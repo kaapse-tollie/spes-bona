@@ -1,0 +1,147 @@
+﻿# Startup treaty helpers for Southern Africa. We keep treaty history additive
+# and normalize the two vanilla GBR-Boer guarantee bundles at runtime so other
+# mods can still extend 00_historical_treaties.txt safely.
+
+sb_normalize_boer_trade_treaties = {
+	if = {
+		limit = {
+			c:GBR ?= {
+				any_scope_treaty = {
+					binds = c:ORA
+					any_scope_article = {
+						has_type = guarantee_independence
+						source_country = c:GBR
+						target_country = c:ORA
+					}
+				}
+			}
+		}
+		c:GBR ?= {
+			every_scope_treaty = {
+				limit = {
+					binds = c:ORA
+					any_scope_article = {
+						has_type = guarantee_independence
+						source_country = c:GBR
+						target_country = c:ORA
+					}
+				}
+				withdraw = {
+					country = c:GBR
+				}
+			}
+			change_infamy = -10
+			change_relations = {
+				country = c:ORA
+				value = 20
+			}
+		}
+	}
+
+	if = {
+		limit = {
+			c:GBR ?= {
+				any_scope_treaty = {
+					binds = c:TRN
+					any_scope_article = {
+						has_type = guarantee_independence
+						source_country = c:GBR
+						target_country = c:TRN
+					}
+				}
+			}
+		}
+		c:GBR ?= {
+			every_scope_treaty = {
+				limit = {
+					binds = c:TRN
+					any_scope_article = {
+						has_type = guarantee_independence
+						source_country = c:GBR
+						target_country = c:TRN
+					}
+				}
+				withdraw = {
+					country = c:GBR
+				}
+			}
+			change_infamy = -10
+			change_relations = {
+				country = c:TRN
+				value = 20
+			}
+		}
+	}
+
+	c:ORA ?= {
+		create_bidirectional_truce = {
+			country = c:GBR
+			months = 240
+		}
+	}
+
+	c:TRN ?= {
+		create_bidirectional_truce = {
+			country = c:GBR
+			months = 240
+		}
+	}
+
+	c:GBR ?= {
+		if = {
+			limit = {
+				NOT = {
+					any_scope_treaty = {
+						binds = c:ORA
+						any_scope_article = {
+							has_type = transit_rights
+							source_country = c:GBR
+							target_country = c:ORA
+						}
+					}
+				}
+			}
+			create_treaty = {
+				first_country = c:GBR
+				second_country = c:ORA
+				is_draft = no
+				binding_period = { years = 25 }
+				articles_to_create = {
+					{
+						article = transit_rights
+						source_country = c:GBR
+						target_country = c:ORA
+					}
+				}
+			}
+		}
+
+		if = {
+			limit = {
+				NOT = {
+					any_scope_treaty = {
+						binds = c:TRN
+						any_scope_article = {
+							has_type = transit_rights
+							source_country = c:GBR
+							target_country = c:TRN
+						}
+					}
+				}
+			}
+			create_treaty = {
+				first_country = c:GBR
+				second_country = c:TRN
+				is_draft = no
+				binding_period = { years = 25 }
+				articles_to_create = {
+					{
+						article = transit_rights
+						source_country = c:GBR
+						target_country = c:TRN
+					}
+				}
+			}
+		}
+	}
+}

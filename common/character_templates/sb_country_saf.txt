@@ -12,7 +12,7 @@ REPLACE:ORA_hendrik_potgieter = {
 	is_general = yes
 	birth_date = 1792.12.19
 	interest_group = ig_landowners
-	ideology = ideology_moderate
+	ideology = ideology_sb_boer_commandant_landowner
 	traits = {
 		brave
 		imperious
@@ -34,7 +34,7 @@ REPLACE:TRN_andries_pretorius = {
 	birth_date = 1798.11.27
 	dna = dna_andries_pretorius
 	interest_group = ig_landowners
-	ideology = ideology_moderate
+	ideology = ideology_sb_boer_commandant_landowner
 	traits = {
 		meticulous
 		brave
@@ -42,6 +42,79 @@ REPLACE:TRN_andries_pretorius = {
 		surveyor
 		experienced_defensive_strategist
 		plains_commander
+	}
+}
+
+REPLACE:ORA_piet_retief = {
+	first_name = "Piet"
+	last_name = "Retief"
+	historical = yes
+	culture = cu:boer
+	religion = rel:protestant
+	ig_leader = yes
+	dna = dna_piet_retief
+	birth_date = 1780.11.12
+	interest_group = ig_petty_bourgeoisie
+	ideology = ideology_sb_boer_commandant_landowner
+	traits = {
+		direct
+		literary
+		charismatic
+		basic_colonial_administrator
+	}
+}
+
+REPLACE:TRN_marthinus_wessel_pretorius = {
+	first_name = "Mathinus_Wessel"
+	last_name = "Pretorius"
+	historical = yes
+	culture = cu:boer
+	religion = rel:protestant
+	female = no
+	interest_group = ig_armed_forces
+	ideology = ideology_sb_boer_commandant_landowner
+	birth_date = 1819.9.17
+	traits = {
+		ambitious
+		reckless
+		brave
+		popular_commander
+	}
+	interest_group_leader_usage = {
+		country_trigger = {
+			OR = {
+				c:TRN ?= this
+				AND = {
+					country_has_primary_culture = cu:boer
+					any_scope_state = {
+						state_region = s:STATE_TRANSVAAL
+					}
+				}
+				AND = {
+					c:ORA ?= this
+					s:STATE_TRANSVAAL = {
+						NOT = {
+							any_scope_state = {
+								owner = { country_has_primary_culture = cu:boer }
+							}
+						}
+					}
+				}
+			}
+		}
+		interest_group_trigger = {
+			OR = {
+				is_interest_group_type = ig_armed_forces
+				is_interest_group_type = ig_landowners
+			}
+			NOR = {
+				has_variable = communist_ig_var
+				has_variable = chose_vanguardism
+			}
+		}
+		earliest_usage_date = 1836.1.1
+		latest_usage_date = 1890.1.1
+		chance = 50
 	}
 }
 
