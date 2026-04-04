@@ -14,9 +14,10 @@
 #     Historically: the trek communities needed to establish farms, churches,
 #     and basic governance before being taken seriously.
 #
-#   Stage 2 — TERRITORY (owns entire home state region):
-#     Full control of the homeland. Requires Stage 1 complete first.
-#     TRN must own all of STATE_TRANSVAAL; ORA must own all of STATE_VRYSTAAT.
+#   Stage 2 — TERRITORY (secure the claimed homeland):
+#     Territorial control of the homeland. Requires Stage 1 complete first.
+#     TRN must control all Transvaal provinces outside the Swaziland-held slice;
+#     ORA must own all of STATE_VRYSTAAT.
 #     Historically: consolidating authority over Ndebele, Griqua, and other
 #     groups contesting the interior took years of conflict and diplomacy.
 #
@@ -183,7 +184,7 @@ je_sb_great_trek = {
 			}
 
 			# ==================================================================
-			# STAGE 2: Territory control — own entire home state region
+			# STAGE 2: Territory control — secure the homeland
 			# ==================================================================
 			# Requires Stage 1 complete first (sequential gating).
 			# Historically, territorial consolidation came after economic viability —
@@ -202,11 +203,12 @@ je_sb_great_trek = {
 					set_variable = sb_trek_stage2_complete
 					trigger_event = { id = sb_trek.040 popup = yes }
 				}
-				# TRN must control all of Transvaal (South African Republic homeland)
+				# TRN must control the Transvaal homeland, excluding the
+				# Swaziland-held slice on the eastern edge.
 				else_if = {
 					limit = {
 						country_definition = cd:TRN
-						owns_entire_state_region = STATE_TRANSVAAL
+						sb_controls_transvaal_except_swazi = yes
 					}
 					set_variable = sb_trek_stage2_complete
 					trigger_event = { id = sb_trek.041 popup = yes }
