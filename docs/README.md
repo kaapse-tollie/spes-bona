@@ -1,17 +1,18 @@
 # Mod Support Docs
 
-This folder is for **current support material** that directly helps maintain the live mod.
+This folder is for current support material that directly helps maintain and test the live mod.
 
-Current live support docs:
+Current live docs:
 
+- [current_state.md](/Users/depro/Documents/Paradox%20Interactive/Victoria%203/mod/Spes%20Bona%20-%20A%20Southern%20Africa%20Flavour%20Pack/docs/current_state.md)
+  - repo-local Phase 1 v1 reference for the live tag model, branch structure, and major systems
+- [testing_checklist.md](/Users/depro/Documents/Paradox%20Interactive/Victoria%203/mod/Spes%20Bona%20-%20A%20Southern%20Africa%20Flavour%20Pack/docs/testing_checklist.md)
+  - fresh-save and branch verification checklist for the current release-candidate line
 - [flag_texture_scaffolds.md](/Users/depro/Documents/Paradox%20Interactive/Victoria%203/mod/Spes%20Bona%20-%20A%20Southern%20Africa%20Flavour%20Pack/docs/flag_texture_scaffolds.md)
-  - DDS flag handoff scaffold for CAP / ABY textured flags
-
-Older design and audit notes that no longer match the live project were moved to:
-
-- [Archived/mod_support_docs](/Users/depro/Documents/Paradox%20Interactive/Victoria%203/mod/Archived/mod_support_docs)
+  - flag and heraldry handoff scaffold for CAP / ABY texture work
 
 Working rule:
 
 - keep this folder small and current
-- move stale design notes into the archive instead of letting them drift here
+- keep runtime testing guidance here, not in external scratch docs
+- remove or archive notes once they stop matching the live branch

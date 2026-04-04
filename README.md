@@ -1,42 +1,26 @@
 # Spes Bona - A Southern Africa Flavour Pack
 
-Spes Bona is a Victoria 3 regional flavor mod for greater Southern Africa built around the Community Mod Framework. The current build is a Phase 1 foundation pass focused on making the 1836 start work properly for the Cape, the Boer republics, the Xhosa frontier, and Natal.
+Spes Bona is a Victoria 3 regional flavor mod for greater Southern Africa built around the Community Mod Framework. The current branch is a Phase 1 v1 release-candidate line focused on making the 1836 start solid, readable, and historically flavored across the Cape, the Boer republics, Natal, and the southeastern frontier.
 
-## Current Build
+## Current Scope
 
-This refresh currently includes:
-
-- 2 custom journal entries
-- 20 custom events
-- 4 scripted buttons
-- 2 custom political movements
-- 21 custom character entries
-- 1 custom amendment
-- 1 custom subject type
-- 1 formable country definition
-- 2 custom state traits
-
-### Current Gameplay Focus
-
-| Area | Current content |
-|---|---|
-| Cape Colony (`CAP`) | Cape Politics JE, liberal vs settler tug-of-war, ECSL and Cape Liberal movements, faction buttons, frontier raid flavor |
-| Transvaal / Orange Free State (`TRN` / `ORA`) | Great Trek JE, two-stage republic consolidation, trek migration pull, stage reward events |
-| Natal / Zululand | Retief negotiation chain, refusal/war alternatives, Natalia formation, British ultimatum follow-through |
-| Ndebele frontier | Early-game pressure on TRN through raids and a follow-up showdown event |
-| Regional setup | `CAP` replacing start-date `SAF`, `XHG` / `XHR` / `XHT` split from vanilla `XHO`, `ORL` setup, pop/building/homeland/state history cleanup |
-
-### What This Build Is Not Yet
-
-This is not yet the later-century Southern Africa overhaul originally described in older docs. The current build does not yet include full Rhodesia content, the Boer Wars, a full Responsible Government chain, a full Basutoland chain, or a bespoke Union of South Africa narrative.
-
-## Tag Model
-
-- `CAP` is the live British colony at game start
-- `SAF` is reserved as a formable
+- `CAP` replaces start-date `SAF`
 - `XHO` is split into `XHG`, `XHR`, and `XHT`
-- `ORL` is represented in Hereroland
-- `NAL` can form through the Natal chain
+- `ORA`, `TRN`, `NAL`, `ZUL`, `SWZ`, `GZA`, `BST`, `ORL`, `ABY`, and the frontier minors all have custom startup work
+- the live build covers the Cape constitutional struggle, the Great Trek, the Natal question, the MTB pressure lane, and the firearms-modernization lane for selected kingdoms
+
+## Live Feature Set
+
+- Cape Colony:
+  liberal vs settler balance JE, Albany petition branch, London answer branch, ECSL and Cape Liberal movement pressure
+- Boer republics:
+  two-stage Great Trek JE, trek migration pull, MTB war opener, post-Vegkop frontier reward, custom Boer government setup
+- Natal / Zululand:
+  Retief diplomacy, Retief-killed revenge branch, Blood River branch, ZUL guns-for-land bargain branch, British ultimatum and annex-war follow-through
+- Firearms modernization:
+  day-0 JE for `ZUL`, `SWZ`, and `GZA`, with monthly malus decay through imports or domestic arms production
+- Startup setup:
+  custom pop, state, country, military formation, and building history for the Phase 1 Southern Africa scope
 
 ## Requirements
 
@@ -45,41 +29,25 @@ This is not yet the later-century Southern Africa overhaul originally described 
 
 ## Compatibility
 
-Spes Bona is not a light overlay. It currently modifies:
+Spes Bona is not a light overlay. It changes Southern Africa startup data heavily, including:
 
-- country definitions
-- cultures
-- state regions / map setup
-- state, pop, and building history
-- on_actions
-- journal entries, events, scripted buttons, movements, and localization
+- country history
+- pops
+- buildings
+- state regions
+- diplomacy
+- journal entries and events
+- modifiers, laws, and subject setup
 
-It will conflict with other mods that touch Southern Africa startup data, the Highveld/Natal setup, or the same CMF-sensitive startup hooks.
+It will conflict with other mods that substantially rewrite Southern Africa in 1836.
 
-## Installation
+## Documentation
 
-### Manual
+The live repo docs are now the source of truth:
 
-1. Place the `Spes Bona - A Southern Africa Flavour Pack` folder in your Victoria 3 `mod` directory.
-2. Enable both Community Mod Framework and Spes Bona in the launcher.
-3. Keep CMF above Spes Bona if your load order requires dependency-first ordering.
-
-## Development Status
-
-Current status: Phase 1 refresh.
-
-What is already done:
-
-- startup architecture moved away from a brittle `SAF`/`XHO`-dependent overlay approach
-- Southern Africa history refactored around `CAP`, split Xhosa tags, `ORL`, and Port Natal handling
-- Cape Politics, Great Trek, Natal, and Ndebele Phase 1 content all exist in script
-- mod text files normalized to UTF-8 BOM for Tiger/game compatibility
-
-What still needs live verification:
-
-- fresh 1836 startup logs after the latest stabilization pass
-- Natalia formation and the delayed British ultimatum in live gameplay
-- final tuning of Cape movement behavior and Ndebele pressure
+- [docs/current_state.md](/Users/depro/Documents/Paradox%20Interactive/Victoria%203/mod/Spes%20Bona%20-%20A%20Southern%20Africa%20Flavour%20Pack/docs/current_state.md)
+- [docs/testing_checklist.md](/Users/depro/Documents/Paradox%20Interactive/Victoria%203/mod/Spes%20Bona%20-%20A%20Southern%20Africa%20Flavour%20Pack/docs/testing_checklist.md)
+- [docs/flag_texture_scaffolds.md](/Users/depro/Documents/Paradox%20Interactive/Victoria%203/mod/Spes%20Bona%20-%20A%20Southern%20Africa%20Flavour%20Pack/docs/flag_texture_scaffolds.md)
 
 ## Validation
 
@@ -92,11 +60,20 @@ vic3-tiger -c --unused --no-color \
   'Spes Bona - A Southern Africa Flavour Pack'
 ```
 
-As of the latest refresh pass this returns `0 fatals / 0 errors / 0 warnings`, with one remaining `unused-localization` untidy report that appears to be a Tiger false-positive bucket for automatically-resolved loc keys.
+Current target state:
 
-## Notes
+- `0 fatals`
+- `0 errors`
+- `0 warnings`
+- `0 untidy`
 
-- Live reference: [`../history.md`](../history.md)
-- Live roadmap: [`../v1_roadmap.md`](../v1_roadmap.md)
-- Live testing sheet: [`../test_runs/phase1_ingame_testing_checklist.md`](../test_runs/phase1_ingame_testing_checklist.md)
-- Manual test log archiving is supported by [`../tools/archive_logs.sh`](../tools/archive_logs.sh).
+## Current Priority
+
+This branch is in stabilization mode.
+
+What still matters most:
+
+- fresh-save gameplay verification
+- debugger cleanup if any new issues appear
+- AI balance and branch reliability
+- small presentation and content polish
