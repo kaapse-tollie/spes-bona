@@ -1,0 +1,248 @@
+﻿# Spes Bona - The Great Trek Journal Entry (Period 1)
+# ==============================================================================
+# Tracks Boer republic establishment for the Transvaal (TRN) and Orange Free State (ORA).
+#
+# HISTORICAL CONTEXT:
+#   The Great Trek (1836-1852) was the mass migration of Boer settlers from the
+#   Cape Colony into the interior, establishing the South African Republic (TRN)
+#   and the Orange Free State (ORA). This JE models the transition from fragile
+#   frontier settlements into viable, recognized states.
+#
+# TWO-STAGE DESIGN:
+#   Stage 1 — ECONOMY (GDP >= 100k):
+#     The republic has a functioning economy. Rewards: prestige, name/flag update.
+#     Historically: the trek communities needed to establish farms, churches,
+#     and basic governance before being taken seriously.
+#
+#   Stage 2 — TERRITORY (owns entire home state region):
+#     Full control of the homeland. Requires Stage 1 complete first.
+#     TRN must own all of STATE_TRANSVAAL; ORA must own all of STATE_VRYSTAAT.
+#     Historically: consolidating authority over Ndebele, Griqua, and other
+#     groups contesting the interior took years of conflict and diplomacy.
+#
+# ON COMPLETE:
+#   - TRN: removes sb_early_republic_var, triggering a name change from
+#     "Transvaal Republic" to "South African Republic" (ZAR). This is handled
+#     by dynamic country name logic elsewhere.
+#   - Both: removes sb_trek_migration_pull from all states (trek is over,
+#     settlers have arrived).
+#   - Fires sb_trek.100 completion event.
+#
+# CROSS-REFERENCES:
+#   - Migration modifier: common/modifiers/sb_modifiers.txt (sb_trek_migration_pull)
+#   - Events: events/sb_trek.txt (sb_trek.030-.031, .040-.041, .050, .100)
+#   - Country names: common/country_definition/ (sb_early_republic_var usage)
+# ==============================================================================
+
+je_sb_great_trek = {
+	group = je_group_historical_content
+
+	icon = "gfx/interface/icons/je_icons/je_great_trek.dds"
+
+	# Shown in lobby for any Boer-culture country (broader than possible,
+	# so players see it when selecting TRN/ORA in the country picker).
+	is_shown_in_lobby = {
+		country_has_primary_culture = cu:boer
+	}
+
+	# Only active for TRN (Transvaal) and ORA (Orange Free State),
+	# and only while independent — subjects don't conduct their own treks.
+	possible = {
+		OR = {
+			country_definition = cd:TRN
+			country_definition = cd:ORA
+		}
+		is_subject = no
+	}
+
+	immediate = {
+		# Grant migration pull modifier to ALL currently owned states.
+		# This attracts Boer pops from the Cape Colony, simulating the historical
+		# trekker influx. Uses is_decaying = no so it persists until JE completes.
+		# KNOWN LIMITATION: states acquired AFTER JE start won't get this modifier
+		# automatically — only states owned at JE creation time.
+		every_scope_state = {
+			add_modifier = {
+				name = sb_trek_migration_pull
+				is_decaying = no
+			}
+		}
+	}
+
+	# Status text: shows Stage 2 description once Stage 1 is complete,
+	# otherwise shows Stage 1 description. Uses first_valid top-to-bottom.
+	status_desc = {
+		first_valid = {
+			triggered_desc = {
+				desc = je_sb_great_trek_stage2_status
+				trigger = {
+					has_variable = sb_trek_stage1_complete
+				}
+			}
+			triggered_desc = {
+				desc = je_sb_great_trek_stage1_status
+				trigger = {
+					always = yes
+				}
+			}
+		}
+	}
+
+	# JE completes when BOTH stages are done (AND logic — both custom_tooltips
+	# must be true simultaneously).
+	complete = {
+		custom_tooltip = {
+			text = je_sb_great_trek_stage1_tt
+			has_variable = sb_trek_stage1_complete
+		}
+		custom_tooltip = {
+			text = je_sb_great_trek_stage2_tt
+			has_variable = sb_trek_stage2_complete
+		}
+	}
+
+	on_complete = {
+		# TRN-specific: remove early republic variable.
+		# sb_early_republic_var controls dynamic country naming — removing it
+		# switches TRN from "Transvaal Republic" to "South African Republic" (ZAR),
+		# reflecting the 1852 Sand River Convention recognition.
+		if = {
+			limit = {
+				country_definition = cd:TRN
+				has_variable = sb_early_republic_var
+			}
+			remove_variable = sb_early_republic_var
+		}
+		# The commandant-general setup is a frontier-state expedient. Once the
+		# republic has consolidated its homeland, it should settle into the
+		# standard presidential-republic form used elsewhere in V3.
+		if = {
+			limit = {
+				has_law = law_type:law_sb_commandant_general_republic
+			}
+			activate_law = law_type:law_presidential_republic
+			activate_law = law_type:law_wealth_voting
+		}
+		if = {
+			limit = {
+				has_variable = sb_commandant_general_visible_var
+			}
+			remove_variable = sb_commandant_general_visible_var
+		}
+		# Remove migration pull from all states — the trek is complete,
+		# no longer need to attract additional Boer settlers.
+		every_scope_state = {
+			remove_modifier = sb_trek_migration_pull
+		}
+		remove_modifier = sb_trek_frontier_drive
+		# Great Trek completion cements Boer settlement into homeland claims.
+		if = {
+			limit = {
+				country_definition = cd:TRN
+			}
+			s:STATE_TRANSVAAL = {
+				add_homeland = cu:boer
+			}
+		}
+		if = {
+			limit = {
+				country_definition = cd:ORA
+			}
+			s:STATE_VRYSTAAT = {
+				add_homeland = cu:boer
+			}
+		}
+		trigger_event = { id = sb_trek.100 }
+	}
+
+	on_monthly_pulse = {
+		effect = {
+			# ==================================================================
+			# STAGE 1: GDP threshold (100k) — economy established
+			# ==================================================================
+			# 100k GDP represents a minimal viable economy — roughly equivalent
+			# to a small agrarian state with a few thousand pops. This is
+			# intentionally low to be achievable within 5-10 years of game start.
+			if = {
+				limit = {
+					NOT = { has_variable = sb_trek_stage1_complete }
+					root.gdp >= 100000
+				}
+				set_variable = sb_trek_stage1_complete
+				# Tag-specific events update name/flag to reflect political maturation.
+				# ORA: Orange River Sovereignty -> Orange Free State
+				if = {
+					limit = { country_definition = cd:ORA }
+					trigger_event = { id = sb_trek.030 popup = yes }
+				}
+				# TRN: initial Transvaal settlement -> Transvaal Republic
+				else_if = {
+					limit = { country_definition = cd:TRN }
+					trigger_event = { id = sb_trek.031 popup = yes }
+				}
+			}
+
+			# ==================================================================
+			# STAGE 2: Territory control — own entire home state region
+			# ==================================================================
+			# Requires Stage 1 complete first (sequential gating).
+			# Historically, territorial consolidation came after economic viability —
+			# you need farms and guns before you can project authority over the full region.
+			if = {
+				limit = {
+					has_variable = sb_trek_stage1_complete
+					NOT = { has_variable = sb_trek_stage2_complete }
+				}
+				# ORA must control all of Vrystaat (Orange Free State homeland)
+				if = {
+					limit = {
+						country_definition = cd:ORA
+						owns_entire_state_region = STATE_VRYSTAAT
+					}
+					set_variable = sb_trek_stage2_complete
+					trigger_event = { id = sb_trek.040 popup = yes }
+				}
+				# TRN must control all of Transvaal (South African Republic homeland)
+				else_if = {
+					limit = {
+						country_definition = cd:TRN
+						owns_entire_state_region = STATE_TRANSVAAL
+					}
+					set_variable = sb_trek_stage2_complete
+					trigger_event = { id = sb_trek.041 popup = yes }
+				}
+			}
+
+		}
+
+			# Random events are intentionally disabled for now. The original
+			# trekker-arrivals pulse was producing too much noise relative to the
+			# more important scripted frontier beats and is better revisited later
+			# as a cleaner flavor event set.
+		}
+
+	# Invalidates if the republic becomes a subject (e.g., annexed by Britain).
+	# A subjected Boer republic can't conduct an independent trek.
+	invalid = {
+		is_subject = yes
+	}
+
+	# Cleanup on invalidation: remove migration pull so it doesn't linger
+	# on states that are now under foreign control.
+	on_invalid = {
+		every_scope_state = {
+			remove_modifier = sb_trek_migration_pull
+		}
+		remove_modifier = sb_trek_frontier_drive
+	}
+
+	# High weight for journal priority.
+	weight = 1000
+
+	should_be_pinned_by_default = yes
+
+	# Non-transferable: the Great Trek is specific to Boer republics and
+	# should not carry over if the country is conquered or revolutionized.
+	transferable = no
+	can_revolution_inherit = no
+}

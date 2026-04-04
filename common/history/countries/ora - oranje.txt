@@ -1,0 +1,75 @@
+﻿# Orange Free State (ORA) — Boer republic between the Orange and Vaal rivers
+# Historically: The Orange River Sovereignty was initially a British protectorate (1848-1854)
+# before London abandoned it. The Orange Free State (Oranje-Vrystaat) was proclaimed in 1854.
+# At game start (1836), Voortrekker settlers were just beginning to arrive in the region.
+# ORA shares most of TRN's law setup — both are Boer frontier republics with similar institutions.
+# Key difference: ORA lacks law_frontier_colonization (its borders were more constrained
+# between the Cape Colony and Basutoland, limiting expansionist potential).
+COUNTRIES = {
+	c:ORA ?= {
+		set_variable = sb_commandant_general_visible_var
+
+		# Election date: 1839 — same as TRN; volksraad governance established alongside.
+		set_next_election_date = 1839.10.12
+
+		# Tier 3 tech: same rationale as TRN — Boer frontier knowledge without industrial base.
+		effect_starting_technology_tier_3_tech = yes
+		# Conservative politics: same Calvinist Boer social structure as TRN.
+		effect_starting_politics_conservative = yes
+		# Commandant-General Republic: a Boer frontier variant of Presidential
+		# Republic that keeps the elected volksraad structure while allowing the
+		# ruler to serve as field commandant.
+		activate_law = law_type:law_sb_commandant_general_republic
+		# Oligarchy: the early trekker volksraad is still a narrow burgher elite
+		# rather than a settled constitutional electorate.
+		activate_law = law_type:law_oligarchy
+		# National Supremacy: racially exclusive polity, same as TRN.
+		activate_law = law_type:law_national_supremacy
+		# Elected Bureaucrats: local officials elected by burghers, same as TRN.
+		activate_law = law_type:law_elected_bureaucrats
+		# Agrarianism: pastoral economy on the highveld grasslands.
+		activate_law = law_type:law_agrarianism
+		# Land-Based Taxation: farm quitrents as primary revenue.
+		activate_law = law_type:law_land_based_taxation
+		# Homesteading: settler land claims, same pattern as TRN.
+		activate_law = law_type:law_homesteading
+			# National Militia: Boer commando system.
+			activate_law = law_type:law_national_militia
+			active_law:lawgroup_army_model ?= {
+				if = {
+					limit = {
+						NOT = { has_amendment = amendment_type:amendment_sb_commando_corps }
+					}
+					add_amendment = {
+						type = amendment_sb_commando_corps
+						sponsor = PREV.ig:ig_rural_folk
+					}
+				}
+			}
+			# Legacy Slavery: same indentured labour practices as TRN.
+		activate_law = law_type:law_legacy_slavery
+		# NOTE: No law_frontier_colonization — ORA was geographically boxed in by CAP and BST.
+		# TRN has it because of open expansion into the northern highveld.
+
+		# Broad-but-coherent start coalition: enough of the trekker camp must sit
+		# in government to avoid the ahistorical zero-legitimacy open, but the
+		# republic should still read as a commandant's laager rather than a full
+		# national front.
+		ig:ig_landowners ?= {
+			add_ruling_interest_group = yes
+		}
+		ig:ig_rural_folk ?= {
+			add_ruling_interest_group = yes
+		}
+		ig:ig_armed_forces ?= {
+			add_ruling_interest_group = yes
+		}
+		ig:ig_devout ?= {
+			add_ruling_interest_group = yes
+		}
+
+		# Spes Bona: Replace vanilla Highveld JE with our Great Trek JE.
+		# See: common/journal_entries/1-02_sb_great_trek.txt
+		add_journal_entry = { type = je_sb_great_trek }
+	}
+}

@@ -1,0 +1,87 @@
+﻿# Transvaal (TRN) — Boer Voortrekker republic north of the Vaal River
+# Historically: In 1836 the game starts, TRN represents the nascent Potchefstroom republic
+# (earliest Voortrekker settlement, est. ~1838). The Transvaal only gained formal recognition
+# from Britain via the Sand River Convention in 1852 and became the South African Republic (ZAR)
+# in 1856-57. Dynamic naming handles the Potchefstroom -> Transvaal transition on JE completion.
+# See: common/dynamic_country_names/sb_dynamic_names.txt (sb_early_republic_var controls naming)
+COUNTRIES = {
+	c:TRN ?= {
+		set_variable = sb_commandant_general_visible_var
+
+		# Election date: 1839 — shortly after the Voortrekker volksraad was first convened.
+		set_next_election_date = 1839.10.12
+
+		# Tier 3 tech: Boers brought Cape-level knowledge but lacked industrial infrastructure.
+		# Lower than CAP's tier 2 — the trekkers had limited access to European supply chains.
+		effect_starting_technology_tier_3_tech = yes
+		# Conservative politics: Calvinist, patriarchal Boer society with strong Reformed Church influence.
+		effect_starting_politics_conservative = yes
+		# Commandant-General Republic: a Boer frontier variant of Presidential
+		# Republic that preserves the elected-republic family while letting the
+		# ruler also act as commander in the field.
+		activate_law = law_type:law_sb_commandant_general_republic
+		# Oligarchy: the early trekker republic is still governed through a small
+		# commandant-and-volksraad elite rather than a settled electoral system.
+		activate_law = law_type:law_oligarchy
+		# National Supremacy: racially exclusive polity — only white Boers held political rights.
+		activate_law = law_type:law_national_supremacy
+		# Elected Bureaucrats: local veldkornets and landdrosten were elected by burghers.
+		activate_law = law_type:law_elected_bureaucrats
+		# Agrarianism: subsistence pastoral economy; cattle and grain farming on the highveld.
+		activate_law = law_type:law_agrarianism
+		# Land-Based Taxation: revenue from farm quitrents; no industrial tax base.
+		activate_law = law_type:law_land_based_taxation
+		# Homesteading: Boer settlers claimed farms of ~3000 morgen each on the frontier.
+		activate_law = law_type:law_homesteading
+			# National Militia: Boer commando system — every burgher was a mounted rifleman.
+			activate_law = law_type:law_national_militia
+			active_law:lawgroup_army_model ?= {
+				if = {
+					limit = {
+						NOT = { has_amendment = amendment_type:amendment_sb_commando_corps }
+					}
+					add_amendment = {
+						type = amendment_sb_commando_corps
+						sponsor = PREV.ig:ig_rural_folk
+					}
+				}
+			}
+			# Legacy Slavery: indentured "apprenticeship" of indigenous people continued after the trek.
+		# The Boers resented the Cape's 1834 emancipation — this was a key driver of the Great Trek.
+		activate_law = law_type:law_legacy_slavery
+		# Frontier Colonization: actively expanding into Tswana/Pedi/Ndebele territory.
+		# ORA notably lacks this — OFS expansion was slower and more bounded.
+		activate_law = law_type:law_frontier_colonization
+
+		# Broad start coalition: as with ORA, this is a trekker camp hardening into a republic.
+		# Keeping the whole Boer political camp in government at start prevents the ahistorical
+		# zero-legitimacy opening and better reflects the ad hoc volksraad coalition of 1836-38.
+		ig:ig_rural_folk ?= {
+			add_ruling_interest_group = yes
+		}
+		ig:ig_landowners ?= {
+			add_ruling_interest_group = yes
+		}
+		ig:ig_armed_forces ?= {
+			add_ruling_interest_group = yes
+		}
+		ig:ig_devout ?= {
+			add_ruling_interest_group = yes
+		}
+
+		# Spes Bona: Replace vanilla Highveld JE with our Great Trek JE.
+		# See: common/journal_entries/1-02_sb_great_trek.txt
+		# Drives events around Boer migration, indigenous conflict, and republic formation.
+		add_journal_entry = { type = je_sb_great_trek }
+
+		# Starts as Potchefstroom republic — dynamic name handles this.
+		# See: common/dynamic_country_names/sb_dynamic_names.txt
+		# This var is cleared when the Great Trek JE completes, switching name to "Transvaal".
+		set_variable = sb_early_republic_var
+
+		# Claim on the whole Transvaal state — represents Boer aspiration to control the region.
+		s:STATE_TRANSVAAL = {
+			add_claim = c:TRN
+		}
+	}
+}

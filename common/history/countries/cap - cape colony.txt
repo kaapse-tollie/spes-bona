@@ -1,0 +1,101 @@
+﻿# Cape Colony (CAP) — Spes Bona replacement for vanilla SAF
+# Historically: British Crown Colony at the Cape of Good Hope, governed from Cape Town since 1806.
+# In vanilla V3, SAF fills this role. This mod splits SAF into CAP (active colony) and SAF (formable).
+# All vanilla SAF starting setup (laws, techs, IGs) is inherited here with adjustments.
+# See: common/history/countries/saf - south africa.txt (now emptied, SAF reserved as formable)
+COUNTRIES = {
+	c:CAP ?= {
+		# Armed Forces + Landowners in government reflects the colonial military-planter elite.
+		# The Cape's politics were dominated by British officers and Afrikaner/English landed gentry.
+		ig:ig_armed_forces ?= {
+			add_ruling_interest_group = yes
+		}
+
+		ig:ig_landowners ?= {
+			add_ruling_interest_group = yes
+		}
+
+		# Including the colonial church gives the liberal side a little more room
+		# to breathe early without making the opening cabinet feel implausible.
+		ig:ig_devout ?= {
+			add_ruling_interest_group = yes
+		}
+
+		# Tier 2 tech: inherited from vanilla SAF. Cape Colony was industrially behind Britain
+		# but ahead of indigenous polities — tier 2 represents partial European knowledge transfer.
+		effect_starting_technology_tier_2_tech = yes
+
+		# Conservative politics: reflects Tory-aligned colonial governance in the 1830s.
+		effect_starting_politics_conservative = yes
+
+		# Freedom of Conscience: Cape had relative religious tolerance (Dutch Reformed + Anglican coexistence).
+		activate_law = law_type:law_freedom_of_conscience
+		# Local Police: no centralized colonial constabulary yet; policing was ad hoc and local.
+		activate_law = law_type:law_local_police
+		# Homesteading: reflects the settler frontier land distribution model.
+		activate_law = law_type:law_homesteading
+		# Colonial Administration: British-appointed governor system (no representative assembly until 1854).
+		activate_law = law_type:law_colonial_administration
+		# Racial Segregation: de facto racial hierarchy under colonial rule; precursor to later apartheid.
+		activate_law = law_type:law_racial_segregation
+		# Land-Based Taxation: primary revenue from land quitrents, not income tax.
+		activate_law = law_type:law_land_based_taxation
+		# Appointed Bureaucrats: colonial civil service appointed by the Crown, not elected.
+		activate_law = law_type:law_appointed_bureaucrats
+		# Public Schools: reflects early mission schools and colonial education efforts.
+		activate_law = law_type:law_public_schools
+		# Mercantilism: Cape trade was regulated under British imperial preference system.
+		activate_law = law_type:law_mercantilism
+		# NOTE: No law_frontier_colonization at start - must be politically enacted
+
+		# Grain taxed: Cape agriculture was grain-based (wheat farming in the Swartland).
+		add_taxed_goods = g:grain
+
+		# southern_africa_subject_var: triggers vanilla flag definitions + colonial admin buttons.
+		# Also triggers priority 100 "British South Africa" naming, but our priority 200 overrides it.
+		# See: /Users/depro/Documents/Paradox Interactive/Victoria 3/mod/history.md for the maintained vanilla/live setup reference.
+		set_variable = southern_africa_subject_var
+
+		# Schools lvl 1: reflects early colonial education infrastructure (mission schools).
+		set_institution_investment_level = {
+			institution = institution_schools
+			level = 1
+		}
+
+		# Police lvl 1: minimal law enforcement apparatus in the colony.
+		set_institution_investment_level = {
+			institution = institution_police
+			level = 1
+		}
+
+		# Explicitly set capital to Western Cape (STATE_CAPE_COLONY)
+		set_capital = STATE_CAPE_COLONY
+
+		# Western Cape = incorporated (vanilla SAF has WC as incorporated/default).
+		# Cape Town and surrounds were the core settled area of the colony.
+		s:STATE_CAPE_COLONY = {
+			region_state:CAP = {
+				set_state_type = incorporated
+			}
+		}
+
+		# Eastern Cape = incorporated.
+		# Graaff-Reinet and the settled eastern districts were already part of the
+		# colony's institutional core by 1836, even if the frontier itself remained unstable.
+		s:STATE_EASTERN_CAPE = {
+			region_state:CAP = {
+				set_state_type = incorporated
+			}
+		}
+
+		# Northern Cape = unincorporated
+		# Defaults to unincorporated from set_owner_of_provinces, no action needed.
+
+		# Tension set via on_actions/sb_on_actions.txt (change_tension doesn't work in country history)
+
+		# CAP gets our custom JE instead of vanilla je_struggle_for_the_highveld.
+		# See: common/journal_entries/1-01_sb_cape_politics.txt
+		# Drives Cape political events (representative government, frontier wars, etc.)
+		add_journal_entry = { type = je_sb_cape_politics }
+	}
+}

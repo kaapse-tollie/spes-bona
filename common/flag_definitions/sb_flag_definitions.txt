@@ -1,0 +1,165 @@
+﻿# Spes Bona - Flag Definitions
+# CAP / ABY intentionally use a narrow, self-contained British-subject ladder:
+#   - CAP-local colony flag while lesser subjects
+#   - CAP-local blue ensign-style dominion flag while higher-tier subjects
+#   - bespoke full-texture flags once fully independent
+# This keeps the colonial transition readable without inheriting unrelated
+# ideological variants or shared naming from other South African flag paths.
+# XHG/XHR/XHT/ORL are decentralized — V3 auto-generates flags, but we define bases.
+
+CAP = { # Cape Colony
+	flag_definition = {
+		coa = CAP
+		subject_canton = CAP
+		# Keep the independent Cape flag above vanilla's Southern Africa colonial
+		# fallback (DEFAULT priority 100) if the colonial helper variable lingers.
+		priority = 200
+	}
+	flag_definition = {
+		coa = CAP_subject_colony
+		priority = 320
+		trigger = {
+			coa_def_lesser_subject_trigger = yes
+		}
+	}
+	flag_definition = {
+		coa = CAP_subject_dominion
+		priority = 310
+		trigger = {
+			coa_def_subject_trigger = yes
+			NOT = { coa_def_lesser_subject_trigger = yes }
+		}
+	}
+}
+
+ABY = { # Albany
+	flag_definition = {
+		coa = ABY
+		subject_canton = ABY
+		priority = 200
+	}
+	flag_definition = {
+		coa = ABY_subject_colony
+		priority = 320
+		trigger = {
+			coa_def_lesser_subject_trigger = yes
+		}
+	}
+	flag_definition = {
+		coa = ABY_subject_dominion
+		priority = 310
+		trigger = {
+			coa_def_subject_trigger = yes
+			NOT = { coa_def_lesser_subject_trigger = yes }
+		}
+	}
+}
+
+QWA = {
+	flag_definition = {
+		coa = QWA
+		subject_canton = QWA
+		priority = 1
+	}
+}
+
+ZPB = {
+	flag_definition = {
+		coa = ZPB
+		subject_canton = ZPB
+		priority = 1
+	}
+}
+
+GLE = {
+	flag_definition = {
+		coa = GLE
+		subject_canton = GLE
+		priority = 1
+	}
+}
+
+REPLACE:TRN = { # Potchefstroom / Transvaal
+	flag_definition = {
+		coa = TRN_trek
+		subject_canton = TRN_trek
+		allow_overlord_canton = yes
+		overlord_canton_scale = { 0.5 0.433 }
+		priority = 200
+		trigger = {
+			scope:actor ?= {
+				has_variable = sb_early_republic_var
+			}
+		}
+	}
+	flag_definition = {
+		coa = TRN
+		subject_canton = TRN
+		priority = 1
+	}
+	flag_definition = {
+		coa = TRN_trek
+		subject_canton = TRN_trek
+		priority = 10
+		allow_overlord_canton = yes
+		overlord_canton_scale = { 0.5 0.433 }
+		trigger = {
+			p:x04FA29.state.owner = {
+				NOT = { scope:actor ?= this }
+			}
+		}
+	}
+	flag_definition = {
+		coa = TRN_boer_state
+		subject_canton = TRN_boer_state
+		priority = 20
+		allow_overlord_canton = yes
+		overlord_canton_scale = { 0.5 0.433 }
+		trigger = {
+			scope:actor ?= {
+				has_variable = highest_on_highveld
+				NOT = { has_variable = sb_early_republic_var }
+			}
+		}
+	}
+	flag_definition = {
+		coa = TRN_subject_GBR
+		allow_overlord_canton = yes
+		priority = 50
+		trigger = {
+			coa_def_british_ensign_trigger = yes
+		}
+	}
+}
+
+XHG = { # Gcaleka Xhosa
+	flag_definition = {
+		coa = XHG
+		subject_canton = XHG
+		priority = 1
+	}
+}
+
+XHR = { # Rharhabe Xhosa
+	flag_definition = {
+		coa = XHR
+		subject_canton = XHR
+		priority = 1
+	}
+}
+
+XHT = { # Thembu
+	flag_definition = {
+		coa = XHT
+		subject_canton = XHT
+		priority = 1
+	}
+}
+
+ORL = { # Oorlam
+	flag_definition = {
+		coa = ORL
+		subject_canton = ORL
+		priority = 1
+	}
+}

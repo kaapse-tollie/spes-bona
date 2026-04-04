@@ -1,0 +1,30 @@
+﻿# Countries in current Spes Bona scope that should pursue widespread access to firearms.
+sb_is_firearms_acquisition_country = {
+	OR = {
+		country_definition = cd:ZUL
+		country_definition = cd:SWZ
+		country_definition = cd:GZA
+	}
+}
+
+sb_has_active_firearms_import_treaty = {
+	any_scope_treaty = {
+		binds = root
+		any_scope_article = {
+			has_type = goods_transfer
+			target_country = root
+			source_country = {
+				any_scope_state = {
+					has_active_building = building_arms_industry
+				}
+			}
+		}
+	}
+}
+
+sb_has_qualifying_firearms_industry = {
+	any_scope_building = {
+		is_building_type = building_arms_industry
+		occupancy >= 0.9
+	}
+}

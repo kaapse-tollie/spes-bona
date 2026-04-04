@@ -1,0 +1,273 @@
+﻿# Spes Bona - Cape Colony Politics Journal Entry (Period 1)
+# ==============================================================================
+# Balance of power between Cape Liberals and Frontier Settlers, c. 1836-1880.
+#
+# DESIGN PATTERN: Spain DLC "Two Spains" — double_sided_bad progress bar +
+#   variable tracking + dynamic modifier. This is the same approach used in
+#   the vanilla Spanish Civil War content where two factions compete on a
+#   shared bar, and the further from center, the worse the instability.
+#
+# PROGRESS BAR LAYOUT:
+#   0 .......... 25 .......... 50 .......... 75 .......... 100
+#   Settler win   Settler adv   Balance   Liberal adv   Liberal win
+#
+# 5-TIER STATUS DISPLAY:
+#   >= 75  Liberal Dominant
+#   >= 60  Liberal Advantage
+#   <= 25  Settler Dominant
+#   <= 40  Settler Advantage
+#   else   Balance (default fallback)
+#
+# COMPLETION CONDITIONS:
+#   - ECSL reaches crisis point --> CAP crisis event + London question
+#   - Liberal balance = 100 + Cultural Exclusion --> Liberal victory
+#   - Settler balance = 0 + frontier pacified --> Settler victory
+#   - Balance remains centered + Cultural Exclusion + frontier pacified
+#       --> Pragmatic compromise
+#   - Date = 1880 --> Bitter failure, make movements stronger and more dangerous
+#
+# OUTCOME EVENTS:
+#   - sb_cape.100 Liberal victory: Griqua accepted + migration reward
+#   - sb_cape.101 Settler victory: Boer accepted + colony growth reward
+#   - sb_cape.102 Balanced compromise: citizenship amendment + modest frontier boost
+#   - sb_cape.103 Eastern Cape Secession: CAP's constitutional crisis breaks open
+#   - sb_cape.200 Britain answers the Albany petition immediately
+#   - sb_cape.201/.202 CAP receives London's answer
+#   - sb_cape.100 Liberal aftermath: the JE only closes once London's answer has landed
+#   - sb_cape.104 Bitter Settlement: radicals simmer for a decade
+#
+# CROSS-REFERENCES:
+#   - Progress bar: common/scripted_progress_bars/sb_progress_bars.txt (sb_cape_balance_bar)
+#   - Buttons: common/scripted_buttons/sb_cape_buttons.txt (favour liberals/settlers)
+#   - Modifier: common/modifiers/sb_modifiers.txt (sb_cape_political_tensions)
+#   - Events: events/sb_cape_events.txt (sb_cape.020, .100-.202)
+#   - ECSL movement: common/political_movements/sb_political_movements.txt
+# ==============================================================================
+
+je_sb_cape_politics = {
+	group = je_group_historical_content
+
+	icon = "gfx/interface/icons/principles_icons/creative_legislature.dds"
+
+	# CAP = Cape Colony. Only available to the Cape, not other SA tags.
+	is_shown_in_lobby = {
+		country_definition = cd:CAP
+	}
+
+	possible = {
+		country_definition = cd:CAP
+	}
+
+	# Links to the double_sided_bad bar defined in sb_progress_bars.txt.
+	# Bar starts at 50 (center), with liberal = positive direction, settler = negative.
+	# CMF note: keep this JE on the vanilla-safe scripted_progress_bar contract so
+	# standalone tiger validation remains clean even when dependency-only styling
+	# helpers are unavailable in the lint pass.
+	scripted_progress_bar = sb_cape_balance_bar
+
+	# Player-facing buttons to tilt the balance — see sb_cape_buttons.txt
+	scripted_button = je_sb_cape_favour_liberals_button
+	scripted_button = je_sb_cape_favour_settlers_button
+
+	# 5-tier status description — evaluated top-to-bottom via first_valid.
+	# Order matters: dominant checks (70/30) must come before advantage checks (60/40),
+	# and the balance fallback (always = yes) must be last.
+	status_desc = {
+		first_valid = {
+			triggered_desc = {
+				desc = je_sb_cape_politics_liberal_dominant
+				trigger = {
+					scope:journal_entry = {
+						"scripted_bar_progress(sb_cape_balance_bar)" >= 75
+					}
+				}
+			}
+			triggered_desc = {
+				desc = je_sb_cape_politics_liberal_advantage
+				trigger = {
+					scope:journal_entry = {
+						"scripted_bar_progress(sb_cape_balance_bar)" >= 60
+					}
+				}
+			}
+			# Settler checks use <= because lower bar = settler-leaning.
+			triggered_desc = {
+				desc = je_sb_cape_politics_settler_dominant
+				trigger = {
+					scope:journal_entry = {
+						"scripted_bar_progress(sb_cape_balance_bar)" <= 25
+					}
+				}
+			}
+			triggered_desc = {
+				desc = je_sb_cape_politics_settler_advantage
+				trigger = {
+					scope:journal_entry = {
+						"scripted_bar_progress(sb_cape_balance_bar)" <= 40
+					}
+				}
+			}
+			# Default: bar is between 41-59 — no faction has a clear edge.
+			triggered_desc = {
+				desc = je_sb_cape_politics_balance
+				trigger = {
+					always = yes
+				}
+			}
+		}
+	}
+
+	custom_completion_header = je_sb_cape_politics_completion_header
+	custom_on_completion_header = je_sb_cape_politics_resolution_header
+
+	complete = {
+		OR = {
+			AND = {
+				custom_tooltip = {
+					text = je_sb_cape_politics_complete_liberal
+					scope:journal_entry = {
+						"scripted_bar_progress(sb_cape_balance_bar)" >= 99
+					}
+				}
+				custom_tooltip = {
+					text = je_sb_cape_politics_complete_cultral_exclusion
+					has_law = law_type:law_cultural_exclusion
+				}
+			}
+				AND = {
+					custom_tooltip = {
+						text = je_sb_cape_politics_complete_settler
+						scope:journal_entry = {
+							"scripted_bar_progress(sb_cape_balance_bar)" <= 1
+						}
+					}
+					custom_tooltip = {
+						text = je_sb_cape_politics_complete_frontier_pacified
+						AND = {
+							NOT = { c:XHG ?= { is_country_alive = yes } }
+							NOT = { c:XHR ?= { is_country_alive = yes } }
+							NOT = { c:XHT ?= { is_country_alive = yes } }
+						}
+					}
+				}
+			AND = {
+				custom_tooltip = {
+					text = je_sb_cape_politics_complete_compromise
+					scope:journal_entry = {
+						"scripted_bar_progress(sb_cape_balance_bar)" >= 26
+						"scripted_bar_progress(sb_cape_balance_bar)" <= 74
+					}
+				}
+					custom_tooltip = {
+						text = je_sb_cape_politics_complete_cultral_exclusion
+						has_law = law_type:law_cultural_exclusion
+					}
+					custom_tooltip = {
+						text = je_sb_cape_politics_complete_frontier_pacified
+						AND = {
+							NOT = { c:XHG ?= { is_country_alive = yes } }
+							NOT = { c:XHR ?= { is_country_alive = yes } }
+							NOT = { c:XHT ?= { is_country_alive = yes } }
+						}
+					}
+			}
+
+			custom_tooltip = {
+				text = je_sb_cape_politics_complete_secession
+				OR = {
+					has_variable = sb_albany_sanctioned_var
+					has_variable = sb_albany_refused_var
+				}
+			}
+
+			custom_tooltip = {
+				text = je_sb_cape_politics_complete_failure
+				game_date >= 1880.1.1
+			}
+		}
+	}
+
+	on_complete = {
+		hidden_effect = {
+			if = {
+				limit = {
+					OR = {
+						has_variable = sb_albany_sanctioned_var
+						has_variable = sb_albany_refused_var
+					}
+				}
+				trigger_event = { id = sb_cape.100 popup = yes }
+			}
+			else_if = {
+				limit = {
+					scope:journal_entry = {
+						"scripted_bar_progress(sb_cape_balance_bar)" >= 99
+					}
+					has_law = law_type:law_cultural_exclusion
+				}
+				trigger_event = { id = sb_cape.100 popup = yes }
+			}
+			else_if = {
+				limit = {
+					scope:journal_entry = {
+						"scripted_bar_progress(sb_cape_balance_bar)" <= 1
+					}
+					NOT = { c:XHG ?= { is_country_alive = yes } }
+					NOT = { c:XHR ?= { is_country_alive = yes } }
+					NOT = { c:XHT ?= { is_country_alive = yes } }
+				}
+				trigger_event = { id = sb_cape.101 popup = yes }
+			}
+			else_if = {
+				limit = {
+					scope:journal_entry = {
+						"scripted_bar_progress(sb_cape_balance_bar)" >= 26
+						"scripted_bar_progress(sb_cape_balance_bar)" <= 74
+					}
+					has_law = law_type:law_cultural_exclusion
+					NOT = { c:XHG ?= { is_country_alive = yes } }
+					NOT = { c:XHR ?= { is_country_alive = yes } }
+					NOT = { c:XHT ?= { is_country_alive = yes } }
+				}
+				trigger_event = { id = sb_cape.102 popup = yes }
+			}
+			else = {
+				trigger_event = { id = sb_cape.104 popup = yes }
+			}
+
+			scope:journal_entry = {
+				if = {
+					limit = { has_modifier = sb_cape_political_tensions }
+					remove_modifier = sb_cape_political_tensions
+				}
+				if = {
+					limit = { has_modifier = sb_cape_liberal_ascendant }
+					remove_modifier = sb_cape_liberal_ascendant
+				}
+				if = {
+					limit = { has_modifier = sb_cape_settler_ascendant }
+					remove_modifier = sb_cape_settler_ascendant
+				}
+			}
+			remove_variable = sb_cape_balance_current
+			remove_variable = sb_cape_tensions_initialized_var
+			remove_variable = sb_cape_tensions_event_pending_var
+			remove_variable = sb_albany_crisis_var
+		}
+	}
+
+	# Invalidates if tag changes (e.g., annexed or formed a new nation).
+	invalid = {
+		NOT = { country_definition = cd:CAP }
+	}
+
+	# High weight ensures this JE takes priority in the journal list.
+	weight = 1000
+
+	should_be_pinned_by_default = yes
+
+	# Non-transferable: this JE is specific to the Cape Colony's internal politics
+	# and should not carry over to a conquering nation or revolution successor.
+	transferable = no
+	can_revolution_inherit = no
+}

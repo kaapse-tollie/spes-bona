@@ -1,0 +1,333 @@
+﻿# Spes Bona - Static Modifiers
+# These modifiers are applied by journal entries, events, and scripted effects throughout the mod.
+# Cross-ref: common/journal_entries/ and events/ for where these are applied and removed.
+
+########################## SOUL OF THE CAPE RELATED MODIFIERS ########################################
+
+# Cape Political Tensions — the standing instability modifier on the JE.
+# Applied once while the Cape politics JE is active; no longer stacked by the JE.
+# Cross-ref: common/on_actions/sb_on_actions.txt (sb_on_cape_monthly_pulse_country)
+sb_cape_political_tensions = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_negative.dds"
+	political_movement_pop_attraction_mult = 0.10
+	state_radicals_from_political_movements_mult = 0.10
+	state_loyalists_from_political_movements_mult = 0.10
+}
+
+sb_cape_liberal_ascendant = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_positive.dds"
+	country_radicalism_increases_violent_hostility_mult = -0.05
+	country_radicalism_increases_cultural_erasure_mult = -0.05
+	country_radicalism_increases_open_prejudice_mult = -0.05
+}
+
+sb_cape_settler_ascendant = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_positive.dds"
+	state_colony_growth_speed_mult = 0.05
+}
+
+# Favour Liberals — Boosts political strength of liberal-aligned interest groups.
+# Uses interest_group_ig_*_pol_str_mult (political strength multiplier), NOT approval.
+# Political strength affects IG clout directly, making this a powerful lever.
+# Intelligentsia and Petty Bourgeoisie represent the Cape's educated/merchant liberal bloc.
+# Applied by Cape political JE when the player tilts the political bar toward liberals.
+sb_cape_favour_liberals = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_positive.dds"
+	interest_group_ig_intelligentsia_pol_str_mult = 0.10
+	interest_group_ig_rural_folk_approval_add = -1
+}
+
+# Favour Settlers — Boosts political strength of settler-aligned interest groups.
+# Uses interest_group_ig_*_pol_str_mult (political strength multiplier), NOT approval.
+# Landowners and Armed Forces represent the settler/farmer/military establishment.
+# Applied by Cape political JE when the player tilts the political bar toward settlers.
+sb_cape_favour_settlers = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_positive.dds"
+	interest_group_ig_rural_folk_pol_str_mult = 0.10
+	interest_group_ig_intelligentsia_approval_add = -1
+}
+
+# Temporary commitment boosts used by the dominance complaint events. These
+# nudge the AI/player toward actually locking in the law that matches the side
+# they have allowed to become ascendant.
+sb_cape_liberal_commitment = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_positive.dds"
+	country_law_enactment_success_add = 0.15
+}
+
+sb_cape_settler_commitment = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_positive.dds"
+	country_law_enactment_success_add = 0.15
+}
+
+sb_cape_liberal_refused = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_negative.dds"
+	political_movement_radicalism_add = 0.20
+}
+
+sb_cape_settler_refused = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_negative.dds"
+	political_movement_radicalism_add = 0.20
+}
+
+
+# Cape Liberal Victory — the colony's more inclusive settlement makes it a
+# stronger magnet for migrants and reform-minded settlers.
+sb_cape_liberal_victory = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_positive.dds"
+	interest_group_ig_intelligentsia_pol_str_mult = 0.10
+	state_migration_pull_mult = 0.10
+	country_liberty_desire_add = 0.10
+}
+
+# Settler Victory — Reward for completing sb_cape JE as settlers 
+# Current Phase 1 target: settlers gain a noticeable, but not runaway, colonial advantage.
+sb_settler_victory = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_positive.dds"
+	state_colony_growth_speed_mult = 0.15
+	country_liberty_desire_add = -0.05 
+	interest_group_ig_intelligentsia_pol_str_mult = -0.10
+}
+
+# Cape Frontier Compromise — a pragmatic constitutional settlement preserves a
+# modest colonial drive while a qualified franchise is passed (Historical)
+sb_cape_frontier_compromise = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_positive.dds"
+	state_colony_growth_speed_mult = 0.05
+	country_radicalism_increases_violent_hostility_mult = -0.05
+	country_radicalism_increases_cultural_erasure_mult = -0.05
+	country_radicalism_increases_open_prejudice_mult = -0.05
+}
+
+# Albany Partition Shock — when London hives the Eastern Cape off into Albany,
+# the frontier bloc loses prestige and political leverage in what remains of CAP.
+sb_albany_partition_shock = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_negative.dds"
+	interest_group_ig_landowners_pol_str_mult = -0.10
+	interest_group_ig_rural_folk_pol_str_mult = -0.15
+	interest_group_ig_armed_forces_pol_str_mult = -0.10
+	interest_group_ig_landowners_approval_add = -2
+	interest_group_ig_rural_folk_approval_add = -2
+	interest_group_ig_armed_forces_approval_add = -1
+	country_liberty_desire_add = 0.2 # Crown loyalists left 
+}
+
+# Albany Founding Mandate — once London sanctions the split, Albany receives a
+# short-lived settler-colonial windfall as the new administration consolidates.
+sb_albany_founding_mandate = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_positive.dds"
+	state_colony_growth_speed_mult = 0.15
+	state_migration_pull_mult = 0.10
+	interest_group_ig_rural_folk_pol_str_mult = 0.10
+	interest_group_ig_armed_forces_pol_str_mult = 0.10
+}
+
+# Cape Bitter Settlement — the constitutional issue closes without a clear legal
+# settlement, leaving a decade of heightened movement radicalism. (Failure)
+sb_cape_bitter_settlement = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_negative.dds"
+	political_movement_pop_attraction_mult = 0.50
+	state_radicals_from_political_movements_mult = 0.50
+}
+
+sb_ecsl_checked = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_negative.dds"
+	political_movement_pop_attraction_mult = -0.50
+	political_movement_radicalism_add = -0.10
+}
+
+sb_cape_liberals_checked = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_negative.dds"
+	political_movement_pop_attraction_mult = -0.50
+	political_movement_radicalism_add = -0.10
+}
+
+sb_godlonton_discredited = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_negative.dds"
+	character_popularity_add = -50
+}
+
+sb_convict_ship_accepted = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_positive.dds"
+	country_mass_migration_attraction_mult = 0.10
+	interest_group_ig_armed_forces_pol_str_mult = 0.10
+}
+
+sb_anti_convict_victory = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_positive.dds"
+	interest_group_ig_intelligentsia_approval_add = 5
+	interest_group_ig_intelligentsia_pol_str_mult = 0.10
+}
+
+sb_convict_crisis_liberal_fury = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_negative.dds"
+	political_movement_radicalism_add = 0.25
+}
+
+sb_xhosa_frontier_pressure_xhg = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_negative.dds"
+	country_tension_decay_mult = -0.95
+}
+
+sb_xhosa_frontier_pressure_xhr = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_negative.dds"
+	country_tension_decay_mult = -0.65
+}
+
+sb_xhosa_frontier_pressure_xht = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_negative.dds"
+	country_tension_decay_mult = -0.30
+}
+
+
+########################## END: SOUL OF THE CAPE RELATED MODIFIERS ########################################
+
+# Phase 2 shell:
+# Responsible Government — Applied when CAP transitions to the sb_responsible_colony subject type.
+# Historically, the Cape received responsible government in 1872, gaining an elected parliament.
+# +15% authority and +5% legitimacy represent the increased domestic political capacity.
+# Cross-ref: common/subject_types/sb_subject_types.txt (subject_type_sb_responsible_colony)
+sb_responsible_government = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_positive.dds"
+	country_authority_mult = 0.15
+	country_legitimacy_govt_total_clout_add = 0.05
+}
+
+########################## GREAT TREK RELATED MODIFIERS ########################################
+
+# Trek Migration Cost — Bureaucracy strain on the receiving trek republic as it
+# absorbs sudden wagon migration and has to improvise magistrates, supplies, and
+# frontier administration from almost nothing.
+sb_trek_migration_cost = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_coins_negative.dds"
+	country_bureaucracy_mult = -0.10
+}
+
+# British Natal Ultimatum — Applied when Britain demands Boer withdrawal from Natalia Republic.
+# Historically, Britain annexed Natal in 1843 after the Boers declared the Republic of Natalia.
+# -10% prestige reflects the humiliation of being forced to capitulate or relocate.
+sb_british_natal_ultimatum = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_negative.dds"
+	country_prestige_mult = -0.10
+}
+
+# Trek Migration Pull — Attracts Boer settlers to the target Boer republic state.
+# +25% migration pull makes the state a destination for internal migration.
+# Applied to Boer republic states during active trek journal entries.
+# Cross-ref: common/scripted_effects/sb_trek_migration.txt
+sb_trek_migration_pull = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_positive.dds"
+	state_migration_pull_mult = 0.25
+}
+
+
+
+# Promised Land — Reward for Boer territorial expansion (stage 2 of the trek JE).
+# Represents the Boer belief in divinely ordained settlement of the interior.
+# +25% colony growth speed: accelerated settlement in newly claimed lands.
+# -25% tension decay: settlers bring unresolved tensions with indigenous populations,
+# making tensions persist longer. This is intentionally a double-edged reward.
+sb_promised_land = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_positive.dds"
+	state_colony_growth_speed_mult = 0.25
+	country_tension_decay_mult = -0.25
+}
+
+# Trek Frontier Drive — Transvaal gets an early-game colonization push while the
+# Great Trek JE is active, helping the republic keep pace with the frontier.
+sb_trek_frontier_drive = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_positive.dds"
+	state_non_homeland_colony_growth_speed_mult = 1
+	state_colony_growth_creation_factor = 0.10
+	country_tension_decay_mult = -0.50
+}
+
+# Parked for possible future TRN/MTB tuning; not currently applied.
+sb_potgieter_relief = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_positive.dds"
+	building_training_rate_mult = 0.25
+	military_formation_mobilization_speed_mult = 0.15
+}
+
+# Parked for possible future MTB tuning; not currently applied.
+sb_iron_age_weaponry = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_negative.dds"
+	unit_offense_mult = -0.50
+	unit_defense_mult = -0.50
+}
+
+# Active MTB tuning hook: native warbands remain dangerous in the opening war,
+# but their looser battlefield cohesion should translate into heavier losses.
+sb_iron_age_natives = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_negative.dds"
+	battle_casualties_mult = 0.50
+	unit_kill_rate_add = -0.50
+	
+}
+
+sb_zulu_natal_triumph = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_positive.dds"
+	country_prestige_add = 15
+}
+
+sb_dingane_triumphant = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_positive.dds"
+	character_popularity_add = 25
+}
+
+sb_dingane_humbled = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_negative.dds"
+	character_popularity_add = -50
+}
+
+sb_dingane_survives_britain = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_positive.dds"
+	character_popularity_add = 40
+}
+
+sb_godlonton_galvanized = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_statue_positive.dds"
+	character_popularity_add = 25
+}
+
+
+########################## END: GREAT TREK RELATED MODIFIERS ########################################
+
+
+
+# ============================================================================
+# Prestige modifiers — Generic scaled prestige rewards/penalties for events.
+# Used across multiple events to avoid hardcoding prestige values in event scripts.
+# Small = minor diplomatic incidents, Medium = significant political events,
+# Large = major crises or humiliations.
+# ============================================================================
+
+sb_prestige_gain_small = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_positive.dds"
+	country_prestige_add = 10
+}
+
+sb_prestige_gain_medium = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_positive.dds"
+	country_prestige_add = 25
+}
+
+sb_prestige_loss_small = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_negative.dds"
+	country_prestige_add = -10
+}
+
+sb_prestige_loss_medium = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_negative.dds"
+	country_prestige_add = -20
+}
+
+sb_prestige_loss_natal_hesitation = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_negative.dds"
+	country_prestige_add = -25
+}
+
+sb_prestige_loss_large = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_negative.dds"
+	country_prestige_add = -30
+}

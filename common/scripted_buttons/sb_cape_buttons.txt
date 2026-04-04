@@ -1,0 +1,267 @@
+﻿# Spes Bona - Cape Colony Scripted Buttons
+# ==============================================================================
+# Buttons for the Cape Politics JE (1-01_sb_cape_politics.txt).
+#
+# Three buttons:
+#   1. Petition for Responsible Government — one-shot, unlocks self-governance
+#   2. Favour Liberals — +10% pol_str to Intelligentsia, -1 Rural Folk approval
+#   3. Favour Settlers — +10% pol_str to Rural Folk, -1 Intelligentsia approval
+#
+# Favour buttons are mutually exclusive (shared 5-year cooldown via variable).
+# Picking one removes the other's modifier if active.
+#
+# CROSS-REFERENCES:
+#   - Parent JE: common/journal_entries/1-01_sb_cape_politics.txt
+#   - Progress bar: common/scripted_progress_bars/sb_progress_bars.txt
+#     (favour modifiers indirectly affect bar via IG government membership)
+#   - Modifiers: common/modifiers/sb_modifiers.txt
+#     (sb_cape_favour_liberals, sb_cape_favour_settlers)
+#   - Events: events/sb_cape.txt (sb_cape.020 for responsible govt)
+# ==============================================================================
+
+# ==============================================================================
+# PETITION FOR RESPONSIBLE GOVERNMENT (DEPRECITATED)
+# ==============================================================================
+# Historically: the Cape Colony gained representative government in 1853 and
+# responsible government in 1872. This button models the push for self-governance.
+# One-shot (sb_cape_responsible_govt_var prevents re-use).
+#
+# Requirements:
+#   - Must be a subject (pushing for autonomy FROM overlord)
+#   - Intelligentsia clout >= 15% (educated elite driving the petition)
+#   - Not at war (political reform requires peacetime)
+#   - Schools investment >= level 2 (literate populace needed)
+je_sb_cape_petition_responsible_govt_button = {
+	name = "je_sb_cape_petition_responsible_govt_button"
+	desc = "je_sb_cape_petition_responsible_govt_button_desc"
+
+	visible = {
+		has_journal_entry = je_sb_cape_politics
+		is_subject = yes						# Only visible while a subject — independent Cape doesn't need to petition
+		NOT = { has_variable = sb_cape_responsible_govt_var }	# One-shot: already petitioned
+	}
+
+	possible = {
+		# Intelligentsia must have at least 15% clout — the educated elite
+		# (missionaries, journalists, lawyers) are the petition's driving force.
+		ig:ig_intelligentsia ?= {
+			ig_clout >= 0.15
+		}
+		is_at_war = no
+		# Schools level 2+ — a literate populace is needed to organize
+		# a credible petition for self-governance.
+		institution_investment_level = {
+			institution = institution_schools
+			value >= 2
+		}
+	}
+
+	# 5-year cooldown (60 months) — though the variable makes this effectively one-shot.
+	cooldown = { months = 60 }
+
+	effect = {
+		set_variable = sb_cape_responsible_govt_var	# Marks petition as used (one-shot guard)
+		trigger_event = { id = sb_cape.020 }		# Responsible government event chain
+	}
+
+	# AI strongly favors petitioning — historically the Cape did push for self-governance.
+	ai_chance = {
+		value = 80
+	}
+}
+
+# ==============================================================================
+# FAVOUR LIBERALS
+# ==============================================================================
+# Player decision to back the liberal faction. Applies a 5-year modifier
+# granting +10% political strength to Intelligentsia and Petty Bourgeoisie.
+#
+# Historically: Cape governors and officials could choose to empower the
+# liberal merchant and intellectual classes (centered in Cape Town and
+# Stellenbosch) through appointments, patronage, and policy direction.
+#
+# The modifier now explicitly backs the Intelligentsia while souring relations
+# with the rural settler bloc.
+je_sb_cape_favour_liberals_button = {
+	name = "je_sb_cape_favour_liberals_button"
+	desc = "je_sb_cape_favour_liberals_button_desc"
+
+	visible = {
+		has_journal_entry = je_sb_cape_politics
+	}
+
+	possible = {
+		# SHARED COOLDOWN: sb_cape_favour_cooldown is set by BOTH favour buttons.
+		# This prevents picking both in quick succession. 5-year expiry.
+		custom_tooltip = {
+			text = je_sb_cape_favour_cooldown_tt
+			NOT = { has_variable = sb_cape_favour_cooldown }
+		}
+	}
+
+	effect = {
+		# Set shared cooldown (5 years = 60 months). Both buttons check this variable.
+		set_variable = {
+			name = sb_cape_favour_cooldown
+			months = 60
+		}
+		# Remove opposing faction's modifier if active (mutually exclusive).
+		if = {
+			limit = { has_modifier = sb_cape_favour_settlers }
+			remove_modifier = sb_cape_favour_settlers
+		}
+		# Apply liberal favour modifier for 5 years.
+		# Modifier defined in sb_modifiers.txt: +10% political strength to
+		# ig_intelligentsia and -1 approval for ig_rural_folk.
+		add_modifier = {
+			name = sb_cape_favour_liberals
+			months = 60
+		}
+		# For AI CAP, favoring liberals should also tilt the reform agenda.
+		hidden_effect = {
+			set_strategy = ai_strategy_progressive_agenda
+		}
+	}
+
+	# AI weighs this based on which factions are in government.
+	ai_chance = {
+		value = 55 # Slight favour for LIBS to balance starting ig_setup
+		if = {
+			limit = {
+				ig:ig_rural_folk ?= { is_in_government = yes }
+			}
+			add = -15
+		} 
+
+		if = {
+			limit = {
+				ig:ig_landowners ?= { is_in_government = yes }
+			}
+			add = -10
+		} 
+
+		if = {
+			limit = {
+				ig:ig_armed_forces ?= { is_in_government = yes }
+			}
+			add = -5
+		}
+
+				if = {
+			limit = {
+				ig:ig_intelligentsia ?= { is_in_government = yes }
+			}
+			add = 15
+		} 
+		if = {
+			limit = {
+				ig:ig_devout ?= { is_in_government = yes }
+			}
+			add = 10
+		} 
+		if = {
+			limit = {
+				ig:ig_petty_bourgeoisie ?= { is_in_government = yes }
+			}
+			add = 5
+		} 
+	}
+}
+
+# ==============================================================================
+# FAVOUR SETTLERS
+# ==============================================================================
+# Player decision to back the settler faction. Applies a 5-year modifier
+# granting +10% political strength to Landowners and Armed Forces.
+#
+# Historically: backing the frontier settlers meant supporting aggressive
+# Xhosa frontier expansion, commando culture, and land distribution to
+# frontier farmers — policies championed by Eastern Cape settlers.
+#
+# The settler button is mapped to the agrarian frontier bloc (Rural Folk),
+# while the Intelligentsia resents the tilt toward the frontier.
+je_sb_cape_favour_settlers_button = {
+	name = "je_sb_cape_favour_settlers_button"
+	desc = "je_sb_cape_favour_settlers_button_desc"
+
+	visible = {
+		has_journal_entry = je_sb_cape_politics
+	}
+
+	possible = {
+		# Same shared cooldown as Favour Liberals — mutually exclusive for 5 years.
+		custom_tooltip = {
+			text = je_sb_cape_favour_cooldown_tt
+			NOT = { has_variable = sb_cape_favour_cooldown }
+		}
+	}
+
+	effect = {
+		# Set shared cooldown (5 years = 60 months).
+		set_variable = {
+			name = sb_cape_favour_cooldown
+			months = 60
+		}
+		# Remove opposing faction's modifier if active (mutually exclusive).
+		if = {
+			limit = { has_modifier = sb_cape_favour_liberals }
+			remove_modifier = sb_cape_favour_liberals
+		}
+		# Apply settler favour modifier for 5 years.
+		# Modifier defined in sb_modifiers.txt: +10% political strength to
+		# ig_rural_folk and -1 approval for ig_intelligentsia.
+		add_modifier = {
+			name = sb_cape_favour_settlers
+			months = 60
+		}
+		# For AI CAP, backing the frontier bloc should reinforce a more
+		# conservative legal program.
+		hidden_effect = {
+			set_strategy = ai_strategy_conservative_agenda
+		}
+	}
+
+	# AI weighs this based on which factions are in government.
+	ai_chance = {
+		value = 45
+		if = {
+			limit = {
+				ig:ig_rural_folk ?= { is_in_government = yes }
+			}
+			add = 15
+		} 
+
+		if = {
+			limit = {
+				ig:ig_landowners ?= { is_in_government = yes }
+			}
+			add = 10
+		} 
+
+		if = {
+			limit = {
+				ig:ig_armed_forces ?= { is_in_government = yes }
+			}
+			add = 5
+		}
+
+				if = {
+			limit = {
+				ig:ig_intelligentsia ?= { is_in_government = yes }
+			}
+			add = -15
+		} 
+		if = {
+			limit = {
+				ig:ig_devout ?= { is_in_government = yes }
+			}
+			add = -10
+		} 
+		if = {
+			limit = {
+				ig:ig_petty_bourgeoisie ?= { is_in_government = yes }
+			}
+			add = -5
+		} 
+	}
+}

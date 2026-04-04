@@ -1,0 +1,36 @@
+﻿# Swaziland (SWZ) — vanilla override
+# Historically: The Swazi kingdom under Sobhuza II (d. 1839) and then Mswati II (r. 1840-1868).
+# A Nguni kingdom that survived the Mfecane by diplomacy and strategic mountain retreats.
+# Smaller and less militarised than Zulu but maintained independence until British protectorate (1903).
+# This file modifies vanilla SWZ by removing je_struggle_for_the_highveld.
+# Setup stays conservative relative to ZUL: similar Nguni institutions, but a weaker
+# case for a distinct external-trade tech profile in 1836.
+COUNTRIES = {
+	c:SWZ ?= {
+		# Tier 6 tech: pre-industrial Nguni society, similar to ZUL.
+		effect_starting_technology_tier_6_tech = yes
+
+		# Traditional politics: monarchy under the Ngwenyama (king) and Ndlovukazi (queen mother).
+		effect_starting_politics_traditional = yes
+		# Subjecthood: subjects of the king, not citizens.
+		activate_law = law_type:law_subjecthood
+		# Traditionalism: economy based on cattle-keeping and agriculture under royal control.
+		activate_law = law_type:law_traditionalism
+		# Isolationism: decentralized polities must start on a valid trade-policy law.
+		activate_law = law_type:law_isolationism
+		# Land-Based Taxation: tribute from chiefs and homesteads.
+		activate_law = law_type:law_land_based_taxation
+		# Slave Trade: captives from Mfecane-era conflicts.
+		activate_law = law_type:law_slave_trade
+
+		# Armed Forces ruling: the king's regiments (emabutfo) were central to state power.
+		# NOTE: no ?= operator here (unlike ZUL) — vanilla inconsistency preserved to avoid logic changes.
+		ig:ig_armed_forces = {
+			add_ruling_interest_group = yes
+		}
+
+		add_journal_entry = { type = je_sb_firearms_acquisition }
+
+		# Spes Bona: Removed je_struggle_for_the_highveld (disabled by mod).
+	}
+}

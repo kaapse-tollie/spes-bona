@@ -1,0 +1,142 @@
+﻿# ============================================================================
+# Spes Bona — Diplomatic Relations (1836 start)
+# ============================================================================
+# Sets starting relations between Southern African countries.
+# Relations affect AI willingness to declare war, form alliances, and trade.
+# Values range from -100 (hostile) to +100 (friendly).
+#
+# Design note: These relations model the political landscape of the mid-1830s.
+# Wars are NOT scripted via events — instead, negative relations + tension
+# (see sb_on_actions.txt) push the AI toward declaring conventional V3 wars.
+#
+# Cross-references:
+#   - Tension values:       common/on_actions/sb_on_actions.txt
+#   - Country definitions:  common/country_definitions/sb_*.txt
+#   - Subject relationships: common/history/diplomacy/sb_subject_relationships.txt
+# ============================================================================
+
+DIPLOMACY = {
+	# ============================================================
+	# CAP (Cape Colony) — replaces vanilla SAF
+	# Inherits SAF's baseline relations + custom Xhosa frontier hostility
+	# ============================================================
+	c:CAP ?= {
+		# --- Vanilla SAF relations (carried over unchanged) ---
+		# These are the same values vanilla uses for SAF, preserved for
+		# compatibility with the broader Southern African diplomatic web.
+			set_relations = { country = c:TRN value = -15 }  # Cape-Boer political hostility over the trek
+			set_relations = { country = c:ORA value = -15 }  # Cape distrust of interior Boer republicanism
+			set_relations = { country = c:WBL value = 15 }   # Fair working relations with Griqualand West
+			set_relations = { country = c:PHL value = 15 }   # Fair working relations with Philippolis
+		set_relations = { country = c:BST value = 10 }   # Neutral-positive with Basotho; no direct conflict yet
+		set_relations = { country = c:ZUL value = -25 }   # Distant hostility; Zulu seen as threat but no shared border
+		set_relations = { country = c:SWZ value = -10 }   # Minor friction with Swazi; no direct conflict
+
+		# --- Custom: Xhosa frontier hostility ---
+		# The Eastern Cape frontier was the site of 9 Cape-Xhosa Wars (1779-1879).
+		# By 1836, the 6th Frontier War (1834-36) had just ended. The Rharhabe
+		# bore the brunt of colonial expansion and are most hostile (-60).
+		# The Gcaleka, as the paramount Xhosa chiefdom further east, had less
+		# direct contact (-40). The Thembu, inland and buffered, are least hostile (-30).
+		set_relations = { country = c:XHG value = -80 }  # Gcaleka — paramount chiefdom, east of the Kei River
+		set_relations = { country = c:XHR value = -100 }  # Rharhabe — frontier chiefdom, bore the brunt of colonial wars
+		set_relations = { country = c:XHT value = -70 }  # Thembu — inland tribe
+	}
+
+	# ============================================================
+	# Xhosa chiefdoms — reciprocal hostility with the Cape
+	# ============================================================
+	# XHR (Rharhabe): Most hostile to CAP. The Rharhabe under chiefs like
+	# Maqoma were directly displaced by settler expansion into the Zuurveld
+	# and Fish River region. The -60 value mirrors CAP's view of XHR.
+	c:XHR ?= {
+		set_relations = { country = c:CAP value = -100 }
+	}
+	# XHG (Gcaleka): Paramount Xhosa chiefdom under King Hintsa (d. 1835)
+	# and then Sarhili. Less direct frontier contact than the Rharhabe.
+	c:XHG ?= {
+		set_relations = { country = c:CAP value = -100 }
+	}
+
+	# ============================================================
+	# MTB (Ndebele / Matabele) — hostile to Transvaal
+	# ============================================================
+	# Mzilikazi's Ndebele kingdom in the western Transvaal was directly
+	# threatened by Voortrekker incursions. The Battle of Vegkop (1836)
+	# and subsequent conflicts drove the Ndebele north across the Limpopo.
+	# -50 is high but below the threshold for immediate war — the tension
+	# value of 90 in sb_on_actions.txt is what actually triggers the 1836 war.
+	c:MTB ?= {
+		set_relations = { country = c:TRN value = -50 }
+	}
+
+	# ============================================================
+	# ZUL (Zulu Kingdom) — wary of Boer encroachment
+	# ============================================================
+	# By 1836, the Zulu under Dingane viewed the arriving Boer trekkers
+	# with suspicion. The TRN relation (-30) reflects pre-Trek tension;
+	# the ORA relation (-20) reflects general Boer distrust.
+	c:ZUL ?= {
+		set_relations = { country = c:TRN value = -30 }  # Voortrekker threat to Zulu territory
+		set_relations = { country = c:ORA value = -20 }  # General Boer distrust
+		set_relations = { country = c:CAP value = -15 }	 # British threat in south
+	}
+
+	# ============================================================
+	# ORA (Orange Free State) — land competition with Griqua & Basotho
+	# ============================================================
+	# The ORA-PHL rivalry (-40) reflects the Griqua-Boer land disputes
+	# around Philippolis. Adam Kok III's territory was being encroached
+	# upon by Boer settlers, leading to the 1845 Kok-Maitland Treaty.
+	# ORA-BST (-30) reflects Boer-Basotho friction over the fertile
+	# Caledon River valley, which would escalate into the Free State-
+	# Basotho Wars of the 1850s-60s.
+			c:ORA ?= {
+				set_relations = { country = c:CAP value = -15 }  # Boer hostility toward Cape authority
+				set_relations = { country = c:BST value = -30 }  # Caledon River valley land disputes
+				set_relations = { country = c:PHL value = -40 }  # Griqua-Boer land competition around Philippolis
+				set_relations = { country = c:WBL value = 25 }   # Working relationship through Waterboersland's corridor
+				set_relations = { country = c:TRN value = 50 } 	 # Brother boer republic
+			}
+
+	# ============================================================
+	# GBR (Great Britain) — friendly with Basotho
+	# ============================================================
+	# +50 prevents the AI from declaring an early war on Basotho.
+	# Historically, Moshoeshoe I cultivated a diplomatic relationship with
+	# the British, eventually requesting protectorate status (granted 1868).
+	# Without this positive relation, the AI GBR tends to conquer BST
+	# immediately, which is ahistorical for the 1836 start.
+		c:GBR ?= {
+			set_relations = { country = c:BST value = 50 }
+			set_relations = { country = c:PHL value = 50 }
+			set_relations = { country = c:WBL value = 50 }
+		}
+
+	# ============================================================
+	# TRN (Transvaal / South African Republic) — hostile to Ndebele
+	# ============================================================
+	# Reciprocal of MTB's view. The Voortrekkers saw the Ndebele as the
+	# primary obstacle to settlement in the Highveld. This hostility
+	# combined with the 90-tension value drives the historical Ndebele-
+	# Voortrekker War of 1836-1838.
+	# See: common/on_actions/sb_on_actions.txt for the tension setup.
+		c:TRN ?= {
+			set_relations = { country = c:CAP value = -15 }
+			set_relations = { country = c:MTB value = -50 }
+			set_relations = { country = c:WBL value = 0 }
+			set_relations = { country = c:ORA value = 50 }
+		}
+
+		c:PHL ?= {
+			set_relations = { country = c:CAP value = 15 }
+			set_relations = { country = c:GBR value = 50 }
+		}
+
+			c:WBL ?= {
+				set_relations = { country = c:CAP value = 15 }
+				set_relations = { country = c:GBR value = 50 }
+				set_relations = { country = c:ORA value = 25 }
+				set_relations = { country = c:TRN value = 0 }
+			}
+		}

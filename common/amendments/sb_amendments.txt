@@ -1,0 +1,103 @@
+﻿# Spes Bona - Cape Citizenship Amendments
+# Keep amendment-level flavor here instead of overriding whole vanilla laws.
+
+amendment_sb_cape_qualified_franchise = {
+
+	parent = law_cultural_exclusion
+
+	allowed_laws = {
+		law_cultural_exclusion
+	}
+
+		# Current Phase 1 target under Cultural Exclusion:
+		# - Griqua land in a clearly improved "second-class" bracket
+		# - Khoisan/Bantu cultures improve materially without jumping straight to
+		#   full acceptance before later reforms
+		modifier = {
+			country_acceptance_no_shared_heritage_trait_add = 10
+		}
+
+	possible = {
+		country_definition = cd:CAP
+		has_law = law_type:law_cultural_exclusion
+		ig:ig_intelligentsia ?= {
+			is_in_government = yes
+		}
+	}
+
+	would_sponsor = {
+		AND = {
+			exists = scope:approval
+			scope:approval > 0
+		}
+	}
+
+	ai_will_revoke = {
+		always = no
+	}
+
+	can_repeal = {
+		legitimacy >= legitimacy_to_repeal_amendment
+	}
+
+	amendment_activism_multiplier = 0.75
+}
+
+amendment_sb_commando_corps = {
+
+	parent = law_national_militia
+
+	allowed_laws = {
+		law_national_militia
+	}
+
+	# Current Phase 1 target: keep the commandos fast to raise and train without
+	# creating huge flat combat-stat spikes.
+	modifier = {
+		interest_group_ig_rural_folk_pol_str_mult = 0.25
+		interest_group_ig_landowners_pol_str_mult = 0.1
+		building_training_rate_mult = 0.50
+		military_formation_mobilization_speed_mult = 0.25
+		unit_experience_gain_mult = 0.25
+	}
+
+	possible = {
+		country_has_primary_culture = cu:boer
+		has_law = law_type:law_national_militia
+	}
+
+	would_sponsor = {
+		ROOT = {
+			OR = {
+				is_interest_group_type = ig_rural_folk
+				is_interest_group_type = ig_armed_forces
+				AND = {
+					exists = scope:approval
+					scope:approval > 0
+				}
+			}
+		}
+	}
+
+	on_activate = {
+		cu:boer = {
+			add_cultural_obsession = small_arms
+		}
+	}
+
+	on_deactivate = {
+		cu:boer = {
+			remove_cultural_obsession = small_arms
+		}
+	}
+
+	ai_will_revoke = {
+		always = no
+	}
+
+	can_repeal = {
+		legitimacy >= legitimacy_to_repeal_amendment
+	}
+
+	amendment_activism_multiplier = 0.5
+}

@@ -1,0 +1,36 @@
+﻿# Zulu Kingdom (ZUL) — vanilla override
+# Historically: Under Dingane kaSenzangakhona (r. 1828-1840) at game start. The Zulu Kingdom
+# was the dominant military power in southeastern Africa following Shaka's conquests (1816-1828).
+# By 1836, Dingane ruled from uMgungundlovu; tensions with Boer trekkers were escalating
+# toward the Battle of Blood River (1838).
+# This file modifies vanilla ZUL by removing je_struggle_for_the_highveld.
+COUNTRIES = {
+	c:ZUL ?= {
+		# Tier 6 tech: pre-industrial society, but militarily sophisticated (regiment system).
+		effect_starting_technology_tier_6_tech = yes
+		# International Trade: Zulu traded ivory and cattle with Port Natal traders.
+		# This extra tech above tier 6 baseline reflects those existing trade contacts.
+		add_technology_researched = international_trade
+
+		# Traditional politics: absolute monarchy under the Zulu king (inkosi).
+		effect_starting_politics_traditional = yes
+		# Subjecthood: subjects of the king, not citizens — no representative governance.
+		activate_law = law_type:law_subjecthood
+		# Traditionalism: economy organised around the homestead (umuzi) and regimental (ibutho) system.
+		activate_law = law_type:law_traditionalism
+		# Land-Based Taxation: tribute extracted from kraals and harvests.
+		activate_law = law_type:law_land_based_taxation
+		# Slave Trade: captives from raids were traded or incorporated as dependents.
+		activate_law = law_type:law_slave_trade
+
+		# Armed Forces ruling: the amabutho (regiments) were the core power structure of the kingdom.
+		ig:ig_armed_forces ?= {
+			add_ruling_interest_group = yes
+		}
+
+		add_journal_entry = { type = je_sb_firearms_acquisition }
+
+		# Spes Bona: Removed je_struggle_for_the_highveld (disabled by mod).
+		# ZUL's content is now driven by regional events and interactions with CAP/TRN.
+	}
+}

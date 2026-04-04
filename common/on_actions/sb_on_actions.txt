@@ -1,0 +1,954 @@
+﻿# ============================================================================
+# Spes Bona — On Actions (Game Start Effects)
+# ============================================================================
+# Runs once at game start to fix homelands and set initial tensions.
+#
+# Why on_actions? Two V3 limitations force this approach:
+#   1. remove_homeland is an effect — it cannot be used in state history files
+#      (only add_homeland works there). So removals must happen here.
+#   2. change_tension is an effect — it cannot be used in diplomacy history
+#      files. Relations (set_relations) go in sb_relations.txt, but tensions
+#      must be set here.
+#
+# Design philosophy: Tensions + negative relations push the AI toward declaring
+# conventional V3 wars. Wars are NOT scripted via events — the AI decides based
+# on these starting conditions. High tension (80-100) = war likely in 1-3 years.
+# Moderate tension (40-60) = war possible but not immediate.
+#
+# Cross-references:
+#   - Relations:         common/history/diplomacy/sb_relations.txt
+#   - Homeland additions: common/history/states/sb_state_overrides.txt
+#   - State traits:      common/history/global/sb_state_traits.txt
+# ============================================================================
+
+on_game_started = {
+	on_actions = { sb_on_game_started }
+}
+
+on_monthly_pulse_country = {
+	on_actions = { sb_on_cape_monthly_pulse_country sb_on_trek_monthly_pulse_country }
+}
+
+on_secession_start = {
+	on_actions = { sb_on_cape_secession_start }
+}
+
+on_revolution_start = {
+	on_actions = { sb_on_cape_secession_start }
+}
+
+on_secession_end = {
+	on_actions = { sb_on_cape_secession_end }
+}
+
+on_revolution_end = {
+	on_actions = { sb_on_cape_secession_end }
+}
+
+on_wargoal_enforced = {
+	on_actions = { sb_on_spes_bona_wargoal_enforced }
+}
+
+on_war_end = {
+	on_actions = { sb_on_spes_bona_war_end }
+}
+
+sb_on_game_started = {
+	effect = {
+		# The vanilla Highveld JE is deliberately disabled by Spes Bona. Without a
+		# live reference path, two of its endpoint flavor events show up as
+		# orphaned in the startup log. Keep a dead-code reference under an actual
+		# country scope so the event manager still sees them as wired while never
+		# firing them in practice.
+		c:CAP ?= {
+			if = {
+				limit = { always = no }
+				trigger_event = { id = struggle_for_the_highveld.6 days = 1 popup = no }
+				trigger_event = { id = struggle_for_the_highveld.7 days = 1 popup = no }
+			}
+		}
+
+		# ============================================================
+		# Homeland corrections — enforcing the 50-100yr presence rule
+		# ============================================================
+		# Vanilla V3 assigns homelands too liberally in Southern Africa.
+		# Many cultures are given homeland status in states where they had
+		# little or no presence by 1836. These removals correct that.
+		#
+		# Counterpart additions are in sb_state_overrides.txt (add_homeland).
+
+		# Western Cape: remove sotho
+		# Sotho peoples are indigenous to the Highveld (Lesotho/Free State),
+		# not the Western Cape. Vanilla incorrectly assigns them here.
+		s:STATE_CAPE_COLONY = {
+			remove_homeland = cu:sotho
+		}
+		# Northern Cape: remove sotho
+		# Same reasoning — Sotho presence here was minimal and recent.
+		# The Northern Cape was historically Khoisan and later Griqua territory.
+		s:STATE_NORTHERN_CAPE = {
+			remove_homeland = cu:sotho
+		}
+		# Zululand (KZN): remove sotho
+		# Zululand was Zulu/Nguni territory. Sotho homeland is Lesotho,
+		# not KwaZulu-Natal. Vanilla conflates "Bantu" groups incorrectly.
+		s:STATE_ZULULAND = {
+			remove_homeland = cu:sotho
+		}
+		# Free State: remove griqua, nguni, boer
+		# - griqua: Philippolis settlement only ~1826 (Adam Kok II). Too recent.
+		# - nguni: Mfecane refugees (~1820s). No established homeland by 1836.
+		# - boer: Great Trek hadn't happened yet (1836-38). No Boer settlement.
+		# Correct homelands: sotho, tswana (long indigenous presence)
+		s:STATE_VRYSTAAT = {
+			remove_homeland = cu:griqua
+			remove_homeland = cu:nguni
+			remove_homeland = cu:boer
+		}
+		# Transvaal: remove zulu, boer
+		# - zulu: Zulu homeland is KZN, not the Transvaal. The Ndebele (a Zulu
+		#   offshoot) were here, but "zulu" culture represents the Zulu kingdom.
+		# - boer: Great Trek hadn't reached the Transvaal by 1836.
+		# Correct homelands: tswana, sotho, venda (long indigenous presence)
+		s:STATE_TRANSVAAL = {
+			remove_homeland = cu:zulu
+			remove_homeland = cu:boer
+		}
+		# Namaqualand: remove tswana
+		# Tswana are indigenous to Botswana and the Northern Cape interior,
+		# not the arid Namaqualand coast. This region was Nama/Khoisan territory.
+		s:STATE_NAMAQUALAND = {
+			remove_homeland = cu:tswana
+		}
+		# Botswana: remove herero, nguni
+		# - herero: Herero homeland is Hereroland (Namibia), not Botswana.
+		# - nguni: No established Nguni presence in Botswana by 1836.
+		# Correct homelands: tswana (dominant), khoisan (indigenous San peoples)
+		s:STATE_BOTSWANA = {
+			remove_homeland = cu:herero
+			remove_homeland = cu:nguni
+		}
+
+		# Southern African English/Boer agrarians should use the settler-colonialist
+		# rural ideology rather than vanilla isolationism. This is no longer tied to
+		# the Cape JE and applies to any qualifying stateholder in the region.
+		every_country = {
+			limit = {
+				OR = {
+					country_has_primary_culture = cu:british
+					country_has_primary_culture = cu:boer
+				}
+				any_scope_state = {
+					OR = {
+						state_region = s:STATE_CAPE_COLONY
+						state_region = s:STATE_EASTERN_CAPE
+						state_region = s:STATE_NORTHERN_CAPE
+						state_region = s:STATE_ZULULAND
+						state_region = s:STATE_TRANSVAAL
+						state_region = s:STATE_VRYSTAAT
+						state_region = s:STATE_NAMAQUALAND
+						state_region = s:STATE_HEREROLAND
+						state_region = s:STATE_BOTSWANA
+						state_region = s:STATE_LOURENCO_MARQUES
+					}
+				}
+			}
+				ig:ig_rural_folk ?= {
+					if = {
+						limit = { has_ideology = ideology:ideology_isolationist }
+						remove_ideology = ideology_isolationist
+					}
+					if = {
+						limit = { NOT = { has_ideology = ideology:ideology_sb_settler_colonialist } }
+						add_ideology = ideology_sb_settler_colonialist
+					}
+				}
+		}
+
+		# Force the trekker republics into their intended opening coalitions after
+		# startup character generation has completed. Using explicit IG adds here
+		# is more reliable than relying on country-history ordering, but we keep
+		# the coalition narrow enough to preserve actual legitimacy dynamics.
+		c:ORA ?= {
+			every_interest_group = {
+				remove_ruling_interest_group = yes
+			}
+			ig:ig_armed_forces ?= {
+				add_ruling_interest_group = yes
+			}
+			ig:ig_landowners ?= {
+				add_ruling_interest_group = yes
+			}
+			ig:ig_rural_folk ?= {
+				add_ruling_interest_group = yes
+			}
+			ig:ig_devout ?= {
+				add_ruling_interest_group = yes
+			}
+		}
+		c:TRN ?= {
+			every_interest_group = {
+				remove_ruling_interest_group = yes
+			}
+			ig:ig_armed_forces ?= {
+				add_ruling_interest_group = yes
+			}
+			ig:ig_landowners ?= {
+				add_ruling_interest_group = yes
+			}
+			ig:ig_rural_folk ?= {
+				add_ruling_interest_group = yes
+			}
+			ig:ig_devout ?= {
+				add_ruling_interest_group = yes
+			}
+		}
+
+		# ============================================================
+		# Initial tensions — drive AI behavior in the first decades
+		# ============================================================
+		# Tension is a hidden value (0-100) that affects AI willingness
+		# to start diplomatic plays. Combined with negative relations
+		# (sb_relations.txt), high tension makes early wars likely.
+
+		# --- Cape-Xhosa Frontier ---
+		# The 6th Frontier War (1834-36) had just ended. Tensions remained
+		# extremely high, especially with the Rharhabe who lost territory.
+		# These values make the 7th Frontier War (historically 1846) plausible
+		# within the first 5-10 years of gameplay.
+			c:CAP ?= {
+				if = {
+					limit = {
+						has_journal_entry = je_sb_cape_politics
+				}
+				if = {
+					limit = {
+						NOT = { has_variable = sb_cape_balance_current }
+					}
+					set_variable = { name = sb_cape_balance_current value = 50 }
+				}
+				if = {
+					limit = {
+						NOT = { has_variable = sb_cape_tensions_initialized_var }
+						NOT = { has_variable = sb_cape_tensions_event_pending_var }
+					}
+					set_variable = sb_cape_tensions_event_pending_var
+					trigger_event = { id = sb_cape.001 days = 7 popup = yes }
+				}
+				every_political_lobby = {
+					limit = {
+						is_political_lobby_type = lobby_pro_overlord
+						target = c:GBR
+					}
+					remove_variable = lobby_custom_name_var_15
+					remove_variable = lobby_custom_name_var_16
+					remove_variable = lobby_custom_name_var_17
+					remove_variable = lobby_custom_name_var_18
+					remove_variable = lobby_custom_name_var_19
+					remove_variable = lobby_custom_name_var_20
+					set_variable = lobby_custom_name_var_15
+				}
+				every_political_lobby = {
+					limit = {
+						is_political_lobby_type = lobby_anti_overlord
+						target = c:GBR
+					}
+					remove_variable = lobby_custom_name_var_7
+					remove_variable = lobby_custom_name_var_8
+					remove_variable = lobby_custom_name_var_9
+					remove_variable = lobby_custom_name_var_10
+					remove_variable = lobby_custom_name_var_11
+					remove_variable = lobby_custom_name_var_12
+					remove_variable = lobby_custom_name_var_13
+					remove_variable = lobby_custom_name_var_14
+						set_variable = lobby_custom_name_var_14
+					}
+				}
+				if = {
+					limit = {
+						NOT = { has_truce_with = c:XHT }
+					}
+					create_bidirectional_truce = {
+						country = c:XHT
+						months = 48
+					}
+				}
+				change_tension = {
+					country = c:XHR
+					value = 100
+			}
+			change_tension = {
+				country = c:XHG
+				value = 100
+			}
+			change_tension = {
+				country = c:XHT
+				value = 100
+			}
+		}
+
+		# --- Transvaal-Ndebele Conflict ---
+		# Tension 90 (near maximum) on both sides. This is intentionally
+		# very high to trigger the Ndebele-Voortrekker War (~1836-1838).
+		# Historically, the Battle of Vegkop (October 1836) happened almost
+		# immediately after the game start date. The reciprocal 90/90 values
+		# ensure BOTH sides see each other as a priority threat.
+		c:TRN ?= {
+			change_tension = {
+				country = c:MTB
+				value = 90
+			}
+			if = {
+				limit = {
+					is_at_war = no
+					aggressive_diplomatic_plays_permitted = yes
+					c:MTB ?= {
+						NOT = { has_variable = sb_ndebele_opening_play_fired }
+						is_country_alive = yes
+						is_at_war = no
+						aggressive_diplomatic_plays_permitted = yes
+					}
+				}
+				# Native uprisings are vanilla plays whose initiator must be the
+				# decentralized country itself. Fire the opening event from MTB,
+				# not TRN, or the play will either fail to start or present the
+				# default colonization-rights article on the wrong side.
+				c:MTB ?= {
+					trigger_event = { id = sb_trek.001 days = 90 }
+				}
+			}
+		}
+		# Ndebele reciprocal tension — Mzilikazi viewed the Boer trekkers
+		# as invaders of his territory. This drives AI MTB to mobilize.
+		c:MTB ?= {
+			change_tension = {
+				country = c:TRN
+				value = 90
+			}
+		}
+
+		# --- Orange Free State Frontier ---
+		# ORA-PHL tension 50: Griqua-Boer land competition around Philippolis.
+		# Adam Kok III's Griqua territory was being encroached upon.
+		# Historically led to the 1845 Kok-Maitland Treaty and later conflict.
+		# Tension 50 makes war possible but not immediate — correct for the
+		# slower-burning Griqua-Boer rivalry.
+		c:ORA ?= {
+			change_tension = {
+				country = c:PHL
+				value = 50
+			}
+			# ORA-BST tension 15: Boer-Basotho friction over the Caledon River valley
+			# should exist at start, but it should not immediately collapse into a
+			# maximal annexation war before the historical escalation of the 1850s.
+			change_tension = {
+				country = c:BST
+				value = 15
+			}
+		}
+
+	}
+}
+
+sb_on_cape_monthly_pulse_country = {
+	effect = {
+		if = {
+			limit = {
+				OR = {
+					country_has_primary_culture = cu:british
+					country_has_primary_culture = cu:boer
+				}
+				any_scope_state = {
+					OR = {
+						state_region = s:STATE_CAPE_COLONY
+						state_region = s:STATE_EASTERN_CAPE
+						state_region = s:STATE_NORTHERN_CAPE
+						state_region = s:STATE_ZULULAND
+						state_region = s:STATE_TRANSVAAL
+						state_region = s:STATE_VRYSTAAT
+						state_region = s:STATE_NAMAQUALAND
+						state_region = s:STATE_HEREROLAND
+						state_region = s:STATE_BOTSWANA
+						state_region = s:STATE_LOURENCO_MARQUES
+					}
+				}
+			}
+				ig:ig_rural_folk ?= {
+					if = {
+						limit = { has_ideology = ideology:ideology_isolationist }
+						remove_ideology = ideology_isolationist
+					}
+					if = {
+						limit = { NOT = { has_ideology = ideology:ideology_sb_settler_colonialist } }
+						add_ideology = ideology_sb_settler_colonialist
+					}
+				}
+		}
+
+		# Eastern Cape resistance is owner-agnostic. Any country that currently
+		# holds the state should remove the trait once the Xhosa polities are gone,
+		# and while the trait exists the three Xhosa tags should keep their
+		# differentiated tension-decay modifiers.
+		if = {
+			limit = {
+				any_scope_state = {
+					state_region = s:STATE_EASTERN_CAPE
+					has_state_trait = state_trait_sb_xhosa_resistance
+				}
+			}
+			if = {
+				limit = {
+					NOT = { c:XHG ?= { is_country_alive = yes } }
+					NOT = { c:XHR ?= { is_country_alive = yes } }
+					NOT = { c:XHT ?= { is_country_alive = yes } }
+				}
+				s:STATE_EASTERN_CAPE = {
+					remove_state_trait = state_trait_sb_xhosa_resistance
+				}
+			}
+		}
+
+		if = {
+			limit = {
+				any_scope_state = {
+					state_region = s:STATE_EASTERN_CAPE
+					has_state_trait = state_trait_sb_xhosa_resistance
+				}
+			}
+			c:XHG ?= {
+				if = {
+					limit = {
+						NOT = { has_modifier = sb_xhosa_frontier_pressure_xhg }
+					}
+					add_modifier = {
+						name = sb_xhosa_frontier_pressure_xhg
+					}
+				}
+			}
+			c:XHR ?= {
+				if = {
+					limit = {
+						NOT = { has_modifier = sb_xhosa_frontier_pressure_xhr }
+					}
+					add_modifier = {
+						name = sb_xhosa_frontier_pressure_xhr
+					}
+				}
+			}
+			c:XHT ?= {
+				if = {
+					limit = {
+						NOT = { has_modifier = sb_xhosa_frontier_pressure_xht }
+					}
+					add_modifier = {
+						name = sb_xhosa_frontier_pressure_xht
+					}
+				}
+			}
+		}
+		else = {
+			c:XHG ?= {
+				if = {
+					limit = { has_modifier = sb_xhosa_frontier_pressure_xhg }
+					remove_modifier = sb_xhosa_frontier_pressure_xhg
+				}
+			}
+			c:XHR ?= {
+				if = {
+					limit = { has_modifier = sb_xhosa_frontier_pressure_xhr }
+					remove_modifier = sb_xhosa_frontier_pressure_xhr
+				}
+			}
+			c:XHT ?= {
+				if = {
+					limit = { has_modifier = sb_xhosa_frontier_pressure_xht }
+					remove_modifier = sb_xhosa_frontier_pressure_xht
+				}
+			}
+		}
+
+		if = {
+			limit = {
+				country_definition = cd:CAP
+				has_journal_entry = je_sb_cape_politics
+			}
+			# The generic cultural-majority movement localizes as the Cape
+			# Supremacist Movement. Vanilla startup history creates it before our
+			# bespoke Cape movements, so keep it suppressed for the full JE span.
+			every_political_movement = {
+				limit = {
+					is_political_movement_type = movement_cultural_majority
+					NOT = { is_being_suppressed = yes }
+				}
+				set_suppression = yes
+			}
+			if = {
+				limit = {
+					any_political_movement = {
+						is_political_movement_type = movement_sb_cape_liberal
+					}
+				}
+				every_political_movement = {
+					limit = {
+						is_political_movement_type = movement_minority_rights
+						NOT = { is_being_suppressed = yes }
+					}
+					set_suppression = yes
+				}
+			}
+
+			if = {
+				limit = {
+					NOT = { has_variable = sb_cape_balance_current }
+				}
+				set_variable = { name = sb_cape_balance_current value = 50 }
+			}
+
+			je:je_sb_cape_politics = {
+				if = {
+					limit = {
+						has_variable = sb_cape_tensions_initialized_var
+						NOT = { has_modifier = sb_cape_political_tensions }
+					}
+					add_modifier = {
+						name = sb_cape_political_tensions
+					}
+				}
+			}
+
+			set_variable = {
+				name = sb_cape_balance_current
+				value = "je:je_sb_cape_politics.scripted_bar_progress(sb_cape_balance_bar)"
+			}
+
+			# Keep the JE-side "ascendant" modifiers attached to the journal entry
+			# itself so the player sees them in the JE UI rather than as hidden
+			# country state.
+			je:je_sb_cape_politics = {
+				if = {
+					limit = { has_modifier = sb_cape_liberal_ascendant }
+					remove_modifier = sb_cape_liberal_ascendant
+				}
+				if = {
+					limit = { has_modifier = sb_cape_settler_ascendant }
+					remove_modifier = sb_cape_settler_ascendant
+				}
+				if = {
+					limit = {
+						root.var:sb_cape_balance_current >= 70
+					}
+					add_modifier = { name = sb_cape_liberal_ascendant }
+				}
+				else_if = {
+					limit = {
+						root.var:sb_cape_balance_current <= 30
+					}
+					add_modifier = { name = sb_cape_settler_ascendant }
+				}
+			}
+
+			# Once either side becomes dominant, surface a one-off demand for the
+			# matching law instead of leaving the pressure hidden in the bar drift.
+			if = {
+				limit = {
+					var:sb_cape_balance_current <= 25
+					NOT = {
+						OR = {
+							has_law = law_type:law_cultural_exclusion
+							has_law = law_type:law_multicultural
+						}
+					}
+					NOT = {
+						OR = {
+							is_enacting_law = law_type:law_cultural_exclusion
+							is_enacting_law = law_type:law_multicultural
+						}
+					}
+					NOT = { has_variable = sb_cape_liberal_complaint_seen_var }
+				}
+				set_variable = sb_cape_liberal_complaint_seen_var
+				trigger_event = { id = sb_cape.120 days = 7 popup = yes }
+			}
+			if = {
+				limit = {
+					var:sb_cape_balance_current >= 75
+					NOT = {
+						OR = {
+							has_law = law_type:law_frontier_colonization
+							has_law = law_type:law_colonial_resettlement
+							has_law = law_type:law_colonial_exploitation
+						}
+					}
+					NOT = {
+						OR = {
+							is_enacting_law = law_type:law_frontier_colonization
+							is_enacting_law = law_type:law_colonial_resettlement
+							is_enacting_law = law_type:law_colonial_exploitation
+						}
+					}
+					NOT = { has_variable = sb_cape_settler_complaint_seen_var }
+				}
+				set_variable = sb_cape_settler_complaint_seen_var
+				if = {
+					limit = {
+						any_scope_character = {
+							has_variable = sb_robert_godlonton_var
+							has_role = agitator
+						}
+					}
+					trigger_event = { id = sb_cape.121 days = 7 popup = yes }
+				}
+				else = {
+					trigger_event = { id = sb_cape.122 days = 7 popup = yes }
+				}
+			}
+
+			# The monthly pulse no longer resolves the "normal" endings itself.
+			# It only opens the Albany crisis; the JE's on_complete block handles
+			# liberal / settler / compromise / failure so the visible reward event
+			# always fires exactly once.
+			if = {
+				limit = {
+					NOT = { has_variable = sb_albany_crisis_var }
+					NOT = { has_variable = sb_albany_sanctioned_var }
+					NOT = { has_variable = sb_albany_refused_var }
+					any_political_movement = {
+						is_political_movement_type = movement_sb_eastern_cape_separatist
+						civil_war ?= {
+							civil_war_progress >= 0.99
+						}
+					}
+				}
+				set_variable = sb_albany_crisis_var
+				trigger_event = { id = sb_cape.103 popup = yes }
+			}
+
+			if = {
+				limit = {
+					NOT = { has_variable = sb_cape_convict_crisis_fired }
+					game_date >= 1849.1.1
+					game_date < 1851.1.1
+				}
+				set_variable = sb_cape_convict_crisis_fired
+				trigger_event = { id = sb_cape.111 days = 7 popup = yes }
+			}
+		}
+	}
+}
+
+sb_on_cape_secession_end = {
+	effect = {
+		# No-op placeholder. The Albany chain now resolves on the London answer
+		# itself rather than waiting for the secession war to conclude.
+	}
+}
+
+sb_on_cape_secession_start = {
+	effect = {
+		# Fallback hook: the main Albany crisis should fire at ECSL >= 99% from the
+		# monthly Cape pulse, but if the revolt slips past that threshold between
+		# checks we still open the crisis the moment the secession starts.
+		if = {
+			limit = {
+				country_definition = cd:CAP
+				has_journal_entry = je_sb_cape_politics
+				NOT = { has_variable = sb_albany_crisis_var }
+				NOT = { has_variable = sb_albany_sanctioned_var }
+				NOT = { has_variable = sb_albany_refused_var }
+				any_civil_war = {
+					OR = {
+						is_civil_war_type = secession
+						is_civil_war_type = revolution
+					}
+					political_movement = {
+						is_political_movement_type = movement_sb_eastern_cape_separatist
+					}
+				}
+			}
+			set_variable = sb_albany_crisis_var
+			trigger_event = { id = sb_cape.103 popup = yes }
+		}
+	}
+}
+
+# Trek-side monthly pulse. This keeps the slower-boiling republican content
+# away from the already-busy Cape monthly block.
+sb_on_trek_monthly_pulse_country = {
+	effect = {
+		# Zoutpansberg appears once the Transvaal has consolidated and the Cape's
+		# liberal turn makes the northern trek districts more attractive than
+		# obedient. TRN's claim on the whole state should naturally turn this into
+		# a later internal republican struggle without a second bespoke system.
+		if = {
+			limit = {
+				country_definition = cd:ORA
+				has_journal_entry = je_sb_great_trek
+				NOT = { has_variable = sb_natal_path_resolved_var }
+				NOT = { has_variable = sb_natal_diplomacy_started_var }
+				NOT = { exists = c:NAL }
+				game_date >= 1838.2.1
+				game_date < 1844.1.1
+				c:ZUL ?= {
+					is_country_alive = yes
+				}
+			}
+			set_variable = sb_natal_diplomacy_started_var
+			trigger_event = { id = sb_boer_zulu.010 days = 7 popup = yes }
+		}
+
+		if = {
+			limit = {
+				country_definition = cd:TRN
+				NOT = { has_variable = sb_zoutpansberg_spawned_var }
+				NOT = { exists = c:ZPB }
+				game_date >= 1849.1.1
+				game_date < 1860.1.1
+				owns_entire_state_region = STATE_TRANSVAAL
+				c:CAP ?= {
+					OR = {
+						has_law = law_type:law_cultural_exclusion
+						has_modifier = sb_cape_liberal_victory
+						je:je_sb_cape_politics ?= {
+							has_modifier = sb_cape_liberal_ascendant
+						}
+					}
+				}
+			}
+			set_variable = sb_zoutpansberg_spawned_var
+			trigger_event = { id = sb_trek.120 days = 7 popup = yes }
+		}
+
+		# Griqualand East remains a shell in Phase 1, but the fork is useful to
+		# expose now so the later CAP/Griqua content has a clean story hook.
+		if = {
+			limit = {
+				country_definition = cd:CAP
+				NOT = { has_variable = sb_griqualand_east_resolved_var }
+				NOT = { exists = c:GLE }
+				NOT = { c:PHL ?= { is_country_alive = yes } }
+				c:ORA ?= {
+					is_country_alive = yes
+					owns_entire_state_region = STATE_VRYSTAAT
+				}
+				game_date >= 1848.1.1
+			}
+			set_variable = sb_griqualand_east_resolved_var
+			trigger_event = { id = sb_trek.220 days = 14 popup = yes }
+		}
+
+		# Britain should only revisit the Natal question once Natalia has made
+		# the coast real through a functioning port. Once that threshold is
+		# crossed, schedule the ultimatum on a long random delay so the coast has
+		# time to breathe before London moves.
+		if = {
+			limit = {
+				country_definition = cd:GBR
+				NOT = { has_variable = sb_british_natal_ultimatum_var }
+				NOT = { has_variable = sb_british_natal_ultimatum_pending_var }
+				c:NAL ?= {
+					is_country_alive = yes
+					NOT = { is_subject_of = c:GBR }
+					any_scope_building = {
+						is_building_type = building_port
+						level >= 1
+					}
+				}
+			}
+			set_variable = {
+				name = sb_british_natal_ultimatum_pending_var
+				days = 750
+			}
+			random_list = {
+				1 = { trigger_event = { id = sb_boer_zulu.100 days = 360 popup = yes } }
+				1 = { trigger_event = { id = sb_boer_zulu.100 days = 450 popup = yes } }
+				1 = { trigger_event = { id = sb_boer_zulu.100 days = 540 popup = yes } }
+				1 = { trigger_event = { id = sb_boer_zulu.100 days = 630 popup = yes } }
+				1 = { trigger_event = { id = sb_boer_zulu.100 days = 720 popup = yes } }
+			}
+		}
+	}
+}
+
+sb_on_spes_bona_war_end = {
+	effect = {
+		# White peace in the Natal crisis should still let ZUL decide whether to
+		# consolidate the frontier or opportunistically strike at Port Natal, but
+		# it should NOT count as a full defeat that deposes Dingane.
+		if = {
+			limit = {
+				scope:actor ?= {
+					country_definition = cd:ZUL
+					has_variable = sb_natal_war_active_var
+				}
+				scope:target ?= {
+					country_definition = cd:ORA
+					has_variable = sb_natal_war_active_var
+				}
+			}
+			scope:actor = {
+				remove_variable = sb_natal_war_active_var
+				trigger_event = { id = sb_boer_zulu.080 days = 7 popup = yes }
+			}
+			scope:target = {
+				remove_variable = sb_natal_war_active_var
+			}
+			c:TRN ?= {
+				if = {
+					limit = { has_variable = sb_trn_joined_natal_war_var }
+					remove_variable = sb_trn_joined_natal_war_var
+				}
+			}
+		}
+		if = {
+			limit = {
+				scope:actor ?= {
+					country_definition = cd:ORA
+					has_variable = sb_natal_war_active_var
+				}
+				scope:target ?= {
+					country_definition = cd:ZUL
+					has_variable = sb_natal_war_active_var
+				}
+			}
+			scope:target = {
+				remove_variable = sb_natal_war_active_var
+				trigger_event = { id = sb_boer_zulu.080 days = 7 popup = yes }
+			}
+			scope:actor = {
+				remove_variable = sb_natal_war_active_var
+			}
+			c:TRN ?= {
+				if = {
+					limit = { has_variable = sb_trn_joined_natal_war_var }
+					remove_variable = sb_trn_joined_natal_war_var
+				}
+			}
+		}
+	}
+}
+
+# War-goal hooks for the Phase 1 frontier wars.
+sb_on_spes_bona_wargoal_enforced = {
+	effect = {
+		# ORA wins the Natal crisis war.
+		if = {
+			limit = {
+				country_definition = cd:ORA
+				scope:target ?= {
+					country_definition = cd:ZUL
+					has_variable = sb_natal_war_active_var
+				}
+				has_variable = sb_natal_war_active_var
+				scope:diplomatic_play ?= {
+					is_diplomatic_play_type = dp_sb_natal_crisis
+				}
+			}
+			remove_variable = sb_natal_war_active_var
+			scope:target = {
+				remove_variable = sb_natal_war_active_var
+			}
+			trigger_event = { id = sb_boer_zulu.070 days = 3 popup = yes }
+		}
+
+		# ZUL wins the Natal crisis war.
+		if = {
+			limit = {
+				country_definition = cd:ZUL
+				scope:target ?= {
+					country_definition = cd:ORA
+					has_variable = sb_natal_war_active_var
+				}
+				has_variable = sb_natal_war_active_var
+				scope:diplomatic_play ?= {
+					is_diplomatic_play_type = dp_sb_natal_crisis
+				}
+			}
+			remove_variable = sb_natal_war_active_var
+			scope:target = {
+				remove_variable = sb_natal_war_active_var
+			}
+			trigger_event = { id = sb_boer_zulu.080 days = 3 popup = yes }
+		}
+
+		# Britain defeats ZUL after Dingane presses on to Port Natal.
+		if = {
+			limit = {
+				country_definition = cd:GBR
+				scope:target ?= {
+					country_definition = cd:ZUL
+					has_variable = sb_port_natal_raid_var
+				}
+				scope:diplomatic_play ?= {
+					is_diplomatic_play_type = dp_annex_war
+				}
+			}
+			scope:target = {
+				remove_variable = sb_port_natal_raid_var
+			}
+			trigger_event = { id = sb_boer_zulu.091 days = 7 popup = yes }
+		}
+
+		# Britain defeats a resisting Natalia and drives Boer refugees inland.
+		if = {
+			limit = {
+				country_definition = cd:GBR
+				scope:target ?= {
+					country_definition = cd:NAL
+				}
+				scope:diplomatic_play ?= {
+					is_diplomatic_play_type = dp_make_protectorate
+				}
+			}
+			c:ORA ?= {
+				if = {
+					limit = {
+						is_country_alive = yes
+						is_subject = no
+					}
+					trigger_event = { id = sb_boer_zulu.116 days = 7 popup = yes }
+				}
+				else_if = {
+					limit = {
+						c:TRN ?= {
+							is_country_alive = yes
+							is_subject = no
+						}
+					}
+					c:TRN ?= {
+						trigger_event = { id = sb_boer_zulu.117 days = 7 popup = yes }
+					}
+				}
+			}
+		}
+
+		# A surviving victory over the British should feel exceptional.
+		if = {
+			limit = {
+				country_definition = cd:ZUL
+				scope:target ?= {
+					country_definition = cd:GBR
+				}
+				has_variable = sb_port_natal_raid_var
+				scope:diplomatic_play ?= {
+					is_diplomatic_play_type = dp_annex_war
+				}
+			}
+			remove_variable = sb_port_natal_raid_var
+			trigger_event = { id = sb_boer_zulu.092 days = 7 popup = yes }
+		}
+
+		# TRN wins the opening Ndebele war and Mzilikazi withdraws north.
+		if = {
+			limit = {
+				country_definition = cd:TRN
+				scope:target ?= {
+					country_definition = cd:MTB
+				}
+				scope:diplomatic_play ?= {
+					is_diplomatic_play_type = dp_native_uprising
+				}
+			}
+			trigger_event = { id = sb_trek.002 days = 3 popup = yes }
+		}
+	}
+}

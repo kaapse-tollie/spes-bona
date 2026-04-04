@@ -1,0 +1,449 @@
+﻿# Spes Bona - Scripted Progress Bars
+# ==============================================================================
+# Cape Colony balance of power: Liberals vs Settlers
+#
+# DESIGN PATTERN: double_sided_bad progress bar, modeled after:
+#   - HC Bleeding Kansas bar (tug-of-war between two factions)
+#   - Spain DLC Reconstruction bar (monthly drift based on laws/IGs)
+#
+# BAR MECHANICS:
+#   - Range: 0 (full settler) to 100 (full liberal), start at 50 (center).
+#   - double_sided_bad = yes means BOTH extremes are "bad" — political
+#     instability increases as either faction dominates (see tension modifier
+#     in 1-01_sb_cape_politics.txt on_monthly_pulse).
+#   - Monthly ticks: ~1 point/month for strong effects (active law),
+#     ~0.5 for moderate effects (IG in government), ~0.25 for minor effects.
+#
+# IMPLEMENTED DRIFT SOURCES:
+#   Liberal direction (positive values, bar moves toward 100):
+#     +0.3  cultural_exclusion law active
+#     +0.1 cultural_exclusion being enacted
+#     +1.5  multicultural law active
+#     +0.3 multicultural law being enacted
+#     +0.8  Universal suffrage law active
+#     +0.2 Universal suffrage being enacted
+#     +0.4 Census suffrage law active
+#     +0.2 Census suffrage being enacted
+#     +0.2  Wealth voting law active
+#     +0.1 Wealth voting being enacted
+#     +0.5 No colonial law active
+#     +0.4  Intelligentsia in government
+#	  +0.2 Devout in government 
+#     +0.1 Petty Bourgeoisie in government
+#
+#   Settler direction (negative values, bar moves toward 0):
+#     -0.2  Landed voting law active
+#     -0.1 Landed voting being enacted
+#     -0.3 Oligarchy law active
+#     -0.1 Oligarchy being enacted
+#     -0.5 Autocracy law active
+#     -0.2 Autocracy being enacted
+#     -0.3  Any colonialism law active
+#     -0.1 any colonialism law being enacted
+#     -0.7 national_supremacy law active
+#     -0.3 national_supremacy being enacted
+#     -1.5  Any slavery law active
+#     -0.4 any slavery law being enacted
+#     -0.5 Agrarianism law active
+#     -0.2 Agrarianism being enacted
+#     -0.4  Rural Folk in government
+#     -0.2 Landowners in government
+#     -0.1 Armed Forces in government
+#     -0.1 Xhosa frontier threat active (state_trait_sb_xhosa_resistance)
+#     +0.1 favour liberals campaign active
+#     -0.1 favour settlers campaign active
+#
+# DESIGN NOTE: settler side has slightly more total drift potential (especially
+#   with the Xhosa frontier threat), reflecting the historical reality that
+#   the frontier settler faction had structural advantages in the early Cape.
+#   The liberal side needs to actively pass laws and get IGs into government.
+#
+# CROSS-REFERENCES:
+#   - Parent JE: common/journal_entries/1-01_sb_cape_politics.txt
+#   - Buttons: common/scripted_buttons/sb_cape_buttons.txt
+#     (favour modifiers affect IG strength, which affects government membership,
+#     which feeds into the IG-in-government drift below)
+#   - State trait: common/state_traits/ (state_trait_sb_xhosa_resistance)
+#   - Localization: name/desc/second_desc keys in localization files
+# ==============================================================================
+
+sb_cape_balance_bar = {
+	name = "sb_cape_balance_bar"
+	desc = "sb_cape_balance_bar_liberal"			# Left-side label (liberal direction)
+	second_desc = "sb_cape_balance_bar_settler"		# Right-side label (settler direction)
+	double_sided_bad = yes							# Both extremes cause instability
+
+	monthly_progress = {
+		# Liberal drift
+			if = {
+				limit = {
+					has_law = law_type:law_cultural_exclusion
+			}
+			add = {
+				desc = "sb_cape_cultural_exclusion_law"
+				value = 0.3
+				}
+			}
+
+			if = {
+				limit = {
+					is_enacting_law = law_type:law_cultural_exclusion
+				}
+				add = {
+					desc = "sb_cape_cultural_exclusion_enacting"
+					value = 0.1
+				}
+			}
+
+			if = {
+				limit = {
+					has_law = law_type:law_multicultural
+			}
+				add = {
+					desc = "sb_cape_multicultural_law"
+					value = 1.5
+				}
+			}
+
+			if = {
+				limit = {
+					is_enacting_law = law_type:law_multicultural
+				}
+				add = {
+					desc = "sb_cape_multicultural_enacting"
+					value = 0.4
+				}
+			}
+
+			if = {
+				limit = {
+					has_law = law_type:law_universal_suffrage
+				}
+				add = {
+					desc = "sb_cape_universal_suffrage_law"
+					value = 0.8
+				}
+			}
+
+			if = {
+				limit = {
+					is_enacting_law = law_type:law_universal_suffrage
+				}
+				add = {
+					desc = "sb_cape_universal_suffrage_enacting"
+					value = 0.3
+				}
+			}
+
+			if = {
+				limit = {
+						has_law = law_type:law_census_voting
+				}
+				add = {
+					desc = "sb_cape_census_suffrage_law"
+					value = 0.4
+				}
+			}
+
+			if = {
+				limit = {
+						is_enacting_law = law_type:law_census_voting
+				}
+				add = {
+					desc = "sb_cape_census_suffrage_enacting"
+					value = 0.1
+				}
+			}
+
+			if = {
+				limit = {
+					has_law = law_type:law_wealth_voting
+				}
+				add = {
+					desc = "sb_cape_wealth_voting_law"
+					value = 0.2
+				}
+			}
+
+			if = {
+				limit = {
+					is_enacting_law = law_type:law_wealth_voting
+				}
+				add = {
+					desc = "sb_cape_wealth_voting_enacting"
+					value = 0.1
+				}
+			}
+
+			if = {
+				limit = {
+					has_law = law_type:law_no_colonial_affairs
+				}
+				add = {
+					desc = "sb_capl_no_colonial_affairs"
+					value = 0.5
+				}
+			}
+
+			if = {
+				limit = {
+					is_enacting_law = law_type:law_no_colonial_affairs
+				}
+				add = {
+					desc = "sb_cape_law_no_colonial_affairs_enacting"
+					value = 0.2
+				}
+			}
+
+			if = {
+				limit = {
+					ig:ig_intelligentsia ?= { is_in_government = yes }
+				}
+				add = {
+					desc = "sb_cape_intelligentsia_in_govt"
+					value = 0.4
+				}
+			}
+
+			if = {
+				limit = {
+					ig:ig_devout ?= { is_in_government = yes }
+				}
+				add = {
+					desc = "sb_cape_devout_in_govt"
+					value = 0.2
+				}
+			}
+
+				if = {
+					limit = {
+						ig:ig_petty_bourgeoisie ?= { is_in_government = yes }
+					}
+					add = {
+						desc = "sb_cape_petty_bourgeoisie_in_govt"
+						value = 0.1
+					}
+				}
+
+				if = {
+					limit = { has_modifier = sb_cape_favour_liberals }
+					add = {
+						desc = "sb_cape_favour_liberals_drift"
+						value = 0.1
+					}
+				}
+
+		# Settler drift
+			if = {
+				limit = {
+					has_law = law_type:law_landed_voting
+				}
+				subtract = {
+					desc = "sb_cape_landed_voting_law"
+					value = 0.2
+				}
+			}
+
+			if = {
+				limit = {
+					is_enacting_law = law_type:law_landed_voting
+				}
+				subtract = {
+					desc = "sb_cape_landed_voting_enacting"
+					value = 0.1
+				}
+			}
+
+			if = {
+				limit = {
+					has_law = law_type:law_oligarchy
+				}
+				subtract = {
+					desc = "sb_cape_oligarchy_law"
+					value = 0.3
+				}
+			}
+
+			if = {
+				limit = {
+					is_enacting_law = law_type:law_oligarchy
+				}
+				subtract = {
+					desc = "sb_cape_oligarchy_enacting"
+					value = 0.1
+				}
+			}
+
+			if = {
+				limit = {
+					has_law = law_type:law_autocracy
+				}
+				subtract = {
+					desc = "sb_cape_autocracy_law"
+					value = 0.5
+				}
+			}
+
+			if = {
+				limit = {
+					is_enacting_law = law_type:law_autocracy
+				}
+				subtract = {
+					desc = "sb_cape_autocracy_enacting"
+					value = 0.2
+				}
+			}
+
+			if = {
+				limit = {
+					OR = {
+					has_law = law_type:law_frontier_colonization
+					has_law = law_type:law_colonial_resettlement
+					has_law = law_type:law_colonial_exploitation
+				}
+			}
+				subtract = {
+					desc = "sb_cape_any_colonial_law"
+					value = 0.3
+				}
+			}
+
+			if = {
+				limit = {
+					OR = {
+						is_enacting_law = law_type:law_frontier_colonization
+						is_enacting_law = law_type:law_colonial_resettlement
+						is_enacting_law = law_type:law_colonial_exploitation
+					}
+				}
+				subtract = {
+					desc = "sb_cape_any_colonial_law_enacting"
+					value = 0.1
+				}
+			}
+
+			if = {
+				limit = {
+					has_law = law_type:law_national_supremacy
+				}
+				subtract = {
+					desc = "sb_cape_national_supremacy_law"
+					value = 0.7
+				}
+			}
+
+			if = {
+				limit = {
+					is_enacting_law = law_type:law_national_supremacy
+				}
+				subtract = {
+					desc = "sb_cape_national_supremacy_enacting"
+					value = 0.3
+				}
+			}
+
+			if = {
+				limit = {
+					OR = {
+					has_law = law_type:law_legacy_slavery
+					has_law = law_type:law_debt_slavery
+					has_law = law_type:law_slave_trade
+					has_law = law_type:law_colonial_slavery
+				}
+			}
+				subtract = {
+					desc = "sb_cape_any_slavery_law"
+					value = 1.5
+				}
+			}
+
+			if = {
+				limit = {
+					OR = {
+						is_enacting_law = law_type:law_legacy_slavery
+						is_enacting_law = law_type:law_debt_slavery
+						is_enacting_law = law_type:law_slave_trade
+						is_enacting_law = law_type:law_colonial_slavery
+					}
+				}
+				subtract = {
+					desc = "sb_cape_any_slavery_law_enacting"
+					value = 0.4
+				}
+			}
+
+			if = {
+				limit = {
+					has_law = law_type:law_agrarianism
+				}
+				subtract = {
+					desc = "sb_cape_agrarianism_law"
+					value = 0.5
+				}
+			}
+
+			if = {
+				limit = {
+					is_enacting_law = law_type:law_agrarianism
+				}
+				subtract = {
+					desc = "sb_cape_agrarianism_enacting"
+					value = 0.2
+				}
+			}
+
+			if = {
+				limit = {
+					ig:ig_rural_folk ?= { is_in_government = yes }
+			}
+			subtract = {
+				desc = "sb_cape_rural_folk_in_govt"
+				value = 0.4
+			}
+		}
+
+		if = {
+			limit = {
+				ig:ig_landowners ?= { is_in_government = yes }
+			}
+			subtract = {
+				desc = "sb_cape_landowners_in_govt"
+				value = 0.2
+			}
+		}
+
+		if = {
+			limit = {
+				ig:ig_armed_forces ?= { is_in_government = yes }
+			}
+			subtract = {
+				desc = "sb_cape_armed_forces_in_govt"
+				value = 0.1
+			}
+		}
+
+			if = {
+				limit = {
+					any_scope_state = {
+						has_state_trait = state_trait_sb_xhosa_resistance
+					}
+				}
+				subtract = {
+					desc = "sb_cape_xhosa_frontier_pressure"
+					value = 0.1
+				}
+			}
+
+			if = {
+				limit = { has_modifier = sb_cape_favour_settlers }
+				subtract = {
+					desc = "sb_cape_favour_settlers_drift"
+					value = 0.1
+				}
+			}
+		}
+
+	start_value = 50		# Center: balanced starting position
+	min_value = 0			# Full settler domination
+	max_value = 100			# Full liberal domination
+}

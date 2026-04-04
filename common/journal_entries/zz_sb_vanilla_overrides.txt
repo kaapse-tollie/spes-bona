@@ -1,0 +1,49 @@
+﻿# Spes Bona - Vanilla Journal Entry Overrides
+# ==============================================================================
+# Disables je_struggle_for_the_highveld entirely.
+#
+# WHY: The vanilla Struggle for the Highveld JE is a simplified, single-JE
+#   approach to Southern African politics. Spes Bona replaces it with a
+#   multi-JE, period-based system:
+#     - Period 1: Cape Politics (1-01), Great Trek (1-02)
+#     - (Future periods handle later SA history)
+#
+# HOW: The REPLACE: prefix overwrites the vanilla definition. We set:
+#   - is_shown_in_lobby = always no  (hidden from country picker)
+#   - possible = always no           (can never activate)
+#   - complete = always no           (can never complete normally)
+#   - fail = always yes              (immediately fails if somehow active)
+#   - on_fail = empty                (no effects on failure)
+#   - weight = 0                     (lowest priority)
+#
+# VANILLA FILE: common/journal_entries/??_struggle_for_the_highveld.txt
+# RELATED OVERRIDES: common/scripted_buttons/zz_sb_vanilla_overrides.txt
+#   (disables the associated vanilla buttons)
+# ==============================================================================
+
+REPLACE:je_struggle_for_the_highveld = {
+	group = je_group_historical_content
+
+	is_shown_in_lobby = {
+		always = no
+	}
+
+	possible = {
+		always = no
+	}
+
+	complete = {
+		always = no
+	}
+
+	# Immediately fail if somehow activated (safety net).
+	fail = {
+		always = yes
+	}
+
+	# Empty on_fail — no side effects from the override.
+	on_fail = {
+	}
+
+	weight = 0
+}

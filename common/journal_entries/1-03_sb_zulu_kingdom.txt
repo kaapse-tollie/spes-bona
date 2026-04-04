@@ -1,0 +1,65 @@
+﻿# Spes Bona - Zulu Kingdom Journal Entry (Period 1)
+# ==============================================================================
+# Phase 1 shell — placeholder for the Zulu Kingdom's internal politics / military JE.
+#
+# HISTORICAL CONTEXT:
+#   The Zulu Kingdom under Dingane (1828-1840) and then Mpande (1840-1872) faced
+#   internal succession crises, Boer encroachment, and British pressure. This JE
+#   is intended to model the Zulu player's experience during Period 1 — managing
+#   the ibutho (regiment) system, navigating Boer diplomacy, and consolidating
+#   power after Shaka's assassination.
+#
+# CURRENT STATE:
+#   complete = always no — this JE can never complete. It exists solely so ZUL
+#   appears in the country selection screen with a journal entry icon, signaling
+#   to the player that Zulu content exists (even though it is incomplete).
+#
+# Phase 2 backlog for this JE:
+#   - Ibutho regiment system (scripted buttons to raise/disband regiments)
+#   - Dingane vs Mpande succession crisis (~1839-1840)
+#   - Zulu response to British ultimatum (1879 Anglo-Zulu War is Period 2+)
+#   - Integration with sb_boer_zulu event chain (currently one-directional:
+#     Boer events fire AT ZUL, but ZUL has no agency via this JE)
+#
+# CROSS-REFERENCES:
+#   - Boer-Zulu events: events/sb_boer_zulu_events.txt (ZUL is event target)
+#   - Zulu country def: common/country_definitions/sb_countries.txt (cd:ZUL)
+#   - Trek JE Natal path: common/journal_entries/1-02_sb_great_trek.txt
+#     (fires sb_boer_zulu.010 -> .020 which gives ZUL player choices)
+# ==============================================================================
+
+je_sb_zulu_kingdom = {
+	group = je_group_historical_content
+
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+
+	# ZUL = Zulu Kingdom. Only shown for Zulu in lobby and gameplay.
+	is_shown_in_lobby = {
+		country_definition = cd:ZUL
+	}
+
+	possible = {
+		country_definition = cd:ZUL
+	}
+
+	status_desc = {
+		first_valid = {
+			triggered_desc = {
+				desc = je_sb_zulu_kingdom_status
+				trigger = {
+					always = yes
+				}
+			}
+		}
+	}
+
+	# Phase 1 shell: always = no means this JE never completes.
+	# Phase 2 will replace this with real completion conditions
+	# (e.g., survive until 1855, or win/lose the Anglo-Zulu War).
+	complete = {
+		always = no
+	}
+
+	# High weight for journal priority (consistent with other SB JEs).
+	weight = 1000
+}

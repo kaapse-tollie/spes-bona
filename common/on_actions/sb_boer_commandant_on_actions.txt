@@ -1,0 +1,32 @@
+﻿# Re-assert the general role for Boer commandant-generals after startup and
+# during play. This preserves the intended ruler-commander behavior for ORA,
+# TRN, NAL, and ZPB without reverting the custom government type.
+
+on_game_started_after_lobby = {
+	on_actions = { sb_on_boer_commandant_started_after_lobby }
+}
+
+on_monthly_pulse_country = {
+	on_actions = { sb_on_boer_commandant_monthly_pulse_country }
+}
+
+sb_on_boer_commandant_started_after_lobby = {
+	effect = {
+		every_country = {
+			limit = {
+				has_law = law_type:law_sb_commandant_general_republic
+			}
+			sb_refresh_boer_commandant_general_government = yes
+			sb_ensure_commandant_general_ruler_command = yes
+			sb_ensure_commandant_general_ruler_landowner_leadership = yes
+		}
+	}
+}
+
+sb_on_boer_commandant_monthly_pulse_country = {
+	effect = {
+		sb_refresh_boer_commandant_general_government = yes
+		sb_ensure_commandant_general_ruler_command = yes
+		sb_ensure_commandant_general_ruler_landowner_leadership = yes
+	}
+}

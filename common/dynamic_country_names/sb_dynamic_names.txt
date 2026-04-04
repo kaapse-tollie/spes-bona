@@ -1,0 +1,160 @@
+﻿# Spes Bona - Dynamic Country Names
+# V3 dynamic names override the base country tag name when trigger conditions are met.
+# Higher priority values take precedence when multiple names match.
+# Cross-ref: localization/ for the actual display strings (dyn_c_sb_* keys).
+
+# TRN: Potchefstroom -> South African Republic
+# REPLACE: overwrites any vanilla dynamic names for TRN.
+# Historically, the Boers initially called their polity after Potchefstroom (est. 1838),
+# the first major Voortrekker settlement in the Transvaal. It was renamed the
+# South African Republic (Zuid-Afrikaansche Republiek / ZAR) upon consolidation under
+# M.W. Pretorius in 1852 (Sand River Convention).
+REPLACE:TRN = {
+	# Potchefstroom — early small Boer republic name.
+	# priority = 0: lowest priority, only used when sb_early_republic_var is set.
+	# This variable is set at game start and cleared by the trek/consolidation JE.
+	dynamic_country_name = {
+		name = dyn_c_sb_potchefstroom
+		adjective = dyn_c_sb_potchefstroom_adj
+
+		is_main_tag_only = yes
+		priority = 0
+
+		trigger = {
+			scope:actor ?= {
+				has_variable = sb_early_republic_var
+			}
+		}
+	}
+
+	# South African Republic — after JE completion / political consolidation.
+	# priority = 1: takes over once the early republic variable is cleared.
+	# Represents the mature ZAR state recognized by Britain at the Sand River Convention.
+	dynamic_country_name = {
+		name = dyn_c_sb_south_african_republic
+		adjective = dyn_c_sb_south_african_republic_adj
+
+		is_main_tag_only = yes
+		priority = 1
+
+		trigger = {
+			scope:actor ?= {
+				NOT = { has_variable = sb_early_republic_var }
+			}
+		}
+	}
+}
+
+# CAP — "Cape Colony" while under Britain, "Cape of Goodhope" once fully independent.
+CAP = {
+	dynamic_country_name = {
+		name = dyn_c_sb_cape_of_goodhope
+		adjective = dyn_c_sb_cape_of_goodhope_adj
+
+		is_main_tag_only = yes
+		priority = 250
+
+		trigger = {
+			scope:actor ?= {
+				is_subject = no
+			}
+		}
+	}
+
+	dynamic_country_name = {
+		name = dyn_c_sb_cape_colony
+		adjective = dyn_c_sb_cape_colony_adj
+
+		is_main_tag_only = yes
+		priority = 200
+
+		trigger = {
+			scope:actor ?= {
+				is_subject = yes
+			}
+		}
+	}
+}
+
+# ABY — "Colony of Albany" while under Britain, plain "Albany" once independent.
+ABY = {
+	dynamic_country_name = {
+		name = dyn_c_sb_colony_of_albany
+		adjective = dyn_c_sb_albany_adj
+
+		is_main_tag_only = yes
+		priority = 250
+
+		trigger = {
+			scope:actor ?= {
+				is_subject = yes
+			}
+		}
+	}
+
+	dynamic_country_name = {
+		name = dyn_c_sb_albany
+		adjective = dyn_c_sb_albany_adj
+
+		is_main_tag_only = yes
+		priority = 200
+
+		trigger = {
+			scope:actor ?= {
+				is_subject = no
+			}
+		}
+	}
+}
+
+# NAL — keep Natalia stable as an ORA-backed republic, but switch cleanly to
+# "Natal Colony" when Britain imposes direct colonial authority later.
+REPLACE:NAL = {
+	dynamic_country_name = {
+		name = dyn_c_sb_natal_colony
+		adjective = dyn_c_sb_natal_colony_adj
+
+		is_main_tag_only = yes
+		priority = 10
+
+		trigger = {
+			scope:actor ?= {
+				has_diplomatic_pact = {
+					who = c:GBR
+					type = colony
+				}
+			}
+		}
+	}
+
+	dynamic_country_name = {
+		name = dyn_c_sb_natalia
+		adjective = dyn_c_sb_natalia_adj
+
+		is_main_tag_only = yes
+		priority = 0
+
+		trigger = {
+			always = yes
+		}
+	}
+}
+
+# SAF — Override vanilla dynamic names for South Africa.
+# REPLACE: clears all vanilla SAF dynamic names (e.g., "Union of South Africa" from base game).
+# SAF is now exclusively a formable country in this mod, not a starting tag.
+# priority = 0 with always = yes: ensures this is the only name SAF ever uses.
+# Cross-ref: common/country_formation/sb_formable_countries.txt for SAF formation requirements.
+REPLACE:SAF = {
+	dynamic_country_name = {
+		name = dyn_c_sb_union_of_south_africa
+		adjective = dyn_c_sb_union_of_south_africa_adj
+
+		is_main_tag_only = yes
+		priority = 0
+
+		trigger = {
+			always = yes
+		}
+	}
+}

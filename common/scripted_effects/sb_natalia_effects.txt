@@ -1,0 +1,557 @@
+﻿# Shared scripted effects for the Natalia chain.
+#
+# The peaceful and military branches both create the same republic with only a
+# few leadership differences. Keep the shared state setup here so the event
+# options can offer "play as Natalia" variants without duplicating giant blocks.
+
+sb_found_natalia_peacefully = {
+	random_scope_character = {
+		limit = {
+			has_template = ORA_piet_retief
+		}
+		save_scope_as = retief_scope
+	}
+	if = {
+		limit = {
+			NOT = { exists = c:NAL }
+		}
+		create_country = {
+			tag = NAL
+			origin = root
+			province = p:x5B124F
+		}
+	}
+	s:STATE_ZULULAND = {
+		set_owner_of_provinces = {
+			country = c:NAL
+			provinces = { x5B124F xFF0EF1 x552449 xE0EB02 x85695F xDE0EDE x7ACC38 xB1F868 x3CED3D x11A090 xCD31DB }
+		}
+		add_claim = c:NAL
+	}
+	c:NAL ?= {
+		sb_apply_boer_commandant_general_baseline = yes
+		set_country_type = unrecognized
+		active_law:lawgroup_army_model ?= {
+			if = {
+				limit = {
+					NOT = { has_amendment = amendment_type:amendment_sb_commando_corps }
+				}
+				add_amendment = {
+					type = amendment_sb_commando_corps
+					sponsor = PREV.ig:ig_rural_folk
+				}
+			}
+		}
+		change_relations = {
+			country = root
+			value = 50
+		}
+		every_interest_group = {
+			remove_ruling_interest_group = yes
+		}
+		ig:ig_armed_forces ?= { add_ruling_interest_group = yes }
+		ig:ig_landowners ?= { add_ruling_interest_group = yes }
+		ig:ig_rural_folk ?= { add_ruling_interest_group = yes }
+		ig:ig_devout ?= { add_ruling_interest_group = yes }
+		scope:retief_scope ?= {
+			transfer_character = c:NAL
+			set_character_as_ruler = yes
+			add_character_role = politician
+			set_interest_group = c:NAL.ig:ig_landowners
+		}
+		if = {
+			limit = {
+				NOT = { any_scope_character = { has_template = ORA_piet_retief } }
+			}
+			create_character = {
+				template = ORA_piet_retief
+				ruler = yes
+				is_general = yes
+				interest_group = ig_landowners
+			}
+		}
+		sb_refresh_boer_commandant_general_government = yes
+		sb_ensure_commandant_general_ruler_command = yes
+		if = {
+			limit = {
+				NOT = { has_truce_with = c:ZUL }
+			}
+			create_bidirectional_truce = {
+				country = c:ZUL
+				months = 60
+			}
+		}
+		create_military_formation = {
+			type = army
+			hq_region = sr:region_southern_africa
+			name = natalia_commando
+			combat_unit = {
+				type = unit_type:combat_unit_type_line_infantry
+				state_region = s:STATE_ZULULAND
+				count = 2
+			}
+			combat_unit = {
+				type = unit_type:combat_unit_type_dragoons
+				state_region = s:STATE_ZULULAND
+				count = 1
+			}
+		}
+	}
+	if = {
+		limit = {
+			NOT = {
+				any_scope_treaty = {
+					binds = c:NAL
+					any_scope_article = {
+						has_type = transit_rights
+						source_country = c:NAL
+						target_country = root
+					}
+				}
+			}
+		}
+		create_treaty = {
+			first_country = c:NAL
+			second_country = root
+			is_draft = no
+			binding_period = { years = 25 }
+			articles_to_create = {
+				{
+					article = transit_rights
+					source_country = c:NAL
+					target_country = root
+				}
+			}
+		}
+	}
+	c:TRN ?= {
+		if = {
+			limit = {
+				is_country_alive = yes
+				NOT = {
+					any_scope_treaty = {
+						binds = c:NAL
+						any_scope_article = {
+							has_type = transit_rights
+							source_country = c:NAL
+							target_country = c:TRN
+						}
+					}
+				}
+			}
+			create_treaty = {
+				first_country = c:NAL
+				second_country = c:TRN
+				is_draft = no
+				binding_period = { years = 25 }
+				articles_to_create = {
+					{
+						article = transit_rights
+						source_country = c:NAL
+						target_country = c:TRN
+					}
+				}
+			}
+		}
+	}
+	sb_trigger_boer_migration_effect = yes
+	set_variable = sb_natal_path_resolved_var
+	remove_variable = sb_natal_diplomacy_started_var
+}
+
+sb_found_natalia_after_blood_river = {
+	if = {
+		limit = {
+			NOT = { exists = c:NAL }
+		}
+		create_country = {
+			tag = NAL
+			origin = root
+			province = p:x5B124F
+		}
+	}
+	s:STATE_ZULULAND = {
+		set_owner_of_provinces = {
+			country = c:NAL
+			provinces = { x5B124F xFF0EF1 x552449 xE0EB02 x85695F xDE0EDE x7ACC38 xB1F868 x3CED3D x11A090 xCD31DB }
+		}
+		add_claim = c:NAL
+	}
+	# If Transvaal answered Oranje's call, Andries Pretorius can be shifted into
+	# Natalia while Marthinus takes over in TRN.
+	if = {
+		limit = {
+			has_variable = sb_trn_joined_natal_war_var
+			c:TRN ?= {
+				is_country_alive = yes
+			}
+		}
+		c:TRN ?= {
+			random_scope_character = {
+				limit = {
+					has_template = TRN_andries_pretorius
+				}
+				save_scope_as = andries_pretorius_scope
+			}
+			if = {
+				limit = {
+					NOT = {
+						any_scope_character = {
+							has_template = TRN_marthinus_wessel_pretorius
+						}
+					}
+				}
+				create_character = {
+					template = TRN_marthinus_wessel_pretorius
+					ruler = yes
+					is_general = yes
+					interest_group = ig_landowners
+					ideology = ideology_moderate
+				}
+			}
+			random_scope_character = {
+				limit = {
+					has_template = TRN_marthinus_wessel_pretorius
+				}
+				set_character_as_ruler = yes
+				set_interest_group = c:TRN.ig:ig_landowners
+			}
+		}
+		scope:andries_pretorius_scope ?= {
+			transfer_character = c:NAL
+			set_character_as_ruler = yes
+			add_character_role = politician
+			set_interest_group = c:NAL.ig:ig_landowners
+		}
+		c:NAL ?= {
+			if = {
+				limit = {
+					NOT = {
+						any_scope_character = {
+							has_template = TRN_andries_pretorius
+						}
+					}
+				}
+				create_character = {
+					template = TRN_andries_pretorius
+					ruler = yes
+					is_general = yes
+					interest_group = ig_landowners
+					ideology = ideology_moderate
+				}
+			}
+		}
+	}
+	c:NAL ?= {
+		sb_apply_boer_commandant_general_baseline = yes
+		set_country_type = unrecognized
+		active_law:lawgroup_army_model ?= {
+			if = {
+				limit = {
+					NOT = { has_amendment = amendment_type:amendment_sb_commando_corps }
+				}
+				add_amendment = {
+					type = amendment_sb_commando_corps
+					sponsor = PREV.ig:ig_rural_folk
+				}
+			}
+		}
+		change_relations = {
+			country = root
+			value = 60
+		}
+		every_interest_group = {
+			remove_ruling_interest_group = yes
+		}
+		ig:ig_armed_forces ?= { add_ruling_interest_group = yes }
+		ig:ig_landowners ?= { add_ruling_interest_group = yes }
+		ig:ig_rural_folk ?= { add_ruling_interest_group = yes }
+		ig:ig_devout ?= { add_ruling_interest_group = yes }
+		sb_refresh_boer_commandant_general_government = yes
+		sb_ensure_commandant_general_ruler_command = yes
+		create_military_formation = {
+			type = army
+			hq_region = sr:region_southern_africa
+			name = natalia_commando
+			combat_unit = {
+				type = unit_type:combat_unit_type_line_infantry
+				state_region = s:STATE_ZULULAND
+				count = 2
+			}
+			combat_unit = {
+				type = unit_type:combat_unit_type_dragoons
+				state_region = s:STATE_ZULULAND
+				count = 1
+			}
+		}
+		create_bidirectional_truce = {
+			country = c:ZUL
+			months = 60
+		}
+	}
+	if = {
+		limit = {
+			NOT = {
+				any_scope_treaty = {
+					binds = c:NAL
+					any_scope_article = {
+						has_type = transit_rights
+						source_country = c:NAL
+						target_country = root
+					}
+				}
+			}
+		}
+		create_treaty = {
+			first_country = c:NAL
+			second_country = root
+			is_draft = no
+			binding_period = { years = 25 }
+			articles_to_create = {
+				{
+					article = transit_rights
+					source_country = c:NAL
+					target_country = root
+				}
+			}
+		}
+	}
+	c:TRN ?= {
+		if = {
+			limit = {
+				is_country_alive = yes
+				NOT = {
+					any_scope_treaty = {
+						binds = c:NAL
+						any_scope_article = {
+							has_type = transit_rights
+							source_country = c:NAL
+							target_country = c:TRN
+						}
+					}
+				}
+			}
+			create_treaty = {
+				first_country = c:NAL
+				second_country = c:TRN
+				is_draft = no
+				binding_period = { years = 25 }
+				articles_to_create = {
+					{
+						article = transit_rights
+						source_country = c:NAL
+						target_country = c:TRN
+					}
+				}
+			}
+		}
+	}
+	set_variable = sb_natal_path_resolved_var
+	remove_variable = sb_natal_diplomacy_started_var
+	remove_variable = sb_natal_war_active_var
+	if = {
+		limit = {
+			has_variable = sb_trn_joined_natal_war_var
+		}
+		remove_variable = sb_trn_joined_natal_war_var
+	}
+	c:ZUL ?= {
+		remove_variable = sb_natal_war_active_var
+		trigger_event = { id = sb_boer_zulu.090 days = 14 }
+	}
+	c:TRN ?= {
+		if = {
+			limit = { has_variable = sb_trn_joined_natal_war_var }
+			remove_variable = sb_trn_joined_natal_war_var
+		}
+	}
+	sb_trigger_boer_migration_effect = yes
+}
+
+# A variant of the war-victory settlement where Retief survives to lead Natalia
+# and Pretorius remains in Transvaal.
+sb_found_natalia_after_guns_bargain_rejection = {
+	sb_found_natalia_peacefully = yes
+	if = {
+		limit = { has_variable = sb_natal_guns_bargain_war_var }
+		remove_variable = sb_natal_guns_bargain_war_var
+	}
+	if = {
+		limit = { has_variable = sb_trn_joined_natal_war_var }
+		remove_variable = sb_trn_joined_natal_war_var
+	}
+	c:ZUL ?= {
+		if = {
+			limit = { has_variable = sb_natal_guns_bargain_war_var }
+			remove_variable = sb_natal_guns_bargain_war_var
+		}
+		trigger_event = { id = sb_boer_zulu.090 days = 14 }
+	}
+	c:TRN ?= {
+		if = {
+			limit = { has_variable = sb_trn_joined_natal_war_var }
+			remove_variable = sb_trn_joined_natal_war_var
+		}
+	}
+}
+
+# Britain can respond to Dingane's coastal raid by annexing the Zulu-held Natal
+# littoral outright and reorganizing it as a crown colony.
+sb_found_natal_colony_after_british_annexation = {
+	if = {
+		limit = {
+			NOT = { exists = c:NAL }
+		}
+		create_country = {
+			tag = NAL
+			origin = root
+			province = p:x279045
+		}
+	}
+	s:STATE_ZULULAND = {
+		set_owner_of_provinces = {
+			country = c:NAL
+			provinces = { x279045 xBE6FEE x1A084B xBFA16B x9E9742 x88FAD4 x904EBE x41C070 xE882CE xE1E455 xBBCA32 }
+		}
+		add_claim = c:NAL
+	}
+	c:NAL ?= {
+		change_relations = {
+			country = root
+			value = 50
+		}
+	}
+	if = {
+		limit = {
+			NOT = {
+				c:NAL ?= {
+					has_diplomatic_pact = {
+						who = root
+						type = colony
+					}
+				}
+			}
+		}
+		create_diplomatic_pact = {
+			country = c:NAL
+			type = colony
+		}
+	}
+	sb_trigger_british_natal_colony_migration_effect = yes
+}
+
+# Add a Boer ally directly to Natalia's side once Britain turns the ultimatum
+# into a live diplomatic play.
+sb_join_natalia_against_britain = {
+	random_diplomatic_play = {
+		limit = {
+			is_diplomatic_play_type = dp_make_protectorate
+			any_scope_play_involved = { c:GBR ?= THIS }
+			any_scope_play_involved = { c:NAL ?= THIS }
+		}
+		add_target_backers = { root }
+	}
+}
+
+# Support Natalia against Britain with both a live war join and a short-term
+# defensive pact, so the diplomatic relationship survives beyond the first war.
+sb_support_natalia_against_britain = {
+	c:NAL ?= {
+		save_scope_as = natalia
+	}
+	if = {
+		limit = {
+			NOT = {
+				any_scope_treaty = {
+					binds = root
+					binds = scope:natalia
+					any_scope_article = {
+						OR = {
+							has_type = defensive_pact
+							has_type = alliance
+						}
+					}
+				}
+			}
+		}
+		create_treaty = {
+			first_country = root
+			second_country = scope:natalia
+			is_draft = no
+			binding_period = { years = 5 }
+			articles_to_create = {
+				{
+					article = defensive_pact
+				}
+			}
+		}
+	}
+	sb_join_natalia_against_britain = yes
+}
+
+# Boer refugees from Natal move inland toward whichever republic receives them.
+sb_trigger_natal_refugee_migration_effect = {
+	c:NAL ?= {
+		save_scope_as = natalia_source
+	}
+	cu:boer = {
+		save_scope_as = migration_culture
+	}
+	ordered_scope_state = {
+		limit = {
+			is_incorporated = yes
+		}
+		order_by = migration_pull
+		position = 0
+		check_range_bounds = no
+		save_scope_as = migration_target
+	}
+	if = {
+		limit = {
+			exists = scope:natalia_source
+			exists = scope:migration_target
+		}
+		scope:migration_target = {
+			create_mass_migration = {
+				origin = scope:natalia_source
+				culture = scope:migration_culture
+			}
+		}
+	}
+}
+
+# Submission to Britain should encourage an English inflow toward the port
+# colony, underscoring that the coast has been pulled back into imperial orbit.
+sb_trigger_british_natal_colony_migration_effect = {
+	random_country = {
+		limit = {
+			country_definition = cd:GBR
+			is_country_alive = yes
+			any_primary_culture = {
+				this = cu:british
+			}
+		}
+		save_scope_as = british_migration_origin
+	}
+	ordered_scope_state = {
+		limit = {
+			is_incorporated = yes
+		}
+		order_by = migration_pull
+		position = 0
+		check_range_bounds = no
+		save_scope_as = british_migration_target
+	}
+	if = {
+		limit = {
+			exists = scope:british_migration_origin
+			exists = scope:british_migration_target
+		}
+		scope:british_migration_target = {
+			create_mass_migration = {
+				origin = scope:british_migration_origin
+				culture = cu:british
+			}
+		}
+	}
+}

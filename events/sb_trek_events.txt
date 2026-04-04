@@ -1,0 +1,661 @@
+﻿namespace = sb_trek
+
+# =============================================================================
+# Spes Bona - Great Trek Events
+# =============================================================================
+# Events for the Boer republic JE (je_sb_great_trek), triggered either by the
+# MTB opening-war setup or by Great Trek stage completion.
+#
+# EVENT CATALOG:
+#   sb_trek.004     TRN receives Mzilikazi's wrath and sends for help
+#   sb_trek.005     ORA answers TRN's call for Potgieter
+#   sb_trek.030     Stage 1 reward — ORA economy established
+#   sb_trek.031     Stage 1 reward — TRN economy established
+#   sb_trek.040     Stage 2 reward — ORA controls Vrystaat + mass migration
+#   sb_trek.041     Stage 2 reward — TRN controls Transvaal + mass migration
+#   sb_trek.100     JE completion (both stages done)
+#
+# MASS MIGRATION PATTERN (Stage 2 events):
+#   Uses create_mass_migration from V3's South America migration pattern.
+#   Source: CAP (Cape Colony), Culture: Boer, Target: highest migration_pull state.
+#   This creates a visible wave of Boer settlers arriving over several years.
+#
+# CROSS-REFERENCES:
+#   JE: common/journal_entries/1-02_sb_great_trek.txt
+#   Migration modifier: common/static_modifiers/sb_modifiers.txt (sb_trek_migration_pull)
+#   Ndebele tensions: common/on_actions/sb_on_actions.txt (TRN-MTB tension = 90)
+# =============================================================================
+
+sb_trek.001 = {
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		country_definition = cd:MTB
+		NOT = { has_variable = sb_ndebele_opening_play_fired }
+		is_at_war = no
+		aggressive_diplomatic_plays_permitted = yes
+		is_country_alive = yes
+	}
+
+	immediate = {
+		set_variable = sb_ndebele_opening_play_fired
+		create_diplomatic_play = {
+			# Use the vanilla decentralized-native flow here. This play already
+			# carries the built-in colonization-rights article, so avoid adding
+			# custom opening articles on top or the presentation/order gets odd.
+			type = dp_native_uprising
+			target_country = c:TRN
+		}
+		c:TRN ?= {
+			if = {
+				limit = {
+					is_country_alive = yes
+					c:ORA ?= {
+						is_country_alive = yes
+					}
+					NOT = { has_variable = sb_potgieter_called_var }
+				}
+				set_variable = {
+					name = sb_potgieter_called_var
+					months = 12
+				}
+				trigger_event = { id = sb_trek.004 days = 1 popup = yes }
+			}
+		}
+	}
+}
+
+# TRN's answer to the MTB uprising is to call on Potgieter and the Oranje
+# trekkers. This mirrors the Natal support chain and keeps the request visible
+# on the threatened side before the answering republic receives its own event.
+sb_trek.004 = {
+	type = country_event
+	placement = root
+
+	title = sb_trek.004.t
+	desc = sb_trek.004.d
+	flavor = sb_trek.004.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_soldiers_breaking_protest.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_military.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:TRN
+		c:ORA ?= {
+			is_country_alive = yes
+		}
+	}
+
+	option = {
+		name = sb_trek.004.a
+		default_option = yes
+		if = {
+			limit = {
+				c:ORA ?= {
+					is_country_alive = yes
+				}
+			}
+			c:ORA ?= {
+				trigger_event = { id = sb_trek.005 days = 5 popup = yes }
+			}
+		}
+	}
+}
+
+# ORA answers Transvaal's plea. The support is handled directly on the active
+# diplomatic play so ORA actually appears on TRN's side instead of relying on
+# post-hoc treaty nudges.
+sb_trek.005 = {
+	type = country_event
+	placement = root
+
+	title = sb_trek.005.t
+	desc = sb_trek.005.d
+	flavor = sb_trek.005.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_soldiers_breaking_protest.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_military.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:ORA
+		c:TRN ?= {
+			is_country_alive = yes
+		}
+	}
+
+	option = {
+		name = sb_trek.005.a
+		default_option = yes
+		# Explicitly add ORA to TRN's side on the already-running native uprising.
+		# Only guard against duplicate joins to this specific play, not against
+		# ORA being involved in some unrelated diplomatic play elsewhere.
+			
+		random_diplomatic_play = {
+			limit = {
+				AND = {
+					target = c:TRN
+					initiator = c:MTB
+				}
+			}
+			add_target_backers = { c:ORA }
+		}
+
+		ai_chance = {
+			base = 100
+		}
+	}
+
+	option = {
+		name = sb_trek.005.b
+		every_scope_treaty = {
+			limit = {
+				binds = c:TRN
+				binds = c:ORA
+				any_scope_article = {
+					has_type = defensive_pact
+				}
+			}
+			withdraw = {
+				country = c:ORA
+			}
+		}
+		c:TRN ?= {
+			change_relations = {
+				country = root
+				value = -20
+			}
+		}
+		ai_chance = {
+			base = 0
+		}
+	}
+}
+
+# In Mzilikazi's Wake
+# Keep this as a Spes Bona-owned copy of the vanilla Highveld withdrawal event
+# so the retreat-to-Zimbabwe structure stays easy to tune without leaning on the
+# disabled vanilla JE/event chain directly.
+sb_trek.002 = {
+	type = country_event
+	placement = ROOT
+
+	title = sb_trek.002.t
+	desc = sb_trek.002.d
+	flavor = sb_trek.002.f
+
+	duration = 3
+
+	event_image = {
+		video = "middleeast_jungle_expedition"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+
+	trigger = {
+		country_definition = cd:TRN
+	}
+
+	immediate = {
+		c:MTB ?= {
+			save_scope_as = ndebele
+			ruler = {
+				save_scope_as = mzilikazi
+			}
+		}
+		ROOT = {
+			save_scope_as = transvaal
+		}
+		c:ZUL ?= {
+			save_scope_as = zulu
+		}
+		s:STATE_TRANSVAAL = {
+			save_scope_as = transvaal_region
+		}
+	}
+
+	option = {
+		name = sb_trek.002.a
+		default_option = yes
+
+		hidden_effect = {
+			if = {
+				limit = {
+					exists = c:MSH
+				}
+				c:MTB ?= {
+					annex = c:MSH
+				}
+			}
+		}
+		c:MTB ?= {
+			random_scope_state = {
+				limit = { state_region = s:STATE_TRANSVAAL }
+				set_state_owner = c:PDI
+			}
+		}
+		remove_modifier = sb_trek_frontier_drive
+		add_modifier = {
+			name = sb_trek_frontier_drive
+			months = 60
+		}
+
+		ai_chance = {
+			base = 100
+		}
+	}
+}
+
+# Stage 1 reward — ORA economy established
+sb_trek.030 = {
+	type = country_event
+	placement = root
+
+	title = sb_trek.030.t
+	desc = sb_trek.030.d
+	flavor = sb_trek.030.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = { }
+
+	immediate = {
+		c:CAP ?= {
+			save_scope_as = migration_source
+		}
+		cu:boer = {
+			save_scope_as = migration_culture
+		}
+		ordered_scope_state = {
+			limit = { is_incorporated = yes }
+			order_by = migration_pull
+			position = 0
+			check_range_bounds = no
+			save_scope_as = migration_target
+		}
+	}
+
+		option = {
+			name = sb_trek.030.a
+			default_option = yes
+		scope:migration_target ?= {
+			create_mass_migration = {
+				origin = scope:migration_source
+				culture = scope:migration_culture
+			}
+		}
+			root = {
+				add_modifier = {
+					name = sb_trek_migration_cost
+					months = 12
+				}
+			}
+		}
+	}
+
+# Stage 1 reward — TRN economy established
+sb_trek.031 = {
+	type = country_event
+	placement = root
+
+	title = sb_trek.031.t
+	desc = sb_trek.031.d
+	flavor = sb_trek.031.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = { }
+
+	immediate = {
+		c:CAP ?= {
+			save_scope_as = migration_source
+		}
+		cu:boer = {
+			save_scope_as = migration_culture
+		}
+		ordered_scope_state = {
+			limit = { is_incorporated = yes }
+			order_by = migration_pull
+			position = 0
+			check_range_bounds = no
+			save_scope_as = migration_target
+		}
+	}
+
+		option = {
+			name = sb_trek.031.a
+			default_option = yes
+		scope:migration_target ?= {
+			create_mass_migration = {
+				origin = scope:migration_source
+				culture = scope:migration_culture
+			}
+		}
+			root = {
+				add_modifier = {
+					name = sb_trek_migration_cost
+					months = 12
+				}
+			}
+		}
+	}
+
+# Stage 2 reward — ORA controls Vrystaat, triggers mass migration
+sb_trek.040 = {
+	type = country_event
+	placement = root
+
+	title = sb_trek.040.t
+	desc = sb_trek.040.d
+	flavor = sb_trek.040.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = { }
+
+	immediate = {
+		c:CAP ?= {
+			save_scope_as = migration_source
+		}
+		cu:boer = {
+			save_scope_as = migration_culture
+		}
+		ordered_scope_state = {
+			limit = { is_incorporated = yes }
+			order_by = migration_pull
+			position = 0
+			check_range_bounds = no
+			save_scope_as = migration_target
+		}
+	}
+
+		option = {
+			name = sb_trek.040.a
+			default_option = yes
+		# Mass migration wave — Boers flock to the Orange Free State.
+		# Also imposes a short bureaucratic strain on the Cape as people leave.
+		scope:migration_target = {
+			create_mass_migration = {
+				origin = scope:migration_source
+				culture = scope:migration_culture
+			}
+		}
+			root = {
+				add_modifier = {
+					name = sb_trek_migration_cost
+					months = 24
+				}
+			}
+		}
+	}
+
+# Stage 2 reward — TRN controls Transvaal, triggers mass migration
+sb_trek.041 = {
+	type = country_event
+	placement = root
+
+	title = sb_trek.041.t
+	desc = sb_trek.041.d
+	flavor = sb_trek.041.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = { }
+
+	immediate = {
+		c:CAP ?= {
+			save_scope_as = migration_source
+		}
+		cu:boer = {
+			save_scope_as = migration_culture
+		}
+		ordered_scope_state = {
+			limit = { is_incorporated = yes }
+			order_by = migration_pull
+			position = 0
+			check_range_bounds = no
+			save_scope_as = migration_target
+		}
+	}
+
+		option = {
+			name = sb_trek.041.a
+			default_option = yes
+		# Mass migration wave — Boers flock to the South African Republic.
+		# The Cape also feels the administrative pull of the trek.
+		scope:migration_target = {
+			create_mass_migration = {
+				origin = scope:migration_source
+				culture = scope:migration_culture
+			}
+		}
+		root = {
+			add_modifier = {
+				name = sb_trek_migration_cost
+				months = 24
+			}
+		}
+			add_modifier = {
+				name = sb_promised_land
+				months = 120
+		}
+	}
+}
+
+# Zoutpansberg splinters out of the northern Transvaal once the Cape's liberal
+# order makes the far-northern trek districts feel both attractive and distant.
+sb_trek.120 = {
+	type = country_event
+	placement = root
+
+	title = sb_trek.120.t
+	desc = sb_trek.120.d
+	flavor = sb_trek.120.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:TRN
+	}
+
+	immediate = {
+		c:CAP ?= {
+			save_scope_as = migration_source
+		}
+		cu:boer = {
+			save_scope_as = migration_culture
+		}
+	}
+
+	option = {
+		name = sb_trek.120.a
+		default_option = yes
+		if = {
+			limit = {
+				NOT = { exists = c:ZPB }
+			}
+			create_country = {
+				tag = ZPB
+				origin = root
+				province = p:x5C4C78
+			}
+		}
+		s:STATE_TRANSVAAL = {
+			set_owner_of_provinces = {
+				country = c:ZPB
+				provinces = {
+					x5C4C78 x8CD439 x3DA2B5 x8DF37C x9EC141 xC9D165 xCAEAEB xD34CB1 x775CAE xDB7D32 x24A528 x336285 x4760DD xF14024
+				}
+			}
+			add_claim = root
+		}
+		c:ZPB ?= {
+			set_country_type = unrecognized
+			active_law:lawgroup_army_model ?= {
+				if = {
+					limit = {
+						NOT = { has_amendment = amendment_type:amendment_sb_commando_corps }
+					}
+					add_amendment = {
+						type = amendment_sb_commando_corps
+						sponsor = PREV.ig:ig_rural_folk
+					}
+				}
+			}
+			change_relations = {
+				country = root
+				value = -40
+			}
+		}
+		change_relations = {
+			country = c:ZPB
+			value = -40
+		}
+		c:ZPB ?= {
+			add_modifier = {
+				name = sb_trek_migration_cost
+				months = 24
+			}
+		}
+		c:ZPB ?= {
+			random_scope_state = {
+				limit = {
+					state_region = s:STATE_TRANSVAAL
+				}
+				create_mass_migration = {
+					origin = scope:migration_source
+					culture = scope:migration_culture
+				}
+			}
+		}
+		ai_chance = {
+			base = 100
+		}
+	}
+}
+
+# Shell for the later Griqualand East line. Phase 1 only establishes the fork in
+# Cape policy; the actual march state can be fleshed out once responsible
+# government and later frontier content are in place.
+sb_trek.220 = {
+	type = country_event
+	placement = root
+
+	title = sb_trek.220.t
+	desc = sb_trek.220.d
+	flavor = sb_trek.220.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:CAP
+	}
+
+	option = {
+		name = sb_trek.220.a
+		default_option = yes
+		# Phase 1 shell: for now this is a Cape-wide frontier settlement push
+		# rather than a full Griqualand East state creation flow. Keep the reward
+		# light until the real march-state content exists.
+		add_modifier = {
+			name = sb_prestige_gain_small
+			months = short_modifier_time
+		}
+		ai_chance = {
+			base = 60
+		}
+	}
+
+	option = {
+		name = sb_trek.220.b
+		trigger = {
+			OR = {
+				has_law = law_type:law_cultural_exclusion
+				country_has_primary_culture = cu:griqua
+			}
+		}
+		add_modifier = {
+			name = sb_cape_frontier_compromise
+			months = 60
+		}
+		ai_chance = {
+			base = 40
+		}
+	}
+}
+
+# Great Trek JE completion event
+sb_trek.100 = {
+	type = country_event
+	placement = root
+
+	title = sb_trek.100.t
+	desc = sb_trek.100.d
+	flavor = sb_trek.100.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = { }
+
+	option = {
+		name = sb_trek.100.a
+		default_option = yes
+		add_modifier = {
+			name = sb_prestige_gain_medium
+			months = long_modifier_time
+		}
+	}
+}

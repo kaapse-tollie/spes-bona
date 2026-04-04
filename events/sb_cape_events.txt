@@ -1,0 +1,1232 @@
+﻿namespace = sb_cape
+
+# =============================================================================
+# Spes Bona - Cape Colony Events
+# =============================================================================
+# sb_cape.001     Opening tensions
+# sb_cape.010     Frontier Raid (retired; state trait now carries this pressure)
+# sb_cape.020     Responsible Government petition (Phase 2, shell only)
+# sb_cape.100     Liberal victory
+# sb_cape.101     Settler victory
+# sb_cape.102     Balanced compromise
+# sb_cape.103     Eastern Cape Secession
+# sb_cape.104     Bitter settlement
+# sb_cape.111     Convict Crisis
+# sb_cape.120     Cape Liberals demand action under settler dominance
+# sb_cape.121     Robert Godlonton demands frontier action
+# sb_cape.122     Eastern Cape settlers demand frontier action
+# sb_cape.200     Britain decides whether to create Albany
+# sb_cape.201     CAP notification: London creates Albany
+# sb_cape.202     CAP notification: London refuses Albany
+# sb_cape.203     ABY flavor follow-up after London sanctions Albany
+#
+# CROSS-REFERENCES:
+#   JE: common/journal_entries/1-01_sb_cape_politics.txt
+#   Buttons: common/scripted_buttons/sb_cape_buttons.txt
+#   Movements: common/political_movements/sb_political_movements.txt
+#   Modifiers: common/static_modifiers/sb_modifiers.txt
+# =============================================================================
+
+####### Cape JE outcome events #############
+
+# Opening tensions — the Cape question should announce itself in the first
+# weeks of play instead of quietly attaching the JE-side tension modifier.
+sb_cape.001 = {
+	type = country_event
+	placement = root
+
+	title = sb_cape.001.t
+	desc = sb_cape.001.d
+	flavor = sb_cape.001.f
+
+	event_image = {
+		video = "gfx/event_pictures/europenorthamerica_sufferage.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	icon = "gfx/interface/icons/principles_icons/creative_legislature.dds"
+
+	duration = 3
+
+	trigger = {
+		country_definition = cd:CAP
+		has_journal_entry = je_sb_cape_politics
+	}
+
+	option = {
+		name = sb_cape.001.a
+		default_option = yes
+		set_variable = sb_cape_tensions_initialized_var
+		remove_variable = sb_cape_tensions_event_pending_var
+		je:je_sb_cape_politics ?= {
+			if = {
+				limit = {
+					NOT = { has_modifier = sb_cape_political_tensions }
+				}
+				add_modifier = {
+					name = sb_cape_political_tensions
+				}
+			}
+		}
+	}
+}
+
+# Liberal victory — triggered when the liberal bar is dominant AND CAP has
+# already passed Cultural Exclusion.
+sb_cape.100 = {
+	type = country_event
+	placement = root
+
+	title = sb_cape.100.t
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				desc = sb_cape.100.d_albany
+				trigger = {
+					has_variable = sb_albany_sanctioned_var
+				}
+			}
+			triggered_desc = {
+				desc = sb_cape.100.d_after_secession
+				trigger = {
+					has_variable = sb_albany_refused_var
+				}
+			}
+			triggered_desc = {
+				desc = sb_cape.100.d
+				trigger = {
+					always = yes
+				}
+			}
+		}
+	}
+	flavor = {
+		first_valid = {
+			triggered_desc = {
+				desc = sb_cape.100.f_albany
+				trigger = {
+					has_variable = sb_albany_sanctioned_var
+				}
+			}
+			triggered_desc = {
+				desc = sb_cape.100.f_after_secession
+				trigger = {
+					has_variable = sb_albany_refused_var
+				}
+			}
+			triggered_desc = {
+				desc = sb_cape.100.f
+				trigger = {
+					always = yes
+				}
+			}
+		}
+	}
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	icon = "gfx/interface/icons/principles_icons/creative_legislature.dds"
+
+	duration = 3
+
+	trigger = {
+		# Triggered by JE completion
+	}
+
+	option = {
+		name = sb_cape.100.a
+		default_option = yes
+		if = {
+			limit = {
+				NOT = { country_has_primary_culture = cu:griqua }
+			}
+			add_primary_culture = cu:griqua
+		}
+		set_variable = sb_cape_griqua_accepted_var
+		set_variable = sb_cape_liberal_resolved_var
+		add_modifier = {
+			name = sb_cape_liberal_victory
+			months = 120
+		}
+		every_political_movement = {
+			limit = {
+				is_political_movement_type = movement_sb_eastern_cape_separatist
+			}
+			add_modifier = {
+				name = sb_ecsl_checked
+				months = 120
+			}
+		}
+		if = {
+			limit = {
+				any_scope_character = {
+					has_variable = sb_robert_godlonton_var
+					has_role = agitator
+				}
+			}
+			random_scope_character = {
+				limit = {
+					has_variable = sb_robert_godlonton_var
+					has_role = agitator
+				}
+				add_modifier = {
+					name = sb_godlonton_discredited
+					months = 120
+				}
+			}
+		}
+		remove_variable = sb_albany_sanctioned_var
+		remove_variable = sb_albany_refused_var
+	}
+}
+
+# Settler victory — triggered when the settler bar dominates and CAP has
+# already committed to colonial expansion in law.
+sb_cape.101 = {
+	type = country_event
+	placement = root
+
+	title = sb_cape.101.t
+	desc = sb_cape.101.d
+	flavor = sb_cape.101.f
+
+	event_image = {
+		video = "gfx/event_pictures/europenorthamerica_political_extremism.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	icon = "gfx/interface/icons/principles_icons/creative_legislature.dds"
+
+	duration = 3
+
+	trigger = {
+		# Triggered by JE completion
+	}
+
+	option = {
+		name = sb_cape.101.a
+		default_option = yes
+		if = {
+			limit = {
+				NOT = { country_has_primary_culture = cu:boer }
+				OR = {
+					has_law = law_type:law_racial_segregation
+					has_law = law_type:law_national_supremacy
+				}
+			}
+			add_primary_culture = cu:boer
+		}
+		add_modifier = {
+			name = sb_settler_victory
+			months = -1
+		}
+		set_variable = sb_ecsl_resolved_var
+		every_political_movement = {
+			limit = {
+				is_political_movement_type = movement_sb_cape_liberal
+			}
+			add_modifier = {
+				name = sb_cape_liberals_checked
+				months = 120
+			}
+		}
+		remove_variable = sb_albany_sanctioned_var
+		remove_variable = sb_albany_refused_var
+	}
+}
+
+# Balance outcome — triggered at the threshold date if neither side wholly
+# dominates. CAP receives a modest frontier boost and a citizenship amendment
+# that slightly softens acceptance for Griqua and southern Bantu peoples.
+sb_cape.102 = {
+	type = country_event
+	placement = root
+
+	title = sb_cape.102.t
+	desc = sb_cape.102.d
+	flavor = sb_cape.102.f
+
+	event_image = {
+		video = "gfx/event_pictures/europenorthamerica_political_extremism.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	icon = "gfx/interface/icons/principles_icons/creative_legislature.dds"
+
+	duration = 3
+
+	trigger = {
+		# Triggered by JE completion
+	}
+
+	option = {
+		name = sb_cape.102.a
+		default_option = yes
+		set_variable = sb_ecsl_resolved_var
+		add_modifier = {
+			name = sb_cape_frontier_compromise
+			months = 120
+		}
+		active_law:lawgroup_citizenship ?= {
+			if = {
+				limit = {
+					NOT = { has_amendment = amendment_type:amendment_sb_cape_qualified_franchise }
+				}
+				add_amendment = {
+					type = amendment_sb_cape_qualified_franchise
+					sponsor = PREV.ig:ig_intelligentsia
+				}
+			}
+		}
+		remove_variable = sb_albany_sanctioned_var
+		remove_variable = sb_albany_refused_var
+	}
+}
+
+# Eastern Cape Secession — the constitutional fight inside CAP is over; the
+# Eastern settlers have gone beyond repair and now appeal to London directly.
+sb_cape.103 = {
+	type = country_event
+	placement = root
+
+	title = sb_cape.103.t
+	desc = sb_cape.103.d
+	flavor = sb_cape.103.f
+
+	event_image = {
+		video = "gfx/event_pictures/europenorthamerica_political_extremism.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	icon = "gfx/interface/icons/principles_icons/creative_legislature.dds"
+
+	duration = 3
+
+	trigger = {
+		country_definition = cd:CAP
+	}
+
+	option = {
+		name = sb_cape.103.a
+		default_option = yes
+		# CAP-side crisis event. This only opens the Albany question; the JE now
+		# closes from London's answer 21 days later.
+		set_variable = sb_albany_crisis_var
+		if = {
+			limit = {
+				NOT = { has_law = law_type:law_cultural_exclusion }
+			}
+			activate_law = law_type:law_cultural_exclusion
+		}
+		if = {
+			limit = {
+				is_subject_of = c:GBR
+			}
+			c:GBR ?= {
+				trigger_event = { id = sb_cape.200 popup = yes }
+			}
+		}
+		else = {
+			trigger_event = { id = sb_cape.202 days = 21 popup = yes }
+		}
+	}
+}
+
+# Bitter settlement — the Cape question times out into an embittered stalemate.
+# This is the failure branch for a colony that never translated political
+# momentum into a constitutional settlement.
+sb_cape.104 = {
+	type = country_event
+	placement = root
+
+	title = sb_cape.104.t
+	desc = sb_cape.104.d
+	flavor = sb_cape.104.f
+
+	event_image = {
+		video = "gfx/event_pictures/europenorthamerica_political_extremism.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	icon = "gfx/interface/icons/principles_icons/creative_legislature.dds"
+
+	duration = 3
+
+	trigger = {
+		country_definition = cd:CAP
+	}
+
+	option = {
+		name = sb_cape.104.a
+		default_option = yes
+		add_modifier = {
+			name = sb_cape_bitter_settlement
+			months = 120
+			is_decaying = yes
+		}
+		remove_variable = sb_albany_sanctioned_var
+		remove_variable = sb_albany_refused_var
+	}
+}
+
+# Convict Crisis — the imperial proposal to use the Cape as a convict destination
+# sharpens the split between settler pragmatists and Cape liberals who resent
+# being treated as a dumping ground of empire.
+sb_cape.111 = {
+	type = country_event
+	placement = root
+
+	title = sb_cape.111.t
+	desc = sb_cape.111.d
+	flavor = sb_cape.111.f
+
+	event_image = {
+		video = "gfx/event_pictures/europenorthamerica_political_extremism.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	icon = "gfx/interface/icons/principles_icons/creative_legislature.dds"
+
+	duration = 3
+
+	trigger = {
+		country_definition = cd:CAP
+		has_journal_entry = je_sb_cape_politics
+	}
+
+	option = {
+		name = sb_cape.111.a
+		add_modifier = {
+			name = sb_convict_ship_accepted
+			months = 120
+		}
+		capital = {
+			add_radicals_in_state = {
+				value = large_radicals
+			}
+		}
+		random_scope_state = {
+			limit = {
+				state_region = s:STATE_CAPE_COLONY
+				state_is_eligible_as_mass_migration_target = yes
+			}
+			create_mass_migration = {
+				origin = c:GBR
+				culture = cu:british
+			}
+		}
+		every_political_movement = {
+			limit = {
+				is_political_movement_type = movement_sb_cape_liberal
+			}
+			add_modifier = {
+				name = sb_convict_crisis_liberal_fury
+				months = 60
+			}
+		}
+		ai_chance = {
+			base = 30
+			modifier = {
+				trigger = {
+					je:je_sb_cape_politics ?= {
+						has_modifier = sb_cape_settler_ascendant
+					}
+				}
+				add = 20
+			}
+			modifier = {
+				trigger = {
+					ig:ig_landowners ?= { is_in_government = yes }
+				}
+				add = 15
+			}
+			modifier = {
+				trigger = {
+					ig:ig_armed_forces ?= { is_in_government = yes }
+				}
+				add = 15
+			}
+			modifier = {
+				trigger = {
+					je:je_sb_cape_politics ?= {
+						has_modifier = sb_cape_liberal_ascendant
+					}
+				}
+				add = -25
+			}
+		}
+	}
+
+	option = {
+		name = sb_cape.111.b
+		default_option = yes
+		add_modifier = {
+			name = sb_anti_convict_victory
+			months = 60
+		}
+		ai_chance = {
+			base = 70
+			modifier = {
+				trigger = {
+					je:je_sb_cape_politics ?= {
+						has_modifier = sb_cape_settler_ascendant
+					}
+				}
+				add = -20
+			}
+			modifier = {
+				trigger = {
+					je:je_sb_cape_politics ?= {
+						has_modifier = sb_cape_liberal_ascendant
+					}
+				}
+				add = 25
+			}
+			modifier = {
+				trigger = {
+					ig:ig_intelligentsia ?= { is_in_government = yes }
+				}
+				add = 15
+			}
+		}
+	}
+}
+
+# If the settlers dominate the Cape question without a liberal citizenship
+# settlement in place, the Cape liberals should demand that the ministry turn
+# principle into law instead of merely speaking in their name.
+sb_cape.120 = {
+	type = country_event
+	placement = root
+
+	title = sb_cape.120.t
+	desc = sb_cape.120.d
+	flavor = sb_cape.120.f
+
+	event_image = {
+		video = "gfx/event_pictures/europenorthamerica_sufferage.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/principles_icons/creative_legislature.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:CAP
+		has_journal_entry = je_sb_cape_politics
+	}
+
+	option = {
+		name = sb_cape.120.a
+		default_option = yes
+		random_law = {
+			limit = {
+				type = law_type:law_cultural_exclusion
+			}
+			save_scope_as = sb_cape_promised_law
+		}
+		if = {
+			limit = {
+				OR = {
+					NOT = { has_journal_entry = je_government_petition_negotiation_version }
+					NOT = { has_journal_entry = je_government_petition_negotiation_version_b }
+				}
+			}
+			ig:ig_intelligentsia ?= {
+				save_scope_as = ig
+				set_variable = {
+					name = desired_law_var
+					value = scope:sb_cape_promised_law
+				}
+				set_variable = {
+					name = promise_quest_degree
+					value = 1
+				}
+				set_variable = {
+					name = promise_quest_type
+					value = 2
+				}
+			}
+			promise_quest = yes
+			if = {
+				limit = { has_journal_entry = je_government_petition_negotiation_version }
+				add_journal_entry = {
+					type = je_government_petition_negotiation_version_b
+				}
+			}
+			else = {
+				add_journal_entry = {
+					type = je_government_petition_negotiation_version
+				}
+			}
+		}
+		else = {
+			add_modifier = {
+				name = sb_cape_liberal_commitment
+				months = 24
+			}
+		}
+		set_strategy = ai_strategy_progressive_agenda
+		ai_chance = {
+			base = 80
+		}
+	}
+
+	option = {
+		name = sb_cape.120.b
+		every_political_movement = {
+			limit = {
+				is_political_movement_type = movement_sb_cape_liberal
+			}
+			add_modifier = {
+				name = sb_cape_liberal_refused
+				months = 60
+			}
+		}
+		ai_chance = {
+			base = 20
+		}
+	}
+}
+
+# If the liberals dominate without any colonial law in force, Godlonton or the
+# wider eastern settler interest should force the issue into the open.
+sb_cape.121 = {
+	type = country_event
+	placement = root
+
+	title = sb_cape.121.t
+	desc = sb_cape.121.d
+	flavor = sb_cape.121.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_public_protest.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/principles_icons/creative_legislature.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:CAP
+		has_journal_entry = je_sb_cape_politics
+		any_scope_character = {
+			has_variable = sb_robert_godlonton_var
+			has_role = agitator
+		}
+	}
+
+	option = {
+		name = sb_cape.121.a
+		default_option = yes
+		random_law = {
+			limit = {
+				type = law_type:law_frontier_colonization
+			}
+			save_scope_as = sb_cape_promised_law
+		}
+		if = {
+			limit = {
+				OR = {
+					NOT = { has_journal_entry = je_government_petition_negotiation_version }
+					NOT = { has_journal_entry = je_government_petition_negotiation_version_b }
+				}
+			}
+			ig:ig_rural_folk ?= {
+				save_scope_as = ig
+				set_variable = {
+					name = desired_law_var
+					value = scope:sb_cape_promised_law
+				}
+				set_variable = {
+					name = promise_quest_degree
+					value = 1
+				}
+				set_variable = {
+					name = promise_quest_type
+					value = 2
+				}
+			}
+			promise_quest = yes
+			if = {
+				limit = { has_journal_entry = je_government_petition_negotiation_version }
+				add_journal_entry = {
+					type = je_government_petition_negotiation_version_b
+				}
+			}
+			else = {
+				add_journal_entry = {
+					type = je_government_petition_negotiation_version
+				}
+			}
+		}
+		else = {
+			add_modifier = {
+				name = sb_cape_settler_commitment
+				months = 24
+			}
+		}
+		random_scope_character = {
+			limit = {
+				has_variable = sb_robert_godlonton_var
+				has_role = agitator
+			}
+			add_modifier = {
+				name = sb_godlonton_galvanized
+				months = 60
+			}
+		}
+		set_strategy = ai_strategy_conservative_agenda
+		ai_chance = {
+			base = 80
+		}
+	}
+
+	option = {
+		name = sb_cape.121.b
+		every_political_movement = {
+			limit = {
+				is_political_movement_type = movement_sb_eastern_cape_separatist
+			}
+			add_modifier = {
+				name = sb_cape_settler_refused
+				months = 60
+			}
+		}
+		ai_chance = {
+			base = 20
+		}
+	}
+}
+
+sb_cape.122 = {
+	type = country_event
+	placement = root
+
+	title = sb_cape.122.t
+	desc = sb_cape.122.d
+	flavor = sb_cape.122.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_public_protest.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/principles_icons/creative_legislature.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:CAP
+		has_journal_entry = je_sb_cape_politics
+		NOR = {
+			any_scope_character = {
+				has_variable = sb_robert_godlonton_var
+				has_role = agitator
+			}
+		}
+	}
+
+	option = {
+		name = sb_cape.122.a
+		default_option = yes
+		random_law = {
+			limit = {
+				type = law_type:law_frontier_colonization
+			}
+			save_scope_as = sb_cape_promised_law
+		}
+		if = {
+			limit = {
+				OR = {
+					NOT = { has_journal_entry = je_government_petition_negotiation_version }
+					NOT = { has_journal_entry = je_government_petition_negotiation_version_b }
+				}
+			}
+			ig:ig_rural_folk ?= {
+				save_scope_as = ig
+				set_variable = {
+					name = desired_law_var
+					value = scope:sb_cape_promised_law
+				}
+				set_variable = {
+					name = promise_quest_degree
+					value = 1
+				}
+				set_variable = {
+					name = promise_quest_type
+					value = 2
+				}
+			}
+			promise_quest = yes
+			if = {
+				limit = { has_journal_entry = je_government_petition_negotiation_version }
+				add_journal_entry = {
+					type = je_government_petition_negotiation_version_b
+				}
+			}
+			else = {
+				add_journal_entry = {
+					type = je_government_petition_negotiation_version
+				}
+			}
+		}
+		else = {
+			add_modifier = {
+				name = sb_cape_settler_commitment
+				months = 24
+			}
+		}
+		set_strategy = ai_strategy_conservative_agenda
+		ai_chance = {
+			base = 80
+		}
+	}
+
+	option = {
+		name = sb_cape.122.b
+		every_political_movement = {
+			limit = {
+				is_political_movement_type = movement_sb_eastern_cape_separatist
+			}
+			add_modifier = {
+				name = sb_cape_settler_refused
+				months = 60
+			}
+		}
+		ai_chance = {
+			base = 20
+		}
+	}
+}
+
+# =============================================================================
+# Responsible Government petition — PHASE 2 SHELL
+# Button removed from Cape JE in P1. This event will be triggered by a new
+# scripted button or JE in Phase 2, once the responsible colony subject type
+# (subject_type_sb_responsible_colony) mechanics are fully implemented.
+# =============================================================================
+sb_cape.020 = {
+	type = country_event
+	placement = root
+
+	title = sb_cape.020.t
+	desc = sb_cape.020.d
+	flavor = sb_cape.020.f
+
+	event_image = {
+		video = "gfx/event_pictures/europenorthamerica_political_extremism.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+
+	duration = 3
+
+	trigger = {
+		# Triggered by scripted button
+	}
+
+	# Accept — Cape gets responsible government
+	option = {
+		name = sb_cape.020.a
+		default_option = yes
+		# Upgrade from colony to responsible colony
+		change_subject_type = subject_type_sb_responsible_colony
+		add_modifier = {
+			name = sb_responsible_government
+			months = -1
+		}
+		ai_chance = {
+			base = 80
+		}
+	}
+
+	# Delay — not yet ready
+	option = {
+		name = sb_cape.020.b
+		remove_variable = sb_cape_responsible_govt_var
+		ai_chance = {
+			base = 20
+		}
+	}
+}
+
+# =============================================================================
+# Albany Question — Britain can defuse a full ECSL secession crisis by hiving
+# the Eastern Cape off into a separate colonial tag.
+# =============================================================================
+sb_cape.200 = {
+	type = country_event
+	placement = root
+
+	title = sb_cape.200.t
+	desc = sb_cape.200.d
+	flavor = sb_cape.200.f
+
+	event_image = {
+		video = "gfx/event_pictures/europenorthamerica_political_extremism.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+
+	duration = 3
+
+	trigger = {
+		country_definition = cd:GBR
+		c:CAP ?= {
+			has_variable = sb_albany_crisis_var
+			NOT = { has_variable = sb_albany_sanctioned_var }
+			NOT = { has_variable = sb_albany_refused_var }
+		}
+	}
+
+	option = {
+		name = sb_cape.200.a
+		default_option = yes
+
+		# London sanctions a separate Albany. If the secession tag does not exist
+		# yet we create it peacefully out of the Eastern Cape; if it already exists
+		# because the ECSL revolt has tipped over, we regularize that same tag
+		# instead of creating a second country.
+		if = {
+			limit = {
+				NOT = { exists = c:ABY }
+			}
+			random_country = {
+				limit = {
+					any_scope_state = {
+						state_region = s:STATE_EASTERN_CAPE
+					}
+				}
+				save_scope_as = sb_albany_state_owner
+			}
+			scope:sb_albany_state_owner ?= {
+				random_scope_state = {
+					limit = {
+						state_region = s:STATE_EASTERN_CAPE
+					}
+					save_scope_as = sb_albany_state_scope
+				}
+				create_country = {
+					tag = ABY
+					origin = c:CAP
+					state = scope:sb_albany_state_scope
+					on_created = {
+						set_capital = STATE_EASTERN_CAPE
+						activate_law = law_type:law_colonial_administration
+						activate_law = law_type:law_appointed_bureaucrats
+						activate_law = law_type:law_frontier_colonization
+					}
+				}
+			}
+		}
+
+		if = {
+			limit = {
+				exists = c:ABY
+			}
+			c:ABY ?= {
+				if = {
+					limit = {
+						NOT = { is_subject_of = c:GBR }
+					}
+					c:GBR ?= {
+						create_diplomatic_pact = {
+							country = c:ABY
+							type = colony
+						}
+					}
+				}
+				hidden_effect = {
+					activate_law = law_type:law_national_supremacy
+					activate_law = law_type:law_national_militia
+					# Give Albany an explicit frontier-settler cabinet before trying to
+					# hand Robert Godlonton the reins. Without this, the country can keep
+					# the auto-generated startup ruler instead of respecting the event handoff.
+					every_interest_group = {
+						remove_ruling_interest_group = yes
+					}
+					ig:ig_rural_folk ?= { add_ruling_interest_group = yes }
+					ig:ig_landowners ?= { add_ruling_interest_group = yes }
+					ig:ig_armed_forces ?= { add_ruling_interest_group = yes }
+					ig:ig_devout ?= { add_ruling_interest_group = yes }
+					active_law:lawgroup_army_model ?= {
+						if = {
+							limit = {
+								NOT = { has_amendment = amendment_type:amendment_sb_commando_corps }
+							}
+							add_amendment = {
+								type = amendment_sb_commando_corps
+								sponsor = PREV.ig:ig_rural_folk
+							}
+						}
+					}
+					if = {
+						limit = {
+							NOT = { country_has_primary_culture = cu:boer }
+						}
+						add_primary_culture = cu:boer
+					}
+				
+					change_relations = {
+						country = c:CAP
+						value = -40
+					}
+					change_tension = {
+						country = c:XHR
+						value = 100
+					}
+					change_tension = {
+						country = c:XHG
+						value = 100
+					}
+					change_tension = {
+						country = c:XHT
+						value = 100
+					}
+				}
+			}
+
+			s:STATE_EASTERN_CAPE = {
+				remove_claim = c:CAP
+				add_claim = c:ABY
+				region_state:ABY = {
+					set_state_type = incorporated
+				}
+			}
+
+			c:CAP ?= {
+				set_variable = sb_ecsl_resolved_var
+			}
+			c:CAP ?= {
+				if = {
+					limit = {
+						any_scope_character = {
+							has_variable = sb_robert_godlonton_var
+						}
+					}
+					random_scope_character = {
+						limit = {
+							has_variable = sb_robert_godlonton_var
+						}
+						save_scope_as = sb_godlonton_scope
+					}
+				}
+			}
+			scope:sb_godlonton_scope ?= {
+				# Mirror vanilla agitator promotion flow: move the character first,
+				# convert him into a politician, then let the target country make
+				# him the IG leader and ruler from its own scope.
+				transfer_character = c:ABY
+				add_character_role = politician
+				if = {
+					limit = {
+						has_role = agitator
+					}
+					remove_character_role = agitator
+				}
+			}
+			c:ABY ?= {
+				scope:sb_godlonton_scope ?= {
+					set_interest_group = c:ABY.ig:ig_rural_folk
+					set_as_interest_group_leader = yes
+					set_character_as_ruler = yes
+				}
+			}
+			if = {
+				limit = {
+					NOT = { exists = scope:sb_godlonton_scope }
+					NOT = {
+						c:ABY ?= {
+							any_scope_character = {
+								has_variable = sb_robert_godlonton_var
+							}
+						}
+					}
+				}
+				c:ABY ?= {
+					create_character = {
+						first_name = Robert
+						last_name = Godlonton
+						historical = no
+						ruler = yes
+						ig_leader = yes
+						birth_date = 1794.9.24
+						interest_group = ig_rural_folk
+						ideology = ideology_ethno_nationalist
+						traits = {
+							bigoted persistent literary
+						}
+						on_created = {
+							set_variable = sb_robert_godlonton_var
+						}
+					}
+				}
+			}
+		}
+
+		c:CAP ?= {
+			trigger_event = { id = sb_cape.201 days = 7 popup = yes }
+		}
+
+		ai_chance = {
+			base = 80
+		}
+	}
+
+	option = {
+		name = sb_cape.200.b
+
+		c:CAP ?= {
+			trigger_event = { id = sb_cape.202 days = 21 popup = yes }
+		}
+
+		ai_chance = {
+			base = 20
+		}
+	}
+}
+
+sb_cape.201 = {
+	type = country_event
+	placement = root
+
+	title = sb_cape.201.t
+	desc = sb_cape.201.d
+	flavor = sb_cape.201.f
+
+	event_image = {
+		video = "gfx/event_pictures/europenorthamerica_political_extremism.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+
+	duration = 3
+
+	trigger = {
+		country_definition = cd:CAP
+		has_variable = sb_albany_crisis_var
+	}
+
+	option = {
+		name = sb_cape.201.a
+		default_option = yes
+		set_variable = sb_albany_sanctioned_var
+		remove_variable = sb_albany_crisis_var
+		add_modifier = {
+			name = sb_albany_partition_shock
+			months = 60
+		}
+		if = {
+			limit = {
+				exists = c:ABY
+			}
+			change_relations = {
+				country = c:ABY
+				value = -40
+			}
+			c:ABY ?= {
+				trigger_event = { id = sb_cape.203 days = 14 popup = yes }
+			}
+		}
+	}
+
+	option = {
+		name = sb_cape.201.b
+		trigger = {
+			exists = c:ABY
+		}
+		set_variable = sb_albany_sanctioned_var
+		remove_variable = sb_albany_crisis_var
+		add_modifier = {
+			name = sb_albany_partition_shock
+			months = 60
+		}
+		change_relations = {
+			country = c:ABY
+			value = -40
+		}
+		c:ABY ?= {
+			trigger_event = { id = sb_cape.203 days = 14 popup = yes }
+		}
+		play_as = c:ABY
+	}
+}
+
+sb_cape.202 = {
+	type = country_event
+	placement = root
+
+	title = sb_cape.202.t
+	desc = sb_cape.202.d
+	flavor = sb_cape.202.f
+
+	event_image = {
+		video = "gfx/event_pictures/europenorthamerica_political_extremism.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+
+	duration = 3
+
+	trigger = {
+		country_definition = cd:CAP
+		has_variable = sb_albany_crisis_var
+	}
+
+	option = {
+		name = sb_cape.202.a
+		default_option = yes
+		set_variable = sb_albany_refused_var
+		remove_variable = sb_albany_crisis_var
+	}
+}
+
+sb_cape.203 = {
+	type = country_event
+	placement = root
+
+	title = sb_cape.203.t
+	desc = sb_cape.203.d
+	flavor = sb_cape.203.f
+
+	event_image = {
+		video = "gfx/event_pictures/europenorthamerica_political_extremism.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+
+	duration = 3
+
+	trigger = {
+		country_definition = cd:ABY
+	}
+
+	option = {
+		name = sb_cape.203.a
+		default_option = yes
+		add_modifier = {
+			name = sb_albany_founding_mandate
+			months = 60
+		}
+	}
+}

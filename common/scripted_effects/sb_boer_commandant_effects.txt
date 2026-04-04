@@ -1,0 +1,77 @@
+﻿# Keep Boer commandant-generals in command.
+#
+# Engine note:
+# The custom Boer presidential-republic variant no longer consistently preserves
+# `is_general = yes` on startup, even though the historical templates still ask
+# for it. Rather than backing out the custom government type, re-assert the
+# ruler's general role whenever the Commandant-General law is active.
+
+sb_ensure_commandant_general_ruler_command = {
+	if = {
+		limit = {
+			has_law = law_type:law_sb_commandant_general_republic
+			exists = ruler
+			exists = capital.land_hq
+			ruler = {
+				is_ruler = yes
+				age >= define:NCharacters|ADULT_AGE
+				NOT = { has_role = general }
+			}
+		}
+		ruler = {
+			add_character_role = general
+		}
+	}
+}
+
+sb_ensure_commandant_general_ruler_landowner_leadership = {
+	if = {
+		limit = {
+			has_law = law_type:law_sb_commandant_general_republic
+			exists = ruler
+			ruler = {
+				is_ruler = yes
+			}
+		}
+		ruler = {
+			if = {
+				limit = {
+					NOT = { has_role = politician }
+				}
+				add_character_role = politician
+			}
+			set_as_interest_group_leader = yes
+		}
+	}
+}
+
+# Refresh the custom Boer government type when the law is already active but
+# the engine has left the country on the generic presidential-republic shell.
+# This can happen for mid-game spawned republics such as Natalia, where the
+# country history loads the law before the live event chain finishes setup.
+sb_refresh_boer_commandant_general_government = {
+	if = {
+		limit = {
+			country_has_primary_culture = cu:boer
+			has_law = law_type:law_sb_commandant_general_republic
+			NOT = { has_government_type = gov_boer_commandant_general_republic }
+		}
+		set_variable = keep_current_ruler_var
+		activate_law = law_type:law_presidential_republic
+		activate_law = law_type:law_sb_commandant_general_republic
+		remove_variable = keep_current_ruler_var
+	}
+}
+
+# Re-apply the Boer republican baseline after mid-game country creation.
+# Country history does not always leave newly spawned republics on the intended
+# governance variant once live event setup continues modifying them.
+sb_apply_boer_commandant_general_baseline = {
+	set_variable = sb_commandant_general_visible_var
+	set_next_election_date = 1840.1.1
+	activate_law = law_type:law_oligarchy
+	activate_law = law_type:law_sb_commandant_general_republic
+	sb_refresh_boer_commandant_general_government = yes
+	sb_ensure_commandant_general_ruler_command = yes
+	sb_ensure_commandant_general_ruler_landowner_leadership = yes
+}

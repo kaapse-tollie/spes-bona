@@ -1,0 +1,40 @@
+﻿# ============================================================================
+# Spes Bona — Subject Relationships
+# ============================================================================
+# Establishes CAP (Cape Colony) as a British colony, replacing vanilla SAF.
+#
+# Historical context: The Cape Colony was a British Crown Colony from 1806,
+# administered by a Governor appointed by the Colonial Office. It did not
+# have responsible government until 1872 (a major mod milestone).
+#
+# Mechanical note: The "colony" subject type gives GBR control over CAP's
+# diplomacy and market access. The -30 liberty desire keeps CAP loyal at
+# game start — matching vanilla SAF's value. Without this reduction, the
+# colony AI may push for independence too early.
+#
+# Cross-references:
+#   - CAP country definition:  common/country_definitions/sb_countries.txt
+#   - CAP diplomatic relations: common/history/diplomacy/sb_relations.txt
+#   - Responsible government:   (future) subject type for post-1872 Cape
+# ============================================================================
+
+DIPLOMACY = {
+	# GBR creates a colonial pact with CAP
+	# This is the same relationship vanilla uses for SAF; CAP inherits it.
+	c:GBR ?= {
+		create_diplomatic_pact = {
+			country = c:CAP
+			type = colony
+		}
+	}
+
+	# Reduce CAP liberty desire by -30 (vanilla SAF baseline)
+	# This represents the Cape's political stability under British rule in 1836.
+	# The Cape had a functioning colonial administration and no significant
+	# independence movement at this date. The value prevents the AI from
+	# pursuing independence before the historical responsible government
+	# movement of the 1850s-60s.
+	c:CAP ?= {
+		add_liberty_desire = -30
+	}
+}

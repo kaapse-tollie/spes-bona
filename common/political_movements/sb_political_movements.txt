@@ -1,0 +1,977 @@
+﻿# Spes Bona - Political Movements
+# ==============================================================================
+# Two movements representing the Cape Colony's core political tension:
+#   1. Eastern Cape Separatist League (ECSL) — settler frontier autonomy
+#   2. Cape Liberal Movement — multi-racial franchise and inclusion
+#
+# DESIGN PATTERN: Follows vanilla ideological movement patterns for both Cape
+#   movements. ECSL is regionally constrained through its state weighting and
+#   frontier-only IG filter, rather than by using the broad pan-national
+#   category. Both are "CMF-compliant" — they use
+#   standard suppression/bolstering blocks, pop_support_factors lists, and
+#   the full character_support / pop_support / revolution / secession structure.
+#
+# CROSS-REFERENCES:
+#   - Ideologies: common/ideologies/sb_ideologies.txt
+#     (ideology_sb_settler_separatist, ideology_sb_cape_liberal)
+#   - Cape JE: common/journal_entries/1-01_sb_cape_politics.txt
+#     (sb_ecsl_resolved_var set on settler victory disbands ECSL)
+#   - Progress bar: common/scripted_progress_bars/sb_progress_bars.txt
+#     (laws that affect these movements also drive the cape balance bar)
+# ==============================================================================
+
+
+# ==============================================================================
+# EASTERN CAPE SEPARATIST LEAGUE (ECSL)
+# ==============================================================================
+# Historically: frontier settlers in the Eastern Cape (around Grahamstown/
+# Port Elizabeth) resented Cape Town's liberal policies toward the Xhosa and
+# other indigenous groups. They demanded autonomous governance, aggressive
+# frontier expansion, and local control of military/native affairs.
+#
+# Mechanically:
+#   - Category: ideological (so it only pressures the scripted frontier IGs)
+#   - Only spawns for CAP when Eastern Cape state is owned
+#   - Revolution AND secession locked to STATE_EASTERN_CAPE only
+#     (state_weight = 0 for all other states)
+#   - Disbands when: all Xhosa tags dead, ECSL defeated in uprising, or
+#     resolved by Cape JE settler victory (sb_ecsl_resolved_var)
+# ==============================================================================
+movement_sb_eastern_cape_separatist = {
+	# Ideological category: lets the movement respect can_pressure_interest_group
+	# and behave like a narrow frontier coalition rather than a broad national bloc.
+	category = movement_category_ideological
+
+	# Custom ideology defined in sb_ideologies.txt — settler separatism.
+	ideology = ideology_sb_settler_separatist
+
+	# Characters with these ideologies are drawn to ECSL leadership.
+	# Jingoist + ethno-nationalist = aggressive frontier expansion mindset.
+	# Paternalistic = "civilizing mission" settlers who want local control.
+	character_ideologies = {
+		ideology_jingoist_leader
+		ideology_ethno_nationalist
+		ideology_paternalistic
+	}
+
+	can_cause_obstinance = yes
+
+	# The separatist coalition should only pressure the frontier bloc, not every
+	# Cape interest group equally.
+	can_pressure_interest_group = {
+		OR = {
+			is_interest_group_type = ig_armed_forces
+			is_interest_group_type = ig_landowners
+			is_interest_group_type = ig_rural_folk
+		}
+	}
+
+	# Only spawns for the Cape Colony when it controls Eastern Cape territory.
+	creation_trigger = {
+		country_definition = cd:CAP
+		any_scope_state = {
+			state_region = s:STATE_EASTERN_CAPE
+		}
+	}
+
+	# Base creation weight — moderate priority.
+	creation_weight = {
+		value = 100
+	}
+
+	on_created = {
+		add_movement_enthusiasm_modifier = yes
+	}
+
+	# DISBAND CONDITIONS: movement dissolves when the frontier question is resolved.
+	disband_trigger = {
+		OR = {
+			owner = {
+				NOT = {
+					any_scope_state = {
+						state_region = s:STATE_EASTERN_CAPE
+					}
+				}
+			}
+			# All Xhosa polities destroyed — no more frontier threat, separatism loses purpose.
+			# XHG = Gcaleka Xhosa, XHR = Rharhabe Xhosa, XHT = Thembu.
+			AND = {
+				NOT = { c:XHG ?= { is_country_alive = yes } }
+				NOT = { c:XHR ?= { is_country_alive = yes } }
+				NOT = { c:XHT ?= { is_country_alive = yes } }
+			}
+			# Resolved peacefully by Cape JE settler victory path.
+			# See 1-01_sb_cape_politics.txt on_complete settler branch.
+			owner = { has_variable = sb_ecsl_resolved_var }
+		}
+	}
+
+	# Character support: leaders with matching ideologies join the movement.
+	character_support_trigger = {
+		scope:interest_group ?= {
+			OR = {
+				is_interest_group_type = ig_armed_forces
+				is_interest_group_type = ig_landowners
+				is_interest_group_type = ig_rural_folk
+			}
+		}
+		OR = {
+			has_ideology = ideology:ideology_jingoist_leader
+			has_ideology = ideology:ideology_ethno_nationalist
+			has_ideology = ideology:ideology_paternalistic
+		}
+	}
+
+	# Character support weight: jingoist/ethno-nationalist leaders are 5x more
+	# committed than paternalistic ones (they want aggressive expansion, not just autonomy).
+	character_support_weight = {
+		value = 250
+		if = {
+			limit = {
+				OR = {
+					has_ideology = ideology:ideology_jingoist_leader
+					has_ideology = ideology:ideology_ethno_nationalist
+				}
+			}
+			multiply = {
+				value = 5
+			}
+		}
+	}
+
+	# Pop support: only European/settler cultures — Bantu and Khoisan heritage
+	# populations would NOT support a settler separatist movement. We also
+	# restrict support to the core frontier occupations so the movement maps
+	# cleanly onto Rural Folk, Landowners, and Armed Forces instead of bleeding
+	# into urban or clerical IGs.
+	pop_support_trigger = {
+		culture = {
+			NOT = { has_discrimination_trait = heritage_southern_bantu }
+			NOT = { has_discrimination_trait = heritage_khoisan }
+		}
+		OR = {
+			is_pop_type = farmers
+			is_pop_type = aristocrats
+			is_pop_type = soldiers
+			is_pop_type = officers
+		}
+	}
+
+	# Standard CMF pop_support_factors list — declares which factor scripts
+	# the game should evaluate for this movement's tooltip breakdown.
+	pop_support_factors = {
+		movement_support_low_urbanization
+		movement_support_farmers
+		movement_support_aristocrats
+		movement_support_officers
+		movement_support_soldiers
+		movement_support_nationalism_tech
+		movement_support_high_acceptance
+		movement_support_rural
+		movement_support_colonial_settlers
+	}
+
+	pop_support_weight = {
+		# SUPPRESSION / BOLSTERING — standard CMF block.
+		# Copied from vanilla movements. The -0.5/+0.5 multiplier with
+		# country modifier integration is the standard pattern.
+		if = {
+			limit = {
+				exists = scope:political_movement
+				scope:political_movement ?= {
+					OR = {
+						is_being_suppressed = yes
+						is_being_bolstered = yes
+					}
+				}
+			}
+			if = {
+				limit = {
+					scope:political_movement = { is_being_suppressed = yes }
+				}
+				add = {
+					value = suppression_base_value
+					multiply = {
+						value = -0.5
+						add = owner.modifier:country_suppression_attraction_factor
+					}
+					desc = "concept_suppressed"
+				}
+			}
+			else = {
+				add = {
+					value = bolstering_base_value
+					multiply = {
+						value = 0.5
+						add = owner.modifier:country_bolster_attraction_factor
+					}
+					desc = "concept_bolstered"
+				}
+			}
+		}
+
+		# Base support for settler cultures (passed pop_support_trigger above).
+			if = {
+				limit = {
+					culture = {
+						NOT = { has_discrimination_trait = heritage_southern_bantu }
+						NOT = { has_discrimination_trait = heritage_khoisan }
+					}
+				}
+				add = {
+					value = 11
+					desc = "POP_BASE_SUPPORT"
+				}
+
+			# POP TYPE BONUSES
+			# Farmers (25) and aristocrats (20) are the core settler constituency —
+			# frontier land-holders who want aggressive expansion.
+			# Soldiers/officers (15 each) represent the commandos and military settlers.
+				if = {
+					limit = { is_pop_type = farmers }
+					add = { value = 26 desc = "POP_FARMERS" }
+				}
+				else_if = {
+					limit = { is_pop_type = aristocrats }
+					add = { value = 22 desc = "POP_ARISTOCRATS" }
+				}
+				else_if = {
+					limit = { is_pop_type = soldiers }
+					add = { value = 15 desc = "POP_SOLDIERS" }
+				}
+				else_if = {
+					limit = { is_pop_type = officers }
+					add = { value = 15 desc = "POP_OFFICERS" }
+				}
+
+			# Urbanization — paradoxically, more urbanized frontier towns
+			# have better communication networks to organize separatism.
+				add = {
+					desc = "URBAN_STATE"
+					value = 10
+					multiply = state.state_urbanization_rate
+				}
+
+			# FRONTIER STATE BONUS (2x multiplier for Eastern Cape pops).
+			# Pops living on the actual Xhosa frontier are far more motivated
+			# by separatism than those in safe Cape Town or Stellenbosch.
+				if = {
+					limit = {
+						state = { state_region = s:STATE_EASTERN_CAPE }
+					}
+					multiply = {
+						value = 2.0
+						desc = "sb_frontier_state"
+					}
+				}
+
+			# Radicalized pops are more likely to support extreme movements.
+			# Formula: (pop_radical_fraction + 1) — so 0% radicals = 1x (no change),
+			# 100% radicals = 2x support.
+			multiply = {
+				desc = "POP_RADICALS"
+				value = pop_radical_fraction
+				add = 1
+			}
+
+			# Technology multipliers — nationalism/pan-nationalism research
+			# amplifies separatist organization capabilities.
+			if = {
+				limit = {
+					owner ?= { has_technology_researched = pan-nationalism }
+				}
+				multiply = {
+					value = 1.5
+					desc = "PAN_NATIONALISM_TECH"
+				}
+			}
+			else_if = {
+				limit = {
+					owner ?= { has_technology_researched = nationalism }
+				}
+				multiply = {
+					value = 1.25
+					desc = "NATIONALISM_TECH"
+				}
+			}
+
+			# Literacy — literate pops organize more effectively.
+			# +0.10 floor prevents illiterate pops from having zero weight.
+				multiply = {
+					desc = "POP_LITERACY"
+					value = literacy_rate
+					add = 0.10
+				}
+
+				if = {
+					limit = {
+						owner = { has_modifier = sb_cape_political_tensions }
+					}
+					multiply = {
+						value = 1.10
+						desc = "sb_cape_political_tensions"
+					}
+				}
+			}
+		}
+
+	# REVOLUTION: ECSL can spark a revolution, but ONLY in Eastern Cape.
+	# state_weight = 0 for all non-EC states ensures the uprising is geographically contained.
+	# 5% movement support threshold is relatively low — frontier tensions boil over easily.
+	revolution = {
+		possible = {
+			political_movement_support >= 0.05
+		}
+
+		interest_group_can_join = {
+			OR = {
+				is_interest_group_type = ig_armed_forces
+				is_interest_group_type = ig_landowners
+				is_interest_group_type = ig_rural_folk
+			}
+		}
+
+		weight = {
+			value = 50
+		}
+
+		# Revolution troops only spawn in Eastern Cape — the frontier, not Cape Town.
+		state_weight = {
+			value = 1
+			if = {
+				limit = {
+					NOT = { state_region = s:STATE_EASTERN_CAPE }
+				}
+				multiply = 0
+			}
+		}
+	}
+
+	# SECESSION: ECSL's primary goal — break away from the Cape.
+	# Higher weight than revolution (100 vs 50) because secession is the
+	# preferred outcome for separatists over mere revolution.
+	# Also geographically locked to Eastern Cape only.
+	secession = {
+		possible = {
+			political_movement_support >= 0.05
+		}
+
+		interest_group_can_join = {
+			OR = {
+				is_interest_group_type = ig_armed_forces
+				is_interest_group_type = ig_landowners
+				is_interest_group_type = ig_rural_folk
+			}
+		}
+
+		weight = {
+			value = 100
+		}
+
+		# Force the secessionist side to use Albany instead of a generic uprising
+		# shell tag. This keeps the crisis readable in-game and lets the Albany
+		# question interact with the same tag whether London sanctions the split
+		# or refuses it.
+		forced_tags = {
+			ABY = {
+				trigger = {
+					always = yes
+				}
+				weight = 1000
+			}
+		}
+
+		# Secession only happens in Eastern Cape — the separatist homeland.
+		state_weight = {
+			value = 1
+			if = {
+				limit = {
+					NOT = { state_region = s:STATE_EASTERN_CAPE }
+				}
+				multiply = 0
+			}
+		}
+	}
+
+	# RADICALISM FACTORS — laws that affect how radical the movement becomes.
+	# These create a push-pull dynamic with the Cape balance bar:
+	# liberal laws anger settlers (increase radicalism), settler laws calm them.
+	law_enactment_radicalism_multiplier = 1.5
+	active_law_radicalism_multiplier = 1.5
+
+	additional_radicalism_factors = {
+		# Cultural exclusion law (+0.15): settlers see inclusive franchise as a betrayal.
+		# Historically: the 1853 Cape Qualified Franchise enraged frontier settlers
+		# who didn't want non-white voters influencing policy.
+		if = {
+			limit = {
+				owner = {
+					has_law = law_type:law_cultural_exclusion
+					OR = {
+						has_variable = sb_cape_griqua_accepted_var
+						country_has_primary_culture = cu:griqua
+						active_law:lawgroup_citizenship ?= {
+							has_amendment = amendment_type:amendment_sb_cape_qualified_franchise
+						}
+					}
+				}
+			}
+			add = {
+				value = 0.15
+				desc = "sb_liberal_franchise_anger"
+			}
+		}
+		else_if = {
+			limit = {
+				owner = { has_law = law_type:law_cultural_exclusion }
+			}
+			add = {
+				value = 0.10
+				desc = "sb_cultural_exclusion_anger"
+			}
+		}
+
+		# Enacting cultural exclusion (+0.05): signal of liberal direction.
+		if = {
+			limit = {
+				owner = { is_enacting_law = law_type:law_cultural_exclusion }
+			}
+			add = {
+				value = 0.05
+				desc = "sb_enacting_liberal_law"
+			}
+		}
+
+		# No colonial affairs is the clearest sign that Cape Town is abandoning the
+		# frontier project entirely.
+		if = {
+			limit = {
+				owner = { has_law = law_type:law_no_colonial_affairs }
+			}
+			add = {
+				value = 0.20
+				desc = "sb_no_colonial_affairs"
+			}
+		}
+
+			if = {
+				limit = {
+					owner = { has_law = law_type:law_frontier_colonization }
+				}
+				add = {
+					value = -0.04
+					desc = "sb_frontier_colonization_enacted"
+				}
+			}
+
+			if = {
+				limit = {
+					owner = { has_law = law_type:law_colonial_resettlement }
+				}
+				add = {
+					value = -0.06
+					desc = "sb_colonial_resettlement_enacted"
+				}
+			}
+
+			if = {
+				limit = {
+					owner = { has_law = law_type:law_colonial_exploitation }
+				}
+				add = {
+					value = -0.08
+					desc = "sb_colonial_exploitation_enacted"
+				}
+			}
+
+			if = {
+				limit = {
+					owner = { is_enacting_law = law_type:law_no_colonial_affairs }
+				}
+				add = {
+					value = 0.10
+					desc = "sb_enacting_no_colonial_affairs"
+				}
+			}
+
+			# The movement should also care about how well the colonial institution is
+			# actually funded, not just which law is currently on the books.
+			owner = {
+				if = {
+					limit = { has_institution = institution_colonial_affairs }
+					add = {
+						value = 3
+						subtract = "institution_investment_level(institution_colonial_affairs)"
+						multiply = 0.05
+						desc = "INSTITUTION_FUNDING_LEVEL_colonial_affairs"
+					}
+				}
+				else = {
+					add = {
+						value = 0.15
+						desc = "NO_INSTITUTION_colonial_affairs"
+					}
+				}
+			}
+
+			if = {
+				limit = {
+					owner = { is_enacting_law = law_type:law_frontier_colonization }
+				}
+				add = {
+					value = -0.02
+					desc = "sb_enacting_frontier_colonization_law"
+				}
+			}
+
+			if = {
+				limit = {
+					owner = { is_enacting_law = law_type:law_colonial_resettlement }
+				}
+				add = {
+					value = -0.03
+					desc = "sb_enacting_colonial_resettlement_law"
+				}
+			}
+
+			if = {
+				limit = {
+					owner = { is_enacting_law = law_type:law_colonial_exploitation }
+				}
+				add = {
+					value = -0.04
+					desc = "sb_enacting_colonial_exploitation_law"
+				}
+			}
+
+			if = {
+				limit = {
+					owner = { has_law = law_type:law_national_supremacy }
+				}
+				add = {
+					value = -0.20
+					desc = "sb_supremacy_enacted"
+				}
+			}
+		}
+	}
+
+
+# ==============================================================================
+# CAPE LIBERAL MOVEMENT
+# ==============================================================================
+# Historically: the Cape liberal tradition was championed by figures like John
+# Fairbairn, Saul Solomon, and later John X. Merriman. It advocated for a
+# non-racial qualified franchise, press freedom, and rule of law — making the
+# Cape Colony unique among South African states.
+#
+# Mechanically:
+#   - Category: ideological (not pan-national — this is about IDEAS, not ethnicity)
+#   - Multi-racial: pop_support_trigger = always yes (all cultures can support it)
+#   - Revolution possible (liberals can revolt) but NO secession (they want to
+#     reform the Cape, not break away from it)
+#   - Supported by educated urban pops: academics, clerks, shopkeepers, bureaucrats
+#   - Discriminated pops are the strongest supporters (they benefit most from inclusion)
+#
+# CROSS-REFERENCES:
+#   - Ideology: common/ideologies/sb_ideologies.txt (ideology_sb_cape_liberal)
+#   - Cape JE: common/journal_entries/1-01_sb_cape_politics.txt
+#   - Cape balance bar: common/scripted_progress_bars/sb_progress_bars.txt
+# ==============================================================================
+movement_sb_cape_liberal = {
+	# Ideological category (not pan-national): this movement is about liberal
+	# principles, not ethnic/regional autonomy. Follows vanilla ideological
+	# movement patterns (e.g., abolitionism, suffragism).
+	category = movement_category_ideological
+
+	ideology = ideology_sb_cape_liberal
+
+	# Liberal/reformer/humanitarian leaders support the cause.
+	character_ideologies = {
+		ideology_liberal_leader
+		ideology_reformer
+		ideology_humanitarian
+	}
+
+	can_cause_obstinance = yes
+
+	# The Cape liberal coalition should remain centered on its historical reform
+	# bloc rather than bleeding into every interest group in the colony.
+	can_pressure_interest_group = {
+		OR = {
+			is_interest_group_type = ig_intelligentsia
+			is_interest_group_type = ig_petty_bourgeoisie
+			is_interest_group_type = ig_devout
+		}
+	}
+
+	# Spawns for CAP while racial_segregation law is active (at start).
+	creation_trigger = {
+		country_definition = cd:CAP
+		has_law = law_type:law_racial_segregation
+	}
+
+	# Lower creation weight than ECSL (80 vs 100) — liberals are initially
+	# a minority voice in a settler-dominated colony.
+	creation_weight = {
+		value = 180
+	}
+
+	on_created = {
+		add_movement_enthusiasm_modifier = yes
+	}
+
+	# Phase 1 intentionally resolves the Cape Liberal Movement through the Cape
+	# JE; a broader post-Phase-1 liberal continuation can be revisited later.
+	disband_trigger = {
+		OR = {
+			# Multicultural law passed — full liberal victory, movement unnecessary.
+			owner = { has_law = law_type:law_multicultural }
+			# Resolved by Cape JE completion event.
+			owner = { has_variable = sb_cape_liberal_resolved_var }
+		}
+	}
+
+	character_support_trigger = {
+		scope:interest_group ?= {
+			OR = {
+				is_interest_group_type = ig_intelligentsia
+				is_interest_group_type = ig_petty_bourgeoisie
+				is_interest_group_type = ig_devout
+			}
+		}
+		OR = {
+			has_ideology = ideology:ideology_liberal_leader
+			has_ideology = ideology:ideology_reformer
+			has_ideology = ideology:ideology_humanitarian
+		}
+	}
+
+	# Liberal/humanitarian leaders get 3x weight — they are the movement's core.
+	character_support_weight = {
+		value = 200
+		if = {
+			limit = {
+				OR = {
+					has_ideology = ideology:ideology_liberal_leader
+					has_ideology = ideology:ideology_humanitarian
+				}
+			}
+			multiply = {
+				value = 3
+			}
+		}
+	}
+
+	# MULTI-RACIAL SUPPORT: the movement is still open to every culture, but it is
+	# socially rooted in the colony's educated urban and missionary strata rather
+	# than the entire population.
+	pop_support_trigger = {
+		NOT = {
+			is_pop_type = slaves
+		}
+	}
+
+	# Standard CMF pop_support_factors — educated/urban pop types.
+	# movement_support_cultural_discrimination ensures discriminated pops
+	# show strong support in the tooltip.
+		pop_support_factors = {
+			movement_support_high_urbanization
+			movement_support_high_literacy
+			movement_support_capitalists
+			movement_support_aristocrats
+			movement_support_shopkeepers
+			movement_support_academics
+			movement_support_clerks
+			movement_support_bureaucrats
+			movement_support_clergymen
+			movement_support_cultural_discrimination
+		}
+
+	pop_support_weight = {
+		# SUPPRESSION / BOLSTERING — standard CMF block (identical to ECSL above).
+		if = {
+			limit = {
+				exists = scope:political_movement
+				scope:political_movement ?= {
+					OR = {
+						is_being_suppressed = yes
+						is_being_bolstered = yes
+					}
+				}
+			}
+			if = {
+				limit = {
+					scope:political_movement = { is_being_suppressed = yes }
+				}
+				add = {
+					value = suppression_base_value
+					multiply = {
+						value = -0.5
+						add = owner.modifier:country_suppression_attraction_factor
+					}
+					desc = "concept_suppressed"
+				}
+			}
+			else = {
+				add = {
+					value = bolstering_base_value
+					multiply = {
+						value = 0.5
+						add = owner.modifier:country_bolster_attraction_factor
+					}
+					desc = "concept_bolstered"
+				}
+			}
+		}
+
+		# Base support (8, slightly lower than ECSL's 10 — liberals start weaker).
+		add = {
+			value = 6
+			desc = "POP_BASE_SUPPORT"
+		}
+
+		add = {
+			desc = "URBAN_STATE"
+			value = 10
+			multiply = state.state_urbanization_rate
+		}
+
+		if = {
+			limit = {
+				strata = upper
+			}
+			if = {
+				limit = { is_pop_type = capitalists }
+				add = { value = 45 desc = "POP_CAPITALISTS" }
+			}
+			else_if = {
+				limit = { is_pop_type = aristocrats }
+				add = { value = 8 desc = "POP_ARISTOCRATS" }
+			}
+			else = {
+				add = { value = 8 desc = "UPPER_NO_ICON" }
+			}
+		}
+		else_if = {
+			limit = {
+				strata = middle
+			}
+			if = {
+				limit = { is_pop_type = shopkeepers }
+				add = { value = 22 desc = "POP_SHOPKEEPERS" }
+			}
+			else_if = {
+				limit = { is_pop_type = academics }
+				add = { value = 38 desc = "POP_ACADEMICS" }
+			}
+			else_if = {
+				limit = { is_pop_type = bureaucrats }
+				add = { value = 18 desc = "POP_BUREAUCRATS" }
+			}
+			else_if = {
+				limit = { is_pop_type = clergymen }
+				add = { value = 18 desc = "POP_CLERGYMEN" }
+			}
+			else = {
+				add = { value = 14 desc = "MIDDLE_NO_ICON" }
+			}
+		}
+		else_if = {
+			limit = {
+				strata = lower
+			}
+			if = {
+				limit = { is_pop_type = clerks }
+				add = { value = 12 desc = "POP_CLERKS" }
+			}
+			else_if = {
+				limit = { is_pop_type = peasants }
+				add = { value = 0 desc = "POP_PEASANTS" }
+			}
+			else = {
+				add = { value = 4 desc = "LOWER_NO_ICON" }
+			}
+		}
+
+		# DISCRIMINATION BONUS — the movement's strongest driver.
+		# Pops who face cultural discrimination have the most to gain from
+		# liberal franchise expansion. The formula: (100 - pop_acceptance) / 10
+		# means more discrimination = more support (up to ~10 bonus at 0 acceptance).
+		# acceptance_status_5 is the threshold below which pops are "discriminated."
+		if = {
+			limit = {
+				state = {
+					state_cultural_acceptance = {
+						target = PREV.culture
+						value < acceptance_status_5
+					}
+				}
+			}
+			add = {
+				desc = "POP_DISCRIMINATED"
+				value = 100
+				subtract = pop_acceptance
+				divide = 5
+			}
+		}
+		else = {
+			# Accepted pops are less motivated — they already benefit from the status quo.
+			# 0.5x multiplier halves their support.
+			multiply = {
+				desc = "POP_ACCEPTANCE"
+				value = 0.95
+			}
+		}
+
+		# Radicalized pops — same formula as ECSL.
+		multiply = {
+			desc = "POP_RADICALS"
+			value = pop_radical_fraction
+			add = 1
+		}
+
+		# Literacy — liberal ideas require literacy to spread.
+		# +0.10 floor prevents illiterate pops from having zero weight.
+		multiply = {
+			desc = "POP_LITERACY"
+			value = literacy_rate
+			add = 0.10
+		}
+
+		if = {
+			limit = {
+				owner = { has_modifier = sb_cape_political_tensions }
+			}
+			multiply = {
+				value = 1.10
+				desc = "sb_cape_political_tensions"
+			}
+		}
+	}
+
+	# REVOLUTION: liberals CAN revolt if the government is too oppressive.
+	# Higher threshold (8% vs ECSL's 5%) — liberals prefer peaceful reform
+	# and only resort to revolution under severe provocation.
+	revolution = {
+		possible = {
+			political_movement_support >= 0.08
+		}
+
+		weight = {
+			value = 30			# Lower than ECSL (50) — revolution is a last resort for liberals.
+		}
+	}
+
+	# SECESSION: DISABLED — liberals want to reform the Cape, not leave it.
+	# always = no + weight = 0 ensures this movement never triggers secession.
+	# This is the key structural difference from the ECSL.
+	secession = {
+		possible = {
+			always = no
+		}
+
+		weight = {
+			value = 0
+		}
+	}
+
+	# RADICALISM FACTORS — mirror image of ECSL: settler laws anger liberals,
+	# liberal laws calm them. This creates the core push-pull dynamic.
+	law_enactment_radicalism_multiplier = 0.60
+	active_law_radicalism_multiplier = 0.85
+
+	additional_radicalism_factors = {
+		# National supremacy (+0.20): strongest provocation — full racial hierarchy.
+		# Historically: any move toward Natal-style racial exclusion outraged Cape liberals.
+		if = {
+			limit = {
+				owner = { has_law = law_type:law_national_supremacy }
+			}
+			add = {
+				value = 0.20
+				desc = "sb_supremacy_anger"
+			}
+		}
+
+			if = {
+				limit = {
+					owner = { has_law = law_type:law_frontier_colonization }
+				}
+				add = {
+					value = 0.015
+					desc = "sb_frontier_colonization_anger"
+				}
+			}
+
+			if = {
+				limit = {
+					owner = { has_law = law_type:law_colonial_resettlement }
+				}
+				add = {
+					value = 0.03
+					desc = "sb_colonial_resettlement_anger"
+				}
+			}
+
+			if = {
+				limit = {
+					owner = { has_law = law_type:law_colonial_exploitation }
+				}
+				add = {
+					value = 0.045
+					desc = "sb_colonial_exploitation_anger"
+				}
+			}
+
+				if = {
+					limit = {
+						owner = { is_enacting_law = law_type:law_frontier_colonization }
+					}
+					add = {
+						value = 0.004
+						desc = "sb_enacting_frontier_colonization_law"
+					}
+				}
+
+				if = {
+					limit = {
+						owner = { is_enacting_law = law_type:law_colonial_resettlement }
+					}
+					add = {
+						value = 0.008
+						desc = "sb_enacting_colonial_resettlement_law"
+					}
+				}
+
+				if = {
+					limit = {
+						owner = { is_enacting_law = law_type:law_colonial_exploitation }
+					}
+					add = {
+						value = 0.012
+						desc = "sb_enacting_colonial_exploitation_law"
+					}
+				}
+
+			if = {
+				limit = {
+					owner = { has_law = law_type:law_cultural_exclusion }
+				}
+				add = {
+					value = -0.15
+					desc = "sb_cultural_exclusion_enacted"
+				}
+			}
+
+			if = {
+				limit = {
+					owner = { has_law = law_type:law_multicultural }
+				}
+				add = {
+					value = -0.25
+					desc = "sb_multicultural_enacted"
+				}
+			}
+		}
+	}

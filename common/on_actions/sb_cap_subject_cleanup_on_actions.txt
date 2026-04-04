@@ -1,0 +1,97 @@
+﻿# Remove the vanilla Southern Africa colonial helper once CAP is no longer a
+# subject. This prevents unrelated vanilla colonial buttons/flag fallbacks from
+# lingering after Cape independence.
+
+on_monthly_pulse_country = {
+	on_actions = { sb_on_cap_subject_cleanup_monthly }
+}
+
+on_become_subject = {
+	on_actions = { sb_on_cap_subject_cleanup_monthly }
+}
+
+on_become_independent = {
+	on_actions = { sb_on_cap_subject_cleanup_monthly }
+}
+
+sb_on_cap_subject_cleanup_monthly = {
+	effect = {
+		if = {
+			limit = {
+				country_definition = cd:CAP
+				is_subject = yes
+				OR = {
+					is_subject_type = subject_type_dominion
+					is_subject_type = subject_type_sb_dominion
+					is_subject_type = subject_type_sb_responsible_colony
+				}
+			}
+			set_variable = sb_cap_dominion_map_color_var
+		}
+		else_if = {
+			limit = {
+				country_definition = cd:CAP
+				has_variable = sb_cap_dominion_map_color_var
+			}
+			remove_variable = sb_cap_dominion_map_color_var
+		}
+		if = {
+			limit = {
+				country_definition = cd:ABY
+				is_subject = yes
+				OR = {
+					is_subject_type = subject_type_dominion
+					is_subject_type = subject_type_sb_dominion
+				}
+			}
+			set_variable = sb_aby_dominion_map_color_var
+		}
+		else_if = {
+			limit = {
+				country_definition = cd:ABY
+				has_variable = sb_aby_dominion_map_color_var
+			}
+			remove_variable = sb_aby_dominion_map_color_var
+		}
+		if = {
+			limit = {
+				OR = {
+					country_definition = cd:CAP
+					country_definition = cd:ABY
+				}
+				is_subject_type = subject_type_dominion
+			}
+			change_subject_type = subject_type_sb_dominion
+		}
+		if = {
+			limit = {
+				OR = {
+					country_definition = cd:CAP
+					country_definition = cd:ABY
+				}
+				is_subject = yes
+				NOT = { is_country_type = colonial }
+			}
+			set_country_type = colonial
+		}
+		if = {
+			limit = {
+				OR = {
+					country_definition = cd:CAP
+					country_definition = cd:ABY
+				}
+				is_subject = no
+				is_country_type = colonial
+			}
+			set_country_type = recognized
+		}
+		if = {
+			limit = {
+				country_definition = cd:CAP
+				is_subject = no
+				has_variable = southern_africa_subject_var
+			}
+			remove_variable = southern_africa_subject_var
+		}
+	}
+}

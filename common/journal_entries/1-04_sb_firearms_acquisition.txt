@@ -1,0 +1,160 @@
+﻿# Generic Phase 1 firearms-acquisition JE for southern African kingdoms that
+# still rely heavily on melee-centric warfare at game start.
+
+je_sb_firearms_acquisition = {
+	group = je_group_historical_content
+
+	icon = "gfx/interface/icons/event_icons/event_military.dds"
+
+	is_shown_in_lobby = {
+		hidden_trigger = {
+			sb_is_firearms_acquisition_country = yes
+		}
+	}
+
+	is_shown_when_inactive = {
+		hidden_trigger = {
+			always = no
+		}
+	}
+
+	possible = {
+		hidden_trigger = {
+			sb_is_firearms_acquisition_country = yes
+			NOT = { has_variable = sb_firearms_modernized_var }
+			NOT = { has_journal_entry = je_sb_firearms_acquisition }
+		}
+	}
+
+	status_desc = {
+		first_valid = {
+			triggered_desc = {
+				desc = je_sb_firearms_acquisition_status_both
+				trigger = {
+					sb_has_active_firearms_import_treaty = yes
+					sb_has_qualifying_firearms_industry = yes
+				}
+			}
+			triggered_desc = {
+				desc = je_sb_firearms_acquisition_status_treaty
+				trigger = {
+					sb_has_active_firearms_import_treaty = yes
+				}
+			}
+			triggered_desc = {
+				desc = je_sb_firearms_acquisition_status_industry
+				trigger = {
+					sb_has_qualifying_firearms_industry = yes
+				}
+			}
+			desc = je_sb_firearms_acquisition_status_no_progress
+		}
+	}
+
+	immediate = {
+		if = {
+			limit = {
+				NOT = { has_variable = sb_firearms_treaty_progress_months_var }
+			}
+			if = {
+				limit = {
+					has_variable = sb_firearms_progress_months_var
+				}
+				set_variable = {
+					name = sb_firearms_treaty_progress_months_var
+					value = var:sb_firearms_progress_months_var
+				}
+			}
+			else = {
+				set_variable = {
+					name = sb_firearms_treaty_progress_months_var
+					value = 0
+				}
+			}
+		}
+		if = {
+			limit = {
+				NOT = { has_variable = sb_firearms_industry_progress_months_var }
+			}
+			set_variable = {
+				name = sb_firearms_industry_progress_months_var
+				value = 0
+			}
+		}
+		if = {
+			limit = {
+				NOT = { has_variable = sb_firearms_progress_months_var }
+			}
+			set_variable = {
+				name = sb_firearms_progress_months_var
+				value = 0
+			}
+		}
+		sb_update_firearms_progress = yes
+		sb_sync_iron_age_weapons_penalty = yes
+	}
+
+	on_monthly_pulse = {
+		effect = {
+			if = {
+				limit = {
+					NOT = { has_variable = sb_firearms_modernized_var }
+					sb_has_active_firearms_import_treaty = yes
+					var:sb_firearms_treaty_progress_months_var < 12
+				}
+				change_variable = {
+					name = sb_firearms_treaty_progress_months_var
+					add = 1
+				}
+			}
+			if = {
+				limit = {
+					NOT = { has_variable = sb_firearms_modernized_var }
+					sb_has_qualifying_firearms_industry = yes
+					var:sb_firearms_industry_progress_months_var < 12
+				}
+				change_variable = {
+					name = sb_firearms_industry_progress_months_var
+					add = 1
+				}
+			}
+			sb_update_firearms_progress = yes
+			sb_sync_iron_age_weapons_penalty = yes
+		}
+	}
+
+	complete = {
+		OR = {
+			custom_tooltip = {
+				text = je_sb_firearms_acquisition_completion_treaty_tt
+				var:sb_firearms_treaty_progress_months_var >= 12
+			}
+			custom_tooltip = {
+				text = je_sb_firearms_acquisition_completion_industry_tt
+				var:sb_firearms_industry_progress_months_var >= 12
+			}
+		}
+	}
+
+	on_complete = {
+		set_variable = sb_firearms_modernized_var
+		sb_remove_iron_age_weapons_modifiers = yes
+		remove_variable = sb_firearms_treaty_progress_months_var
+		remove_variable = sb_firearms_industry_progress_months_var
+		remove_variable = sb_firearms_progress_months_var
+		trigger_event = { id = sb_firearms.001 }
+	}
+
+	current_value = {
+		value = root.var:sb_firearms_progress_months_var
+	}
+
+	goal_add_value = {
+		add = 60
+	}
+
+	progressbar = yes
+
+	weight = 1000
+	should_be_pinned_by_default = yes
+}
