@@ -1,8 +1,9 @@
 ﻿# Startup treaty helpers for Southern Africa. We keep treaty history additive
-# and normalize the two vanilla GBR-Boer guarantee bundles at runtime so other
+# and normalize the relevant vanilla South African bundles at runtime so other
 # mods can still extend 00_historical_treaties.txt safely.
 
 sb_normalize_boer_trade_treaties = {
+	# GBR-ORA: remove the vanilla guarantee bundle, keep only 25-year transit rights.
 	if = {
 		limit = {
 			c:GBR ?= {
@@ -38,6 +39,8 @@ sb_normalize_boer_trade_treaties = {
 		}
 	}
 
+	# GBR-TRN: remove the vanilla guarantee bundle, keep only 25-year transit rights,
+	# and preserve the intended 20-year truce with Britain.
 	if = {
 		limit = {
 			c:GBR ?= {
@@ -84,6 +87,183 @@ sb_normalize_boer_trade_treaties = {
 		create_bidirectional_truce = {
 			country = c:GBR
 			months = 240
+		}
+	}
+
+	# GBR-PHL: remove the vanilla guarantee bundle, keep only 25-year transit rights.
+	if = {
+		limit = {
+			c:GBR ?= {
+				any_scope_treaty = {
+					binds = c:PHL
+					any_scope_article = {
+						has_type = guarantee_independence
+						source_country = c:GBR
+						target_country = c:PHL
+					}
+				}
+			}
+		}
+		c:GBR ?= {
+			every_scope_treaty = {
+				limit = {
+					binds = c:PHL
+					any_scope_article = {
+						has_type = guarantee_independence
+						source_country = c:GBR
+						target_country = c:PHL
+					}
+				}
+				withdraw = {
+					country = c:GBR
+				}
+			}
+			change_infamy = -10
+			change_relations = {
+				country = c:PHL
+				value = 20
+			}
+		}
+		c:PHL ?= {
+			end_truce = c:GBR
+		}
+	}
+
+	# GBR-WBL: replace the vanilla 10-year bundle with a 25-year bundle.
+	if = {
+		limit = {
+			c:GBR ?= {
+				any_scope_treaty = {
+					binds = c:WBL
+					any_scope_article = {
+						has_type = guarantee_independence
+						source_country = c:GBR
+						target_country = c:WBL
+					}
+				}
+			}
+		}
+		c:GBR ?= {
+			every_scope_treaty = {
+				limit = {
+					binds = c:WBL
+					any_scope_article = {
+						has_type = guarantee_independence
+						source_country = c:GBR
+						target_country = c:WBL
+					}
+				}
+				withdraw = {
+					country = c:GBR
+				}
+			}
+			change_infamy = -10
+			change_relations = {
+				country = c:WBL
+				value = 20
+			}
+		}
+		c:WBL ?= {
+			end_truce = c:GBR
+		}
+	}
+
+	# ORA-TRN: replace the vanilla 10-year transit rights with a 25-year corridor.
+	c:ORA ?= {
+		if = {
+			limit = {
+				any_scope_treaty = {
+					binds = c:TRN
+					any_scope_article = {
+						has_type = transit_rights
+						source_country = c:ORA
+						target_country = c:TRN
+					}
+				}
+			}
+			every_scope_treaty = {
+				limit = {
+					binds = c:TRN
+					any_scope_article = {
+						has_type = transit_rights
+						source_country = c:ORA
+						target_country = c:TRN
+					}
+				}
+				withdraw = {
+					country = c:ORA
+				}
+			}
+			change_relations = {
+				country = c:TRN
+				value = 10
+			}
+		}
+	}
+
+	# PHL-ORA: replace the vanilla 10-year transit rights with a 25-year corridor.
+	c:PHL ?= {
+		if = {
+			limit = {
+				any_scope_treaty = {
+					binds = c:ORA
+					any_scope_article = {
+						has_type = transit_rights
+						source_country = c:PHL
+						target_country = c:ORA
+					}
+				}
+			}
+			every_scope_treaty = {
+				limit = {
+					binds = c:ORA
+					any_scope_article = {
+						has_type = transit_rights
+						source_country = c:PHL
+						target_country = c:ORA
+					}
+				}
+				withdraw = {
+					country = c:PHL
+				}
+			}
+			change_relations = {
+				country = c:ORA
+				value = 10
+			}
+		}
+	}
+
+	# WBL-TRN: replace the vanilla 10-year transit rights with a 25-year corridor.
+	c:WBL ?= {
+		if = {
+			limit = {
+				any_scope_treaty = {
+					binds = c:TRN
+					any_scope_article = {
+						has_type = transit_rights
+						source_country = c:WBL
+						target_country = c:TRN
+					}
+				}
+			}
+			every_scope_treaty = {
+				limit = {
+					binds = c:TRN
+					any_scope_article = {
+						has_type = transit_rights
+						source_country = c:WBL
+						target_country = c:TRN
+					}
+				}
+				withdraw = {
+					country = c:WBL
+				}
+			}
+			change_relations = {
+				country = c:TRN
+				value = 10
+			}
 		}
 	}
 
@@ -138,6 +318,157 @@ sb_normalize_boer_trade_treaties = {
 					{
 						article = transit_rights
 						source_country = c:GBR
+						target_country = c:TRN
+					}
+				}
+			}
+		}
+
+		if = {
+			limit = {
+				NOT = {
+					any_scope_treaty = {
+						binds = c:PHL
+						any_scope_article = {
+							has_type = transit_rights
+							source_country = c:GBR
+							target_country = c:PHL
+						}
+					}
+				}
+			}
+			create_treaty = {
+				first_country = c:GBR
+				second_country = c:PHL
+				is_draft = no
+				binding_period = { years = 25 }
+				articles_to_create = {
+					{
+						article = transit_rights
+						source_country = c:GBR
+						target_country = c:PHL
+					}
+				}
+			}
+		}
+
+		if = {
+			limit = {
+				NOT = {
+					any_scope_treaty = {
+						binds = c:WBL
+						any_scope_article = {
+							has_type = transit_rights
+							source_country = c:GBR
+							target_country = c:WBL
+						}
+					}
+				}
+			}
+			create_treaty = {
+				first_country = c:GBR
+				second_country = c:WBL
+				is_draft = no
+				binding_period = { years = 25 }
+				articles_to_create = {
+					{
+						article = transit_rights
+						source_country = c:GBR
+						target_country = c:WBL
+					}
+					{
+						article = guarantee_independence
+						source_country = c:GBR
+						target_country = c:WBL
+					}
+				}
+			}
+		}
+	}
+
+	c:ORA ?= {
+		if = {
+			limit = {
+				NOT = {
+					any_scope_treaty = {
+						binds = c:TRN
+						any_scope_article = {
+							has_type = transit_rights
+							source_country = c:ORA
+							target_country = c:TRN
+						}
+					}
+				}
+			}
+			create_treaty = {
+				first_country = c:ORA
+				second_country = c:TRN
+				is_draft = no
+				binding_period = { years = 25 }
+				articles_to_create = {
+					{
+						article = transit_rights
+						source_country = c:ORA
+						target_country = c:TRN
+					}
+				}
+			}
+		}
+	}
+
+	c:PHL ?= {
+		if = {
+			limit = {
+				NOT = {
+					any_scope_treaty = {
+						binds = c:ORA
+						any_scope_article = {
+							has_type = transit_rights
+							source_country = c:PHL
+							target_country = c:ORA
+						}
+					}
+				}
+			}
+			create_treaty = {
+				first_country = c:PHL
+				second_country = c:ORA
+				is_draft = no
+				binding_period = { years = 25 }
+				articles_to_create = {
+					{
+						article = transit_rights
+						source_country = c:PHL
+						target_country = c:ORA
+					}
+				}
+			}
+		}
+	}
+
+	c:WBL ?= {
+		if = {
+			limit = {
+				NOT = {
+					any_scope_treaty = {
+						binds = c:TRN
+						any_scope_article = {
+							has_type = transit_rights
+							source_country = c:WBL
+							target_country = c:TRN
+						}
+					}
+				}
+			}
+			create_treaty = {
+				first_country = c:WBL
+				second_country = c:TRN
+				is_draft = no
+				binding_period = { years = 25 }
+				articles_to_create = {
+					{
+						article = transit_rights
+						source_country = c:WBL
 						target_country = c:TRN
 					}
 				}
