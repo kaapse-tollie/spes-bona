@@ -89,7 +89,7 @@ This file is the repo-local reference for the live Phase 1 v1 branch. It is mean
 
 ## Firearms Modernization JE
 
-- `ZUL`, `SWZ`, and `GZA` start with `je_sb_firearms_acquisition`
+- `ZUL`, `SWZ`, and `GZA` start with `je_sb_adopt_firearms`
 - the JE models the shift away from the `sb_iron_age_weapons` malus
 - progress comes from either route:
   an active small-arms transfer treaty with a country that runs an arms industry

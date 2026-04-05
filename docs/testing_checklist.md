@@ -60,7 +60,7 @@ Use fresh `1836` starts unless a test explicitly needs a mid-chain save.
 ## Firearms JE
 
 - `ZUL`, `SWZ`, and `GZA` have the JE on day `0`
-- no duplicate `je_sb_firearms_acquisition` warnings appear
+- no duplicate `je_sb_adopt_firearms` warnings appear
 - progress text is readable and player-facing
 - a qualifying small-arms transfer treaty advances progress
 - a `90%` staffed arms industry advances progress
