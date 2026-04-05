@@ -85,6 +85,7 @@ This file is the repo-local reference for the live Phase 1 v1 branch. It is mean
   `NAL` can submit or refuse
   refusal seizes Port Natal and can call `ORA` and `TRN`
   if Britain wins that later war, Boer refugee events fire inland
+  TODO: add a dedicated Natalia Great Trek / coastal republic JE once the Natal chain is fully stable
 
 ## Firearms Modernization JE
 

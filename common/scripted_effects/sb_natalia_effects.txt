@@ -56,6 +56,7 @@ sb_found_natalia_peacefully = {
 		scope:retief_scope ?= {
 			transfer_character = c:NAL
 			set_character_as_ruler = yes
+			add_character_role = general
 			add_character_role = politician
 			set_interest_group = c:NAL.ig:ig_landowners
 		}
@@ -69,6 +70,24 @@ sb_found_natalia_peacefully = {
 				is_general = yes
 				interest_group = ig_landowners
 			}
+		}
+		random_scope_character = {
+			limit = {
+				has_template = ORA_piet_retief
+			}
+			if = {
+				limit = {
+					NOT = { has_role = general }
+				}
+				add_character_role = general
+			}
+			if = {
+				limit = {
+					NOT = { has_role = politician }
+				}
+				add_character_role = politician
+			}
+			set_interest_group = c:NAL.ig:ig_landowners
 		}
 		sb_refresh_boer_commandant_general_government = yes
 		sb_ensure_commandant_general_ruler_command = yes
@@ -124,37 +143,9 @@ sb_found_natalia_peacefully = {
 			}
 		}
 	}
-	c:TRN ?= {
-		if = {
-			limit = {
-				is_country_alive = yes
-				NOT = {
-					any_scope_treaty = {
-						binds = c:NAL
-						any_scope_article = {
-							has_type = transit_rights
-							source_country = c:NAL
-							target_country = c:TRN
-						}
-					}
-				}
-			}
-			create_treaty = {
-				first_country = c:NAL
-				second_country = c:TRN
-				is_draft = no
-				binding_period = { years = 25 }
-				articles_to_create = {
-					{
-						article = transit_rights
-						source_country = c:NAL
-						target_country = c:TRN
-					}
-				}
-			}
-		}
+	c:NAL ?= {
+		sb_trigger_natalia_boer_migration_effect = yes
 	}
-	sb_trigger_boer_migration_effect = yes
 	set_variable = sb_natal_path_resolved_var
 	remove_variable = sb_natal_diplomacy_started_var
 }
@@ -320,6 +311,7 @@ sb_found_natalia_after_blood_river = {
 		if = {
 			limit = {
 				is_country_alive = yes
+				has_variable = sb_trn_joined_natal_war_var
 				NOT = {
 					any_scope_treaty = {
 						binds = c:NAL
@@ -365,7 +357,9 @@ sb_found_natalia_after_blood_river = {
 			remove_variable = sb_trn_joined_natal_war_var
 		}
 	}
-	sb_trigger_boer_migration_effect = yes
+	c:NAL ?= {
+		sb_trigger_natalia_boer_migration_effect = yes
+	}
 }
 
 # A variant of the war-victory settlement where Retief survives to lead Natalia
@@ -515,6 +509,47 @@ sb_trigger_natal_refugee_migration_effect = {
 			create_mass_migration = {
 				origin = scope:natalia_source
 				culture = scope:migration_culture
+			}
+		}
+	}
+}
+
+# Natalia needs its own trekker migration helper because the generic trek effect
+# targets the calling country, which is ORA in the formation chain.
+sb_trigger_natalia_boer_migration_effect = {
+	random_country = {
+		limit = {
+			country_definition = cd:CAP
+			is_country_alive = yes
+			any_primary_culture = {
+				this = cu:boer
+			}
+		}
+		save_scope_as = boer_migration_origin
+	}
+	c:NAL ?= {
+		ordered_scope_state = {
+			order_by = migration_pull
+			position = 0
+			check_range_bounds = no
+			save_scope_as = boer_migration_target
+		}
+	}
+	if = {
+		limit = {
+			exists = scope:boer_migration_origin
+			exists = scope:boer_migration_target
+		}
+		scope:boer_migration_target = {
+			create_mass_migration = {
+				origin = scope:boer_migration_origin
+				culture = cu:boer
+			}
+		}
+		scope:boer_migration_origin = {
+			add_modifier = {
+				name = sb_trek_migration_cost
+				months = 24
 			}
 		}
 	}
