@@ -15,16 +15,17 @@
 #     and basic governance before being taken seriously.
 #
 #   Stage 2 — TERRITORY (secure the claimed homeland):
-#     Territorial control of the homeland. Requires Stage 1 complete first.
+#     Territorial control of the homeland. Checked independently from GDP so the
+#     territorial milestone and migration wave can fire as soon as the land is held.
 #     TRN must control all Transvaal provinces outside the Swaziland-held slice;
 #     ORA must own all of STATE_VRYSTAAT.
 #     Historically: consolidating authority over Ndebele, Griqua, and other
 #     groups contesting the interior took years of conflict and diplomacy.
 #
 # ON COMPLETE:
-#   - TRN: removes sb_early_republic_var, triggering a name change from
-#     "Transvaal Republic" to "South African Republic" (ZAR). This is handled
-#     by dynamic country name logic elsewhere.
+#   - TRN / ORA: removes sb_early_republic_var, triggering the mature republic
+#     name and flag set. This is handled by dynamic country name / flag logic
+#     elsewhere.
 #   - Both: removes sb_trek_migration_pull from all states (trek is over,
 #     settlers have arrived).
 #   - Fires sb_trek.100 completion event.
@@ -103,13 +104,15 @@ je_sb_great_trek = {
 	}
 
 	on_complete = {
-		# TRN-specific: remove early republic variable.
-		# sb_early_republic_var controls dynamic country naming — removing it
-		# switches TRN from "Transvaal Republic" to "South African Republic" (ZAR),
-		# reflecting the 1852 Sand River Convention recognition.
+		# Remove the early-republic variable once the whole JE completes. This keeps
+		# Winburg / Potchefstroom-style provisional naming until both the economic
+		# and territorial stages are done.
 		if = {
 			limit = {
-				country_definition = cd:TRN
+				OR = {
+					country_definition = cd:TRN
+					country_definition = cd:ORA
+				}
 				has_variable = sb_early_republic_var
 			}
 			remove_variable = sb_early_republic_var
@@ -169,8 +172,8 @@ je_sb_great_trek = {
 					root.gdp >= 100000
 				}
 				set_variable = sb_trek_stage1_complete
-				# Tag-specific events update name/flag to reflect political maturation.
-				# ORA: Orange River Sovereignty -> Orange Free State
+				# Tag-specific events are flavor and migration rewards only. The
+				# visible republic name/flag now change on JE completion, not here.
 				if = {
 					limit = { country_definition = cd:ORA }
 					trigger_event = { id = sb_trek.030 popup = yes }
@@ -185,12 +188,8 @@ je_sb_great_trek = {
 			# ==================================================================
 			# STAGE 2: Territory control — secure the homeland
 			# ==================================================================
-			# Requires Stage 1 complete first (sequential gating).
-			# Historically, territorial consolidation came after economic viability —
-			# you need farms and guns before you can project authority over the full region.
 			if = {
 				limit = {
-					has_variable = sb_trek_stage1_complete
 					NOT = { has_variable = sb_trek_stage2_complete }
 				}
 				# ORA must control all of Vrystaat (Orange Free State homeland)
