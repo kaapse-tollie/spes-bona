@@ -22,7 +22,10 @@ je_sb_firearms_acquisition = {
 		hidden_trigger = {
 			sb_is_firearms_acquisition_country = yes
 			NOT = { has_variable = sb_firearms_modernized_var }
-			NOT = { has_journal_entry = je_sb_firearms_acquisition }
+			OR = {
+				has_journal_entry = je_sb_firearms_acquisition
+				NOT = { has_variable = sb_firearms_je_seeded_var }
+			}
 		}
 	}
 
@@ -89,6 +92,12 @@ je_sb_firearms_acquisition = {
 				name = sb_firearms_progress_months_var
 				value = 0
 			}
+		}
+		if = {
+			limit = {
+				NOT = { has_variable = sb_firearms_je_seeded_var }
+			}
+			set_variable = sb_firearms_je_seeded_var
 		}
 		sb_update_firearms_progress = yes
 		sb_sync_iron_age_weapons_penalty = yes
