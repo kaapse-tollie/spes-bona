@@ -1,0 +1,88 @@
+﻿# Generic colony-side constitutional autonomy actions for Spes Bona.
+
+sb_grant_responsible_government = {
+	groups = {
+		overlord
+	}
+	requires_approval = no
+	show_effect_in_tooltip = yes
+
+	texture = "gfx/interface/icons/diplomatic_action_icons/da_increase_autonomy.dds"
+	confirmation_sound = "event:/SFX/UI/SubjectInteractions/subject_button_small_autonomy_increased"
+
+	potential = {
+		scope:target_country = {
+			is_subject_of = root
+			is_subject_type = subject_type_colony
+			is_country_type = colonial
+		}
+	}
+
+	possible = {
+		scope:target_country = {
+			is_subject_of = root
+			is_subject_type = subject_type_colony
+			is_country_type = colonial
+			NOT = { is_diplomatic_play_enemy_of = root }
+		}
+		custom_tooltip = {
+			text = "CHANGE_AUTONOMY_ON_COOLDOWN_OVERLORD"
+			NOT = {
+				scope:target_country = {
+					any_diplomatic_catalyst = {
+						is_diplomatic_catalyst_type = catalyst_autonomy_change_imposed
+						target = root
+					}
+				}
+			}
+		}
+	}
+
+	accept_effect = {
+		scope:target_country = {
+			sb_grant_responsible_government_effect = yes
+			if = {
+				limit = {
+					country_definition = cd:CAP
+				}
+				trigger_event = { id = sb_cape.020 popup = yes }
+			}
+			hidden_effect = {
+				create_diplomatic_catalyst = {
+					type = catalyst_autonomy_change_imposed
+					target = root
+				}
+			}
+		}
+	}
+
+	ai = {
+		evaluation_chance = {
+			value = 0.15
+		}
+
+		propose_score = {
+			value = 10
+		}
+
+		will_propose = {
+			scope:target_country = {
+				is_subject_of = root
+				is_subject_type = subject_type_colony
+				OR = {
+					country_definition = cd:CAP
+					ig:ig_intelligentsia ?= {
+						ig_clout >= 0.18
+					}
+				}
+			}
+			OR = {
+				has_attitude = {
+					who = scope:target_country
+					attitude = protective
+				}
+				"relations(scope:target_country)" >= relations_threshold:cordial
+			}
+		}
+	}
+}

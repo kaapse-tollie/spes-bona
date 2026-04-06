@@ -227,7 +227,7 @@ sb_on_game_started = {
 					limit = {
 						NOT = { has_variable = sb_cape_balance_current }
 					}
-					set_variable = { name = sb_cape_balance_current value = 50 }
+					set_variable = { name = sb_cape_balance_current value = 0 }
 				}
 				if = {
 					limit = {
@@ -503,7 +503,7 @@ sb_on_cape_monthly_pulse_country = {
 				limit = {
 					NOT = { has_variable = sb_cape_balance_current }
 				}
-				set_variable = { name = sb_cape_balance_current value = 50 }
+				set_variable = { name = sb_cape_balance_current value = 0 }
 			}
 
 			je:je_sb_cape_politics = {
@@ -537,13 +537,13 @@ sb_on_cape_monthly_pulse_country = {
 				}
 				if = {
 					limit = {
-						root.var:sb_cape_balance_current >= 70
+						root.var:sb_cape_balance_current >= 40
 					}
 					add_modifier = { name = sb_cape_liberal_ascendant }
 				}
 				else_if = {
 					limit = {
-						root.var:sb_cape_balance_current <= 30
+						root.var:sb_cape_balance_current <= -40
 					}
 					add_modifier = { name = sb_cape_settler_ascendant }
 				}
@@ -553,7 +553,7 @@ sb_on_cape_monthly_pulse_country = {
 			# matching law instead of leaving the pressure hidden in the bar drift.
 			if = {
 				limit = {
-					var:sb_cape_balance_current <= 25
+					var:sb_cape_balance_current <= -50
 					NOT = {
 						OR = {
 							has_law = law_type:law_cultural_exclusion
@@ -573,7 +573,7 @@ sb_on_cape_monthly_pulse_country = {
 			}
 			if = {
 				limit = {
-					var:sb_cape_balance_current >= 75
+					var:sb_cape_balance_current >= 50
 					NOT = {
 						OR = {
 							has_law = law_type:law_frontier_colonization
@@ -704,8 +704,8 @@ sb_on_trek_monthly_pulse_country = {
 				NOT = { has_variable = sb_zoutpansberg_spawned_var }
 				NOT = { exists = c:ZPB }
 				game_date >= 1849.1.1
-				game_date < 1860.1.1
-				owns_entire_state_region = STATE_TRANSVAAL
+				NOT = { has_variable = sb_early_republic_var }
+				sb_controls_west_transvaal_core = yes
 				c:CAP ?= {
 					OR = {
 						has_law = law_type:law_cultural_exclusion

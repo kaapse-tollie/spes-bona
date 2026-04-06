@@ -1,4 +1,4 @@
-﻿# Spes Bona - The Great Trek Journal Entry (Period 1)
+﻿# Spes Bona - The Great Trek Journal Entry
 # ==============================================================================
 # Tracks Boer republic establishment for the Transvaal (TRN) and Orange Free State (ORA).
 #
@@ -17,15 +17,16 @@
 #   Stage 2 — TERRITORY (secure the claimed homeland):
 #     Territorial control of the homeland. Checked independently from GDP so the
 #     territorial milestone and migration wave can fire as soon as the land is held.
-#     TRN must control all Transvaal provinces outside the Swaziland-held slice;
+#     TRN must control the western Transvaal core;
 #     ORA must own all of STATE_VRYSTAAT.
 #     Historically: consolidating authority over Ndebele, Griqua, and other
 #     groups contesting the interior took years of conflict and diplomacy.
 #
 # ON COMPLETE:
 #   - TRN / ORA: removes sb_early_republic_var, triggering the mature republic
-#     name and flag set. This is handled by dynamic country name / flag logic
-#     elsewhere.
+#     name and flag set. For TRN this now represents consolidation of the
+#     western republican core rather than ownership of the whole oversized
+#     STATE_TRANSVAAL shell.
 #   - Both: removes sb_trek_migration_pull from all states (trek is over,
 #     settlers have arrived).
 #   - Fires sb_trek.100 completion event.
@@ -33,7 +34,8 @@
 # CROSS-REFERENCES:
 #   - Migration modifier: common/modifiers/sb_modifiers.txt (sb_trek_migration_pull)
 #   - Events: events/sb_trek.txt (sb_trek.030-.031, .040-.041, .050, .100)
-#   - Country names: common/country_definition/ (sb_early_republic_var usage)
+#   - Country names: common/dynamic_country_names/ (sb_early_republic_var usage)
+#   - Transvaal helpers: common/scripted_triggers/sb_great_trek_triggers.txt
 # ==============================================================================
 
 je_sb_great_trek = {
@@ -178,7 +180,8 @@ je_sb_great_trek = {
 					limit = { country_definition = cd:ORA }
 					trigger_event = { id = sb_trek.030 popup = yes }
 				}
-				# TRN: initial Transvaal settlement -> Transvaal Republic
+				# TRN: the western republican core is now economically viable enough
+				# to support a mature inland state.
 				else_if = {
 					limit = { country_definition = cd:TRN }
 					trigger_event = { id = sb_trek.031 popup = yes }
@@ -201,12 +204,13 @@ je_sb_great_trek = {
 					set_variable = sb_trek_stage2_complete
 					trigger_event = { id = sb_trek.040 popup = yes }
 				}
-				# TRN must control the Transvaal homeland, excluding the
-				# Swaziland-held slice on the eastern edge.
+				# TRN must control the western Transvaal core. This decouples
+				# republican maturation from ownership of the whole macro-state
+				# while the audited split is still pending.
 				else_if = {
 					limit = {
 						country_definition = cd:TRN
-						sb_controls_transvaal_except_swazi = yes
+						sb_controls_west_transvaal_core = yes
 					}
 					set_variable = sb_trek_stage2_complete
 					trigger_event = { id = sb_trek.041 popup = yes }

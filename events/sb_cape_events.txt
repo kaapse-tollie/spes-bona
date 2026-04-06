@@ -5,7 +5,7 @@
 # =============================================================================
 # sb_cape.001     Opening tensions
 # sb_cape.010     Frontier Raid (retired; state trait now carries this pressure)
-# sb_cape.020     Responsible Government petition (Phase 2, shell only)
+# sb_cape.020     Responsible Government granted
 # sb_cape.100     Liberal victory
 # sb_cape.101     Settler victory
 # sb_cape.102     Balanced compromise
@@ -810,10 +810,9 @@ sb_cape.122 = {
 }
 
 # =============================================================================
-# Responsible Government petition — PHASE 2 SHELL
-# Button removed from Cape JE in P1. This event will be triggered by a new
-# scripted button or JE in Phase 2, once the responsible colony subject type
-# (subject_type_sb_responsible_colony) mechanics are fully implemented.
+# Responsible Government granted.
+# This now fires as a flavor follow-up when the generic colony interaction
+# grants responsible government to CAP.
 # =============================================================================
 sb_cape.020 = {
 	type = country_event
@@ -834,30 +833,14 @@ sb_cape.020 = {
 	duration = 3
 
 	trigger = {
-		# Triggered by scripted button
+		country_definition = cd:CAP
 	}
 
-	# Accept — Cape gets responsible government
 	option = {
 		name = sb_cape.020.a
 		default_option = yes
-		# Upgrade from colony to responsible colony
-		change_subject_type = subject_type_sb_responsible_colony
-		add_modifier = {
-			name = sb_responsible_government
-			months = -1
-		}
 		ai_chance = {
-			base = 80
-		}
-	}
-
-	# Delay — not yet ready
-	option = {
-		name = sb_cape.020.b
-		remove_variable = sb_cape_responsible_govt_var
-		ai_chance = {
-			base = 20
+			base = 100
 		}
 	}
 }

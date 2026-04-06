@@ -1,11 +1,11 @@
 # Current State
 
-This file is the repo-local reference for the live Phase 1 v1 branch. It is meant to stay short and track the actual scripted content in the current mod folder.
+This file is the repo-local reference for the live mod branch. It is meant to stay short and track the actual scripted content in the current mod folder.
 
 ## Status
 
-- branch goal: Phase 1 v1 release candidate
-- current focus: debugging, polish, AI balance, and fresh-save verification
+- branch goal: Phase 1 stabilization plus Phase 2 structural groundwork
+- current focus: gameplay testing, polish, AI balance, and Phase 2 scaffolding
 - validation target: `0 fatals / 0 errors / 0 warnings / 0 untidy`
 
 ## Tag Model
@@ -17,6 +17,8 @@ This file is the repo-local reference for the live Phase 1 v1 branch. It is mean
 - `ORA` and `TRN` are live Boer republic starts
 - `NAL` forms through the Natal chain
 - `ZUL`, `SWZ`, and `GZA` run the firearms-acquisition JE
+- `LYD` exists as a Phase 2 Lydenburg shell
+- `RHB` exists as a Phase 2 Rehoboth/Baster shell
 - `ORL` exists in Hereroland
 - `STATE_DRAKENSBERG` is a separate Phase 1 frontier state with a defensive mountain trait
 
@@ -25,21 +27,29 @@ This file is the repo-local reference for the live Phase 1 v1 branch. It is mean
 ### Cape Politics
 
 - `CAP` starts with `je_sb_cape_politics`
-- the JE is a liberal-versus-settler balance bar
+- the JE is a liberal-versus-settler balance bar on a centered `-100 -> 100` model
 - Albany pressure events fire at the dominance thresholds
-- the JE resolves in one of five ways:
+- the JE resolves in one of four live ways:
   liberal resolution
   settler resolution
   compromise
   Albany secession branch after London answers
-  failure in `1880`
+- Responsible Government is now a generic overlord-side colony interaction backed by `subject_type_sb_responsible_colony`
 
 ### Great Trek
 
 - `ORA` and `TRN` share `je_sb_great_trek`
 - stage 1: reach `GDP >= 100000`
-- stage 2: control the full homeland state region
+- stage 2:
+  `ORA` controls the whole Vrystaat
+  `TRN` controls the western Transvaal republican core
 - completion settles the republic, removes the frontier expedient government setup, and ends the trek migration pull
+- `ZPB` is no longer gated behind full ownership of the old macro-`STATE_TRANSVAAL`
+- Transvaal Phase 2 geography now has a scripted helper layer pending the manual province audit:
+  west
+  central
+  east
+  north / Zoutpansberg
 
 ### TRN / MTB Frontier
 
@@ -98,6 +108,15 @@ This file is the repo-local reference for the live Phase 1 v1 branch. It is mean
 - the malus decays month by month while either route is active
 - the flat military-research malus stays until the JE completes
 - completion fires a `new tactics` reward event and gives a temporary military-research bonus
+
+## Zulu Kingdom
+
+- `ZUL` now also starts with `je_sb_zulu_kingdom`
+- the JE is no longer a dead shell
+- it currently bridges:
+  Natal-political resolution
+  succession stabilization
+  firearms modernization
 
 ## Other Important Live Setup
 

@@ -1,6 +1,6 @@
-﻿# Spes Bona - Zulu Kingdom Journal Entry (Period 1)
+﻿# Spes Bona - Zulu Kingdom Journal Entry
 # ==============================================================================
-# Phase 1 shell — placeholder for the Zulu Kingdom's internal politics / military JE.
+# Phase 2 foundation for the Zulu Kingdom's internal politics / military JE.
 #
 # HISTORICAL CONTEXT:
 #   The Zulu Kingdom under Dingane (1828-1840) and then Mpande (1840-1872) faced
@@ -10,16 +10,9 @@
 #   power after Shaka's assassination.
 #
 # CURRENT STATE:
-#   complete = always no — this JE can never complete. It exists solely so ZUL
-#   appears in the country selection screen with a journal entry icon, signaling
-#   to the player that Zulu content exists (even though it is incomplete).
-#
-# Phase 2 backlog for this JE:
-#   - Ibutho regiment system (scripted buttons to raise/disband regiments)
-#   - Dingane vs Mpande succession crisis (~1839-1840)
-#   - Zulu response to British ultimatum (1879 Anglo-Zulu War is Period 2+)
-#   - Integration with sb_boer_zulu event chain (currently one-directional:
-#     Boer events fire AT ZUL, but ZUL has no agency via this JE)
+#   This JE now bridges the Natal crisis, dynastic stabilization, and the
+#   firearms-modernization lane. It does not yet cover the full later-century
+#   Zulu story, but it is no longer a dead placeholder.
 #
 # CROSS-REFERENCES:
 #   - Boer-Zulu events: events/sb_boer_zulu_events.txt (ZUL is event target)
@@ -38,12 +31,57 @@ je_sb_zulu_kingdom = {
 		country_definition = cd:ZUL
 	}
 
+	is_shown_when_inactive = {
+		hidden_trigger = {
+			always = no
+		}
+	}
+
 	possible = {
-		country_definition = cd:ZUL
+		hidden_trigger = {
+			always = no
+		}
 	}
 
 	status_desc = {
 		first_valid = {
+			triggered_desc = {
+				desc = je_sb_zulu_kingdom_status_consolidated
+				trigger = {
+					OR = {
+						any_scope_character = {
+							is_ruler = yes
+							has_template = ZUL_mpande_zulu
+						}
+						has_variable = sb_natal_path_resolved_var
+					}
+					OR = {
+						has_variable = sb_firearms_modernized_var
+						has_modifier = sb_new_tactics
+					}
+				}
+			}
+			triggered_desc = {
+				desc = je_sb_zulu_kingdom_status_modernizing
+				trigger = {
+					OR = {
+						has_variable = sb_firearms_modernized_var
+						has_modifier = sb_new_tactics
+					}
+				}
+			}
+			triggered_desc = {
+				desc = je_sb_zulu_kingdom_status_succession
+				trigger = {
+					OR = {
+						any_scope_character = {
+							is_ruler = yes
+							has_template = ZUL_mpande_zulu
+						}
+						has_variable = sb_natal_path_resolved_var
+					}
+				}
+			}
 			triggered_desc = {
 				desc = je_sb_zulu_kingdom_status
 				trigger = {
@@ -53,11 +91,24 @@ je_sb_zulu_kingdom = {
 		}
 	}
 
-	# Phase 1 shell: always = no means this JE never completes.
-	# Phase 2 will replace this with real completion conditions
-	# (e.g., survive until 1855, or win/lose the Anglo-Zulu War).
 	complete = {
-		always = no
+		custom_tooltip = {
+			text = je_sb_zulu_kingdom_complete_succession
+			OR = {
+				any_scope_character = {
+					is_ruler = yes
+					has_template = ZUL_mpande_zulu
+				}
+				has_variable = sb_natal_path_resolved_var
+			}
+		}
+		custom_tooltip = {
+			text = je_sb_zulu_kingdom_complete_modernization
+			OR = {
+				has_variable = sb_firearms_modernized_var
+				has_modifier = sb_new_tactics
+			}
+		}
 	}
 
 	# High weight for journal priority (consistent with other SB JEs).

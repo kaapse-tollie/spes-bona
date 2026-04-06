@@ -1,6 +1,6 @@
-﻿# Spes Bona - Cape Colony Politics Journal Entry (Period 1)
+﻿# Spes Bona - Cape Colony Politics Journal Entry
 # ==============================================================================
-# Balance of power between Cape Liberals and Frontier Settlers, c. 1836-1880.
+# Balance of power between Cape Liberals and Frontier Settlers.
 #
 # DESIGN PATTERN: Spain DLC "Two Spains" — double_sided_bad progress bar +
 #   variable tracking + dynamic modifier. This is the same approach used in
@@ -8,24 +8,22 @@
 #   shared bar, and the further from center, the worse the instability.
 #
 # PROGRESS BAR LAYOUT:
-#   0 .......... 25 .......... 50 .......... 75 .......... 100
-#   Settler win   Settler adv   Balance   Liberal adv   Liberal win
+#   -100 ........ -50 .......... 0 .......... 50 ........ 100
+#   Settler win    Settler adv   Balance   Liberal adv   Liberal win
 #
 # 5-TIER STATUS DISPLAY:
-#   >= 75  Liberal Dominant
-#   >= 60  Liberal Advantage
-#   <= 25  Settler Dominant
-#   <= 40  Settler Advantage
+#   >= 50  Liberal Dominant
+#   >= 20  Liberal Advantage
+#   <= -50 Settler Dominant
+#   <= -20 Settler Advantage
 #   else   Balance (default fallback)
 #
 # COMPLETION CONDITIONS:
 #   - ECSL reaches crisis point --> CAP crisis event + London question
 #   - Liberal balance = 100 + Cultural Exclusion --> Liberal victory
-#   - Settler balance = 0 + frontier pacified --> Settler victory
+#   - Settler balance = -100 + frontier pacified --> Settler victory
 #   - Balance remains centered + Cultural Exclusion + frontier pacified
 #       --> Pragmatic compromise
-#   - Date = 1880 --> Bitter failure, make movements stronger and more dangerous
-#
 # OUTCOME EVENTS:
 #   - sb_cape.100 Liberal victory: Griqua accepted + migration reward
 #   - sb_cape.101 Settler victory: Boer accepted + colony growth reward
@@ -34,7 +32,8 @@
 #   - sb_cape.200 Britain answers the Albany petition immediately
 #   - sb_cape.201/.202 CAP receives London's answer
 #   - sb_cape.100 Liberal aftermath: the JE only closes once London's answer has landed
-#   - sb_cape.104 Bitter Settlement: radicals simmer for a decade
+#   - The JE no longer hard-fails on a calendar date; it remains open until
+#     the political contest or Albany crisis is resolved in substance.
 #
 # CROSS-REFERENCES:
 #   - Progress bar: common/scripted_progress_bars/sb_progress_bars.txt (sb_cape_balance_bar)
@@ -59,7 +58,7 @@ je_sb_cape_politics = {
 	}
 
 	# Links to the double_sided_bad bar defined in sb_progress_bars.txt.
-	# Bar starts at 50 (center), with liberal = positive direction, settler = negative.
+	# Bar starts at 0 (center), with liberal = positive direction, settler = negative.
 	# CMF note: keep this JE on the vanilla-safe scripted_progress_bar contract so
 	# standalone tiger validation remains clean even when dependency-only styling
 	# helpers are unavailable in the lint pass.
@@ -70,7 +69,7 @@ je_sb_cape_politics = {
 	scripted_button = je_sb_cape_favour_settlers_button
 
 	# 5-tier status description — evaluated top-to-bottom via first_valid.
-	# Order matters: dominant checks (70/30) must come before advantage checks (60/40),
+	# Order matters: dominant checks (50/-50) must come before advantage checks (20/-20),
 	# and the balance fallback (always = yes) must be last.
 	status_desc = {
 		first_valid = {
@@ -78,7 +77,7 @@ je_sb_cape_politics = {
 				desc = je_sb_cape_politics_liberal_dominant
 				trigger = {
 					scope:journal_entry = {
-						"scripted_bar_progress(sb_cape_balance_bar)" >= 75
+						"scripted_bar_progress(sb_cape_balance_bar)" >= 50
 					}
 				}
 			}
@@ -86,7 +85,7 @@ je_sb_cape_politics = {
 				desc = je_sb_cape_politics_liberal_advantage
 				trigger = {
 					scope:journal_entry = {
-						"scripted_bar_progress(sb_cape_balance_bar)" >= 60
+						"scripted_bar_progress(sb_cape_balance_bar)" >= 20
 					}
 				}
 			}
@@ -95,7 +94,7 @@ je_sb_cape_politics = {
 				desc = je_sb_cape_politics_settler_dominant
 				trigger = {
 					scope:journal_entry = {
-						"scripted_bar_progress(sb_cape_balance_bar)" <= 25
+						"scripted_bar_progress(sb_cape_balance_bar)" <= -50
 					}
 				}
 			}
@@ -103,11 +102,11 @@ je_sb_cape_politics = {
 				desc = je_sb_cape_politics_settler_advantage
 				trigger = {
 					scope:journal_entry = {
-						"scripted_bar_progress(sb_cape_balance_bar)" <= 40
+						"scripted_bar_progress(sb_cape_balance_bar)" <= -20
 					}
 				}
 			}
-			# Default: bar is between 41-59 — no faction has a clear edge.
+			# Default: neither side has a clear edge.
 			triggered_desc = {
 				desc = je_sb_cape_politics_balance
 				trigger = {
@@ -138,7 +137,7 @@ je_sb_cape_politics = {
 					custom_tooltip = {
 						text = je_sb_cape_politics_complete_settler
 						scope:journal_entry = {
-							"scripted_bar_progress(sb_cape_balance_bar)" <= 1
+							"scripted_bar_progress(sb_cape_balance_bar)" <= -99
 						}
 					}
 					custom_tooltip = {
@@ -154,8 +153,8 @@ je_sb_cape_politics = {
 				custom_tooltip = {
 					text = je_sb_cape_politics_complete_compromise
 					scope:journal_entry = {
-						"scripted_bar_progress(sb_cape_balance_bar)" >= 26
-						"scripted_bar_progress(sb_cape_balance_bar)" <= 74
+						"scripted_bar_progress(sb_cape_balance_bar)" >= -24
+						"scripted_bar_progress(sb_cape_balance_bar)" <= 24
 					}
 				}
 					custom_tooltip = {
@@ -180,10 +179,6 @@ je_sb_cape_politics = {
 				}
 			}
 
-			custom_tooltip = {
-				text = je_sb_cape_politics_complete_failure
-				game_date >= 1880.1.1
-			}
 		}
 	}
 
@@ -210,7 +205,7 @@ je_sb_cape_politics = {
 			else_if = {
 				limit = {
 					scope:journal_entry = {
-						"scripted_bar_progress(sb_cape_balance_bar)" <= 1
+						"scripted_bar_progress(sb_cape_balance_bar)" <= -99
 					}
 					NOT = { c:XHG ?= { is_country_alive = yes } }
 					NOT = { c:XHR ?= { is_country_alive = yes } }
@@ -221,8 +216,8 @@ je_sb_cape_politics = {
 			else_if = {
 				limit = {
 					scope:journal_entry = {
-						"scripted_bar_progress(sb_cape_balance_bar)" >= 26
-						"scripted_bar_progress(sb_cape_balance_bar)" <= 74
+						"scripted_bar_progress(sb_cape_balance_bar)" >= -24
+						"scripted_bar_progress(sb_cape_balance_bar)" <= 24
 					}
 					has_law = law_type:law_cultural_exclusion
 					NOT = { c:XHG ?= { is_country_alive = yes } }
@@ -231,10 +226,6 @@ je_sb_cape_politics = {
 				}
 				trigger_event = { id = sb_cape.102 popup = yes }
 			}
-			else = {
-				trigger_event = { id = sb_cape.104 popup = yes }
-			}
-
 			scope:journal_entry = {
 				if = {
 					limit = { has_modifier = sb_cape_political_tensions }
