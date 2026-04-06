@@ -498,72 +498,43 @@ sb_trek.120 = {
 		cu:boer = {
 			save_scope_as = migration_culture
 		}
+		if = {
+			limit = {
+				any_scope_character = {
+					has_template = TRN_stephanus_schoeman
+				}
+			}
+			random_scope_character = {
+				limit = {
+					has_template = TRN_stephanus_schoeman
+				}
+				save_scope_as = zpb_ruler_scope
+			}
+		}
 	}
 
 	option = {
 		name = sb_trek.120.a
 		default_option = yes
-		if = {
-			limit = {
-				NOT = { exists = c:ZPB }
-			}
-			create_country = {
-				tag = ZPB
-				origin = root
-				province = p:x5C4C78
-			}
-		}
-		s:STATE_TRANSVAAL = {
-			set_owner_of_provinces = {
-				country = c:ZPB
-				provinces = {
-					x5C4C78 x8CD439 x3DA2B5 x8DF37C x9EC141 xC9D165 xCAEAEB xD34CB1 x775CAE xDB7D32 x24A528 x336285 x4760DD xF14024
-					xD022FF x3E338E xB19AFE x5078AD xD9521C xFF97A1 x2917E2 x7E986B xDABE56
-				}
-			}
-			add_claim = root
-		}
-		c:ZPB ?= {
-			set_country_type = unrecognized
-			active_law:lawgroup_army_model ?= {
-				if = {
-					limit = {
-						NOT = { has_amendment = amendment_type:amendment_sb_commando_corps }
-					}
-					add_amendment = {
-						type = amendment_sb_commando_corps
-						sponsor = PREV.ig:ig_rural_folk
-					}
-				}
-			}
-			change_relations = {
-				country = root
-				value = -40
-			}
-		}
-		change_relations = {
-			country = c:ZPB
-			value = -40
-		}
-		c:ZPB ?= {
-			add_modifier = {
-				name = sb_trek_migration_cost
-				months = 24
-			}
-		}
-		c:ZPB ?= {
-			random_scope_state = {
-				limit = {
-					state_region = s:STATE_TRANSVAAL
-				}
-				create_mass_migration = {
-					origin = scope:migration_source
-					culture = scope:migration_culture
-				}
-			}
+		hidden_effect = {
+			sb_found_zoutpansberg_republic = yes
 		}
 		ai_chance = {
 			base = 100
+		}
+	}
+
+	option = {
+		name = sb_trek.120.b
+		trigger = {
+			is_player = yes
+		}
+		hidden_effect = {
+			sb_found_zoutpansberg_republic = yes
+		}
+		play_as = c:ZPB
+		ai_chance = {
+			base = 0
 		}
 	}
 }

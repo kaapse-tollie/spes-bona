@@ -52,3 +52,85 @@ sb_trigger_boer_migration_effect = {
 		}
 	}
 }
+
+# Shared Zoutpansberg split setup so event branches can offer a play-as choice
+# without duplicating the full spawn / migration / government wiring.
+sb_found_zoutpansberg_republic = {
+	if = {
+		limit = {
+			NOT = { exists = c:ZPB }
+		}
+		create_country = {
+			tag = ZPB
+			origin = root
+			province = p:x5C4C78
+		}
+	}
+	s:STATE_TRANSVAAL = {
+		set_owner_of_provinces = {
+			country = c:ZPB
+			provinces = {
+				x5C4C78 x8CD439 x3DA2B5 x8DF37C x9EC141 xC9D165 xCAEAEB xD34CB1 x775CAE xDB7D32 x24A528 x336285 x4760DD xF14024
+				xD022FF x3E338E xB19AFE x5078AD xD9521C xFF97A1 x2917E2 x7E986B xDABE56
+			}
+		}
+		add_claim = root
+	}
+	c:ZPB ?= {
+		set_country_type = unrecognized
+		sb_apply_boer_republic_spawn_setup = yes
+		if = {
+			limit = {
+				exists = scope:zpb_ruler_scope
+			}
+			scope:zpb_ruler_scope ?= {
+				transfer_character = c:ZPB
+				set_interest_group = c:ZPB.ig:ig_armed_forces
+				set_as_interest_group_leader = yes
+				set_character_as_ruler = yes
+				if = {
+					limit = {
+						NOT = { has_role = general }
+					}
+					add_character_role = general
+				}
+				if = {
+					limit = {
+						NOT = { has_role = politician }
+					}
+					add_character_role = politician
+				}
+			}
+		}
+		else = {
+			create_character = {
+				template = TRN_stephanus_schoeman
+				ruler = yes
+				is_general = yes
+				ig_leader = yes
+				interest_group = ig_armed_forces
+			}
+		}
+		change_relations = {
+			country = root
+			value = -40
+		}
+		add_modifier = {
+			name = sb_trek_migration_cost
+			months = 24
+		}
+		random_scope_state = {
+			limit = {
+				state_region = s:STATE_TRANSVAAL
+			}
+			create_mass_migration = {
+				origin = scope:migration_source
+				culture = scope:migration_culture
+			}
+		}
+	}
+	change_relations = {
+		country = c:ZPB
+		value = -40
+	}
+}

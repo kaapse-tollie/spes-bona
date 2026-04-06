@@ -75,3 +75,35 @@ sb_apply_boer_commandant_general_baseline = {
 	sb_ensure_commandant_general_ruler_command = yes
 	sb_ensure_commandant_general_ruler_landowner_leadership = yes
 }
+
+# Shared hidden setup for mid-game Boer splinter republics. This keeps event
+# flows readable while ensuring the spawned country immediately lands on the
+# intended commandant-general government and custom IG identity stack.
+sb_apply_boer_republic_spawn_setup = {
+	sb_apply_boer_commandant_general_baseline = yes
+	sb_apply_boer_republic_interest_group_identity = yes
+	if = {
+		limit = {
+			NOT = { has_law = law_type:law_frontier_colonization }
+		}
+		activate_law = law_type:law_frontier_colonization
+	}
+	active_law:lawgroup_army_model ?= {
+		if = {
+			limit = {
+				NOT = { has_amendment = amendment_type:amendment_sb_commando_corps }
+			}
+			add_amendment = {
+				type = amendment_sb_commando_corps
+				sponsor = PREV.ig:ig_rural_folk
+			}
+		}
+	}
+	every_interest_group = {
+		remove_ruling_interest_group = yes
+	}
+	ig:ig_armed_forces ?= { add_ruling_interest_group = yes }
+	ig:ig_landowners ?= { add_ruling_interest_group = yes }
+	ig:ig_rural_folk ?= { add_ruling_interest_group = yes }
+	ig:ig_devout ?= { add_ruling_interest_group = yes }
+}
