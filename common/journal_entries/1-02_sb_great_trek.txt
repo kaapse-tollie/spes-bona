@@ -29,7 +29,8 @@
 #     STATE_TRANSVAAL shell.
 #   - Both: removes sb_trek_migration_pull from all states (trek is over,
 #     settlers have arrived).
-#   - Fires sb_trek.100 completion event.
+#   - Fires sb_trek.100 completion event, which now hands off to a post-trek
+#     constitutional choice instead of auto-centralizing every Boer republic.
 #
 # CROSS-REFERENCES:
 #   - Migration modifier: common/modifiers/sb_modifiers.txt (sb_trek_migration_pull)
@@ -118,22 +119,6 @@ je_sb_great_trek = {
 				has_variable = sb_early_republic_var
 			}
 			remove_variable = sb_early_republic_var
-		}
-		# The commandant-general setup is a frontier-state expedient. Once the
-		# republic has consolidated its homeland, it should settle into the
-		# standard presidential-republic form used elsewhere in V3.
-		if = {
-			limit = {
-				has_law = law_type:law_sb_commandant_general_republic
-			}
-			activate_law = law_type:law_presidential_republic
-			activate_law = law_type:law_wealth_voting
-		}
-		if = {
-			limit = {
-				has_variable = sb_commandant_general_visible_var
-			}
-			remove_variable = sb_commandant_general_visible_var
 		}
 		# Remove migration pull from all states — the trek is complete,
 		# no longer need to attract additional Boer settlers.

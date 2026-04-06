@@ -634,6 +634,35 @@ sb_on_cape_monthly_pulse_country = {
 				set_variable = sb_cape_convict_crisis_fired
 				trigger_event = { id = sb_cape.111 days = 7 popup = yes }
 			}
+
+			# A more liberal Cape order encourages a fresh northern trek away from
+			# Cape institutions. This is the player-facing trigger for the later
+			# Zoutpansberg breakaway, and it remains separate from the post-trek
+			# Lydenburg split so the two republics emerge for different reasons.
+			if = {
+				limit = {
+					NOT = { has_variable = sb_zoutpansberg_spawned_var }
+					NOT = { exists = c:ZPB }
+					c:TRN ?= {
+						is_country_alive = yes
+						has_journal_entry = je_sb_great_trek
+					}
+					OR = {
+						var:sb_cape_balance_current >= 25
+						has_law = law_type:law_cultural_exclusion
+						has_law = law_type:law_census_voting
+						has_law = law_type:law_universal_suffrage
+						has_law = law_type:law_women_own_property
+						has_law = law_type:law_women_in_the_workplace
+						has_law = law_type:law_womens_suffrage
+					}
+				}
+				set_variable = sb_zoutpansberg_spawned_var
+				c:TRN ?= {
+					set_variable = sb_zoutpansberg_spawned_var
+				}
+				trigger_event = { id = sb_trek.110 days = 7 popup = yes }
+			}
 		}
 	}
 }
@@ -696,28 +725,6 @@ sb_on_trek_monthly_pulse_country = {
 			}
 			set_variable = sb_natal_diplomacy_started_var
 			trigger_event = { id = sb_boer_zulu.010 days = 7 popup = yes }
-		}
-
-		if = {
-			limit = {
-				country_definition = cd:TRN
-				NOT = { has_variable = sb_zoutpansberg_spawned_var }
-				NOT = { exists = c:ZPB }
-				game_date >= 1849.1.1
-				NOT = { has_variable = sb_early_republic_var }
-				sb_controls_west_transvaal_core = yes
-				c:CAP ?= {
-					OR = {
-						has_law = law_type:law_cultural_exclusion
-						has_modifier = sb_cape_liberal_victory
-						je:je_sb_cape_politics ?= {
-							has_modifier = sb_cape_liberal_ascendant
-						}
-					}
-				}
-			}
-			set_variable = sb_zoutpansberg_spawned_var
-			trigger_event = { id = sb_trek.120 days = 7 popup = yes }
 		}
 
 		# Griqualand East remains a shell in Phase 1, but the fork is useful to

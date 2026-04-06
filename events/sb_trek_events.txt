@@ -470,6 +470,68 @@ sb_trek.041 = {
 }
 
 # Zoutpansberg splinters out of the northern Transvaal once the Cape's liberal
+# order makes another northward trek look preferable to life under Cape law.
+sb_trek.110 = {
+	type = country_event
+	placement = root
+
+	title = sb_trek.110.t
+	desc = sb_trek.110.d
+	flavor = sb_trek.110.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:CAP
+		c:TRN ?= {
+			is_country_alive = yes
+			has_journal_entry = je_sb_great_trek
+		}
+	}
+
+	option = {
+		name = sb_trek.110.a
+		default_option = yes
+		if = {
+			limit = { has_modifier = sb_cape_zoutpansberg_departure_settler }
+			remove_modifier = sb_cape_zoutpansberg_departure_settler
+		}
+		add_modifier = {
+			name = sb_cape_zoutpansberg_departure_liberal
+			months = 60
+		}
+		hidden_effect = {
+			c:TRN ?= {
+				trigger_event = { id = sb_trek.120 days = 30 popup = yes }
+			}
+		}
+	}
+
+	option = {
+		name = sb_trek.110.b
+		if = {
+			limit = { has_modifier = sb_cape_zoutpansberg_departure_liberal }
+			remove_modifier = sb_cape_zoutpansberg_departure_liberal
+		}
+		add_modifier = {
+			name = sb_cape_zoutpansberg_departure_settler
+			months = 60
+		}
+		hidden_effect = {
+			c:TRN ?= {
+				trigger_event = { id = sb_trek.120 days = 30 popup = yes }
+			}
+		}
+	}
+}
+
+# Zoutpansberg splinters out of the northern Transvaal once the Cape's liberal
 # order makes the far-northern trek districts feel both attractive and distant.
 sb_trek.120 = {
 	type = country_event
@@ -595,6 +657,144 @@ sb_trek.220 = {
 	}
 }
 
+sb_trek.130 = {
+	type = country_event
+	placement = root
+
+	title = sb_trek.130.t
+	desc = sb_trek.130.d
+	flavor = sb_trek.130.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		OR = {
+			country_definition = cd:TRN
+			country_definition = cd:ORA
+		}
+	}
+
+	option = {
+		name = sb_trek.130.a
+		default_option = yes
+		if = {
+			limit = { has_modifier = sb_trek_frontier_republic }
+			remove_modifier = sb_trek_frontier_republic
+		}
+		add_modifier = {
+			name = sb_trek_centralizing_republic
+			months = 120
+		}
+		if = {
+			limit = { has_variable = sb_commandant_general_visible_var }
+			remove_variable = sb_commandant_general_visible_var
+		}
+		activate_law = law_type:law_presidential_republic
+		activate_law = law_type:law_interventionism
+		if = {
+			limit = {
+				country_definition = cd:TRN
+				NOT = { exists = c:LYD }
+			}
+			set_variable = sb_lydenburg_spawn_var
+			trigger_event = { id = sb_trek.131 days = 60 popup = yes }
+		}
+		ai_chance = {
+			base = 70
+		}
+	}
+
+	option = {
+		name = sb_trek.130.b
+		if = {
+			limit = { has_modifier = sb_trek_centralizing_republic }
+			remove_modifier = sb_trek_centralizing_republic
+		}
+		add_modifier = {
+			name = sb_trek_frontier_republic
+			months = 120
+		}
+		set_variable = sb_commandant_general_visible_var
+		activate_law = law_type:law_sb_commandant_general_republic
+		activate_law = law_type:law_agrarianism
+		sb_refresh_boer_commandant_general_government = yes
+		sb_ensure_commandant_general_ruler_command = yes
+		sb_ensure_commandant_general_ruler_landowner_leadership = yes
+		if = {
+			limit = { has_variable = sb_lydenburg_spawn_var }
+			remove_variable = sb_lydenburg_spawn_var
+		}
+		ai_chance = {
+			base = 30
+		}
+	}
+}
+
+sb_trek.131 = {
+	type = country_event
+	placement = root
+
+	title = sb_trek.131.t
+	desc = sb_trek.131.d
+	flavor = sb_trek.131.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:TRN
+		has_variable = sb_lydenburg_spawn_var
+		NOT = { exists = c:LYD }
+	}
+
+	immediate = {
+		save_scope_as = migration_source
+		cu:boer = {
+			save_scope_as = migration_culture
+		}
+	}
+
+	option = {
+		name = sb_trek.131.a
+		default_option = yes
+		remove_variable = sb_lydenburg_spawn_var
+		set_variable = sb_lydenburg_spawned_var
+		hidden_effect = {
+			sb_found_lydenburg_republic = yes
+		}
+		ai_chance = {
+			base = 100
+		}
+	}
+
+	option = {
+		name = sb_trek.131.b
+		trigger = {
+			is_player = yes
+		}
+		remove_variable = sb_lydenburg_spawn_var
+		set_variable = sb_lydenburg_spawned_var
+		hidden_effect = {
+			sb_found_lydenburg_republic = yes
+		}
+		play_as = c:LYD
+		ai_chance = {
+			base = 0
+		}
+	}
+}
+
 # Great Trek JE completion event
 sb_trek.100 = {
 	type = country_event
@@ -620,6 +820,17 @@ sb_trek.100 = {
 		add_modifier = {
 			name = sb_prestige_gain_medium
 			months = long_modifier_time
+		}
+		hidden_effect = {
+			if = {
+				limit = {
+					OR = {
+						country_definition = cd:TRN
+						country_definition = cd:ORA
+					}
+				}
+				trigger_event = { id = sb_trek.130 days = 7 popup = yes }
+			}
 		}
 	}
 }

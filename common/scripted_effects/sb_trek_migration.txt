@@ -134,3 +134,58 @@ sb_found_zoutpansberg_republic = {
 		value = -40
 	}
 }
+
+sb_found_lydenburg_republic = {
+	if = {
+		limit = {
+			NOT = { exists = c:LYD }
+		}
+		create_country = {
+			tag = LYD
+			origin = root
+			province = p:x91CA59
+		}
+	}
+	s:STATE_TRANSVAAL = {
+		set_owner_of_provinces = {
+			country = c:LYD
+			provinces = {
+				x50A011 x0591EA x927F5A xDF169D x452304 x972FB2 x73CDE8 x7470A2 xBD0AEB x9037B0 xDC7726
+				x91CA59 xB98B42 x6E419C xD02011 xD72273 x25A652
+			}
+		}
+		add_claim = root
+	}
+	c:LYD ?= {
+		set_country_type = unrecognized
+		sb_apply_boer_republic_spawn_setup = yes
+		create_character = {
+			template = LYD_cornelis_potgieter
+			ruler = yes
+			is_general = yes
+			ig_leader = yes
+			interest_group = ig_armed_forces
+		}
+		change_relations = {
+			country = root
+			value = -25
+		}
+		add_modifier = {
+			name = sb_trek_migration_cost
+			months = 24
+		}
+		random_scope_state = {
+			limit = {
+				state_region = s:STATE_TRANSVAAL
+			}
+			create_mass_migration = {
+				origin = scope:migration_source
+				culture = scope:migration_culture
+			}
+		}
+	}
+	change_relations = {
+		country = c:LYD
+		value = -25
+	}
+}
