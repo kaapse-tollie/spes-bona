@@ -30,8 +30,18 @@ COUNTRIES = {
 		}
 
 		set_variable = sb_firearms_je_seeded_var
-		add_journal_entry = { type = je_sb_adopt_firearms }
-		add_journal_entry = { type = je_sb_zulu_kingdom }
+		if = {
+			limit = {
+				NOT = { has_journal_entry = je_sb_adopt_firearms }
+			}
+			add_journal_entry = { type = je_sb_adopt_firearms }
+		}
+		if = {
+			limit = {
+				NOT = { has_journal_entry = je_sb_zulu_kingdom }
+			}
+			add_journal_entry = { type = je_sb_zulu_kingdom }
+		}
 
 		# Spes Bona: Removed je_struggle_for_the_highveld (disabled by mod).
 		# ZUL's content is now driven by regional events, the firearms JE, and the
