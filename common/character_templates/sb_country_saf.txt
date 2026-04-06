@@ -87,15 +87,31 @@ REPLACE:TRN_marthinus_wessel_pretorius = {
 				AND = {
 					country_has_primary_culture = cu:boer
 					any_scope_state = {
-						state_region = s:STATE_TRANSVAAL
+						OR = {
+							state_region = s:STATE_TRANSVAAL
+							state_region = s:STATE_EAST_TRANSVAAL
+							state_region = s:STATE_NORTHERN_TRANSVAAL
+						}
 					}
 				}
 				AND = {
 					c:ORA ?= this
-					s:STATE_TRANSVAAL = {
-						NOT = {
-							any_scope_state = {
-								owner = { country_has_primary_culture = cu:boer }
+					NOT = {
+						OR = {
+							s:STATE_TRANSVAAL = {
+								any_scope_state = {
+									owner = { country_has_primary_culture = cu:boer }
+								}
+							}
+							s:STATE_EAST_TRANSVAAL = {
+								any_scope_state = {
+									owner = { country_has_primary_culture = cu:boer }
+								}
+							}
+							s:STATE_NORTHERN_TRANSVAAL = {
+								any_scope_state = {
+									owner = { country_has_primary_culture = cu:boer }
+								}
 							}
 						}
 					}
