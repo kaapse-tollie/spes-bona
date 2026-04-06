@@ -1,0 +1,111 @@
+﻿je_sb_transvaal_unity = {
+	group = je_group_historical_content
+
+	icon = "gfx/interface/icons/je_icons/je_great_trek.dds"
+
+	possible = {
+		country_definition = cd:TRN
+		is_subject = no
+		c:LYD ?= {
+			is_country_alive = yes
+		}
+	}
+
+	immediate = {
+		if = {
+			limit = {
+				NOT = { has_variable = sb_transvaal_unity_progress }
+			}
+			set_variable = {
+				name = sb_transvaal_unity_progress
+				value = 0
+			}
+		}
+	}
+
+	status_desc = {
+		first_valid = {
+			triggered_desc = {
+				desc = je_sb_transvaal_unity_status
+				trigger = {
+					always = yes
+				}
+			}
+		}
+	}
+
+	complete = {
+		custom_tooltip = {
+			text = je_sb_transvaal_unity_progress_tt
+			var:sb_transvaal_unity_progress >= 60
+		}
+	}
+
+	on_complete = {
+		if = {
+			limit = {
+				c:LYD ?= {
+					is_country_alive = yes
+				}
+			}
+			s:STATE_EAST_TRANSVAAL = {
+				add_homeland = cu:boer
+			}
+			annex_with_incorporation = c:LYD
+		}
+		remove_variable = sb_transvaal_unity_progress
+	}
+
+	on_monthly_pulse = {
+		effect = {
+			if = {
+				limit = {
+					government_legitimacy >= 50
+					ig:ig_intelligentsia ?= { is_in_government = no }
+					ig:ig_petty_bourgeoisie ?= { is_in_government = no }
+					ig:ig_industrialists ?= { is_in_government = no }
+					ig:ig_trade_unions ?= { is_in_government = no }
+					OR = {
+						has_law = law_type:law_national_supremacy
+						has_law = law_type:law_ethnostate
+					}
+					has_law = law_type:law_national_militia
+					active_law:lawgroup_army_model ?= {
+						has_amendment = amendment_type:amendment_sb_commando_corps
+					}
+					c:LYD ?= {
+						is_country_alive = yes
+						relations:root >= relations_threshold:amicable
+					}
+					root.gdp > {
+						value = c:LYD.gdp
+						multiply = 1.5
+					}
+				}
+				change_variable = {
+					name = sb_transvaal_unity_progress
+					add = 1
+				}
+			}
+		}
+	}
+
+	invalid = {
+		OR = {
+			is_subject = yes
+			NOT = {
+				c:LYD ?= {
+					is_country_alive = yes
+				}
+			}
+		}
+	}
+
+	on_invalid = {
+		remove_variable = sb_transvaal_unity_progress
+	}
+
+	weight = 900
+	should_be_pinned_by_default = yes
+	transferable = no
+}

@@ -7,9 +7,6 @@ sb_trigger_boer_migration_effect = {
 		limit = {
 			country_definition = cd:CAP
 			is_country_alive = yes
-			any_primary_culture = {
-				this = cu:boer
-			}
 		}
 		save_scope_as = boer_migration_origin
 		random_scope_state = {
@@ -79,6 +76,7 @@ sb_found_zoutpansberg_republic = {
 	c:ZPB ?= {
 		set_country_type = unrecognized
 		sb_apply_boer_republic_spawn_setup = yes
+		activate_law = law_type:law_slave_trade
 		if = {
 			limit = {
 				exists = scope:zpb_ruler_scope
@@ -123,6 +121,10 @@ sb_found_zoutpansberg_republic = {
 			limit = {
 				state_region = s:STATE_NORTHERN_TRANSVAAL
 			}
+			add_modifier = {
+				name = sb_trek_migration_pull
+				months = 24
+			}
 			create_mass_migration = {
 				origin = scope:migration_source
 				culture = scope:migration_culture
@@ -157,6 +159,22 @@ sb_found_lydenburg_republic = {
 		add_claim = root
 	}
 	c:LYD ?= {
+		capital = {
+			save_scope_as = lyd_settler_target
+		}
+	}
+	root.capital ?= {
+		every_scope_pop = {
+			limit = {
+				culture = cu:boer
+			}
+			move_partial_pop = {
+				state = scope:lyd_settler_target
+				population_ratio = 0.12
+			}
+		}
+	}
+	c:LYD ?= {
 		set_country_type = unrecognized
 		sb_apply_boer_republic_spawn_setup = yes
 		create_character = {
@@ -178,11 +196,22 @@ sb_found_lydenburg_republic = {
 			limit = {
 				state_region = s:STATE_EAST_TRANSVAAL
 			}
+			add_modifier = {
+				name = sb_trek_migration_pull
+				months = 24
+			}
 			create_mass_migration = {
 				origin = scope:migration_source
 				culture = scope:migration_culture
 			}
 		}
+	}
+	if = {
+		limit = {
+			country_definition = cd:TRN
+			NOT = { has_journal_entry = je_sb_transvaal_unity }
+		}
+		add_journal_entry = { type = je_sb_transvaal_unity }
 	}
 	change_relations = {
 		country = c:LYD

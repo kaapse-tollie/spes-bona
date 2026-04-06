@@ -3,12 +3,13 @@
 # Higher priority values take precedence when multiple names match.
 # Cross-ref: localization/ for the actual display strings (dyn_c_sb_* keys).
 
-# TRN: Potchefstroom -> South African Republic
+# TRN: Potchefstroom -> Transvaal Republic -> Suid-Afrikaanse Republiek
 # REPLACE: overwrites any vanilla dynamic names for TRN.
 # Historically, the Boers initially called their polity after Potchefstroom (est. 1838),
-# the first major Voortrekker settlement in the Transvaal. It was renamed the
-# South African Republic (Zuid-Afrikaansche Republiek / ZAR) upon consolidation under
-# M.W. Pretorius in 1852 (Sand River Convention).
+# the first major Voortrekker settlement in the Transvaal. Once the early trek
+# phase ends, the polity is better read as the Transvaal Republic. The fuller
+# Suid-Afrikaanse Republiek title is reserved for control of the whole
+# Transvaal macro-region, excluding the Swazi-held slice.
 REPLACE:TRN = {
 	# Potchefstroom — early small Boer republic name.
 	# priority = 0: lowest priority, only used when sb_early_republic_var is set.
@@ -27,15 +28,30 @@ REPLACE:TRN = {
 		}
 	}
 
-	# South African Republic — after JE completion / political consolidation.
-	# priority = 1: takes over once the early republic variable is cleared.
-	# Represents the mature ZAR state recognized by Britain at the Sand River Convention.
+	# Suid-Afrikaanse Republiek — full Transvaal consolidation short of Swaziland.
+	# priority = 20: highest TRN naming tier once the whole macro-region is held.
 	dynamic_country_name = {
-		name = dyn_c_sb_south_african_republic
-		adjective = dyn_c_sb_south_african_republic_adj
+		name = dyn_c_sb_suid_afrikaanse_republiek
+		adjective = dyn_c_sb_suid_afrikaanse_republiek_adj
 
 		is_main_tag_only = yes
-		priority = 1
+		priority = 20
+
+		trigger = {
+			scope:actor ?= {
+				NOT = { has_variable = sb_early_republic_var }
+				sb_controls_transvaal_except_swazi = yes
+			}
+		}
+	}
+
+	# Transvaal Republic — mature western republic once the trek phase has ended.
+	dynamic_country_name = {
+		name = dyn_c_sb_transvaal_republic
+		adjective = dyn_c_sb_transvaal_republic_adj
+
+		is_main_tag_only = yes
+		priority = 10
 
 		trigger = {
 			scope:actor ?= {

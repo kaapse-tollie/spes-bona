@@ -401,6 +401,280 @@ sb_found_natalia_after_guns_bargain_rejection = {
 
 # Britain can respond to Dingane's coastal raid by annexing the Zulu-held Natal
 # littoral outright and reorganizing it as a crown colony.
+sb_place_natalia_under_british_protectorate = {
+	change_relations = {
+		country = c:GBR
+		value = 50
+	}
+	if = {
+		limit = {
+			NOT = { is_subject_of = c:GBR }
+		}
+		c:GBR ?= {
+			create_diplomatic_pact = {
+				country = root
+				type = protectorate
+			}
+		}
+	}
+	else_if = {
+		limit = {
+			is_subject_of = c:GBR
+			NOT = { is_subject_type = subject_type_protectorate }
+			NOT = { is_subject_type = subject_type_colony }
+		}
+		change_subject_type = subject_type_protectorate
+	}
+}
+
+sb_convert_natalia_to_british_crown_colony = {
+	if = {
+		limit = {
+			NOT = { has_variable = sb_natalia_british_colony_resolved_var }
+		}
+		set_variable = sb_natalia_british_colony_resolved_var
+	}
+	change_relations = {
+		country = c:GBR
+		value = 50
+	}
+	# Vanilla colony subject types only remain valid on countries with the
+	# colonial country type. Without this, Natalia can briefly become a colony
+	# and then immediately drop back out of subjecthood on the next tick.
+	if = {
+		limit = {
+			NOT = { is_country_type = colonial }
+		}
+		set_country_type = colonial
+	}
+	if = {
+		limit = {
+			NOT = { is_subject_of = c:GBR }
+		}
+		c:GBR ?= {
+			create_diplomatic_pact = {
+				country = root
+				type = colony
+			}
+		}
+	}
+	else_if = {
+		limit = {
+			is_subject_of = c:GBR
+			NOT = { is_subject_type = subject_type_colony }
+		}
+		change_subject_type = subject_type_colony
+	}
+	sb_trigger_british_natal_colony_migration_effect = yes
+}
+
+sb_select_natalia_refugee_receiver = {
+	random_country = {
+		limit = {
+			is_country_alive = yes
+			OR = {
+				country_definition = cd:ORA
+				country_definition = cd:TRN
+				country_definition = cd:ZPB
+				country_definition = cd:LYD
+			}
+		}
+		save_scope_as = natal_refugee_receiver
+	}
+}
+
+sb_annul_natalia_boer_treaties = {
+	if = {
+		limit = {
+			any_scope_treaty = {
+				binds = c:ORA
+			}
+		}
+		every_scope_treaty = {
+			limit = {
+				binds = c:ORA
+			}
+			withdraw = {
+				country = root
+			}
+		}
+	}
+	if = {
+		limit = {
+			any_scope_treaty = {
+				binds = c:TRN
+			}
+		}
+		every_scope_treaty = {
+			limit = {
+				binds = c:TRN
+			}
+			withdraw = {
+				country = root
+			}
+		}
+	}
+	if = {
+		limit = {
+			exists = c:ZPB
+			any_scope_treaty = {
+				binds = c:ZPB
+			}
+		}
+		every_scope_treaty = {
+			limit = {
+				binds = c:ZPB
+			}
+			withdraw = {
+				country = root
+			}
+		}
+	}
+	if = {
+		limit = {
+			exists = c:LYD
+			any_scope_treaty = {
+				binds = c:LYD
+			}
+		}
+		every_scope_treaty = {
+			limit = {
+				binds = c:LYD
+			}
+			withdraw = {
+				country = root
+			}
+		}
+	}
+}
+
+sb_exile_natalia_boer_leadership = {
+	if = {
+		limit = {
+			NOT = { exists = scope:natal_refugee_receiver }
+		}
+		sb_select_natalia_refugee_receiver = yes
+	}
+	random_scope_character = {
+		limit = {
+			has_template = TRN_andries_pretorius
+		}
+		save_scope_as = natal_exiled_leader
+	}
+	if = {
+		limit = {
+			NOT = { exists = scope:natal_exiled_leader }
+			exists = ruler
+			ruler = {
+				culture = cu:boer
+			}
+		}
+		ruler = {
+			save_scope_as = natal_exiled_leader
+		}
+	}
+	scope:natal_exiled_leader ?= {
+		if = {
+			limit = {
+				NOT = { has_role = politician }
+			}
+			add_character_role = politician
+		}
+		transfer_character = scope:natal_refugee_receiver
+		set_interest_group = scope:natal_refugee_receiver.ig:ig_landowners
+	}
+}
+
+sb_install_british_natal_governor = {
+	random_scope_character = {
+		limit = {
+			has_variable = sb_martin_west_var
+		}
+		save_scope_as = natal_colonial_governor
+	}
+	scope:natal_colonial_governor ?= {
+		set_interest_group = c:NAL.ig:ig_armed_forces
+		if = {
+			limit = {
+				NOT = { has_role = politician }
+			}
+			add_character_role = politician
+		}
+		set_as_interest_group_leader = yes
+		set_character_as_ruler = yes
+	}
+	if = {
+		limit = {
+			NOT = { exists = scope:natal_colonial_governor }
+		}
+		create_character = {
+			first_name = Martin
+			last_name = West
+			historical = yes
+			ruler = yes
+			ig_leader = yes
+			birth_date = 1804.1.1
+			culture = cu:british
+			religion = rel:protestant
+			interest_group = ig_armed_forces
+			ideology = ideology_moderate
+			traits = {
+				tactful
+				master_bureaucrat
+				persistent
+			}
+			on_created = {
+				set_variable = sb_martin_west_var
+			}
+		}
+	}
+}
+
+sb_finalize_british_natal_colony = {
+	sb_select_natalia_refugee_receiver = yes
+	sb_exile_natalia_boer_leadership = yes
+	sb_convert_natalia_to_british_crown_colony = yes
+	if = {
+		limit = {
+			has_variable = sb_commandant_general_visible_var
+		}
+		remove_variable = sb_commandant_general_visible_var
+	}
+	activate_law = law_type:law_colonial_administration
+	activate_law = law_type:law_professional_army
+	activate_law = law_type:law_slavery_banned
+	active_law:lawgroup_army_model ?= {
+		if = {
+			limit = {
+				has_amendment = amendment_type:amendment_sb_commando_corps
+			}
+			every_scope_amendment = {
+				limit = {
+					type = amendment_type:amendment_sb_commando_corps
+				}
+				remove_amendment = yes
+			}
+		}
+	}
+	if = {
+		limit = {
+			NOT = { country_has_primary_culture = cu:british }
+		}
+		add_primary_culture = cu:british
+	}
+	if = {
+		limit = {
+			country_has_primary_culture = cu:boer
+		}
+		remove_primary_culture = cu:boer
+	}
+	sb_annul_natalia_boer_treaties = yes
+	sb_install_british_natal_governor = yes
+	scope:natal_refugee_receiver ?= {
+		sb_trigger_natal_refugee_migration_effect = yes
+	}
+}
+
 sb_found_natal_colony_after_british_annexation = {
 	if = {
 		limit = {
@@ -420,28 +694,15 @@ sb_found_natal_colony_after_british_annexation = {
 		add_claim = c:NAL
 	}
 	c:NAL ?= {
-		change_relations = {
-			country = root
-			value = 50
-		}
+		sb_convert_natalia_to_british_crown_colony = yes
 	}
-	if = {
-		limit = {
-			NOT = {
-				c:NAL ?= {
-					has_diplomatic_pact = {
-						who = root
-						type = colony
-					}
-				}
-			}
-		}
-		create_diplomatic_pact = {
-			country = c:NAL
-			type = colony
-		}
+}
+
+sb_trigger_random_natal_refugee_receiver_event = {
+	sb_select_natalia_refugee_receiver = yes
+	scope:natal_refugee_receiver ?= {
+		sb_trigger_natal_refugee_migration_effect = yes
 	}
-	sb_trigger_british_natal_colony_migration_effect = yes
 }
 
 # Add a Boer ally directly to Natalia's side once Britain turns the ultimatum
@@ -521,6 +782,17 @@ sb_trigger_natal_refugee_migration_effect = {
 				culture = scope:migration_culture
 			}
 		}
+		c:NAL.capital ?= {
+			every_scope_pop = {
+				limit = {
+					culture = cu:boer
+				}
+				move_partial_pop = {
+					state = scope:migration_target
+					population_ratio = 0.20
+				}
+			}
+		}
 	}
 }
 
@@ -531,9 +803,6 @@ sb_trigger_natalia_boer_migration_effect = {
 		limit = {
 			country_definition = cd:CAP
 			is_country_alive = yes
-			any_primary_culture = {
-				this = cu:boer
-			}
 		}
 		save_scope_as = boer_migration_origin
 	}

@@ -25,6 +25,22 @@ on_game_started = {
 	on_actions = { sb_on_game_started }
 }
 
+on_game_started_after_lobby = {
+	on_actions = { sb_on_game_started_after_lobby }
+}
+
+on_diplomatic_play_started = {
+	on_actions = { sb_on_spes_bona_diplomatic_play_started }
+}
+
+on_diplo_play_join_side = {
+	on_actions = { sb_on_spes_bona_diplomatic_play_started }
+}
+
+on_become_subject = {
+	on_actions = { sb_on_natalia_become_british_subject }
+}
+
 on_monthly_pulse_country = {
 	on_actions = { sb_on_cape_monthly_pulse_country sb_on_trek_monthly_pulse_country }
 }
@@ -70,9 +86,6 @@ sb_on_game_started = {
 		}
 
 		sb_normalize_boer_trade_treaties = yes
-		c:MTB ?= {
-			sb_effect_native_conscription_MTB = yes
-		}
 
 		# ============================================================
 		# Homeland corrections — enforcing the 50-100yr presence rule
@@ -363,6 +376,45 @@ sb_on_game_started = {
 			}
 		}
 
+	}
+}
+
+sb_on_game_started_after_lobby = {
+	effect = {
+		c:MTB ?= {
+			if = {
+				limit = { has_modifier = sb_native_conscription_MTB_player }
+				remove_modifier = sb_native_conscription_MTB_player
+			}
+			if = {
+				limit = { has_modifier = sb_native_conscription_MTB }
+				remove_modifier = sb_native_conscription_MTB
+			}
+			if = {
+				limit = {
+					OR = {
+						c:TRN ?= {
+							is_country_alive = yes
+							is_player = yes
+						}
+						c:ORA ?= {
+							is_country_alive = yes
+							is_player = yes
+						}
+					}
+				}
+				add_modifier = {
+					name = sb_native_conscription_MTB_player
+					months = -1
+				}
+			}
+			else = {
+				add_modifier = {
+					name = sb_native_conscription_MTB
+					months = -1
+				}
+			}
+		}
 	}
 }
 
@@ -661,7 +713,6 @@ sb_on_cape_monthly_pulse_country = {
 					NOT = { exists = c:ZPB }
 					c:TRN ?= {
 						is_country_alive = yes
-						has_journal_entry = je_sb_great_trek
 					}
 					OR = {
 						var:sb_cape_balance_current >= 25
@@ -685,7 +736,7 @@ sb_on_cape_monthly_pulse_country = {
 
 sb_on_cape_secession_end = {
 	effect = {
-		# No-op placeholder. The Albany chain now resolves on the London answer
+		# Intentionally empty. The Albany chain now resolves on London's answer
 		# itself rather than waiting for the secession war to conclude.
 	}
 }
@@ -793,6 +844,51 @@ sb_on_trek_monthly_pulse_country = {
 				1 = { trigger_event = { id = sb_boer_zulu.100 days = 630 popup = yes } }
 				1 = { trigger_event = { id = sb_boer_zulu.100 days = 720 popup = yes } }
 			}
+		}
+
+		# Catch-up path so ongoing saves also receive the Lydenburg reunion JE if
+		# the republic already exists when this version of the content loads.
+		if = {
+			limit = {
+				country_definition = cd:TRN
+				NOT = { has_journal_entry = je_sb_transvaal_unity }
+				c:LYD ?= {
+					is_country_alive = yes
+				}
+			}
+			add_journal_entry = { type = je_sb_transvaal_unity }
+		}
+	}
+}
+
+sb_on_spes_bona_diplomatic_play_started = {
+	effect = {
+		if = {
+			limit = {
+				any_scope_play_involved = { c:GZA ?= THIS }
+				any_scope_play_involved = { is_player = yes }
+				c:GZA ?= {
+					has_journal_entry = je_sb_adopt_firearms
+					NOT = { has_variable = sb_gza_emergency_barracks_var }
+				}
+			}
+			c:GZA ?= {
+				sb_raise_gza_firearms_emergency_barracks = yes
+			}
+		}
+	}
+}
+
+sb_on_natalia_become_british_subject = {
+	effect = {
+		if = {
+			limit = {
+				country_definition = cd:NAL
+				is_subject_of = c:GBR
+				has_variable = sb_british_natal_ultimatum_var
+				NOT = { has_variable = sb_natalia_british_colony_resolved_var }
+			}
+			trigger_event = { id = sb_boer_zulu.115 days = 1 popup = yes }
 		}
 	}
 }
@@ -928,34 +1024,7 @@ sb_on_spes_bona_wargoal_enforced = {
 				}
 			}
 			scope:target = {
-				if = {
-					limit = {
-						is_subject_of = c:GBR
-						NOT = { is_subject_type = subject_type_colony }
-					}
-					change_subject_type = subject_type_colony
-				}
-				sb_trigger_british_natal_colony_migration_effect = yes
-			}
-			c:ORA ?= {
-				if = {
-					limit = {
-						is_country_alive = yes
-						is_subject = no
-					}
-					trigger_event = { id = sb_boer_zulu.116 days = 7 popup = yes }
-				}
-				else_if = {
-					limit = {
-						c:TRN ?= {
-							is_country_alive = yes
-							is_subject = no
-						}
-					}
-					c:TRN ?= {
-						trigger_event = { id = sb_boer_zulu.117 days = 7 popup = yes }
-					}
-				}
+				trigger_event = { id = sb_boer_zulu.115 days = 7 popup = yes }
 			}
 		}
 

@@ -239,19 +239,23 @@ sb_trek.002 = {
 				}
 			}
 		}
-			c:MTB ?= {
-				every_scope_state = {
-					limit = {
-						OR = {
-							state_region = s:STATE_TRANSVAAL
-							state_region = s:STATE_EAST_TRANSVAAL
-							state_region = s:STATE_NORTHERN_TRANSVAAL
-						}
+		c:MTB ?= {
+			every_scope_state = {
+				limit = {
+					OR = {
+						state_region = s:STATE_TRANSVAAL
+						state_region = s:STATE_NORTHERN_TRANSVAAL
 					}
-					set_state_owner = c:PDI
 				}
+				set_state_owner = c:TSW
 			}
-		remove_modifier = sb_trek_frontier_drive
+			every_scope_state = {
+				limit = {
+					state_region = s:STATE_EAST_TRANSVAAL
+				}
+				set_state_owner = c:PDI
+			}
+		}
 		add_modifier = {
 			name = sb_trek_frontier_drive
 			months = 60
@@ -458,7 +462,7 @@ sb_trek.041 = {
 		option = {
 			name = sb_trek.041.a
 			default_option = yes
-		# Mass migration wave — Boers flock to the South African Republic.
+		# Mass migration wave — Boers flock to the Transvaal Republic.
 		# The Cape also feels the administrative pull of the trek.
 		scope:migration_target = {
 			create_mass_migration = {
@@ -497,7 +501,6 @@ sb_trek.110 = {
 		country_definition = cd:CAP
 		c:TRN ?= {
 			is_country_alive = yes
-			has_journal_entry = je_sb_great_trek
 		}
 	}
 
@@ -734,6 +737,14 @@ sb_trek.130 = {
 		sb_ensure_commandant_general_ruler_command = yes
 		sb_ensure_commandant_general_ruler_landowner_leadership = yes
 		if = {
+			limit = {
+				country_definition = cd:TRN
+			}
+			s:STATE_EAST_TRANSVAAL = {
+				add_claim = c:TRN
+			}
+		}
+		if = {
 			limit = { has_variable = sb_lydenburg_spawn_var }
 			remove_variable = sb_lydenburg_spawn_var
 		}
@@ -791,12 +802,13 @@ sb_trek.131 = {
 		trigger = {
 			is_player = yes
 		}
+		custom_tooltip = sb_trek_131_play_as_lyd_tt
 		remove_variable = sb_lydenburg_spawn_var
 		set_variable = sb_lydenburg_spawned_var
 		hidden_effect = {
 			sb_found_lydenburg_republic = yes
+			play_as = c:LYD
 		}
-		play_as = c:LYD
 		ai_chance = {
 			base = 0
 		}

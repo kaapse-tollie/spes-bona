@@ -38,7 +38,7 @@ This file tracks the structural groundwork for the next layer of Southern Africa
 ### Kingdoms
 
 - `ZUL` now actually starts with `je_sb_zulu_kingdom`.
-- The Zulu JE is no longer a dead placeholder. It now bridges:
+- The Zulu JE is no longer just a shell. It now bridges:
   - Natal-political resolution
   - early succession stabilization
   - firearms modernization

@@ -1,8 +1,9 @@
-﻿# Swaziland (SWZ) — vanilla override
+﻿# Swaziland (SWZ) — vanilla override.
 # Historically: The Swazi kingdom under Sobhuza II (d. 1839) and then Mswati II (r. 1840-1868).
 # A Nguni kingdom that survived the Mfecane by diplomacy and strategic mountain retreats.
 # Smaller and less militarised than Zulu but maintained independence until British protectorate (1903).
-# This file modifies vanilla SWZ by removing je_struggle_for_the_highveld.
+# This override removes the vanilla Highveld JE and adjusts the eastern
+# highveld setup for the mod's regional content.
 # Setup stays conservative relative to ZUL: similar Nguni institutions, but a weaker
 # case for a distinct external-trade tech profile in 1836.
 COUNTRIES = {
@@ -24,19 +25,19 @@ COUNTRIES = {
 		activate_law = law_type:law_slave_trade
 
 		# Armed Forces ruling: the king's regiments (emabutfo) were central to state power.
-		# NOTE: no ?= operator here (unlike ZUL) — vanilla inconsistency preserved to avoid logic changes.
+		# Keep the vanilla-style plain scope here rather than switching to `?=`, so
+		# this override does not change startup behavior beyond the intended edits.
 		ig:ig_armed_forces = {
 			add_ruling_interest_group = yes
 		}
 
-		set_variable = sb_firearms_je_seeded_var
-		if = {
-			limit = {
-				NOT = { has_journal_entry = je_sb_adopt_firearms }
-			}
-			add_journal_entry = { type = je_sb_adopt_firearms }
+		# Swazi authority historically extended farther west into the highveld
+		# than the starting owned slice suggests. This also helps keep early
+		# TRN colonization pressure out of the eastern escarpment.
+		s:STATE_EAST_TRANSVAAL = {
+			add_claim = c:SWZ
 		}
-
-		# Spes Bona: Removed je_struggle_for_the_highveld (disabled by mod).
+		# Replace the vanilla Highveld JE with the firearms adoption lane.
+		add_journal_entry = { type = je_sb_adopt_firearms }
 	}
 }

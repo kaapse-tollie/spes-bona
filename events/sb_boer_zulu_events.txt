@@ -28,8 +28,8 @@
 #   111 ORA decides whether to support resisting Natalia
 #   112 TRN decides whether to support resisting Natalia
 #   114 GBR launches the protectorate war after resistance
-#   115 ORA receives refugee/migration fallout if Natalia submits
-#   116/117 ORA/TRN receive refugee fallout if Natalia loses the war
+#   115 NAL is reduced to a British crown colony after submission or defeat
+#   116/117 ORA/TRN receive refugee fallout from Natalia's collapse
 # =============================================================================
 
 sb_boer_zulu.010 = {
@@ -92,6 +92,56 @@ sb_boer_zulu.010 = {
 	}
 }
 
+sb_boer_zulu.019 = {
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		country_definition = cd:ZUL
+	}
+
+	immediate = {
+		if = {
+			limit = {
+				NOT = { is_player = yes }
+				NOT = { has_variable = sb_zul_emergency_barracks_var }
+			}
+			if = {
+				limit = {
+					OR = {
+						c:ORA ?= {
+							is_country_alive = yes
+							is_player = yes
+						}
+						c:TRN ?= {
+							is_country_alive = yes
+							is_player = yes
+						}
+					}
+				}
+				set_variable = sb_zul_emergency_barracks_var
+				create_military_formation = {
+					type = army
+					hq_region = sr:region_southern_africa
+					name = dingane_amabutho
+
+					combat_unit = {
+						type = unit_type:combat_unit_type_irregular_infantry
+						state_region = s:STATE_ZULULAND
+						count = 16
+					}
+				}
+			}
+			else = {
+				random_list = {
+					33 = { sb_raise_zul_firearms_emergency_barracks = yes }
+					67 = { }
+				}
+			}
+		}
+	}
+}
+
 sb_boer_zulu.020 = {
 	type = country_event
 	placement = root
@@ -113,6 +163,7 @@ sb_boer_zulu.020 = {
 	}
 
 	immediate = {
+		trigger_event = { id = sb_boer_zulu.019 }
 		c:ORA ?= {
 			save_scope_as = boer_republic
 		}
@@ -530,6 +581,7 @@ sb_boer_zulu.056 = {
 		}
 	}
 
+	# Join the British protectorate war on Natalia's side.
 	option = {
 		name = sb_boer_zulu.056.a
 		default_option = yes
@@ -586,12 +638,15 @@ sb_boer_zulu.056 = {
 						scope:orangia ?= { is_ai = no }
 						is_ai = no
 					}
-				} 
-				add = 0 # ? 
+				}
+				# Player support is already handled explicitly through option access,
+				# so this modifier remains neutral for AI weighting.
+				add = 0
 			}
 		}
 	}
 
+	# Decline to intervene.
 	option = {
 		name = sb_boer_zulu.056.b
 		every_scope_treaty = {
@@ -602,7 +657,7 @@ sb_boer_zulu.056 = {
 				}
 			}
 			withdraw = {
-				country = scope:orangia
+				country = root
 			}
 		}
 		change_relations = {
@@ -1248,6 +1303,7 @@ sb_boer_zulu.110 = {
 
 	trigger = {
 		country_definition = cd:NAL
+		NOT = { has_variable = sb_natalia_british_colony_resolved_var }
 	}
 
 	immediate = {
@@ -1275,41 +1331,25 @@ sb_boer_zulu.110 = {
 	option = {
 		name = sb_boer_zulu.110.a
 		default_option = yes
-		scope:britain = {
-			create_diplomatic_pact = {
-				country = root
-				type = colony
+		trigger = {
+			NOT = {
+				OR = {
+					is_player = yes
+					scope:oranje_backer ?= { is_player = yes }
+					scope:transvaal_backer ?= { is_player = yes }
+				}
 			}
 		}
-		sb_trigger_british_natal_colony_migration_effect = yes
-		s:STATE_ZULULAND = {
-			set_owner_of_provinces = {
-				country = root
-				provinces = { x279045 }
-			}
-		}
-		scope:oranje_backer ?= {
-			trigger_event = { id = sb_boer_zulu.115 days = 3 }
-		}
-		if = {
-			limit = {
-				NOT = { exists = scope:oranje_backer }
-				exists = scope:transvaal_backer
-			}
-			scope:transvaal_backer = {
-				trigger_event = { id = sb_boer_zulu.117 days = 3 }
-			}
-		}
+		sb_place_natalia_under_british_protectorate = yes
+		trigger_event = { id = sb_boer_zulu.115 days = 3 popup = yes }
 		ai_chance = {
 			base = 70
 			modifier = {
 				trigger = {
 					OR = {
+						is_player = yes
 						scope:oranje_backer ?= { is_player = yes }
-						c:TRN ?= {
-							is_country_alive = yes
-							is_player = yes
-						}
+						scope:transvaal_backer ?= { is_player = yes }
 					}
 				}
 				add = -70
@@ -1345,11 +1385,9 @@ sb_boer_zulu.110 = {
 			modifier = {
 				trigger = {
 					OR = {
+						is_player = yes
 						scope:oranje_backer ?= { is_player = yes }
-						c:TRN ?= {
-							is_country_alive = yes
-							is_player = yes
-						}
+						scope:transvaal_backer ?= { is_player = yes }
 					}
 				}
 				add = 70
@@ -1582,16 +1620,17 @@ sb_boer_zulu.115 = {
 	duration = 3
 
 	trigger = {
-		country_definition = cd:ORA
+		country_definition = cd:NAL
 	}
 
 	immediate = {
+		sb_place_natalia_under_british_protectorate = yes
 	}
 
 	option = {
 		name = sb_boer_zulu.115.a
 		default_option = yes
-		sb_trigger_natal_refugee_migration_effect = yes
+		sb_finalize_british_natal_colony = yes
 		ai_chance = {
 			base = 100
 		}

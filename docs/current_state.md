@@ -18,6 +18,7 @@ This file is the repo-local reference for the live mod branch. It is meant to st
 - `NAL` forms through the Natal chain
 - `ZUL`, `SWZ`, and `GZA` run the firearms-acquisition JE
 - `LYD` exists as a Phase 2 Lydenburg shell
+- `ZPB` exists as a live northern Boer splinter path
 - `RHB` exists as a Phase 2 Rehoboth/Baster shell
 - `ORL` exists in Hereroland
 - `STATE_DRAKENSBERG` is a separate Phase 1 frontier state with a defensive mountain trait
@@ -45,13 +46,13 @@ This file is the repo-local reference for the live mod branch. It is meant to st
   `TRN` controls the western Transvaal republican core
 - completion settles the republic, removes the frontier expedient government setup, and ends the trek migration pull
 - `ZPB` is no longer gated behind full ownership of the old macro-`STATE_TRANSVAAL`
-- Transvaal Phase 2 geography now has a scripted helper layer pending the manual province audit:
-  west
-  central
-  east
-  north / Zoutpansberg
-- the east / Mpumalanga helper now reflects the current Pedi shell plus the first audited Lydenburg extras and the Swazi slice
-- the north / Zoutpansberg helper now reflects the vanilla Venda shell plus the first audited Limpopo extras for `ZPB`
+- the current live split is now:
+  west `STATE_TRANSVAAL`
+  east `STATE_EAST_TRANSVAAL`
+  north `STATE_NORTHERN_TRANSVAAL`
+- the east / Mpumalanga state follows the current Pedi shell plus the audited Lydenburg extras and the Swazi slice
+- the north / Zoutpansberg state follows the vanilla Venda shell plus the audited Limpopo extras for `ZPB`
+- the old central helper remains a future scaffold rather than a live fourth state
 
 ### TRN / MTB Frontier
 
@@ -106,10 +107,11 @@ This file is the repo-local reference for the live mod branch. It is meant to st
 - progress comes from either route:
   an active small-arms transfer treaty with a country that runs an arms industry
   an arms industry at at least `90%` occupancy
-- both routes now complete after `12` cumulative months
+- both routes now complete after `24` cumulative months
 - the malus decays month by month while either route is active
 - the flat military-research malus stays until the JE completes
 - completion fires a `new tactics` reward event and gives a temporary military-research bonus
+- if the relevant frontier play starts while the JE is still active, `ZUL` and `GZA` now have live emergency barracks fallback logic to stop the AI from deleting its opening army
 
 ## Zulu Kingdom
 
