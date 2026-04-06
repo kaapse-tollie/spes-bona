@@ -24,7 +24,7 @@ This file tracks the structural groundwork for the next layer of Southern Africa
   - `sb_controls_central_transvaal_core`
   - `sb_controls_east_transvaal_core`
   - `sb_controls_north_transvaal_core`
-- The western helper is wired, the eastern helper now follows the current Pedi shell plus the first audited Lydenburg extras, and the northern helper follows the vanilla Venda shell plus the first audited ZPB/Limpopo extras.
+- The western helper is wired, the eastern helper now follows the current Pedi shell plus the first audited Lydenburg extras and the Swazi slice for the broader Mpumalanga region, and the northern helper follows the vanilla Venda shell plus the first audited ZPB/Limpopo extras.
 - Central and eastern helpers are intentionally left inert until the province audit is done.
 - `TRN` Great Trek completion now keys off the western core helper instead of full macro-Transvaal control.
 - `ZPB` no longer waits for `TRN` to own the entire old `STATE_TRANSVAAL` before its split event can fire.
