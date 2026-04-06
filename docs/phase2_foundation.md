@@ -24,7 +24,7 @@ This file tracks the structural groundwork for the next layer of Southern Africa
   - `sb_controls_central_transvaal_core`
   - `sb_controls_east_transvaal_core`
   - `sb_controls_north_transvaal_core`
-- Only the western and northern helpers are currently wired with placeholder province sets.
+- The western helper is wired, and the northern helper now follows the current vanilla Venda shell plus the first audited ZPB/Limpopo extras.
 - Central and eastern helpers are intentionally left inert until the province audit is done.
 - `TRN` Great Trek completion now keys off the western core helper instead of full macro-Transvaal control.
 - `ZPB` no longer waits for `TRN` to own the entire old `STATE_TRANSVAAL` before its split event can fire.
@@ -50,7 +50,7 @@ This file tracks the structural groundwork for the next layer of Southern Africa
 - The full Lydenburg spawn chain.
 - The western Baster/Rehoboth displacement chain.
 - Diamonds and northern Cape consolidation implementation.
-- Cattle-killing and wider mid-century Cape crisis content.
+- Wider mid-century Cape crisis content beyond the current constitutional scaffold.
 
 ## Rule Of Thumb
 

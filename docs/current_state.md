@@ -50,6 +50,7 @@ This file is the repo-local reference for the live mod branch. It is meant to st
   central
   east
   north / Zoutpansberg
+- the north / Zoutpansberg helper now reflects the vanilla Venda shell plus the first audited Limpopo extras for `ZPB`
 
 ### TRN / MTB Frontier
 
