@@ -1,24 +1,91 @@
 ﻿# Shared subject-autonomy helpers for mid-century constitutional content.
 
+sb_apply_responsible_colony_subject_type_from_overlord = {
+	# Non-British monarchical grants use a dynastic responsible-colony variant
+	# that shares the overlord monarch as head of state. This keeps the colony
+	# inside the parent dynasty without inventing a cadet branch in script.
+	if = {
+		limit = {
+			scope:actor = {
+				has_law_or_variant = law_type:law_monarchy
+				NOT = { country_definition = cd:GBR }
+			}
+		}
+		change_subject_type = subject_type_sb_responsible_colony_monarchy
+	}
+	else = {
+		change_subject_type = subject_type_sb_responsible_colony
+	}
+}
+
+sb_apply_responsible_colony_governance_from_overlord = {
+	# Responsible government should move the subject out of the colonial
+	# administration family and into the ordinary governance-principles family.
+	# Britain is the historical monarchical exception and still maps to the
+	# parliamentary path; other monarchies remain monarchies.
+	if = {
+		limit = {
+			scope:actor = {
+				has_law_or_variant = law_type:law_council_republic
+			}
+		}
+		activate_law = law_type:law_council_republic
+	}
+	else_if = {
+		limit = {
+			scope:actor = {
+				has_law_or_variant = law_type:law_theocracy
+			}
+		}
+		activate_law = law_type:law_theocracy
+	}
+	else_if = {
+		limit = {
+			scope:actor = {
+				has_law_or_variant = law_type:law_presidential_republic
+			}
+		}
+		activate_law = law_type:law_presidential_republic
+	}
+	else_if = {
+		limit = {
+			scope:actor = {
+				has_law_or_variant = law_type:law_parliamentary_republic
+			}
+		}
+		activate_law = law_type:law_parliamentary_republic
+	}
+	else_if = {
+		limit = {
+			scope:actor = {
+				country_definition = cd:GBR
+				has_law_or_variant = law_type:law_monarchy
+			}
+		}
+		activate_law = law_type:law_parliamentary_republic
+	}
+	else_if = {
+		limit = {
+			scope:actor = {
+				has_law_or_variant = law_type:law_monarchy
+			}
+		}
+		activate_law = law_type:law_monarchy
+	}
+}
+
 sb_grant_responsible_government_effect = {
 	if = {
 		limit = {
 			is_subject_type = subject_type_colony
 		}
-		change_subject_type = subject_type_sb_responsible_colony
+		sb_apply_responsible_colony_subject_type_from_overlord = yes
+		sb_apply_responsible_colony_governance_from_overlord = yes
 	}
-	if = {
-		limit = {
-			NOT = { has_modifier = sb_responsible_government }
-		}
-		add_modifier = {
-			name = sb_responsible_government
-			months = -1
-		}
-	}
-	add_liberty_desire = -15
+
+	add_liberty_desire = -25
 	change_relations = {
 		country = scope:actor
-		value = 15
+		value = 20
 	}
 }

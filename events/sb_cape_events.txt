@@ -834,11 +834,31 @@ sb_cape.020 = {
 
 	trigger = {
 		country_definition = cd:CAP
+		has_journal_entry = je_sb_cape_politics
 	}
 
 	option = {
 		name = sb_cape.020.a
 		default_option = yes
+		je:je_sb_cape_politics ?= {
+			add_progress = {
+				value = 10
+				name = sb_cape_balance_bar
+			}
+		}
+		add_modifier = {
+			name = sb_cape_favour_liberals
+			months = 60
+		}
+		every_political_movement = {
+			limit = {
+				is_political_movement_type = movement_sb_eastern_cape_separatist
+			}
+			add_modifier = {
+				name = sb_cape_responsible_govt_ecsl_backlash
+				months = 60
+			}
+		}
 		ai_chance = {
 			base = 100
 		}
