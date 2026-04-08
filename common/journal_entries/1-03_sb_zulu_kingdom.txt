@@ -1,24 +1,8 @@
-﻿# Spes Bona - Zulu Kingdom Journal Entry
+﻿# Spes Bona - Zulu dynastic stability JE
 # ==============================================================================
-# Phase 2 foundation for the Zulu Kingdom's internal politics / military JE.
-#
-# HISTORICAL CONTEXT:
-#   The Zulu Kingdom under Dingane (1828-1840) and then Mpande (1840-1872) faced
-#   internal succession crises, Boer encroachment, and British pressure. This JE
-#   is intended to model the Zulu player's experience during Period 1 — managing
-#   the ibutho (regiment) system, navigating Boer diplomacy, and consolidating
-#   power after Shaka's assassination.
-#
-# CURRENT STATE:
-#   This JE now bridges the Natal crisis, dynastic stabilization, and the
-#   firearms-modernization lane. It does not yet cover the full later-century
-#   Zulu story, but it is now a live bridge into the later kingdom content.
-#
-# CROSS-REFERENCES:
-#   - Boer-Zulu events: events/sb_boer_zulu_events.txt (ZUL is event target)
-#   - Zulu country def: common/country_definitions/sb_countries.txt (cd:ZUL)
-#   - Trek JE Natal path: common/journal_entries/1-02_sb_great_trek.txt
-#     (fires sb_boer_zulu.010 -> .020 which gives ZUL player choices)
+# This JE now tracks whether the post-Shaka royal order survives the Natal and
+# coastal crises. Dingane's traits pull the bar downward, while a more secure
+# and politically deft ruler can stabilize the dynasty and set up a durable heir.
 # ==============================================================================
 
 je_sb_zulu_kingdom = {
@@ -26,7 +10,8 @@ je_sb_zulu_kingdom = {
 
 	icon = "gfx/interface/icons/event_icons/event_default.dds"
 
-	# ZUL = Zulu Kingdom. Only shown for Zulu in lobby and gameplay.
+	scripted_progress_bar = sb_zulu_dynastic_stability_bar
+
 	is_shown_in_lobby = {
 		country_definition = cd:ZUL
 	}
@@ -38,79 +23,96 @@ je_sb_zulu_kingdom = {
 	}
 
 	possible = {
-		hidden_trigger = {
-			always = no
+		country_definition = cd:ZUL
+	}
+
+	scripted_button = je_sb_zulu_enforce_dynastic_claims_button
+	scripted_button = je_sb_zulu_relax_dynastic_claims_button
+
+	immediate = {
+		if = {
+			limit = {
+				NOT = { has_variable = sb_zulu_dynastic_stability_seeded_var }
+			}
+			set_variable = sb_zulu_dynastic_stability_seeded_var
+			je:je_sb_zulu_kingdom ?= {
+				set_bar_progress = {
+					value = 50
+					name = sb_zulu_dynastic_stability_bar
+				}
+			}
 		}
 	}
 
 	status_desc = {
 		first_valid = {
 			triggered_desc = {
-				desc = je_sb_zulu_kingdom_status_consolidated
+				desc = je_sb_zulu_kingdom_status_secure
 				trigger = {
-					OR = {
-						any_scope_character = {
-							is_ruler = yes
-							has_template = ZUL_mpande_zulu
-						}
-						has_variable = sb_natal_path_resolved_var
-					}
-					OR = {
-						has_variable = sb_firearms_modernized_var
-						has_modifier = sb_new_tactics
+					scope:journal_entry = {
+						"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" >= 75
 					}
 				}
 			}
 			triggered_desc = {
-				desc = je_sb_zulu_kingdom_status_modernizing
+				desc = je_sb_zulu_kingdom_status_steady
 				trigger = {
-					OR = {
-						has_variable = sb_firearms_modernized_var
-						has_modifier = sb_new_tactics
+					scope:journal_entry = {
+						"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" >= 50
 					}
 				}
 			}
 			triggered_desc = {
-				desc = je_sb_zulu_kingdom_status_succession
+				desc = je_sb_zulu_kingdom_status_crisis
 				trigger = {
-					OR = {
-						any_scope_character = {
-							is_ruler = yes
-							has_template = ZUL_mpande_zulu
-						}
-						has_variable = sb_natal_path_resolved_var
+					scope:journal_entry = {
+						"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 15
 					}
 				}
 			}
 			triggered_desc = {
-				desc = je_sb_zulu_kingdom_status
+				desc = je_sb_zulu_kingdom_status_precarious
 				trigger = {
-					always = yes
+					scope:journal_entry = {
+						"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 35
+					}
 				}
 			}
+			desc = je_sb_zulu_kingdom_status
 		}
 	}
 
 	complete = {
 		custom_tooltip = {
-			text = je_sb_zulu_kingdom_complete_succession
-			OR = {
-				any_scope_character = {
-					is_ruler = yes
-					has_template = ZUL_mpande_zulu
-				}
-				has_variable = sb_natal_path_resolved_var
-			}
-		}
-		custom_tooltip = {
-			text = je_sb_zulu_kingdom_complete_modernization
-			OR = {
-				has_variable = sb_firearms_modernized_var
-				has_modifier = sb_new_tactics
+			text = je_sb_zulu_kingdom_complete_dynasty
+			scope:journal_entry = {
+				"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" >= 100
 			}
 		}
 	}
 
-	# High weight for journal priority (consistent with other SB JEs).
+	on_monthly_pulse = {
+		effect = {
+			sb_zulu_monthly_dynasty_housekeeping = yes
+			if = {
+				limit = {
+					NOT = { has_variable = sb_zulu_dynastic_collapse_pending_var }
+					scope:journal_entry = {
+						"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 0
+					}
+				}
+				set_variable = sb_zulu_dynastic_collapse_pending_var
+				trigger_event = { id = sb_boer_zulu.090 days = 1 popup = yes }
+			}
+		}
+	}
+
+	on_complete = {
+		trigger_event = { id = sb_boer_zulu.093 days = 1 popup = yes }
+		remove_variable = sb_zulu_dynastic_collapse_pending_var
+		sb_zulu_disable_dynastic_claims = yes
+	}
+
 	weight = 1000
+	should_be_pinned_by_default = yes
 }

@@ -625,13 +625,14 @@ sb_on_cape_monthly_pulse_country = {
 					NOT = {
 						OR = {
 							has_law = law_type:law_cultural_exclusion
-							has_law = law_type:law_multicultural
+							has_law_or_variant = law_type:law_multicultural
 						}
 					}
 					NOT = {
 						OR = {
 							is_enacting_law = law_type:law_cultural_exclusion
 							is_enacting_law = law_type:law_multicultural
+							is_enacting_law = law_type:law_sb_non_racialism
 						}
 					}
 					NOT = { has_variable = sb_cape_liberal_complaint_seen_var }
@@ -773,6 +774,44 @@ sb_on_cape_secession_start = {
 # away from the already-busy Cape monthly block.
 sb_on_trek_monthly_pulse_country = {
 	effect = {
+		if = {
+			limit = {
+				OR = {
+					country_definition = cd:ORA
+					country_definition = cd:TRN
+				}
+			}
+			if = {
+				limit = {
+					has_journal_entry = je_sb_great_trek
+					is_ai = yes
+					c:ORA ?= {
+						is_country_alive = yes
+						is_ai = yes
+					}
+					c:TRN ?= {
+						is_country_alive = yes
+						is_ai = yes
+					}
+				}
+				if = {
+					limit = {
+						NOT = { has_modifier = sb_trek_ai_mobilization }
+					}
+					add_modifier = {
+						name = sb_trek_ai_mobilization
+						months = 2
+					}
+				}
+			}
+			else = {
+				if = {
+					limit = { has_modifier = sb_trek_ai_mobilization }
+					remove_modifier = sb_trek_ai_mobilization
+				}
+			}
+		}
+
 		# Zoutpansberg appears once the Transvaal has consolidated and the Cape's
 		# liberal turn makes the northern trek districts more attractive than
 		# obedient. TRN's claim on the whole state should naturally turn this into
@@ -926,6 +965,80 @@ sb_on_spes_bona_war_end = {
 		if = {
 			limit = {
 				scope:actor ?= {
+					country_definition = cd:GBR
+				}
+				scope:target ?= {
+					country_definition = cd:ZUL
+					has_variable = sb_port_natal_british_war_var
+				}
+			}
+			scope:target = {
+				remove_variable = sb_port_natal_british_war_var
+				if = {
+					limit = { has_variable = sb_port_natal_raid_var }
+					remove_variable = sb_port_natal_raid_var
+				}
+				trigger_event = { id = sb_boer_zulu.092 days = 7 popup = yes }
+			}
+		}
+		if = {
+			limit = {
+				scope:actor ?= {
+					country_definition = cd:ZUL
+					has_variable = sb_port_natal_british_war_var
+				}
+				scope:target ?= {
+					country_definition = cd:GBR
+				}
+			}
+			scope:actor = {
+				remove_variable = sb_port_natal_british_war_var
+				if = {
+					limit = { has_variable = sb_port_natal_raid_var }
+					remove_variable = sb_port_natal_raid_var
+				}
+				trigger_event = { id = sb_boer_zulu.092 days = 7 popup = yes }
+			}
+		}
+		if = {
+			limit = {
+				scope:actor ?= {
+					country_definition = cd:ZUL
+					has_variable = sb_zulu_swazi_war_active_var
+				}
+				scope:target ?= {
+					country_definition = cd:SWZ
+					has_variable = sb_zulu_swazi_war_active_var
+				}
+			}
+			scope:actor = {
+				remove_variable = sb_zulu_swazi_war_active_var
+			}
+			scope:target = {
+				remove_variable = sb_zulu_swazi_war_active_var
+			}
+		}
+		if = {
+			limit = {
+				scope:actor ?= {
+					country_definition = cd:SWZ
+					has_variable = sb_zulu_swazi_war_active_var
+				}
+				scope:target ?= {
+					country_definition = cd:ZUL
+					has_variable = sb_zulu_swazi_war_active_var
+				}
+			}
+			scope:actor = {
+				remove_variable = sb_zulu_swazi_war_active_var
+			}
+			scope:target = {
+				remove_variable = sb_zulu_swazi_war_active_var
+			}
+		}
+		if = {
+			limit = {
+				scope:actor ?= {
 					country_definition = cd:ORA
 					has_variable = sb_natal_war_active_var
 				}
@@ -954,6 +1067,64 @@ sb_on_spes_bona_war_end = {
 # War-goal hooks for the Phase 1 frontier wars.
 sb_on_spes_bona_wargoal_enforced = {
 	effect = {
+		if = {
+			limit = {
+				country_definition = cd:ZUL
+				NOT = { has_variable = sb_zulu_generic_war_resolution_recent_var }
+				NOT = { has_variable = sb_natal_war_active_var }
+				NOT = { has_variable = sb_port_natal_british_war_var }
+				NOT = { has_variable = sb_zulu_swazi_war_active_var }
+			}
+			sb_zulu_apply_generic_war_victory = yes
+		}
+
+		if = {
+			limit = {
+				scope:target ?= {
+					country_definition = cd:ZUL
+					NOT = { has_variable = sb_zulu_generic_war_resolution_recent_var }
+					NOT = { has_variable = sb_natal_war_active_var }
+					NOT = { has_variable = sb_port_natal_british_war_var }
+					NOT = { has_variable = sb_zulu_swazi_war_active_var }
+				}
+			}
+			scope:target = {
+				sb_zulu_apply_generic_war_defeat = yes
+			}
+		}
+
+		if = {
+			limit = {
+				country_definition = cd:ZUL
+				has_variable = sb_zulu_swazi_war_active_var
+				scope:target ?= {
+					country_definition = cd:SWZ
+					has_variable = sb_zulu_swazi_war_active_var
+				}
+			}
+			remove_variable = sb_zulu_swazi_war_active_var
+			scope:target = {
+				remove_variable = sb_zulu_swazi_war_active_var
+			}
+			sb_zulu_apply_swazi_campaign_victory = yes
+		}
+
+		if = {
+			limit = {
+				country_definition = cd:SWZ
+				has_variable = sb_zulu_swazi_war_active_var
+				scope:target ?= {
+					country_definition = cd:ZUL
+					has_variable = sb_zulu_swazi_war_active_var
+				}
+			}
+			remove_variable = sb_zulu_swazi_war_active_var
+			scope:target = {
+				remove_variable = sb_zulu_swazi_war_active_var
+				sb_zulu_apply_swazi_campaign_defeat = yes
+			}
+		}
+
 		# ORA wins the Natal crisis war.
 		if = {
 			limit = {
@@ -1000,14 +1171,18 @@ sb_on_spes_bona_wargoal_enforced = {
 				country_definition = cd:GBR
 				scope:target ?= {
 					country_definition = cd:ZUL
-					has_variable = sb_port_natal_raid_var
+					has_variable = sb_port_natal_british_war_var
 				}
 				scope:diplomatic_play ?= {
 					is_diplomatic_play_type = dp_annex_war
 				}
 			}
 			scope:target = {
-				remove_variable = sb_port_natal_raid_var
+				remove_variable = sb_port_natal_british_war_var
+				if = {
+					limit = { has_variable = sb_port_natal_raid_var }
+					remove_variable = sb_port_natal_raid_var
+				}
 			}
 			trigger_event = { id = sb_boer_zulu.091 days = 7 popup = yes }
 		}
@@ -1035,12 +1210,16 @@ sb_on_spes_bona_wargoal_enforced = {
 				scope:target ?= {
 					country_definition = cd:GBR
 				}
-				has_variable = sb_port_natal_raid_var
+				has_variable = sb_port_natal_british_war_var
 				scope:diplomatic_play ?= {
 					is_diplomatic_play_type = dp_annex_war
 				}
 			}
-			remove_variable = sb_port_natal_raid_var
+			remove_variable = sb_port_natal_british_war_var
+			if = {
+				limit = { has_variable = sb_port_natal_raid_var }
+				remove_variable = sb_port_natal_raid_var
+			}
 			trigger_event = { id = sb_boer_zulu.092 days = 7 popup = yes }
 		}
 

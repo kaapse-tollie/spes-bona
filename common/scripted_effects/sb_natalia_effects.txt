@@ -1,16 +1,9 @@
 ﻿# Shared scripted effects for the Natalia chain.
 #
-# The peaceful and military branches both create the same republic with only a
-# few leadership differences. Keep the shared state setup here so the event
-# options can offer "play as Natalia" variants without duplicating giant blocks.
+# NAL can now appear either as a Boer republic or as a British crown colony.
+# Keep the base tag neutral and apply the correct one-time setup here.
 
-sb_found_natalia_peacefully = {
-	random_scope_character = {
-		limit = {
-			has_template = ORA_piet_retief
-		}
-		save_scope_as = retief_scope
-	}
+sb_create_natalia_republic_if_missing = {
 	if = {
 		limit = {
 			NOT = { exists = c:NAL }
@@ -21,43 +14,130 @@ sb_found_natalia_peacefully = {
 			province = p:x5B124F
 		}
 	}
+}
+
+sb_assign_natalia_republic_territory = {
 	s:STATE_ZULULAND = {
 		set_owner_of_provinces = {
 			country = c:NAL
-			provinces = { x5B124F xFF0EF1 x552449 xE0EB02 x85695F xDE0EDE x7ACC38 xB1F868 x3CED3D x11A090 xCD31DB }
+			provinces = {
+				x5B124F xFF0EF1 x552449 xE0EB02 x85695F xDE0EDE
+				x7ACC38 xB1F868 x3CED3D x11A090 xCD31DB
+			}
 		}
 		add_claim = c:NAL
 	}
-	c:NAL ?= {
-		sb_apply_boer_commandant_general_baseline = yes
-		sb_apply_boer_republic_interest_group_identity = yes
-		add_modifier = {
-			name = sb_trek_frontier_drive_natalia
-			months = 120
+}
+
+sb_apply_natalia_boer_republic_setup = {
+	if = {
+		limit = { has_variable = southern_africa_subject_var }
+		remove_variable = southern_africa_subject_var
+	}
+	if = {
+		limit = { has_modifier = sb_trek_frontier_drive_natalia }
+		remove_modifier = sb_trek_frontier_drive_natalia
+	}
+	effect_starting_technology_tier_3_tech = yes
+	effect_starting_politics_conservative = yes
+	add_technology_researched = napoleonic_warfare
+	set_country_type = unrecognized
+	set_next_election_date = 1840.1.1
+	if = {
+		limit = {
+			NOT = { country_has_primary_culture = cu:boer }
 		}
-		set_country_type = unrecognized
-		active_law:lawgroup_army_model ?= {
-			if = {
-				limit = {
-					NOT = { has_amendment = amendment_type:amendment_sb_commando_corps }
-				}
-				add_amendment = {
-					type = amendment_sb_commando_corps
-					sponsor = PREV.ig:ig_rural_folk
-				}
+		add_primary_culture = cu:boer
+	}
+	if = {
+		limit = {
+			country_has_primary_culture = cu:british
+		}
+		remove_primary_culture = cu:british
+	}
+	sb_apply_boer_commandant_general_baseline = yes
+	activate_law = law_type:law_national_supremacy
+	activate_law = law_type:law_elected_bureaucrats
+	activate_law = law_type:law_agrarianism
+	activate_law = law_type:law_land_based_taxation
+	activate_law = law_type:law_homesteading
+	activate_law = law_type:law_national_militia
+	activate_law = law_type:law_legacy_slavery
+	activate_law = law_type:law_no_colonial_affairs
+	sb_apply_boer_republic_interest_group_identity = yes
+	add_modifier = {
+		name = sb_trek_frontier_drive_natalia
+		months = 120
+	}
+	active_law:lawgroup_army_model ?= {
+		if = {
+			limit = {
+				NOT = { has_amendment = amendment_type:amendment_sb_commando_corps }
+			}
+			add_amendment = {
+				type = amendment_sb_commando_corps
+				sponsor = PREV.ig:ig_rural_folk
 			}
 		}
+	}
+	every_interest_group = {
+		remove_ruling_interest_group = yes
+	}
+	ig:ig_armed_forces ?= { add_ruling_interest_group = yes }
+	ig:ig_landowners ?= { add_ruling_interest_group = yes }
+	ig:ig_rural_folk ?= { add_ruling_interest_group = yes }
+	ig:ig_devout ?= { add_ruling_interest_group = yes }
+	sb_refresh_boer_commandant_general_government = yes
+	sb_ensure_commandant_general_ruler_command = yes
+}
+
+sb_create_british_natal_colony_if_missing = {
+	if = {
+		limit = {
+			NOT = { exists = c:NAL }
+		}
+		create_country = {
+			tag = NAL
+			origin = root
+			province = p:x279045
+		}
+	}
+}
+
+sb_seed_british_natal_colony_shell = {
+	effect_starting_technology_tier_2_tech = yes
+	effect_starting_politics_conservative = yes
+}
+
+sb_assign_british_natal_colony_territory = {
+	s:STATE_ZULULAND = {
+		set_owner_of_provinces = {
+			country = c:NAL
+			provinces = {
+				x279045
+				xBE6FEE x1A084B xBFA16B x9E9742 x88FAD4 x904EBE x41C070 xE882CE xE1E455 xBBCA32
+				x5B124F xFF0EF1 x552449 xE0EB02 x85695F xDE0EDE x7ACC38 xB1F868 x3CED3D x11A090 xCD31DB
+			}
+		}
+		add_claim = c:NAL
+	}
+}
+
+sb_found_natalia_peacefully = {
+	random_scope_character = {
+		limit = {
+			has_template = ORA_piet_retief
+		}
+		save_scope_as = retief_scope
+	}
+	sb_create_natalia_republic_if_missing = yes
+	sb_assign_natalia_republic_territory = yes
+	c:NAL ?= {
+		sb_apply_natalia_boer_republic_setup = yes
 		change_relations = {
 			country = root
 			value = 50
 		}
-		every_interest_group = {
-			remove_ruling_interest_group = yes
-		}
-		ig:ig_armed_forces ?= { add_ruling_interest_group = yes }
-		ig:ig_landowners ?= { add_ruling_interest_group = yes }
-		ig:ig_rural_folk ?= { add_ruling_interest_group = yes }
-		ig:ig_devout ?= { add_ruling_interest_group = yes }
 		scope:retief_scope ?= {
 			transfer_character = c:NAL
 			set_character_as_ruler = yes
@@ -94,8 +174,6 @@ sb_found_natalia_peacefully = {
 			}
 			set_interest_group = c:NAL.ig:ig_landowners
 		}
-		sb_refresh_boer_commandant_general_government = yes
-		sb_ensure_commandant_general_ruler_command = yes
 		if = {
 			limit = {
 				NOT = { has_truce_with = c:ZUL }
@@ -156,23 +234,8 @@ sb_found_natalia_peacefully = {
 }
 
 sb_found_natalia_after_blood_river = {
-	if = {
-		limit = {
-			NOT = { exists = c:NAL }
-		}
-		create_country = {
-			tag = NAL
-			origin = root
-			province = p:x5B124F
-		}
-	}
-	s:STATE_ZULULAND = {
-		set_owner_of_provinces = {
-			country = c:NAL
-			provinces = { x5B124F xFF0EF1 x552449 xE0EB02 x85695F xDE0EDE x7ACC38 xB1F868 x3CED3D x11A090 xCD31DB }
-		}
-		add_claim = c:NAL
-	}
+	sb_create_natalia_republic_if_missing = yes
+	sb_assign_natalia_republic_territory = yes
 	# If Transvaal answered Oranje's call, Andries Pretorius can be shifted into
 	# Natalia while Marthinus takes over in TRN.
 	if = {
@@ -239,37 +302,11 @@ sb_found_natalia_after_blood_river = {
 		}
 	}
 	c:NAL ?= {
-		sb_apply_boer_commandant_general_baseline = yes
-		sb_apply_boer_republic_interest_group_identity = yes
-		add_modifier = {
-			name = sb_trek_frontier_drive_natalia
-			months = 120
-		}
-		set_country_type = unrecognized
-		active_law:lawgroup_army_model ?= {
-			if = {
-				limit = {
-					NOT = { has_amendment = amendment_type:amendment_sb_commando_corps }
-				}
-				add_amendment = {
-					type = amendment_sb_commando_corps
-					sponsor = PREV.ig:ig_rural_folk
-				}
-			}
-		}
+		sb_apply_natalia_boer_republic_setup = yes
 		change_relations = {
 			country = root
 			value = 60
 		}
-		every_interest_group = {
-			remove_ruling_interest_group = yes
-		}
-		ig:ig_armed_forces ?= { add_ruling_interest_group = yes }
-		ig:ig_landowners ?= { add_ruling_interest_group = yes }
-		ig:ig_rural_folk ?= { add_ruling_interest_group = yes }
-		ig:ig_devout ?= { add_ruling_interest_group = yes }
-		sb_refresh_boer_commandant_general_government = yes
-		sb_ensure_commandant_general_ruler_command = yes
 		create_military_formation = {
 			type = army
 			hq_region = sr:region_southern_africa
@@ -359,7 +396,6 @@ sb_found_natalia_after_blood_river = {
 	}
 	c:ZUL ?= {
 		remove_variable = sb_natal_war_active_var
-		trigger_event = { id = sb_boer_zulu.090 days = 14 }
 	}
 	c:TRN ?= {
 		if = {
@@ -389,7 +425,6 @@ sb_found_natalia_after_guns_bargain_rejection = {
 			limit = { has_variable = sb_natal_guns_bargain_war_var }
 			remove_variable = sb_natal_guns_bargain_war_var
 		}
-		trigger_event = { id = sb_boer_zulu.090 days = 14 }
 	}
 	c:TRN ?= {
 		if = {
@@ -466,6 +501,60 @@ sb_convert_natalia_to_british_crown_colony = {
 		change_subject_type = subject_type_colony
 	}
 	sb_trigger_british_natal_colony_migration_effect = yes
+}
+
+sb_apply_british_natal_colony_setup = {
+	sb_convert_natalia_to_british_crown_colony = yes
+	if = {
+		limit = {
+			has_variable = sb_commandant_general_visible_var
+		}
+		remove_variable = sb_commandant_general_visible_var
+	}
+	if = {
+		limit = { has_modifier = sb_trek_frontier_drive_natalia }
+		remove_modifier = sb_trek_frontier_drive_natalia
+	}
+	if = {
+		limit = {
+			NOT = { has_variable = southern_africa_subject_var }
+		}
+		set_variable = southern_africa_subject_var
+	}
+	activate_law = law_type:law_colonial_administration
+	activate_law = law_type:law_professional_army
+	activate_law = law_type:law_slavery_banned
+	active_law:lawgroup_army_model ?= {
+		if = {
+			limit = {
+				has_amendment = amendment_type:amendment_sb_commando_corps
+			}
+			every_scope_amendment = {
+				limit = {
+					type = amendment_type:amendment_sb_commando_corps
+				}
+				remove_amendment = yes
+			}
+		}
+	}
+	if = {
+		limit = {
+			NOT = { country_has_primary_culture = cu:british }
+		}
+		add_primary_culture = cu:british
+	}
+	if = {
+		limit = {
+			country_has_primary_culture = cu:boer
+		}
+		remove_primary_culture = cu:boer
+	}
+	s:STATE_ZULULAND = {
+		region_state:NAL ?= {
+			set_state_type = unincorporated
+		}
+	}
+	sb_install_british_natal_governor = yes
 }
 
 sb_select_natalia_refugee_receiver = {
@@ -633,68 +722,19 @@ sb_install_british_natal_governor = {
 sb_finalize_british_natal_colony = {
 	sb_select_natalia_refugee_receiver = yes
 	sb_exile_natalia_boer_leadership = yes
-	sb_convert_natalia_to_british_crown_colony = yes
-	if = {
-		limit = {
-			has_variable = sb_commandant_general_visible_var
-		}
-		remove_variable = sb_commandant_general_visible_var
-	}
-	activate_law = law_type:law_colonial_administration
-	activate_law = law_type:law_professional_army
-	activate_law = law_type:law_slavery_banned
-	active_law:lawgroup_army_model ?= {
-		if = {
-			limit = {
-				has_amendment = amendment_type:amendment_sb_commando_corps
-			}
-			every_scope_amendment = {
-				limit = {
-					type = amendment_type:amendment_sb_commando_corps
-				}
-				remove_amendment = yes
-			}
-		}
-	}
-	if = {
-		limit = {
-			NOT = { country_has_primary_culture = cu:british }
-		}
-		add_primary_culture = cu:british
-	}
-	if = {
-		limit = {
-			country_has_primary_culture = cu:boer
-		}
-		remove_primary_culture = cu:boer
-	}
+	sb_apply_british_natal_colony_setup = yes
 	sb_annul_natalia_boer_treaties = yes
-	sb_install_british_natal_governor = yes
 	scope:natal_refugee_receiver ?= {
 		sb_trigger_natal_refugee_migration_effect = yes
 	}
 }
 
 sb_found_natal_colony_after_british_annexation = {
-	if = {
-		limit = {
-			NOT = { exists = c:NAL }
-		}
-		create_country = {
-			tag = NAL
-			origin = root
-			province = p:x279045
-		}
-	}
-	s:STATE_ZULULAND = {
-		set_owner_of_provinces = {
-			country = c:NAL
-			provinces = { x279045 xBE6FEE x1A084B xBFA16B x9E9742 x88FAD4 x904EBE x41C070 xE882CE xE1E455 xBBCA32 }
-		}
-		add_claim = c:NAL
-	}
+	sb_create_british_natal_colony_if_missing = yes
+	sb_assign_british_natal_colony_territory = yes
 	c:NAL ?= {
-		sb_convert_natalia_to_british_crown_colony = yes
+		sb_seed_british_natal_colony_shell = yes
+		sb_apply_british_natal_colony_setup = yes
 	}
 }
 

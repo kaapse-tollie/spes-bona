@@ -1,0 +1,61 @@
+﻿on_monthly_pulse_country = {
+	on_actions = { sb_on_zpb_monthly_pulse_country }
+}
+
+sb_on_zpb_monthly_pulse_country = {
+	effect = {
+		if = {
+			limit = {
+				country_definition = cd:TRN
+				is_subject = no
+				is_at_war = no
+				NOT = { has_journal_entry = je_sb_great_trek }
+				NOT = { has_variable = sb_early_republic_var }
+				NOT = { has_variable = sb_sand_river_convention_pending_var }
+				NOT = { has_variable = sb_sand_river_convention_resolved_var }
+				game_date >= 1852.1.1
+			}
+			set_variable = sb_sand_river_convention_pending_var
+			trigger_event = { id = sb_trek.140 days = 21 popup = yes }
+		}
+
+		if = {
+			limit = {
+				country_definition = cd:ORA
+				is_subject = no
+				is_at_war = no
+				NOT = { has_journal_entry = je_sb_great_trek }
+				NOT = { has_variable = sb_early_republic_var }
+				NOT = { has_variable = sb_bloemfontein_convention_pending_var }
+				NOT = { has_variable = sb_bloemfontein_convention_resolved_var }
+				game_date >= 1854.1.1
+			}
+			set_variable = sb_bloemfontein_convention_pending_var
+			trigger_event = { id = sb_trek.141 days = 21 popup = yes }
+		}
+
+		if = {
+			limit = {
+				country_definition = cd:TRN
+				is_subject = no
+				is_at_war = no
+				is_country_type = recognized
+				has_variable = sb_sand_river_convention_accepted_var
+				NOT = { has_variable = sb_zpb_lawlessness_pending_var }
+				NOT = { has_variable = sb_zpb_lawlessness_resolved_var }
+				NOT = { has_variable = sb_zpb_crackdown_active_var }
+				NOT = { has_journal_entry = je_sb_zpb_crackdown }
+				c:ZPB ?= {
+					is_country_alive = yes
+					is_subject = no
+					OR = {
+						has_law = law_type:law_slave_trade
+						has_law = law_type:law_legacy_slavery
+					}
+				}
+			}
+			set_variable = sb_zpb_lawlessness_pending_var
+			trigger_event = { id = sb_trek.143 days = 14 popup = yes }
+		}
+	}
+}

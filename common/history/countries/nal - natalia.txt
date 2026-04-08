@@ -1,37 +1,12 @@
-﻿# Natalia (NAL) — Boer settler republic on the Natal coast
-# This file exists so any mid-game creation of Natalia starts from a coherent
-# Boer-republic baseline rather than generic defaults.
+﻿# Natalia (NAL) — shared country shell
+#
+# NAL can now appear in two distinct forms:
+# - a Boer settler republic founded through the trek/Natal chain
+# - a British colonial administration imposed on the coast
+#
+# Keep the history shell neutral so the live scripted effects can apply the
+# correct one-time setup for whichever path actually creates the country.
 COUNTRIES = {
 	c:NAL ?= {
-		set_variable = sb_commandant_general_visible_var
-
-		set_next_election_date = 1840.1.1
-
-		effect_starting_technology_tier_3_tech = yes
-		effect_starting_politics_conservative = yes
-
-		add_technology_researched = napoleonic_warfare
-
-		activate_law = law_type:law_sb_commandant_general_republic
-		activate_law = law_type:law_oligarchy
-		activate_law = law_type:law_national_supremacy
-		activate_law = law_type:law_elected_bureaucrats
-		activate_law = law_type:law_agrarianism
-		activate_law = law_type:law_land_based_taxation
-		activate_law = law_type:law_homesteading
-		activate_law = law_type:law_national_militia
-		active_law:lawgroup_army_model ?= {
-			if = {
-				limit = {
-					NOT = { has_amendment = amendment_type:amendment_sb_commando_corps }
-				}
-				add_amendment = {
-					type = amendment_sb_commando_corps
-					sponsor = PREV.ig:ig_rural_folk
-				}
-			}
-		}
-		activate_law = law_type:law_legacy_slavery
-		activate_law = law_type:law_no_colonial_affairs
 	}
 }

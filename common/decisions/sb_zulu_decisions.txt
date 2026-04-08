@@ -1,0 +1,44 @@
+﻿zulu_raid_port_natal = {
+	is_shown = {
+		country_definition = cd:ZUL
+		has_journal_entry = je_sb_zulu_kingdom
+		has_variable = sb_zulu_port_natal_raid_available_var
+		NOT = { has_variable = sb_port_natal_raid_var }
+		NOT = { has_variable = sb_zulu_port_natal_raid_taken_var }
+		c:GBR ?= {
+			is_country_alive = yes
+		}
+	}
+
+	possible = {
+		is_at_war = no
+		aggressive_diplomatic_plays_permitted = yes
+	}
+
+	when_taken = {
+		set_variable = sb_zulu_port_natal_raid_taken_var
+		remove_variable = sb_zulu_port_natal_raid_available_var
+		set_variable = sb_port_natal_raid_var
+		s:STATE_ZULULAND = {
+			set_owner_of_provinces = {
+				country = root
+				provinces = { x279045 }
+			}
+		}
+		ruler = {
+			if = {
+				limit = {
+					NOT = { has_trait = ambitious }
+				}
+				add_trait = ambitious
+			}
+		}
+		c:GBR ?= {
+			trigger_event = { id = sb_boer_zulu.085 days = 45 }
+		}
+	}
+
+	ai_chance = {
+		value = 20
+	}
+}

@@ -100,7 +100,7 @@ sb_cape_balance_bar = {
 
 			if = {
 				limit = {
-					has_law = law_type:law_multicultural
+					has_law_or_variant = law_type:law_multicultural
 			}
 				add = {
 					desc = "sb_cape_multicultural_law"
@@ -110,7 +110,10 @@ sb_cape_balance_bar = {
 
 			if = {
 				limit = {
-					is_enacting_law = law_type:law_multicultural
+					OR = {
+						is_enacting_law = law_type:law_multicultural
+						is_enacting_law = law_type:law_sb_non_racialism
+					}
 				}
 				add = {
 					desc = "sb_cape_multicultural_enacting"
@@ -446,3 +449,178 @@ sb_cape_balance_bar = {
 			}
 		}
 }
+
+########################## START ZULU DYNASTY RELATED EFFECTS ########################################
+
+
+sb_zulu_dynastic_stability_bar = {
+	name = "sb_zulu_dynastic_stability_bar"
+	desc = "sb_zulu_dynastic_stability_bar_low"
+	second_desc = "sb_zulu_dynastic_stability_bar_high"
+	start_value = 50 
+	min_value = 0
+	max_value = 100
+	default = yes
+
+	monthly_progress = {
+		if = {
+			limit = {
+				has_modifier = sb_zulu_enforcing_dynastic_claims
+			}
+			add = {
+				desc = "sb_zulu_drift_enforced_dynastic_claims"
+				value = 1.5
+			}
+		}
+
+		if = {
+			limit = {
+				ruler = { is_commander = yes  }
+			}
+			add = {
+				desc = "sb_zulu_drift_command"
+				value = 0.5
+			}
+		}
+
+		if = {
+			limit = {
+				ruler = { has_trait = hedonist }
+			}
+			add = {
+				desc = "sb_zulu_drift_hedonist"
+				value = -2
+			}
+		}
+
+		if = {
+			limit = {
+				ruler = { has_trait = imperious }
+			}
+			add = {
+				desc = "sb_zulu_drift_imperious"
+				value = 0.5
+			}
+		}
+
+		if = {
+			limit = {
+				ruler = { has_trait = ruthless }
+			}
+			add = {
+				desc = "sb_zulu_drift_ruthless"
+				value = 0.5
+			}
+		}
+
+		if = {
+			limit = {
+				ruler = { has_trait = wrathful }
+			}
+			add = {
+				desc = "sb_zulu_drift_wrathful"
+				value = 0.5
+			}
+		}
+
+		if = {
+			limit = {
+				ruler = { has_trait = cruel }
+			}
+			add = {
+				desc = "sb_zulu_drift_cruel"
+				value = 0.5
+			}
+		}
+
+		if = {
+			limit = {
+				ruler = { has_trait = honorable }
+			}
+			add = {
+				desc = "sb_zulu_drift_honorable"
+				value = 1
+			}
+		}
+
+		if = {
+			limit = {
+				ruler = { has_trait = compliant }
+			}
+			add = {
+				desc = "sb_zulu_drift_compliant"
+				value = -0.5
+			}
+		}
+
+		if = {
+			limit = {
+				ruler = { has_trait = tactful }
+			}
+			add = {
+				desc = "sb_zulu_drift_tactful"
+				value = 1
+			}
+		}
+
+		if = {
+			limit = {
+				ruler = { has_trait = ambitious }
+			}
+			add = {
+				desc = "sb_zulu_drift_ambitious"
+				value = 2
+			}
+		}
+
+		if = {
+			limit = {
+				ruler = { has_trait = innovative }
+			}
+			add = {
+				desc = "sb_zulu_drift_innovative"
+				value = 1
+			}
+		}
+
+		if = {
+			limit = {
+				ruler = { popularity >= 50 }
+			}
+			add = {
+				desc = "sb_zulu_drift_popular_ruler"
+				value = 2
+			}
+		}
+		else_if = {
+			limit = {
+				ruler = { popularity >= 25 }
+			}
+			add = {
+				desc = "sb_zulu_drift_respected_ruler"
+				value = 1
+			}
+		}
+
+		if = {
+			limit = {
+				ruler = { popularity <= -50 }
+			}
+			add = {
+				desc = "sb_zulu_drift_hated_ruler"
+				value = -2
+			}
+		}
+		else_if = {
+			limit = {
+				ruler = { popularity <= -25 }
+			}
+			add = {
+				desc = "sb_zulu_drift_unpopular_ruler"
+				value = -1
+			}
+		}
+	}
+}
+
+########################## END ZULU DYNASTY RELATED EFFECTS ########################################

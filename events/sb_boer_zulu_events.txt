@@ -13,16 +13,17 @@
 # Chain summary:
 #   010 ORA launches the Natal expedition
 #   020 ZUL answers the Retief approach
-#   021 Dingane is deposed after conceding the southern strip
+#   021 Dingane faces unrest after conceding the southern strip
 #   030 peaceful land grant -> independent Natalia formed
 #   050/056 refusal and murder -> ORA may ask TRN for help before war
 #   070 ORA victory in the Natal crisis -> Natalia formed after Boer victory
 #   071 TRN player follow-up after Blood River
-#   080 ZUL victory in the Natal crisis -> optional Durban raid
+#   080 ZUL victory in the Natal crisis -> unlocks the Port Natal raid decision
 #   085 GBR reaction to a Durban raid
-#   090 Dingane deposed after defeat by the Boers
+#   090 dynastic collapse in the Zulu kingdom
 #   091 Dingane deposed after defeat by Britain
 #   092 Dingane survives a British intervention
+#   093 the royal house secures the succession
 #   100 GBR decides whether to issue the Natal ultimatum
 #   110 NAL answers the ultimatum
 #   111 ORA decides whether to support resisting Natalia
@@ -171,6 +172,15 @@ sb_boer_zulu.020 = {
 
 	option = {
 		name = sb_boer_zulu.020.a
+		sb_zulu_remove_dynastic_stability_5 = yes
+		ruler = {
+			if = {
+				limit = {
+					NOT = { has_trait = honorable }
+				}
+				add_trait = honorable
+			}
+		}
 		s:STATE_ZULULAND = {
 			remove_claim = c:ZUL
 		}
@@ -187,6 +197,21 @@ sb_boer_zulu.020 = {
 	option = {
 		name = sb_boer_zulu.020.b
 		default_option = yes
+		sb_zulu_add_dynastic_stability_5 = yes
+		ruler = {
+			if = {
+				limit = {
+					NOT = { has_trait = wrathful }
+				}
+				add_trait = wrathful
+			}
+			else_if = {
+				limit = {
+					NOT = { has_trait = cruel }
+				}
+				add_trait = cruel
+			}
+		}
 		s:STATE_ZULULAND = {
 			set_owner_of_provinces = {
 				country = c:ZUL
@@ -204,6 +229,7 @@ sb_boer_zulu.020 = {
 
 	option = {
 		name = sb_boer_zulu.020.c
+		sb_zulu_add_dynastic_stability_5 = yes
 		scope:boer_republic = {
 			remove_variable = sb_retief_petition_var
 			trigger_event = { id = sb_boer_zulu.025 days = 21 }
@@ -234,29 +260,9 @@ sb_boer_zulu.021 = {
 		country_definition = cd:ZUL
 	}
 
-	immediate = {
-		random_scope_character = {
-			limit = { has_template = ZUL_mpande_zulu }
-			save_scope_as = mpande_scope
-		}
-		random_scope_character = {
-			limit = { has_template = ZUL_dingane }
-			save_scope_as = dingane_scope
-		}
-	}
-
 	option = {
 		name = sb_boer_zulu.021.a
 		default_option = yes
-		scope:dingane_scope ?= {
-			add_modifier = {
-				name = sb_dingane_humbled
-				months = 120
-			}
-		}
-		scope:mpande_scope ?= {
-			set_character_as_ruler = yes
-		}
 		ai_chance = {
 			base = 100
 		}
@@ -630,6 +636,14 @@ sb_boer_zulu.056 = {
 				}
 			}
 		}
+		random_diplomatic_play = {
+			limit = {
+				initiator = scope:zulu_kingdom
+				target = scope:orangia
+				is_diplomatic_play_type = dp_sb_natal_crisis
+			}
+			add_target_backers = { root }
+		}
 		ai_chance = {
 			base = 100
 			modifier = {
@@ -758,6 +772,14 @@ sb_boer_zulu.057 = {
 				}
 			}
 		}
+		random_diplomatic_play = {
+			limit = {
+				initiator = scope:zulu_kingdom
+				target = scope:orangia
+				is_diplomatic_play_type = dp_sb_natal_crisis
+			}
+			add_target_backers = { root }
+		}
 		ai_chance = {
 			base = 100
 		}
@@ -833,6 +855,9 @@ sb_boer_zulu.070 = {
 				trigger_event = { id = sb_boer_zulu.071 days = 2 }
 			}
 		}
+		c:ZUL ?= {
+			sb_zulu_apply_blood_river_defeat = yes
+		}
 		if = {
 			limit = { has_variable = sb_natal_guns_bargain_war_var }
 			sb_found_natalia_after_guns_bargain_rejection = yes
@@ -861,6 +886,9 @@ sb_boer_zulu.070 = {
 			c:TRN ?= {
 				trigger_event = { id = sb_boer_zulu.071 days = 2 }
 			}
+		}
+		c:ZUL ?= {
+			sb_zulu_apply_blood_river_defeat = yes
 		}
 		if = {
 			limit = { has_variable = sb_natal_guns_bargain_war_var }
@@ -966,6 +994,8 @@ sb_boer_zulu.080 = {
 				add_trait = brave
 			}
 		}
+		sb_zulu_apply_blood_river_victory = yes
+		set_variable = sb_zulu_port_natal_raid_available_var
 		c:ORA ?= {
 			set_variable = sb_natal_path_resolved_var
 			remove_variable = sb_natal_diplomacy_started_var
@@ -987,82 +1017,7 @@ sb_boer_zulu.080 = {
 			}
 		}
 		ai_chance = {
-			base = 75
-		}
-	}
-
-	option = {
-		name = sb_boer_zulu.080.b
-		custom_tooltip = sb_boer_zulu_080_b_warning_tt
-		trigger = {
-			OR = {
-				exists = s:STATE_ZULULAND.region_state:GBR
-				exists = s:STATE_ZULULAND.region_state:CAP
-			}
-		}
-		s:STATE_ZULULAND = {
-			set_owner_of_provinces = {
-				country = root
-				provinces = { x279045 }
-			}
-		}
-		add_modifier = {
-			name = sb_zulu_natal_triumph
-			months = 120
-		}
-		set_variable = sb_port_natal_raid_var
-		random_scope_character = {
-			limit = {
-				has_template = ZUL_dingane
-			}
-			add_modifier = {
-				name = sb_dingane_triumphant
-				months = 120
-			}
-			if = {
-				limit = {
-					NOT = { has_trait = brave }
-				}
-				add_trait = brave
-			}
-			if = {
-				limit = {
-					NOT = { has_trait = ambitious }
-				}
-				add_trait = ambitious
-			}
-		}
-		c:ORA ?= {
-			set_variable = sb_natal_path_resolved_var
-			remove_variable = sb_natal_diplomacy_started_var
-			remove_variable = sb_natal_war_active_var
-			if = {
-				limit = { has_variable = sb_natal_guns_bargain_war_var }
-				remove_variable = sb_natal_guns_bargain_war_var
-			}
-			if = {
-				limit = { has_variable = sb_trn_joined_natal_war_var }
-				remove_variable = sb_trn_joined_natal_war_var
-			}
-		}
-		remove_variable = sb_natal_war_active_var
-		if = {
-			limit = { has_variable = sb_natal_guns_bargain_war_var }
-			remove_variable = sb_natal_guns_bargain_war_var
-		}
-		c:TRN ?= {
-			if = {
-				limit = { has_variable = sb_trn_joined_natal_war_var }
-				remove_variable = sb_trn_joined_natal_war_var
-			}
-		}
-		c:GBR ?= {
-			# Leave a plausible delay for reports to reach Britain and give the
-			# player a short window to prepare before the imperial response lands.
-			trigger_event = { id = sb_boer_zulu.085 days = 45 }
-		}
-		ai_chance = {
-			base = 25
+			base = 100
 		}
 	}
 }
@@ -1090,6 +1045,9 @@ sb_boer_zulu.085 = {
 	option = {
 		name = sb_boer_zulu.085.a
 		default_option = yes
+		c:ZUL ?= {
+			set_variable = sb_port_natal_british_war_var
+		}
 		create_diplomatic_play = {
 			type = dp_annex_war
 			target_country = c:ZUL
@@ -1103,6 +1061,7 @@ sb_boer_zulu.085 = {
 		name = sb_boer_zulu.085.b
 		c:ZUL ?= {
 			remove_variable = sb_port_natal_raid_var
+			sb_zulu_finalize_port_natal_survival = yes
 		}
 		add_modifier = {
 			name = sb_prestige_loss_small
@@ -1134,29 +1093,10 @@ sb_boer_zulu.090 = {
 		country_definition = cd:ZUL
 	}
 
-	immediate = {
-		random_scope_character = {
-			limit = { has_template = ZUL_mpande_zulu }
-			save_scope_as = mpande_scope
-		}
-		random_scope_character = {
-			limit = { has_template = ZUL_dingane }
-			save_scope_as = dingane_scope
-		}
-	}
-
 	option = {
 		name = sb_boer_zulu.090.a
 		default_option = yes
-		scope:dingane_scope ?= {
-			add_modifier = {
-				name = sb_dingane_humbled
-				months = 120
-			}
-		}
-		scope:mpande_scope ?= {
-			set_character_as_ruler = yes
-		}
+		sb_resolve_zulu_dynastic_collapse = yes
 	}
 }
 
@@ -1210,6 +1150,7 @@ sb_boer_zulu.092 = {
 	option = {
 		name = sb_boer_zulu.092.a
 		default_option = yes
+		sb_zulu_finalize_port_natal_survival = yes
 		random_scope_character = {
 			limit = { has_template = ZUL_dingane }
 			add_modifier = {
@@ -1222,6 +1163,266 @@ sb_boer_zulu.092 = {
 				}
 				add_trait = brave
 			}
+		}
+	}
+}
+
+sb_boer_zulu.093 = {
+	type = country_event
+	placement = root
+
+	title = sb_boer_zulu.093.t
+	desc = sb_boer_zulu.093.d
+	flavor = sb_boer_zulu.093.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:ZUL
+		NOT = { has_variable = sb_zulu_dynasty_secured_var }
+	}
+
+	option = {
+		name = sb_boer_zulu.093.a
+		default_option = yes
+		sb_resolve_zulu_dynasty_secured = yes
+	}
+}
+
+sb_boer_zulu.094 = {
+	type = country_event
+	placement = root
+
+	title = sb_boer_zulu.094.t
+	desc = sb_boer_zulu.094.d
+	flavor = sb_boer_zulu.094.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_soldiers_breaking_protest.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_military.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:ZUL
+		ruler = {
+			has_template = ZUL_dingane
+		}
+		c:SWZ ?= {
+			is_country_alive = yes
+			is_subject = no
+			any_scope_state = {
+				state_region = s:STATE_EAST_TRANSVAAL
+			}
+		}
+	}
+
+	option = {
+		name = sb_boer_zulu.094.a
+		default_option = yes
+		set_variable = sb_zulu_swazi_war_active_var
+		c:SWZ ?= {
+			set_variable = sb_zulu_swazi_war_active_var
+		}
+		create_diplomatic_play = {
+			type = dp_conquer_state
+			target_country = c:SWZ
+			target_state = s:STATE_EAST_TRANSVAAL.region_state:SWZ
+		}
+		ai_chance = {
+			base = 65
+		}
+	}
+
+	option = {
+		name = sb_boer_zulu.094.b
+		sb_zulu_remove_dynastic_stability_5 = yes
+		ai_chance = {
+			base = 35
+		}
+	}
+}
+
+sb_boer_zulu.200 = {
+	type = country_event
+	placement = root
+
+	title = sb_boer_zulu.200.t
+	desc = sb_boer_zulu.200.d
+	flavor = sb_boer_zulu.200.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:ZUL
+		has_journal_entry = je_sb_zulu_kingdom
+	}
+
+	option = {
+		name = sb_boer_zulu.200.a
+		default_option = yes
+		sb_zulu_add_dynastic_stability_5 = yes
+		add_treasury = -10000
+		ai_chance = {
+			base = 55
+		}
+	}
+
+	option = {
+		name = sb_boer_zulu.200.b
+		sb_zulu_remove_dynastic_stability_5 = yes
+		capital = {
+			add_loyalists_in_state = {
+				value = medium_radicals
+			}
+		}
+		ai_chance = {
+			base = 45
+		}
+	}
+}
+
+sb_boer_zulu.201 = {
+	type = country_event
+	placement = root
+
+	title = sb_boer_zulu.201.t
+	desc = sb_boer_zulu.201.d
+	flavor = sb_boer_zulu.201.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_soldiers_breaking_protest.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:ZUL
+		has_journal_entry = je_sb_zulu_kingdom
+	}
+
+	option = {
+		name = sb_boer_zulu.201.a
+		default_option = yes
+		sb_zulu_add_dynastic_stability_10 = yes
+		add_treasury = -20000
+		ai_chance = {
+			base = 60
+		}
+	}
+
+	option = {
+		name = sb_boer_zulu.201.b
+		sb_zulu_remove_dynastic_stability_5 = yes
+		capital = {
+			add_radicals_in_state = {
+				value = medium_radicals
+			}
+		}
+		ai_chance = {
+			base = 40
+		}
+	}
+}
+
+sb_boer_zulu.202 = {
+	type = country_event
+	placement = root
+
+	title = sb_boer_zulu.202.t
+	desc = sb_boer_zulu.202.d
+	flavor = sb_boer_zulu.202.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:ZUL
+		has_journal_entry = je_sb_zulu_kingdom
+	}
+
+	option = {
+		name = sb_boer_zulu.202.a
+		default_option = yes
+		sb_zulu_add_dynastic_stability_5 = yes
+		add_treasury = -15000
+		ai_chance = {
+			base = 50
+		}
+	}
+
+	option = {
+		name = sb_boer_zulu.202.b
+		sb_zulu_remove_dynastic_stability_5 = yes
+		capital = {
+			add_loyalists_in_state = {
+				value = medium_radicals
+			}
+		}
+		ai_chance = {
+			base = 50
+		}
+	}
+}
+
+sb_boer_zulu.203 = {
+	type = country_event
+	placement = root
+
+	title = sb_boer_zulu.203.t
+	desc = sb_boer_zulu.203.d
+	flavor = sb_boer_zulu.203.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:ZUL
+		has_journal_entry = je_sb_zulu_kingdom
+	}
+
+	option = {
+		name = sb_boer_zulu.203.a
+		default_option = yes
+		sb_zulu_remove_dynastic_stability_5 = yes
+		sb_boost_firearms_progress_minor = yes
+		add_treasury = 10000
+		ai_chance = {
+			base = 55
+		}
+	}
+
+	option = {
+		name = sb_boer_zulu.203.b
+		sb_zulu_add_dynastic_stability_5 = yes
+		ai_chance = {
+			base = 45
 		}
 	}
 }

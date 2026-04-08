@@ -1,0 +1,160 @@
+﻿# ZPB / TRN recognition-crisis helpers.
+# These are kept separate from the older trek migration file so the later
+# republican recognition branch stays easy to tune without tangling the split
+# setup itself.
+
+sb_ensure_gbr_transit_rights_with_root = {
+	save_scope_as = convention_target
+
+	if = {
+		limit = {
+			NOT = {
+				c:GBR ?= {
+					any_scope_treaty = {
+						binds = scope:convention_target
+						any_scope_article = {
+							has_type = transit_rights
+							source_country = c:GBR
+							target_country = scope:convention_target
+						}
+					}
+				}
+			}
+		}
+		c:GBR ?= {
+			create_treaty = {
+				first_country = c:GBR
+				second_country = scope:convention_target
+				is_draft = no
+				binding_period = { years = 10 }
+				articles_to_create = {
+					{
+						article = transit_rights
+						source_country = c:GBR
+						target_country = scope:convention_target
+					}
+				}
+			}
+		}
+	}
+}
+
+sb_grant_gbr_investment_rights_in_root = {
+	save_scope_as = investment_target
+
+	if = {
+		limit = {
+			NOT = {
+				any_scope_treaty = {
+					binds = c:GBR
+					any_scope_article = {
+						has_type = foreign_investment_rights
+						source_country = scope:investment_target
+						target_country = c:GBR
+					}
+				}
+			}
+		}
+		create_treaty = {
+			first_country = scope:investment_target
+			second_country = c:GBR
+			is_draft = no
+			binding_period = { years = 10 }
+			articles_to_create = {
+				{
+					article = foreign_investment_rights
+					source_country = scope:investment_target
+					target_country = c:GBR
+				}
+			}
+		}
+	}
+}
+
+sb_apply_boer_convention_acceptance = {
+	set_country_type = recognized
+	activate_law = law_type:law_slavery_banned
+
+	if = {
+		limit = {
+			NOT = { has_truce_with = c:GBR }
+		}
+		create_bidirectional_truce = {
+			country = c:GBR
+			months = 120
+		}
+	}
+	else = {
+		create_bidirectional_truce = {
+			country = c:GBR
+			months = 120
+		}
+	}
+
+	sb_ensure_gbr_transit_rights_with_root = yes
+
+	change_relations = {
+		country = c:GBR
+		value = 20
+	}
+}
+
+sb_queue_gbr_highveld_slavery_response = {
+	if = {
+		limit = {
+			NOT = { has_variable = sb_gbr_highveld_slavery_response_pending_var }
+		}
+		set_variable = sb_gbr_highveld_slavery_response_pending_var
+		c:GBR ?= {
+			random_list = {
+				1 = { trigger_event = { id = sb_trek.142 days = 90 popup = no } }
+				1 = { trigger_event = { id = sb_trek.142 days = 180 popup = no } }
+				1 = { trigger_event = { id = sb_trek.142 days = 270 popup = no } }
+				1 = { trigger_event = { id = sb_trek.142 days = 360 popup = no } }
+			}
+		}
+	}
+}
+
+sb_queue_gbr_zpb_slavery_response = {
+	if = {
+		limit = {
+			NOT = { has_variable = sb_gbr_highveld_zpb_response_pending_var }
+		}
+		set_variable = sb_gbr_highveld_zpb_response_pending_var
+		c:GBR ?= {
+			random_list = {
+				1 = { trigger_event = { id = sb_trek.142 days = 30 popup = no } }
+				1 = { trigger_event = { id = sb_trek.142 days = 60 popup = no } }
+				1 = { trigger_event = { id = sb_trek.142 days = 90 popup = no } }
+				1 = { trigger_event = { id = sb_trek.142 days = 120 popup = no } }
+			}
+		}
+	}
+}
+
+sb_ensure_defensive_pact_with_zpb = {
+	if = {
+		limit = {
+			NOT = {
+				any_scope_treaty = {
+					binds = c:ZPB
+					any_scope_article = {
+						has_type = defensive_pact
+					}
+				}
+			}
+		}
+		create_treaty = {
+			first_country = root
+			second_country = c:ZPB
+			is_draft = no
+			binding_period = { years = 10 }
+			articles_to_create = {
+				{
+					article = defensive_pact
+				}
+			}
+		}
+	}
+}

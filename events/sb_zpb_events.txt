@@ -1,0 +1,323 @@
+﻿namespace = sb_trek
+
+# Post-trek recognition and Zoutpansberg crisis chain.
+# This builds on the already-existing Cape-driven ZPB spawn and adds the later
+# Sand River / Bloemfontein recognition layer plus the northern slavery crisis.
+
+sb_trek.140 = {
+	type = country_event
+	placement = root
+
+	title = sb_trek.140.t
+	desc = sb_trek.140.d
+	flavor = sb_trek.140.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:TRN
+		has_variable = sb_sand_river_convention_pending_var
+	}
+
+	option = {
+		name = sb_trek.140.a
+		default_option = yes
+		remove_variable = sb_sand_river_convention_pending_var
+		set_variable = sb_sand_river_convention_resolved_var
+		set_variable = sb_sand_river_convention_accepted_var
+		sb_apply_boer_convention_acceptance = yes
+	}
+
+	option = {
+		name = sb_trek.140.b
+		custom_tooltip = sb_trek_convention_refusal_warning_tt
+		remove_variable = sb_sand_river_convention_pending_var
+		set_variable = sb_sand_river_convention_resolved_var
+		sb_queue_gbr_highveld_slavery_response = yes
+		change_relations = {
+			country = c:GBR
+			value = -15
+		}
+	}
+}
+
+sb_trek.141 = {
+	type = country_event
+	placement = root
+
+	title = sb_trek.141.t
+	desc = sb_trek.141.d
+	flavor = sb_trek.141.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:ORA
+		has_variable = sb_bloemfontein_convention_pending_var
+	}
+
+	option = {
+		name = sb_trek.141.a
+		default_option = yes
+		remove_variable = sb_bloemfontein_convention_pending_var
+		set_variable = sb_bloemfontein_convention_resolved_var
+		set_variable = sb_bloemfontein_convention_accepted_var
+		sb_apply_boer_convention_acceptance = yes
+	}
+
+	option = {
+		name = sb_trek.141.b
+		custom_tooltip = sb_trek_convention_refusal_warning_tt
+		remove_variable = sb_bloemfontein_convention_pending_var
+		set_variable = sb_bloemfontein_convention_resolved_var
+		sb_queue_gbr_highveld_slavery_response = yes
+		change_relations = {
+			country = c:GBR
+			value = -15
+		}
+	}
+}
+
+sb_trek.142 = {
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		country_definition = cd:GBR
+	}
+
+	immediate = {
+		if = {
+			limit = {
+				c:TRN ?= {
+					has_variable = sb_gbr_highveld_slavery_response_pending_var
+				}
+			}
+			c:TRN ?= {
+				save_scope_as = highveld_target
+			}
+		}
+		else_if = {
+			limit = {
+				c:ORA ?= {
+					has_variable = sb_gbr_highveld_slavery_response_pending_var
+				}
+			}
+			c:ORA ?= {
+				save_scope_as = highveld_target
+			}
+		}
+		else_if = {
+			limit = {
+				c:ZPB ?= {
+					has_variable = sb_gbr_highveld_zpb_response_pending_var
+				}
+			}
+			c:ZPB ?= {
+				save_scope_as = highveld_target
+			}
+		}
+
+		if = {
+			limit = {
+				exists = scope:highveld_target
+				scope:highveld_target ?= {
+					is_country_alive = yes
+					is_subject = no
+					is_at_war = no
+					aggressive_diplomatic_plays_permitted = yes
+					OR = {
+						has_law = law_type:law_slave_trade
+						has_law = law_type:law_legacy_slavery
+					}
+				}
+				aggressive_diplomatic_plays_permitted = yes
+				is_at_war = no
+			}
+			scope:highveld_target ?= {
+				if = {
+					limit = { has_variable = sb_gbr_highveld_slavery_response_pending_var }
+					remove_variable = sb_gbr_highveld_slavery_response_pending_var
+				}
+				if = {
+					limit = { has_variable = sb_gbr_highveld_zpb_response_pending_var }
+					remove_variable = sb_gbr_highveld_zpb_response_pending_var
+				}
+				if = {
+					limit = { is_country_type = recognized }
+					set_country_type = unrecognized
+				}
+				change_relations = {
+					country = c:GBR
+					value = -25
+				}
+				sb_grant_gbr_investment_rights_in_root = yes
+			}
+			create_diplomatic_play = {
+				type = dp_ban_slavery
+				target_country = scope:highveld_target
+			}
+		}
+		else_if = {
+			limit = {
+				exists = scope:highveld_target
+				scope:highveld_target ?= {
+					OR = {
+						NOT = { is_country_alive = yes }
+						is_subject = yes
+						has_law = law_type:law_slavery_banned
+					}
+				}
+			}
+			scope:highveld_target ?= {
+				if = {
+					limit = { has_variable = sb_gbr_highveld_slavery_response_pending_var }
+					remove_variable = sb_gbr_highveld_slavery_response_pending_var
+				}
+				if = {
+					limit = { has_variable = sb_gbr_highveld_zpb_response_pending_var }
+					remove_variable = sb_gbr_highveld_zpb_response_pending_var
+				}
+			}
+		}
+		else_if = {
+			limit = {
+				exists = scope:highveld_target
+			}
+			trigger_event = { id = sb_trek.142 days = 90 popup = no }
+		}
+
+		if = {
+			limit = {
+				OR = {
+					c:TRN ?= { has_variable = sb_gbr_highveld_slavery_response_pending_var }
+					c:ORA ?= { has_variable = sb_gbr_highveld_slavery_response_pending_var }
+					c:ZPB ?= { has_variable = sb_gbr_highveld_zpb_response_pending_var }
+				}
+			}
+			trigger_event = { id = sb_trek.142 days = 30 popup = no }
+		}
+	}
+}
+
+sb_trek.143 = {
+	type = country_event
+	placement = root
+
+	title = sb_trek.143.t
+	desc = sb_trek.143.d
+	flavor = sb_trek.143.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_soldiers_breaking_protest.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_military.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:TRN
+		has_variable = sb_zpb_lawlessness_pending_var
+	}
+
+	option = {
+		name = sb_trek.143.a
+		default_option = yes
+		remove_variable = sb_zpb_lawlessness_pending_var
+		set_variable = sb_zpb_crackdown_active_var
+		s:STATE_NORTHERN_TRANSVAAL = {
+			add_claim = c:TRN
+		}
+		if = {
+			limit = {
+				NOT = { has_journal_entry = je_sb_zpb_crackdown }
+			}
+			add_journal_entry = { type = je_sb_zpb_crackdown }
+		}
+	}
+
+	option = {
+		name = sb_trek.143.b
+		custom_tooltip = sb_trek_zpb_frontier_spirit_warning_tt
+		remove_variable = sb_zpb_lawlessness_pending_var
+		set_variable = sb_zpb_lawlessness_resolved_var
+		sb_ensure_defensive_pact_with_zpb = yes
+		activate_law = law_type:law_legacy_slavery
+		change_relations = {
+			country = c:ZPB
+			value = 25
+		}
+		c:ZPB ?= {
+			change_relations = {
+				country = root
+				value = 25
+			}
+		}
+		sb_queue_gbr_highveld_slavery_response = yes
+	}
+}
+
+sb_trek.145 = {
+	type = country_event
+	placement = root
+
+	title = sb_trek.145.t
+	desc = sb_trek.145.d
+	flavor = sb_trek.145.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_soldiers_breaking_protest.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_military.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:TRN
+	}
+
+	option = {
+		name = sb_trek.145.a
+		default_option = yes
+		if = {
+			limit = { is_country_type = recognized }
+			set_country_type = unrecognized
+		}
+		change_relations = {
+			country = c:GBR
+			value = -25
+		}
+		if = {
+			limit = { has_variable = sb_zpb_crackdown_active_var }
+			remove_variable = sb_zpb_crackdown_active_var
+		}
+		if = {
+			limit = {
+				c:ZPB ?= {
+					is_country_alive = yes
+					OR = {
+						has_law = law_type:law_slave_trade
+						has_law = law_type:law_legacy_slavery
+					}
+				}
+			}
+			c:ZPB ?= {
+				sb_queue_gbr_zpb_slavery_response = yes
+			}
+		}
+	}
+}

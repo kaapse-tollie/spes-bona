@@ -35,6 +35,27 @@
 	}
 
 	complete = {
+		government_legitimacy >= 50
+		ig:ig_intelligentsia ?= { is_in_government = no }
+		ig:ig_petty_bourgeoisie ?= { is_in_government = no }
+		ig:ig_industrialists ?= { is_in_government = no }
+		ig:ig_trade_unions ?= { is_in_government = no }
+		OR = {
+			has_law = law_type:law_national_supremacy
+			has_law = law_type:law_ethnostate
+		}
+		has_law = law_type:law_national_militia
+		active_law:lawgroup_army_model ?= {
+			has_amendment = amendment_type:amendment_sb_commando_corps
+		}
+		c:LYD ?= {
+			is_country_alive = yes
+			relations:root >= relations_threshold:amicable
+		}
+		root.gdp > {
+			value = c:LYD.gdp
+			multiply = 1.5
+		}
 		custom_tooltip = {
 			text = je_sb_transvaal_unity_progress_tt
 			var:sb_transvaal_unity_progress >= 60
@@ -52,6 +73,18 @@
 				add_homeland = cu:boer
 			}
 			annex_with_incorporation = c:LYD
+		}
+		if = {
+			limit = { has_modifier = sb_boer_principality_status }
+			remove_modifier = sb_boer_principality_status
+		}
+		if = {
+			limit = {
+				NOT = { has_modifier = sb_boer_grand_principality_status }
+			}
+			add_modifier = {
+				name = sb_boer_grand_principality_status
+			}
 		}
 		remove_variable = sb_transvaal_unity_progress
 	}

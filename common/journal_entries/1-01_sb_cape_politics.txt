@@ -32,8 +32,8 @@
 #   - sb_cape.200 Britain answers the Albany petition immediately
 #   - sb_cape.201/.202 CAP receives London's answer
 #   - sb_cape.100 Liberal aftermath: the JE only closes once London's answer has landed
-#   - The JE no longer hard-fails on a calendar date; it remains open until
-#     the political contest or Albany crisis is resolved in substance.
+#   - If still unresolved by 1880, the contest curdles into exhaustion rather
+#     than reaching a clear constitutional settlement.
 #
 # CROSS-REFERENCES:
 #   - Progress bar: common/scripted_progress_bars/sb_progress_bars.txt (sb_cape_balance_bar)
@@ -179,6 +179,10 @@ je_sb_cape_politics = {
 					has_variable = sb_albany_refused_var
 				}
 			}
+			custom_tooltip = {
+				text = je_sb_cape_politics_complete_timeout
+				game_date >= 1880.1.1
+			}
 
 		}
 	}
@@ -226,6 +230,9 @@ je_sb_cape_politics = {
 					NOT = { c:XHT ?= { is_country_alive = yes } }
 				}
 				trigger_event = { id = sb_cape.102 popup = yes }
+			}
+			else = {
+				trigger_event = { id = sb_cape.104 popup = yes }
 			}
 			scope:journal_entry = {
 				if = {
