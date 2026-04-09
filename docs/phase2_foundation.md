@@ -19,7 +19,7 @@ This file tracks the structural groundwork for the next layer of Southern Africa
 
 ### Transvaal
 
-- New scripted region helpers now exist for the former macro-`STATE_TRANSVAAL`:
+- New scripted region helpers now exist for the former macro-`STATE_WEST_TRANSVAAL`:
   - `sb_controls_west_transvaal_core`
   - `sb_controls_central_transvaal_core`
   - `sb_controls_east_transvaal_core`
@@ -27,7 +27,7 @@ This file tracks the structural groundwork for the next layer of Southern Africa
 - The western helper is wired, the eastern helper now follows the current Pedi shell plus the first audited Lydenburg extras and the Swazi slice for the broader Mpumalanga region, and the northern helper follows the vanilla Venda shell plus the first audited ZPB/Limpopo extras.
 - Central and eastern helpers are intentionally left inert until the province audit is done.
 - `TRN` Great Trek completion now keys off the western core helper instead of full macro-Transvaal control.
-- `ZPB` no longer waits for `TRN` to own the entire old `STATE_TRANSVAAL` before its split event can fire.
+- `ZPB` no longer waits for `TRN` to own the entire old `STATE_WEST_TRANSVAAL` before its split event can fire.
 
 ### New Tag Shells
 
@@ -54,4 +54,4 @@ This file tracks the structural groundwork for the next layer of Southern Africa
 
 ## Rule Of Thumb
 
-If new Phase 2 content needs Transvaal geography before the audited split lands, target the scripted region helpers first rather than `STATE_TRANSVAAL` directly.
+If new Phase 2 content needs Transvaal geography before the audited split lands, target the scripted region helpers first rather than `STATE_WEST_TRANSVAAL` directly.

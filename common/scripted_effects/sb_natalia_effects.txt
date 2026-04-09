@@ -724,9 +724,7 @@ sb_finalize_british_natal_colony = {
 	sb_exile_natalia_boer_leadership = yes
 	sb_apply_british_natal_colony_setup = yes
 	sb_annul_natalia_boer_treaties = yes
-	scope:natal_refugee_receiver ?= {
-		sb_trigger_natal_refugee_migration_effect = yes
-	}
+	sb_trigger_selected_natal_refugee_receiver_followup = yes
 }
 
 sb_found_natal_colony_after_british_annexation = {
@@ -740,8 +738,39 @@ sb_found_natal_colony_after_british_annexation = {
 
 sb_trigger_random_natal_refugee_receiver_event = {
 	sb_select_natalia_refugee_receiver = yes
-	scope:natal_refugee_receiver ?= {
-		sb_trigger_natal_refugee_migration_effect = yes
+	sb_trigger_selected_natal_refugee_receiver_followup = yes
+}
+
+sb_trigger_selected_natal_refugee_receiver_followup = {
+	if = {
+		limit = {
+			exists = scope:natal_refugee_receiver
+			scope:natal_refugee_receiver ?= {
+				country_definition = cd:ORA
+			}
+		}
+		scope:natal_refugee_receiver = {
+			trigger_event = { id = sb_boer_zulu.116 days = 1 popup = yes }
+		}
+	}
+	else_if = {
+		limit = {
+			exists = scope:natal_refugee_receiver
+			scope:natal_refugee_receiver ?= {
+				country_definition = cd:TRN
+			}
+		}
+		scope:natal_refugee_receiver = {
+			trigger_event = { id = sb_boer_zulu.117 days = 1 popup = yes }
+		}
+	}
+	else_if = {
+		limit = {
+			exists = scope:natal_refugee_receiver
+		}
+		scope:natal_refugee_receiver ?= {
+			sb_trigger_natal_refugee_migration_effect = yes
+		}
 	}
 }
 

@@ -45,9 +45,9 @@ This file is the repo-local reference for the live mod branch. It is meant to st
   `ORA` controls the whole Vrystaat
   `TRN` controls the western Transvaal republican core
 - completion settles the republic, removes the frontier expedient government setup, and ends the trek migration pull
-- `ZPB` is no longer gated behind full ownership of the old macro-`STATE_TRANSVAAL`
+- `ZPB` is no longer gated behind full ownership of the old macro-`STATE_WEST_TRANSVAAL`
 - the current live split is now:
-  west `STATE_TRANSVAAL`
+  west `STATE_WEST_TRANSVAAL`
   east `STATE_EAST_TRANSVAAL`
   north `STATE_NORTHERN_TRANSVAAL`
 - the east / Mpumalanga state follows the current Pedi shell plus the audited Lydenburg extras and the Swazi slice
