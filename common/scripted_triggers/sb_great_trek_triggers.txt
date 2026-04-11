@@ -1,4 +1,8 @@
-﻿# Three-state abstraction layer for the Transvaal split.
+﻿# Shared trek / Transvaal ownership triggers.
+#
+# These triggers sit between the audited three-state Transvaal split and the
+# higher-level JE/event logic so the content can ask for "west Transvaal core"
+# or "Transvaal except the Swazi carve-out" without repeating province lists.
 
 sb_can_use_frontier_colonization = {
 	OR = {
@@ -19,6 +23,7 @@ sb_can_use_frontier_colonization = {
 		AND = {
 			country_has_primary_culture = cu:boer
 			OR = {
+				country_definition = cd:ORA
 				country_definition = cd:TRN
 				country_definition = cd:ZPB
 				country_definition = cd:LYD
@@ -32,6 +37,43 @@ sb_controls_west_transvaal_core = {
 	owns_entire_state_region = STATE_TRANSVAAL
 }
 
+sb_has_west_transvaal_foothold = {
+	OR = {
+		p:xD0A010.state.owner = this
+		p:x8BDC4D.state.owner = this
+		p:xA22DC2.state.owner = this
+		p:xD02190.state.owner = this
+		p:x6C1786.state.owner = this
+		p:x9A137B.state.owner = this
+	}
+}
+
+sb_any_boer_republic_player = {
+	OR = {
+		c:ORA ?= {
+			is_country_alive = yes
+			is_player = yes
+		}
+		c:TRN ?= {
+			is_country_alive = yes
+			is_player = yes
+		}
+		c:ZPB ?= {
+			is_country_alive = yes
+			is_player = yes
+		}
+		c:LYD ?= {
+			is_country_alive = yes
+			is_player = yes
+		}
+		c:NAL ?= {
+			is_country_alive = yes
+			is_player = yes
+			country_has_primary_culture = cu:boer
+		}
+	}
+}
+
 # Placeholder until the manual province audit defines the central Transvaal core.
 sb_controls_central_transvaal_core = {
 	always = no
@@ -42,18 +84,14 @@ sb_controls_east_transvaal_core = {
 }
 
 # Lydenburg proper:
-# - all current Pedi-held provinces in the Transvaal shell
-# - plus the audited eastern fringe provinces supplied for the later LYD split
-# - explicitly excludes the Swazi-held slice that belongs to the broader
-#   Mpumalanga abstraction, not the Lydenburg republic itself
+# - the Pedi shell plus the Boer eastern fringe used by the LYD split
+# - explicitly excludes the enlarged Swazi-held frontier pocket
+# - that frontier remains outside Lydenburg proper until later Boer
+#   consolidation pressure resolves it one way or another
 sb_controls_lydenburg_core = {
-	p:x50A011.state.owner = this
-	p:x0591EA.state.owner = this
 	p:x927F5A.state.owner = this
 	p:xDF169D.state.owner = this
-	p:x452304.state.owner = this
 	p:x972FB2.state.owner = this
-	p:x73CDE8.state.owner = this
 	p:x7470A2.state.owner = this
 	p:xBD0AEB.state.owner = this
 	p:x9037B0.state.owner = this
@@ -68,6 +106,10 @@ sb_controls_lydenburg_core = {
 
 sb_controls_north_transvaal_core = {
 	owns_entire_state_region = STATE_NORTHERN_TRANSVAAL
+}
+
+sb_controls_natalia_core = {
+	owns_entire_state_region = STATE_ZULULAND
 }
 
 sb_controls_transvaal_except_swazi = {

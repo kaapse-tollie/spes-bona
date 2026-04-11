@@ -1,4 +1,15 @@
-﻿sb_zulu_add_dynastic_stability_5 = {
+﻿# Zulu dynastic stability helpers
+#
+# Structure:
+#   - small additive/removal helpers for the 0-100 dynastic bar
+#   - monthly housekeeping that updates malus tiers and opens follow-up content
+#   - collapse / success resolution effects
+#
+# The bar is intentionally reused by later content:
+#   Blood River, Port Natal, and the Swazi question all feed back into the same
+#   dynastic-stability story rather than opening disconnected minigames.
+
+sb_zulu_add_dynastic_stability_5 = {
 	if = {
 		limit = {
 			has_journal_entry = je_sb_zulu_kingdom
@@ -129,6 +140,68 @@ sb_zulu_apply_blood_river_defeat = {
 	sb_boost_firearms_progress_minor = yes
 }
 
+sb_zulu_clear_swazi_question_ai_context = {
+	if = { limit = { has_variable = sb_zulu_swazi_ai_honour_deal_var } remove_variable = sb_zulu_swazi_ai_honour_deal_var }
+	if = { limit = { has_variable = sb_zulu_swazi_ai_guns_south_var } remove_variable = sb_zulu_swazi_ai_guns_south_var }
+	if = { limit = { has_variable = sb_zulu_swazi_ai_lost_blood_river_var } remove_variable = sb_zulu_swazi_ai_lost_blood_river_var }
+	if = { limit = { has_variable = sb_zulu_swazi_ai_won_blood_river_var } remove_variable = sb_zulu_swazi_ai_won_blood_river_var }
+}
+
+sb_zulu_mark_swazi_question_after_honour_deal = {
+	sb_zulu_clear_swazi_question_ai_context = yes
+	set_variable = sb_zulu_swazi_ai_honour_deal_var
+}
+
+sb_zulu_mark_swazi_question_after_guns_south = {
+	sb_zulu_clear_swazi_question_ai_context = yes
+	set_variable = sb_zulu_swazi_ai_guns_south_var
+}
+
+sb_zulu_mark_swazi_question_after_blood_river_loss = {
+	sb_zulu_clear_swazi_question_ai_context = yes
+	set_variable = sb_zulu_swazi_ai_lost_blood_river_var
+}
+
+sb_zulu_mark_swazi_question_after_blood_river_win = {
+	sb_zulu_clear_swazi_question_ai_context = yes
+	set_variable = sb_zulu_swazi_ai_won_blood_river_var
+}
+
+sb_zulu_maybe_open_swazi_question = {
+	if = {
+		limit = {
+			sb_is_zulu_dynasty_country = yes
+			has_journal_entry = je_sb_zulu_kingdom
+			NOT = { has_variable = sb_zulu_swazi_question_opened_var }
+			NOT = { has_variable = sb_zulu_swazi_war_active_var }
+			OR = {
+				has_variable = sb_zulu_swazi_ai_honour_deal_var
+				has_variable = sb_zulu_swazi_ai_guns_south_var
+				has_variable = sb_zulu_swazi_ai_lost_blood_river_var
+				has_variable = sb_zulu_swazi_ai_won_blood_river_var
+				has_variable = sb_zulu_blood_river_resolved_var
+				has_variable = sb_zulu_port_natal_raid_available_var
+				c:ORA ?= {
+					has_variable = sb_natal_path_resolved_var
+				}
+			}
+			is_at_war = no
+			c:SWZ ?= {
+				is_country_alive = yes
+				is_subject = no
+				any_scope_state = {
+					state_region = s:STATE_EAST_TRANSVAAL
+				}
+			}
+			ruler = {
+				has_template = ZUL_dingane
+			}
+		}
+		set_variable = sb_zulu_swazi_question_opened_var
+		trigger_event = { id = sb_boer_zulu.094 days = 21 popup = yes }
+	}
+}
+
 sb_zulu_finalize_port_natal_survival = {
 	if = {
 		limit = {
@@ -168,6 +241,313 @@ sb_zulu_disable_dynastic_claims = {
 	}
 }
 
+sb_zulu_clear_dynastic_stability_modifiers = {
+	if = {
+		limit = { has_modifier = sb_zulu_dynastic_stability_decile_0 }
+		remove_modifier = sb_zulu_dynastic_stability_decile_0
+	}
+	if = {
+		limit = { has_modifier = sb_zulu_dynastic_stability_decile_1 }
+		remove_modifier = sb_zulu_dynastic_stability_decile_1
+	}
+	if = {
+		limit = { has_modifier = sb_zulu_dynastic_stability_decile_2 }
+		remove_modifier = sb_zulu_dynastic_stability_decile_2
+	}
+	if = {
+		limit = { has_modifier = sb_zulu_dynastic_stability_decile_3 }
+		remove_modifier = sb_zulu_dynastic_stability_decile_3
+	}
+	if = {
+		limit = { has_modifier = sb_zulu_dynastic_stability_decile_4 }
+		remove_modifier = sb_zulu_dynastic_stability_decile_4
+	}
+	if = {
+		limit = { has_modifier = sb_zulu_dynastic_stability_decile_5 }
+		remove_modifier = sb_zulu_dynastic_stability_decile_5
+	}
+	if = {
+		limit = { has_modifier = sb_zulu_dynastic_stability_decile_6 }
+		remove_modifier = sb_zulu_dynastic_stability_decile_6
+	}
+	if = {
+		limit = { has_modifier = sb_zulu_dynastic_stability_decile_7 }
+		remove_modifier = sb_zulu_dynastic_stability_decile_7
+	}
+	if = {
+		limit = { has_modifier = sb_zulu_dynastic_stability_decile_8 }
+		remove_modifier = sb_zulu_dynastic_stability_decile_8
+	}
+	if = {
+		limit = { has_modifier = sb_zulu_dynastic_stability_decile_9 }
+		remove_modifier = sb_zulu_dynastic_stability_decile_9
+	}
+	if = {
+		limit = { has_modifier = sb_zulu_dynastic_stability_decile_10 }
+		remove_modifier = sb_zulu_dynastic_stability_decile_10
+	}
+	if = {
+		limit = { has_modifier = sb_zulu_dynastic_stability_decile_11 }
+		remove_modifier = sb_zulu_dynastic_stability_decile_11
+	}
+	if = {
+		limit = { has_modifier = sb_zulu_dynastic_stability_decile_12 }
+		remove_modifier = sb_zulu_dynastic_stability_decile_12
+	}
+	if = {
+		limit = { has_modifier = sb_zulu_dynastic_stability_decile_13 }
+		remove_modifier = sb_zulu_dynastic_stability_decile_13
+	}
+	if = {
+		limit = { has_modifier = sb_zulu_dynastic_stability_decile_14 }
+		remove_modifier = sb_zulu_dynastic_stability_decile_14
+	}
+	if = {
+		limit = { has_modifier = sb_zulu_dynastic_stability_decile_15 }
+		remove_modifier = sb_zulu_dynastic_stability_decile_15
+	}
+	if = {
+		limit = { has_modifier = sb_zulu_dynastic_stability_decile_16 }
+		remove_modifier = sb_zulu_dynastic_stability_decile_16
+	}
+	if = {
+		limit = { has_modifier = sb_zulu_dynastic_stability_decile_17 }
+		remove_modifier = sb_zulu_dynastic_stability_decile_17
+	}
+	if = {
+		limit = { has_modifier = sb_zulu_dynastic_stability_decile_18 }
+		remove_modifier = sb_zulu_dynastic_stability_decile_18
+	}
+	if = {
+		limit = { has_modifier = sb_zulu_dynastic_stability_decile_19 }
+		remove_modifier = sb_zulu_dynastic_stability_decile_19
+	}
+}
+
+sb_zulu_update_dynastic_stability_modifiers = {
+	sb_zulu_clear_dynastic_stability_modifiers = yes
+	if = {
+		limit = {
+			has_journal_entry = je_sb_zulu_kingdom
+			je:je_sb_zulu_kingdom ?= {
+				"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 4
+			}
+		}
+		add_modifier = {
+			name = sb_zulu_dynastic_stability_decile_0
+		}
+	}
+	else_if = {
+		limit = {
+			has_journal_entry = je_sb_zulu_kingdom
+			je:je_sb_zulu_kingdom ?= {
+				"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 9
+			}
+		}
+		add_modifier = {
+			name = sb_zulu_dynastic_stability_decile_1
+		}
+	}
+	else_if = {
+		limit = {
+			has_journal_entry = je_sb_zulu_kingdom
+			je:je_sb_zulu_kingdom ?= {
+				"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 14
+			}
+		}
+		add_modifier = {
+			name = sb_zulu_dynastic_stability_decile_2
+		}
+	}
+	else_if = {
+		limit = {
+			has_journal_entry = je_sb_zulu_kingdom
+			je:je_sb_zulu_kingdom ?= {
+				"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 19
+			}
+		}
+		add_modifier = {
+			name = sb_zulu_dynastic_stability_decile_3
+		}
+	}
+	else_if = {
+		limit = {
+			has_journal_entry = je_sb_zulu_kingdom
+			je:je_sb_zulu_kingdom ?= {
+				"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 24
+			}
+		}
+		add_modifier = {
+			name = sb_zulu_dynastic_stability_decile_4
+		}
+	}
+	else_if = {
+		limit = {
+			has_journal_entry = je_sb_zulu_kingdom
+			je:je_sb_zulu_kingdom ?= {
+				"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 29
+			}
+		}
+		add_modifier = {
+			name = sb_zulu_dynastic_stability_decile_5
+		}
+	}
+	else_if = {
+		limit = {
+			has_journal_entry = je_sb_zulu_kingdom
+			je:je_sb_zulu_kingdom ?= {
+				"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 34
+			}
+		}
+		add_modifier = {
+			name = sb_zulu_dynastic_stability_decile_6
+		}
+	}
+	else_if = {
+		limit = {
+			has_journal_entry = je_sb_zulu_kingdom
+			je:je_sb_zulu_kingdom ?= {
+				"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 39
+			}
+		}
+		add_modifier = {
+			name = sb_zulu_dynastic_stability_decile_7
+		}
+	}
+	else_if = {
+		limit = {
+			has_journal_entry = je_sb_zulu_kingdom
+			je:je_sb_zulu_kingdom ?= {
+				"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 44
+			}
+		}
+		add_modifier = {
+			name = sb_zulu_dynastic_stability_decile_8
+		}
+	}
+	else_if = {
+		limit = {
+			has_journal_entry = je_sb_zulu_kingdom
+			je:je_sb_zulu_kingdom ?= {
+				"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 49
+			}
+		}
+		add_modifier = {
+			name = sb_zulu_dynastic_stability_decile_9
+		}
+	}
+	else_if = {
+		limit = {
+			has_journal_entry = je_sb_zulu_kingdom
+			je:je_sb_zulu_kingdom ?= {
+				"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 54
+			}
+		}
+		add_modifier = {
+			name = sb_zulu_dynastic_stability_decile_10
+		}
+	}
+	else_if = {
+		limit = {
+			has_journal_entry = je_sb_zulu_kingdom
+			je:je_sb_zulu_kingdom ?= {
+				"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 59
+			}
+		}
+		add_modifier = {
+			name = sb_zulu_dynastic_stability_decile_11
+		}
+	}
+	else_if = {
+		limit = {
+			has_journal_entry = je_sb_zulu_kingdom
+			je:je_sb_zulu_kingdom ?= {
+				"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 64
+			}
+		}
+		add_modifier = {
+			name = sb_zulu_dynastic_stability_decile_12
+		}
+	}
+	else_if = {
+		limit = {
+			has_journal_entry = je_sb_zulu_kingdom
+			je:je_sb_zulu_kingdom ?= {
+				"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 69
+			}
+		}
+		add_modifier = {
+			name = sb_zulu_dynastic_stability_decile_13
+		}
+	}
+	else_if = {
+		limit = {
+			has_journal_entry = je_sb_zulu_kingdom
+			je:je_sb_zulu_kingdom ?= {
+				"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 74
+			}
+		}
+		add_modifier = {
+			name = sb_zulu_dynastic_stability_decile_14
+		}
+	}
+	else_if = {
+		limit = {
+			has_journal_entry = je_sb_zulu_kingdom
+			je:je_sb_zulu_kingdom ?= {
+				"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 79
+			}
+		}
+		add_modifier = {
+			name = sb_zulu_dynastic_stability_decile_15
+		}
+	}
+	else_if = {
+		limit = {
+			has_journal_entry = je_sb_zulu_kingdom
+			je:je_sb_zulu_kingdom ?= {
+				"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 84
+			}
+		}
+		add_modifier = {
+			name = sb_zulu_dynastic_stability_decile_16
+		}
+	}
+	else_if = {
+		limit = {
+			has_journal_entry = je_sb_zulu_kingdom
+			je:je_sb_zulu_kingdom ?= {
+				"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 89
+			}
+		}
+		add_modifier = {
+			name = sb_zulu_dynastic_stability_decile_17
+		}
+	}
+	else_if = {
+		limit = {
+			has_journal_entry = je_sb_zulu_kingdom
+			je:je_sb_zulu_kingdom ?= {
+				"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 94
+			}
+		}
+		add_modifier = {
+			name = sb_zulu_dynastic_stability_decile_18
+		}
+	}
+	else_if = {
+		limit = {
+			has_journal_entry = je_sb_zulu_kingdom
+			je:je_sb_zulu_kingdom ?= {
+				"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 99
+			}
+		}
+		add_modifier = {
+			name = sb_zulu_dynastic_stability_decile_19
+		}
+	}
+}
+
 sb_zulu_kill_current_heir = {
 	if = {
 		limit = {
@@ -189,6 +569,7 @@ sb_zulu_prepare_uthumbu_heir = {
 			NOT = {
 				any_scope_character = {
 					has_template = ZUL_uthumbu_claimed_son
+					is_character_alive = yes
 				}
 			}
 		}
@@ -201,7 +582,10 @@ sb_zulu_prepare_uthumbu_heir = {
 	}
 	else = {
 		random_scope_character = {
-			limit = { has_template = ZUL_uthumbu_claimed_son }
+			limit = {
+				has_template = ZUL_uthumbu_claimed_son
+				is_character_alive = yes
+			}
 			save_scope_as = new_heir_scope
 		}
 	}
@@ -214,6 +598,7 @@ sb_zulu_prepare_cetshwayo_heir = {
 			NOT = {
 				any_scope_character = {
 					has_template = ZUL_cetshwayo_heir
+					is_character_alive = yes
 				}
 			}
 		}
@@ -226,7 +611,10 @@ sb_zulu_prepare_cetshwayo_heir = {
 	}
 	else = {
 		random_scope_character = {
-			limit = { has_template = ZUL_cetshwayo_heir }
+			limit = {
+				has_template = ZUL_cetshwayo_heir
+				is_character_alive = yes
+			}
 			save_scope_as = new_heir_scope
 		}
 	}
@@ -239,6 +627,7 @@ sb_zulu_prepare_dinuzulu_heir = {
 			NOT = {
 				any_scope_character = {
 					has_template = ZUL_dinuzulu_heir
+					is_character_alive = yes
 				}
 			}
 		}
@@ -251,7 +640,10 @@ sb_zulu_prepare_dinuzulu_heir = {
 	}
 	else = {
 		random_scope_character = {
-			limit = { has_template = ZUL_dinuzulu_heir }
+			limit = {
+				has_template = ZUL_dinuzulu_heir
+				is_character_alive = yes
+			}
 			save_scope_as = new_heir_scope
 		}
 	}
@@ -264,6 +656,7 @@ sb_zulu_prepare_solomon_heir = {
 			NOT = {
 				any_scope_character = {
 					has_template = ZUL_solomon_heir
+					is_character_alive = yes
 				}
 			}
 		}
@@ -276,11 +669,53 @@ sb_zulu_prepare_solomon_heir = {
 	}
 	else = {
 		random_scope_character = {
-			limit = { has_template = ZUL_solomon_heir }
+			limit = {
+				has_template = ZUL_solomon_heir
+				is_character_alive = yes
+			}
 			save_scope_as = new_heir_scope
 		}
 	}
 	set_character_of_unknown_status_as_heir = yes
+}
+
+sb_zulu_install_summoned_claimant_as_ruler = {
+	scope:summoned_character_scope ?= {
+		if = {
+			limit = {
+				is_in_void = yes
+			}
+			hidden_effect = {
+				free_character_from_void = yes
+				transfer_character = prev
+			}
+		}
+		if = {
+			limit = {
+				is_in_exile_pool = yes
+			}
+			transfer_character = prev
+			set_variable = exile_to_ruler_var
+			set_variable = {
+				name = memento_mori_immunity
+				months = 60
+			}
+			hidden_effect = {
+				free_from_exile_effect = yes
+			}
+		}
+		if = {
+			limit = {
+				NOT = { has_role = politician }
+			}
+			add_character_role = politician
+		}
+		set_interest_group = c:ZUL.ig:ig_armed_forces
+		hidden_effect = {
+			cleanup_ruler_character_roles = yes
+		}
+		set_character_as_ruler = yes
+	}
 }
 
 sb_zulu_prepare_mpande_claimant = {
@@ -289,6 +724,7 @@ sb_zulu_prepare_mpande_claimant = {
 			NOT = {
 				any_scope_character = {
 					has_template = ZUL_mpande_zulu
+					is_character_alive = yes
 				}
 			}
 		}
@@ -301,14 +737,14 @@ sb_zulu_prepare_mpande_claimant = {
 	}
 	else = {
 		random_scope_character = {
-			limit = { has_template = ZUL_mpande_zulu }
+			limit = {
+				has_template = ZUL_mpande_zulu
+				is_character_alive = yes
+			}
 			save_scope_as = summoned_character_scope
 		}
 	}
-	scope:summoned_character_scope ?= {
-		set_interest_group = c:ZUL.ig:ig_armed_forces
-		set_character_as_ruler = yes
-	}
+	sb_zulu_install_summoned_claimant_as_ruler = yes
 }
 
 sb_zulu_prepare_cetshwayo_claimant = {
@@ -317,6 +753,7 @@ sb_zulu_prepare_cetshwayo_claimant = {
 			NOT = {
 				any_scope_character = {
 					has_template = ZUL_cetshwayo_heir
+					is_character_alive = yes
 				}
 			}
 		}
@@ -329,14 +766,14 @@ sb_zulu_prepare_cetshwayo_claimant = {
 	}
 	else = {
 		random_scope_character = {
-			limit = { has_template = ZUL_cetshwayo_heir }
+			limit = {
+				has_template = ZUL_cetshwayo_heir
+				is_character_alive = yes
+			}
 			save_scope_as = summoned_character_scope
 		}
 	}
-	scope:summoned_character_scope ?= {
-		set_interest_group = c:ZUL.ig:ig_armed_forces
-		set_character_as_ruler = yes
-	}
+	sb_zulu_install_summoned_claimant_as_ruler = yes
 }
 
 sb_zulu_prepare_dinuzulu_claimant = {
@@ -345,6 +782,7 @@ sb_zulu_prepare_dinuzulu_claimant = {
 			NOT = {
 				any_scope_character = {
 					has_template = ZUL_dinuzulu_heir
+					is_character_alive = yes
 				}
 			}
 		}
@@ -357,14 +795,14 @@ sb_zulu_prepare_dinuzulu_claimant = {
 	}
 	else = {
 		random_scope_character = {
-			limit = { has_template = ZUL_dinuzulu_heir }
+			limit = {
+				has_template = ZUL_dinuzulu_heir
+				is_character_alive = yes
+			}
 			save_scope_as = summoned_character_scope
 		}
 	}
-	scope:summoned_character_scope ?= {
-		set_interest_group = c:ZUL.ig:ig_armed_forces
-		set_character_as_ruler = yes
-	}
+	sb_zulu_install_summoned_claimant_as_ruler = yes
 }
 
 sb_zulu_apply_generic_war_victory = {
@@ -387,6 +825,10 @@ sb_zulu_apply_generic_war_defeat = {
 sb_zulu_apply_swazi_campaign_victory = {
 	sb_zulu_add_dynastic_stability_20 = yes
 	sb_zulu_add_dynastic_stability_10 = yes
+	s:STATE_EAST_TRANSVAAL = {
+		add_claim = root
+	}
+	trigger_event = { id = sb_boer_zulu.097 days = 5 popup = yes }
 }
 
 sb_zulu_apply_swazi_campaign_defeat = {
@@ -396,39 +838,28 @@ sb_zulu_apply_swazi_campaign_defeat = {
 }
 
 sb_zulu_monthly_dynasty_housekeeping = {
-	if = {
-		limit = {
-			country_definition = cd:ZUL
-			has_journal_entry = je_sb_zulu_kingdom
-			NOT = { has_variable = sb_zulu_swazi_question_opened_var }
-			NOT = { has_variable = sb_zulu_swazi_war_active_var }
-			is_at_war = no
-			c:SWZ ?= {
-				is_country_alive = yes
-				is_subject = no
-				any_scope_state = {
-					state_region = s:STATE_EAST_TRANSVAAL
-				}
-			}
-			ruler = {
-				has_template = ZUL_dingane
-			}
-			OR = {
-				has_variable = sb_zulu_port_natal_raid_taken_var
-				c:ORA ?= {
-					has_variable = sb_natal_path_resolved_var
-				}
-				game_date >= 1841.1.1
-			}
-		}
-		set_variable = sb_zulu_swazi_question_opened_var
-		trigger_event = { id = sb_boer_zulu.094 days = 21 popup = yes }
-	}
+	sb_zulu_update_dynastic_stability_modifiers = yes
+	sb_zulu_maybe_open_swazi_question = yes
 	if = {
 		limit = {
 			NOT = { has_variable = sb_zulu_dynastic_event_cooldown_var }
 			NOT = { has_variable = sb_zulu_dynasty_secured_var }
+			OR = {
+				has_variable = sb_natal_war_active_var
+				has_variable = sb_natal_guns_bargain_war_var
+				has_variable = sb_zulu_blood_river_resolved_var
+				has_variable = sb_zulu_port_natal_raid_available_var
+				has_variable = sb_port_natal_british_war_var
+				c:ORA ?= {
+					has_variable = sb_natal_diplomacy_started_var
+				}
+				c:ORA ?= {
+					has_variable = sb_natal_path_resolved_var
+				}
+			}
 		}
+		# War-era randoms: once the Natal crisis is active or resolved, the dynasty
+		# event pool can surface the harsher military/coastal incidents as well.
 		random_list = {
 			4 = {
 				set_variable = {
@@ -461,6 +892,38 @@ sb_zulu_monthly_dynasty_housekeeping = {
 			84 = { }
 		}
 	}
+	else_if = {
+		limit = {
+			NOT = { has_variable = sb_zulu_dynastic_event_cooldown_var }
+			NOT = { has_variable = sb_zulu_dynasty_secured_var }
+		}
+		# Pre-war randoms: before the coast crisis fully develops, only the more
+		# internal court-management events are allowed to fire.
+		random_list = {
+			4 = {
+				set_variable = {
+					name = sb_zulu_dynastic_event_cooldown_var
+					months = 12
+				}
+				trigger_event = { id = sb_boer_zulu.200 days = 7 popup = yes }
+			}
+			4 = {
+				set_variable = {
+					name = sb_zulu_dynastic_event_cooldown_var
+					months = 12
+				}
+				trigger_event = { id = sb_boer_zulu.201 days = 7 popup = yes }
+			}
+			4 = {
+				set_variable = {
+					name = sb_zulu_dynastic_event_cooldown_var
+					months = 12
+				}
+				trigger_event = { id = sb_boer_zulu.202 days = 7 popup = yes }
+			}
+			88 = { }
+		}
+	}
 }
 
 sb_resolve_zulu_dynastic_collapse = {
@@ -470,8 +933,9 @@ sb_resolve_zulu_dynastic_collapse = {
 		}
 		remove_variable = sb_zulu_dynastic_collapse_pending_var
 	}
-	sb_zulu_set_dynastic_stability_33 = yes
+	set_variable = sb_zulu_dynastic_collapse_resolved_var
 	sb_zulu_disable_dynastic_claims = yes
+	sb_zulu_clear_dynastic_stability_modifiers = yes
 	capital = {
 		add_radicals_in_state = {
 			value = large_radicals
@@ -493,17 +957,24 @@ sb_resolve_zulu_dynastic_collapse = {
 			}
 		}
 		sb_zulu_kill_current_heir = yes
+		sb_zulu_prepare_mpande_claimant = yes
+		sb_zulu_prepare_cetshwayo_heir = yes
 		random_scope_character = {
 			limit = {
 				has_template = ZUL_dingane
+				is_character_alive = yes
 			}
 			add_modifier = {
 				name = sb_dingane_humbled
 				months = 120
 			}
+			if = {
+				limit = {
+					NOT = { is_ruler = yes }
+				}
+				exile_character = yes
+			}
 		}
-		sb_zulu_prepare_mpande_claimant = yes
-		sb_zulu_prepare_cetshwayo_heir = yes
 	}
 	else_if = {
 		limit = {
@@ -537,6 +1008,15 @@ sb_resolve_zulu_dynasty_secured = {
 	}
 	set_variable = sb_zulu_dynasty_secured_var
 	sb_zulu_disable_dynastic_claims = yes
+	sb_zulu_clear_dynastic_stability_modifiers = yes
+	ruler = {
+		if = {
+			limit = {
+				NOT = { has_modifier = sb_zulu_secured_the_throne }
+			}
+			add_modifier = { name = sb_zulu_secured_the_throne }
+		}
+	}
 	if = {
 		limit = {
 			ruler = {

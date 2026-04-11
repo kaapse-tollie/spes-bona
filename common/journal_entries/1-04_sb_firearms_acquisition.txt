@@ -1,26 +1,35 @@
-﻿# Generic Phase 1 firearms-acquisition JE for southern African kingdoms that
-# still rely heavily on melee-centric warfare at game start.
+﻿# Generic firearms-acquisition JE for southern African kingdoms that still
+# rely heavily on melee-centric warfare at game start.
+#
+# Two progress lanes run in parallel:
+#   - imports / treaty access to firearms
+#   - domestic industry capable of producing them
+# Whichever lane is ahead becomes the visible bar progress.
 
 je_sb_adopt_firearms = {
 	group = je_group_historical_content
 
 	icon = "gfx/interface/icons/event_icons/event_military.dds"
+	scripted_progress_bar = sb_firearms_adoption_bar
 
 	is_shown_in_lobby = {
 		hidden_trigger = {
 			sb_is_firearms_acquisition_country = yes
+			NOT = { has_variable = sb_firearms_modernized_var }
 		}
 	}
 
 	is_shown_when_inactive = {
 		hidden_trigger = {
-			always = no
+			sb_is_firearms_acquisition_country = yes
+			NOT = { has_variable = sb_firearms_modernized_var }
 		}
 	}
 
 	possible = {
 		hidden_trigger = {
-			always = no
+			sb_is_firearms_acquisition_country = yes
+			NOT = { has_variable = sb_firearms_modernized_var }
 		}
 	}
 
@@ -92,6 +101,7 @@ je_sb_adopt_firearms = {
 			limit = {
 				NOT = { has_variable = sb_firearms_je_seeded_var }
 			}
+			sb_seed_initial_firearms_progress = yes
 			set_variable = sb_firearms_je_seeded_var
 		}
 		sb_update_firearms_progress = yes
@@ -148,16 +158,6 @@ je_sb_adopt_firearms = {
 		remove_variable = sb_firearms_progress_months_var
 		trigger_event = { id = sb_firearms.001 }
 	}
-
-	current_value = {
-		value = root.var:sb_firearms_progress_months_var
-	}
-
-	goal_add_value = {
-		add = 60
-	}
-
-	progressbar = yes
 
 	weight = 1000
 	should_be_pinned_by_default = yes

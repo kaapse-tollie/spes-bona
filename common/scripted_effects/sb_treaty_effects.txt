@@ -270,6 +270,7 @@ sb_normalize_boer_trade_treaties = {
 	c:GBR ?= {
 		if = {
 			limit = {
+				c:ORA ?= { is_country_alive = yes }
 				NOT = {
 					any_scope_treaty = {
 						binds = c:ORA
@@ -298,6 +299,7 @@ sb_normalize_boer_trade_treaties = {
 
 		if = {
 			limit = {
+				c:TRN ?= { is_country_alive = yes }
 				NOT = {
 					any_scope_treaty = {
 						binds = c:TRN
@@ -326,6 +328,7 @@ sb_normalize_boer_trade_treaties = {
 
 		if = {
 			limit = {
+				c:PHL ?= { is_country_alive = yes }
 				NOT = {
 					any_scope_treaty = {
 						binds = c:PHL
@@ -354,6 +357,7 @@ sb_normalize_boer_trade_treaties = {
 
 		if = {
 			limit = {
+				c:WBL ?= { is_country_alive = yes }
 				NOT = {
 					any_scope_treaty = {
 						binds = c:WBL
@@ -389,6 +393,7 @@ sb_normalize_boer_trade_treaties = {
 	c:ORA ?= {
 		if = {
 			limit = {
+				c:TRN ?= { is_country_alive = yes }
 				NOT = {
 					any_scope_treaty = {
 						binds = c:TRN
@@ -419,6 +424,7 @@ sb_normalize_boer_trade_treaties = {
 	c:PHL ?= {
 		if = {
 			limit = {
+				c:ORA ?= { is_country_alive = yes }
 				NOT = {
 					any_scope_treaty = {
 						binds = c:ORA
@@ -449,6 +455,7 @@ sb_normalize_boer_trade_treaties = {
 	c:WBL ?= {
 		if = {
 			limit = {
+				c:TRN ?= { is_country_alive = yes }
 				NOT = {
 					any_scope_treaty = {
 						binds = c:TRN
@@ -479,6 +486,7 @@ sb_normalize_boer_trade_treaties = {
 	c:CAP ?= {
 		if = {
 			limit = {
+				c:WBL ?= { is_country_alive = yes }
 				NOT = {
 					any_scope_treaty = {
 						binds = c:WBL
@@ -737,4 +745,202 @@ sb_ensure_defensive_pact_with_zpb = {
 			}
 		}
 	}
+}
+
+sb_ensure_trn_zpb_frontier_compact = {
+	if = {
+		limit = {
+			c:TRN ?= { is_country_alive = yes }
+			c:ZPB ?= { is_country_alive = yes }
+			NOT = {
+				c:TRN ?= {
+					any_scope_treaty = {
+						binds = c:ZPB
+						any_scope_article = {
+							has_type = defensive_pact
+						}
+					}
+				}
+			}
+		}
+		c:TRN ?= {
+			create_treaty = {
+				first_country = c:TRN
+				second_country = c:ZPB
+				is_draft = no
+				binding_period = { years = 10 }
+				articles_to_create = {
+					{
+						article = defensive_pact
+					}
+					{
+						article = transit_rights
+						source_country = c:TRN
+						target_country = c:ZPB
+					}
+					{
+						article = transit_rights
+						source_country = c:ZPB
+						target_country = c:TRN
+					}
+				}
+			}
+		}
+	}
+
+	if = {
+		limit = {
+			c:TRN ?= { is_country_alive = yes }
+			c:ZPB ?= { is_country_alive = yes }
+			NOT = {
+				c:TRN ?= {
+					any_scope_treaty = {
+						binds = c:ZPB
+						any_scope_article = {
+							has_type = transit_rights
+							source_country = c:TRN
+							target_country = c:ZPB
+						}
+					}
+				}
+			}
+		}
+		c:TRN ?= {
+			create_treaty = {
+				first_country = c:TRN
+				second_country = c:ZPB
+				is_draft = no
+				binding_period = { years = 10 }
+				articles_to_create = {
+					{
+						article = transit_rights
+						source_country = c:TRN
+						target_country = c:ZPB
+					}
+					{
+						article = transit_rights
+						source_country = c:ZPB
+						target_country = c:TRN
+					}
+				}
+			}
+		}
+	}
+}
+
+sb_ensure_trn_nal_frontier_compact = {
+	if = {
+		limit = {
+			c:TRN ?= { is_country_alive = yes }
+			c:NAL ?= {
+				is_country_alive = yes
+				country_has_primary_culture = cu:boer
+			}
+			NOT = {
+				c:TRN ?= {
+					any_scope_treaty = {
+						binds = c:NAL
+						any_scope_article = {
+							has_type = defensive_pact
+						}
+					}
+				}
+			}
+		}
+		c:TRN ?= {
+			create_treaty = {
+				first_country = c:TRN
+				second_country = c:NAL
+				is_draft = no
+				binding_period = { years = 10 }
+				articles_to_create = {
+					{
+						article = defensive_pact
+					}
+					{
+						article = transit_rights
+						source_country = c:TRN
+						target_country = c:NAL
+					}
+					{
+						article = transit_rights
+						source_country = c:NAL
+						target_country = c:TRN
+					}
+				}
+			}
+		}
+	}
+
+	if = {
+		limit = {
+			c:TRN ?= { is_country_alive = yes }
+			c:NAL ?= {
+				is_country_alive = yes
+				country_has_primary_culture = cu:boer
+			}
+			NOT = {
+				c:TRN ?= {
+					any_scope_treaty = {
+						binds = c:NAL
+						any_scope_article = {
+							has_type = transit_rights
+							source_country = c:TRN
+							target_country = c:NAL
+						}
+					}
+				}
+			}
+		}
+		c:TRN ?= {
+			create_treaty = {
+				first_country = c:TRN
+				second_country = c:NAL
+				is_draft = no
+				binding_period = { years = 10 }
+				articles_to_create = {
+					{
+						article = transit_rights
+						source_country = c:TRN
+						target_country = c:NAL
+					}
+					{
+						article = transit_rights
+						source_country = c:NAL
+						target_country = c:TRN
+					}
+				}
+			}
+		}
+	}
+}
+
+sb_open_trn_zpb_frontier_unity_path = {
+	activate_law = law_type:law_slave_trade
+	if = {
+		limit = { has_variable = sb_zpb_crackdown_active_var }
+		remove_variable = sb_zpb_crackdown_active_var
+	}
+	if = {
+		limit = { NOT = { has_variable = sb_zpb_unity_active_var } }
+		set_variable = sb_zpb_unity_active_var
+	}
+	if = {
+		limit = {
+			NOT = { has_journal_entry = je_sb_zpb_unity }
+		}
+		add_journal_entry = { type = je_sb_zpb_unity }
+	}
+	change_relations = {
+		country = c:ZPB
+		value = 25
+	}
+	c:ZPB ?= {
+		change_relations = {
+			country = c:TRN
+			value = 25
+		}
+		trigger_event = { id = sb_trek.146 days = 3 popup = yes }
+	}
+	sb_queue_gbr_highveld_slavery_response = yes
 }

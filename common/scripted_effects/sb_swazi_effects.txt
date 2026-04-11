@@ -1,0 +1,293 @@
+﻿# Spes Bona - Swazi frontier and accommodation helpers
+#
+# Chain order:
+#   1. TRN completes Transvaal Unity
+#   2. SWZ answers Boer consolidation pressure (sell land or resist)
+#   3. only after that, and only if Natal is British, SWZ can choose whether to
+#      seek British shelter or stand apart
+
+sb_swazi_raise_zulu_campaign_muster = {
+	if = {
+		limit = {
+			NOT = { has_variable = sb_swazi_zulu_campaign_muster_var }
+		}
+		set_variable = {
+			name = sb_swazi_zulu_campaign_muster_var
+			months = 24
+		}
+		every_scope_state = {
+			limit = {
+				state_region = s:STATE_EAST_TRANSVAAL
+			}
+			create_pop = {
+				pop_type = officers
+				culture = nguni
+				size = 600
+			}
+			create_pop = {
+				pop_type = soldiers
+				culture = nguni
+				size = 6000
+			}
+			create_building = {
+				building = building_barrack
+				level = 4
+				reserves = 1
+			}
+		}
+		create_military_formation = {
+			type = army
+			hq_region = sr:region_southern_africa
+			name = swazi_emabutfo
+
+			combat_unit = {
+				type = unit_type:combat_unit_type_irregular_infantry
+				state_region = s:STATE_EAST_TRANSVAAL
+				count = 6
+			}
+		}
+	}
+}
+
+sb_swazi_apply_guns_for_land_bonus = {
+	add_modifier = {
+		name = sb_swazi_frontier_rearmed
+		months = 60
+	}
+
+	if = {
+		limit = {
+			has_journal_entry = je_sb_adopt_firearms
+			NOT = { has_variable = sb_firearms_modernized_var }
+		}
+		if = {
+			limit = {
+				NOT = { has_variable = sb_firearms_treaty_progress_months_var }
+			}
+			set_variable = {
+				name = sb_firearms_treaty_progress_months_var
+				value = 0
+			}
+		}
+		if = {
+			limit = {
+				NOT = { has_variable = sb_firearms_industry_progress_months_var }
+			}
+			set_variable = {
+				name = sb_firearms_industry_progress_months_var
+				value = 0
+			}
+		}
+		if = {
+			limit = { var:sb_firearms_treaty_progress_months_var < 24 }
+			change_variable = {
+				name = sb_firearms_treaty_progress_months_var
+				add = 4
+			}
+		}
+		if = {
+			limit = { var:sb_firearms_industry_progress_months_var < 24 }
+			change_variable = {
+				name = sb_firearms_industry_progress_months_var
+				add = 4
+			}
+		}
+		sb_update_firearms_progress = yes
+		sb_sync_iron_age_weapons_penalty = yes
+	}
+}
+
+sb_swazi_apply_boer_buy_time_settlement = {
+	# "Buy Time" is deliberately narrow: only the disputed western frontier pocket
+	# changes hands, and the payoff is security + firearms progress rather than a
+	# full subject relationship.
+	set_variable = sb_swazi_boer_pressure_resolved_var
+	set_variable = sb_swazi_boer_land_sold_var
+	if = {
+		limit = { has_variable = sb_swazi_boer_resisted_var }
+		remove_variable = sb_swazi_boer_resisted_var
+	}
+
+	s:STATE_EAST_TRANSVAAL = {
+		set_owner_of_provinces = {
+			country = c:TRN
+			provinces = {
+				x73CDE8 x50A011 x452304
+			}
+		}
+		remove_claim = c:SWZ
+	}
+
+	c:TRN ?= {
+		if = {
+			limit = { has_modifier = sb_swazi_frontier_grievance }
+			remove_modifier = sb_swazi_frontier_grievance
+		}
+	}
+
+	change_relations = {
+		country = c:TRN
+		value = 25
+	}
+	create_bidirectional_truce = {
+		country = c:TRN
+		months = 96
+	}
+	sb_swazi_apply_guns_for_land_bonus = yes
+}
+
+sb_swazi_apply_boer_resistance = {
+	# Resistance does not immediately force a war; it creates hostility and a
+	# grievance window for later pressure instead.
+	set_variable = sb_swazi_boer_pressure_resolved_var
+	set_variable = sb_swazi_boer_resisted_var
+	if = {
+		limit = { has_variable = sb_swazi_boer_land_sold_var }
+		remove_variable = sb_swazi_boer_land_sold_var
+	}
+
+	change_relations = {
+		country = c:TRN
+		value = -35
+	}
+	create_bidirectional_truce = {
+		country = c:TRN
+		months = 24
+	}
+	c:TRN ?= {
+		add_modifier = {
+			name = sb_swazi_frontier_grievance
+			months = 60
+		}
+	}
+}
+
+sb_swazi_apply_british_accommodation = {
+	# Later-stage shelter, not annexation: SWZ stays independent while Britain
+	# gains leverage and a formal foothold.
+	set_variable = sb_swazi_british_accommodation_var
+	if = {
+		limit = { has_variable = sb_swazi_british_accommodation_pending_var }
+		remove_variable = sb_swazi_british_accommodation_pending_var
+	}
+
+	change_relations = {
+		country = c:GBR
+		value = 50
+	}
+
+	c:GBR ?= {
+		if = {
+			limit = {
+				NOT = {
+					any_scope_treaty = {
+						binds = root
+						any_scope_article = {
+							has_type = trade_privilege
+							source_country = c:GBR
+							target_country = root
+						}
+					}
+				}
+			}
+			create_treaty = {
+				first_country = c:GBR
+				second_country = root
+				is_draft = no
+				binding_period = { years = 20 }
+				articles_to_create = {
+					{
+						article = trade_privilege
+						source_country = c:GBR
+						target_country = root
+					}
+					{
+						article = trade_privilege
+						source_country = root
+						target_country = c:GBR
+					}
+				}
+			}
+		}
+
+		if = {
+			limit = {
+				NOT = {
+					any_scope_treaty = {
+						binds = root
+						any_scope_article = {
+							has_type = guarantee_independence
+							source_country = c:GBR
+							target_country = root
+						}
+					}
+				}
+			}
+			create_treaty = {
+				first_country = c:GBR
+				second_country = root
+				is_draft = no
+				binding_period = { years = 20 }
+				articles_to_create = {
+					{
+						article = guarantee_independence
+						source_country = c:GBR
+						target_country = root
+					}
+				}
+			}
+		}
+
+		if = {
+			limit = {
+				is_power_bloc_leader = yes
+				NOT = { is_in_same_power_bloc = root }
+				NOT = {
+					any_scope_treaty = {
+						binds = root
+						any_scope_article = {
+							has_type = host_power_bloc_embassy
+							source_country = c:GBR
+							target_country = root
+						}
+					}
+				}
+			}
+			create_treaty = {
+				first_country = c:GBR
+				second_country = root
+				is_draft = no
+				binding_period = { years = 20 }
+				articles_to_create = {
+					{
+						article = host_power_bloc_embassy
+						source_country = c:GBR
+						target_country = root
+					}
+				}
+			}
+			power_bloc = {
+				add_leverage = {
+					target = root
+					value = 50
+				}
+			}
+		}
+	}
+}
+
+sb_swazi_apply_stand_apart = {
+	set_variable = sb_swazi_stand_apart_var
+	if = {
+		limit = { has_variable = sb_swazi_british_accommodation_pending_var }
+		remove_variable = sb_swazi_british_accommodation_pending_var
+	}
+	change_relations = {
+		country = c:GBR
+		value = -10
+	}
+	add_modifier = {
+		name = sb_swazi_stand_apart
+		months = 120
+	}
+}

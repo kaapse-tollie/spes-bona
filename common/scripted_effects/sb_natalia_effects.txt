@@ -1,7 +1,13 @@
 ﻿# Shared scripted effects for the Natalia chain.
 #
-# NAL can now appear either as a Boer republic or as a British crown colony.
-# Keep the base tag neutral and apply the correct one-time setup here.
+# NAL can now appear either as:
+#   - a Boer republic created from ORA's Blood River victory
+#   - a British-organized crown colony after the later coast crisis
+#
+# V2 note:
+#   Blood River itself is ORA-only in fresh starts. Some TRN-related helpers are
+#   intentionally retained below as compatibility fallbacks for older saves or
+#   partial branches that still have a live TRN participant.
 
 sb_create_natalia_republic_if_missing = {
 	if = {
@@ -30,9 +36,19 @@ sb_assign_natalia_republic_territory = {
 }
 
 sb_apply_natalia_boer_republic_setup = {
+	c:ORA ?= {
+		if = {
+			limit = { has_variable = sb_voortrekker_start_var }
+			remove_variable = sb_voortrekker_start_var
+		}
+	}
 	if = {
 		limit = { has_variable = southern_africa_subject_var }
 		remove_variable = southern_africa_subject_var
+	}
+	if = {
+		limit = { has_variable = sb_natalia_british_colony_resolved_var }
+		remove_variable = sb_natalia_british_colony_resolved_var
 	}
 	if = {
 		limit = { has_modifier = sb_trek_frontier_drive_natalia }
@@ -65,9 +81,12 @@ sb_apply_natalia_boer_republic_setup = {
 	activate_law = law_type:law_legacy_slavery
 	activate_law = law_type:law_no_colonial_affairs
 	sb_apply_boer_republic_interest_group_identity = yes
-	add_modifier = {
-		name = sb_trek_frontier_drive_natalia
-		months = 120
+	if = {
+		limit = {
+			country_has_primary_culture = cu:boer
+			NOT = { has_journal_entry = je_sb_great_trek }
+		}
+		add_journal_entry = { type = je_sb_great_trek }
 	}
 	active_law:lawgroup_army_model ?= {
 		if = {
@@ -109,6 +128,403 @@ sb_seed_british_natal_colony_shell = {
 	effect_starting_politics_conservative = yes
 }
 
+sb_ensure_trn_ai_natal_front_commitment = {
+	# Legacy compatibility path for pre-V2 saves where TRN still joined the Natal
+	# war. Fresh campaigns should normally never hit this.
+	if = {
+		limit = {
+			country_definition = cd:TRN
+			is_ai = yes
+			has_variable = sb_trn_joined_natal_war_var
+			is_at_war = yes
+		}
+		if = {
+			limit = {
+				NOT = { has_variable = sb_trn_natal_relief_force_recent_var }
+				NOT = {
+					c:ORA ?= {
+						is_country_alive = yes
+						is_ai = yes
+					}
+				}
+			}
+			set_variable = {
+				name = sb_trn_natal_relief_force_recent_var
+				months = 12
+			}
+			create_military_formation = {
+				type = army
+				hq_region = sr:region_southern_africa
+				name = pretorius_relief_commando
+
+				combat_unit = {
+					type = unit_type:combat_unit_type_dragoons
+					state_region = s:STATE_TRANSVAAL
+					count = 2
+				}
+				combat_unit = {
+					type = unit_type:combat_unit_type_line_infantry
+					state_region = s:STATE_TRANSVAAL
+					count = 1
+				}
+			}
+		}
+		every_military_formation = {
+			limit = {
+				is_army = yes
+			}
+			fully_mobilize_army = yes
+		}
+		if = {
+			limit = {
+				any_scope_war = {
+					any_scope_front = {
+						always = yes
+					}
+				}
+			}
+			random_scope_war = {
+				random_scope_front = {
+					save_temporary_scope_as = sb_natal_front_scope
+				}
+			}
+			every_military_formation = {
+				limit = {
+					is_army = yes
+					num_units >= 1
+				}
+				teleport_to_front = {
+					front = scope:sb_natal_front_scope
+					base_camp = p:x04FA29
+				}
+			}
+		}
+	}
+}
+
+sb_ensure_ora_ai_natal_front_commitment = {
+	if = {
+		limit = {
+			country_definition = cd:ORA
+			is_ai = yes
+			has_variable = sb_natal_war_active_var
+			is_at_war = yes
+		}
+		every_military_formation = {
+			limit = {
+				is_army = yes
+			}
+			fully_mobilize_army = yes
+		}
+		if = {
+			limit = {
+				any_scope_war = {
+					any_scope_front = {
+						always = yes
+					}
+				}
+			}
+			random_scope_war = {
+				random_scope_front = {
+					save_temporary_scope_as = sb_natal_front_scope
+				}
+			}
+			every_military_formation = {
+				limit = {
+					is_army = yes
+					num_units >= 1
+				}
+				teleport_to_front = {
+					front = scope:sb_natal_front_scope
+					base_camp = p:xF95B36
+				}
+			}
+		}
+	}
+}
+
+sb_seed_ora_blood_river_relief_manpower = {
+	every_scope_state = {
+		limit = {
+			state_region = s:STATE_VRYSTAAT
+		}
+		create_pop = {
+			pop_type = officers
+			culture = boer
+			religion = protestant
+			size = 2500
+		}
+		create_pop = {
+			pop_type = soldiers
+			culture = boer
+			religion = protestant
+			size = 25000
+		}
+	}
+}
+
+sb_seed_trn_blood_river_relief_manpower = {
+	every_scope_state = {
+		limit = {
+			state_region = s:STATE_TRANSVAAL
+		}
+		create_pop = {
+			pop_type = officers
+			culture = boer
+			religion = protestant
+			size = 2000
+		}
+		create_pop = {
+			pop_type = soldiers
+			culture = boer
+			religion = protestant
+			size = 20000
+		}
+	}
+}
+
+sb_raise_ora_blood_river_relief_force = {
+	# Standard AI-vs-AI ORA relief package for Blood River.
+	if = {
+		limit = {
+			country_definition = cd:ORA
+			NOT = { has_variable = sb_ora_blood_river_relief_force_var }
+		}
+		set_variable = {
+			name = sb_ora_blood_river_relief_force_var
+			months = 24
+		}
+		add_modifier = {
+			name = sb_blood_river_emergency_mobilization
+			months = 12
+		}
+		sb_seed_ora_blood_river_relief_manpower = yes
+		every_scope_state = {
+			limit = {
+				state_region = s:STATE_VRYSTAAT
+			}
+			if = {
+				limit = {
+					NOT = { has_building = building_barrack }
+				}
+				create_building = {
+					building = building_barrack
+					level = 5
+					reserves = 1
+				}
+			}
+			# Avoid an unbounded while-loop here. The play-started relief code runs
+			# under diplomatic-play root, and if building scope resolution gets odd
+			# the loop can keep re-evaluating forever. A fixed top-up ladder is more
+			# verbose but far safer.
+			else_if = {
+				limit = { b:building_barrack.level == 1 }
+				create_building = {
+					building = building_barrack
+					level = 4
+					reserves = 1
+				}
+			}
+			else_if = {
+				limit = { b:building_barrack.level == 2 }
+				create_building = {
+					building = building_barrack
+					level = 3
+					reserves = 1
+				}
+			}
+			else_if = {
+				limit = { b:building_barrack.level == 3 }
+				create_building = {
+					building = building_barrack
+					level = 2
+					reserves = 1
+				}
+			}
+			else_if = {
+				limit = { b:building_barrack.level == 4 }
+				create_building = {
+					building = building_barrack
+					level = 1
+					reserves = 1
+				}
+			}
+		}
+		if = {
+			limit = { army_size <= 0 }
+			create_military_formation = {
+				type = army
+				hq_region = sr:region_southern_africa
+				name = potgieter_relief_commando
+
+				combat_unit = {
+					type = unit_type:combat_unit_type_line_infantry
+					state_region = s:STATE_VRYSTAAT
+					count = 3
+				}
+				combat_unit = {
+					type = unit_type:combat_unit_type_dragoons
+					state_region = s:STATE_VRYSTAAT
+					count = 2
+				}
+			}
+		}
+		else_if = {
+			limit = { army_size == 1 }
+			create_military_formation = {
+				type = army
+				hq_region = sr:region_southern_africa
+				name = potgieter_relief_commando
+
+				combat_unit = {
+					type = unit_type:combat_unit_type_line_infantry
+					state_region = s:STATE_VRYSTAAT
+					count = 3
+				}
+				combat_unit = {
+					type = unit_type:combat_unit_type_dragoons
+					state_region = s:STATE_VRYSTAAT
+					count = 1
+				}
+			}
+		}
+	}
+}
+
+sb_raise_ora_blood_river_player_relief_force = {
+	# Legacy compatibility shim. Older branches can still call the "player"
+	# helper, but ORA should never exceed the militia-law five-barracks ceiling.
+	# Route everything through the capped live relief package instead.
+	sb_raise_ora_blood_river_relief_force = yes
+}
+
+sb_raise_trn_blood_river_player_relief_force = {
+	# Same story for legacy TRN-assisted paths: use the standard capped relief
+	# package so stale calls cannot create a second, uncapped barracks boost.
+	sb_raise_trn_blood_river_relief_force = yes
+}
+
+sb_raise_trn_blood_river_relief_force = {
+	# Legacy compatibility package for old TRN-assisted Blood River saves.
+	if = {
+		limit = {
+			country_definition = cd:TRN
+			NOT = { has_variable = sb_trn_natal_relief_force_recent_var }
+		}
+		set_variable = {
+			name = sb_trn_natal_relief_force_recent_var
+			months = 24
+		}
+		add_modifier = {
+			name = sb_blood_river_emergency_mobilization
+			months = 12
+		}
+		sb_seed_trn_blood_river_relief_manpower = yes
+		every_scope_state = {
+			limit = {
+				state_region = s:STATE_TRANSVAAL
+			}
+			if = {
+				limit = {
+					NOT = { has_building = building_barrack }
+				}
+				create_building = {
+					building = building_barrack
+					level = 5
+					reserves = 1
+				}
+			}
+			else_if = {
+				limit = { b:building_barrack.level == 1 }
+				create_building = {
+					building = building_barrack
+					level = 4
+					reserves = 1
+				}
+			}
+			else_if = {
+				limit = { b:building_barrack.level == 2 }
+				create_building = {
+					building = building_barrack
+					level = 3
+					reserves = 1
+				}
+			}
+			else_if = {
+				limit = { b:building_barrack.level == 3 }
+				create_building = {
+					building = building_barrack
+					level = 2
+					reserves = 1
+				}
+			}
+			else_if = {
+				limit = { b:building_barrack.level == 4 }
+				create_building = {
+					building = building_barrack
+					level = 1
+					reserves = 1
+				}
+			}
+		}
+		if = {
+			limit = { army_size <= 0 }
+			create_military_formation = {
+				type = army
+				hq_region = sr:region_southern_africa
+				name = pretorius_relief_commando
+
+				combat_unit = {
+					type = unit_type:combat_unit_type_line_infantry
+					state_region = s:STATE_TRANSVAAL
+					count = 3
+				}
+				combat_unit = {
+					type = unit_type:combat_unit_type_dragoons
+					state_region = s:STATE_TRANSVAAL
+					count = 2
+				}
+			}
+		}
+		else_if = {
+			limit = { army_size == 1 }
+			create_military_formation = {
+				type = army
+				hq_region = sr:region_southern_africa
+				name = pretorius_relief_commando
+
+				combat_unit = {
+					type = unit_type:combat_unit_type_line_infantry
+					state_region = s:STATE_TRANSVAAL
+					count = 3
+				}
+				combat_unit = {
+					type = unit_type:combat_unit_type_dragoons
+					state_region = s:STATE_TRANSVAAL
+					count = 1
+				}
+			}
+		}
+	}
+}
+
+# This effect runs in diplomatic-play scope when the Natal crisis becomes a war.
+sb_raise_blood_river_ai_boer_relief_forces = {
+	# Live V2 path: only ORA receives deterministic AI relief here.
+	if = {
+		limit = {
+			c:ORA ?= {
+				is_country_alive = yes
+				is_ai = yes
+				has_variable = sb_natal_war_active_var
+			}
+		}
+		c:ORA ?= {
+			sb_raise_ora_blood_river_relief_force = yes
+		}
+	}
+}
+
 sb_assign_british_natal_colony_territory = {
 	s:STATE_ZULULAND = {
 		set_owner_of_provinces = {
@@ -120,6 +536,64 @@ sb_assign_british_natal_colony_territory = {
 			}
 		}
 		add_claim = c:NAL
+	}
+}
+
+sb_ensure_ora_natalia_treaties = {
+	if = {
+		limit = {
+			NOT = {
+				any_scope_treaty = {
+					binds = c:NAL
+					binds = root
+					any_scope_article = {
+						OR = {
+							has_type = defensive_pact
+							has_type = alliance
+						}
+					}
+				}
+			}
+		}
+		create_treaty = {
+			first_country = root
+			second_country = c:NAL
+			is_draft = no
+			binding_period = { years = 10 }
+			articles_to_create = {
+				{
+					article = defensive_pact
+				}
+			}
+		}
+	}
+	if = {
+		limit = {
+			NOT = {
+				any_scope_treaty = {
+					binds = c:NAL
+					binds = root
+					any_scope_article = {
+						has_type = transit_rights
+						source_country = c:NAL
+						target_country = root
+					}
+				}
+			}
+		}
+		create_treaty = {
+			first_country = c:NAL
+			second_country = root
+			is_draft = no
+			binding_period = { years = 25 }
+			articles_to_create = {
+				{
+					article = transit_rights
+					source_country = c:NAL
+					target_country = root
+				}
+			}
+		}
 	}
 }
 
@@ -180,7 +654,7 @@ sb_found_natalia_peacefully = {
 			}
 			create_bidirectional_truce = {
 				country = c:ZUL
-				months = 60
+				months = 120
 			}
 		}
 		create_military_formation = {
@@ -199,33 +673,7 @@ sb_found_natalia_peacefully = {
 			}
 		}
 	}
-	if = {
-		limit = {
-			NOT = {
-				any_scope_treaty = {
-					binds = c:NAL
-					any_scope_article = {
-						has_type = transit_rights
-						source_country = c:NAL
-						target_country = root
-					}
-				}
-			}
-		}
-		create_treaty = {
-			first_country = c:NAL
-			second_country = root
-			is_draft = no
-			binding_period = { years = 25 }
-			articles_to_create = {
-				{
-					article = transit_rights
-					source_country = c:NAL
-					target_country = root
-				}
-			}
-		}
-	}
+	sb_ensure_ora_natalia_treaties = yes
 	c:NAL ?= {
 		sb_trigger_natalia_boer_migration_effect = yes
 	}
@@ -236,8 +684,10 @@ sb_found_natalia_peacefully = {
 sb_found_natalia_after_blood_river = {
 	sb_create_natalia_republic_if_missing = yes
 	sb_assign_natalia_republic_territory = yes
-	# If Transvaal answered Oranje's call, Andries Pretorius can be shifted into
-	# Natalia while Marthinus takes over in TRN.
+	# Legacy compatibility: in older saves where TRN answered ORA's call,
+	# Andries can still be shifted into Natalia while Marthinus takes TRN.
+	# Fresh V2 starts should normally skip this block because TRN does not yet
+	# exist during Blood River.
 	if = {
 		limit = {
 			has_variable = sb_trn_joined_natal_war_var
@@ -282,22 +732,22 @@ sb_found_natalia_after_blood_river = {
 			add_character_role = politician
 			set_interest_group = c:NAL.ig:ig_landowners
 		}
-		c:NAL ?= {
-			if = {
-				limit = {
-					NOT = {
-						any_scope_character = {
-							has_template = TRN_andries_pretorius
-						}
+	}
+	c:NAL ?= {
+		if = {
+			limit = {
+				NOT = {
+					any_scope_character = {
+						has_template = TRN_andries_pretorius
 					}
 				}
-				create_character = {
-					template = TRN_andries_pretorius
-					ruler = yes
-					is_general = yes
-					interest_group = ig_landowners
-					ideology = ideology_sb_volksraad_elitism
-				}
+			}
+			create_character = {
+				template = TRN_andries_pretorius
+				ruler = yes
+				is_general = yes
+				interest_group = ig_landowners
+				ideology = ideology_sb_volksraad_elitism
 			}
 		}
 	}
@@ -324,36 +774,10 @@ sb_found_natalia_after_blood_river = {
 		}
 		create_bidirectional_truce = {
 			country = c:ZUL
-			months = 60
+			months = 120
 		}
 	}
-	if = {
-		limit = {
-			NOT = {
-				any_scope_treaty = {
-					binds = c:NAL
-					any_scope_article = {
-						has_type = transit_rights
-						source_country = c:NAL
-						target_country = root
-					}
-				}
-			}
-		}
-		create_treaty = {
-			first_country = c:NAL
-			second_country = root
-			is_draft = no
-			binding_period = { years = 25 }
-			articles_to_create = {
-				{
-					article = transit_rights
-					source_country = c:NAL
-					target_country = root
-				}
-			}
-		}
-	}
+	sb_ensure_ora_natalia_treaties = yes
 	c:TRN ?= {
 		if = {
 			limit = {
@@ -512,6 +936,12 @@ sb_apply_british_natal_colony_setup = {
 		remove_variable = sb_commandant_general_visible_var
 	}
 	if = {
+		limit = {
+			has_variable = sb_early_republic_var
+		}
+		remove_variable = sb_early_republic_var
+	}
+	if = {
 		limit = { has_modifier = sb_trek_frontier_drive_natalia }
 		remove_modifier = sb_trek_frontier_drive_natalia
 	}
@@ -524,6 +954,16 @@ sb_apply_british_natal_colony_setup = {
 	activate_law = law_type:law_colonial_administration
 	activate_law = law_type:law_professional_army
 	activate_law = law_type:law_slavery_banned
+	if = {
+		limit = {
+			c:ZUL ?= { is_country_alive = yes }
+			NOT = { has_truce_with = c:ZUL }
+		}
+		create_bidirectional_truce = {
+			country = c:ZUL
+			months = 120
+		}
+	}
 	active_law:lawgroup_army_model ?= {
 		if = {
 			limit = {
@@ -549,7 +989,12 @@ sb_apply_british_natal_colony_setup = {
 		}
 		remove_primary_culture = cu:boer
 	}
+	sb_apply_generic_british_colony_interest_group_identity = yes
 	s:STATE_ZULULAND = {
+		set_owner_of_provinces = {
+			country = root
+			provinces = { x279045 }
+		}
 		region_state:NAL ?= {
 			set_state_type = unincorporated
 		}
@@ -777,13 +1222,31 @@ sb_trigger_selected_natal_refugee_receiver_followup = {
 # Add a Boer ally directly to Natalia's side once Britain turns the ultimatum
 # into a live diplomatic play.
 sb_join_natalia_against_britain = {
+	save_scope_as = natalia_supporter
 	random_diplomatic_play = {
 		limit = {
 			is_diplomatic_play_type = dp_make_protectorate
 			any_scope_play_involved = { c:GBR ?= THIS }
 			any_scope_play_involved = { c:NAL ?= THIS }
 		}
-		add_target_backers = { root }
+		add_target_backers = { scope:natalia_supporter }
+		add_war_goal = {
+			holder = c:GBR
+			target_country = scope:natalia_supporter
+			type = make_protectorate
+		}
+		if = {
+			limit = {
+				scope:natalia_supporter ?= {
+					country_definition = cd:ORA
+				}
+			}
+			add_war_goal = {
+				holder = scope:natalia_supporter
+				target_country = c:CAP
+				type = liberate_country
+			}
+		}
 	}
 }
 
@@ -812,7 +1275,7 @@ sb_support_natalia_against_britain = {
 			first_country = root
 			second_country = scope:natalia
 			is_draft = no
-			binding_period = { years = 5 }
+			binding_period = { years = 10 }
 			articles_to_create = {
 				{
 					article = defensive_pact

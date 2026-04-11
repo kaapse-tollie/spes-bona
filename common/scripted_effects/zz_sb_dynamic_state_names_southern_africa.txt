@@ -1,0 +1,291 @@
+﻿# ============================================================================
+# Spes Bona — Southern Africa Dynamic State Name Extensions
+# ============================================================================
+# Vanilla only wires dynamic naming for Zululand, Transvaal proper, and the
+# Vrystaat in southern Africa. East / North Transvaal (and Drakensberg) then
+# fall back to their default names even when Boer or British frontier republics
+# own them.
+#
+# We override the southern-Africa dispatcher to include the split states, then
+# mirror the vanilla culture-ownership pattern so the existing *_boer and
+# *_british localization keys are actually applied in play.
+# ============================================================================
+
+REPLACE:assign_state_name_region_southern_africa = {
+    if = {
+        limit = {
+            state_region = {
+                s:STATE_ZULULAND ?= this
+            }
+        }
+        STATE_ZULULAND_state_name_assign = yes
+    }
+    if = {
+        limit = {
+            state_region = {
+                s:STATE_TRANSVAAL ?= this
+            }
+        }
+        STATE_TRANSVAAL_state_name_assign = yes
+    }
+    if = {
+        limit = {
+            state_region = {
+                s:STATE_EAST_TRANSVAAL ?= this
+            }
+        }
+        STATE_EAST_TRANSVAAL_state_name_assign = yes
+    }
+    if = {
+        limit = {
+            state_region = {
+                s:STATE_NORTHERN_TRANSVAAL ?= this
+            }
+        }
+        STATE_NORTHERN_TRANSVAAL_state_name_assign = yes
+    }
+    if = {
+        limit = {
+            state_region = {
+                s:STATE_DRAKENSBERG ?= this
+            }
+        }
+        STATE_DRAKENSBERG_state_name_assign = yes
+    }
+    if = {
+        limit = {
+            state_region = {
+                s:STATE_VRYSTAAT ?= this
+            }
+        }
+        STATE_VRYSTAAT_state_name_assign = yes
+    }
+}
+
+REPLACE:STATE_TRANSVAAL_state_name_assign = {
+    if = {
+        limit = {
+            owner = {
+                any_primary_culture = {
+                    has_discrimination_trait = heritage_southern_bantu
+                }
+                NOT = { country_has_primary_culture = cu:zulu }
+            }
+        }
+        set_state_name = STATE_TRANSVAAL_southern_bantu
+        set_hub_names = southern_bantu
+    }
+    else_if = {
+        limit = {
+            owner = {
+                country_has_primary_culture = cu:zulu
+            }
+        }
+        set_state_name = STATE_TRANSVAAL_zulu
+        set_hub_names = zulu
+    }
+    else_if = {
+        limit = {
+            owner = {
+                NOT = { country_has_primary_culture = cu:british }
+                any_primary_culture = {
+                    has_discrimination_trait = language_dutch
+                }
+            }
+        }
+        set_state_name = STATE_TRANSVAAL_boer
+        set_hub_names = boer
+    }
+    else_if = {
+        limit = {
+            owner = {
+                OR = {
+                    c:GBR ?= this
+                    c:SAF ?= this
+                    AND = {
+                        exists = c:GBR
+                        exists = top_overlord
+                        top_overlord = c:GBR
+                    }
+                }
+            }
+        }
+        set_state_name = STATE_TRANSVAAL_british
+        set_hub_names = british
+    }
+    else = {
+        reset_state_name = yes
+        reset_hub_names = yes
+    }
+}
+
+STATE_EAST_TRANSVAAL_state_name_assign = {
+    if = {
+        limit = {
+            owner = {
+                any_primary_culture = {
+                    has_discrimination_trait = heritage_southern_bantu
+                }
+                NOT = { country_has_primary_culture = cu:zulu }
+            }
+        }
+        set_state_name = STATE_EAST_TRANSVAAL_southern_bantu
+        set_hub_names = southern_bantu
+    }
+    else_if = {
+        limit = {
+            owner = {
+                country_has_primary_culture = cu:zulu
+            }
+        }
+        set_state_name = STATE_EAST_TRANSVAAL_zulu
+        set_hub_names = zulu
+    }
+    else_if = {
+        limit = {
+            owner = {
+                NOT = { country_has_primary_culture = cu:british }
+                any_primary_culture = {
+                    has_discrimination_trait = language_dutch
+                }
+            }
+        }
+        set_state_name = STATE_EAST_TRANSVAAL_boer
+        set_hub_names = boer
+    }
+    else_if = {
+        limit = {
+            owner = {
+                OR = {
+                    c:GBR ?= this
+                    c:SAF ?= this
+                    AND = {
+                        exists = c:GBR
+                        exists = top_overlord
+                        top_overlord = c:GBR
+                    }
+                }
+            }
+        }
+        set_state_name = STATE_EAST_TRANSVAAL_british
+        set_hub_names = british
+    }
+    else = {
+        reset_state_name = yes
+        reset_hub_names = yes
+    }
+}
+
+STATE_NORTHERN_TRANSVAAL_state_name_assign = {
+    if = {
+        limit = {
+            owner = {
+                any_primary_culture = {
+                    has_discrimination_trait = heritage_southern_bantu
+                }
+                NOT = { country_has_primary_culture = cu:zulu }
+            }
+        }
+        set_state_name = STATE_NORTHERN_TRANSVAAL_southern_bantu
+        set_hub_names = southern_bantu
+    }
+    else_if = {
+        limit = {
+            owner = {
+                country_has_primary_culture = cu:zulu
+            }
+        }
+        set_state_name = STATE_NORTHERN_TRANSVAAL_zulu
+        set_hub_names = zulu
+    }
+    else_if = {
+        limit = {
+            owner = {
+                NOT = { country_has_primary_culture = cu:british }
+                any_primary_culture = {
+                    has_discrimination_trait = language_dutch
+                }
+            }
+        }
+        set_state_name = STATE_NORTHERN_TRANSVAAL_boer
+        set_hub_names = boer
+    }
+    else_if = {
+        limit = {
+            owner = {
+                OR = {
+                    c:GBR ?= this
+                    c:SAF ?= this
+                    AND = {
+                        exists = c:GBR
+                        exists = top_overlord
+                        top_overlord = c:GBR
+                    }
+                }
+            }
+        }
+        set_state_name = STATE_NORTHERN_TRANSVAAL_british
+        set_hub_names = british
+    }
+    else = {
+        reset_state_name = yes
+        reset_hub_names = yes
+    }
+}
+
+STATE_DRAKENSBERG_state_name_assign = {
+    if = {
+        limit = {
+            owner = {
+                any_primary_culture = {
+                    has_discrimination_trait = heritage_southern_bantu
+                }
+                NOT = { country_has_primary_culture = cu:zulu }
+            }
+        }
+        set_state_name = STATE_DRAKENSBERG_southern_bantu
+        set_hub_names = southern_bantu
+    }
+    else_if = {
+        limit = {
+            owner = {
+                country_has_primary_culture = cu:zulu
+            }
+        }
+        set_state_name = STATE_DRAKENSBERG_zulu
+        set_hub_names = zulu
+    }
+    else_if = {
+        limit = {
+            owner = {
+                NOT = { country_has_primary_culture = cu:british }
+                any_primary_culture = {
+                    has_discrimination_trait = language_dutch
+                }
+            }
+        }
+        set_state_name = STATE_DRAKENSBERG_boer
+        set_hub_names = boer
+    }
+    else_if = {
+        limit = {
+            owner = {
+                OR = {
+                    c:GBR ?= this
+                    c:SAF ?= this
+                    AND = {
+                        exists = c:GBR
+                        exists = top_overlord
+                        top_overlord = c:GBR
+                    }
+                }
+            }
+        }
+        set_state_name = STATE_DRAKENSBERG_british
+        set_hub_names = british
+    }
+    else = {
+        reset_state_name = yes
+        reset_hub_names = yes
+    }
+}

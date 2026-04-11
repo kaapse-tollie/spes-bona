@@ -28,7 +28,7 @@
 #     +0.1 Wealth voting being enacted
 #     +0.5 No colonial law active
 #     +0.4  Intelligentsia in government
-#	  +0.2 Devout in government 
+#	  +0.2 Devout in government
 #     +0.1 Petty Bourgeoisie in government
 #
 #   Settler direction (negative values, bar moves toward 0):
@@ -457,7 +457,7 @@ sb_zulu_dynastic_stability_bar = {
 	name = "sb_zulu_dynastic_stability_bar"
 	desc = "sb_zulu_dynastic_stability_bar_low"
 	second_desc = "sb_zulu_dynastic_stability_bar_high"
-	start_value = 50 
+	start_value = 50
 	min_value = 0
 	max_value = 100
 	default = yes
@@ -469,7 +469,7 @@ sb_zulu_dynastic_stability_bar = {
 			}
 			add = {
 				desc = "sb_zulu_drift_enforced_dynastic_claims"
-				value = 1.5
+				value = 1 # nerfed to 1
 			}
 		}
 
@@ -620,7 +620,82 @@ sb_zulu_dynastic_stability_bar = {
 				value = -1
 			}
 		}
+
+		if = {
+			limit = {
+				government_legitimacy >= 90
+			}
+			add = {
+				desc = "sb_zulu_drift_righteous_government"
+				value = 1
+			}
+		}
+		else_if = {
+			limit = {
+				government_legitimacy >= 75
+			}
+			add = {
+				desc = "sb_zulu_drift_legitimate_government"
+				value = 0.5
+			}
+		}
+		else_if = {
+			limit = {
+				government_legitimacy < 25
+			}
+			add = {
+				desc = "sb_zulu_drift_illegitimate_government"
+				value = -1
+			}
+		}
+		else_if = {
+			limit = {
+				government_legitimacy < 50
+			}
+			add = {
+				desc = "sb_zulu_drift_unstable_government"
+				value = -0.5
+			}
+		}
+
+		if = {
+			limit = {
+				net_total_income < 0
+				OR = {
+					gold_reserves < 0
+					in_default = yes
+				}
+			}
+			add = {
+				desc = "sb_zulu_drift_deficit_and_debt"
+				value = -0.5
+			}
+		}
+
+		if = {
+			limit = {
+				OR = {
+					bureaucracy < 0
+					authority < 0
+				}
+			}
+			add = {
+				desc = "sb_zulu_drift_negative_capacity"
+				value = -0.5
+			}
+		}
 	}
 }
+
+sb_firearms_adoption_bar = {
+	name = "sb_firearms_adoption_bar"
+	desc = "sb_firearms_adoption_bar_low"
+	second_desc = "sb_firearms_adoption_bar_high"
+	start_value = 0
+	min_value = 0
+	max_value = 60
+	default = yes
+}
+
 
 ########################## END ZULU DYNASTY RELATED EFFECTS ########################################

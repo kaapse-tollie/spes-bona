@@ -10,7 +10,7 @@
 	possible = {
 		custom_tooltip = {
 			text = je_sb_zulu_enforce_dynastic_claims_button_tt
-			authority >= 100
+			authority >= 75
 		}
 	}
 
@@ -18,8 +18,14 @@
 		sb_zulu_enable_dynastic_claims = yes
 	}
 
-	ai_chance = { # TODO: logic based on available authority 
-		value = 35
+	ai_chance = {
+		if ={
+			limit = {
+				authority >= 75
+			}
+			value = 1000
+		}
+		value = 20
 	}
 }
 
@@ -41,6 +47,13 @@ je_sb_zulu_relax_dynastic_claims_button = {
 	}
 
 	ai_chance = { # TODO: logic based on available authority 
-		value = 20
+		value = 0
+		if ={
+			limit = {
+				authority < 0
+			}
+			value = 1000
+		}
+
 	}
 }

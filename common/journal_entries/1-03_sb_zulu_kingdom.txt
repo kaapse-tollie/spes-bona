@@ -1,29 +1,34 @@
 ﻿# Spes Bona - Zulu dynastic stability JE
 # ==============================================================================
-# This JE now tracks whether the post-Shaka royal order survives the Natal and
-# coastal crises. Dingane's traits pull the bar downward, while a more secure
-# and politically deft ruler can stabilize the dynasty and set up a durable heir.
+# This JE tracks whether the post-Shaka royal order survives:
+#   - the Natal / Blood River crisis
+#   - the coastal Port Natal / British intervention lane
+#   - the later Dingane-era Swazi pressure release valve
 # ==============================================================================
 
 je_sb_zulu_kingdom = {
 	group = je_group_historical_content
 
-	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	icon = "gfx/interface/icons/invention_icons/dynamite.dds"
 
 	scripted_progress_bar = sb_zulu_dynastic_stability_bar
 
 	is_shown_in_lobby = {
-		country_definition = cd:ZUL
+		sb_is_zulu_dynasty_country = yes
+		NOT = { has_variable = sb_zulu_dynasty_secured_var }
+		NOT = { has_variable = sb_zulu_dynastic_collapse_resolved_var }
 	}
 
 	is_shown_when_inactive = {
-		hidden_trigger = {
-			always = no
-		}
+		sb_is_zulu_dynasty_country = yes
+		NOT = { has_variable = sb_zulu_dynasty_secured_var }
+		NOT = { has_variable = sb_zulu_dynastic_collapse_resolved_var }
 	}
 
 	possible = {
-		country_definition = cd:ZUL
+		sb_is_zulu_dynasty_country = yes
+		NOT = { has_variable = sb_zulu_dynasty_secured_var }
+		NOT = { has_variable = sb_zulu_dynastic_collapse_resolved_var }
 	}
 
 	scripted_button = je_sb_zulu_enforce_dynastic_claims_button
@@ -42,6 +47,7 @@ je_sb_zulu_kingdom = {
 				}
 			}
 		}
+		sb_zulu_update_dynastic_stability_modifiers = yes
 	}
 
 	status_desc = {
@@ -97,6 +103,7 @@ je_sb_zulu_kingdom = {
 			if = {
 				limit = {
 					NOT = { has_variable = sb_zulu_dynastic_collapse_pending_var }
+					NOT = { has_variable = sb_zulu_dynastic_collapse_resolved_var }
 					scope:journal_entry = {
 						"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 0
 					}
@@ -111,6 +118,12 @@ je_sb_zulu_kingdom = {
 		trigger_event = { id = sb_boer_zulu.093 days = 1 popup = yes }
 		remove_variable = sb_zulu_dynastic_collapse_pending_var
 		sb_zulu_disable_dynastic_claims = yes
+		sb_zulu_clear_dynastic_stability_modifiers = yes
+	}
+
+	on_invalid = {
+		remove_variable = sb_zulu_dynastic_collapse_pending_var
+		sb_zulu_clear_dynastic_stability_modifiers = yes
 	}
 
 	weight = 1000

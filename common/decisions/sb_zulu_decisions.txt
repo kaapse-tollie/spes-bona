@@ -19,6 +19,7 @@
 		set_variable = sb_zulu_port_natal_raid_taken_var
 		remove_variable = sb_zulu_port_natal_raid_available_var
 		set_variable = sb_port_natal_raid_var
+		custom_tooltip = zulu_raid_port_natal_firearms_tt
 		s:STATE_ZULULAND = {
 			set_owner_of_provinces = {
 				country = root
@@ -33,12 +34,113 @@
 				add_trait = ambitious
 			}
 		}
+		sb_apply_port_natal_raid_firearms_windfall = yes
 		c:GBR ?= {
-			trigger_event = { id = sb_boer_zulu.085 days = 45 }
+			trigger_event = { id = sb_boer_zulu.085 days = 10 popup = yes }
 		}
 	}
 
 	ai_chance = {
-		value = 20
+		value = 0
+		if = {
+			limit = {
+				c:GBR ?= {
+					is_country_alive = yes
+					is_at_war = yes
+					any_scope_war = {
+						any_war_participant = {
+							NOT = { this = c:GBR }
+							OR = {
+								country_rank >= rank_value:major_power
+								country_rank = rank_value:unrecognized_major_power
+							}
+						}
+					}
+				}
+				je:je_sb_zulu_kingdom ?= {
+					"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" >= 80
+				}
+				je:je_sb_adopt_firearms ?= {
+					"scripted_bar_progress(sb_firearms_adoption_bar)" >= 50
+				}
+			}
+			value = 15
+		}
+	}
+}
+
+natalia_raid_port_natal = {
+	is_shown = {
+		country_definition = cd:NAL
+		country_has_primary_culture = cu:boer
+		is_subject = no
+		NOT = { has_variable = sb_natalia_port_natal_raid_taken_var }
+		NOT = { has_variable = sb_natalia_british_colony_resolved_var }
+		c:GBR ?= {
+			is_country_alive = yes
+		}
+		OR = {
+			p:x279045.state.owner = c:CAP
+			p:x279045.state.owner = c:GBR
+		}
+	}
+
+	possible = {
+		is_at_war = no
+		aggressive_diplomatic_plays_permitted = yes
+		c:GBR ?= {
+			is_country_alive = yes
+		}
+		OR = {
+			p:x279045.state.owner = c:CAP
+			p:x279045.state.owner = c:GBR
+		}
+	}
+
+	when_taken = {
+		set_variable = sb_natalia_port_natal_raid_taken_var
+		set_variable = sb_british_natal_ultimatum_var
+		s:STATE_ZULULAND = {
+			set_owner_of_provinces = {
+				country = root
+				provinces = { x279045 }
+			}
+		}
+		c:GBR ?= {
+			if = {
+				limit = { has_variable = sb_british_natal_ultimatum_pending_var }
+				remove_variable = sb_british_natal_ultimatum_pending_var
+			}
+			set_variable = sb_british_natal_ultimatum_var
+			trigger_event = { id = sb_boer_zulu.114 days = 1 popup = yes }
+		}
+		c:ORA ?= {
+			if = {
+				limit = { is_country_alive = yes }
+				trigger_event = { id = sb_boer_zulu.111 days = 7 popup = yes }
+			}
+		}
+		c:TRN ?= {
+			if = {
+				limit = { is_country_alive = yes }
+				trigger_event = { id = sb_boer_zulu.112 days = 10 popup = yes }
+			}
+		}
+		c:ZPB ?= {
+			if = {
+				limit = { is_country_alive = yes }
+				trigger_event = { id = sb_boer_zulu.113 days = 12 popup = yes }
+			}
+		}
+		c:LYD ?= {
+			if = {
+				limit = { is_country_alive = yes }
+				trigger_event = { id = sb_boer_zulu.118 days = 14 popup = yes }
+			}
+		}
+	}
+
+	ai_chance = {
+		value = 0
 	}
 }

@@ -17,7 +17,7 @@
 #
 # Cross-references:
 #   - Relations:         common/history/diplomacy/sb_relations.txt
-#   - Homeland additions: common/history/states/sb_state_overrides.txt
+#   - Homeland additions: common/history/states/00_states.txt
 #   - State traits:      common/history/global/sb_state_traits.txt
 # ============================================================================
 
@@ -37,12 +37,24 @@ on_diplo_play_join_side = {
 	on_actions = { sb_on_spes_bona_diplomatic_play_started }
 }
 
+on_diplo_play_war_start = {
+	on_actions = { sb_on_spes_bona_diplo_play_war_start }
+}
+
+on_diplo_play_back_down = {
+	on_actions = { sb_on_spes_bona_diplo_play_back_down }
+}
+
 on_become_subject = {
 	on_actions = { sb_on_natalia_become_british_subject }
 }
 
 on_monthly_pulse_country = {
-	on_actions = { sb_on_cape_monthly_pulse_country sb_on_trek_monthly_pulse_country sb_on_zpb_monthly_pulse_country sb_on_zulu_je_monthly_pulse_country }
+	on_actions = { sb_on_cape_monthly_pulse_country sb_on_trek_monthly_pulse_country sb_on_zpb_monthly_pulse_country sb_on_gbr_colonial_offices_monthly_pulse_country }
+}
+
+on_colony_created = {
+	on_actions = { sb_on_spes_bona_colony_created }
 }
 
 on_secession_start = {
@@ -69,6 +81,10 @@ on_war_end = {
 	on_actions = { sb_on_spes_bona_war_end }
 }
 
+on_country_formed = {
+	on_actions = { sb_on_spes_bona_country_formed }
+}
+
 sb_on_game_started = {
 	effect = {
 		# The vanilla Highveld JE is deliberately disabled by Spes Bona. Without a
@@ -82,10 +98,12 @@ sb_on_game_started = {
 				trigger_event = { id = struggle_for_the_highveld.6 days = 1 popup = no }
 				trigger_event = { id = struggle_for_the_highveld.7 days = 1 popup = no }
 				trigger_event = { id = sb_cape.104 days = 1 popup = no }
+				trigger_event = { id = sb_boer_zulu.056 days = 1 popup = no }
+				trigger_event = { id = sb_boer_zulu.057 days = 1 popup = no }
+				trigger_event = { id = sb_boer_zulu.071 days = 1 popup = no }
+				trigger_event = { id = sb_trek.004 days = 1 popup = no }
 			}
 		}
-
-		sb_normalize_boer_trade_treaties = yes
 
 		# ============================================================
 		# Homeland corrections — enforcing the 50-100yr presence rule
@@ -94,7 +112,7 @@ sb_on_game_started = {
 		# Many cultures are given homeland status in states where they had
 		# little or no presence by 1836. These removals correct that.
 		#
-		# Counterpart additions are in sb_state_overrides.txt (add_homeland).
+		# Counterpart additions are in common/history/states/00_states.txt.
 
 		# Western Cape: remove sotho
 		# Sotho peoples are indigenous to the Highveld (Lesotho/Free State),
@@ -195,9 +213,9 @@ sb_on_game_started = {
 		}
 
 		# Force the trekker republics into their intended opening coalitions after
-		# startup character generation has completed. Using explicit IG adds here
-		# is more reliable than relying on country-history ordering, but we keep
-		# the coalition narrow enough to preserve actual legitimacy dynamics.
+		# startup character generation has completed. ORA's V2 player-facing start
+		# is anchored on Potgieter, Retief, and Maritz, so keep the opening
+		# government tied to those named figures rather than to generated filler.
 		c:ORA ?= {
 			every_interest_group = {
 				remove_ruling_interest_group = yes
@@ -208,10 +226,7 @@ sb_on_game_started = {
 			ig:ig_landowners ?= {
 				add_ruling_interest_group = yes
 			}
-			ig:ig_rural_folk ?= {
-				add_ruling_interest_group = yes
-			}
-			ig:ig_devout ?= {
+			ig:ig_petty_bourgeoisie ?= {
 				add_ruling_interest_group = yes
 			}
 		}
@@ -316,13 +331,10 @@ sb_on_game_started = {
 			}
 		}
 
-		# --- Transvaal-Ndebele Conflict ---
-		# Tension 90 (near maximum) on both sides. This is intentionally
-		# very high to trigger the Ndebele-Voortrekker War (~1836-1838).
-		# Historically, the Battle of Vegkop (October 1836) happened almost
-		# immediately after the game start date. The reciprocal 90/90 values
-		# ensure BOTH sides see each other as a priority threat.
-		c:TRN ?= {
+		# --- Voortrekker-Ndebele Conflict ---
+		# In the v2 setup the inland trek starts as one Voortrekker polity under
+		# ORA, so the opening Highveld war is now MTB against ORA directly.
+		c:ORA ?= {
 			change_tension = {
 				country = c:MTB
 				value = 90
@@ -347,11 +359,11 @@ sb_on_game_started = {
 				}
 			}
 		}
-		# Ndebele reciprocal tension — Mzilikazi viewed the Boer trekkers
-		# as invaders of his territory. This drives AI MTB to mobilize.
+		# Ndebele reciprocal tension — Mzilikazi now reads the inland
+		# Voortrekker camps as a single advancing frontier under ORA.
 		c:MTB ?= {
 			change_tension = {
-				country = c:TRN
+				country = c:ORA
 				value = 90
 			}
 		}
@@ -381,6 +393,49 @@ sb_on_game_started = {
 
 sb_on_game_started_after_lobby = {
 	effect = {
+		# Startup treaties are now history-authored in the local
+		# 00_historical_treaties override. Do not withdraw/recreate them here:
+		# doing so creates visible treaty banners and "broken obligation" scars.
+
+		# The Nguni JEs auto-instance from their JE definitions. Keep a guarded
+		# after-lobby fallback so older saves or edge-case startup orders do not
+		# leave the countries without their core content, while avoiding duplicate
+		# add_journal_entry calls in normal fresh starts.
+		c:ZUL ?= {
+			if = {
+				limit = {
+					NOT = { has_variable = sb_zulu_dynasty_secured_var }
+					NOT = { has_journal_entry = je_sb_zulu_kingdom }
+				}
+				add_journal_entry = { type = je_sb_zulu_kingdom }
+			}
+			if = {
+				limit = {
+					NOT = { has_variable = sb_firearms_modernized_var }
+					NOT = { has_journal_entry = je_sb_adopt_firearms }
+				}
+				add_journal_entry = { type = je_sb_adopt_firearms }
+			}
+		}
+		c:GZA ?= {
+			if = {
+				limit = {
+					NOT = { has_variable = sb_firearms_modernized_var }
+					NOT = { has_journal_entry = je_sb_adopt_firearms }
+				}
+				add_journal_entry = { type = je_sb_adopt_firearms }
+			}
+		}
+		c:SWZ ?= {
+			if = {
+				limit = {
+					NOT = { has_variable = sb_firearms_modernized_var }
+					NOT = { has_journal_entry = je_sb_adopt_firearms }
+				}
+				add_journal_entry = { type = je_sb_adopt_firearms }
+			}
+		}
+
 		c:MTB ?= {
 			if = {
 				limit = { has_modifier = sb_native_conscription_MTB_player }
@@ -392,15 +447,9 @@ sb_on_game_started_after_lobby = {
 			}
 			if = {
 				limit = {
-					OR = {
-						c:TRN ?= {
-							is_country_alive = yes
-							is_player = yes
-						}
-						c:ORA ?= {
-							is_country_alive = yes
-							is_player = yes
-						}
+					c:ORA ?= {
+						is_country_alive = yes
+						is_player = yes
 					}
 				}
 				add_modifier = {
@@ -408,10 +457,63 @@ sb_on_game_started_after_lobby = {
 					months = -1
 				}
 			}
-			else = {
-				add_modifier = {
-					name = sb_native_conscription_MTB
-					months = -1
+		}
+	}
+}
+
+sb_on_spes_bona_colony_created = {
+	effect = {
+		# V2 Potchefstroom split: once ORA establishes a real foothold in the west
+		# Transvaal core, surface the delayed TRN republic split immediately
+		# instead of waiting on the old Blood River/date gate.
+		if = {
+			limit = {
+				state_region = s:STATE_TRANSVAAL
+				owner = {
+					country_definition = cd:ORA
+					is_country_alive = yes
+					NOT = { has_variable = sb_trn_v2_spawned_var }
+					NOT = { has_variable = sb_trn_v2_spawn_pending_var }
+					NOT = { exists = c:TRN }
+					# Inline the foothold check on the action path too so the split can
+					# fire as soon as a real West Transvaal colony is created, without
+					# depending on a separate scripted trigger resolving during boot.
+					OR = {
+						p:xD0A010.state.owner = this
+						p:x8BDC4D.state.owner = this
+						p:xA22DC2.state.owner = this
+						p:xD02190.state.owner = this
+						p:x6C1786.state.owner = this
+						p:x9A137B.state.owner = this
+					}
+				}
+			}
+			owner = {
+				set_variable = {
+					name = sb_trn_v2_spawn_pending_var
+					days = 21
+				}
+				if = {
+					limit = {
+						NOT = {
+							c:NAL ?= {
+								is_country_alive = yes
+								is_player = yes
+							}
+						}
+					}
+					trigger_event = { id = sb_trek.006 days = 1 popup = yes }
+				}
+			}
+			if = {
+				limit = {
+					c:NAL ?= {
+						is_country_alive = yes
+						is_player = yes
+					}
+				}
+				c:NAL ?= {
+					trigger_event = { id = sb_trek.006 days = 1 popup = yes }
 				}
 			}
 		}
@@ -718,6 +820,8 @@ sb_on_cape_monthly_pulse_country = {
 					OR = {
 						var:sb_cape_balance_current >= 25
 						has_law = law_type:law_cultural_exclusion
+						has_law = law_type:law_landed_voting
+						has_law = law_type:law_wealth_voting
 						has_law = law_type:law_census_voting
 						has_law = law_type:law_universal_suffrage
 						has_law = law_type:law_women_own_property
@@ -774,48 +878,118 @@ sb_on_cape_secession_start = {
 # away from the already-busy Cape monthly block.
 sb_on_trek_monthly_pulse_country = {
 	effect = {
+		# ============================================================
+		# Zulu housekeeping and AI safety rails
+		# ============================================================
 		if = {
 			limit = {
-				OR = {
-					country_definition = cd:ORA
-					country_definition = cd:TRN
+				country_definition = cd:ZUL
+				is_ai = yes
+				has_journal_entry = je_sb_zulu_kingdom
+				NOT = { has_variable = sb_natal_war_active_var }
+				NOT = { has_variable = sb_natal_guns_bargain_war_var }
+				c:ORA ?= {
+					NOT = { has_variable = sb_natal_diplomacy_started_var }
 				}
+			}
+			sb_ensure_zul_ai_army_failsafe = yes
+		}
+
+		# ============================================================
+		# Trek republic mobilization posture
+		# ============================================================
+		if = {
+			limit = {
+				has_modifier = sb_trek_ai_mobilization
+			}
+			remove_modifier = sb_trek_ai_mobilization
+		}
+
+		# ORA remains "Voortrekkers" until the trek actually differentiates into a
+		# settled republic or one of the Boer daughter republics appears.
+		if = {
+			limit = {
+				country_definition = cd:ORA
+				has_variable = sb_voortrekker_start_var
+				OR = {
+					owns_entire_state_region = STATE_VRYSTAAT
+					c:TRN ?= { is_country_alive = yes }
+					c:NAL ?= {
+						is_country_alive = yes
+						country_has_primary_culture = cu:boer
+					}
+					c:ZPB ?= { is_country_alive = yes }
+				}
+			}
+			remove_variable = sb_voortrekker_start_var
+		}
+
+		# Catch-up for colony growth ticks that establish the west-Transvaal
+		# foothold without firing the one-shot colony-created hook in the right
+		# province scope. The split should key off the first real ORA foothold,
+		# not off one particular color in the audited province list.
+		if = {
+			limit = {
+				country_definition = cd:ORA
+				is_country_alive = yes
+				NOT = { has_variable = sb_trn_v2_spawned_var }
+				NOT = { has_variable = sb_trn_v2_spawn_pending_var }
+				NOT = { exists = c:TRN }
+				sb_has_west_transvaal_foothold = yes
+			}
+			set_variable = {
+				name = sb_trn_v2_spawn_pending_var
+				days = 21
 			}
 			if = {
 				limit = {
-					has_journal_entry = je_sb_great_trek
-					is_ai = yes
-					c:ORA ?= {
-						is_country_alive = yes
-						is_ai = yes
-					}
-					c:TRN ?= {
-						is_country_alive = yes
-						is_ai = yes
+					NOT = {
+						c:NAL ?= {
+							is_country_alive = yes
+							is_player = yes
+						}
 					}
 				}
-				if = {
-					limit = {
-						NOT = { has_modifier = sb_trek_ai_mobilization }
-					}
-					add_modifier = {
-						name = sb_trek_ai_mobilization
-						months = 2
-					}
-				}
+				trigger_event = { id = sb_trek.006 days = 1 popup = yes }
 			}
-			else = {
-				if = {
-					limit = { has_modifier = sb_trek_ai_mobilization }
-					remove_modifier = sb_trek_ai_mobilization
+			if = {
+				limit = {
+					c:NAL ?= {
+						is_country_alive = yes
+						is_player = yes
+					}
+				}
+				c:NAL ?= {
+					trigger_event = { id = sb_trek.006 days = 1 popup = yes }
 				}
 			}
 		}
 
-		# Zoutpansberg appears once the Transvaal has consolidated and the Cape's
-		# liberal turn makes the northern trek districts more attractive than
-		# obedient. TRN's claim on the whole state should naturally turn this into
-		# a later internal republican struggle without a second bespoke system.
+		# Legacy compatibility for pre-V2 saves where TRN could still appear in the
+		# Natal crisis. Fresh V2 starts should never set this up, but keeping the
+		# hook avoids stranding those older branches.
+		if = {
+			limit = {
+				country_definition = cd:TRN
+				is_ai = yes
+				has_variable = sb_trn_joined_natal_war_var
+				is_at_war = yes
+			}
+			sb_ensure_trn_ai_natal_front_commitment = yes
+		}
+
+		if = {
+			limit = {
+				country_definition = cd:ORA
+				is_ai = yes
+				has_variable = sb_natal_war_active_var
+				is_at_war = yes
+			}
+			sb_ensure_ora_ai_natal_front_commitment = yes
+		}
+
+		# ORA opens the Natal diplomacy out of the January monthly pulse so the
+		# Retief-at-uMgungundlovu approach lands around February 1838 in practice.
 		if = {
 			limit = {
 				country_definition = cd:ORA
@@ -823,14 +997,14 @@ sb_on_trek_monthly_pulse_country = {
 				NOT = { has_variable = sb_natal_path_resolved_var }
 				NOT = { has_variable = sb_natal_diplomacy_started_var }
 				NOT = { exists = c:NAL }
-				game_date >= 1838.2.1
+				game_date >= 1838.1.1
 				game_date < 1844.1.1
 				c:ZUL ?= {
 					is_country_alive = yes
 				}
 			}
 			set_variable = sb_natal_diplomacy_started_var
-			trigger_event = { id = sb_boer_zulu.010 days = 7 popup = yes }
+			trigger_event = { id = sb_boer_zulu.010 days = 35 popup = yes }
 		}
 
 		# Griqualand East remains a shell in Phase 1, but the fork is useful to
@@ -871,7 +1045,7 @@ sb_on_trek_monthly_pulse_country = {
 			}
 			set_variable = {
 				name = sb_british_natal_ultimatum_pending_var
-				days = 750  
+				days = 750
 			}
 			random_list = {
 				1 = { trigger_event = { id = sb_boer_zulu.100 days = 90 popup = yes } }
@@ -896,6 +1070,28 @@ sb_on_trek_monthly_pulse_country = {
 				}
 			}
 			add_journal_entry = { type = je_sb_transvaal_unity }
+		}
+
+		# SWZ can only seek British shelter after the Boer pressure event is
+		# resolved and Natal is already inside the British orbit.
+		if = {
+			limit = {
+				country_definition = cd:SWZ
+				is_subject = no
+				has_variable = sb_swazi_boer_pressure_resolved_var
+				NOT = { has_variable = sb_swazi_british_accommodation_var }
+				NOT = { has_variable = sb_swazi_stand_apart_var }
+				NOT = { has_variable = sb_swazi_british_accommodation_pending_var }
+				c:NAL ?= {
+					is_country_alive = yes
+					is_subject_of = c:GBR
+				}
+			}
+			set_variable = {
+				name = sb_swazi_british_accommodation_pending_var
+				days = 60
+			}
+			trigger_event = { id = sb_boer_zulu.096 days = 14 popup = yes }
 		}
 	}
 }
@@ -943,7 +1139,9 @@ sb_on_zpb_monthly_pulse_country = {
 				NOT = { has_variable = sb_zpb_lawlessness_pending_var }
 				NOT = { has_variable = sb_zpb_lawlessness_resolved_var }
 				NOT = { has_variable = sb_zpb_crackdown_active_var }
+				NOT = { has_variable = sb_zpb_unity_active_var }
 				NOT = { has_journal_entry = je_sb_zpb_crackdown }
+				NOT = { has_journal_entry = je_sb_zpb_unity }
 				c:ZPB ?= {
 					is_country_alive = yes
 					is_subject = no
@@ -959,41 +1157,59 @@ sb_on_zpb_monthly_pulse_country = {
 	}
 }
 
-sb_on_zulu_je_monthly_pulse_country = {
+sb_on_gbr_colonial_offices_monthly_pulse_country = {
 	effect = {
 		if = {
 			limit = {
-				country_definition = cd:ZUL
-				NOT = { has_journal_entry = je_sb_adopt_firearms }
+				country_definition = cd:GBR
+				is_ai = yes
+				power_bloc ?= {
+					has_principle = principle:principle_colonial_offices_3
+				}
+				NOT = { has_variable = sb_gbr_cap_frontier_colonization_demand_cooldown_var }
+				c:CAP ?= {
+					is_country_alive = yes
+					is_subject_of = c:GBR
+					NOT = { has_law = law_type:law_frontier_colonization }
+					NOT = { has_law = law_type:law_colonial_resettlement }
+					NOT = { has_law = law_type:law_colonial_exploitation }
+					NOT = {
+						OR = {
+							is_enacting_law = law_type:law_frontier_colonization
+							is_enacting_law = law_type:law_colonial_resettlement
+							is_enacting_law = law_type:law_colonial_exploitation
+						}
+					}
+					enacting_any_law = no
+				}
 			}
-			add_journal_entry = { type = je_sb_adopt_firearms }
-		}
-		if = {
-			limit = {
-				country_definition = cd:ZUL
-				NOT = { has_journal_entry = je_sb_zulu_kingdom }
+			set_variable = {
+				name = sb_gbr_cap_frontier_colonization_demand_cooldown_var
+				days = 365
 			}
-			add_journal_entry = { type = je_sb_zulu_kingdom }
-		}
-		if = {
-			limit = {
-				country_definition = cd:GZA
-				NOT = { has_journal_entry = je_sb_adopt_firearms }
+			c:CAP ?= {
+				trigger_event = { id = sb_cape.204 days = 14 popup = yes }
 			}
-			add_journal_entry = { type = je_sb_adopt_firearms }
-		}
-		if = {
-			limit = {
-				country_definition = cd:SWZ
-				NOT = { has_journal_entry = je_sb_adopt_firearms }
-			}
-			add_journal_entry = { type = je_sb_adopt_firearms }
 		}
 	}
 }
 
 sb_on_spes_bona_diplomatic_play_started = {
 	effect = {
+		if = {
+			limit = {
+				is_diplomatic_play_type = dp_sb_natal_crisis
+			}
+			# Resolve Blood River balance at DP start so the support / no-support
+			# outcome is deterministic before war and cannot reroll on later joins.
+			c:ZUL ?= {
+				if = {
+					limit = { is_country_alive = yes }
+					trigger_event = { id = sb_boer_zulu.019 }
+				}
+			}
+			sb_raise_blood_river_ai_boer_relief_forces = yes
+		}
 		if = {
 			limit = {
 				any_scope_play_involved = { c:GZA ?= THIS }
@@ -1005,6 +1221,76 @@ sb_on_spes_bona_diplomatic_play_started = {
 			}
 			c:GZA ?= {
 				sb_raise_gza_firearms_emergency_barracks = yes
+			}
+		}
+		if = {
+			limit = {
+				any_scope_play_involved = { c:SWZ ?= THIS }
+				OR = {
+					any_scope_play_involved = { c:ZUL ?= THIS }
+					any_scope_play_involved = { c:TRN ?= THIS }
+					any_scope_play_involved = { c:LYD ?= THIS }
+				}
+				c:SWZ ?= {
+					is_country_alive = yes
+					NOT = { has_variable = sb_swazi_zulu_campaign_muster_var }
+				}
+			}
+			# SWZ gets the same anti-exploit emergency footing for any direct
+			# Swazi-Zulu/Boer frontier play, not just the scripted Dingane lane.
+			c:SWZ ?= {
+				add_modifier = {
+					name = sb_swazi_frontier_muster
+					months = 24
+				}
+			}
+			if = {
+				limit = {
+					any_scope_play_involved = { is_player = yes }
+				}
+				c:SWZ ?= {
+					add_modifier = {
+						name = sb_swazi_frontier_muster_vs_player
+						months = 24
+					}
+				}
+			}
+			c:SWZ ?= {
+				if = {
+					limit = { is_ai = yes }
+					sb_swazi_raise_zulu_campaign_muster = yes
+				}
+			}
+		}
+	}
+}
+
+sb_on_spes_bona_country_formed = {
+	effect = {
+		if = {
+			limit = {
+				c:NGU ?= ROOT
+			}
+			sb_nguni_apply_formation_inheritance = yes
+		}
+	}
+}
+
+sb_on_spes_bona_diplo_play_war_start = {
+	effect = {
+		if = {
+			limit = {
+				is_diplomatic_play_type = dp_sb_natal_crisis
+				c:ORA ?= {
+					is_country_alive = yes
+					is_ai = yes
+					has_variable = sb_natal_war_active_var
+				}
+			}
+			# ORA is the only active Boer war participant in fresh V2 Blood River
+			# starts, so this is the live front-commitment hook.
+			c:ORA ?= {
+				sb_ensure_ora_ai_natal_front_commitment = yes
 			}
 		}
 	}
@@ -1020,6 +1306,35 @@ sb_on_natalia_become_british_subject = {
 				NOT = { has_variable = sb_natalia_british_colony_resolved_var }
 			}
 			trigger_event = { id = sb_boer_zulu.115 days = 1 popup = yes }
+		}
+	}
+}
+
+sb_on_spes_bona_diplo_play_back_down = {
+	effect = {
+		# Dingane backing down from the Swazi play should still count as a dynastic
+		# humiliation rather than a free reset.
+		if = {
+			limit = {
+				root = {
+					is_diplomatic_play_type = dp_conquer_state
+					target = c:SWZ
+				}
+				scope:actor ?= {
+					country_definition = cd:ZUL
+					has_variable = sb_zulu_swazi_war_active_var
+				}
+			}
+			scope:actor = {
+				remove_variable = sb_zulu_swazi_war_active_var
+				sb_zulu_apply_swazi_campaign_defeat = yes
+			}
+			c:SWZ ?= {
+				if = {
+					limit = { has_variable = sb_zulu_swazi_war_active_var }
+					remove_variable = sb_zulu_swazi_war_active_var
+				}
+			}
 		}
 	}
 }
@@ -1257,42 +1572,28 @@ sb_on_spes_bona_wargoal_enforced = {
 			trigger_event = { id = sb_boer_zulu.080 days = 3 popup = yes }
 		}
 
-		# Britain defeats ZUL after Dingane presses on to Port Natal.
+		# Britain annexes ZUL and reorganizes the coast under a Natal colony shell.
 		if = {
 			limit = {
 				country_definition = cd:GBR
 				scope:target ?= {
 					country_definition = cd:ZUL
-					has_variable = sb_port_natal_british_war_var
 				}
 				scope:diplomatic_play ?= {
 					is_diplomatic_play_type = dp_annex_war
 				}
 			}
 			scope:target = {
-				remove_variable = sb_port_natal_british_war_var
+				if = {
+					limit = { has_variable = sb_port_natal_british_war_var }
+					remove_variable = sb_port_natal_british_war_var
+				}
 				if = {
 					limit = { has_variable = sb_port_natal_raid_var }
 					remove_variable = sb_port_natal_raid_var
 				}
 			}
 			trigger_event = { id = sb_boer_zulu.091 days = 7 popup = yes }
-		}
-
-		# Britain defeats a resisting Natalia and drives Boer refugees inland.
-		if = {
-			limit = {
-				country_definition = cd:GBR
-				scope:target ?= {
-					country_definition = cd:NAL
-				}
-				scope:diplomatic_play ?= {
-					is_diplomatic_play_type = dp_make_protectorate
-				}
-			}
-			scope:target = {
-				trigger_event = { id = sb_boer_zulu.115 days = 7 popup = yes }
-			}
 		}
 
 		# A surviving victory over the British should feel exceptional.
@@ -1315,10 +1616,10 @@ sb_on_spes_bona_wargoal_enforced = {
 			trigger_event = { id = sb_boer_zulu.092 days = 7 popup = yes }
 		}
 
-		# TRN wins the opening Ndebele war and Mzilikazi withdraws north.
+		# ORA wins the opening Ndebele war and the inland trek consolidates.
 		if = {
 			limit = {
-				country_definition = cd:TRN
+				country_definition = cd:ORA
 				scope:target ?= {
 					country_definition = cd:MTB
 				}

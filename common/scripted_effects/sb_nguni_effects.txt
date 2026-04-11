@@ -1,0 +1,36 @@
+﻿# Spes Bona - Nguni formation helpers
+
+sb_nguni_apply_formation_inheritance = {
+	# The formation itself keeps the live country object, so JEs normally survive
+	# as long as their possible triggers still allow NGU. This effect handles the
+	# extra post-formation claims and guarded JE fallbacks for edge cases.
+	set_variable = sb_nguni_formed_var
+
+	s:STATE_EASTERN_CAPE = { add_claim = ROOT }
+	s:STATE_ZULULAND = { add_claim = ROOT }
+	s:STATE_EAST_TRANSVAAL = { add_claim = ROOT }
+	s:STATE_LOURENCO_MARQUES = { add_claim = ROOT }
+
+	if = {
+		limit = {
+			NOT = { has_variable = sb_firearms_modernized_var }
+			NOT = { has_journal_entry = je_sb_adopt_firearms }
+		}
+		add_journal_entry = { type = je_sb_adopt_firearms }
+	}
+
+	if = {
+		limit = {
+			was_formed_from = ZUL
+			NOT = { has_variable = sb_zulu_dynasty_secured_var }
+			NOT = { has_variable = sb_zulu_dynastic_collapse_resolved_var }
+			NOT = { has_journal_entry = je_sb_zulu_kingdom }
+		}
+		add_journal_entry = { type = je_sb_zulu_kingdom }
+	}
+
+	if = {
+		limit = { has_journal_entry = je_sb_zulu_kingdom }
+		sb_zulu_update_dynastic_stability_modifiers = yes
+	}
+}

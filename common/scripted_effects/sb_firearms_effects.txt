@@ -1,4 +1,13 @@
 ﻿# Shared helper effects for the staged firearms-acquisition JE.
+#
+# Bar model:
+#   - the visible bar runs from 0 to 60
+#   - each progress lane tracks months up to 24
+#   - the best lane is copied into the master value, then multiplied by 2.5
+#     so 24 months becomes 60 visible bar progress
+#
+# This keeps seeded starts like SWZ/GZA readable while still allowing either
+# treaty imports or domestic arms production to complete the JE.
 
 sb_remove_iron_age_weapons_modifiers = {
 	if = { limit = { has_modifier = sb_iron_age_weapons } remove_modifier = sb_iron_age_weapons }
@@ -61,6 +70,101 @@ sb_remove_iron_age_weapons_modifiers = {
 	if = { limit = { has_modifier = sb_iron_age_weapons_57 } remove_modifier = sb_iron_age_weapons_57 }
 	if = { limit = { has_modifier = sb_iron_age_weapons_58 } remove_modifier = sb_iron_age_weapons_58 }
 	if = { limit = { has_modifier = sb_iron_age_weapons_59 } remove_modifier = sb_iron_age_weapons_59 }
+}
+
+sb_seed_initial_firearms_progress = {
+	# Balance seeding:
+	#   SWZ starts close to completion for gameplay viability.
+	#   GZA starts part-way there.
+	if = {
+		limit = { country_definition = cd:SWZ }
+		set_variable = {
+			name = sb_firearms_treaty_progress_months_var
+			value = 19.2
+		}
+		set_variable = {
+			name = sb_firearms_industry_progress_months_var
+			value = 19.2
+		}
+	}
+	else_if = {
+		limit = { country_definition = cd:GZA }
+		set_variable = {
+			name = sb_firearms_treaty_progress_months_var
+			value = 7.2
+		}
+		set_variable = {
+			name = sb_firearms_industry_progress_months_var
+			value = 7.2
+		}
+	}
+}
+
+sb_apply_port_natal_raid_firearms_windfall = {
+	if = {
+		limit = {
+			has_journal_entry = je_sb_adopt_firearms
+			NOT = { has_variable = sb_firearms_modernized_var }
+		}
+		if = {
+			limit = {
+				NOT = { has_variable = sb_firearms_treaty_progress_months_var }
+			}
+			set_variable = {
+				name = sb_firearms_treaty_progress_months_var
+				value = 0
+			}
+		}
+		if = {
+			limit = {
+				NOT = { has_variable = sb_firearms_industry_progress_months_var }
+			}
+			set_variable = {
+				name = sb_firearms_industry_progress_months_var
+				value = 0
+			}
+		}
+		change_variable = {
+			name = sb_firearms_treaty_progress_months_var
+			add = 2.4
+		}
+		change_variable = {
+			name = sb_firearms_industry_progress_months_var
+			add = 2.4
+		}
+		sb_update_firearms_progress = yes
+		sb_sync_iron_age_weapons_penalty = yes
+	}
+}
+
+sb_sync_firearms_progress_bar = {
+	if = {
+		limit = { has_journal_entry = je_sb_adopt_firearms }
+		# Preserve country scope explicitly. This helper is called from several
+		# event/effect paths, and inside a JE scope `ROOT` is not reliably the
+		# owning country.
+		save_temporary_scope_as = sb_firearms_country_scope
+		je:je_sb_adopt_firearms ?= {
+			save_temporary_scope_as = sb_firearms_je_scope
+		}
+		if = {
+			limit = { has_variable = sb_firearms_progress_months_var }
+			scope:sb_firearms_je_scope = {
+				set_bar_progress = {
+					value = scope:sb_firearms_country_scope.var:sb_firearms_progress_months_var
+					name = sb_firearms_adoption_bar
+				}
+			}
+		}
+		else = {
+			scope:sb_firearms_je_scope = {
+				set_bar_progress = {
+					value = 0
+					name = sb_firearms_adoption_bar
+				}
+			}
+		}
+	}
 }
 
 sb_update_firearms_progress = {
@@ -126,6 +230,7 @@ sb_update_firearms_progress = {
 		min = 0
 		max = 60
 	}
+	sb_sync_firearms_progress_bar = yes
 }
 
 sb_sync_iron_age_weapons_penalty = {
@@ -609,6 +714,522 @@ sb_raise_zul_firearms_emergency_barracks = {
 			create_building = {
 				building = building_barrack
 				level = 5
+				reserves = 1
+			}
+		}
+	}
+}
+
+sb_raise_zul_blood_river_relief_force = {
+	if = {
+		limit = {
+			NOT = { has_variable = sb_zul_emergency_barracks_var }
+		}
+		set_variable = sb_zul_emergency_barracks_var
+		every_scope_state = {
+			limit = {
+				state_region = s:STATE_ZULULAND
+			}
+			if = {
+				limit = {
+					NOT = { has_building = building_barrack }
+				}
+				create_building = {
+					building = building_barrack
+					level = 25
+					reserves = 1
+				}
+			}
+			# Avoid an unbounded while-loop here. If building scope resolution goes
+			# stale mid-effect, the loop can spam until the engine aborts it.
+			else_if = {
+				limit = { b:building_barrack.level == 1 }
+				create_building = {
+					building = building_barrack
+					level = 24
+					reserves = 1
+				}
+			}
+			else_if = {
+				limit = { b:building_barrack.level == 2 }
+				create_building = {
+					building = building_barrack
+					level = 23
+					reserves = 1
+				}
+			}
+			else_if = {
+				limit = { b:building_barrack.level == 3 }
+				create_building = {
+					building = building_barrack
+					level = 22
+					reserves = 1
+				}
+			}
+			else_if = {
+				limit = { b:building_barrack.level == 4 }
+				create_building = {
+					building = building_barrack
+					level = 21
+					reserves = 1
+				}
+			}
+			else_if = {
+				limit = { b:building_barrack.level == 5 }
+				create_building = {
+					building = building_barrack
+					level = 20
+					reserves = 1
+				}
+			}
+			else_if = {
+				limit = { b:building_barrack.level == 6 }
+				create_building = {
+					building = building_barrack
+					level = 19
+					reserves = 1
+				}
+			}
+			else_if = {
+				limit = { b:building_barrack.level == 7 }
+				create_building = {
+					building = building_barrack
+					level = 18
+					reserves = 1
+				}
+			}
+			else_if = {
+				limit = { b:building_barrack.level == 8 }
+				create_building = {
+					building = building_barrack
+					level = 17
+					reserves = 1
+				}
+			}
+			else_if = {
+				limit = { b:building_barrack.level == 9 }
+				create_building = {
+					building = building_barrack
+					level = 16
+					reserves = 1
+				}
+			}
+			else_if = {
+				limit = { b:building_barrack.level == 10 }
+				create_building = {
+					building = building_barrack
+					level = 15
+					reserves = 1
+				}
+			}
+			else_if = {
+				limit = { b:building_barrack.level == 11 }
+				create_building = {
+					building = building_barrack
+					level = 14
+					reserves = 1
+				}
+			}
+			else_if = {
+				limit = { b:building_barrack.level == 12 }
+				create_building = {
+					building = building_barrack
+					level = 13
+					reserves = 1
+				}
+			}
+			else_if = {
+				limit = { b:building_barrack.level == 13 }
+				create_building = {
+					building = building_barrack
+					level = 12
+					reserves = 1
+				}
+			}
+			else_if = {
+				limit = { b:building_barrack.level == 14 }
+				create_building = {
+					building = building_barrack
+					level = 11
+					reserves = 1
+				}
+			}
+			else_if = {
+				limit = { b:building_barrack.level == 15 }
+				create_building = {
+					building = building_barrack
+					level = 10
+					reserves = 1
+				}
+			}
+			else_if = {
+				limit = { b:building_barrack.level == 16 }
+				create_building = {
+					building = building_barrack
+					level = 9
+					reserves = 1
+				}
+			}
+			else_if = {
+				limit = { b:building_barrack.level == 17 }
+				create_building = {
+					building = building_barrack
+					level = 8
+					reserves = 1
+				}
+			}
+			else_if = {
+				limit = { b:building_barrack.level == 18 }
+				create_building = {
+					building = building_barrack
+					level = 7
+					reserves = 1
+				}
+			}
+			else_if = {
+				limit = { b:building_barrack.level == 19 }
+				create_building = {
+					building = building_barrack
+					level = 6
+					reserves = 1
+				}
+			}
+			else_if = {
+				limit = { b:building_barrack.level == 20 }
+				create_building = {
+					building = building_barrack
+					level = 5
+					reserves = 1
+				}
+			}
+			else_if = {
+				limit = { b:building_barrack.level == 21 }
+				create_building = {
+					building = building_barrack
+					level = 4
+					reserves = 1
+				}
+			}
+			else_if = {
+				limit = { b:building_barrack.level == 22 }
+				create_building = {
+					building = building_barrack
+					level = 3
+					reserves = 1
+				}
+			}
+			else_if = {
+				limit = { b:building_barrack.level == 23 }
+				create_building = {
+					building = building_barrack
+					level = 2
+					reserves = 1
+				}
+			}
+			else_if = {
+				limit = { b:building_barrack.level == 24 }
+				create_building = {
+					building = building_barrack
+					level = 1
+					reserves = 1
+				}
+			}
+		}
+		if = {
+			limit = { army_size < 25 }
+			if = {
+				limit = { army_size <= 4 }
+				create_military_formation = {
+					type = army
+					hq_region = sr:region_southern_africa
+					name = dingane_amabutho
+
+					combat_unit = {
+						type = unit_type:combat_unit_type_irregular_infantry
+						state_region = s:STATE_ZULULAND
+						count = 21
+					}
+				}
+			}
+			else_if = {
+				limit = { army_size == 5 }
+				create_military_formation = {
+					type = army
+					hq_region = sr:region_southern_africa
+					name = dingane_amabutho
+
+					combat_unit = {
+						type = unit_type:combat_unit_type_irregular_infantry
+						state_region = s:STATE_ZULULAND
+						count = 20
+					}
+				}
+			}
+			else_if = {
+				limit = { army_size == 6 }
+				create_military_formation = {
+					type = army
+					hq_region = sr:region_southern_africa
+					name = dingane_amabutho
+
+					combat_unit = {
+						type = unit_type:combat_unit_type_irregular_infantry
+						state_region = s:STATE_ZULULAND
+						count = 19
+					}
+				}
+			}
+			else_if = {
+				limit = { army_size == 7 }
+				create_military_formation = {
+					type = army
+					hq_region = sr:region_southern_africa
+					name = dingane_amabutho
+
+					combat_unit = {
+						type = unit_type:combat_unit_type_irregular_infantry
+						state_region = s:STATE_ZULULAND
+						count = 18
+					}
+				}
+			}
+			else_if = {
+				limit = { army_size == 8 }
+				create_military_formation = {
+					type = army
+					hq_region = sr:region_southern_africa
+					name = dingane_amabutho
+
+					combat_unit = {
+						type = unit_type:combat_unit_type_irregular_infantry
+						state_region = s:STATE_ZULULAND
+						count = 17
+					}
+				}
+			}
+			else_if = {
+				limit = { army_size == 9 }
+				create_military_formation = {
+					type = army
+					hq_region = sr:region_southern_africa
+					name = dingane_amabutho
+
+					combat_unit = {
+						type = unit_type:combat_unit_type_irregular_infantry
+						state_region = s:STATE_ZULULAND
+						count = 16
+					}
+				}
+			}
+			else_if = {
+				limit = { army_size == 10 }
+				create_military_formation = {
+					type = army
+					hq_region = sr:region_southern_africa
+					name = dingane_amabutho
+
+					combat_unit = {
+						type = unit_type:combat_unit_type_irregular_infantry
+						state_region = s:STATE_ZULULAND
+						count = 15
+					}
+				}
+			}
+			else_if = {
+				limit = { army_size == 11 }
+				create_military_formation = {
+					type = army
+					hq_region = sr:region_southern_africa
+					name = dingane_amabutho
+
+					combat_unit = {
+						type = unit_type:combat_unit_type_irregular_infantry
+						state_region = s:STATE_ZULULAND
+						count = 14
+					}
+				}
+			}
+			else_if = {
+				limit = { army_size == 12 }
+				create_military_formation = {
+					type = army
+					hq_region = sr:region_southern_africa
+					name = dingane_amabutho
+
+					combat_unit = {
+						type = unit_type:combat_unit_type_irregular_infantry
+						state_region = s:STATE_ZULULAND
+						count = 13
+					}
+				}
+			}
+			else_if = {
+				limit = { army_size == 13 }
+				create_military_formation = {
+					type = army
+					hq_region = sr:region_southern_africa
+					name = dingane_amabutho
+
+					combat_unit = {
+						type = unit_type:combat_unit_type_irregular_infantry
+						state_region = s:STATE_ZULULAND
+						count = 12
+					}
+				}
+			}
+			else_if = {
+				limit = { army_size == 14 }
+				create_military_formation = {
+					type = army
+					hq_region = sr:region_southern_africa
+					name = dingane_amabutho
+
+					combat_unit = {
+						type = unit_type:combat_unit_type_irregular_infantry
+						state_region = s:STATE_ZULULAND
+						count = 11
+					}
+				}
+			}
+			else_if = {
+				limit = { army_size == 15 }
+				create_military_formation = {
+					type = army
+					hq_region = sr:region_southern_africa
+					name = dingane_amabutho
+
+					combat_unit = {
+						type = unit_type:combat_unit_type_irregular_infantry
+						state_region = s:STATE_ZULULAND
+						count = 10
+					}
+				}
+			}
+			else_if = {
+				limit = { army_size == 16 }
+				create_military_formation = {
+					type = army
+					hq_region = sr:region_southern_africa
+					name = dingane_amabutho
+
+					combat_unit = {
+						type = unit_type:combat_unit_type_irregular_infantry
+						state_region = s:STATE_ZULULAND
+						count = 9
+					}
+				}
+			}
+			else_if = {
+				limit = { army_size == 17 }
+				create_military_formation = {
+					type = army
+					hq_region = sr:region_southern_africa
+					name = dingane_amabutho
+
+					combat_unit = {
+						type = unit_type:combat_unit_type_irregular_infantry
+						state_region = s:STATE_ZULULAND
+						count = 8
+					}
+				}
+			}
+			else_if = {
+				limit = { army_size == 18 }
+				create_military_formation = {
+					type = army
+					hq_region = sr:region_southern_africa
+					name = dingane_amabutho
+
+					combat_unit = {
+						type = unit_type:combat_unit_type_irregular_infantry
+						state_region = s:STATE_ZULULAND
+						count = 7
+					}
+				}
+			}
+			else_if = {
+				limit = { army_size == 19 }
+				create_military_formation = {
+					type = army
+					hq_region = sr:region_southern_africa
+					name = dingane_amabutho
+
+					combat_unit = {
+						type = unit_type:combat_unit_type_irregular_infantry
+						state_region = s:STATE_ZULULAND
+						count = 6
+					}
+				}
+			}
+			else_if = {
+				limit = { army_size == 20 }
+				create_military_formation = {
+					type = army
+					hq_region = sr:region_southern_africa
+					name = dingane_amabutho
+
+					combat_unit = {
+						type = unit_type:combat_unit_type_irregular_infantry
+						state_region = s:STATE_ZULULAND
+						count = 5
+					}
+				}
+			}
+			else_if = {
+				limit = { army_size == 21 }
+				create_military_formation = {
+					type = army
+					hq_region = sr:region_southern_africa
+					name = dingane_amabutho
+
+					combat_unit = {
+						type = unit_type:combat_unit_type_irregular_infantry
+						state_region = s:STATE_ZULULAND
+						count = 4
+					}
+				}
+			}
+			else_if = {
+				limit = { army_size == 22 }
+				create_military_formation = {
+					type = army
+					hq_region = sr:region_southern_africa
+					name = dingane_amabutho
+
+					combat_unit = {
+						type = unit_type:combat_unit_type_irregular_infantry
+						state_region = s:STATE_ZULULAND
+						count = 3
+					}
+				}
+			}
+			else_if = {
+				limit = { army_size == 23 }
+				create_military_formation = {
+					type = army
+					hq_region = sr:region_southern_africa
+					name = dingane_amabutho
+
+					combat_unit = {
+						type = unit_type:combat_unit_type_irregular_infantry
+						state_region = s:STATE_ZULULAND
+						count = 2
+					}
+				}
+			}
+			else_if = {
+				limit = { army_size == 24 }
+				create_military_formation = {
+					type = army
+					hq_region = sr:region_southern_africa
+					name = dingane_amabutho
+
+					combat_unit = {
+						type = unit_type:combat_unit_type_irregular_infantry
+						state_region = s:STATE_ZULULAND
+						count = 1
+					}
+				}
 			}
 		}
 	}
@@ -627,6 +1248,69 @@ sb_raise_gza_firearms_emergency_barracks = {
 			create_building = {
 				building = building_barrack
 				level = 7
+				reserves = 1
+			}
+		}
+	}
+}
+
+sb_ensure_zul_ai_army_failsafe = {
+	if = {
+		limit = {
+			country_definition = cd:ZUL
+			is_ai = yes
+		}
+		if = {
+			limit = {
+				NOT = { has_variable = sb_zul_ai_barracks_failsafe_var }
+				any_scope_state = {
+					owner = ROOT
+					state_region = s:STATE_ZULULAND
+					OR = {
+						NOT = { has_building = building_barrack }
+						b:building_barrack.level < 12
+					}
+				}
+			}
+			set_variable = {
+				name = sb_zul_ai_barracks_failsafe_var
+				months = 4
+			}
+			every_scope_state = {
+				limit = {
+					owner = ROOT
+					state_region = s:STATE_ZULULAND
+				}
+				create_building = {
+					building = building_barrack
+					level = 4
+					reserves = 1
+				}
+			}
+		}
+		if = {
+			limit = {
+				NOT = { has_variable = sb_zul_ai_army_failsafe_var }
+				NOT = {
+					any_military_formation = {
+						num_units >= 6
+					}
+				}
+			}
+			set_variable = {
+				name = sb_zul_ai_army_failsafe_var
+				months = 6
+			}
+			create_military_formation = {
+				type = army
+				hq_region = sr:region_southern_africa
+				name = dingane_amabutho
+
+				combat_unit = {
+					type = unit_type:combat_unit_type_irregular_infantry
+					state_region = s:STATE_ZULULAND
+					count = 8
+				}
 			}
 		}
 	}

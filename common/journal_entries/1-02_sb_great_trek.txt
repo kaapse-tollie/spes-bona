@@ -1,6 +1,10 @@
 ﻿# Spes Bona - The Great Trek Journal Entry
 # ==============================================================================
-# Tracks Boer republic establishment for the Transvaal (TRN) and Orange Free State (ORA).
+# Tracks Boer republic establishment for the inland trekker states.
+#
+# V2 note:
+#   - ORA begins the game as the only inland Boer tag.
+#   - TRN and ZPB enter this JE later, after their delayed split events.
 #
 # HISTORICAL CONTEXT:
 #   The Great Trek (1836-1852) was the mass migration of Boer settlers from the
@@ -33,8 +37,8 @@
 #     constitutional choice instead of auto-centralizing every Boer republic.
 #
 # CROSS-REFERENCES:
-#   - Migration modifier: common/modifiers/sb_modifiers.txt (sb_trek_migration_pull)
-#   - Events: events/sb_trek.txt (sb_trek.030-.031, .040-.041, .050, .100)
+#   - Migration modifier: common/static_modifiers/sb_modifiers.txt (sb_trek_migration_pull)
+#   - Events: events/sb_trek_events.txt (sb_trek.030-.031, .040-.041, .100)
 #   - Country names: common/dynamic_country_names/ (sb_early_republic_var usage)
 #   - Transvaal helpers: common/scripted_triggers/sb_great_trek_triggers.txt
 # ==============================================================================
@@ -50,13 +54,16 @@ je_sb_great_trek = {
 		country_has_primary_culture = cu:boer
 	}
 
-	# Only active for TRN (Transvaal) and ORA (Orange Free State),
-	# and only while independent — subjects don't conduct their own treks.
+	# Only active for Boer trek republics, and only while independent. In V2 this
+	# means ORA starts with the JE while TRN/ZPB/NAL receive it fresh on spawn.
 	possible = {
 		OR = {
 			country_definition = cd:TRN
 			country_definition = cd:ORA
+			country_definition = cd:ZPB
+			country_definition = cd:NAL
 		}
+		country_has_primary_culture = cu:boer
 		is_subject = no
 	}
 
@@ -115,6 +122,8 @@ je_sb_great_trek = {
 				OR = {
 					country_definition = cd:TRN
 					country_definition = cd:ORA
+					country_definition = cd:ZPB
+					country_definition = cd:NAL
 				}
 				has_variable = sb_early_republic_var
 			}
@@ -144,9 +153,27 @@ je_sb_great_trek = {
 		}
 		if = {
 			limit = {
+				country_definition = cd:ZPB
+			}
+			s:STATE_NORTHERN_TRANSVAAL = {
+				add_homeland = cu:boer
+			}
+		}
+		if = {
+			limit = {
+				country_definition = cd:NAL
+			}
+			s:STATE_ZULULAND = {
+				add_homeland = cu:boer
+			}
+		}
+		if = {
+			limit = {
 				OR = {
 					country_definition = cd:TRN
 					country_definition = cd:ORA
+					country_definition = cd:ZPB
+					country_definition = cd:NAL
 				}
 				NOT = { has_modifier = sb_boer_principality_status }
 			}
@@ -198,12 +225,15 @@ je_sb_great_trek = {
 						country_definition = cd:ORA
 						owns_entire_state_region = STATE_VRYSTAAT
 					}
+					if = {
+						limit = { has_variable = sb_voortrekker_start_var }
+						remove_variable = sb_voortrekker_start_var
+					}
 					set_variable = sb_trek_stage2_complete
 					trigger_event = { id = sb_trek.040 popup = yes }
 				}
-				# TRN must control the western Transvaal core. This decouples
-				# republican maturation from ownership of the whole macro-state
-				# while the audited split is still pending.
+				# TRN must control the full west-Transvaal state shell created by the
+				# audited split, not the old pre-refactor macro-state.
 				else_if = {
 					limit = {
 						country_definition = cd:TRN
@@ -211,6 +241,22 @@ je_sb_great_trek = {
 					}
 					set_variable = sb_trek_stage2_complete
 					trigger_event = { id = sb_trek.041 popup = yes }
+				}
+				else_if = {
+					limit = {
+						country_definition = cd:ZPB
+						sb_controls_north_transvaal_core = yes
+					}
+					set_variable = sb_trek_stage2_complete
+					trigger_event = { id = sb_trek.042 popup = yes }
+				}
+				else_if = {
+					limit = {
+						country_definition = cd:NAL
+						sb_controls_natalia_core = yes
+					}
+					set_variable = sb_trek_stage2_complete
+					trigger_event = { id = sb_trek.043 popup = yes }
 				}
 			}
 

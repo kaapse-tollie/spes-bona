@@ -1,4 +1,10 @@
-﻿je_sb_transvaal_unity = {
+﻿# Delayed inland republican follow-up for V2 TRN.
+#
+# Once TRN exists as its own post-Blood-River republic, this JE drives the
+# conservative-reunification path with LYD and then hands off into the later
+# Swazi frontier pressure content.
+
+je_sb_transvaal_unity = {
 	group = je_group_historical_content
 
 	icon = "gfx/interface/icons/je_icons/je_great_trek.dds"
@@ -85,6 +91,9 @@
 			add_modifier = {
 				name = sb_boer_grand_principality_status
 			}
+		}
+		c:SWZ ?= {
+			trigger_event = { id = sb_boer_zulu.095 days = 21 popup = yes }
 		}
 		remove_variable = sb_transvaal_unity_progress
 	}
@@ -216,6 +225,155 @@ je_sb_zpb_crackdown = {
 			limit = { has_variable = sb_zpb_crackdown_active_var }
 			remove_variable = sb_zpb_crackdown_active_var
 		}
+	}
+
+	weight = 850
+	should_be_pinned_by_default = yes
+	transferable = no
+	can_revolution_inherit = no
+}
+
+je_sb_zpb_unity = {
+	group = je_group_historical_content
+
+	icon = "gfx/interface/icons/je_icons/je_great_trek.dds"
+
+	possible = {
+		country_definition = cd:TRN
+		is_subject = no
+		has_variable = sb_zpb_unity_active_var
+		c:ZPB ?= {
+			is_country_alive = yes
+		}
+	}
+
+	immediate = {
+		if = {
+			limit = {
+				NOT = { has_variable = sb_zpb_unity_progress }
+			}
+			set_variable = {
+				name = sb_zpb_unity_progress
+				value = 0
+			}
+		}
+	}
+
+	status_desc = {
+		first_valid = {
+			triggered_desc = {
+				desc = je_sb_zpb_unity_status
+				trigger = {
+					always = yes
+				}
+			}
+		}
+	}
+
+	complete = {
+		government_legitimacy >= 50
+		ig:ig_intelligentsia ?= { is_in_government = no }
+		ig:ig_petty_bourgeoisie ?= { is_in_government = no }
+		ig:ig_industrialists ?= { is_in_government = no }
+		ig:ig_trade_unions ?= { is_in_government = no }
+		OR = {
+			has_law = law_type:law_national_supremacy
+			has_law = law_type:law_ethnostate
+		}
+		has_law = law_type:law_national_militia
+		has_law = law_type:law_slave_trade
+		active_law:lawgroup_army_model ?= {
+			has_amendment = amendment_type:amendment_sb_commando_corps
+		}
+		c:ZPB ?= {
+			is_country_alive = yes
+			relations:root >= relations_threshold:amicable
+		}
+		root.gdp > {
+			value = c:ZPB.gdp
+			multiply = 1.5
+		}
+		custom_tooltip = {
+			text = je_sb_zpb_unity_progress_tt
+			var:sb_zpb_unity_progress >= 60
+		}
+	}
+
+	on_complete = {
+		if = {
+			limit = {
+				c:ZPB ?= {
+					is_country_alive = yes
+				}
+			}
+			s:STATE_NORTHERN_TRANSVAAL = {
+				add_homeland = cu:boer
+			}
+			annex_with_incorporation = c:ZPB
+		}
+		if = {
+			limit = { has_variable = sb_zpb_unity_active_var }
+			remove_variable = sb_zpb_unity_active_var
+		}
+		if = {
+			limit = { NOT = { has_variable = sb_zpb_lawlessness_resolved_var } }
+			set_variable = sb_zpb_lawlessness_resolved_var
+		}
+		remove_variable = sb_zpb_unity_progress
+	}
+
+	on_monthly_pulse = {
+		effect = {
+			if = {
+				limit = {
+					government_legitimacy >= 50
+					ig:ig_intelligentsia ?= { is_in_government = no }
+					ig:ig_petty_bourgeoisie ?= { is_in_government = no }
+					ig:ig_industrialists ?= { is_in_government = no }
+					ig:ig_trade_unions ?= { is_in_government = no }
+					OR = {
+						has_law = law_type:law_national_supremacy
+						has_law = law_type:law_ethnostate
+					}
+					has_law = law_type:law_national_militia
+					has_law = law_type:law_slave_trade
+					active_law:lawgroup_army_model ?= {
+						has_amendment = amendment_type:amendment_sb_commando_corps
+					}
+					c:ZPB ?= {
+						is_country_alive = yes
+						relations:root >= relations_threshold:amicable
+					}
+					root.gdp > {
+						value = c:ZPB.gdp
+						multiply = 1.5
+					}
+				}
+				change_variable = {
+					name = sb_zpb_unity_progress
+					add = 1
+				}
+			}
+		}
+	}
+
+	invalid = {
+		OR = {
+			is_subject = yes
+			NOT = {
+				c:ZPB ?= {
+					is_country_alive = yes
+				}
+			}
+		}
+	}
+
+	on_invalid = {
+		if = {
+			limit = { has_variable = sb_zpb_unity_active_var }
+			remove_variable = sb_zpb_unity_active_var
+		}
+		remove_variable = sb_zpb_unity_progress
 	}
 
 	weight = 850

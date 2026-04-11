@@ -1,0 +1,144 @@
+﻿ai_strategy_sb_boer_frontier_republic = {
+	icon = "gfx/interface/icons/ai_strategy_icons/colonial_expansion.dds"
+
+	type = diplomatic
+
+	undesirable_infamy_level = {
+		value = 35
+	}
+
+	unacceptable_infamy_level = {
+		value = 70
+	}
+
+	diplomatic_play_neutrality = {
+		value = 5
+	}
+
+	diplomatic_play_boldness = {
+		value = 45
+	}
+
+	recklessness = {
+		value = 0.2
+	}
+
+	aggression = {
+		value = 0.75
+
+		if = {
+			limit = {
+				has_strategic_adjacency = scope:target_country
+				scope:target_country = {
+					any_scope_state = {
+						has_claim_by = ROOT
+					}
+				}
+			}
+			add = 2.0
+		}
+	}
+
+	building_group_weights = {
+		bg_army = 1.25
+	}
+
+	secret_goal_weights = {
+		protect = 0.5
+		conquer = 2.0
+	}
+
+	secret_goal_scores = {
+		conquer = {
+			score = {
+				if = {
+					limit = {
+						NOT = { scope:target_country = { is_subject_of = root } }
+						has_strategic_adjacency = scope:target_country
+						scope:target_country = {
+							any_scope_state = {
+								has_claim_by = ROOT
+							}
+						}
+					}
+					add = 300
+				}
+			}
+		}
+	}
+
+	wargoal_weights = {
+		conquer_state = 2.0
+		return_state = 3.0
+	}
+
+	wargoal_scores = {
+		conquer_state = {
+			if = {
+				limit = {
+					scope:target_state = {
+						has_claim_by = ROOT
+					}
+				}
+				add = 500
+			}
+		}
+		return_state = {
+			if = {
+				limit = {
+					scope:target_state = {
+						has_claim_by = ROOT
+					}
+				}
+				add = 750
+			}
+		}
+	}
+
+	possible = {
+		is_subject = no
+		OR = {
+			country_definition = cd:ORA
+			country_definition = cd:TRN
+			country_definition = cd:LYD
+			country_definition = cd:ZPB
+		}
+		has_law_or_variant = law_type:law_frontier_colonization
+	}
+
+	weight = {
+		value = 500
+	}
+}
+
+ai_strategy_sb_boer_frontier_institutions = {
+	icon = "gfx/interface/icons/ai_strategy_icons/colonial_expansion.dds"
+
+	type = political
+
+	# Vanilla and major overhaul mods put institution investment priorities on
+	# political strategies. Keep this separate from the diplomatic claim-presser
+	# so the AI has an explicit, valid Colonial Affairs investment strategy. The
+	# Boer tags are tiny and often have few competing institutions, so this needs
+	# to be far stronger than vanilla's broad "modernizer" weights.
+	institution_scores = {
+		institution_colonial_affairs = {
+			value = 10000
+		}
+	}
+
+	possible = {
+		is_subject = no
+		OR = {
+			country_definition = cd:ORA
+			country_definition = cd:TRN
+			country_definition = cd:LYD
+			country_definition = cd:ZPB
+		}
+		has_law_or_variant = law_type:law_frontier_colonization
+	}
+
+	weight = {
+		value = 1000
+	}
+}

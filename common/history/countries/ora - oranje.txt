@@ -4,12 +4,13 @@
 # (Oranje-Vrystaat) was proclaimed. At the 1836 start, Voortrekker settlement
 # in the region is only beginning.
 # ORA shares most of TRN's setup as a Boer frontier republic. The key
-# difference is that ORA does not begin with frontier colonization, since its
-# geography is more constrained by the Cape, Basutoland, and the Griqua polities.
+# difference is that ORA now carries the whole inland Voortrekker movement at
+# start, so it does begin with frontier colonization active in the v2 setup.
 COUNTRIES = {
 	c:ORA ?= {
 		set_variable = sb_commandant_general_visible_var
 		set_variable = sb_early_republic_var
+		set_variable = sb_voortrekker_start_var
 
 		# Election date: 1839, mirroring the early Volksraad rhythm used for TRN.
 		set_next_election_date = 1839.10.12
@@ -51,24 +52,21 @@ COUNTRIES = {
 			}
 		# Legacy Slavery: same indentured-labour practices as TRN.
 		activate_law = law_type:law_legacy_slavery
-		# No frontier colonization at start: ORA is boxed in far more tightly than
-		# TRN and should not begin with the same open-ended colonial horizon.
-		# TRN has it because of open expansion into the northern highveld.
+		# V2 single-tag trek start: ORA carries the inland trek movement before
+		# Transvaal splinters out later, so it needs colonial affairs from day one.
+		activate_law = law_type:law_frontier_colonization
 
-		# Broad-but-coherent start coalition: enough of the trekker camp must sit
-		# in government to avoid the ahistorical zero-legitimacy open, but the
-		# republic should still read as a commandant's laager rather than a full
-		# national front.
+		# V2 player-start coalition: keep the opening republic anchored on the
+		# named trekker figures the player actually starts with. Potgieter,
+		# Retief, and Maritz should define the opening state more than a generic
+		# clerical or agrarian placeholder leader.
 		ig:ig_landowners ?= {
-			add_ruling_interest_group = yes
-		}
-		ig:ig_rural_folk ?= {
 			add_ruling_interest_group = yes
 		}
 		ig:ig_armed_forces ?= {
 			add_ruling_interest_group = yes
 		}
-		ig:ig_devout ?= {
+		ig:ig_petty_bourgeoisie ?= {
 			add_ruling_interest_group = yes
 		}
 

@@ -15,6 +15,7 @@
 # sb_cape.120     Cape Liberals demand action under settler dominance
 # sb_cape.121     Robert Godlonton demands frontier action
 # sb_cape.122     Eastern Cape settlers demand frontier action
+# sb_cape.204     British colonial offices demand frontier colonization
 # sb_cape.200     Britain decides whether to create Albany
 # sb_cape.201     CAP notification: London creates Albany
 # sb_cape.202     CAP notification: London refuses Albany
@@ -805,6 +806,80 @@ sb_cape.122 = {
 		}
 		ai_chance = {
 			base = 20
+		}
+	}
+}
+
+sb_cape.204 = {
+	type = country_event
+	placement = root
+
+	title = sb_cape.204.t
+	desc = sb_cape.204.d
+	flavor = sb_cape.204.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/principles_icons/colonial_offices.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:CAP
+		is_subject_of = c:GBR
+		c:GBR ?= {
+			is_ai = yes
+			power_bloc ?= {
+				has_principle = principle:principle_colonial_offices_3
+			}
+		}
+		NOT = { has_law = law_type:law_frontier_colonization }
+		NOT = { has_law = law_type:law_colonial_resettlement }
+		NOT = { has_law = law_type:law_colonial_exploitation }
+		NOT = {
+			OR = {
+				is_enacting_law = law_type:law_frontier_colonization
+				is_enacting_law = law_type:law_colonial_resettlement
+				is_enacting_law = law_type:law_colonial_exploitation
+			}
+		}
+	}
+
+	option = {
+		name = sb_cape.204.a
+		default_option = yes
+		if = {
+			limit = {
+				enacting_any_law = yes
+			}
+			cancel_enactment = yes
+		}
+		start_enactment = law_type:law_frontier_colonization
+		add_enactment_modifier = {
+			name = agreeable_to_imposition
+		}
+		change_relations = {
+			country = c:GBR
+			value = 10
+		}
+		ai_chance = {
+			base = 100
+		}
+	}
+
+	option = {
+		name = sb_cape.204.b
+		trigger = {
+			is_player = yes
+		}
+		change_relations = {
+			country = c:GBR
+			value = -15
+		}
+		ai_chance = {
+			base = 0
 		}
 	}
 }
