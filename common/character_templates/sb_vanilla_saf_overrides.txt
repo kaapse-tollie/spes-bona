@@ -1,0 +1,898 @@
+﻿# Southern Africa vanilla-linked roster and overrides.
+# Startup history should only instantiate templates from this layer.
+
+REPLACE:ORA_piet_retief = {
+	first_name = "Piet"
+	last_name = "Retief"
+	historical = yes
+	culture = cu:boer
+	religion = rel:protestant
+	ig_leader = yes
+	dna = dna_piet_retief
+	birth_date = 1780.11.12
+	interest_group = ig_petty_bourgeoisie
+	ideology = ideology_sb_volksraad_elitism
+	traits = {
+		direct
+		literary
+		charismatic
+		basic_colonial_administrator
+	}
+}
+
+REPLACE:ORA_hendrik_potgieter = {
+	first_name = "Hendrik"
+	last_name = "Potgieter"
+	historical = yes
+	culture = cu:boer
+	religion = rel:protestant
+	ruler = yes
+	is_general = yes
+	birth_date = 1792.12.19
+	interest_group = ig_landowners
+	ideology = ideology_sb_volksraad_elitism
+	traits = {
+		brave
+		imperious
+		pious
+		expert_offensive_planner
+		plains_commander
+		surveyor
+	}
+}
+
+ORA_gerrit_maritz = {
+	first_name = "Gerrit"
+	last_name = "Maritz"
+	historical = yes
+	culture = cu:boer
+	religion = rel:protestant
+	ig_leader = yes
+	birth_date = 1797.3.1
+	interest_group = ig_armed_forces
+	ideology = ideology_jingoist_leader
+	traits = {
+		direct
+		persistent
+		popular_commander
+	}
+}
+
+REPLACE:ORA_johannes_brand = {
+	first_name = "Jan"
+	last_name = "Brand"
+	historical = yes
+	culture = cu:boer
+	religion = rel:protestant
+	female = no
+	interest_group = ig_petty_bourgeoisie
+	ideology = ideology_moderate
+	birth_date = 1823.12.6
+	traits = {
+		tactful
+		cautious
+		pious
+		basic_diplomat
+	}
+	interest_group_leader_usage = {
+		country_trigger = {
+			OR = {
+				c:ORA ?= this
+				AND = {
+					country_has_primary_culture = cu:boer
+					any_scope_state = {
+						state_region = s:STATE_VRYSTAAT
+					}
+				}
+			}
+		}
+		interest_group_trigger = {
+			ig_counts_as_marginal = no
+			OR = {
+				is_interest_group_type = ig_landowners
+				is_interest_group_type = ig_intelligentsia
+				is_interest_group_type = ig_petty_bourgeoisie
+			}
+			NOR = {
+				has_variable = communist_ig_var
+				has_variable = chose_vanguardism
+			}
+		}
+		earliest_usage_date = 1858.1.1
+		latest_usage_date = 1884.1.1
+		chance = 50
+	}
+}
+
+REPLACE:ORA_francis_william_reitz = {
+	first_name = "Francis_William"
+	last_name = "Reitz"
+	historical = yes
+	culture = cu:boer
+	religion = rel:protestant
+	female = no
+	interest_group = ig_intelligentsia
+	ideology = ideology_ethno_nationalist
+	birth_date = 1844.10.5
+	traits = {
+		innovative
+		meticulous
+		direct
+		master_bureaucrat
+	}
+	interest_group_leader_usage = {
+		country_trigger = {
+			OR = {
+				c:ORA ?= this
+				c:TRN ?= this
+				AND = {
+					c:SAF ?= this
+					country_has_primary_culture = cu:boer
+				}
+			}
+		}
+		interest_group_trigger = {
+			OR = {
+				is_interest_group_type = ig_intelligentsia
+				is_interest_group_type = ig_petty_bourgeoisie
+			}
+			NOR = {
+				has_variable = communist_ig_var
+				has_variable = chose_vanguardism
+			}
+		}
+		earliest_usage_date = 1873.5.30
+		latest_usage_date = 1898.6.1
+		chance = 50
+	}
+}
+
+REPLACE:TRN_louis_tregardt = {
+	first_name = "Louis"
+	last_name = "Tregardt"
+	historical = yes
+	culture = cu:boer
+	religion = rel:protestant
+	ig_leader = yes
+	birth_date = 1783.8.10
+	interest_group = ig_rural_folk
+	ideology = ideology_slaver
+	traits = {
+		reckless
+		brave
+		bigoted
+	}
+}
+
+REPLACE:TRN_andries_pretorius = {
+	first_name = "Andries"
+	last_name = "Pretorius"
+	historical = yes
+	culture = cu:boer
+	religion = rel:protestant
+	ruler = yes
+	is_general = yes
+	birth_date = 1798.11.27
+	dna = dna_andries_pretorius
+	interest_group = ig_landowners
+	ideology = ideology_sb_volksraad_elitism
+	traits = {
+		meticulous
+		brave
+		tactful
+		surveyor
+		expert_defensive_strategist
+		plains_commander
+	}
+}
+
+REPLACE:TRN_marthinus_wessel_pretorius = {
+	first_name = "Mathinus_Wessel"
+	last_name = "Pretorius"
+	historical = yes
+	culture = cu:boer
+	religion = rel:protestant
+	female = no
+	interest_group = ig_armed_forces
+	ideology = ideology_sb_volksraad_elitism
+	birth_date = 1819.9.17
+	traits = {
+		ambitious
+		reckless
+		brave
+		popular_commander
+	}
+	interest_group_leader_usage = {
+		country_trigger = {
+			OR = {
+				c:TRN ?= this
+				AND = {
+					country_has_primary_culture = cu:boer
+					any_scope_state = {
+						OR = {
+							state_region = s:STATE_TRANSVAAL
+							state_region = s:STATE_EAST_TRANSVAAL
+							state_region = s:STATE_NORTHERN_TRANSVAAL
+						}
+					}
+				}
+				AND = {
+					c:ORA ?= this
+					NOT = {
+						OR = {
+							s:STATE_TRANSVAAL = {
+								any_scope_state = {
+									owner = { country_has_primary_culture = cu:boer }
+								}
+							}
+							s:STATE_EAST_TRANSVAAL = {
+								any_scope_state = {
+									owner = { country_has_primary_culture = cu:boer }
+								}
+							}
+							s:STATE_NORTHERN_TRANSVAAL = {
+								any_scope_state = {
+									owner = { country_has_primary_culture = cu:boer }
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		interest_group_trigger = {
+			OR = {
+				is_interest_group_type = ig_armed_forces
+				is_interest_group_type = ig_landowners
+			}
+			NOR = {
+				has_variable = communist_ig_var
+				has_variable = chose_vanguardism
+			}
+		}
+		earliest_usage_date = 1836.1.1
+		latest_usage_date = 1890.1.1
+		chance = 50
+	}
+}
+
+REPLACE:TRN_thomas_francois_burgers = {
+	first_name = "Thomas"
+	last_name = "Burgers"
+	historical = yes
+	culture = cu:boer
+	religion = rel:protestant
+	female = no
+	interest_group = ig_intelligentsia
+	ideology = ideology_liberal_leader
+	birth_date = 1834.4.15
+	traits = {
+		pious
+		imperious
+		charismatic
+		inept
+	}
+	interest_group_leader_usage = {
+		country_trigger = {
+			OR = {
+				c:TRN ?= this
+				AND = {
+					country_has_primary_culture = cu:boer
+					any_scope_state = {
+						state_region = s:STATE_TRANSVAAL
+					}
+				}
+			}
+		}
+		interest_group_trigger = {
+			is_interest_group_type = ig_intelligentsia
+		}
+		earliest_usage_date = 1862.1.1
+		latest_usage_date = 1877.1.1
+		chance = 50
+	}
+}
+
+REPLACE:TRN_paul_kruger = {
+	first_name = Paul
+	last_name = Kruger
+	historical = yes
+	culture = cu:boer
+	religion = rel:protestant
+	female = no
+	dna = dna_paul_kruger
+	interest_group = ig_rural_folk
+	ideology = ideology_traditionalist
+	birth_date = 1825.10.10
+	traits = {
+		pious
+		bigoted
+		direct
+		basic_diplomat
+	}
+	interest_group_leader_usage = {
+		country_trigger = {
+			exists = c:TRN
+			c:TRN ?= THIS
+		}
+		interest_group_trigger = {
+			ig_counts_as_marginal = no
+			OR = {
+				is_interest_group_type = ig_rural_folk
+				is_interest_group_type = ig_landowners
+				is_interest_group_type = ig_petty_bourgeoisie
+			}
+			NOR = {
+				has_variable = communist_ig_var
+				has_variable = chose_vanguardism
+				has_variable = chose_fascism
+				has_variable = chose_ethno_nationalism
+			}
+		}
+		earliest_usage_date = 1852.1.1
+		latest_usage_date = 1899.1.1
+		chance = 50
+	}
+}
+
+REPLACE:TRN_stephanus_schoeman = {
+	first_name = "Stephanus"
+	last_name = "Schoeman"
+	historical = yes
+	culture = cu:boer
+	religion = rel:protestant
+	female = no
+	interest_group = ig_armed_forces
+	ideology = ideology_authoritarian
+	birth_date = 1810.3.14
+	traits = {
+		ambitious
+		pious
+		wrathful
+		traditionalist_commander
+	}
+	interest_group_leader_usage = {
+		country_trigger = {
+			OR = {
+				c:TRN ?= this
+				AND = {
+					country_has_primary_culture = cu:boer
+					any_scope_state = {
+						state_region = s:STATE_TRANSVAAL
+					}
+				}
+			}
+		}
+		interest_group_trigger = {
+			OR = {
+				is_interest_group_type = ig_armed_forces
+				is_interest_group_type = ig_petty_bourgeoisie
+			}
+			NOR = {
+				has_variable = communist_ig_var
+				has_variable = chose_vanguardism
+			}
+		}
+		earliest_usage_date = 1854.11.1
+		latest_usage_date = 1871.1.1
+		chance = 25
+	}
+}
+
+REPLACE:TRN_frans_lion_cachet = {
+	first_name = "Frans_Lion"
+	last_name = "Cachet"
+	historical = yes
+	culture = cu:dutch
+	religion = rel:protestant
+	female = no
+	interest_group = ig_devout
+	ideology = ideology_moderate
+	birth_date = 1835.1.28
+	traits = {
+		persistent
+		pious
+		literary
+	}
+	interest_group_leader_usage = {
+		country_trigger = {
+			OR = {
+				c:TRN ?= this
+				AND = {
+					country_has_primary_culture = cu:boer
+					any_scope_state = {
+						state_region = s:STATE_TRANSVAAL
+					}
+				}
+			}
+		}
+		interest_group_trigger = {
+			is_interest_group_type = ig_devout
+		}
+		earliest_usage_date = 1858.1.1
+		latest_usage_date = 1873.1.1
+		chance = 50
+	}
+}
+
+REPLACE:TRN_jan_viljoen = {
+	first_name = "Jan"
+	last_name = "Viljoen"
+	historical = yes
+	culture = cu:boer
+	religion = rel:protestant
+	female = no
+	commander_rank = default
+	interest_group = ig_rural_folk
+	birth_date = 1812.5.14
+	traits = {
+		wrathful
+		pious
+		brave
+		explorer
+	}
+	commander_usage = {
+		country_trigger = {
+			OR = {
+				c:TRN ?= this
+				AND = {
+					country_has_primary_culture = cu:boer
+					any_scope_state = {
+						state_region = s:STATE_TRANSVAAL
+					}
+				}
+			}
+		}
+		role = general
+		earliest_usage_date = 1843.1.1
+		latest_usage_date = 1870.1.1
+		chance = 50
+	}
+}
+
+REPLACE:SAF_benjamin_durban = {
+	first_name = "sir_benjamin"
+	last_name = "d_urban"
+	historical = yes
+	culture = cu:british
+	religion = rel:protestant
+	ruler = yes
+	ig_leader = yes
+	noble = yes
+	birth_date = 1777.2.16
+	dna = dna_benjamin_durban
+	interest_group = ig_armed_forces
+	ideology = ideology_moderate
+	traits = {
+		special_character_colonial_military
+		cruel
+	}
+}
+
+REPLACE:SAF_robert_godlonton = {
+	first_name = "Robert"
+	last_name = "Godlonton"
+	historical = yes
+	culture = cu:british
+	is_agitator = yes
+	birth_date = 1794.1.1
+	interest_group = ig_rural_folk
+	ideology = ideology_ethno_nationalist
+	traits = {
+		bigoted
+		persistent
+		literary
+	}
+	on_created = {
+		set_variable = sb_robert_godlonton_var
+	}
+}
+
+REPLACE:SAF_john_fairbairn = {
+	first_name = "John"
+	last_name = "Fairbairn"
+	historical = yes
+	ig_leader = yes
+	birth_date = 1794.1.1
+	interest_group = ig_intelligentsia
+	ideology = ideology_reformer
+	traits = {
+		meticulous
+	}
+}
+
+REPLACE:SAF_hercules_crosse_jarvis = {
+	first_name = "Hercules"
+	last_name = "Jarvis"
+	historical = yes
+	culture = cu:british
+	religion = rel:protestant
+	female = no
+	interest_group = ig_petty_bourgeoisie
+	ideology = ideology_liberal_leader
+	birth_date = 1802.6.18
+	traits = {
+		pious
+		meticulous
+		charismatic
+		master_bureaucrat
+	}
+	interest_group_leader_usage = {
+		country_trigger = {
+			exists = c:SAF
+			c:SAF ?= THIS
+		}
+		interest_group_trigger = {
+			OR = {
+				is_interest_group_type = ig_petty_bourgeoisie
+				is_interest_group_type = ig_industrialists
+			}
+			NOR = {
+				has_variable = communist_ig_var
+				has_variable = chose_vanguardism
+				has_variable = chose_fascism
+				has_variable = chose_ethno_nationalism
+			}
+		}
+		earliest_usage_date = 1840.1.1
+		latest_usage_date = 1860.1.1
+		chance = 50
+	}
+}
+
+REPLACE:SAF_saul_solomon = {
+	first_name = "Saul"
+	last_name = "Solomon"
+	historical = yes
+	culture = cu:british
+	religion = rel:jewish
+	female = no
+	interest_group = ig_intelligentsia
+	ideology = ideology_reformer
+	birth_date = 1817.5.25
+	traits = {
+		persistent
+		tactful
+		sickly
+		inspirational_orator
+	}
+	interest_group_leader_usage = {
+		country_trigger = {
+			exists = c:SAF
+			c:SAF ?= THIS
+		}
+		interest_group_trigger = {
+			is_interest_group_type = ig_intelligentsia
+			NOR = {
+				has_variable = communist_ig_var
+				has_variable = chose_vanguardism
+				has_variable = chose_fascism
+				has_variable = chose_ethno_nationalism
+			}
+		}
+		earliest_usage_date = 1846.1.1
+		latest_usage_date = 1872.12.1
+		chance = 50
+	}
+}
+
+REPLACE:SAF_john_molteno = {
+	first_name = "John"
+	last_name = "Molteno"
+	historical = yes
+	culture = cu:british
+	religion = rel:catholic
+	female = no
+	interest_group = ig_intelligentsia
+	ideology = ideology_radical
+	birth_date = 1814.6.5
+	traits = {
+		charismatic
+		meticulous
+		imposing
+		master_bureaucrat
+	}
+	interest_group_leader_usage = {
+		country_trigger = {
+			exists = c:SAF
+			c:SAF ?= THIS
+		}
+		interest_group_trigger = {
+			OR = {
+				is_interest_group_type = ig_intelligentsia
+				is_interest_group_type = ig_petty_bourgeoisie
+			}
+			NOR = {
+				has_variable = communist_ig_var
+				has_variable = chose_vanguardism
+				has_variable = chose_fascism
+				has_variable = chose_ethno_nationalism
+			}
+		}
+		earliest_usage_date = 1850.1.1
+		latest_usage_date = 1872.12.1
+		chance = 50
+	}
+}
+
+REPLACE:SAF_john_paterson = {
+	first_name = "John"
+	last_name = "Paterson"
+	historical = yes
+	culture = cu:scottish
+	religion = rel:protestant
+	female = no
+	interest_group = ig_landowners
+	ideology = ideology_moderate
+	birth_date = 1822.3.15
+	traits = {
+		ambitious
+		bigoted
+		innovative
+		literary
+	}
+	interest_group_leader_usage = {
+		country_trigger = {
+			exists = c:SAF
+			c:SAF ?= THIS
+		}
+		interest_group_trigger = {
+			OR = {
+				is_interest_group_type = ig_landowners
+				is_interest_group_type = ig_industrialists
+			}
+			NOR = {
+				has_variable = communist_ig_var
+				has_variable = chose_vanguardism
+				has_variable = chose_fascism
+				has_variable = chose_ethno_nationalism
+			}
+		}
+		earliest_usage_date = 1845.5.7
+		latest_usage_date = 1874.5.1
+		chance = 50
+	}
+}
+
+REPLACE:SAF_cecil_rhodes = {
+	first_name = "Cecil"
+	last_name = "Rhodes"
+	historical = yes
+	culture = cu:british
+	noble = yes
+	birth_date = 1853.07.05
+	dna = dna_cecil_rhodes
+	interest_group = ig_industrialists
+	ideology = ideology_moderate
+	ig_leader = yes
+	traits = {
+		literary
+		ambitious
+		experienced_colonial_administrator
+	}
+	executive_usage = {
+		country_trigger = {
+			has_dlc_feature = mp1_content
+		}
+		company_trigger = {
+			is_company_type = company_type:company_de_beers
+		}
+		earliest_usage_date = 1888.1.1
+		latest_usage_date = 1902.03.26
+		chance = 100
+	}
+}
+
+REPLACE:SAF_theophilus_shepstone = {
+	first_name = "Theophilus"
+	last_name = "Shepstone"
+	historical = yes
+	culture = cu:british
+	religion = rel:protestant
+	female = no
+	interest_group = ig_intelligentsia
+	ideology = ideology_jingoist_leader
+	birth_date = 1817.1.8
+	traits = {
+		ambitious
+		charismatic
+		imposing
+		master_bureaucrat
+	}
+	interest_group_leader_usage = {
+		country_trigger = {
+			exists = c:SAF
+			c:SAF ?= THIS
+		}
+		interest_group_trigger = {
+			ig_counts_as_marginal = no
+			OR = {
+				is_interest_group_type = ig_intelligentsia
+				is_interest_group_type = ig_petty_bourgeoisie
+			}
+		}
+		earliest_usage_date = 1848.1.1
+		latest_usage_date = 1873.1.1
+		chance = 50
+	}
+}
+
+REPLACE:BST_Moshoeshoe = {
+	first_name = "Moshoeshoe"
+	last_name = "Bamokoteli"
+	historical = yes
+	culture = cu:sotho
+	religion = rel:animist
+	ruler = yes
+	is_general = yes
+	age = 50
+	interest_group = ig_landowners
+	ideology = ideology_moderate
+	traits = {
+		tactful
+		innovative
+		meticulous
+		charismatic
+		cautious
+		masterful_diplomat
+		mountain_commander
+		surveyor
+		expert_defensive_strategist
+	}
+}
+
+REPLACE:SWZ_sobhuza = {
+	first_name = "Sobhuza"
+	last_name = "Dlamini"
+	historical = yes
+	culture = cu:nguni
+	religion = rel:animist
+	ruler = yes
+	age = 48
+	interest_group = ig_landowners
+	ideology = ideology_moderate
+	traits = {
+		brave
+		reserved
+	}
+}
+
+REPLACE:SWZ_mswati = {
+	first_name = "Mswati"
+	last_name = "Dlamini"
+	historical = yes
+	culture = cu:nguni
+	religion = rel:animist
+	heir = yes
+	age = 16
+	interest_group = ig_armed_forces
+	ideology = ideology_moderate
+	traits = {
+		ambitious
+		direct
+	}
+}
+
+REPLACE:WBL_andries_waterboer = {
+	first_name = "Andries"
+	last_name = "Waterboer"
+	historical = yes
+	ruler = yes
+	ig_leader = yes
+	birth_date = 1789.1.1
+	culture = cu:griqua
+	interest_group = ig_landowners
+	ideology = ideology_moderate
+	traits = {
+		honorable
+		meticulous
+		basic_diplomat
+	}
+}
+
+REPLACE:PHL_abraham_kok = {
+	first_name = "Abraham"
+	last_name = "Kok"
+	historical = yes
+	culture = cu:griqua
+	religion = rel:protestant
+	ruler = yes
+	age = 56
+	interest_group = ig_rural_folk
+	ideology = ideology_traditionalist
+	traits = {
+		reckless
+		arrogant
+		traditionalist_commander
+	}
+}
+
+REPLACE:PHL_adam_kok_III = {
+	first_name = "Adam"
+	last_name = "Kok"
+	historical = yes
+	culture = cu:griqua
+	ig_leader = yes
+	heir = yes
+	birth_date = 1811.1.1
+	interest_group = ig_landowners
+	ideology = ideology_moderate
+	traits = {
+		charismatic
+		honorable
+		basic_diplomat
+	}
+}
+
+REPLACE:PHL_hendrik_hendriks = {
+	first_name = "Hendrik"
+	last_name = "Hendriks"
+	historical = yes
+	culture = cu:griqua
+	religion = rel:protestant
+	age = 41
+	interest_group = ig_rural_folk
+	ideology = ideology_moderate
+	ig_leader = yes
+	traits = {
+		reckless
+		ambitious
+		charismatic
+		social_bandit
+	}
+}
+
+REPLACE:PHL_john_philip = {
+	first_name = "John"
+	last_name = "Philip"
+	historical = yes
+	culture = cu:scottish
+	religion = rel:protestant
+	birth_date = 1775.4.14
+	interest_group = ig_devout
+	ideology = ideology_reformer
+	ig_leader = yes
+	traits = {
+		erudite
+		imperious
+		honorable
+		basic_diplomat
+	}
+}
+
+REPLACE:MTB_mzilikazi = {
+	first_name = "Mzilikazi"
+	last_name = "Khumalo"
+	historical = yes
+	culture = cu:nguni
+	religion = rel:animist
+	age = 46
+	interest_group = ig_armed_forces
+	ideology = ideology_traditionalist
+	ruler = yes
+	is_general = yes
+	traits = {
+		ambitious
+		brave
+		tactful
+	}
+}
+
+LYD_cornelis_potgieter = {
+	first_name = "Cornelis"
+	last_name = "Potgieter"
+	historical = yes
+	culture = cu:boer
+	religion = rel:protestant
+	ruler = yes
+	is_general = yes
+	birth_date = 1814.1.1
+	interest_group = ig_armed_forces
+	ideology = ideology_sb_volksraad_elitism
+	traits = {
+		ambitious
+		brave
+		pious
+		surveyor
+	}
+}

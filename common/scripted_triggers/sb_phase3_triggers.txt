@@ -37,3 +37,78 @@ sb_phase3_has_any_cape_settlement = {
 		has_variable = sb_phase3_cape_compromise_path_var
 	}
 }
+
+sb_kimberley_owner_has_pneumatic_tools = {
+	p:x68B5E8.state.owner = {
+		has_technology_researched = pneumatic_tools
+	}
+}
+
+sb_cap_has_liberal_franchise_route = {
+	OR = {
+		has_variable = sb_cape_liberal_resolved_var
+		has_modifier = sb_cape_liberal_victory
+		has_modifier = sb_cape_frontier_compromise
+		AND = {
+			has_law = law_type:law_cultural_exclusion
+			active_law:lawgroup_citizenship ?= {
+				has_amendment = amendment_type:amendment_sb_cape_qualified_franchise
+			}
+		}
+		has_law_or_variant = law_type:law_multicultural
+		has_law = law_type:law_sb_non_racialism
+	}
+}
+
+sb_cap_is_full_liberal_griqua_route = {
+	country_has_primary_culture = cu:griqua
+}
+
+sb_cap_is_responsible_or_dominion = {
+	is_subject = yes
+	OR = {
+		is_subject_type = subject_type_dominion
+		is_subject_type = subject_type_sb_dominion
+		is_subject_type = subject_type_sb_responsible_colony
+		is_subject_type = subject_type_sb_responsible_colony_monarchy
+	}
+}
+
+sb_cap_can_petition_london_over_kimberley = {
+	country_definition = cd:CAP
+	is_subject_of = c:GBR
+	OR = {
+		has_modifier = sb_cape_frontier_compromise
+		has_modifier = sb_settler_victory
+		has_journal_entry = je_sb_cape_politics
+	}
+}
+
+sb_cap_can_offer_wbl_protection = {
+	country_definition = cd:CAP
+	sb_cap_is_responsible_or_dominion = yes
+	NOT = { has_modifier = sb_settler_victory }
+	OR = {
+		has_variable = sb_cape_liberal_resolved_var
+		has_modifier = sb_cape_liberal_victory
+		has_modifier = sb_cape_frontier_compromise
+		sb_cap_has_liberal_franchise_route = yes
+	}
+}
+
+sb_cap_can_form_gle = {
+	country_definition = cd:CAP
+	is_country_alive = yes
+	sb_cap_is_responsible_or_dominion = yes
+	NOT = { has_modifier = sb_settler_victory }
+	NOT = { has_variable = sb_griqualand_east_resolved_var }
+	NOT = { has_variable = sb_griqualand_east_pending_var }
+	NOT = { exists = c:GLE }
+	NOT = { c:PHL ?= { is_country_alive = yes } }
+	OR = {
+		has_variable = sb_cape_liberal_resolved_var
+		has_modifier = sb_cape_liberal_victory
+		has_modifier = sb_cape_frontier_compromise
+		sb_cap_has_liberal_franchise_route = yes
+	}
+}

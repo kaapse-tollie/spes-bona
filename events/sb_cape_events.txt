@@ -13,6 +13,7 @@
 # sb_cape.104     Bitter settlement
 # sb_cape.111     Convict Crisis
 # sb_cape.120     Cape Liberals demand action under settler dominance
+# sb_cape.130     Cape Liberal Movement demands the Cape Qualified Franchise
 # sb_cape.121     Robert Godlonton demands frontier action
 # sb_cape.122     Eastern Cape settlers demand frontier action
 # sb_cape.204     British colonial offices demand frontier colonization
@@ -243,8 +244,8 @@ sb_cape.101 = {
 }
 
 # Balance outcome — triggered at the threshold date if neither side wholly
-# dominates. CAP receives a modest frontier boost and a citizenship amendment
-# that slightly softens acceptance for Griqua and southern Bantu peoples.
+# dominates. CAP receives a modest frontier boost and a small loyalist gain;
+# the Cape Qualified Franchise now lives in the law-checkpoint event below.
 sb_cape.102 = {
 	type = country_event
 	placement = root
@@ -275,19 +276,96 @@ sb_cape.102 = {
 			name = sb_cape_frontier_compromise
 			months = 120
 		}
-		active_law:lawgroup_citizenship ?= {
-			if = {
-				limit = {
-					NOT = { has_amendment = amendment_type:amendment_sb_cape_qualified_franchise }
-				}
-				add_amendment = {
-					type = amendment_sb_cape_qualified_franchise
-					sponsor = PREV.ig:ig_intelligentsia
-				}
-			}
+		add_loyalists = {
+			value = 0.05
 		}
 		remove_variable = sb_albany_sanctioned_var
 		remove_variable = sb_albany_refused_var
+	}
+}
+
+# Cape Qualified Franchise demand — fired from the first advance checkpoint
+# while CAP is enacting Cultural Exclusion. This keeps CQF tied to parliamentary
+# reform politics rather than making it an automatic pragmatic-victory reward.
+sb_cape.130 = {
+	type = country_event
+	placement = root
+
+	title = sb_cape.130.t
+	desc = sb_cape.130.d
+	flavor = sb_cape.130.f
+
+	category = enactment
+
+	event_image = {
+		video = "gfx/event_pictures/europenorthamerica_sufferage.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/principles_icons/creative_legislature.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:CAP
+		has_variable = sb_cqf_first_checkpoint_pending_var
+		is_enacting_law = law_type:law_cultural_exclusion
+		currently_enacting_law ?= {
+			NOT = { has_amendment = amendment_type:amendment_sb_cape_qualified_franchise }
+		}
+	}
+
+	immediate = {
+		remove_variable = sb_cqf_first_checkpoint_pending_var
+		currently_enacting_law = {
+			save_scope_as = current_law_scope
+		}
+		ig:ig_intelligentsia ?= {
+			save_scope_as = cqf_sponsor
+		}
+	}
+
+	cancellation_trigger = {
+		NOT = { currently_enacting_law = scope:current_law_scope }
+	}
+
+	option = {
+		name = sb_cape.130.a
+		default_option = yes
+		currently_enacting_law = {
+			add_amendment = {
+				type = amendment_sb_cape_qualified_franchise
+				sponsor = scope:cqf_sponsor
+				cooldown = 120
+			}
+		}
+		every_political_movement = {
+			limit = {
+				is_political_movement_type = movement_sb_cape_liberal
+			}
+			add_modifier = {
+				name = sb_cape_liberal_cqf_satisfied
+				months = 60
+			}
+		}
+		ai_chance = {
+			base = 100
+		}
+	}
+
+	option = {
+		name = sb_cape.130.b
+		every_political_movement = {
+			limit = {
+				is_political_movement_type = movement_sb_cape_liberal
+			}
+			add_modifier = {
+				name = sb_cape_liberal_cqf_refused
+				months = 60
+			}
+		}
+		ai_chance = {
+			base = 0
+		}
 	}
 }
 
@@ -1167,26 +1245,13 @@ sb_cape.200 = {
 							}
 						}
 					}
-				}
-				c:ABY ?= {
-					create_character = {
-						first_name = Robert
-						last_name = Godlonton
-						historical = no
-						ruler = yes
-						ig_leader = yes
-						birth_date = 1794.9.24
-						interest_group = ig_rural_folk
-						ideology = ideology_ethno_nationalist
-						traits = {
-							bigoted persistent literary
-						}
-						on_created = {
-							set_variable = sb_robert_godlonton_var
+					}
+					c:ABY ?= {
+						create_character = {
+							template = ABY_robert_godlonton
 						}
 					}
 				}
-			}
 		}
 
 		c:CAP ?= {

@@ -483,36 +483,8 @@ sb_normalize_boer_trade_treaties = {
 		}
 	}
 
-	c:CAP ?= {
-		if = {
-			limit = {
-				c:WBL ?= { is_country_alive = yes }
-				NOT = {
-					any_scope_treaty = {
-						binds = c:WBL
-						any_scope_article = {
-							has_type = guarantee_independence
-							source_country = c:CAP
-							target_country = c:WBL
-						}
-					}
-				}
-			}
-			create_treaty = {
-				first_country = c:CAP
-				second_country = c:WBL
-				is_draft = no
-				binding_period = { years = 20 }
-				articles_to_create = {
-					{
-						article = guarantee_independence
-						source_country = c:CAP
-						target_country = c:WBL
-					}
-				}
-			}
-		}
-	}
+	# CAP-WBL is deliberately not normalized into a startup guarantee. Cape's
+	# influence over WBL is now established by the Kimberley protection lane.
 
 	# Runtime treaty normalization should not leave the bookkeeping scars of a
 	# treaty break on day 1.
@@ -634,6 +606,104 @@ sb_ensure_gbr_transit_rights_with_root = {
 						article = transit_rights
 						source_country = c:GBR
 						target_country = scope:convention_target
+					}
+				}
+			}
+		}
+	}
+}
+
+sb_ensure_boer_transit_from_ora_trn_to_root = {
+	save_scope_as = boer_transit_target
+
+	c:ORA ?= {
+		if = {
+			limit = {
+				is_country_alive = yes
+				NOT = {
+					any_scope_treaty = {
+						binds = scope:boer_transit_target
+						any_scope_article = {
+							has_type = transit_rights
+							source_country = c:ORA
+							target_country = scope:boer_transit_target
+						}
+					}
+				}
+			}
+			create_treaty = {
+				first_country = c:ORA
+				second_country = scope:boer_transit_target
+				is_draft = no
+				binding_period = { years = 10 }
+				articles_to_create = {
+					{
+						article = transit_rights
+						source_country = c:ORA
+						target_country = scope:boer_transit_target
+					}
+				}
+			}
+		}
+	}
+
+	c:TRN ?= {
+		if = {
+			limit = {
+				is_country_alive = yes
+				NOT = {
+					any_scope_treaty = {
+						binds = scope:boer_transit_target
+						any_scope_article = {
+							has_type = transit_rights
+							source_country = c:TRN
+							target_country = scope:boer_transit_target
+						}
+					}
+				}
+			}
+			create_treaty = {
+				first_country = c:TRN
+				second_country = scope:boer_transit_target
+				is_draft = no
+				binding_period = { years = 10 }
+				articles_to_create = {
+					{
+						article = transit_rights
+						source_country = c:TRN
+						target_country = scope:boer_transit_target
+					}
+				}
+			}
+		}
+	}
+}
+
+sb_ensure_lyd_zpb_defensive_pact = {
+	if = {
+		limit = {
+			c:LYD ?= { is_country_alive = yes }
+			c:ZPB ?= { is_country_alive = yes }
+			NOT = {
+				c:LYD ?= {
+					any_scope_treaty = {
+						binds = c:ZPB
+						any_scope_article = {
+							has_type = defensive_pact
+						}
+					}
+				}
+			}
+		}
+		c:LYD ?= {
+			create_treaty = {
+				first_country = c:LYD
+				second_country = c:ZPB
+				is_draft = no
+				binding_period = { years = 10 }
+				articles_to_create = {
+					{
+						article = defensive_pact
 					}
 				}
 			}

@@ -1,0 +1,396 @@
+REPLACE:movement_minority_rights = {
+	category = movement_category_ideological
+
+	ideology = ideology_pluralist_movement_3
+	character_ideologies = {
+		ideology_reformer
+	}
+
+	creation_trigger = {
+		NOT = { country_definition = cd:CAP } # cape liberal replaces
+	}
+	disband_trigger = {
+		owner = { country_definition = cd:CAP }
+	}
+	creation_weight = {
+		value = 50
+		if = {
+			limit = {
+				owner ?= {
+					has_technology_researched = nationalism
+				}
+			}
+			multiply = {
+				value = 2
+			}
+		}
+	}
+
+	character_support_trigger = {
+		trigger_if = {
+			limit = {
+				exists = owner
+			}
+			culture = {
+				NOT = { is_primary_culture_of = owner }
+			}
+		}
+		OR = {
+			has_ideology = ideology:ideology_humanitarian
+			has_ideology = ideology:ideology_humanitarian_royalist
+			has_ideology = ideology:ideology_sovereignist_leader
+			has_ideology = ideology:ideology_reformer
+		}
+	}
+	character_support_weight = {
+		value = 50
+		if = {
+			limit = {
+				has_ideology = ideology:ideology_sovereignist_leader
+			}
+			multiply = {
+				value = 5
+			}
+		}
+		else_if = {
+			limit = {
+				OR = {
+					has_ideology = ideology:ideology_humanitarian
+					has_ideology = ideology:ideology_reformer
+				}
+			}
+			multiply = {
+				value = 2
+			}
+		}
+	}
+
+	pop_support_trigger = {
+		culture = {
+			NOT = { is_primary_culture_of = owner }
+		}
+		owner = {
+			cultural_acceptance_base = { target = root.culture value < acceptance_status_5 }
+		}
+	}
+
+	pop_support_factors = {
+		movement_support_high_literacy
+		movement_support_cultural_discrimination
+		movement_support_academics
+		movement_support_clergymen
+		movement_support_clerks
+		movement_support_soldiers
+		movement_support_nationalism_tech
+		movement_support_pan_nationalism_tech
+	}
+
+	pop_support_weight = {
+		if = {
+			limit = {
+				exists = scope:political_movement
+				scope:political_movement ?= {
+					OR = {
+						is_being_suppressed = yes
+						is_being_bolstered = yes
+					}
+				}
+			}
+			if = {
+				limit = {
+					scope:political_movement = {
+						is_being_suppressed = yes
+					}
+				}
+				add = {
+					value = suppression_base_value
+					multiply = {
+						value = -0.5
+						add = owner.modifier:country_suppression_attraction_factor
+					}
+					desc = "concept_suppressed"
+				}
+			}
+			else = {
+				add = {
+					value = bolstering_base_value
+					multiply = {
+						value = 0.5
+						add = owner.modifier:country_bolster_attraction_factor
+					}
+					desc = "concept_bolstered"
+				}
+			}
+		}
+
+		add = {
+			value = 10
+			desc = "POP_BASE_SUPPORT"
+		}
+
+		if = {
+			limit = {
+				strata = upper
+			}
+			value = 6
+			desc = "UPPER_NO_ICON"
+		}
+		else_if = {
+			limit = {
+				strata = middle
+			}
+			if = {
+				limit = {
+					is_pop_type = academics
+				}
+				add = {
+					value = 35
+					desc = "POP_ACADEMICS"
+				}
+			}
+			else_if = {
+				limit = {
+					is_pop_type = clergymen
+				}
+				add = {
+					value = 25
+					desc = "POP_CLERGYMEN"
+				}
+			}
+			else = {
+				add = {
+					value = 10
+					desc = "MIDDLE_NO_ICON"
+				}
+			}
+		}
+		else_if = {
+			limit = {
+				strata = lower
+			}
+			if = {
+				limit = {
+					is_pop_type = clerks
+				}
+				add = {
+					value = 10
+					desc = "POP_CLERKS"
+				}
+			}
+			else_if = {
+				limit = {
+					is_pop_type = soldiers
+				}
+				add = {
+					value = 9
+					desc = "POP_SOLDIERS"
+				}
+			}
+			else = {
+				add = {
+					value = 5
+					desc = "LOWER_NO_ICON"
+				}
+			}
+		}
+
+		if = {
+			limit = {
+				standard_of_living < state.average_expected_sol
+			}
+			add = { # Increases likelihood of support if impoverished
+				desc = "POP_POVERTY"
+				value = state.average_expected_sol
+				subtract = standard_of_living
+				max = 10
+			}
+		}
+
+		if = {
+			limit = {
+				state = {
+					state_cultural_acceptance = {
+						target = PREV.culture
+						value < acceptance_status_5
+					}
+				}
+			}
+			multiply = { # From 1.21x at 79 to 2x at 0
+				desc = "POP_DISCRIMINATED"
+				value = 100
+				subtract = pop_acceptance
+				divide = 100
+				add = 1
+			}
+		}
+		else = { # Non-discriminated pops are less likely to form separatist movements
+			multiply = {
+				desc = "POP_ACCEPTANCE"
+				value = 0.10
+			}
+		}
+
+		multiply = { # Illiterate pops participate at 1/8 the rate of fully literate pops
+			desc = "POP_LITERACY"
+			value = literacy_rate
+			add = 0.15
+		}
+
+		if = { # If a more radical movement exists, it'll poach radicals from this one.
+			limit = {
+				owner ?= {
+					OR = {
+						any_political_movement = {
+							is_political_movement_type = movement_cultural_minority
+							culture ?= root.culture
+						}
+						any_scope_state = {
+							state_region = {
+								is_homeland = root.culture
+							}
+							turmoil > 0.25
+						}
+					}
+				}
+			}
+			multiply = {
+				desc = "POP_RADICAL_MOVEMENT_LOSSES"
+				value = 1
+				subtract = {
+					value = pop_radical_fraction
+					multiply = 2
+				}
+				min = 0
+			}
+		}
+
+		if = {
+			limit = {
+				owner ?= {
+					has_variable = failed_tanzimat
+				}
+				culture = { has_discrimination_trait_group = heritage_group_european }
+			}
+			multiply = {
+				value = 0.1
+				desc = "FAILED_TANZIMAT_REFORMS"
+			}
+		}
+
+		if = {
+			limit = {
+				owner ?= {
+					has_journal_entry = je_matter_of_hungary
+				}
+				culture = cu:hungarian
+			}
+			multiply = {
+				value = 0.1
+				desc = "je_matter_of_hungary"
+			}
+		}
+
+		if = {
+			limit = {
+				owner ?= { has_journal_entry = je_springtime_of_the_peoples }
+				culture = { has_discrimination_trait_group = heritage_group_european }
+			}
+			multiply = {
+				value = 0.1
+				desc = "SPRINGTIME_OF_THE_PEOPLES_UNDERWAY"
+			}
+		}
+
+		# Funnel small cultures into this movement
+		if = {
+			limit = {
+				owner = {
+					culture_percent_country = {
+						target = root.culture
+						value <= 0.05
+					}
+					NOT = {
+						any_scope_state = {
+							state_region = {
+								is_homeland = root.culture
+							}
+						}
+					}
+				}
+			}
+			multiply = 2.5
+		}
+
+		if = { # Funnel people into Indias unique movements
+			limit = {
+				owner ?= {
+					c:BIC ?= this
+				}
+				culture = { has_discrimination_trait_group = heritage_group_south_asian }
+			}
+			multiply = 0.5
+
+			if = {
+				limit = {
+					owner ?= {
+						has_technology_researched = pan-nationalism
+					}
+				}
+				multiply = 0.1
+			}
+		}
+	}
+
+	law_enactment_radicalism_multiplier = 2
+	active_law_radicalism_multiplier = 2
+
+	additional_radicalism_factors = {
+		if = {
+			limit = {
+				owner = {
+					has_law_or_variant = law_type:law_ethnostate
+				}
+			}
+			add = {
+				value = 0.3
+				desc = "law_ethnostate"
+			}
+		}
+		else_if = {
+			limit = {
+				owner = {
+					has_law_or_variant = law_type:law_national_supremacy
+				}
+			}
+			add = {
+				value = 0.25
+				desc = "law_national_supremacy"
+			}
+		}
+		else_if = {
+			limit = {
+				owner = {
+					has_law_or_variant = law_type:law_racial_segregation
+				}
+			}
+			add = {
+				value = 0.15
+				desc = "law_racial_segregation"
+			}
+		}
+	}
+
+	revolution = {
+		possible = {
+			political_movement_support >= 0.10
+		}
+
+		weight = {
+			value = 50
+		}
+
+		state_weight = {
+			value = 1
+		}
+	}
+}

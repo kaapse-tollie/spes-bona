@@ -90,16 +90,23 @@ sb_apply_boer_republic_spawn_setup = {
 		}
 		activate_law = law_type:law_frontier_colonization
 	}
-	else_if = {
-		limit = {
-			has_law = law_type:law_frontier_colonization
-			NOT = { sb_can_use_frontier_colonization = yes }
+		else_if = {
+			limit = {
+				has_law = law_type:law_frontier_colonization
+				NOT = { sb_can_use_frontier_colonization = yes }
+			}
+			activate_law = law_type:law_no_colonial_affairs
 		}
-		activate_law = law_type:law_no_colonial_affairs
-	}
-	active_law:lawgroup_army_model ?= {
 		if = {
 			limit = {
+				country_has_primary_culture = cu:boer
+				NOT = { has_law = law_type:law_national_militia }
+			}
+			activate_law = law_type:law_national_militia
+		}
+		active_law:lawgroup_army_model ?= {
+			if = {
+				limit = {
 				NOT = { has_amendment = amendment_type:amendment_sb_commando_corps }
 			}
 			add_amendment = {

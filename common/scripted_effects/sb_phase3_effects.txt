@@ -107,3 +107,246 @@ sb_phase3_apply_glw_hardline_path = {
 		}
 	}
 }
+
+sb_phase3_apply_kimberley_london_expedition_path = {
+	set_variable = sb_phase3_glw_question_resolved_var
+	set_variable = sb_phase3_glw_hardline_path_var
+	set_variable = sb_phase3_kimberley_expedition_path_var
+
+	p:x68B5E8.state.owner = {
+		save_scope_as = kimberley_holder
+	}
+
+	s:STATE_NORTHERN_CAPE = {
+		add_claim = root
+		if = {
+			limit = {
+				c:GBR ?= {
+					is_country_alive = yes
+				}
+			}
+			add_claim = c:GBR
+		}
+	}
+	scope:kimberley_holder ?= {
+		change_relations = {
+			country = root
+			value = -30
+		}
+		c:GBR ?= {
+			change_relations = {
+				country = scope:kimberley_holder
+				value = -20
+			}
+		}
+	}
+	c:GBR ?= {
+		change_relations = {
+			country = root
+			value = 10
+		}
+	}
+}
+
+sb_phase3_annul_wbl_guarantee_frame = {
+	c:GBR ?= {
+		every_scope_treaty = {
+			limit = {
+				binds = c:WBL
+				any_scope_article = {
+					has_type = guarantee_independence
+					target_country = c:WBL
+				}
+			}
+			withdraw = {
+				country = c:GBR
+			}
+		}
+	}
+	every_scope_treaty = {
+		limit = {
+			binds = c:WBL
+			any_scope_article = {
+				has_type = guarantee_independence
+				target_country = c:WBL
+			}
+		}
+		withdraw = {
+			country = root
+		}
+	}
+}
+
+sb_phase3_apply_wbl_protection_path = {
+	set_variable = sb_phase3_glw_question_resolved_var
+	set_variable = sb_phase3_glw_arbitration_path_var
+	set_variable = sb_phase3_wbl_protection_path_var
+	sb_phase3_annul_wbl_guarantee_frame = yes
+
+	if = {
+		limit = {
+			sb_cap_is_full_liberal_griqua_route = yes
+		}
+		set_variable = sb_phase3_wbl_direct_annexation_path_var
+		annex = c:WBL
+	}
+	else = {
+		set_variable = sb_phase3_wbl_puppet_path_var
+		if = {
+			limit = {
+				c:WBL ?= {
+					is_country_alive = yes
+					NOT = { is_subject_of = root }
+				}
+			}
+			create_diplomatic_pact = {
+				country = c:WBL
+				type = puppet
+			}
+		}
+		else_if = {
+			limit = {
+				c:WBL ?= {
+					is_country_alive = yes
+					is_subject_of = root
+					NOT = { is_subject_type = subject_type_puppet }
+				}
+			}
+			c:WBL ?= {
+				change_subject_type = subject_type_puppet
+			}
+		}
+		c:WBL ?= {
+			change_relations = {
+				country = root
+				value = 30
+			}
+		}
+	}
+}
+
+sb_phase3_create_kimberley_goldfield_building_if_missing = {
+	random_scope_state = {
+		limit = {
+			state_region = s:STATE_NORTHERN_CAPE
+		}
+		if = {
+			limit = {
+				NOT = { has_building = building_gold_field }
+			}
+			create_building = {
+				building = building_gold_field
+				level = 1
+				reserves = 1
+			}
+		}
+		if = {
+			limit = {
+				has_building = building_gold_field
+			}
+			trigger_event = { id = goldrush.1 days = 1 popup = yes }
+		}
+	}
+}
+
+sb_phase3_create_gle_route = {
+	set_variable = sb_griqualand_east_resolved_var
+
+	if = {
+		limit = {
+			NOT = { exists = c:GLE }
+		}
+		create_country = {
+			tag = GLE
+			origin = root
+			province = p:xE60DC5
+		}
+	}
+
+	c:GLE ?= {
+		set_country_type = unrecognized
+		if = {
+			limit = {
+				NOT = { is_subject_of = root }
+			}
+			root = {
+				create_diplomatic_pact = {
+					country = c:GLE
+					type = puppet
+				}
+			}
+		}
+		if = {
+			limit = {
+				c:XHG ?= { is_country_alive = yes }
+			}
+			annex = c:XHG
+		}
+		if = {
+			limit = {
+				c:XHR ?= { is_country_alive = yes }
+			}
+			annex = c:XHR
+		}
+		if = {
+			limit = {
+				c:XHT ?= { is_country_alive = yes }
+			}
+			annex = c:XHT
+		}
+		change_relations = {
+			country = root
+			value = 30
+		}
+	}
+
+	p:xC5B1AF.state.owner = {
+		save_scope_as = griqua_migration_source
+	}
+	cu:griqua = {
+		save_scope_as = griqua_migration_culture
+	}
+	c:GLE ?= {
+		random_scope_state = {
+			limit = {
+				state_region = s:STATE_EASTERN_CAPE
+			}
+			save_scope_as = griqua_migration_target
+		}
+	}
+	scope:griqua_migration_target ?= {
+		create_mass_migration = {
+			origin = scope:griqua_migration_source
+			culture = scope:griqua_migration_culture
+		}
+	}
+	scope:griqua_migration_source ?= {
+		random_scope_state = {
+			limit = {
+				state_region = s:STATE_VRYSTAAT
+			}
+			every_scope_pop = {
+				limit = {
+					culture = cu:griqua
+				}
+				move_partial_pop = {
+					state = scope:griqua_migration_target
+					population_ratio = 0.20
+				}
+			}
+		}
+	}
+
+	if = {
+		limit = {
+			sb_cap_is_full_liberal_griqua_route = yes
+			c:GLE ?= {
+				is_country_alive = yes
+			}
+		}
+		c:GLE ?= {
+			set_variable = sb_gle_willing_annexation_pending_var
+			trigger_event = { id = sb_trek.221 days = 1825 popup = yes }
+		}
+	}
+}

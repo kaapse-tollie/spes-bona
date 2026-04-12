@@ -1,0 +1,30 @@
+﻿# Spes Bona - Cape law-checkpoint hooks
+#
+# The Cape Qualified Franchise is intentionally attached from the first advance
+# checkpoint for Cultural Exclusion rather than handed out by a JE outcome. This
+# mirrors vanilla amendment timing: a movement presses its demand while the law
+# is live, and the player decides whether to attach it to the bill.
+
+on_law_enactment_started = {
+	on_actions = { sb_on_cape_law_enactment_started }
+}
+
+on_law_checkpoint_advance = {
+	events = { sb_cape.130 }
+}
+
+sb_on_cape_law_enactment_started = {
+	effect = {
+		if = {
+			limit = {
+				country_definition = cd:CAP
+				is_enacting_law = law_type:law_cultural_exclusion
+				NOT = { has_variable = sb_cqf_first_checkpoint_pending_var }
+				currently_enacting_law ?= {
+					NOT = { has_amendment = amendment_type:amendment_sb_cape_qualified_franchise }
+				}
+			}
+			set_variable = sb_cqf_first_checkpoint_pending_var
+		}
+	}
+}

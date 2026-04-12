@@ -276,10 +276,10 @@ sb_spawn_transvaal_republic_v2 = {
 		activate_law = law_type:law_national_militia
 		activate_law = law_type:law_legacy_slavery
 		activate_law = law_type:law_frontier_colonization
-		add_modifier = {
-			name = sb_trek_frontier_drive
-			months = 180
-		}
+			add_modifier = {
+				name = sb_trek_frontier_drive
+				months = 120
+			}
 		if = {
 			limit = {
 				NOT = {
@@ -382,54 +382,31 @@ sb_spawn_transvaal_republic_v2 = {
 		country = c:TRN
 		value = 25
 	}
-	if = {
-		limit = {
-			NOT = {
-				any_scope_treaty = {
-					binds = c:TRN
-					any_scope_article = {
-						has_type = defensive_pact
+		if = {
+			limit = {
+				NOT = {
+					any_scope_treaty = {
+						binds = c:TRN
+						any_scope_article = {
+							has_type = defensive_pact
+						}
 					}
 				}
 			}
-		}
-		create_treaty = {
-			first_country = root
-			second_country = c:TRN
-			is_draft = no
-			binding_period = { years = 10 }
-			articles_to_create = {
-				{
-					article = defensive_pact
-				}
-			}
-		}
-	}
-	if = {
-		limit = {
-			NOT = {
-				any_scope_treaty = {
-					binds = c:TRN
-					binds = root
-					any_scope_article = {
-						has_type = transit_rights
+			create_treaty = {
+				first_country = root
+				second_country = c:TRN
+				is_draft = no
+				binding_period = { years = 10 }
+				articles_to_create = {
+					{
+						article = defensive_pact
+					}
+					{
+						article = transit_rights
 						source_country = root
 						target_country = c:TRN
 					}
-				}
-			}
-		}
-		create_treaty = {
-			first_country = root
-			second_country = c:TRN
-			is_draft = no
-			binding_period = { years = 10 }
-			articles_to_create = {
-				{
-					article = transit_rights
-					source_country = root
-					target_country = c:TRN
-				}
 			}
 		}
 	}
@@ -479,10 +456,10 @@ sb_found_zoutpansberg_republic = {
 		sb_apply_boer_republic_spawn_setup = yes
 		activate_law = law_type:law_slave_trade
 		activate_law = law_type:law_frontier_colonization
-		add_modifier = {
-			name = sb_trek_frontier_drive
-			months = 180
-		}
+			add_modifier = {
+				name = sb_trek_frontier_drive
+				months = 240
+			}
 		if = {
 			limit = { NOT = { has_journal_entry = je_sb_great_trek } }
 			add_journal_entry = { type = je_sb_great_trek }
@@ -510,18 +487,26 @@ sb_found_zoutpansberg_republic = {
 				}
 			}
 		}
-		else = {
-			create_character = {
-				template = TRN_stephanus_schoeman
-				ruler = yes
-				is_general = yes
-				ig_leader = yes
-				interest_group = ig_armed_forces
+			else = {
+				create_character = {
+					template = TRN_stephanus_schoeman
+					ruler = yes
+					is_general = yes
+					ig_leader = yes
+					interest_group = ig_armed_forces
+				}
 			}
-		}
-		change_relations = {
-			country = root
-			value = -40
+			ruler = {
+				if = {
+					limit = {
+						NOT = { has_trait = expert_colonial_administrator }
+					}
+					add_trait = expert_colonial_administrator
+				}
+			}
+			change_relations = {
+				country = root
+				value = -40
 		}
 		add_modifier = {
 			name = sb_trek_migration_cost
@@ -539,11 +524,20 @@ sb_found_zoutpansberg_republic = {
 				months = 24
 			}
 		}
-		sb_trigger_boer_migration_effect = yes
-	}
-	change_relations = {
-		country = c:ZPB
-		value = -40
+			sb_trigger_boer_migration_effect = yes
+		}
+		c:ZPB ?= {
+			sb_ensure_boer_transit_from_ora_trn_to_root = yes
+		}
+		c:GBR ?= {
+			if = {
+				limit = { is_country_alive = yes }
+				trigger_event = { id = sb_trek.008 days = 14 popup = yes }
+			}
+		}
+		change_relations = {
+			country = c:ZPB
+			value = -40
 	}
 	c:ORA ?= {
 		if = {
@@ -590,10 +584,19 @@ sb_found_zoutpansberg_republic = {
 	}
 }
 
-sb_found_lydenburg_republic = {
-	if = {
-		limit = {
-			NOT = { exists = c:LYD }
+	sb_found_lydenburg_republic = {
+		c:ORA ?= {
+			random_scope_character = {
+				limit = {
+					has_template = ORA_hendrik_potgieter
+					NOT = { is_ruler = yes }
+				}
+				save_scope_as = lyd_potgieter_scope
+			}
+		}
+		if = {
+			limit = {
+				NOT = { exists = c:LYD }
 		}
 		create_country = {
 			tag = LYD
@@ -628,18 +631,43 @@ sb_found_lydenburg_republic = {
 			}
 		}
 	}
-	c:LYD ?= {
-		set_country_type = unrecognized
-		sb_apply_boer_republic_spawn_setup = yes
-		create_character = {
-			template = LYD_cornelis_potgieter
-			ruler = yes
-			is_general = yes
-			ig_leader = yes
-			interest_group = ig_armed_forces
-		}
-		change_relations = {
-			country = root
+		c:LYD ?= {
+			set_country_type = unrecognized
+			sb_apply_boer_republic_spawn_setup = yes
+			if = {
+				limit = {
+					exists = scope:lyd_potgieter_scope
+				}
+				scope:lyd_potgieter_scope ?= {
+					transfer_character = c:LYD
+					set_interest_group = c:LYD.ig:ig_landowners
+					set_as_interest_group_leader = yes
+					set_character_as_ruler = yes
+					if = {
+						limit = {
+							NOT = { has_role = general }
+						}
+						add_character_role = general
+					}
+					if = {
+						limit = {
+							NOT = { has_role = politician }
+						}
+						add_character_role = politician
+					}
+				}
+			}
+			else = {
+				create_character = {
+					template = LYD_cornelis_potgieter
+					ruler = yes
+					is_general = yes
+					ig_leader = yes
+					interest_group = ig_armed_forces
+				}
+			}
+			change_relations = {
+				country = root
 			value = -25
 		}
 		add_modifier = {
@@ -657,18 +685,26 @@ sb_found_lydenburg_republic = {
 			create_mass_migration = {
 				origin = scope:migration_source
 				culture = scope:migration_culture
+				}
 			}
+			sb_ensure_boer_transit_from_ora_trn_to_root = yes
 		}
-	}
-	if = {
-		limit = {
+		if = {
+			limit = {
 			country_definition = cd:TRN
 			NOT = { has_journal_entry = je_sb_transvaal_unity }
 		}
 		add_journal_entry = { type = je_sb_transvaal_unity }
 	}
-	change_relations = {
-		country = c:LYD
-		value = -25
+		change_relations = {
+			country = c:LYD
+			value = -25
+		}
+		sb_ensure_lyd_zpb_defensive_pact = yes
+		c:GBR ?= {
+			if = {
+				limit = { is_country_alive = yes }
+				trigger_event = { id = sb_trek.009 days = 14 popup = yes }
+			}
+		}
 	}
-}

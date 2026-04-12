@@ -30,7 +30,8 @@
 #   sb_trek.041     Stage 2 reward — TRN controls Transvaal + mass migration
 #   sb_trek.100     JE completion (both stages done)
 #   sb_trek.110-.131  post-trek republican forks, LYD, ZPB spawn hooks
-#   sb_trek.220     Griqualand East shell
+#   sb_trek.220     Griqualand East formation
+#   sb_trek.221     Griqualand East willing annexation into full-liberal CAP
 #
 # MASS MIGRATION PATTERN (Stage 2 events):
 #   Uses create_mass_migration from V3's South America migration pattern.
@@ -407,6 +408,134 @@ sb_trek.007 = {
 
 	option = {
 		name = sb_trek.007.b
+		add_modifier = {
+			name = sb_prestige_loss_small
+			months = 60
+		}
+		ai_chance = {
+			base = 15
+		}
+	}
+}
+
+sb_trek.008 = {
+	type = country_event
+	placement = root
+
+	title = sb_trek.008.t
+	desc = sb_trek.008.d
+	flavor = sb_trek.008.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:GBR
+		c:ZPB ?= {
+			is_country_alive = yes
+		}
+	}
+
+	option = {
+		name = sb_trek.008.a
+		default_option = yes
+		c:ZPB ?= {
+			sb_ensure_gbr_transit_rights_with_root = yes
+		}
+		if = {
+			limit = {
+				is_power_bloc_leader = yes
+				c:ZPB ?= {
+					NOT = { is_in_same_power_bloc = root }
+				}
+			}
+			power_bloc = {
+				add_leverage = {
+					target = c:ZPB
+					value = 50
+				}
+			}
+		}
+		change_relations = {
+			country = c:ZPB
+			value = 10
+		}
+		ai_chance = {
+			base = 85
+		}
+	}
+
+	option = {
+		name = sb_trek.008.b
+		add_modifier = {
+			name = sb_prestige_loss_small
+			months = 60
+		}
+		ai_chance = {
+			base = 15
+		}
+	}
+}
+
+sb_trek.009 = {
+	type = country_event
+	placement = root
+
+	title = sb_trek.009.t
+	desc = sb_trek.009.d
+	flavor = sb_trek.009.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:GBR
+		c:LYD ?= {
+			is_country_alive = yes
+		}
+	}
+
+	option = {
+		name = sb_trek.009.a
+		default_option = yes
+		c:LYD ?= {
+			sb_ensure_gbr_transit_rights_with_root = yes
+		}
+		if = {
+			limit = {
+				is_power_bloc_leader = yes
+				c:LYD ?= {
+					NOT = { is_in_same_power_bloc = root }
+				}
+			}
+			power_bloc = {
+				add_leverage = {
+					target = c:LYD
+					value = 50
+				}
+			}
+		}
+		change_relations = {
+			country = c:LYD
+			value = 10
+		}
+		ai_chance = {
+			base = 85
+		}
+	}
+
+	option = {
+		name = sb_trek.009.b
 		add_modifier = {
 			name = sb_prestige_loss_small
 			months = 60
@@ -892,9 +1021,8 @@ sb_trek.121 = {
 	}
 }
 
-# Shell for the later Griqualand East line. Phase 1 only establishes the fork in
-# Cape policy; the actual march state can be fleshed out once responsible
-# government and later frontier content are in place.
+# Phase 3 Griqualand East lane. CAP only receives this after responsible
+# government and a non-settler franchise route make a Griqua march-state viable.
 sb_trek.220 = {
 	type = country_event
 	placement = root
@@ -913,37 +1041,57 @@ sb_trek.220 = {
 
 	trigger = {
 		country_definition = cd:CAP
+		has_variable = sb_griqualand_east_pending_var
+		NOT = { has_variable = sb_griqualand_east_resolved_var }
+		NOT = { exists = c:GLE }
 	}
 
 	option = {
 		name = sb_trek.220.a
 		default_option = yes
-		# Phase 1 shell: for now this is a Cape-wide frontier settlement push
-		# rather than a full Griqualand East state creation flow. Keep the reward
-		# light until the real march-state content exists.
-		add_modifier = {
-			name = sb_prestige_gain_small
-			months = short_modifier_time
-		}
+		remove_variable = sb_griqualand_east_pending_var
+		sb_phase3_create_gle_route = yes
 		ai_chance = {
-			base = 60
+			base = 100
+		}
+	}
+}
+
+# Full-liberal Cape can absorb Griqualand East after a short proving period.
+sb_trek.221 = {
+	type = country_event
+	placement = root
+
+	title = sb_trek.221.t
+	desc = sb_trek.221.d
+	flavor = sb_trek.221.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:GLE
+		has_variable = sb_gle_willing_annexation_pending_var
+		c:CAP ?= {
+			is_country_alive = yes
+			sb_cap_is_full_liberal_griqua_route = yes
 		}
 	}
 
 	option = {
-		name = sb_trek.220.b
-		trigger = {
-			OR = {
-				has_law = law_type:law_cultural_exclusion
-				country_has_primary_culture = cu:griqua
-			}
-		}
-		add_modifier = {
-			name = sb_cape_frontier_compromise
-			months = 60
+		name = sb_trek.221.a
+		default_option = yes
+		remove_variable = sb_gle_willing_annexation_pending_var
+		c:CAP ?= {
+			annex = root
 		}
 		ai_chance = {
-			base = 40
+			base = 100
 		}
 	}
 }
@@ -1018,12 +1166,17 @@ sb_trek.130 = {
 		sb_refresh_boer_commandant_general_government = yes
 		sb_ensure_commandant_general_ruler_command = yes
 		sb_ensure_commandant_general_ruler_landowner_leadership = yes
-		if = {
-			limit = {
-				country_definition = cd:TRN
-			}
-			s:STATE_EAST_TRANSVAAL = {
-				add_claim = c:TRN
+			if = {
+				limit = {
+					country_definition = cd:TRN
+					NOT = {
+						c:LYD ?= {
+							is_country_alive = yes
+						}
+					}
+				}
+				s:STATE_EAST_TRANSVAAL = {
+					add_claim = c:TRN
 			}
 			if = {
 				limit = {

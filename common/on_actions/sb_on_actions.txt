@@ -608,69 +608,18 @@ sb_on_cape_monthly_pulse_country = {
 					remove_modifier = sb_xhosa_frontier_pressure_xht
 				}
 			}
-		}
+			}
 
-		if = {
-			limit = {
-				OR = {
+			if = {
+				limit = {
 					country_definition = cd:CAP
-					country_definition = cd:ABY
+					has_journal_entry = je_sb_cape_politics
 				}
-				game_date >= 1846.1.1
-				NOT = { has_variable = sb_xhosa_wars_shell_opened_var }
-				any_scope_state = {
-					state_region = s:STATE_EASTERN_CAPE
-				}
-				OR = {
-					c:XHG ?= { is_country_alive = yes }
-					c:XHR ?= { is_country_alive = yes }
-					c:XHT ?= { is_country_alive = yes }
-				}
-			}
-			set_variable = sb_xhosa_wars_shell_opened_var
-			if = {
-				limit = {
-					NOT = { has_journal_entry = je_sb_xhosa_wars }
-				}
-				add_journal_entry = { type = je_sb_xhosa_wars }
-			}
-			trigger_event = { id = sb_xhosa.001 days = 7 popup = yes }
-		}
 
-		if = {
-			limit = {
-				country_definition = cd:CAP
-				has_journal_entry = je_sb_cape_politics
-			}
-			# The generic cultural-majority movement localizes as the Cape
-			# Supremacist Movement. Vanilla startup history creates it before our
-			# bespoke Cape movements, so keep it suppressed for the full JE span.
-			every_political_movement = {
-				limit = {
-					is_political_movement_type = movement_cultural_majority
-					NOT = { is_being_suppressed = yes }
-				}
-				set_suppression = yes
-			}
-			if = {
-				limit = {
-					any_political_movement = {
-						is_political_movement_type = movement_sb_cape_liberal
-					}
-				}
-				every_political_movement = {
+				if = {
 					limit = {
-						is_political_movement_type = movement_minority_rights
-						NOT = { is_being_suppressed = yes }
+						NOT = { has_variable = sb_cape_balance_current }
 					}
-					set_suppression = yes
-				}
-			}
-
-			if = {
-				limit = {
-					NOT = { has_variable = sb_cape_balance_current }
-				}
 				set_variable = { name = sb_cape_balance_current value = 0 }
 			}
 
@@ -705,13 +654,13 @@ sb_on_cape_monthly_pulse_country = {
 				}
 				if = {
 					limit = {
-						root.var:sb_cape_balance_current >= 40
+						root.var:sb_cape_balance_current >= 50
 					}
 					add_modifier = { name = sb_cape_liberal_ascendant }
 				}
 				else_if = {
 					limit = {
-						root.var:sb_cape_balance_current <= -40
+						root.var:sb_cape_balance_current <= -50
 					}
 					add_modifier = { name = sb_cape_settler_ascendant }
 				}
@@ -830,11 +779,11 @@ sb_on_cape_monthly_pulse_country = {
 				set_variable = sb_zoutpansberg_spawned_var
 				c:TRN ?= {
 					set_variable = sb_zoutpansberg_spawned_var
+					}
+					trigger_event = { id = sb_trek.110 days = 7 popup = yes }
 				}
-				trigger_event = { id = sb_trek.110 days = 7 popup = yes }
 			}
 		}
-	}
 }
 
 sb_on_cape_secession_end = {
@@ -896,12 +845,22 @@ sb_on_trek_monthly_pulse_country = {
 		# ============================================================
 		# Trek republic mobilization posture
 		# ============================================================
-		if = {
-			limit = {
-				has_modifier = sb_trek_ai_mobilization
+			if = {
+				limit = {
+					has_modifier = sb_trek_ai_mobilization
+				}
+				remove_modifier = sb_trek_ai_mobilization
 			}
-			remove_modifier = sb_trek_ai_mobilization
-		}
+
+			if = {
+				limit = {
+					country_definition = cd:ORA
+					is_ai = yes
+					has_journal_entry = je_sb_great_trek
+				}
+				set_strategy = ai_strategy_sb_boer_frontier_republic
+				set_strategy = ai_strategy_sb_boer_frontier_institutions
+			}
 
 		# ORA remains "Voortrekkers" until the trek actually differentiates into a
 		# settled republic or one of the Boer daughter republics appears.
@@ -1005,24 +964,6 @@ sb_on_trek_monthly_pulse_country = {
 			trigger_event = { id = sb_boer_zulu.010 days = 35 popup = yes }
 		}
 
-		# Griqualand East remains a shell in Phase 1, but the fork is useful to
-		# expose now so the later CAP/Griqua content has a clean story hook.
-		if = {
-			limit = {
-				country_definition = cd:CAP
-				NOT = { has_variable = sb_griqualand_east_resolved_var }
-				NOT = { exists = c:GLE }
-				NOT = { c:PHL ?= { is_country_alive = yes } }
-				c:ORA ?= {
-					is_country_alive = yes
-					owns_entire_state_region = STATE_VRYSTAAT
-				}
-				game_date >= 1848.1.1
-			}
-			set_variable = sb_griqualand_east_resolved_var
-			trigger_event = { id = sb_trek.220 days = 14 popup = yes }
-		}
-
 		# Britain should only revisit the Natal question once Natalia has made
 		# the coast real through a functioning port. Once that threshold is
 		# crossed, schedule the ultimatum on a long random delay so the coast has
@@ -1070,19 +1011,39 @@ sb_on_trek_monthly_pulse_country = {
 
 		# Catch-up path so ongoing saves also receive the Lydenburg reunion JE if
 		# the republic already exists when this version of the content loads.
-		if = {
-			limit = {
-				country_definition = cd:TRN
-				NOT = { has_journal_entry = je_sb_transvaal_unity }
+			if = {
+				limit = {
+					country_definition = cd:TRN
+					NOT = { has_journal_entry = je_sb_transvaal_unity }
 				c:LYD ?= {
 					is_country_alive = yes
 				}
+				}
+				add_journal_entry = { type = je_sb_transvaal_unity }
 			}
-			add_journal_entry = { type = je_sb_transvaal_unity }
-		}
 
-		if = {
-			limit = {
+			if = {
+				limit = {
+					country_definition = cd:TRN
+					is_ai = yes
+					NOT = { has_variable = sb_trn_lyd_relations_nudge_cooldown_var }
+					c:LYD ?= {
+						is_country_alive = yes
+						relations:root < relations_threshold:amicable
+					}
+				}
+				set_variable = {
+					name = sb_trn_lyd_relations_nudge_cooldown_var
+					months = 6
+				}
+				change_relations = {
+					country = c:LYD
+					value = 10
+				}
+			}
+
+			if = {
+				limit = {
 				country_definition = cd:TRN
 				has_modifier = sb_trek_frontier_republic
 				NOT = { has_journal_entry = je_sb_pacifying_eastern_transvaal }
@@ -1128,10 +1089,17 @@ sb_on_zpb_monthly_pulse_country = {
 				is_at_war = no
 				NOT = { has_journal_entry = je_sb_great_trek }
 				NOT = { has_variable = sb_early_republic_var }
-				NOT = { has_variable = sb_sand_river_convention_pending_var }
-				NOT = { has_variable = sb_sand_river_convention_resolved_var }
-				game_date >= 1852.1.1
-			}
+					NOT = { has_variable = sb_sand_river_convention_pending_var }
+					NOT = { has_variable = sb_sand_river_convention_resolved_var }
+					OR = {
+						has_variable = sb_transvaal_unity_resolved_var
+						has_variable = sb_eastern_transvaal_frontier_resolved_var
+						s:STATE_EAST_TRANSVAAL = {
+							is_homeland = cu:boer
+						}
+					}
+					game_date >= 1852.1.1
+				}
 			set_variable = sb_sand_river_convention_pending_var
 			trigger_event = { id = sb_trek.140 days = 21 popup = yes }
 		}

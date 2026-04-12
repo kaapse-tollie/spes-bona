@@ -44,5 +44,32 @@ sb_on_phase3_monthly_pulse_country = {
 			set_variable = sb_phase3_bootstrap_pending_var
 			trigger_event = { id = sb_phase3.001 days = 1 popup = no }
 		}
+		if = {
+			limit = {
+				sb_is_phase3_coordinator_country = yes
+				NOT = { has_global_variable = sb_kimberley_discovered_global_var }
+				sb_kimberley_owner_has_pneumatic_tools = yes
+			}
+			set_global_variable = sb_kimberley_discovered_global_var
+			p:x68B5E8.state.owner = {
+				trigger_event = { id = sb_phase3.021 days = 1 popup = yes }
+			}
+			c:CAP ?= {
+				if = {
+					limit = { is_country_alive = yes }
+					set_variable = sb_phase3_glw_question_active_var
+					set_variable = sb_phase3_kimberley_discovered_var
+					trigger_event = { id = sb_phase3.020 days = 7 popup = yes }
+				}
+			}
+		}
+		if = {
+			limit = {
+				country_definition = cd:CAP
+				sb_cap_can_form_gle = yes
+			}
+			set_variable = sb_griqualand_east_pending_var
+			trigger_event = { id = sb_trek.220 days = 14 popup = yes }
+		}
 	}
 }

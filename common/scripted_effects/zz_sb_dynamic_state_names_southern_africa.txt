@@ -59,6 +59,62 @@ REPLACE:assign_state_name_region_southern_africa = {
             }
         }
         STATE_VRYSTAAT_state_name_assign = yes
+	}
+}
+
+REPLACE:STATE_ZULULAND_state_name_assign = {
+    if = {
+        limit = {
+            owner = {
+                country_has_primary_culture = cu:zulu
+            }
+        }
+        set_state_name = STATE_ZULULAND_zulu
+        reset_hub_names = yes
+    }
+    else_if = {
+        limit = {
+            owner = {
+                any_primary_culture = {
+                    has_discrimination_trait = heritage_southern_bantu
+                }
+            }
+        }
+        set_state_name = STATE_ZULULAND_southern_bantu
+        reset_hub_names = yes
+    }
+    else_if = {
+        limit = {
+            owner = {
+                NOT = { country_has_primary_culture = cu:british }
+                any_primary_culture = {
+                    has_discrimination_trait = language_dutch
+                }
+            }
+        }
+        set_state_name = STATE_ZULULAND_boer
+        set_hub_names = boer
+    }
+    else_if = {
+        limit = {
+            owner = {
+                OR = {
+                    c:GBR ?= this
+                    c:SAF ?= this
+                    AND = {
+                        exists = c:GBR
+                        exists = top_overlord
+                        top_overlord = c:GBR
+                    }
+                }
+            }
+        }
+        set_state_name = STATE_ZULULAND_british
+        set_hub_names = british
+    }
+    else = {
+        reset_state_name = yes
+        reset_hub_names = yes
     }
 }
 
