@@ -1,0 +1,109 @@
+﻿# Spes Bona - Phase 3 branch snapshot and Wave 1 helpers
+
+# Apply the inherited Phase 1-2 branch interface onto the current country.
+# This is intentionally snapshot-based: later Phase 3 content should read these
+# fixed route markers rather than re-deciding branch outcomes every year.
+sb_phase3_initialize_branch_snapshot = {
+	# CAP branch family
+	if = {
+		limit = { c:CAP ?= { has_variable = sb_cape_liberal_resolved_var } }
+		set_variable = sb_phase3_cape_liberal_path_var
+	}
+	if = {
+		limit = { c:CAP ?= { has_modifier = sb_settler_victory } }
+		set_variable = sb_phase3_cape_settler_path_var
+	}
+	if = {
+		limit = { c:CAP ?= { has_modifier = sb_cape_frontier_compromise } }
+		set_variable = sb_phase3_cape_compromise_path_var
+	}
+	# Shell-only late-century snapshot rails are intentionally commented out
+	# until their downstream Phase 3 waves land. Keeping them live now only
+	# creates startup "set but never used" noise.
+}
+
+# Seed the player-facing Wave 1 interface on whichever country should carry the
+# opening late-century content in the current run.
+sb_phase3_seed_public_wave1_interface = {
+	set_variable = sb_phase3_mineral_revolution_available_var
+}
+
+# Resolve the initial Griqualand West route. The heavier territorial/dynamic-
+# naming work is a later Wave 1 expansion; for now we land the political
+# direction cleanly so later content has a stable branch to build on.
+sb_phase3_apply_glw_arbitration_path = {
+	set_variable = sb_phase3_glw_question_resolved_var
+	set_variable = sb_phase3_glw_arbitration_path_var
+
+	if = {
+		limit = {
+			c:WBL ?= {
+				is_country_alive = yes
+			}
+		}
+		change_relations = {
+			country = c:WBL
+			value = 20
+		}
+	}
+	if = {
+		limit = {
+			c:TRN ?= {
+				is_country_alive = yes
+				has_variable = sb_sand_river_convention_accepted_var
+			}
+		}
+		c:TRN ?= {
+			change_relations = {
+				country = ROOT
+				value = 5
+			}
+		}
+	}
+}
+
+sb_phase3_apply_glw_hardline_path = {
+	set_variable = sb_phase3_glw_question_resolved_var
+	set_variable = sb_phase3_glw_hardline_path_var
+
+	if = {
+		limit = {
+			c:WBL ?= {
+				is_country_alive = yes
+			}
+		}
+		change_relations = {
+			country = c:WBL
+			value = -20
+		}
+	}
+	if = {
+		limit = {
+			c:CAP ?= {
+				is_country_alive = yes
+			}
+		}
+		s:STATE_NORTHERN_CAPE = {
+			add_claim = c:CAP
+		}
+	}
+	else = {
+		s:STATE_NORTHERN_CAPE = {
+			add_claim = ROOT
+		}
+	}
+	if = {
+		limit = {
+			c:TRN ?= {
+				is_country_alive = yes
+				has_variable = sb_sand_river_convention_accepted_var
+			}
+		}
+		c:TRN ?= {
+			change_relations = {
+				country = ROOT
+				value = -10
+			}
+		}
+	}
+}

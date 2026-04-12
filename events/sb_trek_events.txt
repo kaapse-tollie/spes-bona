@@ -243,13 +243,13 @@ sb_trek.002 = {
 					set_owner_of_provinces = {
 						country = c:ORA
 						provinces = {
-							xF075D7 x373E53 x9D6A16 xCEE3D2
+							xF17D3D xF075D7 x373E53 x9D6A16 xCEE3D2
 						}
 					}
 					set_owner_of_provinces = {
 						country = c:TSW
 						provinces = {
-							xF17D3D x83E266 x6253E3 x19AE59 xED7851 x75FA4B
+							x83E266 x6253E3 x19AE59 xED7851 x75FA4B
 						}
 					}
 				}
@@ -268,14 +268,6 @@ sb_trek.002 = {
 				}
 				set_state_owner = c:PDI
 			}
-		}
-		# Restore a short migration/colonization burst on MTB defeat. V2 no longer
-		# gives ORA a permanent-feeling early snowball here, but the immediate win
-		# should still open a five-year trek window before the later branches take
-		# over.
-		add_modifier = {
-			name = sb_trek_frontier_drive
-			months = 120
 		}
 		if = {
 			limit = {
@@ -1030,6 +1022,15 @@ sb_trek.130 = {
 			s:STATE_EAST_TRANSVAAL = {
 				add_claim = c:TRN
 			}
+			if = {
+				limit = {
+					NOT = { has_journal_entry = je_sb_pacifying_eastern_transvaal }
+					s:STATE_EAST_TRANSVAAL = {
+						NOT = { is_homeland = cu:boer }
+					}
+				}
+				add_journal_entry = { type = je_sb_pacifying_eastern_transvaal }
+			}
 		}
 		if = {
 			limit = { has_variable = sb_lydenburg_spawn_var }
@@ -1138,6 +1139,56 @@ sb_trek.100 = {
 				}
 				trigger_event = { id = sb_trek.130 days = 7 popup = yes }
 			}
+			if = {
+				limit = {
+					country_definition = cd:NAL
+					country_has_primary_culture = cu:boer
+				}
+				trigger_event = { id = sb_trek.101 days = 7 popup = yes }
+			}
+		}
+	}
+}
+
+sb_trek.101 = {
+	type = country_event
+	placement = root
+
+	title = sb_trek.101.t
+	desc = sb_trek.101.d
+	flavor = sb_trek.101.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:NAL
+		country_has_primary_culture = cu:boer
+		NOT = { has_variable = sb_natalia_trek_normalized_var }
+	}
+
+	option = {
+		name = sb_trek.101.a
+		default_option = yes
+		set_variable = sb_natalia_trek_normalized_var
+		if = {
+			limit = { has_variable = sb_commandant_general_visible_var }
+			remove_variable = sb_commandant_general_visible_var
+		}
+		if = {
+			limit = { has_modifier = sb_trek_frontier_drive_natalia }
+			remove_modifier = sb_trek_frontier_drive_natalia
+		}
+		activate_law = law_type:law_presidential_republic
+		activate_law = law_type:law_interventionism
+		sb_refresh_boer_commandant_general_government = yes
+		ai_chance = {
+			base = 100
 		}
 	}
 }

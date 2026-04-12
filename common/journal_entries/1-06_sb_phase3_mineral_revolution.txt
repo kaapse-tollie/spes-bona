@@ -1,0 +1,96 @@
+﻿# Spes Bona - Phase 3 Wave 1 journal entries
+#
+# The late-century layer opens with a short public JE pair:
+#   - je_sb_mineral_revolution: the phase gate and branch-summary handoff
+#   - je_sb_griqualand_west_question: the first concrete regional crisis
+#
+# Later Phase 3 hubs (confederation, corridor politics, gold, and union) are
+# deliberately deferred until their content lands, rather than appearing as
+# empty placeholder JEs in live builds.
+
+je_sb_mineral_revolution = {
+	group = je_group_historical_content
+
+	icon = "gfx/interface/icons/je_icons/sb_je_cape_politics.dds"
+
+	possible = {
+		sb_is_phase3_public_host_country = yes
+		has_variable = sb_phase3_mineral_revolution_available_var
+	}
+
+	status_desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = sb_phase3_cape_liberal_path_var }
+				desc = je_sb_mineral_revolution_status_liberal
+			}
+			triggered_desc = {
+				trigger = { has_variable = sb_phase3_cape_settler_path_var }
+				desc = je_sb_mineral_revolution_status_settler
+			}
+			triggered_desc = {
+				trigger = { has_variable = sb_phase3_cape_compromise_path_var }
+				desc = je_sb_mineral_revolution_status_compromise
+			}
+			triggered_desc = {
+				trigger = { always = yes }
+				desc = je_sb_mineral_revolution_status_default
+			}
+		}
+	}
+
+	complete = {
+		has_variable = sb_phase3_mineral_revolution_opened_var
+	}
+
+	on_complete = {
+		if = {
+			limit = { NOT = { has_variable = sb_phase3_glw_question_active_var } }
+			set_variable = sb_phase3_glw_question_active_var
+		}
+		trigger_event = { id = sb_phase3.020 days = 14 popup = yes }
+	}
+
+	weight = 1000
+	should_be_pinned_by_default = yes
+	transferable = no
+}
+
+je_sb_griqualand_west_question = {
+	group = je_group_historical_content
+
+	icon = "gfx/interface/icons/je_icons/je_great_trek.dds"
+
+	possible = {
+		sb_is_phase3_public_host_country = yes
+		has_variable = sb_phase3_glw_question_active_var
+	}
+
+	status_desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = sb_phase3_glw_arbitration_path_var }
+				desc = je_sb_griqualand_west_question_status_arbitration
+			}
+			triggered_desc = {
+				trigger = { has_variable = sb_phase3_glw_hardline_path_var }
+				desc = je_sb_griqualand_west_question_status_hardline
+			}
+			triggered_desc = {
+				trigger = { always = yes }
+				desc = je_sb_griqualand_west_question_status_pending
+			}
+		}
+	}
+
+	complete = {
+		has_variable = sb_phase3_glw_question_resolved_var
+	}
+
+	on_complete = {
+	}
+
+	weight = 950
+	should_be_pinned_by_default = yes
+	transferable = no
+}

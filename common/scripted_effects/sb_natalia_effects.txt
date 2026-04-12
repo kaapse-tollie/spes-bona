@@ -564,6 +564,11 @@ sb_ensure_ora_natalia_treaties = {
 				{
 					article = defensive_pact
 				}
+				{
+					article = transit_rights
+					source_country = c:NAL
+					target_country = root
+				}
 			}
 		}
 	}
@@ -585,7 +590,7 @@ sb_ensure_ora_natalia_treaties = {
 			first_country = c:NAL
 			second_country = root
 			is_draft = no
-			binding_period = { years = 25 }
+			binding_period = { years = 10 }
 			articles_to_create = {
 				{
 					article = transit_rights
@@ -593,6 +598,82 @@ sb_ensure_ora_natalia_treaties = {
 					target_country = root
 				}
 			}
+		}
+	}
+}
+
+sb_join_trn_to_active_natal_war = {
+	if = {
+		limit = {
+			c:TRN ?= {
+				is_country_alive = yes
+				is_ai = yes
+				NOT = { has_variable = sb_trn_joined_natal_war_var }
+			}
+			c:ORA ?= {
+				is_country_alive = yes
+				has_variable = sb_natal_war_active_var
+			}
+			c:ZUL ?= {
+				is_country_alive = yes
+			}
+		}
+		if = {
+			limit = {
+				NOT = {
+					c:TRN ?= {
+						any_scope_treaty = {
+							binds = c:ORA
+							any_scope_article = {
+								OR = {
+									has_type = defensive_pact
+									has_type = alliance
+								}
+							}
+						}
+					}
+				}
+			}
+			c:TRN ?= {
+				create_treaty = {
+					first_country = c:TRN
+					second_country = c:ORA
+					is_draft = no
+					binding_period = { years = 5 }
+					articles_to_create = {
+						{
+							article = defensive_pact
+						}
+					}
+				}
+			}
+		}
+		c:TRN ?= {
+			set_variable = sb_trn_joined_natal_war_var
+			change_relations = {
+				country = c:ORA
+				value = 20
+			}
+		}
+		c:ORA ?= {
+			set_variable = sb_trn_joined_natal_war_var
+			change_relations = {
+				country = c:TRN
+				value = 20
+			}
+		}
+		random_diplomatic_play = {
+			limit = {
+				initiator = c:ZUL
+				target = c:ORA
+				is_diplomatic_play_type = dp_sb_natal_crisis
+				NOT = {
+					any_scope_play_involved = {
+						c:TRN ?= THIS
+					}
+				}
+			}
+			add_target_backers = { c:TRN }
 		}
 	}
 }
@@ -674,6 +755,7 @@ sb_found_natalia_peacefully = {
 		}
 	}
 	sb_ensure_ora_natalia_treaties = yes
+	sb_ensure_trn_nal_frontier_compact = yes
 	c:NAL ?= {
 		sb_trigger_natalia_boer_migration_effect = yes
 	}
@@ -684,15 +766,18 @@ sb_found_natalia_peacefully = {
 sb_found_natalia_after_blood_river = {
 	sb_create_natalia_republic_if_missing = yes
 	sb_assign_natalia_republic_territory = yes
-	# Legacy compatibility: in older saves where TRN answered ORA's call,
-	# Andries can still be shifted into Natalia while Marthinus takes TRN.
-	# Fresh V2 starts should normally skip this block because TRN does not yet
-	# exist during Blood River.
+	# If TRN already exists when Natalia is founded, Natalia should inherit
+	# Andries while Marthinus takes over the inland republic. This now covers
+	# both older compatibility saves and the live V2 "TRN formed before NAL"
+	# branch.
 	if = {
 		limit = {
-			has_variable = sb_trn_joined_natal_war_var
 			c:TRN ?= {
 				is_country_alive = yes
+				any_scope_character = {
+					has_template = TRN_andries_pretorius
+					is_character_alive = yes
+				}
 			}
 		}
 		c:TRN ?= {
@@ -778,37 +863,7 @@ sb_found_natalia_after_blood_river = {
 		}
 	}
 	sb_ensure_ora_natalia_treaties = yes
-	c:TRN ?= {
-		if = {
-			limit = {
-				is_country_alive = yes
-				has_variable = sb_trn_joined_natal_war_var
-				NOT = {
-					any_scope_treaty = {
-						binds = c:NAL
-						any_scope_article = {
-							has_type = transit_rights
-							source_country = c:NAL
-							target_country = c:TRN
-						}
-					}
-				}
-			}
-			create_treaty = {
-				first_country = c:NAL
-				second_country = c:TRN
-				is_draft = no
-				binding_period = { years = 25 }
-				articles_to_create = {
-					{
-						article = transit_rights
-						source_country = c:NAL
-						target_country = c:TRN
-					}
-				}
-			}
-		}
-	}
+	sb_ensure_trn_nal_frontier_compact = yes
 	set_variable = sb_natal_path_resolved_var
 	remove_variable = sb_natal_diplomacy_started_var
 	remove_variable = sb_natal_war_active_var

@@ -1,0 +1,192 @@
+﻿namespace = sb_phase3
+
+# =============================================================================
+# Spes Bona - Phase 3 late-century foundation and Wave 1 opening
+# =============================================================================
+# This file intentionally lands only the foundation layer plus the opening
+# mineral-revolution / Griqualand West lane. Later-confederation, corridor, and union
+# content will branch off the snapshot variables seeded here.
+#
+# EVENT CATALOG:
+#   sb_phase3.001  hidden bootstrap and inherited-branch snapshot
+#   sb_phase3.010  visible "Mineral Revolution" opening
+#   sb_phase3.020  visible "Griqualand West Question" routing choice
+# =============================================================================
+
+sb_phase3.001 = {
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		sb_is_phase3_coordinator_country = yes
+	}
+
+	immediate = {
+		if = {
+			limit = { has_variable = sb_phase3_bootstrap_pending_var }
+			remove_variable = sb_phase3_bootstrap_pending_var
+		}
+		if = {
+			limit = { has_variable = sb_phase3_initialized_var }
+		}
+		else = {
+			set_variable = sb_phase3_initialized_var
+			sb_phase3_initialize_branch_snapshot = yes
+
+			if = {
+				limit = {
+					c:CAP ?= {
+						is_country_alive = yes
+					}
+				}
+				c:CAP ?= {
+					sb_phase3_initialize_branch_snapshot = yes
+					sb_phase3_seed_public_wave1_interface = yes
+					trigger_event = { id = sb_phase3.010 days = 3 popup = yes }
+				}
+			}
+			else = {
+				sb_phase3_seed_public_wave1_interface = yes
+				trigger_event = { id = sb_phase3.010 days = 3 popup = yes }
+			}
+		}
+	}
+}
+
+sb_phase3.010 = {
+	type = country_event
+	placement = root
+
+	title = sb_phase3.010.t
+
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = sb_phase3_cape_liberal_path_var }
+				desc = sb_phase3.010.d_liberal
+			}
+			triggered_desc = {
+				trigger = { has_variable = sb_phase3_cape_settler_path_var }
+				desc = sb_phase3.010.d_settler
+			}
+			triggered_desc = {
+				trigger = { has_variable = sb_phase3_cape_compromise_path_var }
+				desc = sb_phase3.010.d_compromise
+			}
+			triggered_desc = {
+				trigger = { always = yes }
+				desc = sb_phase3.010.d_default
+			}
+		}
+	}
+
+	flavor = sb_phase3.010.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		sb_is_phase3_public_host_country = yes
+		has_variable = sb_phase3_mineral_revolution_available_var
+		NOT = { has_variable = sb_phase3_mineral_revolution_opened_var }
+	}
+
+	option = {
+		name = sb_phase3.010.a
+		default_option = yes
+		set_variable = sb_phase3_mineral_revolution_opened_var
+		ai_chance = {
+			base = 100
+		}
+	}
+}
+
+sb_phase3.020 = {
+	type = country_event
+	placement = root
+
+	title = sb_phase3.020.t
+
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = sb_phase3_cape_liberal_path_var }
+				desc = sb_phase3.020.d_liberal
+			}
+			triggered_desc = {
+				trigger = { has_variable = sb_phase3_cape_settler_path_var }
+				desc = sb_phase3.020.d_settler
+			}
+			triggered_desc = {
+				trigger = { has_variable = sb_phase3_cape_compromise_path_var }
+				desc = sb_phase3.020.d_compromise
+			}
+			triggered_desc = {
+				trigger = { always = yes }
+				desc = sb_phase3.020.d_default
+			}
+		}
+	}
+
+	flavor = sb_phase3.020.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+
+	trigger = {
+		sb_is_phase3_public_host_country = yes
+		has_variable = sb_phase3_glw_question_active_var
+		NOT = { has_variable = sb_phase3_glw_question_resolved_var }
+	}
+
+	option = {
+		name = sb_phase3.020.a
+		custom_tooltip = sb_phase3_glw_arbitration_tt
+		trigger = {
+			OR = {
+				has_variable = sb_phase3_cape_liberal_path_var
+				has_variable = sb_phase3_cape_compromise_path_var
+			}
+		}
+		sb_phase3_apply_glw_arbitration_path = yes
+		ai_chance = {
+			base = 60
+			modifier = {
+				factor = 1.75
+				has_variable = sb_phase3_cape_liberal_path_var
+			}
+			modifier = {
+				factor = 0.4
+				has_variable = sb_phase3_cape_settler_path_var
+			}
+		}
+	}
+
+	option = {
+		name = sb_phase3.020.b
+		default_option = yes
+		custom_tooltip = sb_phase3_glw_hardline_tt
+		sb_phase3_apply_glw_hardline_path = yes
+		ai_chance = {
+			base = 40
+			modifier = {
+				factor = 2.25
+				has_variable = sb_phase3_cape_settler_path_var
+			}
+			modifier = {
+				factor = 0.45
+				has_variable = sb_phase3_cape_liberal_path_var
+			}
+		}
+	}
+}

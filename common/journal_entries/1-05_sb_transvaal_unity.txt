@@ -381,3 +381,53 @@ je_sb_zpb_unity = {
 	transferable = no
 	can_revolution_inherit = no
 }
+
+je_sb_pacifying_eastern_transvaal = {
+	group = je_group_historical_content
+
+	icon = "gfx/interface/icons/je_icons/je_great_trek.dds"
+
+	possible = {
+		country_definition = cd:TRN
+		is_subject = no
+		s:STATE_EAST_TRANSVAAL = {
+			NOT = { is_homeland = cu:boer }
+		}
+	}
+
+	status_desc = {
+		first_valid = {
+			triggered_desc = {
+				desc = je_sb_pacifying_eastern_transvaal_status
+				trigger = {
+					always = yes
+				}
+			}
+		}
+	}
+
+	complete = {
+		owns_entire_state_region = STATE_EAST_TRANSVAAL
+		sb_east_transvaal_has_boer_settler_critical_mass = yes
+	}
+
+	on_complete = {
+		s:STATE_EAST_TRANSVAAL = {
+			add_homeland = cu:boer
+		}
+	}
+
+	invalid = {
+		OR = {
+			is_subject = yes
+			s:STATE_EAST_TRANSVAAL = {
+				is_homeland = cu:boer
+			}
+		}
+	}
+
+	weight = 840
+	should_be_pinned_by_default = yes
+	transferable = no
+	can_revolution_inherit = no
+}

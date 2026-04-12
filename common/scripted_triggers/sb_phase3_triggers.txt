@@ -1,0 +1,39 @@
+﻿# Spes Bona - Phase 3 triggers
+
+sb_can_start_phase3_wave1 = {
+	game_date >= 1867.1.1
+}
+
+# Keep one stable coordinator for the late-century branch snapshot. Britain is
+# the safest anchor because it survives almost all plausible Phase 1-2 routes.
+sb_is_phase3_coordinator_country = {
+	country_definition = cd:GBR
+	is_country_alive = yes
+}
+
+# Public Wave 1 content should speak through the Cape when it exists. If CAP is
+# gone, Britain inherits the opening lane directly.
+sb_is_phase3_public_host_country = {
+	OR = {
+		AND = {
+			country_definition = cd:CAP
+			is_country_alive = yes
+		}
+		AND = {
+			country_definition = cd:GBR
+			NOT = {
+				c:CAP ?= {
+					is_country_alive = yes
+				}
+			}
+		}
+	}
+}
+
+sb_phase3_has_any_cape_settlement = {
+	OR = {
+		has_variable = sb_phase3_cape_liberal_path_var
+		has_variable = sb_phase3_cape_settler_path_var
+		has_variable = sb_phase3_cape_compromise_path_var
+	}
+}

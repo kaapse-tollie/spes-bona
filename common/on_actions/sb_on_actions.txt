@@ -397,44 +397,9 @@ sb_on_game_started_after_lobby = {
 		# 00_historical_treaties override. Do not withdraw/recreate them here:
 		# doing so creates visible treaty banners and "broken obligation" scars.
 
-		# The Nguni JEs auto-instance from their JE definitions. Keep a guarded
-		# after-lobby fallback so older saves or edge-case startup orders do not
-		# leave the countries without their core content, while avoiding duplicate
-		# add_journal_entry calls in normal fresh starts.
-		c:ZUL ?= {
-			if = {
-				limit = {
-					NOT = { has_variable = sb_zulu_dynasty_secured_var }
-					NOT = { has_journal_entry = je_sb_zulu_kingdom }
-				}
-				add_journal_entry = { type = je_sb_zulu_kingdom }
-			}
-			if = {
-				limit = {
-					NOT = { has_variable = sb_firearms_modernized_var }
-					NOT = { has_journal_entry = je_sb_adopt_firearms }
-				}
-				add_journal_entry = { type = je_sb_adopt_firearms }
-			}
-		}
-		c:GZA ?= {
-			if = {
-				limit = {
-					NOT = { has_variable = sb_firearms_modernized_var }
-					NOT = { has_journal_entry = je_sb_adopt_firearms }
-				}
-				add_journal_entry = { type = je_sb_adopt_firearms }
-			}
-		}
-		c:SWZ ?= {
-			if = {
-				limit = {
-					NOT = { has_variable = sb_firearms_modernized_var }
-					NOT = { has_journal_entry = je_sb_adopt_firearms }
-				}
-				add_journal_entry = { type = je_sb_adopt_firearms }
-			}
-		}
+		# The Nguni JEs now auto-instance reliably from their JE definitions.
+		# Retaining the old after-lobby fallback only creates duplicate-startup
+		# warnings, so it stays disabled unless a future regression reappears.
 
 		c:MTB ?= {
 			if = {
@@ -456,6 +421,12 @@ sb_on_game_started_after_lobby = {
 					name = sb_native_conscription_MTB_player
 					months = -1
 				}
+			}
+		}
+		c:GBR ?= {
+			if = {
+				limit = { has_modifier = repudiated_obligation }
+				remove_modifier = repudiated_obligation
 			}
 		}
 	}
@@ -637,6 +608,33 @@ sb_on_cape_monthly_pulse_country = {
 					remove_modifier = sb_xhosa_frontier_pressure_xht
 				}
 			}
+		}
+
+		if = {
+			limit = {
+				OR = {
+					country_definition = cd:CAP
+					country_definition = cd:ABY
+				}
+				game_date >= 1846.1.1
+				NOT = { has_variable = sb_xhosa_wars_shell_opened_var }
+				any_scope_state = {
+					state_region = s:STATE_EASTERN_CAPE
+				}
+				OR = {
+					c:XHG ?= { is_country_alive = yes }
+					c:XHR ?= { is_country_alive = yes }
+					c:XHT ?= { is_country_alive = yes }
+				}
+			}
+			set_variable = sb_xhosa_wars_shell_opened_var
+			if = {
+				limit = {
+					NOT = { has_journal_entry = je_sb_xhosa_wars }
+				}
+				add_journal_entry = { type = je_sb_xhosa_wars }
+			}
+			trigger_event = { id = sb_xhosa.001 days = 7 popup = yes }
 		}
 
 		if = {
@@ -1031,6 +1029,17 @@ sb_on_trek_monthly_pulse_country = {
 		# time to breathe before London moves.
 		if = {
 			limit = {
+				country_definition = cd:NAL
+				country_has_primary_culture = cu:boer
+				NOT = { has_journal_entry = je_sb_great_trek }
+				NOT = { has_variable = sb_early_republic_var }
+				NOT = { has_variable = sb_natalia_trek_normalized_var }
+			}
+			trigger_event = { id = sb_trek.101 days = 7 popup = yes }
+		}
+
+		if = {
+			limit = {
 				country_definition = cd:GBR
 				NOT = { has_variable = sb_british_natal_ultimatum_var }
 				NOT = { has_variable = sb_british_natal_ultimatum_pending_var }
@@ -1072,6 +1081,18 @@ sb_on_trek_monthly_pulse_country = {
 			add_journal_entry = { type = je_sb_transvaal_unity }
 		}
 
+		if = {
+			limit = {
+				country_definition = cd:TRN
+				has_modifier = sb_trek_frontier_republic
+				NOT = { has_journal_entry = je_sb_pacifying_eastern_transvaal }
+				s:STATE_EAST_TRANSVAAL = {
+					NOT = { is_homeland = cu:boer }
+				}
+			}
+			add_journal_entry = { type = je_sb_pacifying_eastern_transvaal }
+		}
+
 		# SWZ can only seek British shelter after the Boer pressure event is
 		# resolved and Natal is already inside the British orbit.
 		if = {
@@ -1086,6 +1107,7 @@ sb_on_trek_monthly_pulse_country = {
 					is_country_alive = yes
 					is_subject_of = c:GBR
 				}
+				sb_all_zululand_under_british_control = yes
 			}
 			set_variable = {
 				name = sb_swazi_british_accommodation_pending_var
@@ -1233,33 +1255,18 @@ sb_on_spes_bona_diplomatic_play_started = {
 				}
 				c:SWZ ?= {
 					is_country_alive = yes
+					is_ai = yes
 					NOT = { has_variable = sb_swazi_zulu_campaign_muster_var }
 				}
 			}
-			# SWZ gets the same anti-exploit emergency footing for any direct
-			# Swazi-Zulu/Boer frontier play, not just the scripted Dingane lane.
+			# The generalized frontier-muster rail is AI-only. Player SWZ should
+			# never receive the invisible anti-exploit safety package.
 			c:SWZ ?= {
 				add_modifier = {
 					name = sb_swazi_frontier_muster
 					months = 24
 				}
-			}
-			if = {
-				limit = {
-					any_scope_play_involved = { is_player = yes }
-				}
-				c:SWZ ?= {
-					add_modifier = {
-						name = sb_swazi_frontier_muster_vs_player
-						months = 24
-					}
-				}
-			}
-			c:SWZ ?= {
-				if = {
-					limit = { is_ai = yes }
-					sb_swazi_raise_zulu_campaign_muster = yes
-				}
+				sb_swazi_raise_zulu_campaign_muster = yes
 			}
 		}
 	}
