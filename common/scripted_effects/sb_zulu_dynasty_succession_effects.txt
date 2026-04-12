@@ -1,0 +1,501 @@
+﻿# Spes Bona - Zulu Succession and Collapse Effects
+#
+# These helpers are split out from `sb_zulu_dynasty_effects.txt` so the main
+# file can stay focused on the dynastic-stability bar and monthly upkeep while
+# this one owns the actual claimant preparation, ruler swaps, and collapse
+# resolution.
+
+sb_zulu_kill_current_heir = {
+	if = {
+		limit = {
+			heir = {
+				is_character_alive = yes
+			}
+		}
+		heir = {
+			kill_character = {
+				hidden = yes
+			}
+		}
+	}
+}
+
+sb_zulu_prepare_uthumbu_heir = {
+	if = {
+		limit = {
+			NOT = {
+				any_scope_character = {
+					has_template = ZUL_uthumbu_claimed_son
+					is_character_alive = yes
+				}
+			}
+		}
+		create_character = {
+			template = ZUL_uthumbu_claimed_son
+			on_created = {
+				save_scope_as = new_heir_scope
+			}
+		}
+	}
+	else = {
+		random_scope_character = {
+			limit = {
+				has_template = ZUL_uthumbu_claimed_son
+				is_character_alive = yes
+			}
+			save_scope_as = new_heir_scope
+		}
+	}
+	set_character_of_unknown_status_as_heir = yes
+}
+
+sb_zulu_prepare_cetshwayo_heir = {
+	if = {
+		limit = {
+			NOT = {
+				any_scope_character = {
+					has_template = ZUL_cetshwayo_heir
+					is_character_alive = yes
+				}
+			}
+		}
+		create_character = {
+			template = ZUL_cetshwayo_heir
+			on_created = {
+				save_scope_as = new_heir_scope
+			}
+		}
+	}
+	else = {
+		random_scope_character = {
+			limit = {
+				has_template = ZUL_cetshwayo_heir
+				is_character_alive = yes
+			}
+			save_scope_as = new_heir_scope
+		}
+	}
+	set_character_of_unknown_status_as_heir = yes
+}
+
+sb_zulu_prepare_dinuzulu_heir = {
+	if = {
+		limit = {
+			NOT = {
+				any_scope_character = {
+					has_template = ZUL_dinuzulu_heir
+					is_character_alive = yes
+				}
+			}
+		}
+		create_character = {
+			template = ZUL_dinuzulu_heir
+			on_created = {
+				save_scope_as = new_heir_scope
+			}
+		}
+	}
+	else = {
+		random_scope_character = {
+			limit = {
+				has_template = ZUL_dinuzulu_heir
+				is_character_alive = yes
+			}
+			save_scope_as = new_heir_scope
+		}
+	}
+	set_character_of_unknown_status_as_heir = yes
+}
+
+sb_zulu_prepare_solomon_heir = {
+	if = {
+		limit = {
+			NOT = {
+				any_scope_character = {
+					has_template = ZUL_solomon_heir
+					is_character_alive = yes
+				}
+			}
+		}
+		create_character = {
+			template = ZUL_solomon_heir
+			on_created = {
+				save_scope_as = new_heir_scope
+			}
+		}
+	}
+	else = {
+		random_scope_character = {
+			limit = {
+				has_template = ZUL_solomon_heir
+				is_character_alive = yes
+			}
+			save_scope_as = new_heir_scope
+		}
+	}
+	set_character_of_unknown_status_as_heir = yes
+}
+
+sb_zulu_install_summoned_claimant_as_ruler = {
+	scope:summoned_character_scope ?= {
+		if = {
+			limit = {
+				is_in_void = yes
+			}
+			hidden_effect = {
+				free_character_from_void = yes
+				transfer_character = prev
+			}
+		}
+		if = {
+			limit = {
+				is_in_exile_pool = yes
+			}
+			transfer_character = prev
+			set_variable = exile_to_ruler_var
+			set_variable = {
+				name = memento_mori_immunity
+				months = 60
+			}
+			hidden_effect = {
+				free_from_exile_effect = yes
+			}
+		}
+		if = {
+			limit = {
+				NOT = { has_role = politician }
+			}
+			add_character_role = politician
+		}
+		set_interest_group = c:ZUL.ig:ig_armed_forces
+		hidden_effect = {
+			cleanup_ruler_character_roles = yes
+		}
+		set_character_as_ruler = yes
+	}
+}
+
+sb_zulu_prepare_mpande_claimant = {
+	if = {
+		limit = {
+			NOT = {
+				any_scope_character = {
+					has_template = ZUL_mpande_zulu
+					is_character_alive = yes
+				}
+			}
+		}
+		create_character = {
+			template = ZUL_mpande_zulu
+			on_created = {
+				save_scope_as = summoned_character_scope
+			}
+		}
+	}
+	else = {
+		random_scope_character = {
+			limit = {
+				has_template = ZUL_mpande_zulu
+				is_character_alive = yes
+			}
+			save_scope_as = summoned_character_scope
+		}
+	}
+	sb_zulu_install_summoned_claimant_as_ruler = yes
+}
+
+sb_zulu_prepare_cetshwayo_claimant = {
+	if = {
+		limit = {
+			NOT = {
+				any_scope_character = {
+					has_template = ZUL_cetshwayo_heir
+					is_character_alive = yes
+				}
+			}
+		}
+		create_character = {
+			template = ZUL_cetshwayo_heir
+			on_created = {
+				save_scope_as = summoned_character_scope
+			}
+		}
+	}
+	else = {
+		random_scope_character = {
+			limit = {
+				has_template = ZUL_cetshwayo_heir
+				is_character_alive = yes
+			}
+			save_scope_as = summoned_character_scope
+		}
+	}
+	sb_zulu_install_summoned_claimant_as_ruler = yes
+}
+
+sb_zulu_prepare_dinuzulu_claimant = {
+	if = {
+		limit = {
+			NOT = {
+				any_scope_character = {
+					has_template = ZUL_dinuzulu_heir
+					is_character_alive = yes
+				}
+			}
+		}
+		create_character = {
+			template = ZUL_dinuzulu_heir
+			on_created = {
+				save_scope_as = summoned_character_scope
+			}
+		}
+	}
+	else = {
+		random_scope_character = {
+			limit = {
+				has_template = ZUL_dinuzulu_heir
+				is_character_alive = yes
+			}
+			save_scope_as = summoned_character_scope
+		}
+	}
+	sb_zulu_install_summoned_claimant_as_ruler = yes
+}
+
+sb_zulu_apply_generic_war_victory = {
+	sb_zulu_add_dynastic_stability_20 = yes
+	set_variable = {
+		name = sb_zulu_generic_war_resolution_recent_var
+		days = 30
+	}
+}
+
+sb_zulu_apply_generic_war_defeat = {
+	sb_zulu_remove_dynastic_stability_10 = yes
+	sb_zulu_remove_dynastic_stability_10 = yes
+	set_variable = {
+		name = sb_zulu_generic_war_resolution_recent_var
+		days = 30
+	}
+}
+
+sb_zulu_apply_swazi_campaign_victory = {
+	sb_zulu_add_dynastic_stability_20 = yes
+	sb_zulu_add_dynastic_stability_10 = yes
+	s:STATE_EAST_TRANSVAAL = {
+		add_claim = root
+	}
+	trigger_event = { id = sb_boer_zulu.097 days = 5 popup = yes }
+}
+
+sb_zulu_apply_swazi_campaign_defeat = {
+	sb_zulu_remove_dynastic_stability_10 = yes
+	sb_zulu_remove_dynastic_stability_10 = yes
+	sb_zulu_remove_dynastic_stability_10 = yes
+}
+
+sb_zulu_monthly_dynasty_housekeeping = {
+	sb_zulu_update_dynastic_stability_modifiers = yes
+	sb_zulu_maybe_open_swazi_question = yes
+	if = {
+		limit = {
+			NOT = { has_variable = sb_zulu_dynastic_event_cooldown_var }
+			NOT = { has_variable = sb_zulu_dynasty_secured_var }
+			OR = {
+				has_variable = sb_natal_war_active_var
+				has_variable = sb_natal_guns_bargain_war_var
+				has_variable = sb_zulu_blood_river_resolved_var
+				has_variable = sb_zulu_port_natal_raid_available_var
+				has_variable = sb_port_natal_british_war_var
+				c:ORA ?= {
+					has_variable = sb_natal_diplomacy_started_var
+				}
+				c:ORA ?= {
+					has_variable = sb_natal_path_resolved_var
+				}
+			}
+		}
+		# War-era randoms: once the Natal crisis is active or resolved, the dynasty
+		# event pool can surface the harsher military/coastal incidents as well.
+		random_list = {
+			4 = {
+				set_variable = {
+					name = sb_zulu_dynastic_event_cooldown_var
+					months = 12
+				}
+				trigger_event = { id = sb_boer_zulu.200 days = 7 popup = yes }
+			}
+			4 = {
+				set_variable = {
+					name = sb_zulu_dynastic_event_cooldown_var
+					months = 12
+				}
+				trigger_event = { id = sb_boer_zulu.201 days = 7 popup = yes }
+			}
+			4 = {
+				set_variable = {
+					name = sb_zulu_dynastic_event_cooldown_var
+					months = 12
+				}
+				trigger_event = { id = sb_boer_zulu.202 days = 7 popup = yes }
+			}
+			4 = {
+				set_variable = {
+					name = sb_zulu_dynastic_event_cooldown_var
+					months = 12
+				}
+				trigger_event = { id = sb_boer_zulu.203 days = 7 popup = yes }
+			}
+			84 = { }
+		}
+	}
+	else_if = {
+		limit = {
+			NOT = { has_variable = sb_zulu_dynastic_event_cooldown_var }
+			NOT = { has_variable = sb_zulu_dynasty_secured_var }
+		}
+		# Pre-war randoms: before the coast crisis fully develops, only the more
+		# internal court-management events are allowed to fire.
+		random_list = {
+			4 = {
+				set_variable = {
+					name = sb_zulu_dynastic_event_cooldown_var
+					months = 12
+				}
+				trigger_event = { id = sb_boer_zulu.200 days = 7 popup = yes }
+			}
+			4 = {
+				set_variable = {
+					name = sb_zulu_dynastic_event_cooldown_var
+					months = 12
+				}
+				trigger_event = { id = sb_boer_zulu.201 days = 7 popup = yes }
+			}
+			4 = {
+				set_variable = {
+					name = sb_zulu_dynastic_event_cooldown_var
+					months = 12
+				}
+				trigger_event = { id = sb_boer_zulu.202 days = 7 popup = yes }
+			}
+			88 = { }
+		}
+	}
+}
+
+sb_resolve_zulu_dynastic_collapse = {
+	if = {
+		limit = {
+			has_variable = sb_zulu_dynastic_collapse_pending_var
+		}
+		remove_variable = sb_zulu_dynastic_collapse_pending_var
+	}
+	if = {
+		limit = {
+			has_variable = sb_zulu_dynastic_collapse_resolved_var
+		}
+		remove_variable = sb_zulu_dynastic_collapse_resolved_var
+	}
+	sb_zulu_disable_dynastic_claims = yes
+	sb_zulu_clear_dynastic_stability_modifiers = yes
+	sb_zulu_set_dynastic_stability_50 = yes
+	capital = {
+		add_radicals_in_state = {
+			value = large_radicals
+		}
+	}
+	if = {
+		limit = {
+			NOT = { has_modifier = sb_zulu_dynastic_crisis }
+		}
+		add_modifier = {
+			name = sb_zulu_dynastic_crisis
+			months = 120
+		}
+	}
+	if = {
+		limit = {
+			ruler = {
+				has_template = ZUL_dingane
+			}
+		}
+		ruler = {
+			save_scope_as = deposed_dingane_scope
+		}
+		sb_zulu_kill_current_heir = yes
+		sb_zulu_prepare_mpande_claimant = yes
+		random_scope_character = {
+			limit = {
+				has_template = ZUL_mpande_zulu
+				is_character_alive = yes
+			}
+			set_interest_group = c:ZUL.ig:ig_armed_forces
+			set_character_as_ruler = yes
+		}
+		sb_zulu_prepare_cetshwayo_heir = yes
+		scope:deposed_dingane_scope ?= {
+			add_modifier = {
+				name = sb_dingane_humbled
+				months = 120
+			}
+			if = {
+				limit = {
+					NOT = { is_ruler = yes }
+				}
+				exile_character = yes
+			}
+		}
+	}
+	else_if = {
+		limit = {
+			ruler = {
+				has_template = ZUL_mpande_zulu
+			}
+		}
+		sb_zulu_kill_current_heir = yes
+		sb_zulu_prepare_cetshwayo_claimant = yes
+		sb_zulu_prepare_dinuzulu_heir = yes
+	}
+	else = {
+		sb_zulu_kill_current_heir = yes
+		sb_zulu_prepare_dinuzulu_claimant = yes
+		sb_zulu_prepare_solomon_heir = yes
+	}
+}
+
+sb_resolve_zulu_dynasty_secured = {
+	if = {
+		limit = {
+			has_modifier = sb_zulu_dynastic_crisis
+		}
+		remove_modifier = sb_zulu_dynastic_crisis
+	}
+	if = {
+		limit = {
+			has_variable = sb_zulu_dynastic_collapse_pending_var
+		}
+		remove_variable = sb_zulu_dynastic_collapse_pending_var
+	}
+	set_variable = sb_zulu_dynasty_secured_var
+	sb_zulu_disable_dynastic_claims = yes
+	sb_zulu_clear_dynastic_stability_modifiers = yes
+	ruler = {
+		if = {
+			limit = {
+				NOT = { has_modifier = sb_zulu_secured_the_throne }
+			}
+			add_modifier = { name = sb_zulu_secured_the_throne }
+		}
+	}
+	if = {
+		limit = {
+			ruler = {
+				has_template = ZUL_dingane
+			}
+		}
+		sb_zulu_prepare_uthumbu_heir = yes
+	}
+	else = {
+		sb_zulu_prepare_cetshwayo_heir = yes
+	}
+}
