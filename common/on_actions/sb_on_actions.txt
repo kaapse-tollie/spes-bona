@@ -852,19 +852,37 @@ sb_on_trek_monthly_pulse_country = {
 				remove_modifier = sb_trek_ai_mobilization
 			}
 
+				if = {
+					limit = {
+						country_definition = cd:ORA
+						is_ai = yes
+						has_journal_entry = je_sb_great_trek
+					}
+					set_strategy = ai_strategy_sb_boer_frontier_republic
+					set_strategy = ai_strategy_sb_boer_frontier_institutions
+				}
+
+			# Retry the MTB opener if ORA was busy in another diplomatic play when the
+			# original one-shot startup queue tried to fire.
 			if = {
 				limit = {
-					country_definition = cd:ORA
-					is_ai = yes
-					has_journal_entry = je_sb_great_trek
+					country_definition = cd:MTB
+					NOT = { has_variable = sb_ndebele_opening_play_fired }
+					is_country_alive = yes
+					is_at_war = no
+					aggressive_diplomatic_plays_permitted = yes
+					c:ORA ?= {
+						is_country_alive = yes
+						is_at_war = no
+						aggressive_diplomatic_plays_permitted = yes
+					}
 				}
-				set_strategy = ai_strategy_sb_boer_frontier_republic
-				set_strategy = ai_strategy_sb_boer_frontier_institutions
+				trigger_event = { id = sb_trek.001 days = 1 }
 			}
 
-		# ORA remains "Voortrekkers" until the trek actually differentiates into a
-		# settled republic or one of the Boer daughter republics appears.
-		if = {
+			# ORA remains "Voortrekkers" until the trek actually differentiates into a
+			# settled republic or one of the Boer daughter republics appears.
+			if = {
 			limit = {
 				country_definition = cd:ORA
 				has_variable = sb_voortrekker_start_var

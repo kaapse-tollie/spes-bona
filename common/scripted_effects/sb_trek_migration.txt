@@ -55,6 +55,37 @@ sb_trigger_boer_migration_effect = {
 	}
 }
 
+sb_seed_zpb_initial_trekker_arrivals = {
+	# ZPB is created mid-effect rather than through a normal event reward. A
+	# deterministic settler package is more reliable here than trying to fire an
+	# immediate mass migration during the create-country handoff.
+	s:STATE_NORTHERN_TRANSVAAL = {
+		region_state:ZPB ?= {
+			add_modifier = {
+				name = sb_trek_migration_pull
+				months = 24
+			}
+			create_pop = {
+				culture = boer
+				religion = protestant
+				size = 700
+			}
+			create_pop = {
+				pop_type = laborers
+				culture = boer
+				religion = protestant
+				size = 200
+			}
+			create_pop = {
+				pop_type = shopkeepers
+				culture = boer
+				religion = protestant
+				size = 100
+			}
+		}
+	}
+}
+
 sb_seed_trn_v2_start_package = {
 	# Minimal scripted replacement for the old day-1 TRN history package.
 	# This is applied only after the delayed split event creates the country.
@@ -512,19 +543,7 @@ sb_found_zoutpansberg_republic = {
 			name = sb_trek_migration_cost
 			months = 24
 		}
-		# Keep ZPB migration self-contained. Using hard-coded Cape/Boer scopes here
-		# is more reliable than depending on event-local saved scopes surviving the
-		# republic-creation handoff.
-		random_scope_state = {
-			limit = {
-				state_region = s:STATE_NORTHERN_TRANSVAAL
-			}
-			add_modifier = {
-				name = sb_trek_migration_pull
-				months = 24
-			}
-		}
-			sb_trigger_boer_migration_effect = yes
+		sb_seed_zpb_initial_trekker_arrivals = yes
 		}
 		c:ZPB ?= {
 			sb_ensure_boer_transit_from_ora_trn_to_root = yes

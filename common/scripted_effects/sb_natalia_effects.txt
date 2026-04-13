@@ -309,10 +309,44 @@ sb_raise_ora_blood_river_relief_force = {
 			months = 12
 		}
 		sb_seed_ora_blood_river_relief_manpower = yes
+		if = {
+			limit = {
+				any_scope_state = {
+					state_region = s:STATE_VRYSTAAT
+					any_scope_building = {
+						is_building_type = building_barrack
+					}
+				}
+			}
+			random_scope_state = {
+				limit = {
+					state_region = s:STATE_VRYSTAAT
+					any_scope_building = {
+						is_building_type = building_barrack
+					}
+				}
+				save_scope_as = ora_blood_river_relief_state
+			}
+		}
+		else = {
+			random_scope_state = {
+				limit = {
+					state_region = s:STATE_VRYSTAAT
+				}
+				save_scope_as = ora_blood_river_relief_state
+			}
+		}
 		every_scope_state = {
 			limit = {
 				state_region = s:STATE_VRYSTAAT
+				NOT = { this = scope:ora_blood_river_relief_state }
+				any_scope_building = {
+					is_building_type = building_barrack
+				}
 			}
+			remove_building = building_barrack
+		}
+		scope:ora_blood_river_relief_state = {
 			if = {
 				limit = {
 					NOT = { has_building = building_barrack }
@@ -323,10 +357,8 @@ sb_raise_ora_blood_river_relief_force = {
 					reserves = 1
 				}
 			}
-			# Avoid an unbounded while-loop here. The play-started relief code runs
-			# under diplomatic-play root, and if building scope resolution gets odd
-			# the loop can keep re-evaluating forever. A fixed top-up ladder is more
-			# verbose but far safer.
+			# Blood River relief should cap ORA at the five-barracks militia ceiling
+			# even if ORA already absorbed split Vrystaat state objects from PHL.
 			else_if = {
 				limit = { b:building_barrack.level == 1 }
 				create_building = {

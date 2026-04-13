@@ -111,7 +111,6 @@ sb_phase3_apply_glw_hardline_path = {
 sb_phase3_apply_kimberley_london_expedition_path = {
 	set_variable = sb_phase3_glw_question_resolved_var
 	set_variable = sb_phase3_glw_hardline_path_var
-	set_variable = sb_phase3_kimberley_expedition_path_var
 
 	p:x68B5E8.state.owner = {
 		save_scope_as = kimberley_holder
@@ -180,18 +179,15 @@ sb_phase3_annul_wbl_guarantee_frame = {
 sb_phase3_apply_wbl_protection_path = {
 	set_variable = sb_phase3_glw_question_resolved_var
 	set_variable = sb_phase3_glw_arbitration_path_var
-	set_variable = sb_phase3_wbl_protection_path_var
 	sb_phase3_annul_wbl_guarantee_frame = yes
 
 	if = {
 		limit = {
 			sb_cap_is_full_liberal_griqua_route = yes
 		}
-		set_variable = sb_phase3_wbl_direct_annexation_path_var
 		annex = c:WBL
 	}
 	else = {
-		set_variable = sb_phase3_wbl_puppet_path_var
 		if = {
 			limit = {
 				c:WBL ?= {
@@ -232,19 +228,10 @@ sb_phase3_create_kimberley_goldfield_building_if_missing = {
 		}
 		if = {
 			limit = {
+				has_potential_resource = building_gold_field
 				NOT = { has_building = building_gold_field }
 			}
-			create_building = {
-				building = building_gold_field
-				level = 1
-				reserves = 1
-			}
-		}
-		if = {
-			limit = {
-				has_building = building_gold_field
-			}
-			trigger_event = { id = goldrush.1 days = 1 popup = yes }
+			force_resource_discovery = building_gold_field
 		}
 	}
 }

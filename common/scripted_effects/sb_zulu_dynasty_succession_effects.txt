@@ -49,6 +49,35 @@ sb_zulu_prepare_uthumbu_heir = {
 	set_character_of_unknown_status_as_heir = yes
 }
 
+sb_zulu_prepare_gqugqu_heir = {
+	if = {
+		limit = {
+			NOT = {
+				any_scope_character = {
+					has_template = ZUL_gqugqu_claimant
+					is_character_alive = yes
+				}
+			}
+		}
+		create_character = {
+			template = ZUL_gqugqu_claimant
+			on_created = {
+				save_scope_as = new_heir_scope
+			}
+		}
+	}
+	else = {
+		random_scope_character = {
+			limit = {
+				has_template = ZUL_gqugqu_claimant
+				is_character_alive = yes
+			}
+			save_scope_as = new_heir_scope
+		}
+	}
+	set_character_of_unknown_status_as_heir = yes
+}
+
 sb_zulu_prepare_cetshwayo_heir = {
 	if = {
 		limit = {
@@ -390,12 +419,6 @@ sb_resolve_zulu_dynastic_collapse = {
 		}
 		remove_variable = sb_zulu_dynastic_collapse_pending_var
 	}
-	if = {
-		limit = {
-			has_variable = sb_zulu_dynastic_collapse_resolved_var
-		}
-		remove_variable = sb_zulu_dynastic_collapse_resolved_var
-	}
 	sb_zulu_disable_dynastic_claims = yes
 	sb_zulu_clear_dynastic_stability_modifiers = yes
 	sb_zulu_set_dynastic_stability_50 = yes
@@ -432,7 +455,9 @@ sb_resolve_zulu_dynastic_collapse = {
 			set_interest_group = c:ZUL.ig:ig_armed_forces
 			set_character_as_ruler = yes
 		}
-		sb_zulu_prepare_cetshwayo_heir = yes
+		# Mpande's first heir slot should reflect the early succession contest
+		# rather than jump straight to Cetshwayo.
+		sb_zulu_prepare_gqugqu_heir = yes
 		scope:deposed_dingane_scope ?= {
 			add_modifier = {
 				name = sb_dingane_humbled
@@ -494,6 +519,14 @@ sb_resolve_zulu_dynasty_secured = {
 			}
 		}
 		sb_zulu_prepare_uthumbu_heir = yes
+	}
+	else_if = {
+		limit = {
+			ruler = {
+				has_template = ZUL_mpande_zulu
+			}
+		}
+		sb_zulu_prepare_gqugqu_heir = yes
 	}
 	else = {
 		sb_zulu_prepare_cetshwayo_heir = yes
