@@ -21,6 +21,29 @@ sb_on_bst_monthly_pulse_country = {
 		if = {
 			limit = {
 				country_definition = cd:ORA
+				has_journal_entry = je_sb_bst_ora_frontier
+				NOT = { has_variable = sb_bst_frontier_claim_seeded_var }
+			}
+			set_variable = sb_bst_frontier_claim_seeded_var
+			s:STATE_DRAKENSBERG = {
+				add_claim = c:ORA
+			}
+		}
+
+		if = {
+			limit = {
+				country_definition = cd:BST
+				has_journal_entry = je_sb_bst_ora_frontier
+				sb_bst_holds_drakensberg = yes
+				NOT = { sb_bst_holds_vrystaat_foothold = yes }
+				NOT = { has_variable = sb_bst_into_the_mountains_var }
+			}
+			trigger_event = { id = sb_bst_frontier.020 days = 1 popup = yes }
+		}
+
+		if = {
+			limit = {
+				country_definition = cd:ORA
 				has_variable = sb_ora_annexed_bst_var
 				NOT = { has_journal_entry = je_sb_settle_drakensberg }
 				NOT = {
