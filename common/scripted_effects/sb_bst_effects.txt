@@ -1,0 +1,104 @@
+﻿# Spes Bona - BST frontier, protection, and STA effects
+
+sb_bst_execute_oranje_raid = {
+	set_variable = sb_bst_oranje_raid_cooldown_var
+	trigger_event = { id = sb_bst_frontier.001 days = 365 popup = no }
+
+	c:ORA ?= {
+		random_scope_state = {
+			limit = {
+				state_region = s:STATE_VRYSTAAT
+			}
+			add_radicals_in_state = {
+				value = {
+					add = 0.01
+				}
+			}
+			kill_population_percent_in_state = {
+				percent = 0.001
+			}
+		}
+		add_treasury = -5000
+		add_modifier = {
+			name = sb_bst_frontier_raided
+			months = 12
+		}
+		if = {
+			limit = { is_player = yes }
+			trigger_event = { id = sb_bst_frontier.010 days = 1 popup = yes }
+		}
+	}
+
+	add_treasury = 5000
+}
+
+sb_bst_restore_gbr_protectorate = {
+	if = {
+		limit = { has_variable = sb_bst_cap_annexation_crisis_var }
+		remove_variable = sb_bst_cap_annexation_crisis_var
+	}
+
+	c:CAP ?= {
+		if = {
+			limit = { has_variable = sb_bst_cap_annexation_crisis_var }
+			remove_variable = sb_bst_cap_annexation_crisis_var
+		}
+	}
+
+	if = {
+		limit = {
+			is_subject_of = c:CAP
+		}
+		c:GBR ?= {
+			transfer_subject = root
+		}
+	}
+
+	if = {
+		limit = {
+			NOT = { is_subject_of = c:GBR }
+		}
+		c:GBR ?= {
+			create_diplomatic_pact = {
+				country = root
+				type = protectorate
+			}
+		}
+	}
+	else_if = {
+		limit = {
+			is_subject_of = c:GBR
+			NOT = { is_subject_type = subject_type_protectorate }
+		}
+		change_subject_type = subject_type_protectorate
+	}
+}
+
+sb_bst_centralize_tswana_client = {
+	c:TSW ?= {
+		if = {
+			limit = {
+				is_country_type = decentralized
+			}
+			set_country_type = unrecognized
+		}
+		if = {
+			limit = {
+				NOT = { is_subject_of = root }
+			}
+			root = {
+				create_diplomatic_pact = {
+					country = c:TSW
+					type = vassal
+				}
+			}
+		}
+		else_if = {
+			limit = {
+				is_subject_of = root
+				NOT = { is_subject_type = subject_type_vassal }
+			}
+			change_subject_type = subject_type_vassal
+		}
+	}
+}

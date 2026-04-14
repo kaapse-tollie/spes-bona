@@ -1,0 +1,105 @@
+﻿# Spes Bona - BST decisions
+
+sb_seek_british_protection = {
+	is_shown = {
+		country_definition = cd:BST
+		is_subject = no
+		has_journal_entry = je_sb_bst_ora_frontier
+		NOT = { has_variable = sb_bst_gbr_protection_request_resolved_var }
+		c:GBR ?= {
+			is_country_alive = yes
+		}
+	}
+
+	possible = {
+		always = yes
+	}
+
+	when_taken = {
+		set_variable = sb_bst_gbr_protection_request_resolved_var
+		c:GBR ?= {
+			trigger_event = { id = sb_bst_frontier.100 popup = yes }
+		}
+	}
+
+	ai_chance = {
+		value = 0
+	}
+}
+
+sb_fold_drakensberg_under_direct_control = {
+	is_shown = {
+		country_definition = cd:CAP
+		c:BST ?= {
+			is_country_alive = yes
+			is_direct_subject_of = root
+			is_subject_type = subject_type_puppet
+		}
+		NOT = { has_variable = sb_bst_cap_annexation_crisis_var }
+	}
+
+	possible = {
+		is_at_war = no
+		aggressive_diplomatic_plays_permitted = yes
+		c:BST ?= {
+			is_country_alive = yes
+			is_direct_subject_of = root
+			is_subject_type = subject_type_puppet
+		}
+	}
+
+	when_taken = {
+		set_variable = sb_bst_cap_annexation_crisis_var
+		c:BST ?= {
+			set_variable = sb_bst_cap_annexation_crisis_var
+		}
+		create_diplomatic_play = {
+			type = dp_annex_subject
+			target_country = c:BST
+		}
+	}
+
+	ai_chance = {
+		value = 25
+	}
+}
+
+sb_proclaim_sotho_tswana_nation = {
+	is_shown = {
+		country_definition = cd:BST
+		is_subject = no
+		has_variable = sb_sotho_tswana_nation_completed_var
+		c:TSW ?= {
+			is_country_alive = yes
+			is_subject_of = root
+			is_subject_type = subject_type_vassal
+			relations:root >= 50
+			liberty_desire <= 25
+		}
+	}
+
+	possible = {
+		always = yes
+	}
+
+	when_taken = {
+		annex = c:TSW
+		change_tag = STA
+		if = {
+			limit = {
+				NOT = { country_has_primary_culture = cu:tswana }
+			}
+			add_primary_culture = cu:tswana
+		}
+		if = {
+			limit = {
+				NOT = { country_has_primary_culture = cu:sotho }
+			}
+			add_primary_culture = cu:sotho
+		}
+	}
+
+	ai_chance = {
+		value = 100
+	}
+}

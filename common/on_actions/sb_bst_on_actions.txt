@@ -1,0 +1,228 @@
+﻿# Spes Bona - BST frontier and Cape transfer hooks
+
+on_monthly_pulse_country = {
+	on_actions = { sb_on_bst_monthly_pulse_country }
+}
+
+on_wargoal_enforced = {
+	on_actions = { sb_on_bst_wargoal_enforced }
+}
+
+on_war_end = {
+	on_actions = { sb_on_bst_war_end }
+}
+
+on_diplo_play_back_down = {
+	on_actions = { sb_on_bst_diplo_play_back_down }
+}
+
+sb_on_bst_monthly_pulse_country = {
+	effect = {
+		if = {
+			limit = {
+				country_definition = cd:ORA
+				has_variable = sb_ora_annexed_bst_var
+				NOT = { has_journal_entry = je_sb_settle_drakensberg }
+				NOT = {
+					c:BST ?= {
+						is_country_alive = yes
+					}
+				}
+			}
+			add_journal_entry = {
+				type = je_sb_settle_drakensberg
+			}
+		}
+
+		if = {
+			limit = {
+				country_definition = cd:GBR
+				c:BST ?= {
+					has_variable = sb_bst_cap_transfer_pending_var
+				}
+				OR = {
+					NOT = { c:BST ?= { is_country_alive = yes } }
+					NOT = { c:BST ?= { is_subject_of = c:GBR } }
+					NOT = { c:BST ?= { is_subject_type = subject_type_protectorate } }
+					NOT = {
+						c:CAP ?= {
+							is_country_alive = yes
+							is_subject_of = c:GBR
+							OR = {
+								is_subject_type = subject_type_dominion
+								is_subject_type = subject_type_sb_dominion
+								is_subject_type = subject_type_sb_responsible_colony
+								is_subject_type = subject_type_sb_responsible_colony_monarchy
+							}
+							sb_cap_controls_bst_frontier = yes
+						}
+					}
+				}
+			}
+			c:BST ?= {
+				remove_variable = sb_bst_cap_transfer_pending_var
+			}
+		}
+
+		if = {
+			limit = {
+				country_definition = cd:GBR
+				c:BST ?= {
+					is_country_alive = yes
+					is_subject_of = c:GBR
+					is_subject_type = subject_type_protectorate
+					NOT = { has_variable = sb_bst_cap_transfer_resolved_var }
+					NOT = { has_variable = sb_bst_cap_transfer_pending_var }
+				}
+				c:CAP ?= {
+					is_country_alive = yes
+					is_subject_of = c:GBR
+					OR = {
+						is_subject_type = subject_type_dominion
+						is_subject_type = subject_type_sb_dominion
+						is_subject_type = subject_type_sb_responsible_colony
+						is_subject_type = subject_type_sb_responsible_colony_monarchy
+					}
+					sb_cap_controls_bst_frontier = yes
+				}
+			}
+			c:BST ?= {
+				set_variable = sb_bst_cap_transfer_pending_var
+			}
+			random_list = {
+				1 = { trigger_event = { id = sb_bst_frontier.200 days = 180 popup = yes } }
+				1 = { trigger_event = { id = sb_bst_frontier.200 days = 360 popup = yes } }
+				1 = { trigger_event = { id = sb_bst_frontier.200 days = 540 popup = yes } }
+				1 = { trigger_event = { id = sb_bst_frontier.200 days = 719 popup = yes } }
+			}
+		}
+	}
+}
+
+sb_on_bst_wargoal_enforced = {
+	effect = {
+		if = {
+			limit = {
+				country_definition = cd:ORA
+				scope:target ?= {
+					country_definition = cd:BST
+				}
+				scope:diplomatic_play ?= {
+					is_diplomatic_play_type = dp_annex_war
+				}
+			}
+			set_variable = sb_ora_annexed_bst_var
+		}
+
+		if = {
+			limit = {
+				country_definition = cd:CAP
+				scope:target ?= {
+					country_definition = cd:BST
+				}
+				scope:diplomatic_play ?= {
+					is_diplomatic_play_type = dp_annex_subject
+				}
+				has_variable = sb_bst_cap_annexation_crisis_var
+			}
+			remove_variable = sb_bst_cap_annexation_crisis_var
+		}
+	}
+}
+
+sb_on_bst_war_end = {
+	effect = {
+		if = {
+			limit = {
+				scope:actor ?= {
+					country_definition = cd:CAP
+					has_variable = sb_bst_cap_annexation_crisis_var
+				}
+				scope:target ?= {
+					country_definition = cd:BST
+					has_variable = sb_bst_cap_annexation_crisis_var
+					is_country_alive = yes
+				}
+			}
+			scope:target = {
+				sb_bst_restore_gbr_protectorate = yes
+			}
+		}
+		if = {
+			limit = {
+				scope:actor ?= {
+					country_definition = cd:BST
+					has_variable = sb_bst_cap_annexation_crisis_var
+					is_country_alive = yes
+				}
+				scope:target ?= {
+					country_definition = cd:CAP
+					has_variable = sb_bst_cap_annexation_crisis_var
+				}
+			}
+			scope:actor = {
+				sb_bst_restore_gbr_protectorate = yes
+			}
+		}
+	}
+}
+
+sb_on_bst_diplo_play_back_down = {
+	effect = {
+		if = {
+			limit = {
+				root = {
+					is_diplomatic_play_type = dp_annex_war
+				}
+				scope:actor ?= {
+					country_definition = cd:ORA
+				}
+				scope:target ?= {
+					country_definition = cd:BST
+				}
+			}
+			scope:actor = {
+				set_variable = sb_ora_annexed_bst_var
+			}
+		}
+
+		if = {
+			limit = {
+				root = {
+					is_diplomatic_play_type = dp_annex_subject
+				}
+				scope:actor ?= {
+					country_definition = cd:CAP
+					has_variable = sb_bst_cap_annexation_crisis_var
+				}
+				scope:target ?= {
+					country_definition = cd:BST
+					has_variable = sb_bst_cap_annexation_crisis_var
+					is_country_alive = yes
+				}
+			}
+			scope:target = {
+				sb_bst_restore_gbr_protectorate = yes
+			}
+		}
+		if = {
+			limit = {
+				root = {
+					is_diplomatic_play_type = dp_annex_subject
+				}
+				scope:actor ?= {
+					country_definition = cd:BST
+					has_variable = sb_bst_cap_annexation_crisis_var
+					is_country_alive = yes
+				}
+				scope:target ?= {
+					country_definition = cd:CAP
+					has_variable = sb_bst_cap_annexation_crisis_var
+				}
+			}
+			scope:actor = {
+				sb_bst_restore_gbr_protectorate = yes
+			}
+		}
+	}
+}

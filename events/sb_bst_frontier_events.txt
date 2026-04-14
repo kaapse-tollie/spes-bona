@@ -1,0 +1,176 @@
+﻿# Spes Bona - BST frontier, protection, and transfer events
+# Cross-ref: common/journal_entries/1-07_sb_bst_frontier.txt
+# Cross-ref: common/decisions/sb_bst_decisions.txt
+# Cross-ref: common/scripted_effects/sb_bst_effects.txt
+
+namespace = sb_bst_frontier
+
+sb_bst_frontier.001 = {
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		country_definition = cd:BST
+		has_variable = sb_bst_oranje_raid_cooldown_var
+	}
+
+	immediate = {
+		remove_variable = sb_bst_oranje_raid_cooldown_var
+	}
+}
+
+sb_bst_frontier.010 = {
+	type = country_event
+	placement = root
+
+	title = sb_bst_frontier.010.t
+	desc = sb_bst_frontier.010.d
+	flavor = sb_bst_frontier.010.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_soldiers_breaking_protest.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:ORA
+	}
+
+	option = {
+		name = sb_bst_frontier.010.a
+		default_option = yes
+	}
+}
+
+sb_bst_frontier.100 = {
+	type = country_event
+	placement = root
+
+	title = sb_bst_frontier.100.t
+	desc = sb_bst_frontier.100.d
+	flavor = sb_bst_frontier.100.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:GBR
+		c:BST ?= {
+			is_country_alive = yes
+			is_subject = no
+			has_journal_entry = je_sb_bst_ora_frontier
+		}
+	}
+
+	option = {
+		name = sb_bst_frontier.100.a
+		default_option = yes
+		c:GBR ?= {
+			create_diplomatic_pact = {
+				country = c:BST
+				type = protectorate
+			}
+		}
+		ai_chance = {
+			base = 100
+		}
+	}
+
+	option = {
+		name = sb_bst_frontier.100.b
+		trigger = {
+			is_player = yes
+		}
+		ai_chance = {
+			base = 0
+		}
+	}
+}
+
+sb_bst_frontier.200 = {
+	type = country_event
+	placement = root
+
+	title = sb_bst_frontier.200.t
+	desc = sb_bst_frontier.200.d
+	flavor = sb_bst_frontier.200.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:GBR
+		c:BST ?= {
+			has_variable = sb_bst_cap_transfer_pending_var
+			is_country_alive = yes
+			is_subject_of = c:GBR
+			is_subject_type = subject_type_protectorate
+		}
+		c:CAP ?= {
+			is_country_alive = yes
+			is_subject_of = c:GBR
+			OR = {
+				is_subject_type = subject_type_dominion
+				is_subject_type = subject_type_sb_dominion
+				is_subject_type = subject_type_sb_responsible_colony
+				is_subject_type = subject_type_sb_responsible_colony_monarchy
+			}
+			sb_cap_controls_bst_frontier = yes
+		}
+	}
+
+	immediate = {
+		c:BST ?= {
+			remove_variable = sb_bst_cap_transfer_pending_var
+		}
+	}
+
+	option = {
+		name = sb_bst_frontier.200.a
+		default_option = yes
+		c:BST ?= {
+			set_variable = sb_bst_cap_transfer_resolved_var
+		}
+		c:CAP ?= {
+			transfer_subject = c:BST
+		}
+		c:BST ?= {
+			if = {
+				limit = {
+					is_subject_of = c:CAP
+					NOT = { is_subject_type = subject_type_puppet }
+				}
+				change_subject_type = subject_type_puppet
+			}
+		}
+		ai_chance = {
+			base = 100
+		}
+	}
+
+	option = {
+		name = sb_bst_frontier.200.b
+		trigger = {
+			is_player = yes
+		}
+		c:BST ?= {
+			set_variable = sb_bst_cap_transfer_resolved_var
+		}
+		ai_chance = {
+			base = 0
+		}
+	}
+}

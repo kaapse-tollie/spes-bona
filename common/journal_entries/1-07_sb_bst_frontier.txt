@@ -1,0 +1,175 @@
+﻿# Spes Bona - BST frontier and Sotho-Tswana journal entries
+
+je_sb_bst_ora_frontier = {
+	group = je_group_global_international_situations
+
+	icon = "gfx/interface/icons/je_icons/je_great_trek.dds"
+
+	should_be_involved = {
+		OR = {
+			c:BST ?= root
+			c:ORA ?= root
+		}
+	}
+
+	should_show_when_not_involved = {
+		always = no
+	}
+
+	is_shown_when_inactive = {
+		c:ORA ?= {
+			is_country_alive = yes
+			NOT = { has_journal_entry = je_sb_great_trek }
+		}
+		c:BST ?= {
+			is_country_alive = yes
+			is_subject = no
+			sb_bst_holds_drakensberg = yes
+		}
+	}
+
+	possible = {
+		c:ORA ?= {
+			is_country_alive = yes
+			NOT = { has_journal_entry = je_sb_great_trek }
+		}
+		c:BST ?= {
+			is_country_alive = yes
+			is_subject = no
+			sb_bst_holds_drakensberg = yes
+		}
+	}
+
+	scripted_button = je_sb_bst_raid_oranje_button
+
+	status_desc = {
+		desc = je_sb_bst_ora_frontier_status
+	}
+
+	complete = {
+		OR = {
+			NOT = {
+				c:BST ?= {
+					is_country_alive = yes
+				}
+			}
+			c:BST ?= {
+				is_subject = yes
+			}
+			c:BST ?= {
+				owns_entire_state_region = STATE_VRYSTAAT
+			}
+		}
+	}
+
+	on_yearly_pulse = {
+		effect = {
+			c:BST ?= {
+				if = {
+					limit = {
+						is_ai = yes
+						sb_bst_frontier_raid_valid = yes
+						NOT = { has_variable = sb_bst_oranje_raid_cooldown_var }
+					}
+					sb_bst_execute_oranje_raid = yes
+				}
+			}
+		}
+	}
+
+	invalid = {
+		OR = {
+			NOT = {
+				c:ORA ?= {
+					is_country_alive = yes
+				}
+			}
+			NOT = {
+				c:BST ?= {
+					is_country_alive = yes
+					sb_bst_holds_drakensberg = yes
+				}
+			}
+		}
+	}
+
+	weight = 1000
+	should_be_pinned_by_default = yes
+}
+
+je_sb_settle_drakensberg = {
+	group = je_group_historical_content
+
+	icon = "gfx/interface/icons/je_icons/je_great_trek.dds"
+
+	possible = {
+		country_definition = cd:ORA
+		has_variable = sb_ora_annexed_bst_var
+		NOT = { has_variable = sb_settled_drakensberg_var }
+		NOT = {
+			c:BST ?= {
+				is_country_alive = yes
+			}
+		}
+	}
+
+	status_desc = {
+		desc = je_sb_settle_drakensberg_status
+	}
+
+	complete = {
+		owns_entire_state_region = STATE_DRAKENSBERG
+		any_scope_state = {
+			state_region = s:STATE_DRAKENSBERG
+			culture_percent_state = {
+				target = cu:boer
+				value >= 0.2
+			}
+		}
+	}
+
+	on_complete = {
+		set_variable = sb_settled_drakensberg_var
+		remove_variable = sb_ora_annexed_bst_var
+		s:STATE_DRAKENSBERG = {
+			add_homeland = cu:boer
+		}
+	}
+
+	weight = 1000
+	should_be_pinned_by_default = yes
+}
+
+je_sb_sotho_tswana_nation = {
+	group = je_group_historical_content
+
+	icon = "gfx/interface/icons/je_icons/je_great_trek.dds"
+
+	possible = {
+		country_definition = cd:BST
+		is_subject = no
+		owns_entire_state_region = STATE_VRYSTAAT
+		c:TSW ?= {
+			is_country_alive = yes
+		}
+	}
+
+	status_desc = {
+		desc = je_sb_sotho_tswana_nation_status
+	}
+
+	complete = {
+		owns_entire_state_region = STATE_VRYSTAAT
+		owns_entire_state_region = STATE_DRAKENSBERG
+		has_technology_researched = nationalism
+		sb_bst_boer_free_sta_route = yes
+	}
+
+	on_complete = {
+		set_variable = sb_sotho_tswana_nation_completed_var
+		sb_bst_centralize_tswana_client = yes
+	}
+
+	weight = 1000
+	should_be_pinned_by_default = yes
+}
