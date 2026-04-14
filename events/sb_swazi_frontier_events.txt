@@ -1,0 +1,291 @@
+﻿namespace = sb_swazi_frontier
+
+# =============================================================================
+# Spes Bona - Swazi Frontier Events
+# =============================================================================
+# Ownership: ZUL-SWZ frontier war, Boer consolidation pressure, and British accommodation.
+# TOC: 094 Swazi war opening, 095 Boer frontier pressure, 096 British accommodation, 097 Zulu victory follow-up.
+# Cross-ref: common/scripted_effects/sb_zulu_dynasty_effects.txt, common/scripted_effects/sb_swazi_effects.txt
+# =============================================================================
+
+sb_swazi_frontier.094 = {
+	type = country_event
+	placement = root
+
+	title = sb_swazi_frontier.094.t
+	desc = sb_swazi_frontier.094.d
+	flavor = sb_swazi_frontier.094.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_soldiers_breaking_protest.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_military.dds"
+	duration = 3
+
+	trigger = {
+		sb_is_zulu_dynasty_country = yes
+		ruler = {
+			has_template = ZUL_dingane
+		}
+		c:SWZ ?= {
+			is_country_alive = yes
+			is_subject = no
+			any_scope_state = {
+				state_region = s:STATE_EAST_TRANSVAAL
+			}
+		}
+	}
+
+	# This is the crisis-release valve for Dingane after the Natal line. It only
+	# becomes available once the Natal/Blood River line has actually resolved.
+	# AI weighting below is driven by how that line ended.
+	option = {
+		name = sb_swazi_frontier.094.a
+		default_option = yes
+		sb_zulu_clear_swazi_question_ai_context = yes
+		set_variable = sb_zulu_swazi_war_active_var
+		c:SWZ ?= {
+			set_variable = sb_zulu_swazi_war_active_var
+			if = {
+				limit = { is_ai = yes }
+				add_modifier = {
+					name = sb_swazi_frontier_muster
+					months = 18
+				}
+				if = {
+					limit = { root = { is_player = yes } }
+					add_modifier = {
+						name = sb_swazi_frontier_muster_vs_player
+						months = 18
+					}
+				}
+				sb_swazi_raise_zulu_campaign_muster = yes
+			}
+		}
+		create_diplomatic_play = {
+			type = dp_conquer_state
+			target_country = c:SWZ
+			target_state = s:STATE_EAST_TRANSVAAL.region_state:SWZ
+		}
+		ai_chance = {
+			base = 50
+			modifier = {
+				factor = 0.4
+				has_variable = sb_zulu_swazi_ai_honour_deal_var
+			}
+			modifier = {
+				factor = 2
+				has_variable = sb_zulu_swazi_ai_lost_blood_river_var
+			}
+			modifier = {
+				factor = 1.6
+				has_variable = sb_zulu_swazi_ai_won_blood_river_var
+			}
+		}
+	}
+
+	option = {
+		name = sb_swazi_frontier.094.b
+		sb_zulu_clear_swazi_question_ai_context = yes
+		sb_zulu_remove_dynastic_stability_5 = yes
+		ai_chance = {
+			base = 50
+			modifier = {
+				factor = 1.6
+				has_variable = sb_zulu_swazi_ai_honour_deal_var
+			}
+			modifier = {
+				factor = 0
+				has_variable = sb_zulu_swazi_ai_lost_blood_river_var
+			}
+			modifier = {
+				factor = 0.4
+				has_variable = sb_zulu_swazi_ai_won_blood_river_var
+			}
+		}
+	}
+}
+
+sb_swazi_frontier.095 = {
+	type = country_event
+	placement = root
+
+	title = sb_swazi_frontier.095.t
+	desc = sb_swazi_frontier.095.d
+	flavor = sb_swazi_frontier.095.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:SWZ
+		is_country_alive = yes
+		is_subject = no
+		NOT = { has_variable = sb_swazi_boer_pressure_resolved_var }
+			c:TRN ?= {
+				is_country_alive = yes
+				has_variable = sb_transvaal_unity_resolved_var
+			}
+			OR = {
+			p:x73CDE8.state.owner = root
+			p:x50A011.state.owner = root
+			p:x452304.state.owner = root
+		}
+	}
+
+	# Fired from Transvaal Unity completion. The frontier bargain is intentionally
+	# about the disputed Swazi-held western pocket only; it does not rewrite the
+	# whole East Transvaal ownership shell.
+	option = {
+		name = sb_swazi_frontier.095.a
+		default_option = yes
+		custom_tooltip = sb_swazi_frontier_095_a_tt
+		sb_swazi_apply_boer_buy_time_settlement = yes
+		ai_chance = {
+			base = 45
+			modifier = {
+				factor = 1.75
+				has_journal_entry = je_sb_adopt_firearms
+				NOT = { has_variable = sb_firearms_modernized_var }
+			}
+			modifier = {
+				factor = 1.5
+				c:TRN ?= {
+					gdp > {
+						value = root.gdp
+						multiply = 1.5
+					}
+				}
+			}
+		}
+	}
+
+	option = {
+		name = sb_swazi_frontier.095.b
+		custom_tooltip = sb_swazi_frontier_095_b_tt
+		sb_swazi_apply_boer_resistance = yes
+		ai_chance = {
+			base = 55
+			modifier = {
+				factor = 0.5
+				has_journal_entry = je_sb_adopt_firearms
+				NOT = { has_variable = sb_firearms_modernized_var }
+			}
+			modifier = {
+				factor = 0.7
+				c:TRN ?= {
+					gdp > {
+						value = root.gdp
+						multiply = 1.5
+					}
+				}
+			}
+		}
+	}
+}
+
+sb_swazi_frontier.096 = {
+	type = country_event
+	placement = root
+
+	title = sb_swazi_frontier.096.t
+	desc = sb_swazi_frontier.096.d
+	flavor = sb_swazi_frontier.096.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:SWZ
+		is_country_alive = yes
+		is_subject = no
+		has_variable = sb_swazi_boer_pressure_resolved_var
+		NOT = { has_variable = sb_swazi_british_accommodation_var }
+		NOT = { has_variable = sb_swazi_stand_apart_var }
+		c:NAL ?= {
+			is_country_alive = yes
+			is_subject_of = c:GBR
+		}
+		sb_all_zululand_under_british_control = yes
+	}
+
+	# Second-stage response only. The British accommodation lane is gated behind
+	# an already-resolved Boer pressure crisis so it reads as later shelter, not
+	# an alternate early branch.
+	option = {
+		name = sb_swazi_frontier.096.a
+		default_option = yes
+		custom_tooltip = sb_swazi_frontier_096_a_tt
+		sb_swazi_apply_british_accommodation = yes
+		ai_chance = {
+			base = 70
+			modifier = {
+				factor = 1.5
+				has_variable = sb_swazi_boer_resisted_var
+			}
+		}
+	}
+
+	option = {
+		name = sb_swazi_frontier.096.b
+		custom_tooltip = sb_swazi_frontier_096_b_tt
+		sb_swazi_apply_stand_apart = yes
+		ai_chance = {
+			base = 30
+			modifier = {
+				factor = 1.5
+				has_variable = sb_swazi_boer_resisted_var
+			}
+		}
+	}
+}
+
+sb_swazi_frontier.097 = {
+	type = country_event
+	placement = root
+
+	title = sb_swazi_frontier.097.t
+	desc = sb_swazi_frontier.097.d
+	flavor = sb_swazi_frontier.097.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_soldiers_breaking_protest.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_military.dds"
+	duration = 3
+
+	trigger = {
+		sb_is_zulu_dynasty_country = yes
+	}
+
+	option = {
+		name = sb_swazi_frontier.097.a
+		default_option = yes
+		random_scope_character = {
+			limit = {
+				has_template = ZUL_dingane
+			}
+			add_modifier = {
+				name = sb_dingane_breaks_swazi
+				months = 120
+			}
+		}
+		ai_chance = {
+			base = 100
+		}
+	}
+}

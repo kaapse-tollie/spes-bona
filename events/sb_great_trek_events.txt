@@ -1,0 +1,616 @@
+﻿namespace = sb_great_trek
+
+# =============================================================================
+# Spes Bona - Great Trek Events
+# =============================================================================
+# Ownership: ORA-first trek spine, MTB opener, Potchefstroom split trigger, JE rewards, and trek completion.
+# TOC: 001 MTB opener, 002 Ndebele retreat, 006 Potchefstroom, 030-043 JE rewards, 100-101 trek completion and Boer Natalia normalization.
+# Cross-ref: common/journal_entries/1-02_sb_great_trek.txt, common/scripted_effects/sb_trek_migration.txt
+# =============================================================================
+
+sb_great_trek.001 = {
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		country_definition = cd:MTB
+		NOT = { has_variable = sb_ndebele_opening_play_fired }
+		is_at_war = no
+		aggressive_diplomatic_plays_permitted = yes
+		is_country_alive = yes
+		c:ORA ?= {
+			is_country_alive = yes
+			is_at_war = no
+			aggressive_diplomatic_plays_permitted = yes
+		}
+	}
+
+	immediate = {
+		set_variable = sb_ndebele_opening_play_fired
+		create_diplomatic_play = {
+			# Use the vanilla decentralized-native flow here. This play already
+			# carries the built-in colonization-rights article, so avoid adding
+			# custom opening articles on top or the presentation/order gets odd.
+			type = dp_native_uprising
+			target_country = c:ORA
+		}
+	}
+}
+
+sb_great_trek.002 = {
+	type = country_event
+	placement = ROOT
+
+	title = sb_great_trek.002.t
+	desc = sb_great_trek.002.d
+	flavor = sb_great_trek.002.f
+
+	duration = 3
+
+	event_image = {
+		video = "middleeast_jungle_expedition"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+
+	trigger = {
+		country_definition = cd:ORA
+	}
+
+	immediate = {
+		c:MTB ?= {
+			save_scope_as = ndebele
+			ruler = {
+				save_scope_as = mzilikazi
+			}
+		}
+		ROOT = {
+			save_scope_as = transvaal
+		}
+		c:ZUL ?= {
+			save_scope_as = zulu
+		}
+		s:STATE_TRANSVAAL = {
+			save_scope_as = transvaal_region
+		}
+	}
+
+	option = {
+		name = sb_great_trek.002.a
+		default_option = yes
+
+		hidden_effect = {
+			if = {
+				limit = {
+					exists = c:MSH
+				}
+				c:MTB ?= {
+					annex = c:MSH
+				}
+			}
+		}
+			c:MTB ?= {
+				s:STATE_VRYSTAAT = {
+					set_owner_of_provinces = {
+						country = c:ORA
+						provinces = {
+							xF17D3D xF075D7 x373E53 x9D6A16 xCEE3D2
+						}
+					}
+					set_owner_of_provinces = {
+						country = c:TSW
+						provinces = {
+							x83E266 x6253E3 x19AE59 xED7851 x75FA4B
+						}
+					}
+				}
+			every_scope_state = {
+				limit = {
+					OR = {
+						state_region = s:STATE_TRANSVAAL
+						state_region = s:STATE_NORTHERN_TRANSVAAL
+					}
+				}
+				set_state_owner = c:TSW
+			}
+			every_scope_state = {
+				limit = {
+					state_region = s:STATE_EAST_TRANSVAAL
+				}
+				set_state_owner = c:PDI
+			}
+		}
+		if = {
+			limit = {
+				is_ai = yes
+			}
+			c:MTB ?= {
+				if = {
+					limit = { has_modifier = sb_native_conscription_MTB }
+					remove_modifier = sb_native_conscription_MTB
+				}
+				if = {
+					limit = { NOT = { has_modifier = sb_native_conscription_MTB_player } }
+					add_modifier = {
+						name = sb_native_conscription_MTB_player
+						months = -1
+					}
+				}
+			}
+		}
+
+		ai_chance = {
+			base = 100
+		}
+	}
+}
+
+sb_great_trek.006 = {
+	type = country_event
+	placement = root
+
+	title = sb_great_trek.006.t
+	desc = sb_great_trek.006.d
+	flavor = sb_great_trek.006.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+
+	trigger = {
+		# The Potchefstroom split can be surfaced either to ORA itself or to a
+		# player-controlled Natalia, but the actual spawn work still runs from ORA
+		# scope so the inland ownership handoff stays consistent.
+		OR = {
+			country_definition = cd:ORA
+			country_definition = cd:NAL
+		}
+		NOT = { exists = c:TRN }
+		c:ORA ?= {
+			is_country_alive = yes
+			has_variable = sb_trn_v2_spawn_pending_var
+			NOT = { has_variable = sb_trn_v2_spawned_var }
+			# Inline the west-Transvaal foothold audit directly here. This avoids a
+			# boot-time dependency on a custom scripted trigger for the one place the
+			# split event needs to know whether ORA has actually established itself
+			# in the Potchefstroom corridor.
+			OR = {
+				p:xD0A010.state.owner = this
+				p:x8BDC4D.state.owner = this
+				p:xA22DC2.state.owner = this
+				p:xD02190.state.owner = this
+				p:x6C1786.state.owner = this
+				p:x9A137B.state.owner = this
+			}
+		}
+	}
+
+	option = {
+		name = sb_great_trek.006.a
+		trigger = {
+			is_player = yes
+		}
+		c:ORA ?= {
+			sb_spawn_transvaal_republic_v2 = yes
+		}
+		play_as = c:TRN
+		ai_chance = {
+			base = 0
+		}
+	}
+
+	option = {
+		name = sb_great_trek.006.b
+		default_option = yes
+		c:ORA ?= {
+			sb_spawn_transvaal_republic_v2 = yes
+		}
+		ai_chance = {
+			base = 100
+		}
+	}
+}
+
+sb_great_trek.030 = {
+	type = country_event
+	placement = root
+
+	title = sb_great_trek.030.t
+	desc = sb_great_trek.030.d
+	flavor = sb_great_trek.030.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = { }
+
+	immediate = {
+		c:CAP ?= {
+			save_scope_as = migration_source
+		}
+		cu:boer = {
+			save_scope_as = migration_culture
+		}
+		ordered_scope_state = {
+			order_by = migration_pull
+			position = 0
+			check_range_bounds = no
+			save_scope_as = migration_target
+		}
+	}
+
+		option = {
+			name = sb_great_trek.030.a
+			default_option = yes
+		scope:migration_target ?= {
+			create_mass_migration = {
+				origin = scope:migration_source
+				culture = scope:migration_culture
+			}
+		}
+			root = {
+				add_modifier = {
+					name = sb_trek_migration_cost
+					months = 12
+				}
+			}
+		}
+	}
+
+sb_great_trek.031 = {
+	type = country_event
+	placement = root
+
+	title = sb_great_trek.031.t
+	desc = sb_great_trek.031.d
+	flavor = sb_great_trek.031.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = { }
+
+	immediate = {
+		c:CAP ?= {
+			save_scope_as = migration_source
+		}
+		cu:boer = {
+			save_scope_as = migration_culture
+		}
+		ordered_scope_state = {
+			order_by = migration_pull
+			position = 0
+			check_range_bounds = no
+			save_scope_as = migration_target
+		}
+	}
+
+		option = {
+			name = sb_great_trek.031.a
+			default_option = yes
+		scope:migration_target ?= {
+			create_mass_migration = {
+				origin = scope:migration_source
+				culture = scope:migration_culture
+			}
+		}
+			root = {
+				add_modifier = {
+					name = sb_trek_migration_cost
+					months = 12
+				}
+			}
+		}
+	}
+
+sb_great_trek.040 = {
+	type = country_event
+	placement = root
+
+	title = sb_great_trek.040.t
+	desc = sb_great_trek.040.d
+	flavor = sb_great_trek.040.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = { }
+
+	immediate = {
+		c:CAP ?= {
+			save_scope_as = migration_source
+		}
+		cu:boer = {
+			save_scope_as = migration_culture
+		}
+		ordered_scope_state = {
+			order_by = migration_pull
+			position = 0
+			check_range_bounds = no
+			save_scope_as = migration_target
+		}
+	}
+
+		option = {
+			name = sb_great_trek.040.a
+			default_option = yes
+		# Mass migration wave — Boers flock to the Orange Free State.
+		# Also imposes a short bureaucratic strain on the Cape as people leave.
+		scope:migration_target = {
+			create_mass_migration = {
+				origin = scope:migration_source
+				culture = scope:migration_culture
+			}
+		}
+			root = {
+				add_modifier = {
+					name = sb_trek_migration_cost
+					months = 24
+				}
+			}
+		}
+	}
+
+sb_great_trek.041 = {
+	type = country_event
+	placement = root
+
+	title = sb_great_trek.041.t
+	desc = sb_great_trek.041.d
+	flavor = sb_great_trek.041.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = { }
+
+	immediate = {
+		c:CAP ?= {
+			save_scope_as = migration_source
+		}
+		cu:boer = {
+			save_scope_as = migration_culture
+		}
+		ordered_scope_state = {
+			order_by = migration_pull
+			position = 0
+			check_range_bounds = no
+			save_scope_as = migration_target
+		}
+	}
+
+		option = {
+			name = sb_great_trek.041.a
+			default_option = yes
+		# Mass migration wave — Boers flock to the Transvaal Republic.
+		# The Cape also feels the administrative pull of the trek.
+		scope:migration_target = {
+			create_mass_migration = {
+				origin = scope:migration_source
+				culture = scope:migration_culture
+			}
+		}
+		root = {
+			add_modifier = {
+				name = sb_trek_migration_cost
+				months = 24
+			}
+		}
+	}
+}
+
+sb_great_trek.042 = {
+	type = country_event
+	placement = root
+
+	title = sb_great_trek.042.t
+	desc = sb_great_trek.042.d
+	flavor = sb_great_trek.042.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = { }
+
+	immediate = {
+		c:CAP ?= {
+			save_scope_as = migration_source
+		}
+		cu:boer = {
+			save_scope_as = migration_culture
+		}
+		ordered_scope_state = {
+			order_by = migration_pull
+			position = 0
+			check_range_bounds = no
+			save_scope_as = migration_target
+		}
+	}
+
+	option = {
+		name = sb_great_trek.042.a
+		default_option = yes
+		scope:migration_target = {
+			create_mass_migration = {
+				origin = scope:migration_source
+				culture = scope:migration_culture
+			}
+		}
+		root = {
+			add_modifier = {
+				name = sb_trek_migration_cost
+				months = 24
+			}
+		}
+	}
+}
+
+sb_great_trek.043 = {
+	type = country_event
+	placement = root
+
+	title = sb_great_trek.043.t
+	desc = sb_great_trek.043.d
+	flavor = sb_great_trek.043.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = { }
+
+	immediate = {
+		c:CAP ?= {
+			save_scope_as = migration_source
+		}
+		cu:boer = {
+			save_scope_as = migration_culture
+		}
+		ordered_scope_state = {
+			order_by = migration_pull
+			position = 0
+			check_range_bounds = no
+			save_scope_as = migration_target
+		}
+	}
+
+	option = {
+		name = sb_great_trek.043.a
+		default_option = yes
+		scope:migration_target = {
+			create_mass_migration = {
+				origin = scope:migration_source
+				culture = scope:migration_culture
+			}
+		}
+		root = {
+			add_modifier = {
+				name = sb_trek_migration_cost
+				months = 24
+			}
+		}
+	}
+}
+
+sb_great_trek.100 = {
+	type = country_event
+	placement = root
+
+	title = sb_great_trek.100.t
+	desc = sb_great_trek.100.d
+	flavor = sb_great_trek.100.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = { }
+
+	option = {
+		name = sb_great_trek.100.a
+		default_option = yes
+		add_modifier = {
+			name = sb_prestige_gain_medium
+			months = long_modifier_time
+		}
+		hidden_effect = {
+			if = {
+				limit = {
+					OR = {
+						country_definition = cd:TRN
+						country_definition = cd:ORA
+					}
+				}
+				trigger_event = { id = sb_boer_republics.130 days = 7 popup = yes }
+			}
+			if = {
+				limit = {
+					country_definition = cd:NAL
+					country_has_primary_culture = cu:boer
+				}
+				trigger_event = { id = sb_great_trek.101 days = 7 popup = yes }
+			}
+		}
+	}
+}
+
+sb_great_trek.101 = {
+	type = country_event
+	placement = root
+
+	title = sb_great_trek.101.t
+	desc = sb_great_trek.101.d
+	flavor = sb_great_trek.101.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:NAL
+		country_has_primary_culture = cu:boer
+		NOT = { has_variable = sb_natalia_trek_normalized_var }
+	}
+
+	option = {
+		name = sb_great_trek.101.a
+		default_option = yes
+		set_variable = sb_natalia_trek_normalized_var
+		if = {
+			limit = { has_variable = sb_commandant_general_visible_var }
+			remove_variable = sb_commandant_general_visible_var
+		}
+		if = {
+			limit = { has_modifier = sb_trek_frontier_drive_natalia }
+			remove_modifier = sb_trek_frontier_drive_natalia
+		}
+		activate_law = law_type:law_presidential_republic
+		activate_law = law_type:law_interventionism
+		sb_refresh_boer_commandant_general_government = yes
+		ai_chance = {
+			base = 100
+		}
+	}
+}

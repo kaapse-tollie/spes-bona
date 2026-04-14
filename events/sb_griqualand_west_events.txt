@@ -1,0 +1,195 @@
+﻿namespace = sb_griqualand_west
+
+# =============================================================================
+# Spes Bona - Griqualand West Events
+# =============================================================================
+# Ownership: Kimberley discovery, Cape response, and British expedition answer.
+# TOC: 020 Cape response, 021 local discovery, 022 British answer.
+# Cross-ref: common/on_actions/sb_phase3_on_actions.txt, common/scripted_effects/sb_phase3_effects.txt
+# =============================================================================
+
+sb_griqualand_west.020 = {
+	type = country_event
+	placement = root
+
+	title = sb_griqualand_west.020.t
+	desc = sb_griqualand_west.020.d
+	flavor = sb_griqualand_west.020.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:CAP
+		has_variable = sb_phase3_glw_question_active_var
+		has_variable = sb_phase3_kimberley_discovered_var
+		NOT = { has_variable = sb_phase3_glw_question_resolved_var }
+	}
+
+	immediate = {
+		p:x68B5E8.state.owner = {
+			save_scope_as = kimberley_holder
+		}
+	}
+
+	option = {
+		name = sb_griqualand_west.020.a
+		trigger = {
+			c:WBL ?= scope:kimberley_holder
+			sb_cap_can_petition_london_over_kimberley = yes
+		}
+		custom_tooltip = sb_griqualand_west_kimberley_london_expedition_tt
+		c:GBR ?= {
+			trigger_event = { id = sb_griqualand_west.022 days = 7 popup = yes }
+		}
+		ai_chance = {
+			base = 35
+			modifier = {
+				factor = 2.0
+				has_modifier = sb_settler_victory
+			}
+		}
+	}
+
+	option = {
+		name = sb_griqualand_west.020.b
+		default_option = yes
+		trigger = {
+			c:WBL ?= scope:kimberley_holder
+			sb_cap_can_offer_wbl_protection = yes
+		}
+		custom_tooltip = sb_griqualand_west_kimberley_wbl_protection_tt
+		sb_phase3_apply_wbl_protection_path = yes
+		ai_chance = {
+			base = 65
+			modifier = {
+				factor = 2.0
+				sb_cap_is_full_liberal_griqua_route = yes
+			}
+			modifier = {
+				factor = 0
+				has_modifier = sb_settler_victory
+			}
+		}
+	}
+
+	option = {
+		name = sb_griqualand_west.020.c
+		trigger = {
+			NOT = { c:WBL ?= scope:kimberley_holder }
+			is_subject_of = c:GBR
+		}
+		custom_tooltip = sb_griqualand_west_kimberley_london_expedition_tt
+		c:GBR ?= {
+			trigger_event = { id = sb_griqualand_west.022 days = 7 popup = yes }
+		}
+		ai_chance = {
+			base = 75
+		}
+	}
+
+	option = {
+		name = sb_griqualand_west.020.e
+		add_modifier = {
+			name = sb_prestige_loss_small
+			months = short_modifier_time
+		}
+		set_variable = sb_phase3_glw_question_resolved_var
+		ai_chance = {
+			base = 5
+			modifier = {
+				add = 20
+				is_subject_of = c:GBR
+			}
+		}
+	}
+}
+
+sb_griqualand_west.021 = {
+	type = country_event
+	placement = root
+
+	title = sb_griqualand_west.021.t
+	desc = sb_griqualand_west.021.d
+	flavor = sb_griqualand_west.021.f
+
+	event_image = {
+		video = "gfx/event_pictures/europenorthamerica_gold_prospectors.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_trade.dds"
+	duration = 3
+
+	trigger = {
+		p:x68B5E8.state.owner = root
+		sb_kimberley_owner_has_pneumatic_tools = yes
+		NOT = { has_variable = sb_phase3_local_kimberley_discovery_var }
+	}
+
+	option = {
+		name = sb_griqualand_west.021.a
+		default_option = yes
+		set_variable = sb_phase3_local_kimberley_discovery_var
+		sb_phase3_create_kimberley_goldfield_building_if_missing = yes
+		ai_chance = {
+			base = 100
+		}
+	}
+}
+
+sb_griqualand_west.022 = {
+	type = country_event
+	placement = root
+
+	title = sb_griqualand_west.022.t
+	desc = sb_griqualand_west.022.d
+	flavor = sb_griqualand_west.022.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:GBR
+		c:CAP ?= {
+			is_country_alive = yes
+			has_variable = sb_phase3_glw_question_active_var
+			NOT = { has_variable = sb_phase3_glw_question_resolved_var }
+		}
+	}
+
+	option = {
+		name = sb_griqualand_west.022.a
+		default_option = yes
+		c:CAP ?= {
+			sb_phase3_apply_kimberley_london_expedition_path = yes
+		}
+		ai_chance = {
+			base = 100
+		}
+	}
+
+	option = {
+		name = sb_griqualand_west.022.b
+		c:CAP ?= {
+			add_modifier = {
+				name = sb_prestige_loss_small
+				months = short_modifier_time
+			}
+			set_variable = sb_phase3_glw_question_resolved_var
+		}
+		ai_chance = {
+			base = 0
+		}
+	}
+}

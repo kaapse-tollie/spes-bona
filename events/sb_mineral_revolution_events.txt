@@ -1,0 +1,62 @@
+﻿namespace = sb_mineral_revolution
+
+# =============================================================================
+# Spes Bona - Mineral Revolution Events
+# =============================================================================
+# Ownership: visible late-century opener for the mineral revolution.
+# TOC: 010 opening event.
+# Cross-ref: common/journal_entries/1-06_sb_phase3_mineral_revolution.txt
+# =============================================================================
+
+sb_mineral_revolution.010 = {
+	type = country_event
+	placement = root
+
+	title = sb_mineral_revolution.010.t
+
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_variable = sb_phase3_cape_liberal_path_var }
+				desc = sb_mineral_revolution.010.d_liberal
+			}
+			triggered_desc = {
+				trigger = { has_variable = sb_phase3_cape_settler_path_var }
+				desc = sb_mineral_revolution.010.d_settler
+			}
+			triggered_desc = {
+				trigger = { has_variable = sb_phase3_cape_compromise_path_var }
+				desc = sb_mineral_revolution.010.d_compromise
+			}
+			triggered_desc = {
+				trigger = { always = yes }
+				desc = sb_mineral_revolution.010.d_default
+			}
+		}
+	}
+
+	flavor = sb_mineral_revolution.010.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		sb_is_phase3_public_host_country = yes
+		has_variable = sb_phase3_mineral_revolution_available_var
+		NOT = { has_variable = sb_phase3_mineral_revolution_opened_var }
+	}
+
+	option = {
+		name = sb_mineral_revolution.010.a
+		default_option = yes
+		set_variable = sb_phase3_mineral_revolution_opened_var
+		ai_chance = {
+			base = 100
+		}
+	}
+}

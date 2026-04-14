@@ -1,0 +1,213 @@
+﻿namespace = sb_zulu_court
+
+# =============================================================================
+# Spes Bona - Zulu Court Events
+# =============================================================================
+# Ownership: ZUL court randoms that move dynastic stability and firearms politics.
+# TOC: 200-203 court randoms.
+# Cross-ref: common/scripted_effects/sb_zulu_dynasty_succession_effects.txt
+# =============================================================================
+
+sb_zulu_court.200 = {
+	type = country_event
+	placement = root
+
+	title = sb_zulu_court.200.t
+	desc = sb_zulu_court.200.d
+	flavor = sb_zulu_court.200.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		sb_is_zulu_dynasty_country = yes
+		has_journal_entry = je_sb_zulu_kingdom
+	}
+
+	option = {
+		name = sb_zulu_court.200.a
+		default_option = yes
+		custom_tooltip = sb_zulu_dynasty_gain_stability_5
+		hidden_effect = {
+			sb_zulu_add_dynastic_stability_5 = yes
+		}
+		add_treasury = -10000
+		ai_chance = {
+			base = 55
+		}
+	}
+
+	option = {
+		name = sb_zulu_court.200.b
+		custom_tooltip = sb_zulu_dynasty_lose_stability_5
+		hidden_effect = {
+			sb_zulu_remove_dynastic_stability_5 = yes
+		}
+		capital = {
+			add_loyalists_in_state = {
+				value = medium_radicals
+			}
+		}
+		ai_chance = {
+			base = 45
+		}
+	}
+}
+
+sb_zulu_court.201 = {
+	type = country_event
+	placement = root
+
+	title = sb_zulu_court.201.t
+	desc = sb_zulu_court.201.d
+	flavor = sb_zulu_court.201.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_soldiers_breaking_protest.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		sb_is_zulu_dynasty_country = yes
+		has_journal_entry = je_sb_zulu_kingdom
+	}
+
+	option = {
+		name = sb_zulu_court.201.a
+		default_option = yes
+		custom_tooltip = sb_zulu_dynasty_gain_stability_10
+		sb_zulu_add_dynastic_stability_10 = yes
+		add_treasury = -20000
+		ai_chance = {
+			base = 60
+		}
+	}
+
+	option = {
+		name = sb_zulu_court.201.b
+		custom_tooltip = sb_zulu_dynasty_lose_stability_5
+		sb_zulu_remove_dynastic_stability_5 = yes
+		capital = {
+			add_radicals_in_state = {
+				value = medium_radicals
+			}
+		}
+		ai_chance = {
+			base = 40
+		}
+	}
+}
+
+sb_zulu_court.202 = {
+	type = country_event
+	placement = root
+
+	title = sb_zulu_court.202.t
+	desc = sb_zulu_court.202.d
+	flavor = sb_zulu_court.202.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		sb_is_zulu_dynasty_country = yes
+		has_journal_entry = je_sb_zulu_kingdom
+	}
+
+	option = {
+		name = sb_zulu_court.202.a
+		default_option = yes
+		custom_tooltip = sb_zulu_dynasty_gain_stability_5
+		sb_zulu_add_dynastic_stability_5 = yes
+		add_treasury = -15000
+		ai_chance = {
+			base = 50
+		}
+	}
+
+	option = {
+		name = sb_zulu_court.202.b
+		custom_tooltip = sb_zulu_dynasty_lose_stability_5
+		sb_zulu_remove_dynastic_stability_5 = yes
+		capital = {
+			add_loyalists_in_state = {
+				value = medium_radicals
+			}
+		}
+		ai_chance = {
+			base = 50
+		}
+	}
+}
+
+sb_zulu_court.203 = {
+	type = country_event
+	placement = root
+
+	title = sb_zulu_court.203.t
+	desc = sb_zulu_court.203.d
+	flavor = sb_zulu_court.203.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		sb_is_zulu_dynasty_country = yes
+		has_journal_entry = je_sb_zulu_kingdom
+		OR = {
+			has_variable = sb_natal_war_active_var
+			has_variable = sb_natal_guns_bargain_war_var
+			has_variable = sb_zulu_blood_river_resolved_var
+			has_variable = sb_zulu_port_natal_raid_available_var
+			has_variable = sb_port_natal_british_war_var
+			c:ORA ?= {
+				has_variable = sb_natal_diplomacy_started_var
+			}
+			c:ORA ?= {
+				has_variable = sb_natal_path_resolved_var
+			}
+		}
+	}
+
+	option = {
+		name = sb_zulu_court.203.a
+		default_option = yes
+		custom_tooltip = sb_zulu_dynasty_lose_stability_10_firearms
+		hidden_effect = {
+			sb_zulu_remove_dynastic_stability_10 = yes
+			sb_boost_firearms_progress_minor = yes
+		}
+
+		add_treasury = 10000
+		ai_chance = {
+			base = 55
+		}
+	}
+
+	option = {
+		name = sb_zulu_court.203.b
+		custom_tooltip = sb_zulu_dynasty_gain_stability_5
+		sb_zulu_add_dynastic_stability_5 = yes
+		ai_chance = {
+			base = 45
+		}
+	}
+}

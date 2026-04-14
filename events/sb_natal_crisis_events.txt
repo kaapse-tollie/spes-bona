@@ -1,45 +1,23 @@
-﻿namespace = sb_boer_zulu
+﻿namespace = sb_natal_crisis
 
 # =============================================================================
-# Spes Bona - Oranje / Natal / Zulu Event Chain
+# Spes Bona - Natal Crisis Events
 # =============================================================================
-# Current V2 structure:
-#   - ORA is the only inland Boer participant in the Natal / Blood River lane.
-#   - TRN is delayed until after Blood River and the west-Transvaal foothold.
-#   - Natalia can still become the player branch after Boer victory.
-#   - The later Zulu dynastic / Swazi follow-up now lives in
-#     `events/sb_zulu_dynasty_events.txt` so this file stays focused on the
-#     Natal crisis, the British ultimatum, and Boer coastal fallout.
-#
-# Chain summary:
-#   010 ORA launches the Natal expedition
-#   020 ZUL answers the Retief approach
-#   021 Dingane faces unrest after conceding the southern strip
-#   030 peaceful land grant -> independent Natalia formed
-#   050/051 refusal and murder -> ORA backs down or starts Blood River
-#   070 ORA victory in the Natal crisis -> Natalia formed after Boer victory
-#   080 ZUL victory in the Natal crisis -> unlocks the Port Natal raid decision
-#   085 GBR reaction to a Durban raid
-#   100 GBR decides whether to issue the Natal ultimatum
-#   110 NAL answers the ultimatum
-#   111 ORA decides whether to support resisting Natalia
-#   112 TRN decides whether to support resisting Natalia
-#   114 GBR launches the protectorate war after resistance
-#   115 NAL is reduced to a British crown colony after submission or defeat
-#   116/117 ORA/TRN receive refugee fallout from Natalia's collapse
-#
-# Dormant compatibility branch:
-#   056 / 057 / 071 remain defined for older TRN-assisted Blood River saves,
-#   but the live V2 setup no longer routes new games into them.
+# Ownership: ORA-ZUL-NAL-GBR coastal crisis lane.
+# TOC: 010 opening embassy, 019 Blood River AI support resolver, 020-030
+# diplomacy branches, 050-080 Natal war resolution, 085 Port Natal raid
+# response, 100-118 British ultimatum and Boer fallout.
+# Cross-ref: common/scripted_effects/sb_natalia_effects.txt,
+# common/scripted_effects/sb_natalia_colony_effects.txt, common/decisions/sb_zulu_decisions.txt
 # =============================================================================
 
-sb_boer_zulu.010 = {
+sb_natal_crisis.010 = {
 	type = country_event
 	placement = root
 
-	title = sb_boer_zulu.010.t
-	desc = sb_boer_zulu.010.d
-	flavor = sb_boer_zulu.010.f
+	title = sb_natal_crisis.010.t
+	desc = sb_natal_crisis.010.d
+	flavor = sb_natal_crisis.010.f
 
 	event_image = {
 		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
@@ -67,9 +45,9 @@ sb_boer_zulu.010 = {
 	}
 
 	option = {
-		name = sb_boer_zulu.010.a
+		name = sb_natal_crisis.010.a
 		default_option = yes
-		custom_tooltip = sb_boer_zulu_010_a_warning_tt
+		custom_tooltip = sb_natal_crisis_010_a_warning_tt
 		# Launching the Retief embassy also secures the southeast trek corridor
 		# ahead of the Natal split, so ORA keeps those frontier districts even
 		# before the later Winburg/TSW post-MTB settlement is finalized.
@@ -81,7 +59,7 @@ sb_boer_zulu.010 = {
 		}
 		set_variable = sb_retief_petition_var
 		scope:zulu_kingdom = {
-			trigger_event = { id = sb_boer_zulu.020 days = 21 }
+			trigger_event = { id = sb_natal_crisis.020 days = 21 }
 		}
 		ai_chance = {
 			base = 100
@@ -89,7 +67,7 @@ sb_boer_zulu.010 = {
 	}
 
 	option = {
-		name = sb_boer_zulu.010.b
+		name = sb_natal_crisis.010.b
 		set_variable = sb_natal_path_resolved_var
 		remove_variable = sb_natal_diplomacy_started_var
 		add_modifier = {
@@ -102,7 +80,7 @@ sb_boer_zulu.010 = {
 	}
 }
 
-sb_boer_zulu.019 = {
+sb_natal_crisis.019 = {
 	type = country_event
 	hidden = yes
 
@@ -162,13 +140,13 @@ sb_boer_zulu.019 = {
 	}
 }
 
-sb_boer_zulu.020 = {
+sb_natal_crisis.020 = {
 	type = country_event
 	placement = root
 
-	title = sb_boer_zulu.020.t
-	desc = sb_boer_zulu.020.d
-	flavor = sb_boer_zulu.020.f
+	title = sb_natal_crisis.020.t
+	desc = sb_natal_crisis.020.d
+	flavor = sb_natal_crisis.020.f
 
 	event_image = {
 		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
@@ -190,7 +168,7 @@ sb_boer_zulu.020 = {
 
 	# Honour the bargain
 	option = {
-		name = sb_boer_zulu.020.a
+		name = sb_natal_crisis.020.a
 		sb_zulu_remove_dynastic_stability_5 = yes
 		ruler = {
 			if = {
@@ -205,9 +183,9 @@ sb_boer_zulu.020 = {
 		}
 		scope:boer_republic = {
 			remove_variable = sb_retief_petition_var
-			trigger_event = { id = sb_boer_zulu.030 days = 21 }
+			trigger_event = { id = sb_natal_crisis.030 days = 21 }
 		}
-		trigger_event = { id = sb_boer_zulu.021 days = 30 }
+		trigger_event = { id = sb_natal_crisis.021 days = 30 }
 		ai_chance = {
 			base = 20
 		}
@@ -215,7 +193,7 @@ sb_boer_zulu.020 = {
 
 	# Kill retief
 	option = {
-		name = sb_boer_zulu.020.b
+		name = sb_natal_crisis.020.b
 		default_option = yes
 		sb_zulu_add_dynastic_stability_10 = yes
 		ruler = {
@@ -240,7 +218,7 @@ sb_boer_zulu.020 = {
 		}
 		scope:boer_republic = {
 			remove_variable = sb_retief_petition_var
-			trigger_event = { id = sb_boer_zulu.050 days = 21 }
+			trigger_event = { id = sb_natal_crisis.050 days = 21 }
 		}
 		ai_chance = {
 			base = 70
@@ -249,11 +227,11 @@ sb_boer_zulu.020 = {
 
 	# Natalia for guns
 	option = {
-		name = sb_boer_zulu.020.c
+		name = sb_natal_crisis.020.c
 		sb_zulu_add_dynastic_stability_5 = yes
 		scope:boer_republic = {
 			remove_variable = sb_retief_petition_var
-			trigger_event = { id = sb_boer_zulu.025 days = 21 }
+			trigger_event = { id = sb_natal_crisis.025 days = 21 }
 		}
 		ai_chance = {
 			base = 10
@@ -261,13 +239,13 @@ sb_boer_zulu.020 = {
 	}
 }
 
-sb_boer_zulu.021 = {
+sb_natal_crisis.021 = {
 	type = country_event
 	placement = root
 
-	title = sb_boer_zulu.021.t
-	desc = sb_boer_zulu.021.d
-	flavor = sb_boer_zulu.021.f
+	title = sb_natal_crisis.021.t
+	desc = sb_natal_crisis.021.d
+	flavor = sb_natal_crisis.021.f
 
 	event_image = {
 		video = "gfx/event_pictures/africa_soldiers_breaking_protest.bk2"
@@ -282,7 +260,7 @@ sb_boer_zulu.021 = {
 	}
 
 	option = {
-		name = sb_boer_zulu.021.a
+		name = sb_natal_crisis.021.a
 		default_option = yes
 		sb_zulu_mark_swazi_question_after_honour_deal = yes
 		sb_zulu_maybe_open_swazi_question = yes
@@ -292,57 +270,13 @@ sb_boer_zulu.021 = {
 	}
 }
 
-sb_boer_zulu.030 = {
+sb_natal_crisis.025 = {
 	type = country_event
 	placement = root
 
-	title = sb_boer_zulu.030.t
-	desc = sb_boer_zulu.030.d
-	flavor = sb_boer_zulu.030.f
-
-	event_image = {
-		video = "gfx/event_pictures/africa_construction_colony.bk2"
-	}
-
-	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-	icon = "gfx/interface/icons/event_icons/event_default.dds"
-	duration = 3
-
-	trigger = {
-		country_definition = cd:ORA
-	}
-
-	# Peaceful branch: Dingane grants the land and ORA helps launch Natalia as
-	# an independent Boer republic rather than annexing the coast outright.
-	option = {
-		name = sb_boer_zulu.030.a
-		default_option = yes
-		sb_found_natalia_peacefully = yes
-		ai_chance = {
-			base = 100
-		}
-	}
-
-	option = {
-		name = sb_boer_zulu.030.b
-		trigger = {
-			is_player = yes
-		}
-		sb_found_natalia_peacefully = yes
-		play_as = c:NAL
-		ai_chance = {
-			base = 0
-		}
-	}
-}
-
-sb_boer_zulu.025 = {
-	type = country_event
-	placement = root
-
-	title = sb_boer_zulu.025.t
-	desc = sb_boer_zulu.025.d
-	flavor = sb_boer_zulu.025.f
+	title = sb_natal_crisis.025.t
+	desc = sb_natal_crisis.025.d
+	flavor = sb_natal_crisis.025.f
 
 	event_image = {
 		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
@@ -363,7 +297,7 @@ sb_boer_zulu.025 = {
 	}
 
 	option = {
-		name = sb_boer_zulu.025.a
+		name = sb_natal_crisis.025.a
 		default_option = yes
 		sb_found_natalia_peacefully = yes
 		sb_create_ora_zul_firearms_treaty = yes
@@ -377,11 +311,11 @@ sb_boer_zulu.025 = {
 	}
 
 	option = {
-		name = sb_boer_zulu.025.b
+		name = sb_natal_crisis.025.b
 		set_variable = sb_natal_guns_bargain_war_var
 		scope:zulu_kingdom ?= {
 			set_variable = sb_natal_guns_bargain_war_var
-			trigger_event = { id = sb_boer_zulu.026 days = 7 }
+			trigger_event = { id = sb_natal_crisis.026 days = 7 }
 		}
 		ai_chance = {
 			base = 60
@@ -389,13 +323,13 @@ sb_boer_zulu.025 = {
 	}
 }
 
-sb_boer_zulu.026 = {
+sb_natal_crisis.026 = {
 	type = country_event
 	placement = root
 
-	title = sb_boer_zulu.026.t
-	desc = sb_boer_zulu.026.d
-	flavor = sb_boer_zulu.026.f
+	title = sb_natal_crisis.026.t
+	desc = sb_natal_crisis.026.d
+	flavor = sb_natal_crisis.026.f
 
 	event_image = {
 		video = "gfx/event_pictures/africa_soldiers_breaking_protest.bk2"
@@ -410,7 +344,7 @@ sb_boer_zulu.026 = {
 	}
 
 	option = {
-		name = sb_boer_zulu.026.a
+		name = sb_natal_crisis.026.a
 		default_option = yes
 		s:STATE_ZULULAND = {
 			set_owner_of_provinces = {
@@ -419,7 +353,7 @@ sb_boer_zulu.026 = {
 			}
 		}
 		c:ORA ?= {
-			trigger_event = { id = sb_boer_zulu.051 days = 7 }
+			trigger_event = { id = sb_natal_crisis.051 days = 7 }
 		}
 		ai_chance = {
 			base = 100
@@ -427,13 +361,57 @@ sb_boer_zulu.026 = {
 	}
 }
 
-sb_boer_zulu.050 = {
+sb_natal_crisis.030 = {
 	type = country_event
 	placement = root
 
-	title = sb_boer_zulu.050.t
-	desc = sb_boer_zulu.050.d
-	flavor = sb_boer_zulu.050.f
+	title = sb_natal_crisis.030.t
+	desc = sb_natal_crisis.030.d
+	flavor = sb_natal_crisis.030.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:ORA
+	}
+
+	# Peaceful branch: Dingane grants the land and ORA helps launch Natalia as
+	# an independent Boer republic rather than annexing the coast outright.
+	option = {
+		name = sb_natal_crisis.030.a
+		default_option = yes
+		sb_found_natalia_peacefully = yes
+		ai_chance = {
+			base = 100
+		}
+	}
+
+	option = {
+		name = sb_natal_crisis.030.b
+		trigger = {
+			is_player = yes
+		}
+		sb_found_natalia_peacefully = yes
+		play_as = c:NAL
+		ai_chance = {
+			base = 0
+		}
+	}
+}
+
+sb_natal_crisis.050 = {
+	type = country_event
+	placement = root
+
+	title = sb_natal_crisis.050.t
+	desc = sb_natal_crisis.050.d
+	flavor = sb_natal_crisis.050.f
 
 	event_image = {
 		video = "gfx/event_pictures/africa_soldiers_breaking_protest.bk2"
@@ -456,7 +434,7 @@ sb_boer_zulu.050 = {
 	# Refusal branch: ORA can either retreat from Natal for now or escalate into
 	# a tightly scoped humiliation war with ZUL.
 	option = {
-		name = sb_boer_zulu.050.a
+		name = sb_natal_crisis.050.a
 		set_variable = sb_natal_path_resolved_var
 		remove_variable = sb_natal_diplomacy_started_var
 		add_modifier = {
@@ -469,7 +447,7 @@ sb_boer_zulu.050 = {
 	}
 
 	option = {
-		name = sb_boer_zulu.050.b
+		name = sb_natal_crisis.050.b
 		default_option = yes
 		set_variable = sb_natal_war_active_var
 		scope:zulu_kingdom = { set_variable = sb_natal_war_active_var }
@@ -490,13 +468,13 @@ sb_boer_zulu.050 = {
 	}
 }
 
-sb_boer_zulu.051 = {
+sb_natal_crisis.051 = {
 	type = country_event
 	placement = root
 
-	title = sb_boer_zulu.051.t
-	desc = sb_boer_zulu.051.d
-	flavor = sb_boer_zulu.051.f
+	title = sb_natal_crisis.051.t
+	desc = sb_natal_crisis.051.d
+	flavor = sb_natal_crisis.051.f
 
 	event_image = {
 		video = "gfx/event_pictures/africa_soldiers_breaking_protest.bk2"
@@ -517,7 +495,7 @@ sb_boer_zulu.051 = {
 	}
 
 	option = {
-		name = sb_boer_zulu.051.a
+		name = sb_natal_crisis.051.a
 		set_variable = sb_natal_path_resolved_var
 		remove_variable = sb_natal_diplomacy_started_var
 		if = {
@@ -540,7 +518,7 @@ sb_boer_zulu.051 = {
 	}
 
 	option = {
-		name = sb_boer_zulu.051.b
+		name = sb_natal_crisis.051.b
 		default_option = yes
 		set_variable = sb_natal_war_active_var
 		scope:zulu_kingdom = { set_variable = sb_natal_war_active_var }
@@ -561,278 +539,13 @@ sb_boer_zulu.051 = {
 	}
 }
 
-sb_boer_zulu.056 = {
+sb_natal_crisis.070 = {
 	type = country_event
 	placement = root
 
-	title = sb_boer_zulu.056.t
-	desc = sb_boer_zulu.056.d
-	flavor = sb_boer_zulu.056.f
-
-	event_image = {
-		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
-	}
-
-	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-	icon = "gfx/interface/icons/event_icons/event_default.dds"
-	duration = 3
-
-	trigger = {
-		country_definition = cd:TRN
-	}
-
-	immediate = {
-		c:ORA ?= {
-			save_scope_as = orangia
-		}
-		c:ZUL ?= {
-			save_scope_as = zulu_kingdom
-		}
-	}
-
-	# Join the British protectorate war on Natalia's side.
-	# Legacy compatibility: this used to be the TRN joins ORA against ZUL branch
-	# in the pre-V2 Blood River setup. It is kept defined for older saves, but
-	# fresh campaigns should no longer trigger it.
-	option = {
-		name = sb_boer_zulu.056.a
-		default_option = yes
-		if = {
-			limit = {
-				NOT = {
-					any_scope_treaty = {
-						binds = scope:orangia
-						any_scope_article = {
-							OR = {
-								has_type = defensive_pact
-								has_type = alliance
-							}
-						}
-					}
-				}
-			}
-			create_treaty = {
-				first_country = root
-				second_country = scope:orangia
-				is_draft = no
-				binding_period = { years = 5 }
-				articles_to_create = {
-					{
-						article = defensive_pact
-					}
-				}
-			}
-		}
-		set_variable = sb_trn_joined_natal_war_var
-		scope:orangia ?= {
-			set_variable = sb_trn_joined_natal_war_var
-			change_relations = {
-				country = root
-				value = 20
-			}
-		}
-		scope:zulu_kingdom = {
-			create_diplomatic_play = {
-				type = dp_sb_natal_crisis
-				target_country = scope:orangia
-				add_war_goal = {
-					holder = scope:orangia
-					type = humiliation
-					target_country = scope:zulu_kingdom
-				}
-			}
-		}
-		random_diplomatic_play = {
-			limit = {
-				initiator = scope:zulu_kingdom
-				target = scope:orangia
-				is_diplomatic_play_type = dp_sb_natal_crisis
-			}
-			add_target_backers = { root }
-		}
-		ai_chance = {
-			base = 100
-			modifier = {
-				trigger = {
-					OR = {
-						scope:orangia ?= { is_ai = no }
-						is_ai = no
-					}
-				}
-				# Player support is already handled explicitly through option access,
-				# so this modifier remains neutral for AI weighting.
-				add = 0
-			}
-		}
-	}
-
-	# Decline to intervene.
-	option = {
-		name = sb_boer_zulu.056.b
-		every_scope_treaty = {
-			limit = {
-				binds = scope:orangia
-				any_scope_article = {
-					has_type = defensive_pact
-				}
-			}
-			withdraw = {
-				country = root
-			}
-		}
-		change_relations = {
-			country = scope:orangia
-			value = -20
-		}
-		scope:zulu_kingdom = {
-			create_diplomatic_play = {
-				type = dp_sb_natal_crisis
-				target_country = scope:orangia
-				add_war_goal = {
-					holder = scope:orangia
-					type = humiliation
-					target_country = scope:zulu_kingdom
-				}
-			}
-		}
-		ai_chance = {
-			base = 0
-		}
-	}
-}
-
-sb_boer_zulu.057 = {
-	type = country_event
-	placement = root
-
-	title = sb_boer_zulu.057.t
-	desc = sb_boer_zulu.057.d
-	flavor = sb_boer_zulu.057.f
-
-	event_image = {
-		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
-	}
-
-	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-	icon = "gfx/interface/icons/event_icons/event_default.dds"
-	duration = 3
-
-	trigger = {
-		country_definition = cd:TRN
-	}
-
-	immediate = {
-		c:ORA ?= {
-			save_scope_as = orangia
-		}
-		c:ZUL ?= {
-			save_scope_as = zulu_kingdom
-		}
-	}
-
-	option = {
-		name = sb_boer_zulu.057.a
-		default_option = yes
-		if = {
-			limit = {
-				NOT = {
-					any_scope_treaty = {
-						binds = scope:orangia
-						any_scope_article = {
-							OR = {
-								has_type = defensive_pact
-								has_type = alliance
-							}
-						}
-					}
-				}
-			}
-			create_treaty = {
-				first_country = root
-				second_country = scope:orangia
-				is_draft = no
-				binding_period = { years = 5 }
-				articles_to_create = {
-					{
-						article = defensive_pact
-					}
-				}
-			}
-		}
-		set_variable = sb_trn_joined_natal_war_var
-		scope:orangia ?= {
-			set_variable = sb_trn_joined_natal_war_var
-			change_relations = {
-				country = root
-				value = 20
-			}
-		}
-		scope:zulu_kingdom = {
-			create_diplomatic_play = {
-				type = dp_sb_natal_crisis
-				target_country = scope:orangia
-				add_war_goal = {
-					holder = scope:orangia
-					type = humiliation
-					target_country = scope:zulu_kingdom
-				}
-			}
-		}
-		random_diplomatic_play = {
-			limit = {
-				initiator = scope:zulu_kingdom
-				target = scope:orangia
-				is_diplomatic_play_type = dp_sb_natal_crisis
-			}
-			add_target_backers = { root }
-		}
-		ai_chance = {
-			base = 100
-		}
-	}
-
-	option = {
-		name = sb_boer_zulu.057.b
-		every_scope_treaty = {
-			limit = {
-				binds = scope:orangia
-				any_scope_article = {
-					has_type = defensive_pact
-				}
-			}
-			withdraw = {
-				country = scope:orangia
-			}
-		}
-		change_relations = {
-			country = scope:orangia
-			value = -20
-		}
-		scope:zulu_kingdom = {
-			create_diplomatic_play = {
-				type = dp_sb_natal_crisis
-				target_country = scope:orangia
-				add_war_goal = {
-					holder = scope:orangia
-					type = humiliation
-					target_country = scope:zulu_kingdom
-				}
-			}
-		}
-		ai_chance = {
-			base = 0
-		}
-	}
-}
-
-# ORA wins the Natal crisis war and can now establish Natalia under arms.
-sb_boer_zulu.070 = {
-	type = country_event
-	placement = root
-
-	title = sb_boer_zulu.070.t
-	desc = sb_boer_zulu.070.d
-	flavor = sb_boer_zulu.070.f
+	title = sb_natal_crisis.070.t
+	desc = sb_natal_crisis.070.d
+	flavor = sb_natal_crisis.070.f
 
 	event_image = {
 		video = "gfx/event_pictures/africa_soldiers_breaking_protest.bk2"
@@ -847,7 +560,7 @@ sb_boer_zulu.070 = {
 	}
 
 	option = {
-		name = sb_boer_zulu.070.a
+		name = sb_natal_crisis.070.a
 		default_option = yes
 		c:ZUL ?= {
 			sb_zulu_apply_blood_river_defeat = yes
@@ -868,7 +581,7 @@ sb_boer_zulu.070 = {
 	}
 
 	option = {
-		name = sb_boer_zulu.070.b
+		name = sb_natal_crisis.070.b
 		trigger = {
 			is_player = yes
 		}
@@ -892,62 +605,13 @@ sb_boer_zulu.070 = {
 	}
 }
 
-sb_boer_zulu.071 = {
+sb_natal_crisis.080 = {
 	type = country_event
 	placement = root
 
-	title = sb_boer_zulu.071.t
-	desc = sb_boer_zulu.071.d
-	flavor = sb_boer_zulu.071.f
-
-	event_image = {
-		video = "gfx/event_pictures/africa_soldiers_breaking_protest.bk2"
-	}
-
-	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-	icon = "gfx/interface/icons/event_icons/event_military.dds"
-	duration = 3
-
-	trigger = {
-		country_definition = cd:TRN
-	}
-
-	# Legacy post-Blood-River follow-up from the old TRN-assisted branch.
-	option = {
-		name = sb_boer_zulu.071.a
-		default_option = yes
-		change_relations = {
-			country = c:NAL
-			value = 20
-		}
-		ai_chance = {
-			base = 100
-		}
-	}
-
-	option = {
-		name = sb_boer_zulu.071.b
-		trigger = {
-			is_player = yes
-			c:NAL ?= {
-				is_country_alive = yes
-			}
-		}
-		play_as = c:NAL
-		ai_chance = {
-			base = 0
-		}
-	}
-}
-
-# ZUL wins the Natal crisis and may press the advantage.
-sb_boer_zulu.080 = {
-	type = country_event
-	placement = root
-
-	title = sb_boer_zulu.080.t
-	desc = sb_boer_zulu.080.d
-	flavor = sb_boer_zulu.080.f
+	title = sb_natal_crisis.080.t
+	desc = sb_natal_crisis.080.d
+	flavor = sb_natal_crisis.080.f
 
 	event_image = {
 		video = "gfx/event_pictures/africa_soldiers_breaking_protest.bk2"
@@ -962,7 +626,7 @@ sb_boer_zulu.080 = {
 	}
 
 	option = {
-		name = sb_boer_zulu.080.a
+		name = sb_natal_crisis.080.a
 		default_option = yes
 		add_modifier = {
 			name = sb_zulu_natal_triumph
@@ -983,8 +647,8 @@ sb_boer_zulu.080 = {
 				add_trait = brave
 			}
 		}
-		custom_tooltip = sb_boer_zulu_gain_firearms_10
-		custom_tooltip = sb_boer_zulu_gain_stability_20
+		custom_tooltip = sb_natal_crisis_gain_firearms_10
+		custom_tooltip = sb_zulu_dynasty_gain_stability_20
 
 		hidden_effect = {
 			sb_zulu_apply_blood_river_victory = yes
@@ -1020,13 +684,13 @@ sb_boer_zulu.080 = {
 	}
 }
 
-sb_boer_zulu.085 = {
+sb_natal_crisis.085 = {
 	type = country_event
 	placement = root
 
-	title = sb_boer_zulu.085.t
-	desc = sb_boer_zulu.085.d
-	flavor = sb_boer_zulu.085.f
+	title = sb_natal_crisis.085.t
+	desc = sb_natal_crisis.085.d
+	flavor = sb_natal_crisis.085.f
 
 	event_image = {
 		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
@@ -1045,7 +709,7 @@ sb_boer_zulu.085 = {
 	}
 
 	option = {
-		name = sb_boer_zulu.085.a
+		name = sb_natal_crisis.085.a
 		default_option = yes
 		c:ZUL ?= {
 			set_variable = sb_port_natal_british_war_var
@@ -1060,7 +724,7 @@ sb_boer_zulu.085 = {
 	}
 
 	option = {
-		name = sb_boer_zulu.085.b
+		name = sb_natal_crisis.085.b
 		c:ZUL ?= {
 			remove_variable = sb_port_natal_raid_var
 			sb_zulu_finalize_port_natal_survival = yes
@@ -1075,13 +739,13 @@ sb_boer_zulu.085 = {
 	}
 }
 
-sb_boer_zulu.100 = {
+sb_natal_crisis.100 = {
 	type = country_event
 	placement = root
 
-	title = sb_boer_zulu.100.t
-	desc = sb_boer_zulu.100.d
-	flavor = sb_boer_zulu.100.f
+	title = sb_natal_crisis.100.t
+	desc = sb_natal_crisis.100.d
+	flavor = sb_natal_crisis.100.f
 
 	event_image = {
 		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
@@ -1112,11 +776,11 @@ sb_boer_zulu.100 = {
 	}
 
 	option = {
-		name = sb_boer_zulu.100.a
+		name = sb_natal_crisis.100.a
 		default_option = yes
 		scope:natalia ?= {
 			set_variable = sb_british_natal_ultimatum_var
-			trigger_event = { id = sb_boer_zulu.110 days = 21 }
+			trigger_event = { id = sb_natal_crisis.110 days = 21 }
 		}
 		ai_chance = {
 			base = 100
@@ -1124,7 +788,7 @@ sb_boer_zulu.100 = {
 	}
 
 	option = {
-		name = sb_boer_zulu.100.b
+		name = sb_natal_crisis.100.b
 		add_modifier = {
 			name = sb_prestige_loss_natal_hesitation
 			months = 120
@@ -1135,13 +799,13 @@ sb_boer_zulu.100 = {
 	}
 }
 
-sb_boer_zulu.110 = {
+sb_natal_crisis.110 = {
 	type = country_event
 	placement = root
 
-	title = sb_boer_zulu.110.t
-	desc = sb_boer_zulu.110.d
-	flavor = sb_boer_zulu.110.f
+	title = sb_natal_crisis.110.t
+	desc = sb_natal_crisis.110.d
+	flavor = sb_natal_crisis.110.f
 
 	event_image = {
 		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
@@ -1179,7 +843,7 @@ sb_boer_zulu.110 = {
 	}
 
 	option = {
-		name = sb_boer_zulu.110.a
+		name = sb_natal_crisis.110.a
 		default_option = yes
 		sb_finalize_british_natal_colony = yes
 		ai_chance = {
@@ -1188,7 +852,7 @@ sb_boer_zulu.110 = {
 	}
 
 	option = {
-		name = sb_boer_zulu.110.b
+		name = sb_natal_crisis.110.b
 		s:STATE_ZULULAND = {
 			set_owner_of_provinces = {
 				country = root
@@ -1198,29 +862,29 @@ sb_boer_zulu.110 = {
 		c:ORA ?= {
 			if = {
 				limit = { is_country_alive = yes }
-				trigger_event = { id = sb_boer_zulu.111 days = 7 }
+				trigger_event = { id = sb_natal_crisis.111 days = 7 }
 			}
 		}
 		c:TRN ?= {
 			if = {
 				limit = { is_country_alive = yes }
-				trigger_event = { id = sb_boer_zulu.112 days = 10 }
+				trigger_event = { id = sb_natal_crisis.112 days = 10 }
 			}
 		}
 		c:ZPB ?= {
 			if = {
 				limit = { is_country_alive = yes }
-				trigger_event = { id = sb_boer_zulu.113 days = 12 }
+				trigger_event = { id = sb_natal_crisis.113 days = 12 }
 			}
 		}
 		c:LYD ?= {
 			if = {
 				limit = { is_country_alive = yes }
-				trigger_event = { id = sb_boer_zulu.118 days = 14 }
+				trigger_event = { id = sb_natal_crisis.118 days = 14 }
 			}
 		}
 		scope:britain = {
-			trigger_event = { id = sb_boer_zulu.114 days = 1 }
+			trigger_event = { id = sb_natal_crisis.114 days = 1 }
 		}
 		ai_chance = {
 			base = 20
@@ -1228,13 +892,13 @@ sb_boer_zulu.110 = {
 	}
 }
 
-sb_boer_zulu.111 = {
+sb_natal_crisis.111 = {
 	type = country_event
 	placement = root
 
-	title = sb_boer_zulu.111.t
-	desc = sb_boer_zulu.111.d
-	flavor = sb_boer_zulu.111.f
+	title = sb_natal_crisis.111.t
+	desc = sb_natal_crisis.111.d
+	flavor = sb_natal_crisis.111.f
 
 	event_image = {
 		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
@@ -1263,7 +927,7 @@ sb_boer_zulu.111 = {
 	}
 
 	option = {
-		name = sb_boer_zulu.111.a
+		name = sb_natal_crisis.111.a
 		default_option = yes
 		change_relations = {
 			country = scope:natalia
@@ -1292,7 +956,7 @@ sb_boer_zulu.111 = {
 	}
 
 	option = {
-		name = sb_boer_zulu.111.b
+		name = sb_natal_crisis.111.b
 		add_modifier = {
 			name = sb_prestige_loss_small
 			months = 108
@@ -1311,13 +975,13 @@ sb_boer_zulu.111 = {
 	}
 }
 
-sb_boer_zulu.112 = {
+sb_natal_crisis.112 = {
 	type = country_event
 	placement = root
 
-	title = sb_boer_zulu.112.t
-	desc = sb_boer_zulu.112.d
-	flavor = sb_boer_zulu.112.f
+	title = sb_natal_crisis.112.t
+	desc = sb_natal_crisis.112.d
+	flavor = sb_natal_crisis.112.f
 
 	event_image = {
 		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
@@ -1341,7 +1005,7 @@ sb_boer_zulu.112 = {
 	}
 
 	option = {
-		name = sb_boer_zulu.112.a
+		name = sb_natal_crisis.112.a
 		default_option = yes
 		sb_support_natalia_against_britain = yes
 		change_relations = {
@@ -1376,7 +1040,7 @@ sb_boer_zulu.112 = {
 	}
 
 	option = {
-		name = sb_boer_zulu.112.b
+		name = sb_natal_crisis.112.b
 		add_modifier = {
 			name = sb_prestige_loss_small
 			months = 108
@@ -1395,13 +1059,13 @@ sb_boer_zulu.112 = {
 	}
 }
 
-sb_boer_zulu.113 = {
+sb_natal_crisis.113 = {
 	type = country_event
 	placement = root
 
-	title = sb_boer_zulu.113.t
-	desc = sb_boer_zulu.113.d
-	flavor = sb_boer_zulu.113.f
+	title = sb_natal_crisis.113.t
+	desc = sb_natal_crisis.113.d
+	flavor = sb_natal_crisis.113.f
 
 	event_image = {
 		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
@@ -1422,7 +1086,7 @@ sb_boer_zulu.113 = {
 	}
 
 	option = {
-		name = sb_boer_zulu.113.a
+		name = sb_natal_crisis.113.a
 		default_option = yes
 		sb_support_natalia_against_britain = yes
 		change_relations = {
@@ -1445,7 +1109,7 @@ sb_boer_zulu.113 = {
 	}
 
 	option = {
-		name = sb_boer_zulu.113.b
+		name = sb_natal_crisis.113.b
 		add_modifier = {
 			name = sb_prestige_loss_small
 			months = 108
@@ -1464,13 +1128,13 @@ sb_boer_zulu.113 = {
 	}
 }
 
-sb_boer_zulu.114 = {
+sb_natal_crisis.114 = {
 	type = country_event
 	placement = root
 
-	title = sb_boer_zulu.114.t
-	desc = sb_boer_zulu.114.d
-	flavor = sb_boer_zulu.114.f
+	title = sb_natal_crisis.114.t
+	desc = sb_natal_crisis.114.d
+	flavor = sb_natal_crisis.114.f
 
 	event_image = {
 		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
@@ -1491,7 +1155,7 @@ sb_boer_zulu.114 = {
 	}
 
 	option = {
-		name = sb_boer_zulu.114.a
+		name = sb_natal_crisis.114.a
 		default_option = yes
 		create_diplomatic_play = {
 			type = dp_make_protectorate
@@ -1508,13 +1172,13 @@ sb_boer_zulu.114 = {
 	}
 }
 
-sb_boer_zulu.115 = {
+sb_natal_crisis.115 = {
 	type = country_event
 	placement = root
 
-	title = sb_boer_zulu.115.t
-	desc = sb_boer_zulu.115.d
-	flavor = sb_boer_zulu.115.f
+	title = sb_natal_crisis.115.t
+	desc = sb_natal_crisis.115.d
+	flavor = sb_natal_crisis.115.f
 
 	event_image = {
 		video = "gfx/event_pictures/africa_construction_colony.bk2"
@@ -1533,7 +1197,7 @@ sb_boer_zulu.115 = {
 	}
 
 	option = {
-		name = sb_boer_zulu.115.a
+		name = sb_natal_crisis.115.a
 		default_option = yes
 		sb_finalize_british_natal_colony = yes
 		ai_chance = {
@@ -1542,13 +1206,13 @@ sb_boer_zulu.115 = {
 	}
 }
 
-sb_boer_zulu.116 = {
+sb_natal_crisis.116 = {
 	type = country_event
 	placement = root
 
-	title = sb_boer_zulu.116.t
-	desc = sb_boer_zulu.116.d
-	flavor = sb_boer_zulu.116.f
+	title = sb_natal_crisis.116.t
+	desc = sb_natal_crisis.116.d
+	flavor = sb_natal_crisis.116.f
 
 	event_image = {
 		video = "gfx/event_pictures/africa_construction_colony.bk2"
@@ -1563,7 +1227,7 @@ sb_boer_zulu.116 = {
 	}
 
 	option = {
-		name = sb_boer_zulu.116.a
+		name = sb_natal_crisis.116.a
 		default_option = yes
 		sb_trigger_natal_refugee_migration_effect = yes
 		ai_chance = {
@@ -1572,13 +1236,13 @@ sb_boer_zulu.116 = {
 	}
 }
 
-sb_boer_zulu.117 = {
+sb_natal_crisis.117 = {
 	type = country_event
 	placement = root
 
-	title = sb_boer_zulu.117.t
-	desc = sb_boer_zulu.117.d
-	flavor = sb_boer_zulu.117.f
+	title = sb_natal_crisis.117.t
+	desc = sb_natal_crisis.117.d
+	flavor = sb_natal_crisis.117.f
 
 	event_image = {
 		video = "gfx/event_pictures/africa_construction_colony.bk2"
@@ -1593,7 +1257,7 @@ sb_boer_zulu.117 = {
 	}
 
 	option = {
-		name = sb_boer_zulu.117.a
+		name = sb_natal_crisis.117.a
 		default_option = yes
 		sb_trigger_natal_refugee_migration_effect = yes
 		ai_chance = {
@@ -1602,13 +1266,13 @@ sb_boer_zulu.117 = {
 	}
 }
 
-sb_boer_zulu.118 = {
+sb_natal_crisis.118 = {
 	type = country_event
 	placement = root
 
-	title = sb_boer_zulu.118.t
-	desc = sb_boer_zulu.118.d
-	flavor = sb_boer_zulu.118.f
+	title = sb_natal_crisis.118.t
+	desc = sb_natal_crisis.118.d
+	flavor = sb_natal_crisis.118.f
 
 	event_image = {
 		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
@@ -1629,7 +1293,7 @@ sb_boer_zulu.118 = {
 	}
 
 	option = {
-		name = sb_boer_zulu.118.a
+		name = sb_natal_crisis.118.a
 		default_option = yes
 		sb_support_natalia_against_britain = yes
 		change_relations = {
@@ -1652,7 +1316,7 @@ sb_boer_zulu.118 = {
 	}
 
 	option = {
-		name = sb_boer_zulu.118.b
+		name = sb_natal_crisis.118.b
 		add_modifier = {
 			name = sb_prestige_loss_small
 			months = 108

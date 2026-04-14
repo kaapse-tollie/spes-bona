@@ -1,0 +1,499 @@
+﻿namespace = sb_boer_republics
+
+# =============================================================================
+# Spes Bona - Boer Republic Events
+# =============================================================================
+# Ownership: immediate inland republic setup after the trek spine, including ZPB, LYD, and republican forks.
+# TOC: 007-009 British transit reactions, 110-121 ZPB split and play-as prompt, 130-131 constitutional fork and LYD spawn.
+# Cross-ref: common/scripted_effects/sb_trek_migration.txt, common/on_actions/sb_on_actions.txt
+# =============================================================================
+
+sb_boer_republics.007 = {
+	type = country_event
+	placement = root
+
+	title = sb_boer_republics.007.t
+	desc = sb_boer_republics.007.d
+	flavor = sb_boer_republics.007.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:GBR
+		c:TRN ?= {
+			is_country_alive = yes
+		}
+	}
+
+	option = {
+		name = sb_boer_republics.007.a
+		default_option = yes
+		c:TRN ?= {
+			sb_ensure_gbr_transit_rights_with_root = yes
+		}
+		change_relations = {
+			country = c:TRN
+			value = 15
+		}
+		ai_chance = {
+			base = 85
+		}
+	}
+
+	option = {
+		name = sb_boer_republics.007.b
+		add_modifier = {
+			name = sb_prestige_loss_small
+			months = 60
+		}
+		ai_chance = {
+			base = 15
+		}
+	}
+}
+
+sb_boer_republics.008 = {
+	type = country_event
+	placement = root
+
+	title = sb_boer_republics.008.t
+	desc = sb_boer_republics.008.d
+	flavor = sb_boer_republics.008.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:GBR
+		c:ZPB ?= {
+			is_country_alive = yes
+		}
+	}
+
+	option = {
+		name = sb_boer_republics.008.a
+		default_option = yes
+		c:ZPB ?= {
+			sb_ensure_gbr_transit_rights_with_root = yes
+		}
+		if = {
+			limit = {
+				is_power_bloc_leader = yes
+				c:ZPB ?= {
+					NOT = { is_in_same_power_bloc = root }
+				}
+			}
+			power_bloc = {
+				add_leverage = {
+					target = c:ZPB
+					value = 50
+				}
+			}
+		}
+		change_relations = {
+			country = c:ZPB
+			value = 10
+		}
+		ai_chance = {
+			base = 85
+		}
+	}
+
+	option = {
+		name = sb_boer_republics.008.b
+		add_modifier = {
+			name = sb_prestige_loss_small
+			months = 60
+		}
+		ai_chance = {
+			base = 15
+		}
+	}
+}
+
+sb_boer_republics.009 = {
+	type = country_event
+	placement = root
+
+	title = sb_boer_republics.009.t
+	desc = sb_boer_republics.009.d
+	flavor = sb_boer_republics.009.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:GBR
+		c:LYD ?= {
+			is_country_alive = yes
+		}
+	}
+
+	option = {
+		name = sb_boer_republics.009.a
+		default_option = yes
+		c:LYD ?= {
+			sb_ensure_gbr_transit_rights_with_root = yes
+		}
+		if = {
+			limit = {
+				is_power_bloc_leader = yes
+				c:LYD ?= {
+					NOT = { is_in_same_power_bloc = root }
+				}
+			}
+			power_bloc = {
+				add_leverage = {
+					target = c:LYD
+					value = 50
+				}
+			}
+		}
+		change_relations = {
+			country = c:LYD
+			value = 10
+		}
+		ai_chance = {
+			base = 85
+		}
+	}
+
+	option = {
+		name = sb_boer_republics.009.b
+		add_modifier = {
+			name = sb_prestige_loss_small
+			months = 60
+		}
+		ai_chance = {
+			base = 15
+		}
+	}
+}
+
+sb_boer_republics.110 = {
+	type = country_event
+	placement = root
+
+	title = sb_boer_republics.110.t
+	desc = sb_boer_republics.110.d
+	flavor = sb_boer_republics.110.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:CAP
+		c:TRN ?= {
+			is_country_alive = yes
+		}
+	}
+
+	option = {
+		name = sb_boer_republics.110.a
+		default_option = yes
+		if = {
+			limit = { has_modifier = sb_cape_zoutpansberg_departure_settler }
+			remove_modifier = sb_cape_zoutpansberg_departure_settler
+		}
+		add_modifier = {
+			name = sb_cape_zoutpansberg_departure_liberal
+			months = 60
+		}
+		hidden_effect = {
+			c:TRN ?= {
+				trigger_event = { id = sb_boer_republics.120 days = 30 popup = yes }
+			}
+		}
+	}
+
+	option = {
+		name = sb_boer_republics.110.b
+		if = {
+			limit = { has_modifier = sb_cape_zoutpansberg_departure_liberal }
+			remove_modifier = sb_cape_zoutpansberg_departure_liberal
+		}
+		add_modifier = {
+			name = sb_cape_zoutpansberg_departure_settler
+			months = 60
+		}
+		hidden_effect = {
+			c:TRN ?= {
+				trigger_event = { id = sb_boer_republics.120 days = 30 popup = yes }
+			}
+		}
+	}
+}
+
+sb_boer_republics.120 = {
+	type = country_event
+	placement = root
+
+	title = sb_boer_republics.120.t
+	desc = sb_boer_republics.120.d
+	flavor = sb_boer_republics.120.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:TRN
+	}
+
+	immediate = {
+		if = {
+			limit = {
+				any_scope_character = {
+					has_template = TRN_stephanus_schoeman
+				}
+			}
+			random_scope_character = {
+				limit = {
+					has_template = TRN_stephanus_schoeman
+				}
+				save_scope_as = zpb_ruler_scope
+			}
+		}
+	}
+
+	option = {
+		name = sb_boer_republics.120.a
+		default_option = yes
+		hidden_effect = {
+			sb_found_zoutpansberg_republic = yes
+		}
+		ai_chance = {
+			base = 100
+		}
+	}
+}
+
+sb_boer_republics.121 = {
+	type = country_event
+	placement = root
+
+	title = sb_boer_republics.121.t
+	desc = sb_boer_republics.121.d
+	flavor = sb_boer_republics.121.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		is_player = yes
+		country_has_primary_culture = cu:boer
+		NOT = { country_definition = cd:ZPB }
+		c:ZPB ?= {
+			is_country_alive = yes
+		}
+	}
+
+	option = {
+		name = sb_boer_republics.121.a
+		default_option = yes
+		ai_chance = {
+			base = 100
+		}
+	}
+
+	option = {
+		name = sb_boer_republics.121.b
+		play_as = c:ZPB
+		ai_chance = {
+			base = 0
+		}
+	}
+}
+
+sb_boer_republics.130 = {
+	type = country_event
+	placement = root
+
+	title = sb_boer_republics.130.t
+	desc = sb_boer_republics.130.d
+	flavor = sb_boer_republics.130.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		OR = {
+			country_definition = cd:TRN
+			country_definition = cd:ORA
+		}
+	}
+
+	option = {
+		name = sb_boer_republics.130.a
+		default_option = yes
+		if = {
+			limit = { has_modifier = sb_trek_frontier_republic }
+			remove_modifier = sb_trek_frontier_republic
+		}
+		add_modifier = {
+			name = sb_trek_centralizing_republic
+			months = 120
+		}
+		if = {
+			limit = { has_variable = sb_commandant_general_visible_var }
+			remove_variable = sb_commandant_general_visible_var
+		}
+		activate_law = law_type:law_presidential_republic
+		activate_law = law_type:law_interventionism
+		if = {
+			limit = {
+				country_definition = cd:TRN
+				NOT = { exists = c:LYD }
+				NOT = { has_variable = sb_lydenburg_spawned_var }
+			}
+			set_variable = sb_lydenburg_spawn_var
+			trigger_event = { id = sb_boer_republics.131 days = 60 popup = yes }
+		}
+		ai_chance = {
+			base = 75
+		}
+	}
+
+	option = {
+		name = sb_boer_republics.130.b
+		if = {
+			limit = { has_modifier = sb_trek_centralizing_republic }
+			remove_modifier = sb_trek_centralizing_republic
+		}
+		add_modifier = {
+			name = sb_trek_frontier_republic
+			months = 120
+		}
+		set_variable = sb_commandant_general_visible_var
+		activate_law = law_type:law_sb_commandant_general_republic
+		activate_law = law_type:law_agrarianism
+		sb_refresh_boer_commandant_general_government = yes
+		sb_ensure_commandant_general_ruler_command = yes
+		sb_ensure_commandant_general_ruler_landowner_leadership = yes
+			if = {
+				limit = {
+					country_definition = cd:TRN
+					NOT = {
+						c:LYD ?= {
+							is_country_alive = yes
+						}
+					}
+				}
+				s:STATE_EAST_TRANSVAAL = {
+					add_claim = c:TRN
+			}
+			if = {
+				limit = {
+					NOT = { has_journal_entry = je_sb_pacifying_eastern_transvaal }
+					s:STATE_EAST_TRANSVAAL = {
+						NOT = { is_homeland = cu:boer }
+					}
+				}
+				add_journal_entry = { type = je_sb_pacifying_eastern_transvaal }
+			}
+		}
+		if = {
+			limit = { has_variable = sb_lydenburg_spawn_var }
+			remove_variable = sb_lydenburg_spawn_var
+		}
+		ai_chance = {
+			base = 25
+		}
+	}
+}
+
+sb_boer_republics.131 = {
+	type = country_event
+	placement = root
+
+	title = sb_boer_republics.131.t
+	desc = sb_boer_republics.131.d
+	flavor = sb_boer_republics.131.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:TRN
+		has_variable = sb_lydenburg_spawn_var
+		NOT = { has_variable = sb_lydenburg_spawned_var }
+		NOT = { exists = c:LYD }
+	}
+
+	immediate = {
+		save_scope_as = migration_source
+		cu:boer = {
+			save_scope_as = migration_culture
+		}
+	}
+
+	option = {
+		name = sb_boer_republics.131.a
+		default_option = yes
+		remove_variable = sb_lydenburg_spawn_var
+		set_variable = sb_lydenburg_spawned_var
+		hidden_effect = {
+			sb_found_lydenburg_republic = yes
+		}
+		ai_chance = {
+			base = 100
+		}
+	}
+
+	option = {
+		name = sb_boer_republics.131.b
+		trigger = {
+			is_player = yes
+		}
+		custom_tooltip = sb_boer_republics_131_play_as_lyd_tt
+		remove_variable = sb_lydenburg_spawn_var
+		set_variable = sb_lydenburg_spawned_var
+		hidden_effect = {
+			sb_found_lydenburg_republic = yes
+			play_as = c:LYD
+		}
+		ai_chance = {
+			base = 0
+		}
+	}
+}

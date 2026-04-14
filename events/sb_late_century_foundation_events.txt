@@ -1,0 +1,49 @@
+﻿namespace = sb_late_century_foundation
+
+# =============================================================================
+# Spes Bona - Late-Century Foundation Events
+# =============================================================================
+# Ownership: hidden bootstrap and inherited branch snapshot for the late-century layer.
+# TOC: 001 bootstrap and snapshot.
+# Cross-ref: common/on_actions/sb_phase3_on_actions.txt, common/scripted_effects/sb_phase3_effects.txt
+# =============================================================================
+
+sb_late_century_foundation.001 = {
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		sb_is_phase3_coordinator_country = yes
+	}
+
+	immediate = {
+		if = {
+			limit = { has_variable = sb_phase3_bootstrap_pending_var }
+			remove_variable = sb_phase3_bootstrap_pending_var
+		}
+		if = {
+			limit = { has_variable = sb_phase3_initialized_var }
+		}
+		else = {
+			set_variable = sb_phase3_initialized_var
+			sb_phase3_initialize_branch_snapshot = yes
+
+			if = {
+				limit = {
+					c:CAP ?= {
+						is_country_alive = yes
+					}
+				}
+				c:CAP ?= {
+					sb_phase3_initialize_branch_snapshot = yes
+					sb_phase3_seed_public_wave1_interface = yes
+					trigger_event = { id = sb_mineral_revolution.010 days = 3 popup = yes }
+				}
+			}
+			else = {
+				sb_phase3_seed_public_wave1_interface = yes
+				trigger_event = { id = sb_mineral_revolution.010 days = 3 popup = yes }
+			}
+		}
+	}
+}

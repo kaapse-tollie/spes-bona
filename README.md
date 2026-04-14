@@ -60,6 +60,14 @@ vic3-tiger -c --unused --no-color \
   'Spes Bona - A Southern Africa Flavour Pack'
 ```
 
+For Southern Africa `map_data/state_regions` and `map_data/province_terrains.txt` edits, run:
+
+```sh
+python3 tools/check_state_region_hub_impassables.py
+```
+
+Then validate from a cold restart. Do not rely on filewatcher hot reload for map-data changes.
+
 Current target state:
 
 - `0 fatals`

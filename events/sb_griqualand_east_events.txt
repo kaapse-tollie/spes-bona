@@ -1,0 +1,81 @@
+﻿namespace = sb_griqualand_east
+
+# =============================================================================
+# Spes Bona - Griqualand East Events
+# =============================================================================
+# Ownership: GLE creation and later full-liberal annexation.
+# TOC: 220 GLE creation, 221 GLE willing annexation.
+# Cross-ref: common/scripted_effects/sb_phase3_effects.txt, common/on_actions/sb_phase3_on_actions.txt
+# =============================================================================
+
+sb_griqualand_east.220 = {
+	type = country_event
+	placement = root
+
+	title = sb_griqualand_east.220.t
+	desc = sb_griqualand_east.220.d
+	flavor = sb_griqualand_east.220.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:CAP
+		has_variable = sb_griqualand_east_pending_var
+		NOT = { has_variable = sb_griqualand_east_resolved_var }
+		NOT = { exists = c:GLE }
+	}
+
+	option = {
+		name = sb_griqualand_east.220.a
+		default_option = yes
+		remove_variable = sb_griqualand_east_pending_var
+		sb_phase3_create_gle_route = yes
+		ai_chance = {
+			base = 100
+		}
+	}
+}
+
+sb_griqualand_east.221 = {
+	type = country_event
+	placement = root
+
+	title = sb_griqualand_east.221.t
+	desc = sb_griqualand_east.221.d
+	flavor = sb_griqualand_east.221.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:GLE
+		has_variable = sb_gle_willing_annexation_pending_var
+		c:CAP ?= {
+			is_country_alive = yes
+			sb_cap_is_full_liberal_griqua_route = yes
+		}
+	}
+
+	option = {
+		name = sb_griqualand_east.221.a
+		default_option = yes
+		remove_variable = sb_gle_willing_annexation_pending_var
+		c:CAP ?= {
+			annex = root
+		}
+		ai_chance = {
+			base = 100
+		}
+	}
+}
