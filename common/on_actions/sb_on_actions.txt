@@ -629,6 +629,48 @@ sb_on_cape_monthly_pulse_country = {
 						name = sb_cape_political_tensions
 					}
 				}
+				if = {
+					limit = {
+						root = {
+							is_subject_of = c:GBR
+							has_technology_researched = nationalism
+							NOT = {
+								OR = {
+									is_subject_type = subject_type_dominion
+									is_subject_type = subject_type_sb_dominion
+									is_subject_type = subject_type_sb_responsible_colony
+									is_subject_type = subject_type_sb_responsible_colony_monarchy
+								}
+							}
+						}
+						NOT = { has_modifier = sb_cape_autonomy_pressure }
+					}
+					add_modifier = {
+						name = sb_cape_autonomy_pressure
+					}
+				}
+				if = {
+					limit = {
+						has_modifier = sb_cape_autonomy_pressure
+						OR = {
+							root = {
+								NOT = { is_subject_of = c:GBR }
+							}
+							root = {
+								NOT = { has_technology_researched = nationalism }
+							}
+							root = {
+								OR = {
+									is_subject_type = subject_type_dominion
+									is_subject_type = subject_type_sb_dominion
+									is_subject_type = subject_type_sb_responsible_colony
+									is_subject_type = subject_type_sb_responsible_colony_monarchy
+								}
+							}
+						}
+					}
+					remove_modifier = sb_cape_autonomy_pressure
+				}
 			}
 
 			set_variable = {
