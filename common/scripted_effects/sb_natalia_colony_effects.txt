@@ -287,6 +287,17 @@ sb_install_british_natal_governor = {
 		}
 		save_scope_as = natal_colonial_governor
 	}
+	if = {
+		limit = {
+			NOT = { exists = scope:natal_colonial_governor }
+		}
+		create_character = {
+			template = NAL_martin_west
+			on_created = {
+				save_scope_as = natal_colonial_governor
+			}
+		}
+	}
 	scope:natal_colonial_governor ?= {
 		set_interest_group = c:NAL.ig:ig_armed_forces
 		if = {
@@ -298,15 +309,7 @@ sb_install_british_natal_governor = {
 		set_as_interest_group_leader = yes
 		set_character_as_ruler = yes
 	}
-		if = {
-			limit = {
-				NOT = { exists = scope:natal_colonial_governor }
-			}
-			create_character = {
-				template = NAL_martin_west
-			}
-		}
-	}
+}
 
 sb_finalize_british_natal_colony = {
 	sb_select_natalia_refugee_receiver = yes
@@ -372,6 +375,11 @@ sb_join_natalia_against_britain = {
 			is_diplomatic_play_type = dp_make_protectorate
 			any_scope_play_involved = { c:GBR ?= THIS }
 			any_scope_play_involved = { c:NAL ?= THIS }
+			NOT = {
+				any_scope_play_involved = {
+					scope:natalia_supporter ?= THIS
+				}
+			}
 		}
 		add_target_backers = { scope:natalia_supporter }
 		add_war_goal = {
@@ -432,44 +440,163 @@ sb_support_natalia_against_britain = {
 
 # Boer refugees from Natal move inland toward whichever republic receives them.
 sb_trigger_natal_refugee_migration_effect = {
+	save_temporary_scope_as = natal_refugee_coordinator
 	c:NAL ?= {
 		save_scope_as = natalia_source
 	}
-	cu:boer = {
-		save_scope_as = migration_culture
+	set_variable = {
+		name = sb_natal_refugee_receiver_count_var
+		value = 0
 	}
-	ordered_scope_state = {
-		limit = {
-			is_incorporated = yes
+	if = {
+		limit = { c:ORA ?= { is_country_alive = yes } }
+		c:ORA.capital ?= {
+			save_scope_as = natal_refugee_receiver_a
 		}
-		order_by = migration_pull
-		position = 0
-		check_range_bounds = no
-		save_scope_as = migration_target
+		change_variable = {
+			name = sb_natal_refugee_receiver_count_var
+			add = 1
+		}
+	}
+	if = {
+		limit = { c:TRN ?= { is_country_alive = yes } }
+		c:TRN.capital ?= {
+			if = {
+				limit = { NOT = { exists = scope:natal_refugee_receiver_a } }
+				save_scope_as = natal_refugee_receiver_a
+			}
+			else_if = {
+				limit = { NOT = { exists = scope:natal_refugee_receiver_b } }
+				save_scope_as = natal_refugee_receiver_b
+			}
+		}
+		change_variable = {
+			name = sb_natal_refugee_receiver_count_var
+			add = 1
+		}
+	}
+	if = {
+		limit = { c:ZPB ?= { is_country_alive = yes } }
+		c:ZPB.capital ?= {
+			if = {
+				limit = { NOT = { exists = scope:natal_refugee_receiver_a } }
+				save_scope_as = natal_refugee_receiver_a
+			}
+			else_if = {
+				limit = { NOT = { exists = scope:natal_refugee_receiver_b } }
+				save_scope_as = natal_refugee_receiver_b
+			}
+			else_if = {
+				limit = { NOT = { exists = scope:natal_refugee_receiver_c } }
+				save_scope_as = natal_refugee_receiver_c
+			}
+		}
+		change_variable = {
+			name = sb_natal_refugee_receiver_count_var
+			add = 1
+		}
+	}
+	if = {
+		limit = { c:LYD ?= { is_country_alive = yes } }
+		c:LYD.capital ?= {
+			if = {
+				limit = { NOT = { exists = scope:natal_refugee_receiver_a } }
+				save_scope_as = natal_refugee_receiver_a
+			}
+			else_if = {
+				limit = { NOT = { exists = scope:natal_refugee_receiver_b } }
+				save_scope_as = natal_refugee_receiver_b
+			}
+			else_if = {
+				limit = { NOT = { exists = scope:natal_refugee_receiver_c } }
+				save_scope_as = natal_refugee_receiver_c
+			}
+			else_if = {
+				limit = { NOT = { exists = scope:natal_refugee_receiver_d } }
+				save_scope_as = natal_refugee_receiver_d
+			}
+		}
+		change_variable = {
+			name = sb_natal_refugee_receiver_count_var
+			add = 1
+		}
 	}
 	if = {
 		limit = {
 			exists = scope:natalia_source
-			exists = scope:migration_target
+			scope:natal_refugee_coordinator.var:sb_natal_refugee_receiver_count_var > 0
 		}
-		scope:migration_target = {
-			create_mass_migration = {
-				origin = scope:natalia_source
-				culture = scope:migration_culture
-			}
-		}
-		c:NAL.capital ?= {
-			every_scope_pop = {
-				limit = {
-					culture = cu:boer
-				}
-				move_partial_pop = {
-					state = scope:migration_target
-					population_ratio = 0.20
+		c:NAL ?= {
+			every_scope_state = {
+				every_scope_pop = {
+					limit = {
+						culture = cu:boer
+					}
+					if = {
+						limit = {
+							scope:natal_refugee_coordinator.var:sb_natal_refugee_receiver_count_var == 1
+						}
+						move_partial_pop = {
+							state = scope:natal_refugee_receiver_a
+							population_ratio = 0.95
+						}
+					}
+					else_if = {
+						limit = {
+							scope:natal_refugee_coordinator.var:sb_natal_refugee_receiver_count_var == 2
+						}
+						move_partial_pop = {
+							state = scope:natal_refugee_receiver_a
+							population_ratio = 0.475
+						}
+						move_partial_pop = {
+							state = scope:natal_refugee_receiver_b
+							population_ratio = 0.904762
+						}
+					}
+					else_if = {
+						limit = {
+							scope:natal_refugee_coordinator.var:sb_natal_refugee_receiver_count_var == 3
+						}
+						move_partial_pop = {
+							state = scope:natal_refugee_receiver_a
+							population_ratio = 0.316667
+						}
+						move_partial_pop = {
+							state = scope:natal_refugee_receiver_b
+							population_ratio = 0.463415
+						}
+						move_partial_pop = {
+							state = scope:natal_refugee_receiver_c
+							population_ratio = 0.863636
+						}
+					}
+					else_if = {
+						limit = {
+							scope:natal_refugee_coordinator.var:sb_natal_refugee_receiver_count_var >= 4
+						}
+						move_partial_pop = {
+							state = scope:natal_refugee_receiver_a
+							population_ratio = 0.2375
+						}
+						move_partial_pop = {
+							state = scope:natal_refugee_receiver_b
+							population_ratio = 0.311475
+						}
+						move_partial_pop = {
+							state = scope:natal_refugee_receiver_c
+							population_ratio = 0.452381
+						}
+						move_partial_pop = {
+							state = scope:natal_refugee_receiver_d
+							population_ratio = 0.826087
+						}
+					}
 				}
 			}
 		}
 	}
+	remove_variable = sb_natal_refugee_receiver_count_var
 }
 
 # Natalia needs its own trekker migration helper because the generic trek effect
