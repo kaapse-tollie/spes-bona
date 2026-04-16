@@ -807,6 +807,39 @@ sb_on_cape_monthly_pulse_country = {
 
 			if = {
 				limit = {
+					is_subject_of = c:GBR
+					has_technology_researched = nationalism
+					NOT = {
+						OR = {
+							is_subject_type = subject_type_dominion
+							is_subject_type = subject_type_sb_dominion
+							is_subject_type = subject_type_sb_responsible_colony
+							is_subject_type = subject_type_sb_responsible_colony_monarchy
+						}
+					}
+				}
+				every_political_movement = {
+					limit = {
+						is_political_movement_type = movement_sb_cape_liberal
+						NOT = { has_modifier = sb_cape_liberal_autonomy_pressure }
+					}
+					add_modifier = {
+						name = sb_cape_liberal_autonomy_pressure
+					}
+				}
+			}
+			else = {
+				every_political_movement = {
+					limit = {
+						is_political_movement_type = movement_sb_cape_liberal
+						has_modifier = sb_cape_liberal_autonomy_pressure
+					}
+					remove_modifier = sb_cape_liberal_autonomy_pressure
+				}
+			}
+
+			if = {
+				limit = {
 					has_variable = sb_cape_liberal_law_obligation_active_var
 					OR = {
 						has_law = law_type:law_cultural_exclusion
@@ -1454,7 +1487,7 @@ sb_on_trek_monthly_pulse_country = {
 				is_at_war = no
 				aggressive_diplomatic_plays_permitted = yes
 				NOT = { has_variable = sb_ora_bst_scripted_war_1848_resolved_var }
-				game_date >= 1848.1.1
+				game_date >= 1847.1.1
 				c:PHL ?= {
 					OR = {
 						NOT = { is_country_alive = yes }
