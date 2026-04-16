@@ -293,6 +293,15 @@ sb_normalize_boer_trade_treaties = {
 						source_country = c:GBR
 						target_country = c:ORA
 					}
+					{
+						article = goods_transfer
+						source_country = c:GBR
+						target_country = c:ORA
+						inputs = {
+							{ goods = g:merchant_marine }
+							{ quantity = 10 }
+						}
+					}
 				}
 			}
 		}
@@ -322,6 +331,15 @@ sb_normalize_boer_trade_treaties = {
 						source_country = c:GBR
 						target_country = c:TRN
 					}
+					{
+						article = goods_transfer
+						source_country = c:GBR
+						target_country = c:TRN
+						inputs = {
+							{ goods = g:merchant_marine }
+							{ quantity = 10 }
+						}
+					}
 				}
 			}
 		}
@@ -350,6 +368,15 @@ sb_normalize_boer_trade_treaties = {
 						article = transit_rights
 						source_country = c:GBR
 						target_country = c:PHL
+					}
+					{
+						article = goods_transfer
+						source_country = c:GBR
+						target_country = c:PHL
+						inputs = {
+							{ goods = g:merchant_marine }
+							{ quantity = 10 }
+						}
 					}
 				}
 			}
@@ -381,6 +408,15 @@ sb_normalize_boer_trade_treaties = {
 						target_country = c:WBL
 					}
 					{
+						article = goods_transfer
+						source_country = c:GBR
+						target_country = c:WBL
+						inputs = {
+							{ goods = g:merchant_marine }
+							{ quantity = 10 }
+						}
+					}
+					{
 						article = guarantee_independence
 						source_country = c:GBR
 						target_country = c:WBL
@@ -394,13 +430,25 @@ sb_normalize_boer_trade_treaties = {
 		if = {
 			limit = {
 				c:TRN ?= { is_country_alive = yes }
-				NOT = {
-					any_scope_treaty = {
-						binds = c:TRN
-						any_scope_article = {
-							has_type = transit_rights
-							source_country = c:ORA
-							target_country = c:TRN
+				OR = {
+					NOT = {
+						any_scope_treaty = {
+							binds = c:TRN
+							any_scope_article = {
+								has_type = transit_rights
+								source_country = c:ORA
+								target_country = c:TRN
+							}
+						}
+					}
+					NOT = {
+						any_scope_treaty = {
+							binds = c:TRN
+							any_scope_article = {
+								has_type = transit_rights
+								source_country = c:TRN
+								target_country = c:ORA
+							}
 						}
 					}
 				}
@@ -415,6 +463,11 @@ sb_normalize_boer_trade_treaties = {
 						article = transit_rights
 						source_country = c:ORA
 						target_country = c:TRN
+					}
+					{
+						article = transit_rights
+						source_country = c:TRN
+						target_country = c:ORA
 					}
 				}
 			}
@@ -606,6 +659,15 @@ sb_ensure_gbr_transit_rights_with_root = {
 						article = transit_rights
 						source_country = c:GBR
 						target_country = scope:convention_target
+					}
+					{
+						article = goods_transfer
+						source_country = c:GBR
+						target_country = scope:convention_target
+						inputs = {
+							{ goods = g:merchant_marine }
+							{ quantity = 10 }
+						}
 					}
 				}
 			}

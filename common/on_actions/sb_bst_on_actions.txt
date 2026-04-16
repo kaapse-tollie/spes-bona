@@ -34,11 +34,24 @@ sb_on_bst_monthly_pulse_country = {
 			limit = {
 				country_definition = cd:BST
 				has_journal_entry = je_sb_bst_ora_frontier
-				sb_bst_holds_drakensberg = yes
-				NOT = { sb_bst_holds_vrystaat_foothold = yes }
+				sb_bst_controls_only_drakensberg = yes
 				NOT = { has_variable = sb_bst_into_the_mountains_var }
 			}
 			trigger_event = { id = sb_bst_frontier.020 days = 1 popup = yes }
+		}
+
+		if = {
+			limit = {
+				country_definition = cd:BST
+				is_country_alive = yes
+				is_subject = no
+				owns_entire_state_region = STATE_VRYSTAAT
+				NOT = { has_journal_entry = je_sb_sotho_tswana_nation }
+				NOT = { has_variable = sb_sotho_tswana_nation_completed_var }
+			}
+			add_journal_entry = {
+				type = je_sb_sotho_tswana_nation
+			}
 		}
 
 		if = {

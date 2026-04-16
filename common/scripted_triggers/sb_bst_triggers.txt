@@ -19,11 +19,35 @@ sb_bst_holds_vrystaat_foothold = {
 	}
 }
 
+sb_bst_controls_only_drakensberg = {
+	owns_entire_state_region = STATE_DRAKENSBERG
+	NOT = {
+		any_scope_state = {
+			NOT = {
+				state_region = s:STATE_DRAKENSBERG
+			}
+		}
+	}
+}
+
 sb_bst_frontier_raid_valid = {
 	c:ORA ?= {
 		is_country_alive = yes
 		any_scope_state = {
 			state_region = s:STATE_VRYSTAAT
+		}
+	}
+}
+
+sb_has_adjacent_british_protection_route = {
+	any_scope_state = {
+		any_neighbouring_state = {
+			owner = {
+				OR = {
+					country_definition = cd:GBR
+					is_subject_of = c:GBR
+				}
+			}
 		}
 	}
 }

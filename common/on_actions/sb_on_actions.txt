@@ -425,6 +425,35 @@ sb_on_game_started_after_lobby = {
 				remove_modifier = repudiated_obligation
 			}
 		}
+		c:ORA ?= {
+			if = {
+				limit = { is_ai = yes }
+				s:STATE_VRYSTAAT = {
+					region_state:ORA ?= {
+						if = {
+							limit = { NOT = { has_modifier = sb_ora_ai_infrastructure_boost } }
+							add_modifier = {
+								name = sb_ora_ai_infrastructure_boost
+							}
+						}
+						if = {
+							limit = { NOT = { has_building = building_construction_sector } }
+							create_building = {
+								building = "building_construction_sector"
+								add_ownership = {
+									country = {
+										country = "c:ORA"
+										levels = 1
+									}
+								}
+								reserves = 1
+								activate_production_methods = { "pm_wooden_buildings" }
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 }
 
@@ -604,7 +633,107 @@ sb_on_cape_monthly_pulse_country = {
 					remove_modifier = sb_xhosa_frontier_pressure_xht
 				}
 			}
+		}
+
+		if = {
+			limit = {
+				country_definition = cd:CAP
+				is_country_alive = yes
+				any_scope_state = {
+					state_region = s:STATE_EASTERN_CAPE
+					has_state_trait = state_trait_sb_xhosa_resistance
+				}
+				OR = {
+					has_law = law_type:law_frontier_colonization
+					has_law = law_type:law_colonial_resettlement
+					has_law = law_type:law_colonial_exploitation
+					is_enacting_law = law_type:law_frontier_colonization
+					is_enacting_law = law_type:law_colonial_resettlement
+					is_enacting_law = law_type:law_colonial_exploitation
+				}
 			}
+			# Closest-to-Cape ordering for the scripted Xhosa wars:
+			#   7th war  -> XHR
+			#   8th war  -> XHT
+			#   9th war  -> XHG
+			if = {
+				limit = {
+					NOT = { has_variable = sb_xhosa_frontier_war_7_resolved_var }
+					game_date >= 1846.1.1
+				}
+				if = {
+					limit = { game_date >= 1848.1.1 }
+					set_variable = sb_xhosa_frontier_war_7_resolved_var
+				}
+				else_if = {
+					limit = {
+						c:XHR ?= {
+							is_country_alive = yes
+							is_at_war = no
+							aggressive_diplomatic_plays_permitted = yes
+						}
+						is_at_war = no
+						aggressive_diplomatic_plays_permitted = yes
+					}
+					set_variable = sb_xhosa_frontier_war_7_resolved_var
+					c:XHR ?= {
+						trigger_event = { id = sb_frontier_ai_wars.100 days = 1 }
+					}
+				}
+			}
+
+			if = {
+				limit = {
+					NOT = { has_variable = sb_xhosa_frontier_war_8_resolved_var }
+					game_date >= 1850.1.1
+				}
+				if = {
+					limit = { game_date >= 1854.1.1 }
+					set_variable = sb_xhosa_frontier_war_8_resolved_var
+				}
+				else_if = {
+					limit = {
+						c:XHT ?= {
+							is_country_alive = yes
+							is_at_war = no
+							aggressive_diplomatic_plays_permitted = yes
+						}
+						is_at_war = no
+						aggressive_diplomatic_plays_permitted = yes
+					}
+					set_variable = sb_xhosa_frontier_war_8_resolved_var
+					c:XHT ?= {
+						trigger_event = { id = sb_frontier_ai_wars.110 days = 1 }
+					}
+				}
+			}
+
+			if = {
+				limit = {
+					NOT = { has_variable = sb_xhosa_frontier_war_9_resolved_var }
+					game_date >= 1877.1.1
+				}
+				if = {
+					limit = { game_date >= 1880.1.1 }
+					set_variable = sb_xhosa_frontier_war_9_resolved_var
+				}
+				else_if = {
+					limit = {
+						c:XHG ?= {
+							is_country_alive = yes
+							is_at_war = no
+							aggressive_diplomatic_plays_permitted = yes
+						}
+						is_at_war = no
+						aggressive_diplomatic_plays_permitted = yes
+					}
+					set_variable = sb_xhosa_frontier_war_9_resolved_var
+					c:XHG ?= {
+						trigger_event = { id = sb_frontier_ai_wars.120 days = 1 }
+					}
+				}
+			}
+		}
 
 			if = {
 				limit = {
@@ -880,6 +1009,37 @@ sb_on_trek_monthly_pulse_country = {
 			sb_ensure_zul_ai_army_failsafe = yes
 		}
 
+		if = {
+			limit = {
+				sb_is_zulu_dynasty_country = yes
+				is_ai = yes
+				has_variable = sb_zulu_gaza_followup_pending_var
+				is_country_alive = yes
+				is_at_war = no
+				aggressive_diplomatic_plays_permitted = yes
+				c:GZA ?= {
+					is_country_alive = yes
+					is_ai = yes
+					is_subject = no
+					is_at_war = no
+					aggressive_diplomatic_plays_permitted = yes
+				}
+			}
+			trigger_event = { id = sb_frontier_ai_wars.040 days = 7 }
+		}
+		else_if = {
+			limit = {
+				sb_is_zulu_dynasty_country = yes
+				has_variable = sb_zulu_gaza_followup_pending_var
+				OR = {
+					is_ai = no
+					NOT = { c:GZA ?= { is_country_alive = yes } }
+					c:GZA ?= { is_ai = no }
+				}
+			}
+			remove_variable = sb_zulu_gaza_followup_pending_var
+		}
+
 		# ============================================================
 		# Trek republic mobilization posture
 		# ============================================================
@@ -1110,28 +1270,102 @@ sb_on_trek_monthly_pulse_country = {
 			add_journal_entry = { type = je_sb_pacifying_eastern_transvaal }
 		}
 
-		# SWZ can only seek British shelter after the Boer pressure event is
-		# resolved and Natal is already inside the British orbit.
+		# AI-only inland frontier pacing. These beats are intentionally dated and
+		# only fire when the whole inland frontier triangle is still AI-driven.
 		if = {
 			limit = {
-				country_definition = cd:SWZ
+				country_definition = cd:ORA
+				is_ai = yes
+				is_country_alive = yes
 				is_subject = no
-				has_variable = sb_swazi_boer_pressure_resolved_var
-				NOT = { has_variable = sb_swazi_british_accommodation_var }
-				NOT = { has_variable = sb_swazi_stand_apart_var }
-				NOT = { has_variable = sb_swazi_british_accommodation_pending_var }
-				c:NAL ?= {
+				is_at_war = no
+				aggressive_diplomatic_plays_permitted = yes
+				NOT = { has_variable = sb_ora_phl_scripted_war_resolved_var }
+				game_date >= 1840.1.1
+				c:PHL ?= {
 					is_country_alive = yes
-					is_subject_of = c:GBR
+					is_ai = yes
+					is_subject = no
+					is_at_war = no
+					aggressive_diplomatic_plays_permitted = yes
+					any_scope_state = {
+						state_region = s:STATE_VRYSTAAT
+					}
 				}
-				sb_all_zululand_under_british_control = yes
+				c:BST ?= {
+					is_country_alive = yes
+					is_ai = yes
+				}
 			}
-			set_variable = {
-				name = sb_swazi_british_accommodation_pending_var
-				days = 60
-			}
-			trigger_event = { id = sb_swazi_frontier.096 days = 14 popup = yes }
+			set_variable = sb_ora_phl_scripted_war_resolved_var
+			trigger_event = { id = sb_frontier_ai_wars.010 days = 14 }
 		}
+
+		if = {
+			limit = {
+				country_definition = cd:ORA
+				is_ai = yes
+				is_country_alive = yes
+				is_subject = no
+				is_at_war = no
+				aggressive_diplomatic_plays_permitted = yes
+				NOT = { has_variable = sb_ora_bst_scripted_war_1848_resolved_var }
+				game_date >= 1848.1.1
+				c:PHL ?= {
+					OR = {
+						NOT = { is_country_alive = yes }
+						is_ai = yes
+					}
+				}
+				c:BST ?= {
+					is_country_alive = yes
+					is_ai = yes
+					is_subject = no
+					is_at_war = no
+					aggressive_diplomatic_plays_permitted = yes
+					any_scope_state = {
+						state_region = s:STATE_VRYSTAAT
+					}
+				}
+				any_scope_state = {
+					state_region = s:STATE_VRYSTAAT
+				}
+			}
+			set_variable = sb_ora_bst_scripted_war_1848_resolved_var
+			trigger_event = { id = sb_frontier_ai_wars.020 days = 14 }
+		}
+
+		if = {
+			limit = {
+				country_definition = cd:ORA
+				is_ai = yes
+				is_country_alive = yes
+				is_subject = no
+				is_at_war = no
+				aggressive_diplomatic_plays_permitted = yes
+				NOT = { has_variable = sb_ora_bst_scripted_war_1856_resolved_var }
+				game_date >= 1856.1.1
+				c:PHL ?= {
+					OR = {
+						NOT = { is_country_alive = yes }
+						is_ai = yes
+					}
+				}
+				c:BST ?= {
+					is_country_alive = yes
+					is_ai = yes
+					is_subject = no
+					is_at_war = no
+					aggressive_diplomatic_plays_permitted = yes
+				}
+				any_scope_state = {
+					state_region = s:STATE_VRYSTAAT
+				}
+			}
+			set_variable = sb_ora_bst_scripted_war_1856_resolved_var
+			trigger_event = { id = sb_frontier_ai_wars.030 days = 14 }
+		}
+
 	}
 }
 
@@ -1550,6 +1784,25 @@ sb_on_spes_bona_wargoal_enforced = {
 				remove_variable = sb_zulu_swazi_war_active_var
 			}
 			sb_zulu_apply_swazi_campaign_victory = yes
+			if = {
+				limit = {
+					is_ai = yes
+					NOT = { c:SWZ ?= { is_country_alive = yes } }
+					c:GZA ?= {
+						is_country_alive = yes
+						is_ai = yes
+						is_subject = no
+					}
+					NOT = { has_variable = sb_zulu_gaza_followup_resolved_var }
+				}
+				set_variable = sb_zulu_gaza_followup_resolved_var
+				random_list = {
+					33 = {
+						set_variable = sb_zulu_gaza_followup_pending_var
+					}
+					67 = { }
+				}
+			}
 		}
 
 		if = {

@@ -64,8 +64,7 @@ sb_bst_frontier.020 = {
 	trigger = {
 		country_definition = cd:BST
 		has_journal_entry = je_sb_bst_ora_frontier
-		sb_bst_holds_drakensberg = yes
-		NOT = { sb_bst_holds_vrystaat_foothold = yes }
+		sb_bst_controls_only_drakensberg = yes
 		NOT = { has_variable = sb_bst_into_the_mountains_var }
 	}
 
@@ -76,6 +75,18 @@ sb_bst_frontier.020 = {
 	option = {
 		name = sb_bst_frontier.020.a
 		default_option = yes
+		c:ORA ?= {
+			if = {
+				limit = { is_country_alive = yes }
+				change_relations = {
+					country = root
+					value = -20
+				}
+				s:STATE_DRAKENSBERG = {
+					add_claim = c:ORA
+				}
+			}
+		}
 		add_modifier = {
 			name = sb_bst_biding_time
 			months = 60
@@ -105,6 +116,7 @@ sb_bst_frontier.100 = {
 			is_country_alive = yes
 			is_subject = no
 			has_journal_entry = je_sb_bst_ora_frontier
+			sb_has_adjacent_british_protection_route = yes
 		}
 	}
 
@@ -115,6 +127,12 @@ sb_bst_frontier.100 = {
 			create_diplomatic_pact = {
 				country = c:BST
 				type = protectorate
+			}
+		}
+		c:ORA ?= {
+			if = {
+				limit = { is_country_alive = yes }
+				trigger_event = { id = sb_bst_frontier.110 days = 1 popup = yes }
 			}
 		}
 		ai_chance = {
@@ -129,6 +147,39 @@ sb_bst_frontier.100 = {
 		}
 		ai_chance = {
 			base = 0
+		}
+	}
+}
+
+sb_bst_frontier.110 = {
+	type = country_event
+	placement = root
+
+	title = sb_bst_frontier.110.t
+	desc = sb_bst_frontier.110.d
+	flavor = sb_bst_frontier.110.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:ORA
+	}
+
+	option = {
+		name = sb_bst_frontier.110.a
+		default_option = yes
+		if = {
+			limit = { has_variable = sb_bst_frontier_claim_seeded_var }
+			remove_variable = sb_bst_frontier_claim_seeded_var
+		}
+		s:STATE_DRAKENSBERG = {
+			remove_claim = c:ORA
 		}
 	}
 }

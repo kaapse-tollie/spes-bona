@@ -50,18 +50,35 @@ sb_swazi_frontier.094 = {
 			set_variable = sb_zulu_swazi_war_active_var
 			if = {
 				limit = { is_ai = yes }
-				add_modifier = {
-					name = sb_swazi_frontier_muster
-					months = 18
-				}
 				if = {
-					limit = { root = { is_player = yes } }
-					add_modifier = {
-						name = sb_swazi_frontier_muster_vs_player
-						months = 18
+					limit = {
+						root = { is_ai = yes }
+					}
+					random_list = {
+						75 = {
+							add_modifier = {
+								name = sb_swazi_frontier_muster
+								months = 18
+							}
+							sb_swazi_raise_zulu_campaign_muster = yes
+						}
+						25 = { }
 					}
 				}
-				sb_swazi_raise_zulu_campaign_muster = yes
+				else = {
+					add_modifier = {
+						name = sb_swazi_frontier_muster
+						months = 18
+					}
+					if = {
+						limit = { root = { is_player = yes } }
+						add_modifier = {
+							name = sb_swazi_frontier_muster_vs_player
+							months = 18
+						}
+					}
+					sb_swazi_raise_zulu_campaign_muster = yes
+				}
 			}
 		}
 		create_diplomatic_play = {

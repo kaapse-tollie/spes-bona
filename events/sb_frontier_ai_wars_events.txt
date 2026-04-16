@@ -1,0 +1,193 @@
+﻿namespace = sb_frontier_ai_wars
+
+# Hidden dated AI frontier-war openers.
+# Ownership:
+#   - ORA/PHL/BST inland pacing wars
+#   - ZUL follow-on pressure into Gaza
+#   - Cape-Xhosa frontier war scheduling
+
+sb_frontier_ai_wars.010 = {
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		country_definition = cd:ORA
+		is_ai = yes
+	}
+
+	immediate = {
+		create_diplomatic_play = {
+			type = dp_return_state
+			target_country = c:PHL
+			target_state = s:STATE_VRYSTAAT.region_state:PHL
+
+			add_war_goal = {
+				holder = root
+				target_country = c:PHL
+				type = humiliation
+			}
+		}
+	}
+}
+
+sb_frontier_ai_wars.020 = {
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		country_definition = cd:ORA
+		is_ai = yes
+	}
+
+	immediate = {
+		random_list = {
+			20 = {
+				c:BST ?= {
+					add_modifier = {
+						name = sb_bst_scripted_frontier_edge
+						months = 36
+					}
+				}
+			}
+			80 = { }
+		}
+		create_diplomatic_play = {
+			type = dp_return_state
+			target_country = c:BST
+			target_state = s:STATE_VRYSTAAT.region_state:BST
+
+			add_war_goal = {
+				holder = c:BST
+				target_state = s:STATE_VRYSTAAT.region_state:ORA
+				type = return_state
+			}
+		}
+	}
+}
+
+sb_frontier_ai_wars.030 = {
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		country_definition = cd:ORA
+		is_ai = yes
+	}
+
+	immediate = {
+		random_list = {
+			20 = {
+				c:BST ?= {
+					add_modifier = {
+						name = sb_bst_scripted_frontier_major_edge
+						months = 48
+					}
+				}
+			}
+			80 = { }
+		}
+		create_diplomatic_play = {
+			type = dp_annex_war
+			target_country = c:BST
+
+			add_war_goal = {
+				holder = c:BST
+				target_state = s:STATE_VRYSTAAT.region_state:ORA
+				type = return_state
+			}
+		}
+	}
+}
+
+sb_frontier_ai_wars.040 = {
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		sb_is_zulu_dynasty_country = yes
+		is_ai = yes
+	}
+
+	immediate = {
+		if = {
+			limit = { has_variable = sb_zulu_gaza_followup_pending_var }
+			remove_variable = sb_zulu_gaza_followup_pending_var
+		}
+		create_diplomatic_play = {
+			type = dp_annex_war
+			target_country = c:GZA
+		}
+	}
+}
+
+sb_frontier_ai_wars.100 = {
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		country_definition = cd:XHR
+		is_country_alive = yes
+		is_at_war = no
+		aggressive_diplomatic_plays_permitted = yes
+		c:CAP ?= {
+			is_country_alive = yes
+			is_at_war = no
+			aggressive_diplomatic_plays_permitted = yes
+		}
+	}
+
+	immediate = {
+		create_diplomatic_play = {
+			type = dp_native_uprising
+			target_country = c:CAP
+		}
+	}
+}
+
+sb_frontier_ai_wars.110 = {
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		country_definition = cd:XHT
+		is_country_alive = yes
+		is_at_war = no
+		aggressive_diplomatic_plays_permitted = yes
+		c:CAP ?= {
+			is_country_alive = yes
+			is_at_war = no
+			aggressive_diplomatic_plays_permitted = yes
+		}
+	}
+
+	immediate = {
+		create_diplomatic_play = {
+			type = dp_native_uprising
+			target_country = c:CAP
+		}
+	}
+}
+
+sb_frontier_ai_wars.120 = {
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		country_definition = cd:XHG
+		is_country_alive = yes
+		is_at_war = no
+		aggressive_diplomatic_plays_permitted = yes
+		c:CAP ?= {
+			is_country_alive = yes
+			is_at_war = no
+			aggressive_diplomatic_plays_permitted = yes
+		}
+	}
+
+	immediate = {
+		create_diplomatic_play = {
+			type = dp_native_uprising
+			target_country = c:CAP
+		}
+	}
+}
