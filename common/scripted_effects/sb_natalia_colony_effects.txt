@@ -140,9 +140,15 @@ sb_apply_british_natal_colony_setup = {
 	}
 	if = {
 		limit = {
-			NOT = { country_has_primary_culture = cu:british }
+			NOT = { country_has_primary_culture = cu:anglo_african }
 		}
-		add_primary_culture = cu:british
+		add_primary_culture = cu:anglo_african
+	}
+	if = {
+		limit = {
+			country_has_primary_culture = cu:british
+		}
+		remove_primary_culture = cu:british
 	}
 	if = {
 		limit = {
@@ -158,6 +164,15 @@ sb_apply_british_natal_colony_setup = {
 		}
 		region_state:NAL ?= {
 			set_state_type = unincorporated
+			every_scope_pop = {
+				limit = {
+					culture = cu:british
+				}
+				change_pop_culture = {
+					target = cu:anglo_african
+					value = 1
+				}
+			}
 		}
 	}
 	sb_install_british_natal_governor = yes
