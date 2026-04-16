@@ -427,7 +427,10 @@ sb_on_game_started_after_lobby = {
 		}
 		c:ORA ?= {
 			if = {
-				limit = { is_ai = yes }
+				limit = {
+					is_ai = yes
+					sb_frontier_ai_behavior_dynamic_historical = yes
+				}
 				s:STATE_VRYSTAAT = {
 					region_state:ORA ?= {
 						if = {
@@ -802,6 +805,71 @@ sb_on_cape_monthly_pulse_country = {
 				}
 			}
 
+			if = {
+				limit = {
+					has_variable = sb_cape_liberal_law_obligation_active_var
+					OR = {
+						has_law = law_type:law_cultural_exclusion
+						has_law_or_variant = law_type:law_multicultural
+					}
+				}
+				remove_variable = sb_cape_liberal_law_obligation_active_var
+				if = {
+					limit = { has_variable = sb_cape_liberal_law_obligation_due_var }
+					remove_variable = sb_cape_liberal_law_obligation_due_var
+				}
+			}
+
+			if = {
+				limit = {
+					has_variable = sb_cape_liberal_law_obligation_active_var
+					NOT = { has_variable = sb_cape_liberal_law_obligation_due_var }
+				}
+				remove_variable = sb_cape_liberal_law_obligation_active_var
+				every_political_movement = {
+					limit = {
+						is_political_movement_type = movement_sb_cape_liberal
+					}
+					add_modifier = {
+						name = sb_cape_liberal_deadline_broken
+						months = 60
+					}
+				}
+			}
+
+			if = {
+				limit = {
+					has_variable = sb_cape_settler_law_obligation_active_var
+					OR = {
+						has_law = law_type:law_frontier_colonization
+						has_law = law_type:law_colonial_resettlement
+						has_law = law_type:law_colonial_exploitation
+					}
+				}
+				remove_variable = sb_cape_settler_law_obligation_active_var
+				if = {
+					limit = { has_variable = sb_cape_settler_law_obligation_due_var }
+					remove_variable = sb_cape_settler_law_obligation_due_var
+				}
+			}
+
+			if = {
+				limit = {
+					has_variable = sb_cape_settler_law_obligation_active_var
+					NOT = { has_variable = sb_cape_settler_law_obligation_due_var }
+				}
+				remove_variable = sb_cape_settler_law_obligation_active_var
+				every_political_movement = {
+					limit = {
+						is_political_movement_type = movement_sb_eastern_cape_separatist
+					}
+					add_modifier = {
+						name = sb_cape_settler_deadline_broken
+						months = 60
+					}
+				}
+			}
+
 			set_variable = {
 				name = sb_cape_balance_current
 				value = "je:je_sb_cape_politics.scripted_bar_progress(sb_cape_balance_bar)"
@@ -887,6 +955,76 @@ sb_on_cape_monthly_pulse_country = {
 				}
 				else = {
 					trigger_event = { id = sb_cape.122 days = 7 popup = yes }
+				}
+			}
+
+			if = {
+				limit = {
+					game_date >= 1875.1.1
+					NOT = { has_variable = sb_cape_1875_law_demand_fired_var }
+					OR = {
+						AND = {
+							NOT = {
+								OR = {
+									has_law = law_type:law_cultural_exclusion
+									has_law_or_variant = law_type:law_multicultural
+								}
+							}
+							NOT = {
+								OR = {
+									is_enacting_law = law_type:law_cultural_exclusion
+									is_enacting_law = law_type:law_multicultural
+									is_enacting_law = law_type:law_sb_non_racialism
+								}
+							}
+						}
+						AND = {
+							NOT = {
+								OR = {
+									has_law = law_type:law_frontier_colonization
+									has_law = law_type:law_colonial_resettlement
+									has_law = law_type:law_colonial_exploitation
+								}
+							}
+							NOT = {
+								OR = {
+									is_enacting_law = law_type:law_frontier_colonization
+									is_enacting_law = law_type:law_colonial_resettlement
+									is_enacting_law = law_type:law_colonial_exploitation
+								}
+							}
+						}
+					}
+				}
+				set_variable = sb_cape_1875_law_demand_fired_var
+				if = {
+					limit = {
+						NOT = {
+							OR = {
+								has_law = law_type:law_cultural_exclusion
+								has_law_or_variant = law_type:law_multicultural
+							}
+						}
+						NOT = {
+							OR = {
+								is_enacting_law = law_type:law_cultural_exclusion
+								is_enacting_law = law_type:law_multicultural
+								is_enacting_law = law_type:law_sb_non_racialism
+							}
+						}
+						OR = {
+							var:sb_cape_balance_current >= 0
+							OR = {
+								has_law = law_type:law_frontier_colonization
+								has_law = law_type:law_colonial_resettlement
+								has_law = law_type:law_colonial_exploitation
+							}
+						}
+					}
+					trigger_event = { id = sb_cape.123 days = 7 popup = yes }
+				}
+				else = {
+					trigger_event = { id = sb_cape.124 days = 7 popup = yes }
 				}
 			}
 
@@ -1013,6 +1151,7 @@ sb_on_trek_monthly_pulse_country = {
 			limit = {
 				sb_is_zulu_dynasty_country = yes
 				is_ai = yes
+				sb_frontier_ai_behavior_dynamic_historical = yes
 				has_variable = sb_zulu_gaza_followup_pending_var
 				is_country_alive = yes
 				is_at_war = no
@@ -1032,6 +1171,7 @@ sb_on_trek_monthly_pulse_country = {
 				sb_is_zulu_dynasty_country = yes
 				has_variable = sb_zulu_gaza_followup_pending_var
 				OR = {
+					sb_frontier_ai_behavior_dynamic_historical = no
 					is_ai = no
 					NOT = { c:GZA ?= { is_country_alive = yes } }
 					c:GZA ?= { is_ai = no }
@@ -1145,6 +1285,7 @@ sb_on_trek_monthly_pulse_country = {
 			limit = {
 				country_definition = cd:TRN
 				is_ai = yes
+				sb_frontier_ai_behavior_dynamic_historical = yes
 				has_variable = sb_trn_joined_natal_war_var
 				is_at_war = yes
 			}
@@ -1155,6 +1296,7 @@ sb_on_trek_monthly_pulse_country = {
 			limit = {
 				country_definition = cd:ORA
 				is_ai = yes
+				sb_frontier_ai_behavior_dynamic_historical = yes
 				has_variable = sb_natal_war_active_var
 				is_at_war = yes
 			}
@@ -1274,6 +1416,7 @@ sb_on_trek_monthly_pulse_country = {
 		# only fire when the whole inland frontier triangle is still AI-driven.
 		if = {
 			limit = {
+				sb_frontier_ai_scripting_enabled = yes
 				country_definition = cd:ORA
 				is_ai = yes
 				is_country_alive = yes
@@ -1303,6 +1446,7 @@ sb_on_trek_monthly_pulse_country = {
 
 		if = {
 			limit = {
+				sb_frontier_ai_scripting_enabled = yes
 				country_definition = cd:ORA
 				is_ai = yes
 				is_country_alive = yes
@@ -1337,6 +1481,7 @@ sb_on_trek_monthly_pulse_country = {
 
 		if = {
 			limit = {
+				sb_frontier_ai_scripting_enabled = yes
 				country_definition = cd:ORA
 				is_ai = yes
 				is_country_alive = yes
@@ -1488,7 +1633,12 @@ sb_on_spes_bona_diplomatic_play_started = {
 					trigger_event = { id = sb_natal_crisis.019 }
 				}
 			}
-			sb_raise_blood_river_ai_boer_relief_forces = yes
+			if = {
+				limit = {
+					sb_frontier_ai_behavior_dynamic_historical = yes
+				}
+				sb_raise_blood_river_ai_boer_relief_forces = yes
+			}
 		}
 		if = {
 			limit = {
@@ -1515,16 +1665,41 @@ sb_on_spes_bona_diplomatic_play_started = {
 					is_country_alive = yes
 					is_ai = yes
 					NOT = { has_variable = sb_swazi_zulu_campaign_muster_var }
+					NOT = { has_game_rule = sb_frontier_ai_behavior_off }
 				}
 			}
 			# The generalized frontier-muster rail is AI-only. Player SWZ should
 			# never receive the invisible anti-exploit safety package.
 			c:SWZ ?= {
-				add_modifier = {
-					name = sb_swazi_frontier_muster
-					months = 24
+				if = {
+					limit = {
+						sb_frontier_ai_behavior_dynamic_historical = yes
+					}
+					if = {
+						limit = { NOT = { has_modifier = sb_swazi_frontier_muster } }
+						add_modifier = {
+							name = sb_swazi_frontier_muster
+							months = 24
+						}
+					}
+					sb_swazi_raise_zulu_campaign_muster = yes
 				}
-				sb_swazi_raise_zulu_campaign_muster = yes
+				else_if = {
+					limit = {
+						sb_frontier_ai_behavior_strict_historical = yes
+						root = {
+							any_scope_play_involved = { c:ZUL ?= THIS }
+						}
+					}
+					if = {
+						limit = { NOT = { has_modifier = sb_swazi_frontier_muster } }
+						add_modifier = {
+							name = sb_swazi_frontier_muster
+							months = 24
+						}
+					}
+					sb_swazi_raise_zulu_campaign_muster = yes
+				}
 			}
 		}
 	}
@@ -1549,6 +1724,7 @@ sb_on_spes_bona_diplo_play_war_start = {
 				c:ORA ?= {
 					is_country_alive = yes
 					is_ai = yes
+					sb_frontier_ai_behavior_dynamic_historical = yes
 					has_variable = sb_natal_war_active_var
 				}
 			}
@@ -1787,6 +1963,7 @@ sb_on_spes_bona_wargoal_enforced = {
 			if = {
 				limit = {
 					is_ai = yes
+					sb_frontier_ai_behavior_dynamic_historical = yes
 					NOT = { c:SWZ ?= { is_country_alive = yes } }
 					c:GZA ?= {
 						is_country_alive = yes

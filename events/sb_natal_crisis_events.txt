@@ -100,38 +100,52 @@ sb_natal_crisis.019 = {
 			set_variable = sb_zul_blood_river_support_resolved_var
 			if = {
 				limit = {
-					OR = {
-						c:ORA ?= {
-							is_country_alive = yes
-							is_player = yes
-						}
-						c:TRN ?= {
-							is_country_alive = yes
-							is_player = yes
-						}
-					}
+					sb_frontier_ai_behavior_strict_historical = yes
+				}
+				add_modifier = {
+					name = sb_blood_river_zulu_no_relief
+					months = 12
+				}
+			}
+			else_if = {
+				limit = {
+					sb_frontier_ai_behavior_dynamic_historical = yes
 				}
 				if = {
 					limit = {
-						NOT = { has_variable = sb_zul_emergency_barracks_var }
-					}
-					sb_raise_zul_blood_river_relief_force = yes
-				}
-			}
-			else = {
-				random_list = {
-					33 = {
-						if = {
-							limit = {
-								NOT = { has_variable = sb_zul_emergency_barracks_var }
+						OR = {
+							c:ORA ?= {
+								is_country_alive = yes
+								is_player = yes
 							}
-							sb_raise_zul_blood_river_relief_force = yes
+							c:TRN ?= {
+								is_country_alive = yes
+								is_player = yes
+							}
 						}
 					}
-					67 = {
-						add_modifier = {
-							name = sb_blood_river_zulu_no_relief
-							months = 12
+					if = {
+						limit = {
+							NOT = { has_variable = sb_zul_emergency_barracks_var }
+						}
+						sb_raise_zul_blood_river_relief_force = yes
+					}
+					else = {
+						random_list = {
+							33 = {
+								if = {
+									limit = {
+										NOT = { has_variable = sb_zul_emergency_barracks_var }
+									}
+									sb_raise_zul_blood_river_relief_force = yes
+								}
+							}
+							67 = {
+								add_modifier = {
+									name = sb_blood_river_zulu_no_relief
+									months = 12
+								}
+							}
 						}
 					}
 				}

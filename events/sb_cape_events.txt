@@ -900,6 +900,158 @@ sb_cape.122 = {
 	}
 }
 
+# Late constitutional demand — if the Cape question is still unresolved by the
+# mid-1870s, the liberal movement forces the missing legal settlement back onto
+# the ministry's desk.
+sb_cape.123 = {
+	type = country_event
+	placement = root
+
+	title = sb_cape.123.t
+	desc = sb_cape.123.d
+	flavor = sb_cape.123.f
+
+	event_image = {
+		video = "gfx/event_pictures/europenorthamerica_sufferage.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/principles_icons/creative_legislature.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:CAP
+		has_journal_entry = je_sb_cape_politics
+		NOT = {
+			OR = {
+				has_law = law_type:law_cultural_exclusion
+				has_law_or_variant = law_type:law_multicultural
+			}
+		}
+	}
+
+	option = {
+		name = sb_cape.123.a
+		default_option = yes
+		custom_tooltip = sb_cape.123.a.tt
+		add_modifier = {
+			name = sb_cape_liberal_commitment
+			months = 24
+		}
+		set_variable = sb_cape_liberal_law_obligation_active_var
+		set_variable = {
+			name = sb_cape_liberal_law_obligation_due_var
+			days = 730
+		}
+		if = {
+			limit = {
+				is_ai = yes
+				NOT = { has_law = law_type:law_cultural_exclusion }
+			}
+			if = {
+				limit = { enacting_any_law = yes }
+				cancel_enactment = yes
+			}
+			start_enactment = law_type:law_cultural_exclusion
+		}
+		ai_chance = {
+			base = 80
+		}
+	}
+
+	option = {
+		name = sb_cape.123.b
+		every_political_movement = {
+			limit = {
+				is_political_movement_type = movement_sb_cape_liberal
+			}
+			add_modifier = {
+				name = sb_cape_liberal_deadline_broken
+				months = 60
+			}
+		}
+		ai_chance = {
+			base = 20
+		}
+	}
+}
+
+# Late frontier demand — if the Cape question still hangs open by the
+# mid-1870s, the eastern bloc insists that frontier policy be settled in law.
+sb_cape.124 = {
+	type = country_event
+	placement = root
+
+	title = sb_cape.124.t
+	desc = sb_cape.124.d
+	flavor = sb_cape.124.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_public_protest.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/principles_icons/creative_legislature.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:CAP
+		has_journal_entry = je_sb_cape_politics
+		NOT = {
+			OR = {
+				has_law = law_type:law_frontier_colonization
+				has_law = law_type:law_colonial_resettlement
+				has_law = law_type:law_colonial_exploitation
+			}
+		}
+	}
+
+	option = {
+		name = sb_cape.124.a
+		default_option = yes
+		custom_tooltip = sb_cape.124.a.tt
+		add_modifier = {
+			name = sb_cape_settler_commitment
+			months = 24
+		}
+		set_variable = sb_cape_settler_law_obligation_active_var
+		set_variable = {
+			name = sb_cape_settler_law_obligation_due_var
+			days = 730
+		}
+		if = {
+			limit = {
+				is_ai = yes
+				NOT = { has_law = law_type:law_frontier_colonization }
+			}
+			if = {
+				limit = { enacting_any_law = yes }
+				cancel_enactment = yes
+			}
+			start_enactment = law_type:law_frontier_colonization
+		}
+		ai_chance = {
+			base = 80
+		}
+	}
+
+	option = {
+		name = sb_cape.124.b
+		every_political_movement = {
+			limit = {
+				is_political_movement_type = movement_sb_eastern_cape_separatist
+			}
+			add_modifier = {
+				name = sb_cape_settler_deadline_broken
+				months = 60
+			}
+		}
+		ai_chance = {
+			base = 20
+		}
+	}
+}
+
 sb_cape.204 = {
 	type = country_event
 	placement = root
