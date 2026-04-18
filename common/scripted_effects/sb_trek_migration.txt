@@ -56,31 +56,48 @@ sb_trigger_boer_migration_effect = {
 }
 
 sb_seed_zpb_initial_trekker_arrivals = {
-	# ZPB is created mid-effect rather than through a normal event reward. A
-	# deterministic settler package is more reliable here than trying to fire an
-	# immediate mass migration during the create-country handoff.
-	s:STATE_NORTHERN_TRANSVAAL = {
-		region_state:ZPB ?= {
+	# Seed ZPB from actual Cape Boer frontier communities rather than from a
+	# synthetic pop package. The eastern districts provide the bulk, with the
+	# northern inland supplying a smaller supplementary trickle.
+	c:ZPB ?= {
+		capital = {
+			save_scope_as = zpb_settler_target
+		}
+	}
+	if = {
+		limit = {
+			exists = scope:zpb_settler_target
+		}
+		scope:zpb_settler_target = {
 			add_modifier = {
 				name = sb_trek_migration_pull
 				months = 24
 			}
-			create_pop = {
-				culture = boer
-				religion = protestant
-				size = 700
+		}
+		s:STATE_EASTERN_CAPE = {
+			region_state:CAP ?= {
+				every_scope_pop = {
+					limit = {
+						culture = cu:boer
+					}
+					move_partial_pop = {
+						state = scope:zpb_settler_target
+						population_ratio = 0.06
+					}
+				}
 			}
-			create_pop = {
-				pop_type = laborers
-				culture = boer
-				religion = protestant
-				size = 200
-			}
-			create_pop = {
-				pop_type = shopkeepers
-				culture = boer
-				religion = protestant
-				size = 100
+		}
+		s:STATE_NORTHERN_CAPE = {
+			region_state:CAP ?= {
+				every_scope_pop = {
+					limit = {
+						culture = cu:boer
+					}
+					move_partial_pop = {
+						state = scope:zpb_settler_target
+						population_ratio = 0.04
+					}
+				}
 			}
 		}
 	}
@@ -467,6 +484,21 @@ sb_spawn_transvaal_republic_v2 = {
 # Shared Zoutpansberg split setup so event branches can offer a play-as choice
 # without duplicating the full spawn / migration / government wiring.
 sb_found_zoutpansberg_republic = {
+	c:TRN ?= {
+		if = {
+			limit = {
+				any_scope_character = {
+					has_template = TRN_stephanus_schoeman
+				}
+			}
+			random_scope_character = {
+				limit = {
+					has_template = TRN_stephanus_schoeman
+				}
+				save_scope_as = zpb_ruler_scope
+			}
+		}
+	}
 	if = {
 		limit = {
 			NOT = { exists = c:ZPB }
@@ -579,7 +611,7 @@ sb_found_zoutpansberg_republic = {
 				is_player = yes
 			}
 		}
-		c:ORA ?= { trigger_event = { id = sb_boer_republics.121 days = 1 popup = yes } }
+		c:ORA ?= { trigger_event = { id = sb_boer_republics.120 days = 7 popup = yes } }
 	}
 	if = {
 		limit = {
@@ -588,16 +620,7 @@ sb_found_zoutpansberg_republic = {
 				is_player = yes
 			}
 		}
-		c:TRN ?= { trigger_event = { id = sb_boer_republics.121 days = 1 popup = yes } }
-	}
-	if = {
-		limit = {
-			c:LYD ?= {
-				is_country_alive = yes
-				is_player = yes
-			}
-		}
-		c:LYD ?= { trigger_event = { id = sb_boer_republics.121 days = 1 popup = yes } }
+		c:TRN ?= { trigger_event = { id = sb_boer_republics.120 days = 7 popup = yes } }
 	}
 	if = {
 		limit = {
@@ -607,7 +630,7 @@ sb_found_zoutpansberg_republic = {
 				country_has_primary_culture = cu:boer
 			}
 		}
-		c:NAL ?= { trigger_event = { id = sb_boer_republics.121 days = 1 popup = yes } }
+		c:NAL ?= { trigger_event = { id = sb_boer_republics.120 days = 7 popup = yes } }
 	}
 }
 

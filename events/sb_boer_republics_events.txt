@@ -186,6 +186,7 @@ sb_boer_republics.009 = {
 	}
 }
 
+# ZPB trekkers: 
 sb_boer_republics.110 = {
 	type = country_event
 	placement = root
@@ -212,6 +213,15 @@ sb_boer_republics.110 = {
 	option = {
 		name = sb_boer_republics.110.a
 		default_option = yes
+		custom_tooltip = {
+			text = sb_boer_republics_110_liberal_shift_tt
+		}
+		je:je_sb_cape_politics ?= {
+			add_progress = {
+				name = sb_cape_balance_bar
+				value = 10
+			}
+		}
 		if = {
 			limit = { has_modifier = sb_cape_zoutpansberg_departure_settler }
 			remove_modifier = sb_cape_zoutpansberg_departure_settler
@@ -222,13 +232,22 @@ sb_boer_republics.110 = {
 		}
 		hidden_effect = {
 			c:TRN ?= {
-				trigger_event = { id = sb_boer_republics.120 days = 30 popup = yes }
+				sb_found_zoutpansberg_republic = yes
 			}
 		}
 	}
 
 	option = {
 		name = sb_boer_republics.110.b
+		custom_tooltip = {
+			text = sb_boer_republics_110_settler_shift_tt
+		}
+		je:je_sb_cape_politics ?= {
+			add_progress = {
+				name = sb_cape_balance_bar
+				value = -10
+			}
+		}
 		if = {
 			limit = { has_modifier = sb_cape_zoutpansberg_departure_liberal }
 			remove_modifier = sb_cape_zoutpansberg_departure_liberal
@@ -239,7 +258,7 @@ sb_boer_republics.110 = {
 		}
 		hidden_effect = {
 			c:TRN ?= {
-				trigger_event = { id = sb_boer_republics.120 days = 30 popup = yes }
+				sb_found_zoutpansberg_republic = yes
 			}
 		}
 	}
@@ -262,75 +281,30 @@ sb_boer_republics.120 = {
 	duration = 3
 
 	trigger = {
-		country_definition = cd:TRN
-	}
-
-	immediate = {
-		if = {
-			limit = {
-				any_scope_character = {
-					has_template = TRN_stephanus_schoeman
-				}
-			}
-			random_scope_character = {
-				limit = {
-					has_template = TRN_stephanus_schoeman
-				}
-				save_scope_as = zpb_ruler_scope
-			}
-		}
-	}
-
-	option = {
-		name = sb_boer_republics.120.a
-		default_option = yes
-		hidden_effect = {
-			sb_found_zoutpansberg_republic = yes
-		}
-		ai_chance = {
-			base = 100
-		}
-	}
-}
-
-sb_boer_republics.121 = {
-	type = country_event
-	placement = root
-
-	title = sb_boer_republics.121.t
-	desc = sb_boer_republics.121.d
-	flavor = sb_boer_republics.121.f
-
-	event_image = {
-		video = "gfx/event_pictures/africa_construction_colony.bk2"
-	}
-
-	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-	icon = "gfx/interface/icons/event_icons/event_default.dds"
-	duration = 3
-
-	trigger = {
 		is_player = yes
-		country_has_primary_culture = cu:boer
-		NOT = { country_definition = cd:ZPB }
+		OR = {
+			country_definition = cd:TRN
+			country_definition = cd:ORA
+			country_definition = cd:NAL
+		}
 		c:ZPB ?= {
 			is_country_alive = yes
 		}
 	}
 
 	option = {
-		name = sb_boer_republics.121.a
-		default_option = yes
+		name = sb_boer_republics.120.a
+		play_as = c:ZPB
 		ai_chance = {
-			base = 100
+			base = 0
 		}
 	}
 
 	option = {
-		name = sb_boer_republics.121.b
-		play_as = c:ZPB
+		name = sb_boer_republics.120.b
+		default_option = yes
 		ai_chance = {
-			base = 0
+			base = 100
 		}
 	}
 }
