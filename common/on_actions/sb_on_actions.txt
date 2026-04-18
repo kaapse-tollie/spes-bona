@@ -638,9 +638,6 @@ sb_on_cape_monthly_pulse_country = {
 					has_law = law_type:law_frontier_colonization
 					has_law = law_type:law_colonial_resettlement
 					has_law = law_type:law_colonial_exploitation
-					is_enacting_law = law_type:law_frontier_colonization
-					is_enacting_law = law_type:law_colonial_resettlement
-					is_enacting_law = law_type:law_colonial_exploitation
 				}
 			}
 			# Closest-to-Cape ordering for the scripted Xhosa wars:
@@ -653,7 +650,20 @@ sb_on_cape_monthly_pulse_country = {
 					game_date >= 1846.1.1
 				}
 				if = {
-					limit = { game_date >= 1848.1.1 }
+					limit = {
+						OR = {
+							NOT = { c:XHR ?= { is_country_alive = yes } }
+							c:XHR ?= {
+								NOT = {
+									any_scope_state = {
+										state_region = s:STATE_EASTERN_CAPE
+										owner = root
+										num_provinces >= 1
+									}
+								}
+							}
+						}
+					}
 					set_variable = sb_xhosa_frontier_war_7_resolved_var
 				}
 				else_if = {
@@ -662,6 +672,12 @@ sb_on_cape_monthly_pulse_country = {
 							is_country_alive = yes
 							is_at_war = no
 							aggressive_diplomatic_plays_permitted = yes
+							any_scope_state = {
+								state_region = s:STATE_EASTERN_CAPE
+								owner = root
+								num_provinces >= 1
+							}
+							NOT = { sb_xhr_owns_all_eastern_cape_starting_provinces = yes }
 						}
 						is_at_war = no
 						aggressive_diplomatic_plays_permitted = yes
@@ -679,7 +695,20 @@ sb_on_cape_monthly_pulse_country = {
 					game_date >= 1850.1.1
 				}
 				if = {
-					limit = { game_date >= 1854.1.1 }
+					limit = {
+						OR = {
+							NOT = { c:XHT ?= { is_country_alive = yes } }
+							c:XHT ?= {
+								NOT = {
+									any_scope_state = {
+										state_region = s:STATE_EASTERN_CAPE
+										owner = root
+										num_provinces >= 1
+									}
+								}
+							}
+						}
+					}
 					set_variable = sb_xhosa_frontier_war_8_resolved_var
 				}
 				else_if = {
@@ -688,6 +717,12 @@ sb_on_cape_monthly_pulse_country = {
 							is_country_alive = yes
 							is_at_war = no
 							aggressive_diplomatic_plays_permitted = yes
+							any_scope_state = {
+								state_region = s:STATE_EASTERN_CAPE
+								owner = root
+								num_provinces >= 1
+							}
+							NOT = { sb_xht_owns_all_eastern_cape_starting_provinces = yes }
 						}
 						is_at_war = no
 						aggressive_diplomatic_plays_permitted = yes
@@ -705,7 +740,20 @@ sb_on_cape_monthly_pulse_country = {
 					game_date >= 1877.1.1
 				}
 				if = {
-					limit = { game_date >= 1880.1.1 }
+					limit = {
+						OR = {
+							NOT = { c:XHG ?= { is_country_alive = yes } }
+							c:XHG ?= {
+								NOT = {
+									any_scope_state = {
+										state_region = s:STATE_EASTERN_CAPE
+										owner = root
+										num_provinces >= 1
+									}
+								}
+							}
+						}
+					}
 					set_variable = sb_xhosa_frontier_war_9_resolved_var
 				}
 				else_if = {
@@ -714,6 +762,12 @@ sb_on_cape_monthly_pulse_country = {
 							is_country_alive = yes
 							is_at_war = no
 							aggressive_diplomatic_plays_permitted = yes
+							any_scope_state = {
+								state_region = s:STATE_EASTERN_CAPE
+								owner = root
+								num_provinces >= 1
+							}
+							NOT = { sb_xhg_owns_all_eastern_cape_starting_provinces = yes }
 						}
 						is_at_war = no
 						aggressive_diplomatic_plays_permitted = yes
@@ -905,8 +959,16 @@ sb_on_cape_monthly_pulse_country = {
 					remove_modifier = sb_cape_liberal_ascendant
 				}
 				if = {
+					limit = { has_modifier = sb_cape_liberal_dominant }
+					remove_modifier = sb_cape_liberal_dominant
+				}
+				if = {
 					limit = { has_modifier = sb_cape_settler_ascendant }
 					remove_modifier = sb_cape_settler_ascendant
+				}
+				if = {
+					limit = { has_modifier = sb_cape_settler_dominant }
+					remove_modifier = sb_cape_settler_dominant
 				}
 				if = {
 					limit = {
@@ -914,12 +976,38 @@ sb_on_cape_monthly_pulse_country = {
 					}
 					add_modifier = { name = sb_cape_liberal_ascendant }
 				}
-				else_if = {
+				if = {
+					limit = {
+						root.var:sb_cape_balance_current >= 50
+					}
+					add_modifier = { name = sb_cape_liberal_dominant }
+				}
+				if = {
 					limit = {
 						root.var:sb_cape_balance_current <= -25
 					}
 					add_modifier = { name = sb_cape_settler_ascendant }
 				}
+				if = {
+					limit = {
+						root.var:sb_cape_balance_current <= -50
+					}
+					add_modifier = { name = sb_cape_settler_dominant }
+				}
+			}
+
+			every_political_movement = {
+				limit = {
+					OR = {
+						is_political_movement_type = movement_cultural_majority
+						AND = {
+							is_political_movement_type = movement_cultural_minority
+							culture = cu:boer
+						}
+					}
+					NOT = { is_being_suppressed = yes }
+				}
+				set_suppression = yes
 			}
 
 			# Once either side becomes dominant, surface a one-off demand for the
@@ -1143,6 +1231,27 @@ sb_on_cape_secession_start = {
 			}
 			set_variable = sb_albany_crisis_var
 			trigger_event = { id = sb_cape.103 popup = yes }
+		}
+		if = {
+			limit = {
+				country_definition = cd:CAP
+				is_ai = yes
+				has_journal_entry = je_sb_cape_politics
+				NOT = { has_law = law_type:law_cultural_exclusion }
+				NOT = { is_enacting_law = law_type:law_cultural_exclusion }
+				NOT = { is_enacting_law = law_type:law_multicultural }
+				NOT = { is_enacting_law = law_type:law_sb_non_racialism }
+				any_civil_war = {
+					OR = {
+						is_civil_war_type = secession
+						is_civil_war_type = revolution
+					}
+					political_movement = {
+						is_political_movement_type = movement_sb_cape_liberal
+					}
+				}
+			}
+			trigger_event = { id = sb_cape.125 popup = yes }
 		}
 	}
 }

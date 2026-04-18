@@ -1052,6 +1052,69 @@ sb_cape.124 = {
 	}
 }
 
+sb_cape.125 = {
+	type = country_event
+	placement = root
+
+	title = sb_cape.125.t
+	desc = sb_cape.125.d
+	flavor = sb_cape.125.f
+
+	event_image = {
+		video = "gfx/event_pictures/europenorthamerica_sufferage.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/principles_icons/creative_legislature.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:CAP
+		is_ai = yes
+		has_journal_entry = je_sb_cape_politics
+		NOT = {
+			OR = {
+				has_law = law_type:law_cultural_exclusion
+				has_law_or_variant = law_type:law_multicultural
+			}
+		}
+		NOT = { is_enacting_law = law_type:law_cultural_exclusion }
+		NOT = { is_enacting_law = law_type:law_multicultural }
+		NOT = { is_enacting_law = law_type:law_sb_non_racialism }
+		any_civil_war = {
+			OR = {
+				is_civil_war_type = secession
+				is_civil_war_type = revolution
+			}
+			political_movement = {
+				is_political_movement_type = movement_sb_cape_liberal
+			}
+		}
+	}
+
+	option = {
+		name = sb_cape.125.a
+		default_option = yes
+		add_modifier = {
+			name = sb_cape_liberal_commitment
+			months = 24
+		}
+		set_variable = sb_cape_liberal_law_obligation_active_var
+		set_variable = {
+			name = sb_cape_liberal_law_obligation_due_var
+			days = 730
+		}
+		if = {
+			limit = { enacting_any_law = yes }
+			cancel_enactment = yes
+		}
+		start_enactment = law_type:law_cultural_exclusion
+		ai_chance = {
+			base = 100
+		}
+	}
+}
+
 sb_cape.204 = {
 	type = country_event
 	placement = root
