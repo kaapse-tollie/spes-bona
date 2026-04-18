@@ -1,0 +1,346 @@
+﻿sb_nam_schedule_angra_pequena_purchase = {
+	random_list = {
+		10 = { trigger_event = { id = sb_nam.011 days = 365 popup = no } }
+		10 = { trigger_event = { id = sb_nam.011 days = 730 popup = no } }
+		10 = { trigger_event = { id = sb_nam.011 days = 1095 popup = no } }
+		10 = { trigger_event = { id = sb_nam.011 days = 1460 popup = no } }
+		10 = { trigger_event = { id = sb_nam.011 days = 1825 popup = no } }
+		10 = { trigger_event = { id = sb_nam.011 days = 2190 popup = no } }
+		10 = { trigger_event = { id = sb_nam.011 days = 2555 popup = no } }
+		10 = { trigger_event = { id = sb_nam.011 days = 2920 popup = no } }
+		10 = { trigger_event = { id = sb_nam.011 days = 3285 popup = no } }
+		10 = { trigger_event = { id = sb_nam.011 days = 3650 popup = no } }
+	}
+}
+
+sb_nam_schedule_next_consolidation_event = {
+	if = {
+		limit = { NOT = { has_variable = sb_nam_stage_100_done_var } }
+		random_list = {
+			20 = { trigger_event = { id = sb_nam.100 days = 120 popup = yes } }
+			20 = { trigger_event = { id = sb_nam.100 days = 150 popup = yes } }
+			20 = { trigger_event = { id = sb_nam.100 days = 180 popup = yes } }
+			20 = { trigger_event = { id = sb_nam.100 days = 210 popup = yes } }
+			20 = { trigger_event = { id = sb_nam.100 days = 240 popup = yes } }
+		}
+	}
+	else_if = {
+		limit = { NOT = { has_variable = sb_nam_stage_110_done_var } }
+		random_list = {
+			20 = { trigger_event = { id = sb_nam.110 days = 120 popup = yes } }
+			20 = { trigger_event = { id = sb_nam.110 days = 150 popup = yes } }
+			20 = { trigger_event = { id = sb_nam.110 days = 180 popup = yes } }
+			20 = { trigger_event = { id = sb_nam.110 days = 210 popup = yes } }
+			20 = { trigger_event = { id = sb_nam.110 days = 240 popup = yes } }
+		}
+	}
+	else_if = {
+		limit = { NOT = { has_variable = sb_nam_stage_120_done_var } }
+		random_list = {
+			20 = { trigger_event = { id = sb_nam.120 days = 120 popup = yes } }
+			20 = { trigger_event = { id = sb_nam.120 days = 150 popup = yes } }
+			20 = { trigger_event = { id = sb_nam.120 days = 180 popup = yes } }
+			20 = { trigger_event = { id = sb_nam.120 days = 210 popup = yes } }
+			20 = { trigger_event = { id = sb_nam.120 days = 240 popup = yes } }
+		}
+	}
+	else_if = {
+		limit = { NOT = { has_variable = sb_nam_stage_130_done_var } }
+		random_list = {
+			20 = { trigger_event = { id = sb_nam.130 days = 120 popup = yes } }
+			20 = { trigger_event = { id = sb_nam.130 days = 150 popup = yes } }
+			20 = { trigger_event = { id = sb_nam.130 days = 180 popup = yes } }
+			20 = { trigger_event = { id = sb_nam.130 days = 210 popup = yes } }
+			20 = { trigger_event = { id = sb_nam.130 days = 240 popup = yes } }
+		}
+	}
+}
+
+sb_nam_seed_consolidation_harshness = {
+	je:je_sb_consolidation_of_south_west_africa ?= {
+		set_bar_progress = {
+			name = sb_nam_rule_harshness_bar
+			value = 0
+		}
+	}
+	if = {
+		limit = { has_law = law_type:law_colonial_exploitation }
+		je:je_sb_consolidation_of_south_west_africa ?= {
+			add_progress = {
+				name = sb_nam_rule_harshness_bar
+				value = 6
+			}
+		}
+	}
+	else_if = {
+		limit = { has_law = law_type:law_colonial_resettlement }
+		je:je_sb_consolidation_of_south_west_africa ?= {
+			add_progress = {
+				name = sb_nam_rule_harshness_bar
+				value = 3
+			}
+		}
+	}
+	else_if = {
+		limit = { has_law = law_type:law_frontier_colonization }
+		je:je_sb_consolidation_of_south_west_africa ?= {
+			add_progress = {
+				name = sb_nam_rule_harshness_bar
+				value = 1
+			}
+		}
+	}
+	if = {
+		limit = { has_law = law_type:law_ethnostate }
+		je:je_sb_consolidation_of_south_west_africa ?= {
+			add_progress = {
+				name = sb_nam_rule_harshness_bar
+				value = 3
+			}
+		}
+	}
+	else_if = {
+		limit = { has_law = law_type:law_national_supremacy }
+		je:je_sb_consolidation_of_south_west_africa ?= {
+			add_progress = {
+				name = sb_nam_rule_harshness_bar
+				value = 2
+			}
+		}
+	}
+	else_if = {
+		limit = { has_law = law_type:law_racial_segregation }
+		je:je_sb_consolidation_of_south_west_africa ?= {
+			add_progress = {
+				name = sb_nam_rule_harshness_bar
+				value = 1
+			}
+		}
+	}
+	else_if = {
+		limit = { has_law = law_type:law_cultural_exclusion }
+		je:je_sb_consolidation_of_south_west_africa ?= {
+			add_progress = {
+				name = sb_nam_rule_harshness_bar
+				value = -1
+			}
+		}
+	}
+	else_if = {
+		limit = { has_law_or_variant = law_type:law_multicultural }
+		je:je_sb_consolidation_of_south_west_africa ?= {
+			add_progress = {
+				name = sb_nam_rule_harshness_bar
+				value = -2
+			}
+		}
+	}
+	if = {
+		limit = {
+			country_definition = cd:CAP
+			active_law:lawgroup_citizenship ?= {
+				has_amendment = amendment_type:amendment_sb_cape_qualified_franchise
+			}
+		}
+		je:je_sb_consolidation_of_south_west_africa ?= {
+			add_progress = {
+				name = sb_nam_rule_harshness_bar
+				value = -1
+			}
+		}
+	}
+	if = {
+		limit = {
+			country_definition = cd:CAP
+			has_variable = sb_cape_liberal_resolved_var
+		}
+		je:je_sb_consolidation_of_south_west_africa ?= {
+			add_progress = {
+				name = sb_nam_rule_harshness_bar
+				value = -2
+			}
+		}
+	}
+	sb_nam_sync_consolidation_modifiers = yes
+}
+
+sb_nam_adjust_consolidation_harshness_up = {
+	je:je_sb_consolidation_of_south_west_africa ?= {
+		add_progress = {
+			name = sb_nam_rule_harshness_bar
+			value = 1
+		}
+	}
+	sb_nam_sync_consolidation_modifiers = yes
+}
+
+sb_nam_adjust_consolidation_harshness_down = {
+	je:je_sb_consolidation_of_south_west_africa ?= {
+		add_progress = {
+			name = sb_nam_rule_harshness_bar
+			value = -1
+		}
+	}
+	sb_nam_sync_consolidation_modifiers = yes
+}
+
+sb_nam_clear_consolidation_modifiers = {
+	remove_modifier = sb_nam_rule_accommodating
+	remove_modifier = sb_nam_rule_supervised
+	remove_modifier = sb_nam_rule_coercive
+	remove_modifier = sb_nam_rule_brutal
+	remove_modifier = sb_nam_rule_exterminatory
+}
+
+sb_nam_sync_consolidation_modifiers = {
+	sb_nam_clear_consolidation_modifiers = yes
+	if = {
+		limit = {
+			je:je_sb_consolidation_of_south_west_africa ?= {
+				"scripted_bar_progress(sb_nam_rule_harshness_bar)" < 2
+			}
+		}
+		add_modifier = {
+			name = sb_nam_rule_accommodating
+			months = -1
+		}
+	}
+	else_if = {
+		limit = {
+			je:je_sb_consolidation_of_south_west_africa ?= {
+				"scripted_bar_progress(sb_nam_rule_harshness_bar)" < 5
+			}
+		}
+		add_modifier = {
+			name = sb_nam_rule_supervised
+			months = -1
+		}
+	}
+	else_if = {
+		limit = {
+			je:je_sb_consolidation_of_south_west_africa ?= {
+				"scripted_bar_progress(sb_nam_rule_harshness_bar)" < 7
+			}
+		}
+		add_modifier = {
+			name = sb_nam_rule_coercive
+			months = -1
+		}
+	}
+	else_if = {
+		limit = {
+			je:je_sb_consolidation_of_south_west_africa ?= {
+				"scripted_bar_progress(sb_nam_rule_harshness_bar)" < 10
+			}
+		}
+		add_modifier = {
+			name = sb_nam_rule_brutal
+			months = -1
+		}
+	}
+	else = {
+		add_modifier = {
+			name = sb_nam_rule_exterminatory
+			months = -1
+		}
+	}
+}
+
+sb_nam_clear_consolidation_runtime = {
+	remove_variable = sb_nam_consolidation_seeded_var
+	remove_variable = sb_nam_stage_100_done_var
+	remove_variable = sb_nam_stage_110_done_var
+	remove_variable = sb_nam_stage_120_done_var
+	remove_variable = sb_nam_stage_130_done_var
+	sb_nam_clear_consolidation_modifiers = yes
+}
+
+sb_nam_clear_final_harshness_flags = {
+	remove_variable = sb_nam_final_harshness_10_var
+	remove_variable = sb_nam_final_harshness_7_var
+	remove_variable = sb_nam_final_harshness_5_var
+	remove_variable = sb_nam_final_harshness_2_var
+	remove_variable = sb_nam_final_harshness_0_var
+}
+
+sb_nam_copy_final_harshness_flags_from_root = {
+	sb_nam_clear_final_harshness_flags = yes
+	if = {
+		limit = { root = { has_variable = sb_nam_final_harshness_10_var } }
+		set_variable = sb_nam_final_harshness_10_var
+	}
+	else_if = {
+		limit = { root = { has_variable = sb_nam_final_harshness_7_var } }
+		set_variable = sb_nam_final_harshness_7_var
+	}
+	else_if = {
+		limit = { root = { has_variable = sb_nam_final_harshness_5_var } }
+		set_variable = sb_nam_final_harshness_5_var
+	}
+	else_if = {
+		limit = { root = { has_variable = sb_nam_final_harshness_2_var } }
+		set_variable = sb_nam_final_harshness_2_var
+	}
+	else_if = {
+		limit = { root = { has_variable = sb_nam_final_harshness_0_var } }
+		set_variable = sb_nam_final_harshness_0_var
+	}
+}
+
+sb_nam_seed_minority_rights_from_harshness = {
+	if = {
+		limit = {
+			NOT = {
+				any_political_movement = {
+					is_political_movement_type = movement_minority_rights
+				}
+			}
+		}
+		create_political_movement = {
+			type = movement_minority_rights
+		}
+	}
+	every_political_movement = {
+		limit = {
+			is_political_movement_type = movement_minority_rights
+		}
+		add_modifier = {
+			name = sb_nam_minority_rights_suppressed
+			months = 120
+		}
+		if = {
+			limit = { root = { has_variable = sb_nam_final_harshness_10_var } }
+			add_modifier = {
+				name = sb_nam_minority_rights_seed_maximum
+				months = 120
+			}
+		}
+		else_if = {
+			limit = { root = { has_variable = sb_nam_final_harshness_7_var } }
+			add_modifier = {
+				name = sb_nam_minority_rights_seed_extreme
+				months = 120
+			}
+		}
+		else_if = {
+			limit = { root = { has_variable = sb_nam_final_harshness_5_var } }
+			add_modifier = {
+				name = sb_nam_minority_rights_seed_high
+				months = 120
+			}
+		}
+		else_if = {
+			limit = { root = { has_variable = sb_nam_final_harshness_2_var } }
+			add_modifier = {
+				name = sb_nam_minority_rights_seed_mid
+				months = 120
+			}
+		}
+		else = {
+			add_modifier = {
+				name = sb_nam_minority_rights_seed_low
+				months = 120
+			}
+		}
+	}
+}

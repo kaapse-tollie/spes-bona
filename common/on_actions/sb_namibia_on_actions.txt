@@ -1,0 +1,101 @@
+﻿sb_on_namibia_monthly_pulse_country = {
+	effect = {
+		if = {
+			limit = {
+				country_definition = cd:GER
+				game_date >= 1870.1.1
+				game_date <= 1875.12.31
+				NOT = { has_variable = sb_nam_colonial_prestige_resolved_var }
+				NOT = { has_law = law_type:law_frontier_colonization }
+				NOT = { has_law = law_type:law_colonial_resettlement }
+				NOT = { has_law = law_type:law_colonial_exploitation }
+				ig:ig_landowners ?= { is_in_government = yes }
+			}
+			trigger_event = { id = sb_nam.010 popup = yes }
+		}
+
+		if = {
+			limit = {
+				country_definition = cd:CAP
+				game_date >= 1868.1.1
+				game_date <= 1885.12.31
+				NOT = { has_variable = sb_nam_rehoboth_branch_resolved_var }
+				OR = {
+					sb_nam_has_any_colonial_law = yes
+					has_modifier = sb_cape_favour_settlers
+				}
+			}
+			trigger_event = { id = sb_nam.020 popup = yes }
+		}
+
+		if = {
+			limit = {
+				p:xDEAA3C.state.owner = root
+				NOT = { is_country_type = decentralized }
+				NOT = { has_claim = s:STATE_NAMAQUALAND }
+				c:CAP ?= {
+					NOT = {
+						any_scope_state = {
+							state_region = s:STATE_NAMAQUALAND
+							owner = prev
+							num_provinces >= 1
+						}
+					}
+				}
+			}
+			s:STATE_NAMAQUALAND = {
+				add_claim = root
+			}
+		}
+
+		if = {
+			limit = {
+				NOT = { has_journal_entry = je_sb_consolidation_of_south_west_africa }
+				sb_nam_can_run_consolidation_je = yes
+			}
+			add_journal_entry = { type = je_sb_consolidation_of_south_west_africa }
+		}
+
+		if = {
+			limit = {
+				OR = {
+					has_variable = sb_nam_final_harshness_10_var
+					has_variable = sb_nam_final_harshness_7_var
+					has_variable = sb_nam_final_harshness_5_var
+				}
+				NOT = { has_variable = sb_nam_forced_camps_fired_var }
+				any_political_movement = {
+					is_political_movement_type = movement_minority_rights
+					political_movement_radicalism >= 0.30
+					political_movement_radicalism < 0.70
+				}
+				OR = {
+					has_law = law_type:law_colonial_exploitation
+					has_law = law_type:law_national_supremacy
+					has_law = law_type:law_ethnostate
+				}
+			}
+			trigger_event = { id = sb_nam.200 popup = yes }
+		}
+
+		if = {
+			limit = {
+				OR = {
+					has_variable = sb_nam_final_harshness_10_var
+					has_variable = sb_nam_final_harshness_7_var
+				}
+				NOT = { has_variable = sb_nam_extermination_fired_var }
+				any_political_movement = {
+					is_political_movement_type = movement_minority_rights
+					political_movement_radicalism >= 0.70
+				}
+				OR = {
+					has_law = law_type:law_colonial_exploitation
+					has_law = law_type:law_national_supremacy
+					has_law = law_type:law_ethnostate
+				}
+			}
+			trigger_event = { id = sb_nam.201 popup = yes }
+		}
+	}
+}

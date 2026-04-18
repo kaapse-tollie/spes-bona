@@ -1,0 +1,149 @@
+﻿je_sb_delegate_south_west_affairs_to_cape_button = {
+	name = "je_sb_delegate_south_west_affairs_to_cape_button"
+	desc = "je_sb_delegate_south_west_affairs_to_cape_button_desc"
+
+	visible = {
+		has_journal_entry = je_sb_consolidation_of_south_west_africa
+		country_definition = cd:GBR
+		c:CAP ?= {
+			is_subject_of = root
+		}
+	}
+
+	possible = {
+		c:CAP ?= {
+			is_subject_of = root
+		}
+	}
+
+	effect = {
+		set_variable = sb_nam_delegate_to_cape_pending_var
+		transfer_state = {
+			STATE = s:STATE_NAMAQUALAND
+			GIVER = root
+			TAKER = c:CAP
+		}
+		transfer_state = {
+			STATE = s:STATE_HEREROLAND
+			GIVER = root
+			TAKER = c:CAP
+		}
+		if = {
+			limit = {
+				root = {
+					je:je_sb_consolidation_of_south_west_africa ?= {
+						"scripted_bar_progress(sb_nam_rule_harshness_bar)" >= 10
+					}
+				}
+			}
+			set_variable = sb_nam_delegate_progress_10_var
+		}
+		else_if = {
+			limit = {
+				root = {
+					je:je_sb_consolidation_of_south_west_africa ?= {
+						"scripted_bar_progress(sb_nam_rule_harshness_bar)" >= 7
+					}
+				}
+			}
+			set_variable = sb_nam_delegate_progress_7_var
+		}
+		else_if = {
+			limit = {
+				root = {
+					je:je_sb_consolidation_of_south_west_africa ?= {
+						"scripted_bar_progress(sb_nam_rule_harshness_bar)" >= 5
+					}
+				}
+			}
+			set_variable = sb_nam_delegate_progress_5_var
+		}
+		else_if = {
+			limit = {
+				root = {
+					je:je_sb_consolidation_of_south_west_africa ?= {
+						"scripted_bar_progress(sb_nam_rule_harshness_bar)" >= 2
+					}
+				}
+			}
+			set_variable = sb_nam_delegate_progress_2_var
+		}
+		else = {
+			set_variable = sb_nam_delegate_progress_0_var
+		}
+		c:CAP ?= {
+			if = {
+				limit = { NOT = { has_journal_entry = je_sb_consolidation_of_south_west_africa } }
+				add_journal_entry = { type = je_sb_consolidation_of_south_west_africa }
+			}
+			set_variable = sb_nam_consolidation_seeded_var
+			je:je_sb_consolidation_of_south_west_africa ?= {
+				set_bar_progress = {
+					name = sb_nam_rule_harshness_bar
+					value = 0
+				}
+				if = {
+					limit = { root = { has_variable = sb_nam_delegate_progress_10_var } }
+					set_bar_progress = {
+						name = sb_nam_rule_harshness_bar
+						value = 10
+					}
+				}
+				else_if = {
+					limit = { root = { has_variable = sb_nam_delegate_progress_7_var } }
+					set_bar_progress = {
+						name = sb_nam_rule_harshness_bar
+						value = 7
+					}
+				}
+				else_if = {
+					limit = { root = { has_variable = sb_nam_delegate_progress_5_var } }
+					set_bar_progress = {
+						name = sb_nam_rule_harshness_bar
+						value = 5
+					}
+				}
+				else_if = {
+					limit = { root = { has_variable = sb_nam_delegate_progress_2_var } }
+					set_bar_progress = {
+						name = sb_nam_rule_harshness_bar
+						value = 2
+					}
+				}
+				else = {
+					set_bar_progress = {
+						name = sb_nam_rule_harshness_bar
+						value = 0
+					}
+				}
+			}
+			if = {
+				limit = { root = { has_variable = sb_nam_stage_100_done_var } }
+				set_variable = sb_nam_stage_100_done_var
+			}
+			if = {
+				limit = { root = { has_variable = sb_nam_stage_110_done_var } }
+				set_variable = sb_nam_stage_110_done_var
+			}
+			if = {
+				limit = { root = { has_variable = sb_nam_stage_120_done_var } }
+				set_variable = sb_nam_stage_120_done_var
+			}
+			if = {
+				limit = { root = { has_variable = sb_nam_stage_130_done_var } }
+				set_variable = sb_nam_stage_130_done_var
+			}
+			sb_nam_sync_consolidation_modifiers = yes
+		}
+		remove_variable = sb_nam_delegate_progress_10_var
+		remove_variable = sb_nam_delegate_progress_7_var
+		remove_variable = sb_nam_delegate_progress_5_var
+		remove_variable = sb_nam_delegate_progress_2_var
+		remove_variable = sb_nam_delegate_progress_0_var
+		sb_nam_clear_consolidation_runtime = yes
+	}
+
+	ai_chance = {
+		value = 60
+	}
+}

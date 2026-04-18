@@ -1,0 +1,167 @@
+﻿je_sb_consolidation_of_south_west_africa = {
+	group = je_group_historical_content
+
+	icon = "gfx/interface/icons/notification_icons/colonial.dds"
+
+	scripted_progress_bar = sb_nam_rule_harshness_bar
+
+	possible = {
+		NOT = { is_country_type = decentralized }
+		NOT = { country_definition = cd:SWA }
+		NOT = { has_variable = sb_nam_consolidation_resolved_var }
+	}
+
+	scripted_button = je_sb_delegate_south_west_affairs_to_cape_button
+
+	immediate = {
+		if = {
+			limit = {
+				NOT = { has_variable = sb_nam_consolidation_seeded_var }
+			}
+			set_variable = sb_nam_consolidation_seeded_var
+			sb_nam_seed_consolidation_harshness = yes
+			sb_nam_schedule_next_consolidation_event = yes
+		}
+		sb_nam_sync_consolidation_modifiers = yes
+	}
+
+	status_desc = {
+		first_valid = {
+			triggered_desc = {
+				desc = je_sb_consolidation_of_south_west_africa_status_exterminatory
+				trigger = {
+					scope:journal_entry = {
+						"scripted_bar_progress(sb_nam_rule_harshness_bar)" >= 10
+					}
+				}
+			}
+			triggered_desc = {
+				desc = je_sb_consolidation_of_south_west_africa_status_brutal
+				trigger = {
+					scope:journal_entry = {
+						"scripted_bar_progress(sb_nam_rule_harshness_bar)" >= 7
+					}
+				}
+			}
+			triggered_desc = {
+				desc = je_sb_consolidation_of_south_west_africa_status_coercive
+				trigger = {
+					scope:journal_entry = {
+						"scripted_bar_progress(sb_nam_rule_harshness_bar)" >= 5
+					}
+				}
+			}
+			triggered_desc = {
+				desc = je_sb_consolidation_of_south_west_africa_status_supervised
+				trigger = {
+					scope:journal_entry = {
+						"scripted_bar_progress(sb_nam_rule_harshness_bar)" >= 2
+					}
+				}
+			}
+			desc = je_sb_consolidation_of_south_west_africa_status_accommodating
+		}
+	}
+
+	complete = {
+		custom_tooltip = {
+			text = je_sb_consolidation_of_south_west_africa_tt_ports
+			p:xDEAA3C.state.owner = root
+			p:xB04050.state.owner = root
+		}
+		custom_tooltip = {
+			text = je_sb_consolidation_of_south_west_africa_tt_events
+			has_variable = sb_nam_stage_100_done_var
+			has_variable = sb_nam_stage_110_done_var
+			has_variable = sb_nam_stage_120_done_var
+			has_variable = sb_nam_stage_130_done_var
+		}
+		custom_tooltip = {
+			text = je_sb_consolidation_of_south_west_africa_tt_namaqualand
+			any_scope_state = {
+				state_region = s:STATE_NAMAQUALAND
+				owner = root
+				num_provinces >= 22
+			}
+		}
+		custom_tooltip = {
+			text = je_sb_consolidation_of_south_west_africa_tt_hereroland
+			any_scope_state = {
+				state_region = s:STATE_HEREROLAND
+				owner = root
+				num_provinces >= 44
+			}
+		}
+	}
+
+	invalid = {
+		OR = {
+			NOT = { p:xDEAA3C.state.owner = root }
+			NOT = { p:xB04050.state.owner = root }
+		}
+	}
+
+	on_monthly_pulse = {
+		effect = {
+			sb_nam_sync_consolidation_modifiers = yes
+		}
+	}
+
+	on_complete = {
+		set_variable = sb_nam_consolidation_resolved_var
+		sb_nam_clear_final_harshness_flags = yes
+		if = {
+			limit = {
+				scope:journal_entry = {
+					"scripted_bar_progress(sb_nam_rule_harshness_bar)" >= 10
+				}
+			}
+			set_variable = sb_nam_final_harshness_10_var
+		}
+		else_if = {
+			limit = {
+				scope:journal_entry = {
+					"scripted_bar_progress(sb_nam_rule_harshness_bar)" >= 7
+				}
+			}
+			set_variable = sb_nam_final_harshness_7_var
+		}
+		else_if = {
+			limit = {
+				scope:journal_entry = {
+					"scripted_bar_progress(sb_nam_rule_harshness_bar)" >= 5
+				}
+			}
+			set_variable = sb_nam_final_harshness_5_var
+		}
+		else_if = {
+			limit = {
+				scope:journal_entry = {
+					"scripted_bar_progress(sb_nam_rule_harshness_bar)" >= 2
+				}
+			}
+			set_variable = sb_nam_final_harshness_2_var
+		}
+		else = {
+			set_variable = sb_nam_final_harshness_0_var
+		}
+		if = {
+			limit = {
+				NOT = { country_definition = cd:GBR }
+				NOT = { country_definition = cd:CAP }
+			}
+			trigger_event = { id = sb_nam.140 days = 1 popup = yes }
+		}
+		else = {
+			sb_nam_seed_minority_rights_from_harshness = yes
+		}
+		sb_nam_clear_consolidation_runtime = yes
+	}
+
+	on_invalid = {
+		sb_nam_clear_consolidation_runtime = yes
+	}
+
+	weight = 1000
+	should_be_pinned_by_default = yes
+}

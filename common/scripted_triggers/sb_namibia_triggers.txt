@@ -1,0 +1,24 @@
+﻿sb_nam_has_any_colonial_law = {
+	OR = {
+		has_law = law_type:law_frontier_colonization
+		has_law = law_type:law_colonial_resettlement
+		has_law = law_type:law_colonial_exploitation
+	}
+}
+
+sb_nam_controls_both_consolidation_ports = {
+	p:xDEAA3C.state.owner = root
+	p:xB04050.state.owner = root
+}
+
+sb_nam_can_run_consolidation_je = {
+	sb_nam_controls_both_consolidation_ports = yes
+	NOT = { is_country_type = decentralized }
+	NOT = { country_definition = cd:SWA }
+	NOT = { has_variable = sb_nam_consolidation_resolved_var }
+	OR = {
+		country_definition = cd:CAP
+		country_definition = cd:GBR
+		sb_nam_has_any_colonial_law = yes
+	}
+}

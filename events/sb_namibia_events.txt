@@ -1,0 +1,934 @@
+﻿namespace = sb_nam
+
+sb_nam.010 = {
+	type = country_event
+	placement = root
+
+	title = sb_nam.010.t
+	desc = sb_nam.010.d
+	flavor = sb_nam.010.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:GER
+		game_date >= 1870.1.1
+		game_date <= 1875.12.31
+		NOT = { has_variable = sb_nam_colonial_prestige_resolved_var }
+		NOT = { has_law = law_type:law_frontier_colonization }
+		NOT = { has_law = law_type:law_colonial_resettlement }
+		NOT = { has_law = law_type:law_colonial_exploitation }
+		ig:ig_landowners ?= { is_in_government = yes }
+	}
+
+	option = {
+		name = sb_nam.010.a
+		default_option = yes
+		set_variable = sb_nam_colonial_prestige_resolved_var
+		add_modifier = {
+			name = sb_nam_german_colonial_lobby
+			months = 60
+		}
+		sb_nam_schedule_angra_pequena_purchase = yes
+	}
+
+	option = {
+		name = sb_nam.010.b
+		set_variable = sb_nam_colonial_prestige_resolved_var
+		add_modifier = {
+			name = sb_nam_german_colonial_rebuff
+			months = 60
+		}
+	}
+}
+
+sb_nam.011 = {
+	type = country_event
+	placement = root
+
+	title = sb_nam.011.t
+	desc = sb_nam.011.d
+	flavor = sb_nam.011.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_trade.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:GER
+		game_date >= 1883.1.1
+		OR = {
+			has_law = law_type:law_colonial_resettlement
+			has_law = law_type:law_colonial_exploitation
+		}
+		NOT = {
+			any_scope_state = {
+				state_region = s:STATE_NAMAQUALAND
+				owner = root
+				num_provinces >= 1
+			}
+		}
+		p:xDEAA3C.state.owner = {
+			is_country_type = decentralized
+		}
+		c:CAP ?= {
+			NOT = {
+				any_scope_state = {
+					state_region = s:STATE_NAMAQUALAND
+					owner = prev
+					num_provinces >= 1
+				}
+			}
+		}
+	}
+
+	option = {
+		name = sb_nam.011.a
+		default_option = yes
+		s:STATE_NAMAQUALAND = {
+			set_owner_of_provinces = {
+				country = root
+				provinces = { xDEAA3C }
+			}
+			add_claim = root
+		}
+	}
+}
+
+sb_nam.020 = {
+	type = country_event
+	placement = root
+
+	title = sb_nam.020.t
+	desc = sb_nam.020.d
+	flavor = sb_nam.020.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:CAP
+		game_date >= 1868.1.1
+		game_date <= 1885.12.31
+		NOT = { has_variable = sb_nam_rehoboth_branch_resolved_var }
+		OR = {
+			sb_nam_has_any_colonial_law = yes
+			has_modifier = sb_cape_favour_settlers
+		}
+	}
+
+	option = {
+		name = sb_nam.020.a
+		default_option = yes
+		set_variable = sb_nam_rehoboth_branch_resolved_var
+		if = {
+			limit = { NOT = { exists = c:RHB } }
+			create_country = {
+				tag = RHB
+				origin = root
+				province = p:xB1939F
+			}
+		}
+		if = {
+			limit = { exists = c:RHB }
+			root.capital = {
+				every_scope_pop = {
+					limit = {
+						culture = cu:griqua
+					}
+					move_partial_pop = {
+						state = c:RHB.capital
+						population = 2000
+					}
+				}
+			}
+		}
+	}
+
+	option = {
+		name = sb_nam.020.b
+		set_variable = sb_nam_rehoboth_branch_resolved_var
+		add_modifier = {
+			name = sb_nam_rehoboth_discouraged
+			months = 60
+		}
+		every_political_movement = {
+			limit = {
+				is_political_movement_type = movement_sb_cape_liberal
+			}
+			add_modifier = {
+				name = sb_cape_liberal_autonomy_pressure
+				months = 60
+			}
+		}
+	}
+}
+
+sb_nam.100 = {
+	type = country_event
+	placement = root
+
+	title = sb_nam.100.t
+	desc = sb_nam.100.d
+	flavor = sb_nam.100.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		has_journal_entry = je_sb_consolidation_of_south_west_africa
+		NOT = { has_variable = sb_nam_stage_100_done_var }
+	}
+
+	option = {
+		name = sb_nam.100.a
+		default_option = yes
+		set_variable = sb_nam_stage_100_done_var
+		sb_nam_adjust_consolidation_harshness_up = yes
+		sb_nam_schedule_next_consolidation_event = yes
+		ai_chance = {
+			base = 40
+			modifier = {
+				trigger = { has_law = law_type:law_colonial_exploitation }
+				add = 30
+			}
+			modifier = {
+				trigger = { has_law = law_type:law_colonial_resettlement }
+				add = 15
+			}
+			modifier = {
+				trigger = {
+					OR = {
+						has_law = law_type:law_ethnostate
+						has_law = law_type:law_national_supremacy
+					}
+				}
+				add = 15
+			}
+		}
+	}
+
+	option = {
+		name = sb_nam.100.b
+		set_variable = sb_nam_stage_100_done_var
+		sb_nam_adjust_consolidation_harshness_down = yes
+		sb_nam_schedule_next_consolidation_event = yes
+		ai_chance = {
+			base = 60
+			modifier = {
+				trigger = { has_law = law_type:law_colonial_exploitation }
+				add = -30
+			}
+			modifier = {
+				trigger = { has_law = law_type:law_colonial_resettlement }
+				add = -15
+			}
+			modifier = {
+				trigger = {
+					OR = {
+						has_law = law_type:law_cultural_exclusion
+						has_law_or_variant = law_type:law_multicultural
+					}
+				}
+				add = 15
+			}
+		}
+	}
+}
+
+sb_nam.110 = {
+	type = country_event
+	placement = root
+
+	title = sb_nam.110.t
+	desc = sb_nam.110.d
+	flavor = sb_nam.110.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		has_journal_entry = je_sb_consolidation_of_south_west_africa
+		has_variable = sb_nam_stage_100_done_var
+		NOT = { has_variable = sb_nam_stage_110_done_var }
+	}
+
+	option = {
+		name = sb_nam.110.a
+		default_option = yes
+		set_variable = sb_nam_stage_110_done_var
+		sb_nam_adjust_consolidation_harshness_up = yes
+		sb_nam_schedule_next_consolidation_event = yes
+		ai_chance = {
+			base = 40
+			modifier = {
+				trigger = { has_law = law_type:law_colonial_exploitation }
+				add = 30
+			}
+			modifier = {
+				trigger = { has_law = law_type:law_colonial_resettlement }
+				add = 15
+			}
+			modifier = {
+				trigger = {
+					OR = {
+						has_law = law_type:law_ethnostate
+						has_law = law_type:law_national_supremacy
+					}
+				}
+				add = 15
+			}
+		}
+	}
+
+	option = {
+		name = sb_nam.110.b
+		set_variable = sb_nam_stage_110_done_var
+		sb_nam_adjust_consolidation_harshness_down = yes
+		sb_nam_schedule_next_consolidation_event = yes
+		ai_chance = {
+			base = 60
+			modifier = {
+				trigger = { has_law = law_type:law_colonial_exploitation }
+				add = -30
+			}
+			modifier = {
+				trigger = { has_law = law_type:law_colonial_resettlement }
+				add = -15
+			}
+			modifier = {
+				trigger = {
+					OR = {
+						has_law = law_type:law_cultural_exclusion
+						has_law_or_variant = law_type:law_multicultural
+					}
+				}
+				add = 15
+			}
+		}
+	}
+}
+
+sb_nam.120 = {
+	type = country_event
+	placement = root
+
+	title = sb_nam.120.t
+	desc = sb_nam.120.d
+	flavor = sb_nam.120.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		has_journal_entry = je_sb_consolidation_of_south_west_africa
+		has_variable = sb_nam_stage_110_done_var
+		NOT = { has_variable = sb_nam_stage_120_done_var }
+	}
+
+	option = {
+		name = sb_nam.120.a
+		default_option = yes
+		set_variable = sb_nam_stage_120_done_var
+		sb_nam_adjust_consolidation_harshness_up = yes
+		sb_nam_schedule_next_consolidation_event = yes
+		ai_chance = {
+			base = 40
+			modifier = {
+				trigger = { has_law = law_type:law_colonial_exploitation }
+				add = 30
+			}
+			modifier = {
+				trigger = { has_law = law_type:law_colonial_resettlement }
+				add = 15
+			}
+			modifier = {
+				trigger = {
+					OR = {
+						has_law = law_type:law_ethnostate
+						has_law = law_type:law_national_supremacy
+					}
+				}
+				add = 15
+			}
+		}
+	}
+
+	option = {
+		name = sb_nam.120.b
+		set_variable = sb_nam_stage_120_done_var
+		sb_nam_adjust_consolidation_harshness_down = yes
+		sb_nam_schedule_next_consolidation_event = yes
+		ai_chance = {
+			base = 60
+			modifier = {
+				trigger = { has_law = law_type:law_colonial_exploitation }
+				add = -30
+			}
+			modifier = {
+				trigger = { has_law = law_type:law_colonial_resettlement }
+				add = -15
+			}
+			modifier = {
+				trigger = {
+					OR = {
+						has_law = law_type:law_cultural_exclusion
+						has_law_or_variant = law_type:law_multicultural
+					}
+				}
+				add = 15
+			}
+		}
+	}
+}
+
+sb_nam.130 = {
+	type = country_event
+	placement = root
+
+	title = sb_nam.130.t
+	desc = sb_nam.130.d
+	flavor = sb_nam.130.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_soldiers_breaking_protest.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		has_journal_entry = je_sb_consolidation_of_south_west_africa
+		has_variable = sb_nam_stage_120_done_var
+		NOT = { has_variable = sb_nam_stage_130_done_var }
+	}
+
+	option = {
+		name = sb_nam.130.a
+		default_option = yes
+		set_variable = sb_nam_stage_130_done_var
+		sb_nam_adjust_consolidation_harshness_up = yes
+		ai_chance = {
+			base = 40
+			modifier = {
+				trigger = { has_law = law_type:law_colonial_exploitation }
+				add = 30
+			}
+			modifier = {
+				trigger = { has_law = law_type:law_colonial_resettlement }
+				add = 15
+			}
+			modifier = {
+				trigger = {
+					OR = {
+						has_law = law_type:law_ethnostate
+						has_law = law_type:law_national_supremacy
+					}
+				}
+				add = 15
+			}
+		}
+	}
+
+	option = {
+		name = sb_nam.130.b
+		set_variable = sb_nam_stage_130_done_var
+		sb_nam_adjust_consolidation_harshness_down = yes
+		ai_chance = {
+			base = 60
+			modifier = {
+				trigger = { has_law = law_type:law_colonial_exploitation }
+				add = -30
+			}
+			modifier = {
+				trigger = { has_law = law_type:law_colonial_resettlement }
+				add = -15
+			}
+			modifier = {
+				trigger = {
+					OR = {
+						has_law = law_type:law_cultural_exclusion
+						has_law_or_variant = law_type:law_multicultural
+					}
+				}
+				add = 15
+			}
+		}
+	}
+}
+
+sb_nam.140 = {
+	type = country_event
+	placement = root
+
+	title = sb_nam.140.t
+	desc = sb_nam.140.d
+	flavor = sb_nam.140.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		NOT = { country_definition = cd:GBR }
+		NOT = { country_definition = cd:CAP }
+	}
+
+	option = {
+		name = sb_nam.140.a
+		default_option = yes
+		create_country = {
+			tag = SWA
+			origin = root
+			province = p:xB04050
+			on_created = {
+				activate_law = law_type:law_colonial_administration
+				activate_law = law_type:law_oligarchy
+				activate_law = law_type:law_subjecthood
+				activate_law = law_type:law_extraction_economy
+				activate_law = law_type:law_colonial_exploitation
+				activate_law = law_type:law_no_schools
+				activate_law = law_type:law_no_health_system
+				activate_law = law_type:law_censorship
+				activate_law = law_type:law_no_workers_rights
+				activate_law = law_type:law_child_labor_allowed
+				activate_law = law_type:law_no_social_security
+				activate_law = law_type:law_migration_controls
+			}
+		}
+		create_diplomatic_pact = {
+			country = c:SWA
+			type = chartered_company
+		}
+		c:SWA ?= {
+			remove_primary_culture = cu:british
+		}
+		every_primary_culture = {
+			limit = {
+				has_discrimination_trait_group = heritage_group_european
+				NOT = { is_primary_culture_of = c:SWA }
+			}
+			c:SWA ?= {
+				add_primary_culture = prev
+			}
+		}
+		transfer_state = {
+			STATE = s:STATE_NAMAQUALAND
+			GIVER = root
+			TAKER = c:SWA
+		}
+		transfer_state = {
+			STATE = s:STATE_HEREROLAND
+			GIVER = root
+			TAKER = c:SWA
+		}
+		c:SWA ?= {
+			sb_nam_copy_final_harshness_flags_from_root = yes
+			add_modifier = {
+				name = sb_nam_colonial_charter
+				months = -1
+			}
+			trigger_event = { id = sb_nam.150 days = 1 popup = yes }
+		}
+		sb_nam_clear_final_harshness_flags = yes
+	}
+
+	option = {
+		name = sb_nam.140.b
+		create_country = {
+			tag = SWA
+			origin = root
+			province = p:xB04050
+			on_created = {
+				activate_law = law_type:law_colonial_administration
+				activate_law = law_type:law_oligarchy
+				activate_law = law_type:law_subjecthood
+				activate_law = law_type:law_extraction_economy
+				activate_law = law_type:law_colonial_exploitation
+				activate_law = law_type:law_state_religion
+				activate_law = law_type:law_religious_schools
+				activate_law = law_type:law_no_health_system
+				activate_law = law_type:law_censorship
+				activate_law = law_type:law_no_workers_rights
+				activate_law = law_type:law_child_labor_allowed
+				activate_law = law_type:law_no_social_security
+				activate_law = law_type:law_migration_controls
+			}
+		}
+		create_diplomatic_pact = {
+			country = c:SWA
+			type = chartered_company
+		}
+		c:SWA ?= {
+			remove_primary_culture = cu:british
+		}
+		every_primary_culture = {
+			limit = {
+				has_discrimination_trait_group = heritage_group_european
+				NOT = { is_primary_culture_of = c:SWA }
+			}
+			c:SWA ?= {
+				add_primary_culture = prev
+			}
+		}
+		transfer_state = {
+			STATE = s:STATE_NAMAQUALAND
+			GIVER = root
+			TAKER = c:SWA
+		}
+		transfer_state = {
+			STATE = s:STATE_HEREROLAND
+			GIVER = root
+			TAKER = c:SWA
+		}
+		c:SWA ?= {
+			sb_nam_copy_final_harshness_flags_from_root = yes
+			add_modifier = {
+				name = sb_nam_mission_colony
+				months = -1
+			}
+			trigger_event = { id = sb_nam.150 days = 1 popup = yes }
+		}
+		sb_nam_clear_final_harshness_flags = yes
+	}
+
+	option = {
+		name = sb_nam.140.c
+		create_country = {
+			tag = SWA
+			origin = root
+			province = p:xB04050
+			on_created = {
+				activate_law = law_type:law_colonial_administration
+				activate_law = law_type:law_oligarchy
+				activate_law = law_type:law_subjecthood
+				activate_law = law_type:law_agrarianism
+				activate_law = law_type:law_colonial_resettlement
+				activate_law = law_type:law_no_schools
+				activate_law = law_type:law_no_health_system
+				activate_law = law_type:law_censorship
+				activate_law = law_type:law_no_workers_rights
+				activate_law = law_type:law_child_labor_allowed
+				activate_law = law_type:law_no_social_security
+				activate_law = law_type:law_migration_controls
+			}
+		}
+		create_diplomatic_pact = {
+			country = c:SWA
+			type = chartered_company
+		}
+		c:SWA ?= {
+			remove_primary_culture = cu:british
+		}
+		every_primary_culture = {
+			limit = {
+				has_discrimination_trait_group = heritage_group_european
+				NOT = { is_primary_culture_of = c:SWA }
+			}
+			c:SWA ?= {
+				add_primary_culture = prev
+			}
+		}
+		transfer_state = {
+			STATE = s:STATE_NAMAQUALAND
+			GIVER = root
+			TAKER = c:SWA
+		}
+		transfer_state = {
+			STATE = s:STATE_HEREROLAND
+			GIVER = root
+			TAKER = c:SWA
+		}
+		c:SWA ?= {
+			sb_nam_copy_final_harshness_flags_from_root = yes
+			add_modifier = {
+				name = sb_nam_settlement_campaigns
+				months = -1
+			}
+			trigger_event = { id = sb_nam.150 days = 1 popup = yes }
+		}
+		sb_nam_clear_final_harshness_flags = yes
+	}
+
+	option = {
+		name = sb_nam.140.d_option
+		create_country = {
+			tag = SWA
+			origin = root
+			province = p:xB04050
+			on_created = {
+				activate_law = law_type:law_colonial_administration
+				activate_law = law_type:law_oligarchy
+				activate_law = law_type:law_subjecthood
+				activate_law = law_type:law_extraction_economy
+				activate_law = law_type:law_colonial_exploitation
+				activate_law = law_type:law_no_schools
+				activate_law = law_type:law_no_health_system
+				activate_law = law_type:law_censorship
+				activate_law = law_type:law_no_workers_rights
+				activate_law = law_type:law_child_labor_allowed
+				activate_law = law_type:law_no_social_security
+				activate_law = law_type:law_migration_controls
+			}
+		}
+		create_diplomatic_pact = {
+			country = c:SWA
+			type = chartered_company
+		}
+		c:SWA ?= {
+			remove_primary_culture = cu:british
+		}
+		every_primary_culture = {
+			limit = {
+				has_discrimination_trait_group = heritage_group_european
+				NOT = { is_primary_culture_of = c:SWA }
+			}
+			c:SWA ?= {
+				add_primary_culture = prev
+			}
+		}
+		transfer_state = {
+			STATE = s:STATE_NAMAQUALAND
+			GIVER = root
+			TAKER = c:SWA
+		}
+		transfer_state = {
+			STATE = s:STATE_HEREROLAND
+			GIVER = root
+			TAKER = c:SWA
+		}
+		c:SWA ?= {
+			sb_nam_copy_final_harshness_flags_from_root = yes
+			add_modifier = {
+				name = sb_nam_coercive_colony
+				months = -1
+			}
+			trigger_event = { id = sb_nam.150 days = 1 popup = yes }
+		}
+		sb_nam_clear_final_harshness_flags = yes
+	}
+}
+
+sb_nam.150 = {
+	type = country_event
+	placement = root
+
+	title = sb_nam.150.t
+	desc = sb_nam.150.d
+	flavor = sb_nam.150.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:SWA
+	}
+
+	option = {
+		name = sb_nam.150.a
+		default_option = yes
+		root = {
+			sb_nam_seed_minority_rights_from_harshness = yes
+		}
+	}
+}
+
+sb_nam.200 = {
+	type = country_event
+	placement = root
+
+	title = sb_nam.200.t
+	desc = sb_nam.200.d
+	flavor = sb_nam.200.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_soldiers_breaking_protest.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		NOT = { has_variable = sb_nam_forced_camps_fired_var }
+		OR = {
+			has_variable = sb_nam_final_harshness_10_var
+			has_variable = sb_nam_final_harshness_7_var
+			has_variable = sb_nam_final_harshness_5_var
+		}
+		OR = {
+			has_law = law_type:law_colonial_exploitation
+			has_law = law_type:law_national_supremacy
+			has_law = law_type:law_ethnostate
+		}
+		any_political_movement = {
+			is_political_movement_type = movement_minority_rights
+			political_movement_radicalism >= 0.30
+			political_movement_radicalism < 0.70
+		}
+	}
+
+	option = {
+		name = sb_nam.200.a
+		default_option = yes
+		set_variable = sb_nam_forced_camps_fired_var
+		s:STATE_NAMAQUALAND = {
+			every_scope_state = {
+				add_modifier = {
+					name = sb_nam_forced_camps_state
+					months = 120
+				}
+			}
+		}
+		s:STATE_HEREROLAND = {
+			every_scope_state = {
+				add_modifier = {
+					name = sb_nam_forced_camps_state
+					months = 120
+				}
+			}
+		}
+		every_political_movement = {
+			limit = {
+				is_political_movement_type = movement_minority_rights
+			}
+			add_modifier = {
+				name = sb_nam_forced_camps_movement
+				months = 120
+			}
+		}
+	}
+
+	option = {
+		name = sb_nam.200.b
+		set_variable = sb_nam_forced_camps_fired_var
+		every_political_movement = {
+			limit = {
+				is_political_movement_type = movement_minority_rights
+			}
+			add_modifier = {
+				name = sb_nam_resistance_allowed_minor
+				months = 60
+			}
+		}
+	}
+}
+
+sb_nam.201 = {
+	type = country_event
+	placement = root
+
+	title = sb_nam.201.t
+	desc = sb_nam.201.d
+	flavor = sb_nam.201.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_soldiers_breaking_protest.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		NOT = { has_variable = sb_nam_extermination_fired_var }
+		OR = {
+			has_variable = sb_nam_final_harshness_10_var
+			has_variable = sb_nam_final_harshness_7_var
+		}
+		OR = {
+			has_law = law_type:law_colonial_exploitation
+			has_law = law_type:law_national_supremacy
+			has_law = law_type:law_ethnostate
+		}
+		any_political_movement = {
+			is_political_movement_type = movement_minority_rights
+			political_movement_radicalism >= 0.70
+		}
+	}
+
+	option = {
+		name = sb_nam.201.a
+		default_option = yes
+		set_variable = sb_nam_extermination_fired_var
+		s:STATE_NAMAQUALAND = {
+			every_scope_state = {
+				add_modifier = {
+					name = sb_nam_extermination_orders_state
+					months = 120
+				}
+			}
+		}
+		s:STATE_HEREROLAND = {
+			every_scope_state = {
+				add_modifier = {
+					name = sb_nam_extermination_orders_state
+					months = 120
+				}
+			}
+		}
+		every_political_movement = {
+			limit = {
+				is_political_movement_type = movement_minority_rights
+			}
+			add_modifier = {
+				name = sb_nam_extermination_orders_movement
+				months = 120
+			}
+		}
+	}
+
+	option = {
+		name = sb_nam.201.b
+		set_variable = sb_nam_extermination_fired_var
+		every_political_movement = {
+			limit = {
+				is_political_movement_type = movement_minority_rights
+			}
+			add_modifier = {
+				name = sb_nam_resistance_allowed_major
+				months = 60
+			}
+		}
+	}
+}
