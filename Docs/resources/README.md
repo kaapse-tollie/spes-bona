@@ -51,30 +51,47 @@ The public workbook also aggregates these regional tags:
 - `SAF` = South African states
 - `SWA` = Namibian states
 
-### Common Cap Formula
+### Moddeling of peak capacities
+#### Description 
+The goals was to design a max capacity that allows to capture plausible alt-historical development, remains internally consistent across SB states and captures some of the modelling dynamics of vanilla. SB does this by constraining the capacities based on real world data and to approximate GDP per Capita equivalent years, by having our capacity quanties map to a real world output and by using vanilla capacities to drive capacity quantities.
 
-Every cap still resolves through the same public arithmetic:
+#### Target side output 
+In the mineral resources SB models takes the real-world output in the year that the (projected) GDP per Capita of the state is approximately equal to that of Great Britain in 1950. SB uses historical GDP per Capita data from the Maddison Project, found in [mpd2023_web.xlsx]. The year 1950 was chosen as it allows us to model extra development above a 1936 target. For example, let's say Britian's GDP per capita in 1950 was £500 and we are looking at peak iron production potential for the Northern Cape, we then take the amount of iron produced in the Northern Cape when its GDP per capita was £500 (or projected onto then) and save it as the target-side quanity 'X'. 
+While for arable land and wood, SB models this by taking the maximum potential farmable land and (historical) forestries. 
 
+This value is modulated by a factor 'Z' which is built from actual produced goods (such as quantity of livestock) such that stays in a historical plausible range. 
+
+If target side output data is missing, but there is other evidence of industrial production of a certain resource, a value is given for the variable 'Y' which accounts for this missing data. 
+
+The final target side output is then: 
 ```text
-final = X + Y - Z
-cap = round(final / denominator)
+F = X + Y - Z
 ```
 
-Where:
+#### Capacity quantification
+For the capacities of a resource, the resource outputs of twenty 1950 Great Britian GDP per capita sub-states where taken, divided by their vanilla capacity and averaged. For example, the GDP per capita of Wallonië reached the 1950-British level in 1952. We then take real-world iron production of Wallonië in 1952, put it in common units and divide it by its vanilla state capacity:
+```text
+C_i =  4 mt of iron / 120 
+```
 
-- `X` is the direct target-side quantity
-- `Y` is a named upward addition for a bounded omitted block
-- `Z` is a downward plausibility haircut
+We then take the average of this value across twenty comparitor states:
+```text
+C = sum(C_i)/sum(i) 
+```
+In practice, to account for mines that depleted or sector economic shocks we look at a small band of 2 years above and below the 1950-British GDP per capita year and pick the max value as our output. 
 
-The meanings of `X`, `Y`, and `Z` differ by family:
+#### Calculating SB capacities
+The SB state capacities then become: 
+```text
+cap = round(F / C)
+```
 
-- for land-capacity families, `X` is effective hectares
-- for non-land families, `X` is normalized representative output
-- for explicit exceptions, `X` may be blank and the row is governed directly by documented policy
+#### Missing data
+For many of the SB states no 1950-British GDP per capita year data exists. SB synthetically creates this data by doing a forward and backward projection onto the 1950-British GDP per capita equivalent year, using global per sector growth rates. For example, the Western Transvaal reached a an equivalent GDP per capita in 1975 to Britain however no iron production data exists for that year. SB then takes the available previous data in the series and future data in the series, projectects them onto 1975 using the growth rates and takes the average of the two. 
 
 ### Resource-Family Split
 
-The package separates families by what they are actually trying to represent.
+SB separates families by what they are actually trying to represent.
 
 #### Non-land families
 
@@ -82,12 +99,11 @@ These remain output-based:
 
 - `Coal Mine`
 - `Iron Mine`
-- `Gold Fields`
+- `Gold Fields` (which include precious metal and gem outputs)
 - `Gold Mine`
 - `Lead Mine`
 - `Sulfur Mine`
-- `Fishing`
-- and other non-land numeric families where a comparator pool exists
+- `Fishing` 
 
 These rows use:
 
@@ -99,14 +115,14 @@ These rows use:
 
 #### Land-capacity families
 
-These no longer use realized output as the main basis:
+These do not use realized output as the main basis, but maxmimum potential releasible hectares:
 
 - `Arable Land`
 - `Wood`
+- `Rubber`
 
 These rows use:
 
-- weighted effective land classes
 - direct target-side effective hectares
 - comparator-side effective hectares per vanilla cap
 - no GDP-selected output transform as the main cap driver

@@ -6,7 +6,7 @@ This report compares vanilla caps, the current live file, and the audited result
 
 ## Botswana
 
-Totals: vanilla `93`, live `5`, audited `5`, delta vs vanilla `-88`, delta vs live `0`.
+Totals: vanilla `93`, live `6`, audited `6`, delta vs vanilla `-87`, delta vs live `0`.
 
 | Resource | Vanilla | Live | Audited | Delta vs vanilla | Delta vs live | Status |
 |---|---:|---:|---:|---:|---:|---|
@@ -20,7 +20,7 @@ Totals: vanilla `93`, live `5`, audited `5`, delta vs vanilla `-88`, delta vs li
 | Whaling | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Wood | 5 | 0 | 0 | -5 | 0 | explicit exception |
 | Gold Fields (discovered) | 0 | 0 | 0 | 0 | 0 | explicit exception |
-| Gold Fields (undiscovered) | 0 | 0 | 0 | 0 | 0 | explicit exception |
+| Gold Fields (undiscovered) | 0 | 1 | 1 | 1 | 0 | explicit exception |
 | Oil (discovered) | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Oil (undiscovered) | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Rubber (discovered) | 0 | 0 | 0 | 0 | 0 | explicit exception |

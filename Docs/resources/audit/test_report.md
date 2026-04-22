@@ -68,11 +68,12 @@
 - **PASS** `regional totals match final caps aggregation`: 0 regional mismatches.
 - **PASS** `state delta summary matches final caps aggregation`: 
 - **PASS** `state delta exports exist and mirror final caps`: 
-- **PASS** `priority rows file exists`: Priority rows: 157
+- **PASS** `priority rows file exists`: Priority rows: 158
 
 ## Current Priority Rows
 
 - `P1` `Botswana / Coal Mine`: explicit audit exception
+- `P1` `Botswana / Gold Fields (undiscovered)`: explicit audit exception
 - `P1` `Cape Colony / Gold Fields (discovered)`: explicit audit exception
 - `P1` `Cape Colony / Gold Fields (undiscovered)`: explicit audit exception
 - `P1` `Cape Colony / Gold Mine`: explicit audit exception
@@ -86,4 +87,3 @@
 - `P1` `Cape Colony / Whaling`: explicit audit exception
 - `P1` `Drakensberg / Coal Mine`: explicit audit exception
 - `P1` `Drakensberg / Fishing`: explicit audit exception
-- `P1` `Drakensberg / Gold Fields (discovered)`: explicit audit exception
