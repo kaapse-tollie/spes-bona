@@ -19,6 +19,77 @@ This loop audits the exact public workbook surface for each state:
 - 15 arable-resource yes/no rows
 - the remaining numeric/special resource rows now shown on each state sheet
 
+## 0. Methodology Guardrails
+
+Before changing any row, read the methodology in:
+
+- `Docs/resources/README.md`
+
+Do not treat this as a generic 1936 snapshot audit. The package uses two different model families and the agent must preserve that distinction.
+
+### 0A. Non-land families are still `1950-equivalent` models
+
+For non-land numeric families such as:
+
+- `Coal Mine`
+- `Iron Mine`
+- `Gold Fields`
+- `Gold Mine`
+- `Lead Mine`
+- `Sulfur Mine`
+- `Fishing`
+- any other family that still uses comparator-derived output denominators
+
+the governing method is:
+
+1. gather target observations
+2. choose a representative year using the frozen GDP-selection protocol
+3. normalize the observation into the common `1950-equivalent` frame
+4. compare against comparator denominators built on the same frame
+
+Hard rules:
+
+- Do **not** treat raw 1936 output as the primary target just because it is chronologically close to game start.
+- A 1936 observation may be used as one candidate year, but it is not privileged over a better representative year once the package's GDP-selection and `1950-equivalent` logic are applied.
+- When reviewing a non-land row, ask:
+  - is the representative-year choice still defensible?
+  - is the `1950-equivalent` normalized value still the right direct `X` basis?
+  - is the comparator denominator family still appropriate?
+- Do not silently replace the package's `1950-equivalent` method with a “closest to 1936” method.
+
+### 0B. Land families are not `1950-equivalent` output models
+
+For:
+
+- `Arable Land`
+- `Wood`
+
+the governing method is land capacity, not realized output.
+
+Hard rules:
+
+- `Arable Land` is based on potential effective commercial agricultural land.
+- `Wood` is based on potential effective commercial forestry land.
+- Representative year on these rows is audit metadata only; it is **not** a signal to convert the family back into a 1936 or 1950 output model.
+- Do not introduce GDP-selected output normalization into arable or wood.
+
+### 0C. Counterfactual review standard
+
+The counterfactual audit is not “what existed in 1936 and only 1936.”
+
+Use this standard:
+
+- direct local history matters
+- bounded local counterfactual potential matters
+- later-developed districts, belts, estates, mines, or forestry zones may still support a row if they reveal a local potential that plausibly existed before large-scale postwar buildout
+
+But:
+
+- later national dominance does not automatically justify earlier local caps
+- later development must be converted into a bounded local counterfactual, not smuggled in as direct 1936 output
+
+When a changed non-land row survives partly because of later evidence, the audit note must say clearly that the row is being carried by bounded counterfactual potential within the package's `1950-equivalent` non-land framework.
+
 ## Key Changes
 
 ### 1. Make the loop stateful and append-only
@@ -200,6 +271,7 @@ Citation/update rules for every changed row:
 - preserve old citations on superseded rows
 - do not ship a changed row with only prose and no citations
 - for defended zeroes and exceptions, the limiting rationale must also be documented in `adjustment_inputs.csv` or `counterevidence_cases.csv`
+- for every changed non-land numeric row, document whether the representative-year choice and `1950-equivalent` normalization were kept, revised, or explicitly rejected by a family rewrite
 
 Counterfactual rules:
 - neighboring, provincial, or national claims must be written explicitly into `regional_claim_note`

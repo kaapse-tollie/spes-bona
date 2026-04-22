@@ -94,7 +94,7 @@ Totals: vanilla `133`, live `55`, audited `55`, delta vs vanilla `-78`, delta vs
 
 ## Eastern Transvaal
 
-Totals: vanilla `231`, live `150`, audited `150`, delta vs vanilla `-81`, delta vs live `0`.
+Totals: vanilla `231`, live `154`, audited `154`, delta vs vanilla `-77`, delta vs live `0`.
 
 | Resource | Vanilla | Live | Audited | Delta vs vanilla | Delta vs live | Status |
 |---|---:|---:|---:|---:|---:|---|
@@ -108,7 +108,7 @@ Totals: vanilla `231`, live `150`, audited `150`, delta vs vanilla `-81`, delta 
 | Whaling | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Wood | 5 | 11 | 11 | 6 | 0 | formula-driven |
 | Gold Fields (discovered) | 0 | 0 | 0 | 0 | 0 | explicit exception |
-| Gold Fields (undiscovered) | 12 | 0 | 0 | -12 | 0 | explicit exception |
+| Gold Fields (undiscovered) | 12 | 4 | 4 | -8 | 0 | explicit exception |
 | Oil (discovered) | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Oil (undiscovered) | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Rubber (discovered) | 0 | 0 | 0 | 0 | 0 | explicit exception |
