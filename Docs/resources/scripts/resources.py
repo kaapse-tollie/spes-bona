@@ -39,7 +39,7 @@ def cmd_sync_live() -> None:
         for resource, audited_cap in resources.items():
             if pre_sync_live[state].get(resource, 0) != audited_cap:
                 mismatch_count += 1
-    builder.sync_live_state_file(result["final_caps"])
+    builder.sync_live_state_file(result["final_caps"], result["arable_resource_expectation_rows"])
     synced_result = builder.build_public_workbook()
     print(f"Synced {builder.STATE_FILE}")
     print(f"Applied {mismatch_count} live cap updates from the audited result")
@@ -120,7 +120,7 @@ def cmd_state_pass() -> None:
         )
     builder.write_state_pass_tracker_rows(tracker_rows)
 
-    builder.sync_live_state_file(result["final_caps"])
+    builder.sync_live_state_file(result["final_caps"], result["arable_resource_expectation_rows"])
     synced_result = builder.build_public_workbook()
     synced_report = tester.run_tests()
     if report_has_failures(synced_report):

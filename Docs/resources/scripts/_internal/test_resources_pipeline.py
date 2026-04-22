@@ -364,14 +364,18 @@ def run_tests() -> str:
     eastern_cape_wheat = expectation_map.get(("Eastern Cape", "Wheat Farm"))
     if eastern_cape_wheat is None or not (
         eastern_cape_wheat["researched_plausible"] == "yes"
-        and eastern_cape_wheat["live_enabled_in_state"] == "no"
-        and eastern_cape_wheat["basket_membership_status"] == "researched_only"
+        and eastern_cape_wheat["live_enabled_in_state"] == "yes"
+        and eastern_cape_wheat["basket_membership_status"] == "researched_and_live"
     ):
         basket_logic_failures.append("Eastern Cape / Wheat Farm")
     cape_tea = expectation_map.get(("Cape Colony", "Tea Plantation"))
-    if cape_tea is None or cape_tea["basket_membership_status"] != "live_only":
+    if cape_tea is None or not (
+        cape_tea["researched_plausible"] == "no"
+        and cape_tea["live_enabled_in_state"] == "no"
+        and cape_tea["basket_membership_status"] == "excluded"
+    ):
         basket_logic_failures.append("Cape Colony / Tea Plantation")
-    results.append(CheckResult("arable basket/live mismatch reporting still works", "PASS" if not basket_logic_failures else "FAIL", "Basket logic failures: " + ", ".join(basket_logic_failures)))
+    results.append(CheckResult("arable basket/live expectations reflect the synced gameplay state", "PASS" if not basket_logic_failures else "FAIL", "Basket logic failures: " + ", ".join(basket_logic_failures)))
 
     overview_headers, overview_rows = extract_table(overview_ws, "SB totals before and after")
     overview_map = {str(row["Resource"]): row for row in overview_rows}
@@ -485,6 +489,19 @@ def run_tests() -> str:
         results.append(CheckResult("final caps match live state file", "PASS" if not live_mismatches else "FAIL", detail))
     else:
         results.append(CheckResult("live state file sync remains frozen", "PASS", f"Auto-sync disabled; {len(ignored_live_mismatches)} live mismatches are expected during the audit pass."))
+
+    arable_live_mismatches = []
+    expectation_map = {(row["state"], row["resource"]): row for row in arable_resource_expectations}
+    for state in sync_expected_states:
+        for _category, resource in builder.BINARY_RESOURCES:
+            expected = expectation_map[(state, resource)]["researched_plausible"]
+            actual = str(live_values[state].get(resource, "no")).lower()
+            if actual != expected:
+                arable_live_mismatches.append(f"{state} / {resource}: expected {expected}, live {actual}")
+    if sync_expected_states:
+        results.append(CheckResult("accepted synced states match live arable resources", "PASS" if not arable_live_mismatches else "FAIL", "; ".join(arable_live_mismatches[:12])))
+    else:
+        results.append(CheckResult("accepted synced states match live arable resources", "PASS", "No accepted synced states yet."))
 
     builder_text = BUILDER.read_text(encoding="utf-8")
     wood_builder_failures = []

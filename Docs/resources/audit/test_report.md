@@ -1,7 +1,7 @@
 # Public Resource Audit Test Report
 
 - Date: 2026-04-22
-- Passes: 62
+- Passes: 63
 - Fails: 0
 
 ## Checks
@@ -39,13 +39,14 @@
 - **PASS** `arable rows use direct land-capacity X with no GDP fields or legacy Y/Z`: 
 - **PASS** `arable spot-check outcomes are playable and directionally plausible`: 
 - **PASS** `arable resource expectations are now a gameplay audit surface`: Missing fields: 
-- **PASS** `arable basket/live mismatch reporting still works`: Basket logic failures: 
+- **PASS** `arable basket/live expectations reflect the synced gameplay state`: Basket logic failures: 
 - **PASS** `overview totals mirror regional_resource_totals.csv`: Mismatches: 
 - **PASS** `major tag changes mirror regional_resource_totals.csv`: Mismatches: 
 - **PASS** `overview progress block mirrors state_pass_tracker.csv`: Mismatches: 
 - **PASS** `state sheets mirror vanilla baselines and audited SB updates`: Mismatches: 
 - **PASS** `state sheets expose the public Basis column`: Basis issues: 
 - **PASS** `final caps match live state file`: 0 mismatches on accepted synced states.
+- **PASS** `accepted synced states match live arable resources`: 
 - **PASS** `wood uses dedicated effective-forestry denominator path`: Wood path failures: 
 - **PASS** `non-arable benchmark registry and gold-mine denominator path are wired`: 
 - **PASS** `public target observations no longer expose formula-driving wood estate rows`: Wood rows are absent from target_observations.csv
@@ -67,11 +68,10 @@
 - **PASS** `regional totals match final caps aggregation`: 0 regional mismatches.
 - **PASS** `state delta summary matches final caps aggregation`: 
 - **PASS** `state delta exports exist and mirror final caps`: 
-- **PASS** `priority rows file exists`: Priority rows: 169
+- **PASS** `priority rows file exists`: Priority rows: 157
 
 ## Current Priority Rows
 
-- `P1` `Botswana / Arable Land`: arable audit/gameplay mismatch
 - `P1` `Botswana / Coal Mine`: explicit audit exception
 - `P1` `Cape Colony / Gold Fields (discovered)`: explicit audit exception
 - `P1` `Cape Colony / Gold Fields (undiscovered)`: explicit audit exception
@@ -84,5 +84,6 @@
 - `P1` `Cape Colony / Rubber (undiscovered)`: explicit audit exception
 - `P1` `Cape Colony / Sulfur Mine`: explicit audit exception
 - `P1` `Cape Colony / Whaling`: explicit audit exception
-- `P1` `Drakensberg / Arable Land`: arable audit/gameplay mismatch
 - `P1` `Drakensberg / Coal Mine`: explicit audit exception
+- `P1` `Drakensberg / Fishing`: explicit audit exception
+- `P1` `Drakensberg / Gold Fields (discovered)`: explicit audit exception

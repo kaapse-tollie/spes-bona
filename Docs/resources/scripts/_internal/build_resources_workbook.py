@@ -5367,9 +5367,18 @@ def build_workbook(
     return wb
 
 
-def rewrite_state_block(block: str, final_caps_for_state: dict[str, int]) -> str:
+def rewrite_state_block(
+    block: str,
+    final_caps_for_state: dict[str, int],
+    enabled_arable_buildings: list[str],
+) -> str:
     arable = final_caps_for_state["Arable Land"]
     block = re.sub(r"(?m)^(\s*arable_land\s*=\s*)\d+", rf"\g<1>{arable}", block)
+    arable_resource_line = "    arable_resources = { " + " ".join(f'"{building}"' for building in enabled_arable_buildings) + " }"
+    if re.search(r"(?m)^\s*arable_resources\s*=\s*\{[^\n]*\}", block):
+        block = re.sub(r"(?m)^\s*arable_resources\s*=\s*\{[^\n]*\}", arable_resource_line, block)
+    else:
+        block = re.sub(r"(?m)^(\s*arable_land\s*=\s*\d+\s*)$", r"\1\n" + arable_resource_line, block, count=1)
     capped_lines = [f"        {building} = {final_caps_for_state[resource]}" for resource, building in CAP_BUILDINGS.items() if final_caps_for_state.get(resource, 0)]
     new_capped_block = "    capped_resources = {\n" + ("\n".join(capped_lines) + "\n" if capped_lines else "") + "    }"
     if re.search(r"\n\s*capped_resources\s*=\s*\{.*?\n\s*\}", block, re.S):
@@ -5406,11 +5415,30 @@ def rewrite_state_block(block: str, final_caps_for_state: dict[str, int]) -> str
     return block
 
 
-def sync_live_state_file(final_caps: dict[str, dict[str, int]]) -> None:
+def sync_live_state_file(
+    final_caps: dict[str, dict[str, int]],
+    arable_resource_expectation_rows: list[dict[str, Any]],
+) -> None:
     text = STATE_FILE.read_text(encoding="utf-8")
+    arable_resources_by_state = {row["official_name"]: [] for row in STATE_INFO}
+    expectation_map = defaultdict(list)
+    for row in arable_resource_expectation_rows:
+        expectation_map[str(row["state"])].append(row)
+    for state, rows in expectation_map.items():
+        enabled_buildings = [
+            RESOURCE_TO_BUILDING[row["resource"]]
+            for _category, resource in BINARY_RESOURCES
+            for row in rows
+            if row["resource"] == resource and str(row["researched_plausible"]) == "yes"
+        ]
+        arable_resources_by_state[state] = enabled_buildings
     for info in STATE_INFO:
         old_block = extract_state_block(text, info["state_id"])
-        new_block = rewrite_state_block(old_block, final_caps[info["official_name"]])
+        new_block = rewrite_state_block(
+            old_block,
+            final_caps[info["official_name"]],
+            arable_resources_by_state[info["official_name"]],
+        )
         text = text.replace(old_block, new_block)
     STATE_FILE.write_text(text, encoding="utf-8")
 
