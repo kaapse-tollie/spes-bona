@@ -121,7 +121,7 @@ These do not use realized output as the main basis, but maxmimum potential relea
 - `Wood`
 - `Rubber`
 
-These rows use:
+They use:
 
 - direct target-side effective hectares
 - comparator-side effective hectares per vanilla cap
@@ -129,13 +129,9 @@ These rows use:
 
 #### Arable-resource yes/no rows
 
-Arable resource rows such as `Wheat Farm`, `Sugar Plantation`, or `Vineyard` are no longer cap drivers.
+For deciding the availablity of types of arable resources per state, SB looked at if any large scale commercial production was or would be possible for said arable good.
 
-They are now:
-
-- a gameplay-availability layer
-- audited against a researched crop basket
-- reported separately from the cap arithmetic
+>TODO: CLEAN UP FROM HERE<
 
 ### Maintained Input Surfaces
 
