@@ -133,6 +133,39 @@ Exception:
 
 The agent must not continue into the next untouched state in the same normal run.
 
+### 2A. Final response contract for each CLI call
+
+Do not use the word `complete` to mean “one state pass finished”.
+
+Use `complete` only if the entire 13-state loop is finished and `state_pass_tracker.csv` shows no remaining `not started`, `in review`, or `rerun required` rows.
+
+At the end of every call, the final response must include these plain-text status lines:
+
+- `CURRENT_STATE=<state just processed, or NONE>`
+- `STATE_PASS_COMPLETE=yes|no`
+- `LOOP_COMPLETE=yes|no`
+- `NEXT_STATE=<next state name, or NONE>`
+- `FAMILY_REWRITE=yes|no`
+
+Rules:
+- If one state pass finished successfully and more states remain:
+  - `STATE_PASS_COMPLETE=yes`
+  - `LOOP_COMPLETE=no`
+  - `NEXT_STATE=<next state from tracker>`
+- If all 13 states are accepted:
+  - `STATE_PASS_COMPLETE=yes`
+  - `LOOP_COMPLETE=yes`
+  - `NEXT_STATE=NONE`
+- If the run stops before accepting the current state:
+  - `STATE_PASS_COMPLETE=no`
+  - `LOOP_COMPLETE=no`
+  - `NEXT_STATE=<same state or rerun-required state>`
+- Never output a bare “complete” or “done” without the status lines above.
+- The final response should also include one short paragraph summarizing:
+  - what changed
+  - whether live sync happened
+  - whether tests passed
+
 ### 3. Define the row review model and citation duties
 
 Every public row must receive:
@@ -172,6 +205,74 @@ Counterfactual rules:
 - neighboring, provincial, or national claims must be written explicitly into `regional_claim_note`
 - they do not silently become local support
 - strong national or provincial potential can only support a row if bounded into the actual SB footprint and recorded as counterfactual rather than disguised as direct local history
+
+### 3A. Research protocol for each contested or changed row
+
+The agent must do real research work during each state pass. Do not treat this as a pure spreadsheet-editing task.
+
+Expected local tools:
+- `python3`
+- `rg`
+- `curl`
+- `jq`
+- `pdftotext`
+- `mutool`
+- Codex CLI built-in web search
+- local SearXNG endpoint at `http://127.0.0.1:8888/search` as fallback
+
+If one of those tools is missing:
+- continue with the strongest available fallback
+- note the missing tool in the final response
+- do not skip citation work silently
+
+Research order for every row that is changed, reopened, or explicitly checked as a trigger row:
+
+1. Search the maintained local package first.
+   - inspect the current raw evidence tables
+   - inspect existing adjustment and counterevidence rows
+   - inspect the existing counterfactual audit and state tracker
+   - inspect the public workbook/state sheet for the current result
+2. If local evidence is insufficient, use Codex CLI built-in web search as the primary external search path.
+   - prefer the built-in CLI web search tool first
+   - use it to discover candidate sources, localized districts, belts, mines, estates, and chronology references
+3. If built-in web search is unavailable, weak, or does not surface the needed source type, fall back to shell-accessible search/fetch tools.
+   - prefer the local SearXNG endpoint first:
+     - `curl 'http://127.0.0.1:8888/search?q=<query>&format=json'`
+   - use SearXNG to discover candidate URLs before fetching individual sources
+   - use `curl` for HTML or downloadable reports
+   - use `pdftotext` or `mutool draw -F txt` for PDFs
+   - prefer sources that localize to the actual SB state footprint, district, belt, minefield, irrigation corridor, forestry belt, or fishery zone
+4. Prefer source types in this order:
+   - direct local historical or geological/agricultural evidence
+   - district or belt-level evidence clearly overlapping the SB footprint
+   - provincial/regional evidence with explicit overlap
+   - national evidence only as bounded context, never as silent local support
+5. Capture citation data immediately when a source is used.
+   - title
+   - URL
+   - locator/page/section
+   - short note on whether it is local, regional, or national in scope
+6. If only broad regional or national support exists:
+   - do not let it become direct local history
+   - record it in `regional_claim_note`
+   - either use bounded counterfactual treatment or reject it
+7. If evidence remains insufficient after search:
+   - keep the row unchanged or convert it to a defended exception/zero
+   - explain the evidence gap explicitly
+   - do not fabricate a formula-driving `X`
+
+Minimum research expectation per state pass:
+- every changed row must have refreshed citations
+- every trigger row must be explicitly rechecked even if it ends unchanged
+- at least one local-package search pass and one external search pass must be completed for any changed contested row
+- if built-in Codex CLI web search is unavailable in the session, note that explicitly in the final response and fall back to SearXNG or direct-source fetching
+- if the SearXNG endpoint is unreachable, note that explicitly in the final response and fall back to direct-source fetching
+
+PDF handling rules:
+- prefer `pdftotext <file> -` for quick extraction
+- if that fails, use `mutool draw -F txt -o - <file>`
+- when a PDF is downloaded temporarily for review, do not treat it as maintained project data unless you intentionally add it to the repo later
+- cite page numbers or section locators, not just the PDF title
 
 ### 4. Require outward-facing documentation updates on every state pass
 

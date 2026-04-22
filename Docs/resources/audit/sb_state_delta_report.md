@@ -182,7 +182,7 @@ Totals: vanilla `73`, live `4`, audited `4`, delta vs vanilla `-69`, delta vs li
 
 ## Northern Cape
 
-Totals: vanilla `84`, live `110`, audited `110`, delta vs vanilla `26`, delta vs live `0`.
+Totals: vanilla `84`, live `48`, audited `48`, delta vs vanilla `-36`, delta vs live `0`.
 
 | Resource | Vanilla | Live | Audited | Delta vs vanilla | Delta vs live | Status |
 |---|---:|---:|---:|---:|---:|---|
@@ -190,12 +190,12 @@ Totals: vanilla `84`, live `110`, audited `110`, delta vs vanilla `26`, delta vs
 | Coal Mine | 0 | 0 | 0 | 0 | 0 | constrained zero |
 | Fishing | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Gold Mine | 0 | 0 | 0 | 0 | 0 | explicit exception |
-| Iron Mine | 33 | 68 | 68 | 35 | 0 | formula-driven |
+| Iron Mine | 33 | 6 | 6 | -27 | 0 | quantified adjustment |
 | Lead Mine | 0 | 11 | 11 | 11 | 0 | quantified adjustment |
 | Sulfur Mine | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Whaling | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Wood | 2 | 0 | 0 | -2 | 0 | explicit exception |
-| Gold Fields (discovered) | 1 | 0 | 0 | -1 | 0 | constrained zero |
+| Gold Fields (discovered) | 1 | 0 | 0 | -1 | 0 | explicit exception |
 | Gold Fields (undiscovered) | 8 | 20 | 20 | 12 | 0 | explicit exception |
 | Oil (discovered) | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Oil (undiscovered) | 0 | 0 | 0 | 0 | 0 | explicit exception |

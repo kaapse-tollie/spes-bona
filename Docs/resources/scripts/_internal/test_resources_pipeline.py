@@ -42,6 +42,9 @@ STATE_RESOURCE_DELTAS = DERIVED_DIR / "state_resource_deltas.csv"
 STATE_DELTA_REPORT = AUDIT_DIR / "sb_state_delta_report.md"
 TARGET_DATA_VALIDATION = AUDIT_DIR / "target_data_validation.csv"
 STATE_REGIONAL_ADVANTAGES = AUDIT_DIR / "state_regional_advantages.csv"
+STATE_COUNTERFACTUAL_AUDIT = AUDIT_DIR / "state_resource_counterfactual_audit.csv"
+STATE_PASS_TRACKER = AUDIT_DIR / "state_pass_tracker.csv"
+FAMILY_REWRITE_LOG = AUDIT_DIR / "family_rewrite_log.csv"
 STATE_REVIEW_STATUS = AUDIT_DIR / "state_review_status.csv"
 DATA_README = PUBLIC_ROOT / "data/README.md"
 RAW_DATA_README = PUBLIC_ROOT / "data/raw/README.md"
@@ -56,6 +59,8 @@ RAW_ARABLE_TARGET_CAPACITY = PUBLIC_ROOT / "data/raw/arable_target_capacity_rows
 RAW_ARABLE_COMPARATOR_CAPACITY = PUBLIC_ROOT / "data/raw/arable_comparator_capacity_rows.csv"
 RAW_HISTORICAL = PUBLIC_ROOT / "data/raw/historical_anchors.csv"
 RAW_MODERN = PUBLIC_ROOT / "data/raw/modern_maxima.csv"
+RAW_ADJUSTMENT_INPUTS = PUBLIC_ROOT / "data/raw/adjustment_inputs.csv"
+RAW_COUNTEREVIDENCE = PUBLIC_ROOT / "data/raw/counterevidence_cases.csv"
 
 
 @dataclass
@@ -114,6 +119,19 @@ def extract_table(ws, section_title: str) -> tuple[list[str], list[dict[str, Any
     return headers, rows
 
 
+def duplicate_active_keys(rows: list[dict[str, str]], logical_key_fields: list[str]) -> list[str]:
+    duplicates: list[str] = []
+    seen: set[tuple[str, ...]] = set()
+    for row in rows:
+        if row.get("row_status") not in ("", "active"):
+            continue
+        key = tuple(str(row.get(field, "")) for field in logical_key_fields)
+        if key in seen:
+            duplicates.append(" / ".join(key))
+        seen.add(key)
+    return duplicates
+
+
 def run_tests() -> str:
     builder = load_builder()
     readme_text = README.read_text(encoding="utf-8")
@@ -146,12 +164,17 @@ def run_tests() -> str:
     gdp_selection_rows = read_csv_rows(GDP_SELECTION)
     target_data_validation = read_csv_rows(TARGET_DATA_VALIDATION)
     state_regional_advantages = read_csv_rows(STATE_REGIONAL_ADVANTAGES)
+    state_counterfactual_audit = read_csv_rows(STATE_COUNTERFACTUAL_AUDIT)
+    state_pass_tracker = read_csv_rows(STATE_PASS_TRACKER)
+    family_rewrite_log = read_csv_rows(FAMILY_REWRITE_LOG)
     state_review_status = read_csv_rows(STATE_REVIEW_STATUS)
     non_arable_benchmarks = read_csv_rows(NON_ARABLE_BENCHMARKS) if NON_ARABLE_BENCHMARKS.exists() else []
     raw_historical_rows = read_csv_rows(RAW_HISTORICAL)
     raw_modern_rows = read_csv_rows(RAW_MODERN)
     raw_arable_target_rows = read_csv_rows(RAW_ARABLE_TARGET_CAPACITY)
     raw_wood_target_rows = read_csv_rows(RAW_WOOD_TARGET_CAPACITY)
+    raw_adjustment_rows = read_csv_rows(RAW_ADJUSTMENT_INPUTS)
+    raw_counterevidence_rows = read_csv_rows(RAW_COUNTEREVIDENCE)
 
     live_values = builder.parse_live_state_resources()
 
@@ -170,6 +193,8 @@ def run_tests() -> str:
         "## problems and what we did",
         "## how to modify / run",
         "## references",
+        "append-only",
+        "state-pass",
         "effective commercial agricultural hectares",
         "effective commercial forestry hectares",
         "resources.xlsx",
@@ -182,7 +207,7 @@ def run_tests() -> str:
     expected_visible_sheets = ["Overview", *state_sheet_names]
     results.append(CheckResult("overview plus one sheet per SB state", "PASS" if visible_sheets == expected_visible_sheets else "FAIL", f"Visible sheets: {visible_sheets}"))
 
-    required_overview_sections = ["SB totals before and after", "Major tag changes"]
+    required_overview_sections = ["SB totals before and after", "Major tag changes", "State pass progress"]
     missing_overview_sections = [section for section in required_overview_sections if find_row_by_first_cell(overview_ws, section) is None]
     results.append(CheckResult("overview sheet sections", "PASS" if not missing_overview_sections else "FAIL", "Missing sections: " + ", ".join(missing_overview_sections)))
 
@@ -248,8 +273,28 @@ def run_tests() -> str:
             placeholder_hits.append(f"{row['state']} / {row['resource']} / {row['land_class']}")
     results.append(CheckResult("validation notes ship without placeholder language", "PASS" if not placeholder_hits else "FAIL", "; ".join(placeholder_hits[:10])))
 
-    results.append(CheckResult("new audit tables exist", "PASS" if STATE_REGIONAL_ADVANTAGES.exists() and STATE_REVIEW_STATUS.exists() else "FAIL", "Missing state_regional_advantages.csv or state_review_status.csv"))
+    new_audit_tables_present = all(path.exists() for path in [STATE_REGIONAL_ADVANTAGES, STATE_COUNTERFACTUAL_AUDIT, STATE_PASS_TRACKER, FAMILY_REWRITE_LOG, STATE_REVIEW_STATUS])
+    results.append(CheckResult("new audit tables exist", "PASS" if new_audit_tables_present else "FAIL", "Missing one of the tracker/counterfactual/rewrite/state review audit tables."))
     results.append(CheckResult("regional advantages and state review status are populated", "PASS" if len(state_regional_advantages) == len(builder.STATE_INFO) and len(state_review_status) == len(builder.STATE_INFO) else "FAIL", f"advantages={len(state_regional_advantages)}, review_status={len(state_review_status)}"))
+
+    lifecycle_required = set(builder.LIFECYCLE_FIELDNAMES)
+    lifecycle_failures = []
+    raw_tables_to_check = [
+        ("historical_anchors.csv", raw_historical_rows, builder.TARGET_OBSERVATION_LOGICAL_KEY_FIELDS),
+        ("modern_maxima.csv", raw_modern_rows, builder.TARGET_OBSERVATION_LOGICAL_KEY_FIELDS),
+        ("arable_target_capacity_rows.csv", raw_arable_target_rows, builder.ARABLE_TARGET_CAPACITY_LOGICAL_KEY_FIELDS),
+        ("wood_target_capacity_rows.csv", raw_wood_target_rows, builder.WOOD_TARGET_CAPACITY_LOGICAL_KEY_FIELDS),
+        ("adjustment_inputs.csv", raw_adjustment_rows, builder.ADJUSTMENT_INPUT_LOGICAL_KEY_FIELDS),
+        ("counterevidence_cases.csv", raw_counterevidence_rows, builder.COUNTEREVIDENCE_LOGICAL_KEY_FIELDS),
+    ]
+    duplicate_key_failures = []
+    for name, rows, logical_key_fields in raw_tables_to_check:
+        headers = set(rows[0].keys()) if rows else set()
+        if not lifecycle_required <= headers:
+            lifecycle_failures.append(name)
+        duplicate_key_failures.extend([f"{name}: {value}" for value in duplicate_active_keys(rows, logical_key_fields)])
+    results.append(CheckResult("lifecycle columns exist on maintained evidence tables", "PASS" if not lifecycle_failures else "FAIL", "Missing lifecycle fields in: " + ", ".join(lifecycle_failures)))
+    results.append(CheckResult("no maintained logical key has more than one active evidence row", "PASS" if not duplicate_key_failures else "FAIL", "; ".join(duplicate_key_failures[:10])))
 
     arable_resources = {resource for category, resource in builder.BINARY_RESOURCES if category == "Arable Resource"}
     arable_selection_rows = [row for row in gdp_selection_rows if row["resource"] in arable_resources or row["resource"] == "Arable Land"]
@@ -363,11 +408,34 @@ def run_tests() -> str:
             tag_mismatches.append(f"{expected['region']} / {expected['resource']}")
     results.append(CheckResult("major tag changes mirror regional_resource_totals.csv", "PASS" if not tag_mismatches else "FAIL", "Mismatches: " + ", ".join(tag_mismatches[:10])))
 
+    progress_headers, progress_rows = extract_table(overview_ws, "State pass progress")
+    progress_map = {str(row["State"]): row for row in progress_rows}
+    progress_failures = []
+    for tracker_row in state_pass_tracker:
+        actual = progress_map.get(tracker_row["state"])
+        if actual is None:
+            progress_failures.append(f"missing {tracker_row['state']}")
+            continue
+        expected_status = builder.tracker_status_for_workbook(tracker_row["pass_status"])
+        if (
+            str(actual["Pass order"]) != str(tracker_row["pass_order"])
+            or str(actual["Status"]) != expected_status
+            or str(actual["Completed rows"]) != str(tracker_row["completed_rows"])
+            or str(actual["Changed rows"]) != str(tracker_row["changed_rows"])
+        ):
+            progress_failures.append(tracker_row["state"])
+    results.append(CheckResult("overview progress block mirrors state_pass_tracker.csv", "PASS" if not progress_failures else "FAIL", "Mismatches: " + ", ".join(progress_failures[:10])))
+
     csv_map = {(row["state"], row["resource"]): row for row in final_caps}
     expectation_sheet_map = {(row["state"], row["resource"]): row for row in arable_resource_expectations}
+    counterfactual_audit_map = {(row["state"], row["resource"]): row for row in state_counterfactual_audit}
     vanilla_priors = builder.load_vanilla_priors()
     state_sheet_mismatches = []
+    basis_failures = []
     for state, ws in state_sheet_map.items():
+        headers, sheet_rows = extract_table(ws, "Resource rows")
+        if "Basis" not in headers:
+            basis_failures.append(f"{state} / Basis column missing")
         _, sheet_rows = extract_table(ws, "Resource rows")
         sheet_map = {str(row["Resource"]): row for row in sheet_rows}
         for category, resource in builder.WORKBOOK_STATE_RESOURCE_ORDER:
@@ -380,22 +448,43 @@ def run_tests() -> str:
                 expected_sb = expectation_sheet_map[(state, resource)]["researched_plausible"]
                 if str(actual["Vanilla baseline"]).lower() != expected_vanilla or str(actual["SB update"]).lower() != expected_sb:
                     state_sheet_mismatches.append(f"{state} / {resource}")
+                if str(actual.get("Basis", "")) != builder.visible_basis_label(counterfactual_audit_map[(state, resource)]["driving_basis"]):
+                    basis_failures.append(f"{state} / {resource}")
                 continue
             expected = csv_map[(state, resource)]
             if str(actual["Vanilla baseline"]) != expected["vanilla_cap"] or str(actual["SB update"]) != expected["final_audited_cap"]:
                 state_sheet_mismatches.append(f"{state} / {resource}")
+            if str(actual.get("Basis", "")) != builder.visible_basis_label(counterfactual_audit_map[(state, resource)]["driving_basis"]):
+                basis_failures.append(f"{state} / {resource}")
     results.append(CheckResult("state sheets mirror vanilla baselines and audited SB updates", "PASS" if not state_sheet_mismatches else "FAIL", "Mismatches: " + ", ".join(state_sheet_mismatches[:12])))
+    results.append(CheckResult("state sheets expose the public Basis column", "PASS" if not basis_failures else "FAIL", "Basis issues: " + ", ".join(basis_failures[:12])))
 
+    sync_expected_states = {
+        row["state"]
+        for row in state_pass_tracker
+        if row["live_synced"] == "yes" and row["pass_status"] == builder.TRACKER_ACCEPTED
+    }
     live_mismatches = []
+    ignored_live_mismatches = []
     for row in final_caps:
         expected = int(float(row["final_audited_cap"]))
         actual = live_values[row["state"]].get(row["resource"], 0)
-        if expected != actual:
-            live_mismatches.append(f"{row['state']} / {row['resource']}: csv={expected}, live={actual}")
+        if expected == actual:
+            continue
+        detail = f"{row['state']} / {row['resource']}: csv={expected}, live={actual}"
+        if builder.SYNC_LIVE_ON_BUILD or row["state"] in sync_expected_states:
+            live_mismatches.append(detail)
+        else:
+            ignored_live_mismatches.append(detail)
     if builder.SYNC_LIVE_ON_BUILD:
         results.append(CheckResult("final caps match live state file", "PASS" if not live_mismatches else "FAIL", f"{len(live_mismatches)} mismatches against the live resource file."))
+    elif sync_expected_states:
+        detail = f"{len(live_mismatches)} mismatches on accepted synced states."
+        if ignored_live_mismatches:
+            detail += f" Ignored {len(ignored_live_mismatches)} mismatches on in-review or unsynced states."
+        results.append(CheckResult("final caps match live state file", "PASS" if not live_mismatches else "FAIL", detail))
     else:
-        results.append(CheckResult("live state file sync remains frozen", "PASS", f"Auto-sync disabled; {len(live_mismatches)} live mismatches are expected during the audit pass."))
+        results.append(CheckResult("live state file sync remains frozen", "PASS", f"Auto-sync disabled; {len(ignored_live_mismatches)} live mismatches are expected during the audit pass."))
 
     builder_text = BUILDER.read_text(encoding="utf-8")
     wood_builder_failures = []
@@ -523,6 +612,57 @@ def run_tests() -> str:
         if audit["counterevidence_status"] == "not_reviewed" and row["exception_status"] == "":
             unsupported_zero_rows.append(f"{row['state']} / {row['resource']}")
     results.append(CheckResult("hard zeros carry explicit audit support or exception status", "PASS" if not unsupported_zero_rows else "FAIL", f"Unsupported hard zeros: {len(unsupported_zero_rows)}"))
+
+    expected_public_rows = len(builder.STATE_INFO) * len(builder.WORKBOOK_STATE_RESOURCE_ORDER)
+    results.append(CheckResult("state counterfactual audit covers the full public workbook surface", "PASS" if STATE_COUNTERFACTUAL_AUDIT.exists() and len(state_counterfactual_audit) == expected_public_rows else "FAIL", f"audit_rows={len(state_counterfactual_audit)}, expected={expected_public_rows}"))
+
+    counterfactual_field_failures = []
+    changed_row_without_citations = []
+    for row in state_counterfactual_audit:
+        required = ["historical_label", "counterfactual_label", "driving_basis", "decision", "row_category"]
+        if any(row[field] in ("", None) for field in required):
+            counterfactual_field_failures.append(f"{row['state']} / {row['resource']}")
+        if (
+            row["decision"] != "keep"
+            and int(row.get("state_pass_index") or 0) > 0
+            and not (row["citation_1_title"] or row["citation_2_title"])
+        ):
+            changed_row_without_citations.append(f"{row['state']} / {row['resource']}")
+    results.append(CheckResult("every audited public row has both labels and one driving basis", "PASS" if not counterfactual_field_failures else "FAIL", "; ".join(counterfactual_field_failures[:12])))
+    results.append(CheckResult("no changed row lacks citations", "PASS" if not changed_row_without_citations else "FAIL", "; ".join(changed_row_without_citations[:12])))
+
+    tracker_failures = []
+    if len(state_pass_tracker) != len(builder.STATE_INFO):
+        tracker_failures.append(f"expected {len(builder.STATE_INFO)} tracker rows, got {len(state_pass_tracker)}")
+    tracker_map = {row["state"]: row for row in state_pass_tracker}
+    for info in builder.STATE_INFO:
+        state = info["official_name"]
+        row = tracker_map.get(state)
+        if row is None:
+            tracker_failures.append(f"missing {state}")
+            continue
+        if int(row["pass_order"]) != builder.STATE_PASS_ORDER[state]:
+            tracker_failures.append(f"{state} order mismatch")
+    results.append(CheckResult("state pass tracker rows are present and in fixed order", "PASS" if not tracker_failures else "FAIL", "; ".join(tracker_failures[:12])))
+
+    supersede_failures = []
+    for _name, rows, _logical_key_fields in raw_tables_to_check:
+        row_ids = {row["row_id"] for row in rows}
+        for row in rows:
+            if row.get("supersedes_row_id") and row["supersedes_row_id"] not in row_ids:
+                supersede_failures.append(row["supersedes_row_id"])
+    results.append(CheckResult("superseded rows remain present after a change", "PASS" if not supersede_failures else "FAIL", "; ".join(supersede_failures[:10])))
+
+    family_rewrite_failures = []
+    for row in family_rewrite_log:
+        if row.get("rerun_completed") != "yes":
+            continue
+        affected_states = [state.strip() for state in str(row.get("affected_states", "")).split(";") if state.strip()]
+        for state in affected_states:
+            tracker_row = tracker_map.get(state)
+            if tracker_row is None or tracker_row.get("last_completed_pass_index") in ("", None):
+                family_rewrite_failures.append(f"{row['resource_family']} / {state}")
+    results.append(CheckResult("no family rewrite is marked complete unless affected completed states were rerun", "PASS" if not family_rewrite_failures else "FAIL", "; ".join(family_rewrite_failures[:10])))
 
     regional_expected: dict[tuple[str, str], tuple[int, int]] = {}
     vanilla_priors = builder.load_vanilla_priors()

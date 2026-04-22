@@ -1,7 +1,7 @@
 # Public Resource Audit Test Report
 
 - Date: 2026-04-22
-- Passes: 52
+- Passes: 62
 - Fails: 0
 
 ## Checks
@@ -24,8 +24,10 @@
 - **PASS** `target data validation output exists and is populated`: Rows=360
 - **PASS** `validation discount and drive-x rules hold`: 
 - **PASS** `validation notes ship without placeholder language`: 
-- **PASS** `new audit tables exist`: Missing state_regional_advantages.csv or state_review_status.csv
+- **PASS** `new audit tables exist`: Missing one of the tracker/counterfactual/rewrite/state review audit tables.
 - **PASS** `regional advantages and state review status are populated`: advantages=13, review_status=13
+- **PASS** `lifecycle columns exist on maintained evidence tables`: Missing lifecycle fields in: 
+- **PASS** `no maintained logical key has more than one active evidence row`: 
 - **PASS** `arable rows are removed from gdp selection output`: Unexpected arable GDP rows: 0
 - **PASS** `wood rows are removed from gdp selection output`: Unexpected wood GDP rows: 0
 - **PASS** `arable target capacity rows cover all states and land classes`: Rows=78, expected=78
@@ -40,8 +42,10 @@
 - **PASS** `arable basket/live mismatch reporting still works`: Basket logic failures: 
 - **PASS** `overview totals mirror regional_resource_totals.csv`: Mismatches: 
 - **PASS** `major tag changes mirror regional_resource_totals.csv`: Mismatches: 
+- **PASS** `overview progress block mirrors state_pass_tracker.csv`: Mismatches: 
 - **PASS** `state sheets mirror vanilla baselines and audited SB updates`: Mismatches: 
-- **PASS** `live state file sync remains frozen`: Auto-sync disabled; 0 live mismatches are expected during the audit pass.
+- **PASS** `state sheets expose the public Basis column`: Basis issues: 
+- **PASS** `final caps match live state file`: 0 mismatches on accepted synced states.
 - **PASS** `wood uses dedicated effective-forestry denominator path`: Wood path failures: 
 - **PASS** `non-arable benchmark registry and gold-mine denominator path are wired`: 
 - **PASS** `public target observations no longer expose formula-driving wood estate rows`: Wood rows are absent from target_observations.csv
@@ -54,6 +58,12 @@
 - **PASS** `row audit file exists`: row_audit rows=195, final_caps rows=195
 - **PASS** `row audit fields are populated`: Rows missing audit fields: 0
 - **PASS** `hard zeros carry explicit audit support or exception status`: Unsupported hard zeros: 0
+- **PASS** `state counterfactual audit covers the full public workbook surface`: audit_rows=390, expected=390
+- **PASS** `every audited public row has both labels and one driving basis`: 
+- **PASS** `no changed row lacks citations`: 
+- **PASS** `state pass tracker rows are present and in fixed order`: 
+- **PASS** `superseded rows remain present after a change`: 
+- **PASS** `no family rewrite is marked complete unless affected completed states were rerun`: 
 - **PASS** `regional totals match final caps aggregation`: 0 regional mismatches.
 - **PASS** `state delta summary matches final caps aggregation`: 
 - **PASS** `state delta exports exist and mirror final caps`: 

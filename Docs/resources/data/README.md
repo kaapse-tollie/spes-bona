@@ -5,6 +5,7 @@ This folder is split into two surfaces:
 - `raw/`
   - maintained inputs
   - includes both formula-driving tables and supporting source material
+  - maintained evidence rows are append-only during the state-audit loop
 - `derived/`
   - generated output
   - current caps, denominators, delta tables, and model surfaces

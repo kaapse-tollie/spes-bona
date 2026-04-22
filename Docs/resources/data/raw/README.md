@@ -2,6 +2,17 @@
 
 These are the maintained inputs for the public resource package.
 
+Maintained evidence rows now carry lifecycle metadata during the state-audit loop:
+
+- `row_id`
+- `row_status`
+- `supersedes_row_id`
+- `state_pass_index`
+- `changed_on`
+- `change_reason`
+
+The rule is append-only for the maintained evidence tables that drive or constrain public rows. New evidence supersedes old rows; it does not delete them.
+
 ## Formula-driving
 
 - `historical_anchors.csv`

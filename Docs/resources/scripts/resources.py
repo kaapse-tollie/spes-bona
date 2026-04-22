@@ -55,6 +55,99 @@ def cmd_test() -> None:
     print(report)
 
 
+def report_has_failures(report: str) -> bool:
+    return "- Fails: 0" not in report
+
+
+def cmd_state_pass() -> None:
+    builder = load_module("resources_builder", "build_resources_workbook.py")
+    tester = load_module("resources_tester", "test_resources_pipeline.py")
+
+    tracker_rows = builder.load_state_pass_tracker_rows()
+    state = builder.select_next_state_for_pass(tracker_rows)
+    if state is None:
+        print("No unfinished or rerun-required state passes remain.")
+        print("CURRENT_STATE=NONE")
+        print("STATE_PASS_COMPLETE=yes")
+        print("LOOP_COMPLETE=yes")
+        print("NEXT_STATE=NONE")
+        print("FAMILY_REWRITE=no")
+        return
+
+    pass_index = builder.next_state_pass_index(tracker_rows)
+    for row in tracker_rows:
+        if row["state"] != state:
+            continue
+        row["pass_status"] = builder.TRACKER_IN_REVIEW
+        row["summary_note"] = f"{state} pass {pass_index} is in review."
+    builder.write_state_pass_tracker_rows(tracker_rows)
+
+    result = builder.build_public_workbook()
+    report = tester.run_tests()
+    if report_has_failures(report):
+        print(f"Selected {state} for pass {pass_index}, but the pre-sync test run failed.")
+        print(f"CURRENT_STATE={state}")
+        print("STATE_PASS_COMPLETE=no")
+        print("LOOP_COMPLETE=no")
+        print(f"NEXT_STATE={state}")
+        print("FAMILY_REWRITE=no")
+        print(report)
+        raise SystemExit(1)
+
+    state_audit_rows = [
+        row
+        for row in result["counterfactual_audit_rows"]
+        if row["state"] == state
+    ]
+    changed_rows = sum(1 for row in state_audit_rows if row["decision"] != "keep")
+    family_rewrite_rows = [
+        row
+        for row in result["family_rewrite_rows"]
+        if row.get("trigger_state") == state or state in str(row.get("affected_states", "")).split(";")
+    ]
+
+    for row in tracker_rows:
+        if row["state"] != state:
+            continue
+        row["pass_status"] = builder.TRACKER_ACCEPTED
+        row["completed_rows"] = len(state_audit_rows)
+        row["changed_rows"] = changed_rows
+        row["family_rewrites_triggered"] = len(family_rewrite_rows)
+        row["live_synced"] = "yes"
+        row["last_completed_pass_index"] = pass_index
+        row["summary_note"] = (
+            f"Accepted on pass {pass_index}; {changed_rows} of {len(state_audit_rows)} public rows differ from the vanilla baseline."
+        )
+    builder.write_state_pass_tracker_rows(tracker_rows)
+
+    builder.sync_live_state_file(result["final_caps"])
+    synced_result = builder.build_public_workbook()
+    synced_report = tester.run_tests()
+    if report_has_failures(synced_report):
+        print(f"{state} passed the pre-sync test run but failed after live sync on pass {pass_index}.")
+        print(f"CURRENT_STATE={state}")
+        print("STATE_PASS_COMPLETE=no")
+        print("LOOP_COMPLETE=no")
+        print(f"NEXT_STATE={state}")
+        print(f"FAMILY_REWRITE={'yes' if family_rewrite_rows else 'no'}")
+        print(synced_report)
+        raise SystemExit(1)
+
+    refreshed_tracker_rows = builder.load_state_pass_tracker_rows()
+    next_state = builder.select_next_state_for_pass(refreshed_tracker_rows)
+    loop_complete = next_state is None
+
+    print(f"Completed {state} (pass {pass_index}).")
+    print(f"Synced {builder.STATE_FILE}")
+    print(f"Tracked {len(synced_result['counterfactual_audit_rows'])} public state-resource audit rows")
+    print(f"CURRENT_STATE={state}")
+    print("STATE_PASS_COMPLETE=yes")
+    print(f"LOOP_COMPLETE={'yes' if loop_complete else 'no'}")
+    print(f"NEXT_STATE={next_state if next_state is not None else 'NONE'}")
+    print(f"FAMILY_REWRITE={'yes' if family_rewrite_rows else 'no'}")
+    print(synced_report)
+
+
 def cmd_refresh_public_data() -> None:
     exporter = load_module("resources_exporter", "export_public_data.py")
     exporter.main()
@@ -77,6 +170,10 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     subparsers.add_parser("build", help="Rebuild Docs/resources/RESOURCES.xlsx and the derived tables.")
+    subparsers.add_parser(
+        "state-pass",
+        help="Run exactly one state audit pass: rebuild, test, sync live, retest, and update the tracker.",
+    )
     subparsers.add_parser("sync-live", help="Sync audited caps into the live SB state file, then rebuild outputs.")
     subparsers.add_parser("test", help="Run the public audit tests and rewrite the test report.")
     subparsers.add_parser(
@@ -99,6 +196,8 @@ def main() -> None:
     args = parser.parse_args()
     if args.command == "build":
         cmd_build()
+    elif args.command == "state-pass":
+        cmd_state_pass()
     elif args.command == "sync-live":
         cmd_sync_live()
     elif args.command == "test":

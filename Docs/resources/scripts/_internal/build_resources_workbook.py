@@ -19,6 +19,9 @@ REPO = PUBLIC_ROOT.parents[1]
 RAW_DIR = PUBLIC_ROOT / "data/raw"
 DERIVED_DIR = PUBLIC_ROOT / "data/derived"
 AUDIT_DIR = PUBLIC_ROOT / "audit"
+STATE_COUNTERFACTUAL_AUDIT_CSV = AUDIT_DIR / "state_resource_counterfactual_audit.csv"
+STATE_PASS_TRACKER_CSV = AUDIT_DIR / "state_pass_tracker.csv"
+FAMILY_REWRITE_LOG_CSV = AUDIT_DIR / "family_rewrite_log.csv"
 
 RAW_HISTORICAL_CSV = RAW_DIR / "historical_anchors.csv"
 RAW_MODERN_CSV = RAW_DIR / "modern_maxima.csv"
@@ -169,6 +172,82 @@ REGIONS = {
 }
 WORKBOOK_TAG_REGIONS = ["CAP", "TRN", "SAF", "SWA"]
 WORKBOOK_STATE_RESOURCE_ORDER = [("Arable", "Arable Land"), *BINARY_RESOURCES, *NUMERIC_RESOURCES[1:]]
+STATE_PASS_ORDER = {row["official_name"]: idx for idx, row in enumerate(STATE_INFO, start=1)}
+PRIMARY_BELT_BY_STATE = {
+    "Cape Colony": "Mediterranean grain-and-vine core and southern coastal timber belt",
+    "Northern Cape": "Orange-Vaal irrigation corridors and Karoo grazing belt",
+    "Eastern Cape": "Mixed-farming interior and Tsitsikamma-Outeniqua coastal belt",
+    "West Transvaal": "western Highveld and Magaliesberg-Marico interior belt",
+    "Eastern Transvaal": "Mpumalanga escarpment and eastern lowveld belt",
+    "Northern Transvaal": "Limpopo mixed-farming belt and eastern escarpment fringe",
+    "Transorangia": "Free State grain heartland",
+    "Drakensberg": "Lesotho highlands and foothill grain belt",
+    "Botswana": "eastern corridor cereal strip and cattle range",
+    "Lourenço Marques": "Maputo-Gaza littoral and lower Limpopo lowland",
+    "Zambezi": "Eastern Highlands and plateau-centered estate belt",
+    "Hereroland": "Otavi-Grootfontein crop pocket and central plateau",
+    "Namaqualand": "lower Orange irrigation fringe and arid grazing belt",
+}
+
+LIFECYCLE_FIELDNAMES = [
+    "row_id",
+    "row_status",
+    "supersedes_row_id",
+    "state_pass_index",
+    "changed_on",
+    "change_reason",
+]
+LIFECYCLE_ACTIVE_STATUSES = {"", "active"}
+TRACKER_NOT_STARTED = "not started"
+TRACKER_IN_REVIEW = "in review"
+TRACKER_ACCEPTED = "accepted"
+TRACKER_RERUN_REQUIRED = "rerun required"
+TRACKER_VISIBLE_STATUSES = {TRACKER_NOT_STARTED, TRACKER_IN_REVIEW, TRACKER_ACCEPTED}
+COUNTERFACTUAL_AUDIT_FIELDNAMES = [
+    "state",
+    "resource",
+    "row_category",
+    "historical_label",
+    "counterfactual_label",
+    "driving_basis",
+    "current_value",
+    "proposed_value",
+    "decision",
+    "issue_type",
+    "chronology_note",
+    "regional_claim_note",
+    "primary_district_or_belt",
+    "citation_1_title",
+    "citation_1_url",
+    "citation_1_locator",
+    "citation_2_title",
+    "citation_2_url",
+    "citation_2_locator",
+    "state_pass_index",
+    "family_rewrite_triggered",
+    "notes",
+]
+STATE_PASS_TRACKER_FIELDNAMES = [
+    "state",
+    "pass_order",
+    "pass_status",
+    "completed_rows",
+    "changed_rows",
+    "family_rewrites_triggered",
+    "live_synced",
+    "last_completed_pass_index",
+    "summary_note",
+]
+FAMILY_REWRITE_LOG_FIELDNAMES = [
+    "resource_family",
+    "trigger_state",
+    "trigger_resource",
+    "old_rule_summary",
+    "new_rule_summary",
+    "why_rewrite_was_needed",
+    "affected_states",
+    "rerun_completed",
+]
 
 FALLBACK_ANNUAL_GROWTH_RATES = {
     "Fisheries / Marine": 0.0080,
@@ -226,7 +305,13 @@ TARGET_VALIDATION_FIELDS = [
     "localization_discount",
     "validation_note",
 ]
-TARGET_OBSERVATION_RAW_FIELDNAMES = [
+
+
+def with_lifecycle_fieldnames(fieldnames: list[str]) -> list[str]:
+    return [*fieldnames, *LIFECYCLE_FIELDNAMES]
+
+
+TARGET_OBSERVATION_RAW_CORE_FIELDNAMES = [
     "sheet",
     "geography",
     "resource",
@@ -239,6 +324,7 @@ TARGET_OBSERVATION_RAW_FIELDNAMES = [
     "note",
     *TARGET_VALIDATION_FIELDS,
 ]
+TARGET_OBSERVATION_RAW_FIELDNAMES = with_lifecycle_fieldnames(TARGET_OBSERVATION_RAW_CORE_FIELDNAMES)
 TARGET_DATA_VALIDATION_FIELDNAMES = [
     "input_family",
     "source_file",
@@ -278,6 +364,25 @@ STATE_REVIEW_STATUS_FIELDNAMES = [
     "largest_remaining_issue",
     "summary_note",
 ]
+COUNTEREVIDENCE_CASE_CORE_FIELDNAMES = [
+    "state",
+    "resource",
+    "question",
+    "source_a_title",
+    "source_a_url",
+    "source_a_locator",
+    "source_b_title",
+    "source_b_url",
+    "source_b_locator",
+    "result",
+    "decision",
+]
+COUNTEREVIDENCE_CASE_FIELDNAMES = with_lifecycle_fieldnames(COUNTEREVIDENCE_CASE_CORE_FIELDNAMES)
+TARGET_OBSERVATION_LOGICAL_KEY_FIELDS = ["sheet", "geography", "resource", "year", "normalized_quantity", "source_title", "citation_locator"]
+ARABLE_TARGET_CAPACITY_LOGICAL_KEY_FIELDS = ["state", "land_class"]
+WOOD_TARGET_CAPACITY_LOGICAL_KEY_FIELDS = ["state", "land_class"]
+ADJUSTMENT_INPUT_LOGICAL_KEY_FIELDS = ["state", "resource"]
+COUNTEREVIDENCE_LOGICAL_KEY_FIELDS = ["state", "resource", "question"]
 RESEARCH_DIR = REPO.parent / "References/research"
 AGRI_RESEARCH_PATH = RESEARCH_DIR / "agriculture and fisheries research.md"
 COMPARATOR_RESEARCH_PATH = RESEARCH_DIR / "southern_africa_comparator_states_ranked_per_region.md"
@@ -684,6 +789,7 @@ ARABLE_TARGET_CAPACITY_FIELDNAMES = [
     "citation_2_locator",
     *TARGET_VALIDATION_FIELDS,
 ]
+MAINTAINED_ARABLE_TARGET_CAPACITY_FIELDNAMES = with_lifecycle_fieldnames(ARABLE_TARGET_CAPACITY_FIELDNAMES)
 ARABLE_COMPARATOR_CAPACITY_FIELDNAMES = [
     "target_state",
     "comparator_geography",
@@ -898,6 +1004,7 @@ WOOD_TARGET_CAPACITY_FIELDNAMES = [
     "citation_2_locator",
     *TARGET_VALIDATION_FIELDS,
 ]
+MAINTAINED_WOOD_TARGET_CAPACITY_FIELDNAMES = with_lifecycle_fieldnames(WOOD_TARGET_CAPACITY_FIELDNAMES)
 WOOD_COMPARATOR_CAPACITY_FIELDNAMES = [
     "comparator_geography",
     "representative_year",
@@ -1158,6 +1265,172 @@ def ensure_csv_schema(path: Path, fieldnames: list[str], seed_rows: list[dict[st
     write_csv(path, rows, fieldnames)
 
 
+def logical_key_for_row(row: dict[str, Any], logical_key_fields: list[str]) -> tuple[str, ...]:
+    return tuple(str(row.get(field, "")) for field in logical_key_fields)
+
+
+def ensure_append_only_csv(
+    path: Path,
+    fieldnames: list[str],
+    logical_key_fields: list[str],
+    row_id_prefix: str,
+    seed_rows: list[dict[str, Any]] | None = None,
+) -> None:
+    seed_rows = seed_rows or []
+    if not path.exists():
+        rows = seed_rows
+    else:
+        rows = read_csv_rows(path)
+        if not rows and seed_rows:
+            rows = seed_rows
+    migrated_rows: list[dict[str, Any]] = []
+    changed = not path.exists()
+    for idx, row in enumerate(rows, start=1):
+        migrated = {field: row.get(field, "") for field in fieldnames}
+        if not migrated["row_id"]:
+            migrated["row_id"] = f"{row_id_prefix}-{idx:04d}"
+            changed = True
+        if not migrated["row_status"]:
+            migrated["row_status"] = "active"
+            changed = True
+        if migrated["supersedes_row_id"] is None:
+            migrated["supersedes_row_id"] = ""
+            changed = True
+        if migrated["state_pass_index"] in (None, ""):
+            migrated["state_pass_index"] = "0"
+            changed = True
+        if migrated["changed_on"] is None:
+            migrated["changed_on"] = ""
+            changed = True
+        if migrated["change_reason"] in (None, ""):
+            migrated["change_reason"] = "baseline row"
+            changed = True
+        migrated_rows.append(migrated)
+    current_fields = list(rows[0].keys()) if rows else []
+    if current_fields != fieldnames:
+        changed = True
+    if changed:
+        write_csv(path, migrated_rows, fieldnames)
+
+
+def load_append_only_rows(
+    path: Path,
+    fieldnames: list[str],
+    logical_key_fields: list[str],
+    row_id_prefix: str,
+    seed_rows: list[dict[str, Any]] | None = None,
+) -> tuple[list[dict[str, str]], list[dict[str, str]]]:
+    ensure_append_only_csv(path, fieldnames, logical_key_fields, row_id_prefix, seed_rows)
+    all_rows = read_csv_rows(path)
+    active_rows = [row for row in all_rows if str(row.get("row_status", "active")) in LIFECYCLE_ACTIVE_STATUSES]
+    return all_rows, active_rows
+
+
+def seed_state_pass_tracker_rows() -> list[dict[str, Any]]:
+    return [
+        {
+            "state": info["official_name"],
+            "pass_order": STATE_PASS_ORDER[info["official_name"]],
+            "pass_status": TRACKER_NOT_STARTED,
+            "completed_rows": 0,
+            "changed_rows": 0,
+            "family_rewrites_triggered": 0,
+            "live_synced": "no",
+            "last_completed_pass_index": "",
+            "summary_note": "",
+        }
+        for info in STATE_INFO
+    ]
+
+
+def load_state_pass_tracker_rows() -> list[dict[str, Any]]:
+    ensure_csv_schema(STATE_PASS_TRACKER_CSV, STATE_PASS_TRACKER_FIELDNAMES, seed_state_pass_tracker_rows())
+    existing_rows = {row["state"]: row for row in read_csv_rows(STATE_PASS_TRACKER_CSV)}
+    rows: list[dict[str, Any]] = []
+    changed = False
+    for info in STATE_INFO:
+        state = info["official_name"]
+        row = existing_rows.get(state, {})
+        normalized = {
+            "state": state,
+            "pass_order": STATE_PASS_ORDER[state],
+            "pass_status": row.get("pass_status") or TRACKER_NOT_STARTED,
+            "completed_rows": parse_int(row.get("completed_rows")) or 0,
+            "changed_rows": parse_int(row.get("changed_rows")) or 0,
+            "family_rewrites_triggered": parse_int(row.get("family_rewrites_triggered")) or 0,
+            "live_synced": row.get("live_synced") or "no",
+            "last_completed_pass_index": parse_int(row.get("last_completed_pass_index")) or "",
+            "summary_note": row.get("summary_note", ""),
+        }
+        if normalized != row:
+            changed = True
+        rows.append(normalized)
+    if changed:
+        write_csv(STATE_PASS_TRACKER_CSV, rows, STATE_PASS_TRACKER_FIELDNAMES)
+    return rows
+
+
+def write_state_pass_tracker_rows(rows: list[dict[str, Any]]) -> None:
+    sorted_rows = sorted(rows, key=lambda row: int(row["pass_order"]))
+    write_csv(STATE_PASS_TRACKER_CSV, sorted_rows, STATE_PASS_TRACKER_FIELDNAMES)
+
+
+def next_state_pass_index(state_pass_tracker_rows: list[dict[str, Any]]) -> int:
+    completed_indices = [int(row["last_completed_pass_index"]) for row in state_pass_tracker_rows if row["last_completed_pass_index"] not in ("", None)]
+    return (max(completed_indices) if completed_indices else 0) + 1
+
+
+def select_next_state_for_pass(state_pass_tracker_rows: list[dict[str, Any]]) -> str | None:
+    for row in sorted(state_pass_tracker_rows, key=lambda item: int(item["pass_order"])):
+        if row["pass_status"] in {TRACKER_IN_REVIEW, TRACKER_RERUN_REQUIRED, TRACKER_NOT_STARTED}:
+            return str(row["state"])
+    return None
+
+
+def state_pass_index_by_state(state_pass_tracker_rows: list[dict[str, Any]]) -> dict[str, int]:
+    pending_index = next_state_pass_index(state_pass_tracker_rows)
+    result: dict[str, int] = {}
+    for row in state_pass_tracker_rows:
+        state = str(row["state"])
+        if row["last_completed_pass_index"] not in ("", None):
+            result[state] = int(row["last_completed_pass_index"])
+        elif row["pass_status"] in {TRACKER_IN_REVIEW, TRACKER_RERUN_REQUIRED}:
+            result[state] = pending_index
+        else:
+            result[state] = 0
+    return result
+
+
+def tracker_status_for_workbook(status: str) -> str:
+    if status == TRACKER_RERUN_REQUIRED:
+        return TRACKER_IN_REVIEW
+    if status in TRACKER_VISIBLE_STATUSES:
+        return status
+    return TRACKER_NOT_STARTED
+
+
+def ensure_family_rewrite_log_rows() -> list[dict[str, Any]]:
+    ensure_csv_schema(FAMILY_REWRITE_LOG_CSV, FAMILY_REWRITE_LOG_FIELDNAMES, [])
+    return read_csv_rows(FAMILY_REWRITE_LOG_CSV)
+
+
+def family_rewrite_flags_by_state(family_rewrite_rows: list[dict[str, Any]]) -> dict[str, int]:
+    flags = {info["official_name"]: 0 for info in STATE_INFO}
+    for row in family_rewrite_rows:
+        states = {
+            state.strip()
+            for state in str(row.get("affected_states", "")).split(";")
+            if state.strip()
+        }
+        trigger_state = str(row.get("trigger_state", "")).strip()
+        if trigger_state:
+            states.add(trigger_state)
+        for state in states:
+            if state in flags:
+                flags[state] += 1
+    return flags
+
+
 def parse_int(value: Any) -> int | None:
     if value in (None, ""):
         return None
@@ -1407,9 +1680,14 @@ def parse_live_state_resources() -> dict[str, dict[str, Any]]:
 
 def load_raw_data() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     def read_anchor_csv(path: Path, observation_family: str) -> list[dict[str, Any]]:
-        ensure_csv_schema(path, TARGET_OBSERVATION_RAW_FIELDNAMES)
+        _all_rows, active_rows = load_append_only_rows(
+            path,
+            TARGET_OBSERVATION_RAW_FIELDNAMES,
+            TARGET_OBSERVATION_LOGICAL_KEY_FIELDS,
+            f"{observation_family}-anchor",
+        )
         rows: list[dict[str, Any]] = []
-        for row in read_csv_rows(path):
+        for row in active_rows:
             state_info = STATE_INFO_BY_SHEET.get(row["sheet"])
             validation = (
                 normalize_validation_fields(row, OBSERVATION_TARGET_VALIDATION_DEFAULTS_BY_STATE[state_info["official_name"]])
@@ -1432,7 +1710,6 @@ def load_raw_data() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
                     **validation,
                 }
             )
-        write_csv(path, rows, TARGET_OBSERVATION_RAW_FIELDNAMES)
         return rows
 
     return read_anchor_csv(RAW_HISTORICAL_CSV, "historical"), read_anchor_csv(RAW_MODERN_CSV, "modern")
@@ -1618,10 +1895,14 @@ def seed_arable_basket_rows() -> list[dict[str, Any]]:
     return rows
 
 
-def load_arable_baskets() -> dict[str, dict[str, str]]:
+def load_arable_basket_rows() -> list[dict[str, str]]:
     ensure_csv_schema(RAW_ARABLE_BASKETS_CSV, ARABLE_BASKET_FIELDNAMES, seed_arable_basket_rows())
+    return read_csv_rows(RAW_ARABLE_BASKETS_CSV)
+
+
+def load_arable_baskets() -> dict[str, dict[str, str]]:
     baskets: dict[str, dict[str, str]] = {row["official_name"]: {} for row in STATE_INFO}
-    for row in read_csv_rows(RAW_ARABLE_BASKETS_CSV):
+    for row in load_arable_basket_rows():
         if row["state"] not in baskets:
             continue
         baskets[row["state"]][row["resource"]] = row["researched_plausible"]
@@ -1678,9 +1959,15 @@ def seed_arable_target_capacity_rows() -> list[dict[str, Any]]:
 
 
 def load_arable_target_capacity_rows() -> list[dict[str, Any]]:
-    ensure_csv_schema(RAW_ARABLE_TARGET_CAPACITY_CSV, ARABLE_TARGET_CAPACITY_FIELDNAMES, seed_arable_target_capacity_rows())
+    _all_rows, active_rows = load_append_only_rows(
+        RAW_ARABLE_TARGET_CAPACITY_CSV,
+        MAINTAINED_ARABLE_TARGET_CAPACITY_FIELDNAMES,
+        ARABLE_TARGET_CAPACITY_LOGICAL_KEY_FIELDS,
+        "arable-target-capacity",
+        seed_arable_target_capacity_rows(),
+    )
     rows: list[dict[str, Any]] = []
-    for row in read_csv_rows(RAW_ARABLE_TARGET_CAPACITY_CSV):
+    for row in active_rows:
         validation = normalize_validation_fields(row, ARABLE_TARGET_VALIDATION_DEFAULTS_BY_STATE[row["state"]])
         raw_area = parse_float(row["raw_area_ha"]) or 0.0
         effective_weight = parse_float(row["effective_weight"]) or 0.0
@@ -1704,7 +1991,6 @@ def load_arable_target_capacity_rows() -> list[dict[str, Any]]:
                 **validation,
             }
         )
-    write_csv(RAW_ARABLE_TARGET_CAPACITY_CSV, rows, ARABLE_TARGET_CAPACITY_FIELDNAMES)
     return rows
 
 
@@ -1860,9 +2146,15 @@ def seed_wood_target_capacity_rows() -> list[dict[str, Any]]:
 
 
 def load_wood_target_capacity_rows() -> list[dict[str, Any]]:
-    ensure_csv_schema(RAW_WOOD_TARGET_CAPACITY_CSV, WOOD_TARGET_CAPACITY_FIELDNAMES, seed_wood_target_capacity_rows())
+    _all_rows, active_rows = load_append_only_rows(
+        RAW_WOOD_TARGET_CAPACITY_CSV,
+        MAINTAINED_WOOD_TARGET_CAPACITY_FIELDNAMES,
+        WOOD_TARGET_CAPACITY_LOGICAL_KEY_FIELDS,
+        "wood-target-capacity",
+        seed_wood_target_capacity_rows(),
+    )
     rows: list[dict[str, Any]] = []
-    for row in read_csv_rows(RAW_WOOD_TARGET_CAPACITY_CSV):
+    for row in active_rows:
         validation = normalize_validation_fields(row, WOOD_TARGET_VALIDATION_DEFAULTS_BY_STATE[row["state"]])
         raw_area = parse_float(row["raw_area_ha"]) or 0.0
         effective_weight = parse_float(row["effective_weight"]) or 0.0
@@ -1887,7 +2179,6 @@ def load_wood_target_capacity_rows() -> list[dict[str, Any]]:
             }
         )
     _validate_wood_restoration_cap(rows, "state")
-    write_csv(RAW_WOOD_TARGET_CAPACITY_CSV, rows, WOOD_TARGET_CAPACITY_FIELDNAMES)
     return rows
 
 
@@ -2045,7 +2336,13 @@ def load_adjusted_vanilla_totals(vanilla_priors: dict[str, dict[str, Any]]) -> d
 
 def load_counterevidence_cases() -> dict[tuple[str, str], list[dict[str, str]]]:
     cases: dict[tuple[str, str], list[dict[str, str]]] = defaultdict(list)
-    for row in read_csv_rows(RAW_COUNTEREVIDENCE_CSV):
+    _all_rows, active_rows = load_append_only_rows(
+        RAW_COUNTEREVIDENCE_CSV,
+        COUNTEREVIDENCE_CASE_FIELDNAMES,
+        COUNTEREVIDENCE_LOGICAL_KEY_FIELDS,
+        "counterevidence",
+    )
+    for row in active_rows:
         cases[(row["state"], row["resource"])].append(row)
     return dict(cases)
 
@@ -3149,6 +3446,7 @@ ADJUSTMENT_INPUT_FIELDNAMES = [
     "citation_2_locator",
     "calculation_note",
 ]
+MAINTAINED_ADJUSTMENT_INPUT_FIELDNAMES = with_lifecycle_fieldnames(ADJUSTMENT_INPUT_FIELDNAMES)
 
 
 def seed_adjustment_inputs_if_needed(
@@ -3239,11 +3537,22 @@ def seed_adjustment_inputs_if_needed(
                 seeded["y_quantification_method"] = "Difference between audited output target and direct observed output."
                 seeded["calculation_note"] = "Seeded from legacy audited cap as one Y term justified by counterevidence and comparator context."
         seeded_rows.append(seeded)
-    write_csv(RAW_ADJUSTMENT_INPUTS_CSV, seeded_rows, ADJUSTMENT_INPUT_FIELDNAMES)
+    ensure_append_only_csv(
+        RAW_ADJUSTMENT_INPUTS_CSV,
+        MAINTAINED_ADJUSTMENT_INPUT_FIELDNAMES,
+        ADJUSTMENT_INPUT_LOGICAL_KEY_FIELDS,
+        "adjustment-input",
+        seeded_rows,
+    )
 
 
 def load_adjustment_inputs() -> dict[tuple[str, str], dict[str, Any]]:
-    ensure_csv_schema(RAW_ADJUSTMENT_INPUTS_CSV, ADJUSTMENT_INPUT_FIELDNAMES)
+    _all_rows, active_rows = load_append_only_rows(
+        RAW_ADJUSTMENT_INPUTS_CSV,
+        MAINTAINED_ADJUSTMENT_INPUT_FIELDNAMES,
+        ADJUSTMENT_INPUT_LOGICAL_KEY_FIELDS,
+        "adjustment-input",
+    )
     inputs: dict[tuple[str, str], dict[str, Any]] = {}
     wood_capacity_by_state: dict[str, dict[str, Any]] = {}
     for wood_row in load_wood_target_capacity_rows():
@@ -3268,7 +3577,7 @@ def load_adjustment_inputs() -> dict[tuple[str, str], dict[str, Any]]:
             payload["citation_2_title"] = wood_row["citation_2_title"]
             payload["citation_2_url"] = wood_row["citation_2_url"]
             payload["citation_2_locator"] = wood_row["citation_2_locator"]
-    for row in read_csv_rows(RAW_ADJUSTMENT_INPUTS_CSV):
+    for row in active_rows:
         resource = row["resource"]
         parsed = {
             "problem_type": row["problem_type"],
@@ -3867,9 +4176,7 @@ def build_regional_totals(vanilla_totals: dict[str, dict[str, int]], final_caps:
 
 
 def cleanup_legacy_outputs() -> None:
-    for path in OLD_PUBLIC_OUTPUTS:
-        if path.exists():
-            path.unlink()
+    # Supporting and legacy material stays on disk during the stateful audit loop.
     for path in PUBLIC_ROOT.rglob(".DS_Store"):
         path.unlink()
 
@@ -3896,6 +4203,9 @@ def write_public_outputs(
     row_audit_rows: list[dict[str, Any]],
     priority_rows: list[dict[str, Any]],
     state_regional_advantage_rows: list[dict[str, Any]],
+    counterfactual_audit_rows: list[dict[str, Any]],
+    state_pass_tracker_rows: list[dict[str, Any]],
+    family_rewrite_rows: list[dict[str, Any]],
     state_review_status_rows: list[dict[str, Any]],
 ) -> None:
     cleanup_legacy_outputs()
@@ -4330,6 +4640,21 @@ def write_public_outputs(
         REGIONAL_ADVANTAGES_FIELDNAMES,
     )
     write_csv(
+        STATE_COUNTERFACTUAL_AUDIT_CSV,
+        counterfactual_audit_rows,
+        COUNTERFACTUAL_AUDIT_FIELDNAMES,
+    )
+    write_csv(
+        STATE_PASS_TRACKER_CSV,
+        state_pass_tracker_rows,
+        STATE_PASS_TRACKER_FIELDNAMES,
+    )
+    write_csv(
+        FAMILY_REWRITE_LOG_CSV,
+        family_rewrite_rows,
+        FAMILY_REWRITE_LOG_FIELDNAMES,
+    )
+    write_csv(
         AUDIT_DIR / "state_review_status.csv",
         state_review_status_rows,
         STATE_REVIEW_STATUS_FIELDNAMES,
@@ -4506,11 +4831,29 @@ def seed_regional_advantages_rows() -> list[dict[str, Any]]:
     return list(REGIONAL_ADVANTAGE_SEEDS)
 
 
-def build_state_review_status_rows() -> list[dict[str, Any]]:
+def build_state_review_status_rows(state_pass_tracker_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    tracker_map = {row["state"]: row for row in state_pass_tracker_rows}
     rows: list[dict[str, Any]] = []
     for info in STATE_INFO:
         state = info["official_name"]
-        review_status, largest_remaining_issue, summary_note = STATE_REVIEW_STATUS_SEEDS[state]
+        tracker_row = tracker_map[state]
+        seed_status, seed_issue, seed_summary = STATE_REVIEW_STATUS_SEEDS[state]
+        if tracker_row["pass_status"] == TRACKER_ACCEPTED:
+            review_status = TRACKER_ACCEPTED
+            largest_remaining_issue = seed_issue
+            summary_note = tracker_row["summary_note"] or seed_summary
+        elif tracker_row["pass_status"] == TRACKER_IN_REVIEW:
+            review_status = TRACKER_IN_REVIEW
+            largest_remaining_issue = "Current state pass is in review."
+            summary_note = tracker_row["summary_note"] or "The state pass is open and the public workbook is showing an in-review status."
+        elif tracker_row["pass_status"] == TRACKER_RERUN_REQUIRED:
+            review_status = TRACKER_IN_REVIEW
+            largest_remaining_issue = "A family rewrite requires this state to be rerun before acceptance."
+            summary_note = tracker_row["summary_note"] or "A family contradiction forced a rerun requirement for this state."
+        else:
+            review_status = TRACKER_NOT_STARTED
+            largest_remaining_issue = "Counterfactual audit pass has not started."
+            summary_note = tracker_row["summary_note"] or "State is still waiting for its scheduled state pass."
         rows.append(
             {
                 "state": state,
@@ -4597,6 +4940,245 @@ def binary_change_label(vanilla_value: str, sb_value: str) -> str:
     return "Changed"
 
 
+def visible_basis_label(driving_basis: str) -> str:
+    return {
+        "historical": "Historical",
+        "counterfactual": "Counterfactual",
+        "exception": "Exception",
+        "unchanged_baseline": "Unchanged",
+    }.get(driving_basis, "Unchanged")
+
+
+def distinct_join(values: list[str], fallback: str) -> str:
+    seen: list[str] = []
+    for value in values:
+        text = str(value or "").strip()
+        if text and text not in seen:
+            seen.append(text)
+    return " | ".join(seen) if seen else fallback
+
+
+def build_capacity_validation_summary(
+    arable_target_capacity_rows: list[dict[str, Any]],
+    wood_target_capacity_rows: list[dict[str, Any]],
+) -> dict[tuple[str, str], dict[str, Any]]:
+    summary: dict[tuple[str, str], dict[str, Any]] = {}
+    for resource, rows in [("Arable Land", arable_target_capacity_rows), ("Wood", wood_target_capacity_rows)]:
+        for row in rows:
+            key = (row["state"], resource)
+            payload = summary.setdefault(
+                key,
+                {
+                    "bounded_proxy": False,
+                    "broad_potential_only": False,
+                    "state_localized": True,
+                    "validation_notes": [],
+                    "citation_1_title": "",
+                    "citation_1_url": "",
+                    "citation_1_locator": "",
+                    "citation_2_title": "",
+                    "citation_2_url": "",
+                    "citation_2_locator": "",
+                },
+            )
+            if row.get("evidence_scope") != "state_localized" or float(row.get("localization_discount") or 0) < 0.999999:
+                payload["bounded_proxy"] = True
+                payload["state_localized"] = False
+            if row.get("slot_support_status") == "broad_potential_only":
+                payload["broad_potential_only"] = True
+            if row.get("validation_note"):
+                payload["validation_notes"].append(str(row["validation_note"]))
+            if not payload["citation_1_title"]:
+                payload["citation_1_title"] = row.get("citation_1_title", "")
+                payload["citation_1_url"] = row.get("citation_1_url", "")
+                payload["citation_1_locator"] = row.get("citation_1_locator", "")
+            if not payload["citation_2_title"]:
+                payload["citation_2_title"] = row.get("citation_2_title", "")
+                payload["citation_2_url"] = row.get("citation_2_url", "")
+                payload["citation_2_locator"] = row.get("citation_2_locator", "")
+    return summary
+
+
+def build_state_resource_counterfactual_audit_rows(
+    resource_adjustment_rows: list[dict[str, Any]],
+    arable_resource_expectation_rows: list[dict[str, Any]],
+    arable_basket_rows: list[dict[str, Any]],
+    vanilla_priors: dict[str, dict[str, Any]],
+    state_pass_tracker_rows: list[dict[str, Any]],
+    family_rewrite_rows: list[dict[str, Any]],
+    arable_target_capacity_rows: list[dict[str, Any]],
+    wood_target_capacity_rows: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    adjustment_map = {(row["state"], row["resource"]): row for row in resource_adjustment_rows}
+    expectation_map = {(row["state"], row["resource"]): row for row in arable_resource_expectation_rows}
+    basket_map = {(row["state"], row["resource"]): row for row in arable_basket_rows}
+    pass_index_map = state_pass_index_by_state(state_pass_tracker_rows)
+    family_flags = family_rewrite_flags_by_state(family_rewrite_rows)
+    capacity_summary = build_capacity_validation_summary(arable_target_capacity_rows, wood_target_capacity_rows)
+    category_map = {resource: humanize_label(category) for category, resource in WORKBOOK_STATE_RESOURCE_ORDER}
+    rows: list[dict[str, Any]] = []
+
+    for state_info in STATE_INFO:
+        state = state_info["official_name"]
+        for category, resource in WORKBOOK_STATE_RESOURCE_ORDER:
+            base_row = {
+                "state": state,
+                "resource": resource,
+                "row_category": humanize_label(category),
+                "state_pass_index": pass_index_map[state],
+                "family_rewrite_triggered": "yes" if family_flags.get(state, 0) else "no",
+                "primary_district_or_belt": PRIMARY_BELT_BY_STATE[state],
+            }
+            if category == "Arable Resource":
+                expectation = expectation_map[(state, resource)]
+                basket_row = basket_map.get((state, resource), {})
+                current_value = str(vanilla_priors[state].get(resource, "no")).lower()
+                proposed_value = str(expectation["researched_plausible"]).lower()
+                rows.append(
+                    {
+                        **base_row,
+                        "historical_label": "direct_historical_support" if proposed_value == "yes" else "no_material_historical_support",
+                        "counterfactual_label": (
+                            "rejected_counterfactual"
+                            if current_value == "yes" and proposed_value == "no"
+                            else "not_needed"
+                        ),
+                        "driving_basis": "historical" if current_value != proposed_value else "unchanged_baseline",
+                        "current_value": current_value,
+                        "proposed_value": proposed_value,
+                        "decision": "flip_yes_no" if current_value != proposed_value else "keep",
+                        "issue_type": expectation["basket_membership_status"],
+                        "chronology_note": "Gameplay crop availability is reviewed against the 1836-1936 state basket rather than a single-year output series.",
+                        "regional_claim_note": (
+                            "No broader regional claim is driving the row; the reviewed crop basket is state-specific."
+                            if proposed_value == "yes"
+                            else "Broader climatic or neighboring analogies are not treated as local support when the reviewed basket excludes the crop."
+                        ),
+                        "citation_1_title": basket_row.get("citation_1_title", ""),
+                        "citation_1_url": basket_row.get("citation_1_url", ""),
+                        "citation_1_locator": basket_row.get("citation_1_locator", ""),
+                        "citation_2_title": basket_row.get("citation_2_title", ""),
+                        "citation_2_url": basket_row.get("citation_2_url", ""),
+                        "citation_2_locator": basket_row.get("citation_2_locator", ""),
+                        "notes": basket_row.get("basket_reason") or expectation["gameplay_note"],
+                    }
+                )
+                continue
+
+            adjustment = adjustment_map[(state, resource)]
+            current_value = int(float(adjustment["vanilla_cap"]))
+            proposed_value = int(float(adjustment["final_audited_cap"]))
+            summary = capacity_summary.get((state, resource), {})
+            note_texts = [
+                str(adjustment.get("adjustment_reason", "")),
+                str(adjustment.get("selection_note", "")),
+                str(adjustment.get("counterevidence_note", "")),
+                distinct_join(summary.get("validation_notes", []), ""),
+            ]
+            bounded_proxy = bool(summary.get("bounded_proxy")) or any(
+                token in " ".join(note_texts).lower()
+                for token in ["bounded", "proxy", "fallback", "not a whole", "whole-zimbabwe", "whole-mozambique"]
+            )
+            broad_potential_only = bool(summary.get("broad_potential_only"))
+            exception_status = str(adjustment.get("exception_status", ""))
+
+            if exception_status or adjustment["status"] in {"explicit exception", "constrained zero", "review required"}:
+                historical_label = "indirect_historical_support" if adjustment.get("citation_1_title") else "no_material_historical_support"
+                counterfactual_label = "rejected_counterfactual" if proposed_value == 0 else "not_needed"
+                driving_basis = "exception"
+            elif broad_potential_only and proposed_value == 0:
+                historical_label = "indirect_historical_support"
+                counterfactual_label = "rejected_counterfactual"
+                driving_basis = "exception"
+            elif bounded_proxy:
+                historical_label = "indirect_historical_support"
+                counterfactual_label = "bounded_counterfactual"
+                driving_basis = "counterfactual"
+            else:
+                historical_label = "direct_historical_support"
+                counterfactual_label = "not_needed"
+                driving_basis = "historical" if current_value != proposed_value else "unchanged_baseline"
+
+            if current_value == proposed_value and driving_basis == "historical":
+                driving_basis = "unchanged_baseline"
+
+            if exception_status and current_value != proposed_value and proposed_value == 0:
+                decision = "convert_to_exception"
+            elif current_value < proposed_value:
+                decision = "raise"
+            elif current_value > proposed_value:
+                decision = "lower"
+            else:
+                decision = "keep"
+
+            notes = distinct_join(
+                [
+                    str(adjustment.get("adjustment_reason", "")),
+                    str(adjustment.get("calculation_note", "")),
+                    str(adjustment.get("counterevidence_note", "")),
+                ],
+                adjustment.get("status", ""),
+            )
+            regional_claim_note = (
+                distinct_join(summary.get("validation_notes", []), "Bounded regional evidence is not required for this row.")
+                if bounded_proxy
+                else (
+                    distinct_join(summary.get("validation_notes", []), "No broader regional claim is driving the row; the accepted evidence is treated as state-localized.")
+                    if summary
+                    else adjustment.get("counterevidence_note")
+                    or adjustment.get("selection_note")
+                    or "No broader regional claim is driving the row."
+                )
+            )
+            chronology_note = adjustment.get("year_selection_reason") or "Representative year is audit metadata only for this public row."
+            citation_1_title = adjustment.get("citation_1_title") or summary.get("citation_1_title", "")
+            citation_1_url = adjustment.get("citation_1_url") or summary.get("citation_1_url", "")
+            citation_1_locator = adjustment.get("citation_1_locator") or summary.get("citation_1_locator", "")
+            citation_2_title = adjustment.get("citation_2_title") or summary.get("citation_2_title", "")
+            citation_2_url = adjustment.get("citation_2_url") or summary.get("citation_2_url", "")
+            citation_2_locator = adjustment.get("citation_2_locator") or summary.get("citation_2_locator", "")
+
+            rows.append(
+                {
+                    **base_row,
+                    "historical_label": historical_label,
+                    "counterfactual_label": counterfactual_label,
+                    "driving_basis": driving_basis,
+                    "current_value": current_value,
+                    "proposed_value": proposed_value,
+                    "decision": decision,
+                    "issue_type": adjustment.get("problem_type") or adjustment.get("status"),
+                    "chronology_note": chronology_note,
+                    "regional_claim_note": regional_claim_note,
+                    "citation_1_title": citation_1_title,
+                    "citation_1_url": citation_1_url,
+                    "citation_1_locator": citation_1_locator,
+                    "citation_2_title": citation_2_title,
+                    "citation_2_url": citation_2_url,
+                    "citation_2_locator": citation_2_locator,
+                    "notes": notes,
+                }
+            )
+
+    rows.sort(key=lambda row: (STATE_PASS_ORDER[row["state"]], list(category_map).index(row["resource"]) if row["resource"] in category_map else 999))
+    return rows
+
+
+def build_state_pass_progress_rows(state_pass_tracker_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    rows = []
+    for tracker_row in sorted(state_pass_tracker_rows, key=lambda row: int(row["pass_order"])):
+        rows.append(
+            {
+                "state": tracker_row["state"],
+                "pass_order": tracker_row["pass_order"],
+                "status": tracker_status_for_workbook(str(tracker_row["pass_status"])),
+                "completed_rows": tracker_row["completed_rows"],
+                "changed_rows": tracker_row["changed_rows"],
+            }
+        )
+    return rows
+
+
 def build_overview_resource_rows(regional_total_rows: list[dict[str, Any]], region: str) -> list[dict[str, Any]]:
     resource_order = {resource: idx for idx, resource in enumerate(SUMMARY_RESOURCES)}
     rows = [
@@ -4635,9 +5217,11 @@ def build_state_sheet_rows(
     resource_adjustment_rows: list[dict[str, Any]],
     arable_resource_expectation_rows: list[dict[str, Any]],
     vanilla_priors: dict[str, dict[str, Any]],
+    counterfactual_audit_rows: list[dict[str, Any]],
 ) -> dict[str, list[dict[str, Any]]]:
     adjustment_map = {(row["state"], row["resource"]): row for row in resource_adjustment_rows}
     expectation_map = {(row["state"], row["resource"]): row for row in arable_resource_expectation_rows}
+    audit_map = {(row["state"], row["resource"]): row for row in counterfactual_audit_rows}
     rows_by_state: dict[str, list[dict[str, Any]]] = {}
     for info in STATE_INFO:
         state = info["official_name"]
@@ -4653,6 +5237,7 @@ def build_state_sheet_rows(
                         "resource": resource,
                         "vanilla_baseline": vanilla_value,
                         "sb_update": sb_value,
+                        "basis": visible_basis_label(audit_map[(state, resource)]["driving_basis"]),
                         "delta_or_change": binary_change_label(vanilla_value, sb_value),
                     }
                 )
@@ -4666,6 +5251,7 @@ def build_state_sheet_rows(
                     "resource": resource,
                     "vanilla_baseline": vanilla_cap,
                     "sb_update": final_cap,
+                    "basis": visible_basis_label(audit_map[(state, resource)]["driving_basis"]),
                     "delta_or_change": final_cap - vanilla_cap,
                 }
             )
@@ -4678,7 +5264,8 @@ def build_workbook(
     regional_total_rows: list[dict[str, Any]],
     arable_resource_expectation_rows: list[dict[str, Any]],
     vanilla_priors: dict[str, dict[str, Any]],
-    state_review_status_rows: list[dict[str, Any]],
+    state_pass_tracker_rows: list[dict[str, Any]],
+    counterfactual_audit_rows: list[dict[str, Any]],
 ) -> Workbook:
     wb = Workbook()
     overview = wb.active
@@ -4686,9 +5273,15 @@ def build_workbook(
 
     state_summary_rows = build_state_summary_rows(resource_adjustment_rows)
     state_summary_map = {row["state"]: row for row in state_summary_rows}
-    state_sheet_rows = build_state_sheet_rows(resource_adjustment_rows, arable_resource_expectation_rows, vanilla_priors)
+    state_sheet_rows = build_state_sheet_rows(
+        resource_adjustment_rows,
+        arable_resource_expectation_rows,
+        vanilla_priors,
+        counterfactual_audit_rows,
+    )
     sb_scope_rows = build_overview_resource_rows(regional_total_rows, "SB Scope")
     tag_rows = build_workbook_tag_rows(regional_total_rows)
+    state_progress_rows = build_state_pass_progress_rows(state_pass_tracker_rows)
 
     overview.merge_cells(start_row=1, start_column=1, end_row=1, end_column=5)
     overview["A1"] = "SB scope - vanilla baseline and proposed SB update"
@@ -4698,7 +5291,8 @@ def build_workbook(
     overview.merge_cells(start_row=2, start_column=1, end_row=2, end_column=5)
     overview["A2"] = (
         "Vanilla baseline is compared against the audited SB update. "
-        "Tags: CAP = Cape states, TRN = Transvaal states, SAF = South African states, SWA = Namibian states."
+        "Tags: CAP = Cape states, TRN = Transvaal states, SAF = South African states, SWA = Namibian states. "
+        "The progress block tracks the one-state-per-run counterfactual audit loop."
     )
     overview["A2"].alignment = Alignment(wrap_text=True)
     row = 4
@@ -4710,7 +5304,7 @@ def build_workbook(
         sb_scope_rows,
         ["resource", "vanilla_baseline", "sb_update", "delta_vs_vanilla"],
     )
-    add_table(
+    row = add_table(
         overview,
         row,
         "Major tag changes",
@@ -4718,25 +5312,33 @@ def build_workbook(
         tag_rows,
         ["tag", "resource", "vanilla_baseline", "sb_update", "delta_vs_vanilla"],
     )
+    row = add_table(
+        overview,
+        row,
+        "State pass progress",
+        ["State", "Pass order", "Status", "Completed rows", "Changed rows"],
+        state_progress_rows,
+        ["state", "pass_order", "status", "completed_rows", "changed_rows"],
+    )
     overview.freeze_panes = "A6"
 
     for info in STATE_INFO:
         state = info["official_name"]
         ws = wb.create_sheet(state)
         summary = state_summary_map[state]
-        ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=5)
+        ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=6)
         ws["A1"] = f"{state} - vanilla baseline and proposed SB update"
         ws["A1"].font = Font(size=16, bold=True, color="FFFFFF")
         ws["A1"].fill = TITLE_FILL
         ws["A1"].alignment = Alignment(horizontal="left", vertical="center")
-        ws.merge_cells(start_row=2, start_column=1, end_row=2, end_column=5)
+        ws.merge_cells(start_row=2, start_column=1, end_row=2, end_column=6)
         ws["A2"] = (
             f"SB target mapping: {state} -> {info['state_id']} | "
             f"Vanilla proxy: {info['vanilla_proxy_name']} -> {info['vanilla_proxy_id']}"
         )
         ws["A2"].alignment = Alignment(wrap_text=True)
-        ws.merge_cells(start_row=3, start_column=1, end_row=3, end_column=5)
-        ws["A3"] = "Final column shows the proposed SB update. Arable-resource rows are yes/no gameplay availability, while capped rows are numeric caps."
+        ws.merge_cells(start_row=3, start_column=1, end_row=3, end_column=6)
+        ws["A3"] = "The SB update column shows the audited value and the Basis column shows whether that row is historical, counterfactual, an exception, or unchanged."
         ws["A3"].alignment = Alignment(wrap_text=True)
         row = 5
         row = add_key_value_block(
@@ -4754,9 +5356,9 @@ def build_workbook(
             ws,
             table_start,
             "Resource rows",
-            ["Category", "Resource", "Vanilla baseline", "SB update", "Delta / change"],
+            ["Category", "Resource", "Vanilla baseline", "SB update", "Basis", "Delta / change"],
             state_sheet_rows[state],
-            ["category", "resource", "vanilla_baseline", "sb_update", "delta_or_change"],
+            ["category", "resource", "vanilla_baseline", "sb_update", "basis", "delta_or_change"],
         )
         ws.freeze_panes = f"A{table_start + 2}"
 
@@ -4819,6 +5421,8 @@ def build_public_workbook() -> dict[str, Any]:
     gdp_reference = load_gdp_reference_anchor()
     gdp_series = load_gdp_series()
     gdp_map = load_gdp_geography_map()
+    state_pass_tracker_rows = load_state_pass_tracker_rows()
+    family_rewrite_rows = ensure_family_rewrite_log_rows()
     target_observations = enrich_observation_rows(historical_rows + modern_rows, include_target=True, growth_index_lookup=growth_index_lookup)
     comparator_observations = enrich_observation_rows(historical_rows + modern_rows, include_target=False, growth_index_lookup=growth_index_lookup)
     selected_target_rows, target_gdp_selection_rows = select_observation_rows(target_observations, "target_state", gdp_reference, gdp_series, gdp_map)
@@ -4832,6 +5436,7 @@ def build_public_workbook() -> dict[str, Any]:
     family_normalising_constants = load_family_normalising_constants()
     live_values = parse_live_state_resources()
     vanilla_priors = load_vanilla_priors()
+    arable_basket_rows = load_arable_basket_rows()
     arable_baskets = load_arable_baskets()
     _arable_land_weights = load_arable_land_class_weights()
     _wood_land_weights = load_wood_land_class_weights()
@@ -4849,7 +5454,6 @@ def build_public_workbook() -> dict[str, Any]:
         wood_target_capacity_rows,
     )
     state_regional_advantage_rows = seed_regional_advantages_rows()
-    state_review_status_rows = build_state_review_status_rows()
     mining_comparator_rows, mining_gdp_selection_rows = compute_mining_comparator_rows(load_benchmark_cases(), growth_index_lookup, gdp_reference, gdp_series, gdp_map)
     wood_state_payloads = compute_wood_state_payloads(wood_target_capacity_rows)
     wood_denominator_row, wood_comparator_summary_rows = compute_wood_denominator(wood_comparator_capacity_rows)
@@ -4884,6 +5488,17 @@ def build_public_workbook() -> dict[str, Any]:
     regional_total_rows = build_regional_totals(vanilla_totals, final_caps)
     priority_rows = compute_priority_rows(resource_adjustment_rows)
     row_audit_rows = build_row_audit_rows(resource_adjustment_rows, build_selected_target_map(selected_target_rows), counterevidence_cases, family_normalising_constants)
+    counterfactual_audit_rows = build_state_resource_counterfactual_audit_rows(
+        resource_adjustment_rows,
+        arable_resource_expectation_rows,
+        arable_basket_rows,
+        vanilla_priors,
+        state_pass_tracker_rows,
+        family_rewrite_rows,
+        arable_target_capacity_rows,
+        wood_target_capacity_rows,
+    )
+    state_review_status_rows = build_state_review_status_rows(state_pass_tracker_rows)
     capacity_model_resources = {resource for category, resource in BINARY_RESOURCES if category == "Arable Resource"} | {"Arable Land", "Wood"}
     target_gdp_selection_rows = [row for row in target_gdp_selection_rows if row["resource"] not in capacity_model_resources]
     comparator_gdp_selection_rows = [row for row in comparator_gdp_selection_rows if row["resource"] not in capacity_model_resources]
@@ -4900,7 +5515,8 @@ def build_public_workbook() -> dict[str, Any]:
         regional_total_rows,
         arable_resource_expectation_rows,
         vanilla_priors,
-        state_review_status_rows,
+        state_pass_tracker_rows,
+        counterfactual_audit_rows,
     )
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     workbook.save(OUTPUT)
@@ -4926,6 +5542,9 @@ def build_public_workbook() -> dict[str, Any]:
         row_audit_rows,
         priority_rows,
         state_regional_advantage_rows,
+        counterfactual_audit_rows,
+        state_pass_tracker_rows,
+        family_rewrite_rows,
         state_review_status_rows,
     )
     return {
@@ -4949,8 +5568,11 @@ def build_public_workbook() -> dict[str, Any]:
         "regional_total_rows": regional_total_rows,
         "audit_rows": audit_rows,
         "row_audit_rows": row_audit_rows,
+        "counterfactual_audit_rows": counterfactual_audit_rows,
         "priority_rows": priority_rows,
         "state_regional_advantage_rows": state_regional_advantage_rows,
+        "state_pass_tracker_rows": state_pass_tracker_rows,
+        "family_rewrite_rows": family_rewrite_rows,
         "state_review_status_rows": state_review_status_rows,
         "final_caps": final_caps,
         "sync_live": SYNC_LIVE_ON_BUILD,

@@ -6,8 +6,14 @@ This folder contains generated review surfaces.
 
 - `target_data_validation.csv`
   - provenance and bounded-fallback check for every formula-driving target input
+- `state_resource_counterfactual_audit.csv`
+  - one row per public state-resource row with historical/counterfactual labels, basis, and pass index
+- `state_pass_tracker.csv`
+  - fixed-order progress tracker for the one-state-per-run audit loop
+- `family_rewrite_log.csv`
+  - family contradictions that force already-completed states to rerun
 - `row_audit.csv`
-  - row-level reasoning trail
+  - legacy row-level reasoning trail retained as a supporting review surface during the loop
 - `adjustments.csv`
   - public `X + Y - Z` ledger
 - `priority_rows.csv`
