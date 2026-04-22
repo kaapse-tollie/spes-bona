@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This document is the full public protocol for the Southern Africa resource rework used by *Spes Bona - A Southern Africa Flavour Pack*.
+This document describribe the Southern Africa resource rework used by *Spes Bona - A Southern Africa Flavour Pack*.
 
 It is meant to stand on its own. A third party reading only this file, the maintained raw tables, and the generated workbook should be able to answer:
 
@@ -13,22 +13,16 @@ It is meant to stand on its own. A third party reading only this file, the maint
 5. how evidence quality is handled
 6. what is still formula-driven versus explicit policy
 
-The readable output surface is [RESOURCES.xlsx](/Users/depro/Documents/Paradox%20Interactive/Victoria%203/mod/Spes%20Bona%20-%20A%20Southern%20Africa%20Flavour%20Pack/Docs/resources/RESOURCES.xlsx). The machine-readable outputs are in [data/derived](/Users/depro/Documents/Paradox%20Interactive/Victoria%203/mod/Spes%20Bona%20-%20A%20Southern%20Africa%20Flavour%20Pack/Docs/resources/data/derived/README.md).
+To see the changes please consult: [RESOURCES.xlsx](/Users/depro/Documents/Paradox%20Interactive/Victoria%203/mod/Spes%20Bona%20-%20A%20Southern%20Africa%20Flavour%20Pack/Docs/resources/RESOURCES.xlsx). Machine-readable outputs can be found in [data/derived](/Users/depro/Documents/Paradox%20Interactive/Victoria%203/mod/Spes%20Bona%20-%20A%20Southern%20Africa%20Flavour%20Pack/Docs/resources/data/derived/README.md).
 
 ## Why
+We chose to rework the resources for three reasons:
 
-The rework exists because vanilla resource values stop behaving coherently once Southern Africa is split into smaller SB state scopes.
+1. SB introduces smaller states and the resources aren't clearly dividable
+2. Vanilla's resources often under or overestimate potential development, e.g. gold and coal respectively
+3. Notable historical resource industries are missing like lead.
 
-The main problems are:
-
-1. Vanilla caps are often assigned to a much larger undivided state than the SB target scope.
-2. Vanilla frequently reflects realized development rather than plausible regional potential.
-3. Different resource families need different models.
-   Land-capacity families do not behave like mining or fishery output families.
-4. Split-state allocation matters.
-   A macro-Transvaal or macro-Cape number can look reasonable at the vanilla scale while becoming internally inconsistent once it is divided into west/east/north or coast/interior subregions.
-
-The goal of the package is therefore not to preserve vanilla totals mechanically. The goal is to produce a coherent SB-state resource map with clear evidence rules and clear formulas.
+The goal of the package is therefore NOT to preserve vanilla totals mechanically. The goal is to produce a coherent SB-state resource map with clear evidence rules and clear formulas.
 
 ## Methodology
 
