@@ -248,7 +248,7 @@ Totals: vanilla `153`, live `34`, audited `34`, delta vs vanilla `-119`, delta v
 
 ## West Transvaal
 
-Totals: vanilla `231`, live `116`, audited `116`, delta vs vanilla `-115`, delta vs live `0`.
+Totals: vanilla `231`, live `113`, audited `113`, delta vs vanilla `-118`, delta vs live `0`.
 
 | Resource | Vanilla | Live | Audited | Delta vs vanilla | Delta vs live | Status |
 |---|---:|---:|---:|---:|---:|---|
@@ -257,7 +257,7 @@ Totals: vanilla `231`, live `116`, audited `116`, delta vs vanilla `-115`, delta
 | Fishing | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Gold Mine | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Iron Mine | 60 | 0 | 0 | -60 | 0 | explicit exception |
-| Lead Mine | 0 | 3 | 3 | 3 | 0 | formula-driven |
+| Lead Mine | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Sulfur Mine | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Whaling | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Wood | 5 | 0 | 0 | -5 | 0 | explicit exception |

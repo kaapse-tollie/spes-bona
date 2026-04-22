@@ -21,7 +21,7 @@
 - **PASS** `derived data README classifies outputs`: README classification text missing.
 - **PASS** `no .DS_Store files remain under Docs/resources`: 
 - **PASS** `formula-driving raw files expose validation columns`: Missing validation columns in: 
-- **PASS** `target data validation output exists and is populated`: Rows=360
+- **PASS** `target data validation output exists and is populated`: Rows=359
 - **PASS** `validation discount and drive-x rules hold`: 
 - **PASS** `validation notes ship without placeholder language`: 
 - **PASS** `new audit tables exist`: Missing one of the tracker/counterfactual/rewrite/state review audit tables.
