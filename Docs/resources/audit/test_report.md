@@ -1,7 +1,7 @@
 # Public Resource Audit Test Report
 
 - Date: 2026-04-22
-- Passes: 63
+- Passes: 75
 - Fails: 0
 
 ## Checks
@@ -9,8 +9,12 @@
 - **PASS** `public cli entrypoint exists`: Expected /Users/depro/Documents/Paradox Interactive/Victoria 3/mod/Spes Bona - A Southern Africa Flavour Pack/Docs/resources/scripts/resources.py
 - **PASS** `new arable raw files exist`: Expected land-class, target-capacity, and comparator-capacity raw files.
 - **PASS** `new wood raw files exist`: Expected wood land-class, target-capacity, and comparator-capacity raw files.
+- **PASS** `new rubber raw files exist`: Expected rubber land-class, target-capacity, and comparator-capacity raw files.
 - **PASS** `non-arable benchmark registry exists`: Expected non_arable_benchmark_cases.csv to be the authoritative non-land comparator registry.
 - **PASS** `readme follows the explanatory paper-style structure`: Missing README terms: 
+- **PASS** `readme no longer carries v2 drift language or the old GDP anchor`: Unexpected README text: 
+- **PASS** `frozen GDP anchor is GBR 1940`: 
+- **PASS** `universal quantity-resource Z formula matches the locked chronology calibration`: 
 - **PASS** `overview plus one sheet per SB state`: Visible sheets: ['Overview', 'Cape Colony', 'Northern Cape', 'Eastern Cape', 'West Transvaal', 'Eastern Transvaal', 'Northern Transvaal', 'Transorangia', 'Drakensberg', 'Botswana', 'Lourenço Marques', 'Zambezi', 'Hereroland', 'Namaqualand']
 - **PASS** `overview sheet sections`: Missing sections: 
 - **PASS** `each state sheet has totals and resource table sections`: Missing sections on: 
@@ -21,22 +25,28 @@
 - **PASS** `derived data README classifies outputs`: README classification text missing.
 - **PASS** `no .DS_Store files remain under Docs/resources`: 
 - **PASS** `formula-driving raw files expose validation columns`: Missing validation columns in: 
-- **PASS** `target data validation output exists and is populated`: Rows=359
+- **PASS** `target data validation output exists and is populated`: Rows=415
 - **PASS** `validation discount and drive-x rules hold`: 
 - **PASS** `validation notes ship without placeholder language`: 
 - **PASS** `new audit tables exist`: Missing one of the tracker/counterfactual/rewrite/state review audit tables.
 - **PASS** `regional advantages and state review status are populated`: advantages=13, review_status=13
 - **PASS** `lifecycle columns exist on maintained evidence tables`: Missing lifecycle fields in: 
 - **PASS** `no maintained logical key has more than one active evidence row`: 
+- **PASS** `quantity-resource chronology moderation rows set both commercial years together`: 
+- **PASS** `integer cap conversion now uses ceil with active floors preserved`: 
 - **PASS** `arable rows are removed from gdp selection output`: Unexpected arable GDP rows: 0
 - **PASS** `wood rows are removed from gdp selection output`: Unexpected wood GDP rows: 0
+- **PASS** `latent-rubber rows are removed from gdp selection output`: Unexpected rubber GDP rows: 0
 - **PASS** `arable target capacity rows cover all states and land classes`: Rows=78, expected=78
 - **PASS** `arable comparator capacity rows are populated`: Rows=672
 - **PASS** `wood target capacity rows cover all states and land classes`: Rows=78, expected=78
 - **PASS** `wood comparator capacity rows are populated`: Rows=120
+- **PASS** `rubber target capacity rows cover all states and land classes`: Rows=52, expected=52
+- **PASS** `rubber comparator capacity rows are populated`: Rows=80
 - **PASS** `shared arable denominator matches simple mean of state means`: shared=55846.153846153844, expected=55846.153846153844
 - **PASS** `all arable rows use the shared land-capacity denominator`: States with non-shared arable denominator: 
 - **PASS** `arable rows use direct land-capacity X with no GDP fields or legacy Y/Z`: 
+- **PASS** `hectare families bypass the universal quantity-resource Z rule`: 
 - **PASS** `arable spot-check outcomes are playable and directionally plausible`: 
 - **PASS** `arable resource expectations are now a gameplay audit surface`: Missing fields: 
 - **PASS** `arable basket/live expectations reflect the synced gameplay state`: Basket logic failures: 
@@ -45,8 +55,8 @@
 - **PASS** `overview progress block mirrors state_pass_tracker.csv`: Mismatches: 
 - **PASS** `state sheets mirror vanilla baselines and audited SB updates`: Mismatches: 
 - **PASS** `state sheets expose the public Basis column`: Basis issues: 
-- **PASS** `final caps match live state file`: 0 mismatches on accepted synced states.
-- **PASS** `accepted synced states match live arable resources`: 
+- **PASS** `live state file sync remains frozen`: Auto-sync disabled; 18 live mismatches are expected during the audit pass.
+- **PASS** `accepted synced states match live arable resources`: No accepted synced states yet.
 - **PASS** `wood uses dedicated effective-forestry denominator path`: Wood path failures: 
 - **PASS** `non-arable benchmark registry and gold-mine denominator path are wired`: 
 - **PASS** `public target observations no longer expose formula-driving wood estate rows`: Wood rows are absent from target_observations.csv
@@ -54,7 +64,8 @@
 - **PASS** `wood rows use the land-capacity contract with no GDP metadata`: 
 - **PASS** `wood restoration allowance never exceeds the 50 percent cap`: Cap failures: 
 - **PASS** `wood spot-check outcomes are directionally plausible`: 
-- **PASS** `unsupported tropical-rubber carry-over rows are retired`: 
+- **PASS** `latent rubber is hectare-based while discovered rubber stays exceptional`: 
+- **PASS** `latent-rubber denominator is built from the comparator hectare pool`: 
 - **PASS** `sentinel provenance scenarios behave as intended`: 
 - **PASS** `row audit file exists`: row_audit rows=195, final_caps rows=195
 - **PASS** `row audit fields are populated`: Rows missing audit fields: 0
@@ -63,12 +74,13 @@
 - **PASS** `every audited public row has both labels and one driving basis`: 
 - **PASS** `no changed row lacks citations`: 
 - **PASS** `state pass tracker rows are present and in fixed order`: 
+- **PASS** `v3 loop surfaces start clean after archive/reset`: 
 - **PASS** `superseded rows remain present after a change`: 
 - **PASS** `no family rewrite is marked complete unless affected completed states were rerun`: 
 - **PASS** `regional totals match final caps aggregation`: 0 regional mismatches.
 - **PASS** `state delta summary matches final caps aggregation`: 
 - **PASS** `state delta exports exist and mirror final caps`: 
-- **PASS** `priority rows file exists`: Priority rows: 158
+- **PASS** `priority rows file exists`: Priority rows: 148
 
 ## Current Priority Rows
 
@@ -82,8 +94,8 @@
 - `P1` `Cape Colony / Oil (discovered)`: explicit audit exception
 - `P1` `Cape Colony / Oil (undiscovered)`: explicit audit exception
 - `P1` `Cape Colony / Rubber (discovered)`: explicit audit exception
-- `P1` `Cape Colony / Rubber (undiscovered)`: explicit audit exception
 - `P1` `Cape Colony / Sulfur Mine`: explicit audit exception
 - `P1` `Cape Colony / Whaling`: explicit audit exception
 - `P1` `Drakensberg / Coal Mine`: explicit audit exception
 - `P1` `Drakensberg / Fishing`: explicit audit exception
+- `P1` `Drakensberg / Gold Fields (discovered)`: explicit audit exception

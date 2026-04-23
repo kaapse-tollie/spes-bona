@@ -28,19 +28,19 @@ Totals: vanilla `93`, live `6`, audited `6`, delta vs vanilla `-87`, delta vs li
 
 ## Cape Colony
 
-Totals: vanilla `72`, live `60`, audited `65`, delta vs vanilla `-7`, delta vs live `5`.
+Totals: vanilla `72`, live `60`, audited `60`, delta vs vanilla `-12`, delta vs live `0`.
 
 | Resource | Vanilla | Live | Audited | Delta vs vanilla | Delta vs live | Status |
 |---|---:|---:|---:|---:|---:|---|
-| Arable Land | 50 | 41 | 42 | -8 | 1 | formula-driven |
+| Arable Land | 50 | 41 | 41 | -9 | 0 | formula-driven |
 | Coal Mine | 0 | 0 | 0 | 0 | 0 | constrained zero |
-| Fishing | 10 | 12 | 15 | 5 | 3 | quantified adjustment |
+| Fishing | 10 | 12 | 12 | 2 | 0 | quantified adjustment |
 | Gold Mine | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Iron Mine | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Lead Mine | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Sulfur Mine | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Whaling | 4 | 4 | 4 | 0 | 0 | explicit exception |
-| Wood | 8 | 3 | 4 | -4 | 1 | formula-driven |
+| Wood | 8 | 3 | 3 | -5 | 0 | formula-driven |
 | Gold Fields (discovered) | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Gold Fields (undiscovered) | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Oil (discovered) | 0 | 0 | 0 | 0 | 0 | explicit exception |
@@ -72,7 +72,7 @@ Totals: vanilla `128`, live `9`, audited `9`, delta vs vanilla `-119`, delta vs 
 
 ## Eastern Cape
 
-Totals: vanilla `133`, live `55`, audited `56`, delta vs vanilla `-77`, delta vs live `1`.
+Totals: vanilla `133`, live `55`, audited `55`, delta vs vanilla `-78`, delta vs live `0`.
 
 | Resource | Vanilla | Live | Audited | Delta vs vanilla | Delta vs live | Status |
 |---|---:|---:|---:|---:|---:|---|
@@ -84,7 +84,7 @@ Totals: vanilla `133`, live `55`, audited `56`, delta vs vanilla `-77`, delta vs
 | Lead Mine | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Sulfur Mine | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Whaling | 0 | 0 | 0 | 0 | 0 | explicit exception |
-| Wood | 9 | 8 | 9 | 0 | 1 | formula-driven |
+| Wood | 9 | 8 | 8 | -1 | 0 | formula-driven |
 | Gold Fields (discovered) | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Gold Fields (undiscovered) | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Oil (discovered) | 0 | 0 | 0 | 0 | 0 | explicit exception |
@@ -94,15 +94,15 @@ Totals: vanilla `133`, live `55`, audited `56`, delta vs vanilla `-77`, delta vs
 
 ## Eastern Transvaal
 
-Totals: vanilla `231`, live `154`, audited `161`, delta vs vanilla `-70`, delta vs live `7`.
+Totals: vanilla `231`, live `154`, audited `154`, delta vs vanilla `-77`, delta vs live `0`.
 
 | Resource | Vanilla | Live | Audited | Delta vs vanilla | Delta vs live | Status |
 |---|---:|---:|---:|---:|---:|---|
-| Arable Land | 50 | 35 | 36 | -14 | 1 | formula-driven |
+| Arable Land | 50 | 35 | 35 | -15 | 0 | formula-driven |
 | Coal Mine | 104 | 104 | 104 | 0 | 0 | formula-driven |
 | Fishing | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Gold Mine | 0 | 0 | 0 | 0 | 0 | explicit exception |
-| Iron Mine | 60 | 0 | 6 | -54 | 6 | quantified adjustment |
+| Iron Mine | 60 | 0 | 0 | -60 | 0 | explicit exception |
 | Lead Mine | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Sulfur Mine | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Whaling | 0 | 0 | 0 | 0 | 0 | explicit exception |
@@ -116,7 +116,7 @@ Totals: vanilla `231`, live `154`, audited `161`, delta vs vanilla `-70`, delta 
 
 ## Hereroland
 
-Totals: vanilla `88`, live `56`, audited `19`, delta vs vanilla `-69`, delta vs live `-37`.
+Totals: vanilla `88`, live `56`, audited `56`, delta vs vanilla `-32`, delta vs live `0`.
 
 | Resource | Vanilla | Live | Audited | Delta vs vanilla | Delta vs live | Status |
 |---|---:|---:|---:|---:|---:|---|
@@ -125,7 +125,7 @@ Totals: vanilla `88`, live `56`, audited `19`, delta vs vanilla `-69`, delta vs 
 | Fishing | 6 | 11 | 11 | 5 | 0 | formula-driven |
 | Gold Mine | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Iron Mine | 0 | 0 | 0 | 0 | 0 | explicit exception |
-| Lead Mine | 0 | 39 | 2 | 2 | -37 | formula-driven |
+| Lead Mine | 0 | 39 | 39 | 39 | 0 | formula-driven |
 | Sulfur Mine | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Whaling | 0 | 2 | 2 | 2 | 0 | explicit exception |
 | Wood | 2 | 0 | 0 | -2 | 0 | explicit exception |
@@ -138,7 +138,7 @@ Totals: vanilla `88`, live `56`, audited `19`, delta vs vanilla `-69`, delta vs 
 
 ## Lourenço Marques
 
-Totals: vanilla `153`, live `32`, audited `48`, delta vs vanilla `-105`, delta vs live `16`.
+Totals: vanilla `153`, live `32`, audited `32`, delta vs vanilla `-121`, delta vs live `0`.
 
 | Resource | Vanilla | Live | Audited | Delta vs vanilla | Delta vs live | Status |
 |---|---:|---:|---:|---:|---:|---|
@@ -156,7 +156,7 @@ Totals: vanilla `153`, live `32`, audited `48`, delta vs vanilla `-105`, delta v
 | Oil (discovered) | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Oil (undiscovered) | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Rubber (discovered) | 0 | 0 | 0 | 0 | 0 | explicit exception |
-| Rubber (undiscovered) | 16 | 0 | 16 | 0 | 16 | formula-driven |
+| Rubber (undiscovered) | 16 | 0 | 0 | -16 | 0 | explicit exception |
 
 ## Namaqualand
 
@@ -182,7 +182,7 @@ Totals: vanilla `73`, live `4`, audited `4`, delta vs vanilla `-69`, delta vs li
 
 ## Northern Cape
 
-Totals: vanilla `84`, live `48`, audited `60`, delta vs vanilla `-24`, delta vs live `12`.
+Totals: vanilla `84`, live `48`, audited `48`, delta vs vanilla `-36`, delta vs live `0`.
 
 | Resource | Vanilla | Live | Audited | Delta vs vanilla | Delta vs live | Status |
 |---|---:|---:|---:|---:|---:|---|
@@ -190,8 +190,8 @@ Totals: vanilla `84`, live `48`, audited `60`, delta vs vanilla `-24`, delta vs 
 | Coal Mine | 0 | 0 | 0 | 0 | 0 | constrained zero |
 | Fishing | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Gold Mine | 0 | 0 | 0 | 0 | 0 | explicit exception |
-| Iron Mine | 33 | 6 | 21 | -12 | 15 | quantified adjustment |
-| Lead Mine | 0 | 11 | 8 | 8 | -3 | quantified adjustment |
+| Iron Mine | 33 | 6 | 6 | -27 | 0 | quantified adjustment |
+| Lead Mine | 0 | 11 | 11 | 11 | 0 | quantified adjustment |
 | Sulfur Mine | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Whaling | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Wood | 2 | 0 | 0 | -2 | 0 | explicit exception |
@@ -204,15 +204,15 @@ Totals: vanilla `84`, live `48`, audited `60`, delta vs vanilla `-24`, delta vs 
 
 ## Northern Transvaal
 
-Totals: vanilla `231`, live `30`, audited `32`, delta vs vanilla `-199`, delta vs live `2`.
+Totals: vanilla `231`, live `30`, audited `30`, delta vs vanilla `-201`, delta vs live `0`.
 
 | Resource | Vanilla | Live | Audited | Delta vs vanilla | Delta vs live | Status |
 |---|---:|---:|---:|---:|---:|---|
 | Arable Land | 50 | 18 | 18 | -32 | 0 | formula-driven |
-| Coal Mine | 104 | 8 | 9 | -95 | 1 | formula-driven |
+| Coal Mine | 104 | 8 | 8 | -96 | 0 | formula-driven |
 | Fishing | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Gold Mine | 0 | 0 | 0 | 0 | 0 | explicit exception |
-| Iron Mine | 60 | 3 | 4 | -56 | 1 | formula-driven |
+| Iron Mine | 60 | 3 | 3 | -57 | 0 | formula-driven |
 | Lead Mine | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Sulfur Mine | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Whaling | 0 | 0 | 0 | 0 | 0 | explicit exception |
@@ -226,12 +226,12 @@ Totals: vanilla `231`, live `30`, audited `32`, delta vs vanilla `-199`, delta v
 
 ## Transorangia
 
-Totals: vanilla `153`, live `34`, audited `36`, delta vs vanilla `-117`, delta vs live `2`.
+Totals: vanilla `153`, live `34`, audited `34`, delta vs vanilla `-119`, delta vs live `0`.
 
 | Resource | Vanilla | Live | Audited | Delta vs vanilla | Delta vs live | Status |
 |---|---:|---:|---:|---:|---:|---|
 | Arable Land | 40 | 30 | 30 | -10 | 0 | formula-driven |
-| Coal Mine | 60 | 1 | 2 | -58 | 1 | formula-driven |
+| Coal Mine | 60 | 1 | 1 | -59 | 0 | formula-driven |
 | Fishing | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Gold Mine | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Iron Mine | 30 | 0 | 0 | -30 | 0 | explicit exception |
@@ -240,7 +240,7 @@ Totals: vanilla `153`, live `34`, audited `36`, delta vs vanilla `-117`, delta v
 | Whaling | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Wood | 7 | 0 | 0 | -7 | 0 | explicit exception |
 | Gold Fields (discovered) | 0 | 0 | 0 | 0 | 0 | explicit exception |
-| Gold Fields (undiscovered) | 16 | 3 | 4 | -12 | 1 | formula-driven |
+| Gold Fields (undiscovered) | 16 | 3 | 3 | -13 | 0 | formula-driven |
 | Oil (discovered) | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Oil (undiscovered) | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Rubber (discovered) | 0 | 0 | 0 | 0 | 0 | explicit exception |
@@ -248,15 +248,15 @@ Totals: vanilla `153`, live `34`, audited `36`, delta vs vanilla `-117`, delta v
 
 ## West Transvaal
 
-Totals: vanilla `231`, live `113`, audited `115`, delta vs vanilla `-116`, delta vs live `2`.
+Totals: vanilla `231`, live `113`, audited `113`, delta vs vanilla `-118`, delta vs live `0`.
 
 | Resource | Vanilla | Live | Audited | Delta vs vanilla | Delta vs live | Status |
 |---|---:|---:|---:|---:|---:|---|
 | Arable Land | 50 | 15 | 15 | -35 | 0 | formula-driven |
-| Coal Mine | 104 | 4 | 5 | -99 | 1 | formula-driven |
+| Coal Mine | 104 | 4 | 4 | -100 | 0 | formula-driven |
 | Fishing | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Gold Mine | 0 | 0 | 0 | 0 | 0 | explicit exception |
-| Iron Mine | 60 | 0 | 1 | -59 | 1 | formula-driven |
+| Iron Mine | 60 | 0 | 0 | -60 | 0 | explicit exception |
 | Lead Mine | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Sulfur Mine | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Whaling | 0 | 0 | 0 | 0 | 0 | explicit exception |
@@ -270,11 +270,11 @@ Totals: vanilla `231`, live `113`, audited `115`, delta vs vanilla `-116`, delta
 
 ## Zambezi
 
-Totals: vanilla `141`, live `33`, audited `51`, delta vs vanilla `-90`, delta vs live `18`.
+Totals: vanilla `141`, live `33`, audited `33`, delta vs vanilla `-108`, delta vs live `0`.
 
 | Resource | Vanilla | Live | Audited | Delta vs vanilla | Delta vs live | Status |
 |---|---:|---:|---:|---:|---:|---|
-| Arable Land | 70 | 25 | 26 | -44 | 1 | formula-driven |
+| Arable Land | 70 | 25 | 25 | -45 | 0 | formula-driven |
 | Coal Mine | 44 | 4 | 4 | -40 | 0 | formula-driven |
 | Fishing | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Gold Mine | 0 | 0 | 0 | 0 | 0 | explicit exception |
@@ -288,5 +288,5 @@ Totals: vanilla `141`, live `33`, audited `51`, delta vs vanilla `-90`, delta vs
 | Oil (discovered) | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Oil (undiscovered) | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Rubber (discovered) | 0 | 0 | 0 | 0 | 0 | explicit exception |
-| Rubber (undiscovered) | 16 | 0 | 17 | 1 | 17 | formula-driven |
+| Rubber (undiscovered) | 16 | 0 | 0 | -16 | 0 | explicit exception |
 

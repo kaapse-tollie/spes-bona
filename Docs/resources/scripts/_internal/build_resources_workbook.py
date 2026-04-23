@@ -31,6 +31,9 @@ RAW_WOOD_COMPARATOR_CSV = RAW_DIR / "wood_comparator_cases.csv"
 RAW_WOOD_LAND_WEIGHTS_CSV = RAW_DIR / "wood_land_class_weights.csv"
 RAW_WOOD_TARGET_CAPACITY_CSV = RAW_DIR / "wood_target_capacity_rows.csv"
 RAW_WOOD_COMPARATOR_CAPACITY_CSV = RAW_DIR / "wood_comparator_capacity_rows.csv"
+RAW_RUBBER_LAND_WEIGHTS_CSV = RAW_DIR / "rubber_land_class_weights.csv"
+RAW_RUBBER_TARGET_CAPACITY_CSV = RAW_DIR / "rubber_target_capacity_rows.csv"
+RAW_RUBBER_COMPARATOR_CAPACITY_CSV = RAW_DIR / "rubber_comparator_capacity_rows.csv"
 RAW_RANKINGS_CSV = RAW_DIR / "agri_rankings.csv"
 RAW_VANILLA_PRIORS_CSV = RAW_DIR / "vanilla_priors.csv"
 RAW_ARABLE_BASKETS_CSV = RAW_DIR / "arable_baskets.csv"
@@ -255,6 +258,11 @@ FALLBACK_ANNUAL_GROWTH_RATES = {
 }
 GROWTH_YEAR_MIN = 1820
 GROWTH_YEAR_MAX = 2025
+OUTPUT_NORMALIZATION_YEAR = 1940
+UNIVERSAL_Z_REFERENCE_YEAR = 1940
+UNIVERSAL_Z_E_COEFFICIENT = 0.0027733851436286447
+UNIVERSAL_Z_PROXY_LAG_COEFFICIENT = 0.01
+UNIVERSAL_Z_EXCLUDED_RESOURCES = {"Arable Land", "Wood", "Rubber (undiscovered)"}
 
 CONVERSION_FACTORS = [
     ("grain_t", "Bulk grain output in tons", 1.0, "Mass-equivalent baseline for wheat, maize, millet, and rice."),
@@ -381,11 +389,14 @@ COUNTEREVIDENCE_CASE_FIELDNAMES = with_lifecycle_fieldnames(COUNTEREVIDENCE_CASE
 TARGET_OBSERVATION_LOGICAL_KEY_FIELDS = ["sheet", "geography", "resource", "year", "normalized_quantity", "source_title", "citation_locator"]
 ARABLE_TARGET_CAPACITY_LOGICAL_KEY_FIELDS = ["state", "land_class"]
 WOOD_TARGET_CAPACITY_LOGICAL_KEY_FIELDS = ["state", "land_class"]
+RUBBER_TARGET_CAPACITY_LOGICAL_KEY_FIELDS = ["state", "land_class"]
 ADJUSTMENT_INPUT_LOGICAL_KEY_FIELDS = ["state", "resource"]
 COUNTEREVIDENCE_LOGICAL_KEY_FIELDS = ["state", "resource", "question"]
 RESEARCH_DIR = REPO.parent / "References/research"
 AGRI_RESEARCH_PATH = RESEARCH_DIR / "agriculture and fisheries research.md"
 COMPARATOR_RESEARCH_PATH = RESEARCH_DIR / "southern_africa_comparator_states_ranked_per_region.md"
+V3_RESET_ARCHIVE_DIR = AUDIT_DIR / "archive/v2_pre_v3_reset"
+V3_RESET_MARKER = AUDIT_DIR / "archive/v3_reset_complete.txt"
 
 
 def validation_profile(
@@ -450,6 +461,22 @@ WOOD_TARGET_VALIDATION_DEFAULTS_BY_STATE = {
     "Zambezi": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.80, "Zambezi wood capacity is bounded to the Eastern Highlands plantation belt inside the broader state footprint rather than to a whole-Zimbabwe forestry fallback."),
     "Hereroland": validation_profile("state_localized", "direct", "broad_potential_only", 1.0, "Hereroland has no distinct commercial forestry slot; wooded savanna does not drive x."),
     "Namaqualand": validation_profile("state_localized", "direct", "broad_potential_only", 1.0, "Namaqualand has no distinct commercial forestry slot; arid wooded pockets do not drive x."),
+}
+
+RUBBER_TARGET_VALIDATION_DEFAULTS_BY_STATE = {
+    "Cape Colony": validation_profile("state_localized", "direct", "broad_potential_only", 1.0, "Cape Colony is a Mediterranean grain-and-vine state rather than a humid rubber plantation belt."),
+    "Northern Cape": validation_profile("state_localized", "direct", "broad_potential_only", 1.0, "Northern Cape is arid and does not support a distinct latent-rubber slot."),
+    "Eastern Cape": validation_profile("state_localized", "direct", "broad_potential_only", 1.0, "Eastern Cape is a mixed-farming and stock state rather than a localized rubber belt."),
+    "West Transvaal": validation_profile("state_localized", "direct", "broad_potential_only", 1.0, "West Transvaal is an interior Highveld state and does not support latent rubber."),
+    "Eastern Transvaal": validation_profile("regional_proxy", "partial_overlap", "broad_potential_only", 0.60, "Eastern Transvaal has warm lowveld pockets, but v3 does not freeze a localized latent-rubber slot there."),
+    "Northern Transvaal": validation_profile("regional_proxy", "partial_overlap", "broad_potential_only", 0.60, "Northern Transvaal has subtropical fringe agriculture, but no localized latent-rubber slot is frozen in v3."),
+    "Transorangia": validation_profile("state_localized", "direct", "broad_potential_only", 1.0, "Transorangia is a grain-and-stock interior state, not a rubber belt."),
+    "Drakensberg": validation_profile("state_localized", "direct", "broad_potential_only", 1.0, "Drakensberg is a mountain grain-and-pastoral state, not a rubber belt."),
+    "Botswana": validation_profile("state_localized", "direct", "broad_potential_only", 1.0, "Botswana is a dry cattle-and-cereal state without a latent-rubber slot."),
+    "Lourenço Marques": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.80, "Lourenço Marques latent rubber is bounded to the Maputo-Gaza littoral and lower Limpopo coastal-lowland plantation belt, not to whole-Mozambique tropical potential."),
+    "Zambezi": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.75, "Zambezi latent rubber is bounded to the warm eastern and lowveld estate fringe inside the state footprint, not to whole-Zimbabwe tropical potential."),
+    "Hereroland": validation_profile("state_localized", "direct", "broad_potential_only", 1.0, "Hereroland is a savanna agropastoral state and does not support latent rubber."),
+    "Namaqualand": validation_profile("state_localized", "direct", "broad_potential_only", 1.0, "Namaqualand is arid and does not support latent rubber."),
 }
 
 REGIONAL_ADVANTAGE_SEEDS = [
@@ -1238,6 +1265,194 @@ WOOD_COMPARATOR_PROFILE_BY_BENCHMARK = {
     "North Island": "plantation_core",
 }
 
+RUBBER_LAND_CLASSES = [
+    ("high_suitability_plantation", 1.00, "High-suitability latent rubber plantation land."),
+    ("moderate_suitability_plantation", 0.60, "Moderate-suitability latent rubber plantation land."),
+    ("marginal_suitability_plantation", 0.20, "Marginal but still commercially arguable latent rubber land."),
+    ("unsuitable_or_noncommercial", 0.00, "Unsuitable or non-commercial land for latent rubber."),
+]
+RUBBER_LAND_CLASS_WEIGHT_MAP = {name: weight for name, weight, _note in RUBBER_LAND_CLASSES}
+RUBBER_LAND_CLASS_FIELDNAMES = [
+    "land_class",
+    "default_weight",
+    "weight_note",
+]
+RUBBER_TARGET_CAPACITY_FIELDNAMES = [
+    "state",
+    "land_class",
+    "representative_year",
+    "raw_area_ha",
+    "effective_weight",
+    "effective_area_ha",
+    "year_selection_reason",
+    "capacity_note",
+    "citation_1_title",
+    "citation_1_url",
+    "citation_1_locator",
+    "citation_2_title",
+    "citation_2_url",
+    "citation_2_locator",
+    *TARGET_VALIDATION_FIELDS,
+]
+MAINTAINED_RUBBER_TARGET_CAPACITY_FIELDNAMES = with_lifecycle_fieldnames(RUBBER_TARGET_CAPACITY_FIELDNAMES)
+RUBBER_COMPARATOR_CAPACITY_FIELDNAMES = [
+    "comparator_geography",
+    "benchmark_state_id",
+    "representative_year",
+    "land_class",
+    "raw_area_ha",
+    "effective_weight",
+    "effective_area_ha",
+    "benchmark_vanilla_rubber_cap",
+    "year_selection_reason",
+    "capacity_note",
+    "citation_1_title",
+    "citation_1_url",
+    "citation_1_locator",
+    "citation_2_title",
+    "citation_2_url",
+    "citation_2_locator",
+]
+RUBBER_COMPARATOR_EFFECTIVE_HECTARES_PER_CAP = 10_000.0
+RUBBER_TARGET_CAPACITY_SEEDS = {
+    "Cape Colony": {
+        "classes": {land_class: 0.0 for land_class, _weight, _note in RUBBER_LAND_CLASSES},
+        "capacity_note": "Cape Colony stays outside the latent-rubber model; its agricultural identity is Mediterranean grain, vines, fruit, and mixed farming rather than humid plantation land.",
+        "citation_1_locator": "Cape winter-rain grain-and-vine system; no humid plantation belt comparable to rubber country is frozen here.",
+        "citation_2_locator": "[^wc]: Western Cape is Mediterranean with strong wine, wheat, wool, lucerne, and fruit production.",
+    },
+    "Northern Cape": {
+        "classes": {land_class: 0.0 for land_class, _weight, _note in RUBBER_LAND_CLASSES},
+        "capacity_note": "Northern Cape remains outside the latent-rubber model; Orange irrigation and dry grazing do not create a rubber slot.",
+        "citation_1_locator": "Northern Cape row: livestock, fishing, and whaling dominate; irrigated river agriculture is narrow and dry-country dominated.",
+        "citation_2_locator": "Northern Cape is arid, with Orange irrigation and grazing belts rather than humid plantation country.",
+    },
+    "Eastern Cape": {
+        "classes": {land_class: 0.0 for land_class, _weight, _note in RUBBER_LAND_CLASSES},
+        "capacity_note": "Eastern Cape remains outside the latent-rubber model; the state is mixed-farming, stock, and temperate coastal agriculture rather than rubber country.",
+        "citation_1_locator": "Eastern Cape profile is grain, stock, and coastal mixed farming rather than a humid tropical plantation belt.",
+        "citation_2_locator": "Eastern Cape analogues are mixed-farming and grazing systems, not rubber-plantation states.",
+    },
+    "West Transvaal": {
+        "classes": {land_class: 0.0 for land_class, _weight, _note in RUBBER_LAND_CLASSES},
+        "capacity_note": "West Transvaal remains outside the latent-rubber model; the western Highveld interior does not support a rubber slot.",
+        "citation_1_locator": "Interior plateau cereal-and-stock state; no humid lowland plantation belt is frozen here.",
+        "citation_2_locator": "West Transvaal analogues are interior mixed-farming states rather than tropical plantation belts.",
+    },
+    "Eastern Transvaal": {
+        "classes": {land_class: 0.0 for land_class, _weight, _note in RUBBER_LAND_CLASSES},
+        "capacity_note": "Eastern Transvaal has tropical and subtropical lowveld pockets, but v3 keeps them as broad potential only rather than freezing a localized latent-rubber slot.",
+        "citation_1_locator": "Mpumalanga row: maize, sugar, tobacco, bananas, and livestock dominate the warm lowveld; no localized rubber chain is frozen here.",
+        "citation_2_locator": "[^mpu]: Mpumalanga and Eswatini support sugarcane, tobacco, citrus, subtropical fruits, and forestry, but that broad humid profile is not treated as automatic rubber support.",
+    },
+    "Northern Transvaal": {
+        "classes": {land_class: 0.0 for land_class, _weight, _note in RUBBER_LAND_CLASSES},
+        "capacity_note": "Northern Transvaal has a subtropical fringe, but v3 keeps latent rubber as broad potential only rather than as a frozen slot.",
+        "citation_1_locator": "Limpopo row: maize, tobacco, cotton, bananas, and livestock dominate; no localized rubber chain is frozen here.",
+        "citation_2_locator": "[^lim]: Limpopo combines citrus, maize, tea/tobacco/groundnuts, cattle, goats, and sheep in a warm subtropical-to-montane gradient rather than a documented rubber belt.",
+    },
+    "Transorangia": {
+        "classes": {land_class: 0.0 for land_class, _weight, _note in RUBBER_LAND_CLASSES},
+        "capacity_note": "Transorangia remains outside the latent-rubber model; it is a dry grain-and-livestock interior state.",
+        "citation_1_locator": "Free State profile is maize, wheat, tobacco, and livestock rather than tropical plantation land.",
+        "citation_2_locator": "Free State analogues are interior grain states, not rubber country.",
+    },
+    "Drakensberg": {
+        "classes": {land_class: 0.0 for land_class, _weight, _note in RUBBER_LAND_CLASSES},
+        "capacity_note": "Drakensberg remains outside the latent-rubber model; mountain grain and pastoral land do not support rubber.",
+        "citation_1_locator": "Lesotho section: maize, sorghum, wheat, and livestock define the state; mountains do not support a rubber belt.",
+        "citation_2_locator": "[^les]: Lesotho is a highland pastoral and grain system, not a tropical plantation zone.",
+    },
+    "Botswana": {
+        "classes": {land_class: 0.0 for land_class, _weight, _note in RUBBER_LAND_CLASSES},
+        "capacity_note": "Botswana remains outside the latent-rubber model; it is a dry cattle-and-cereal state without a rubber belt.",
+        "citation_1_locator": "Botswana section: cattle first, with maize and millet in narrow corridors only.",
+        "citation_2_locator": "[^bot]: Botswana is drought-prone and cattle-dominant rather than humid plantation country.",
+    },
+    "Lourenço Marques": {
+        "classes": {
+            "high_suitability_plantation": 90_000,
+            "moderate_suitability_plantation": 170_000,
+            "marginal_suitability_plantation": 40_000,
+            "unsuitable_or_noncommercial": 0.0,
+        },
+        "capacity_note": "Lourenço Marques carries a bounded latent-rubber row anchored on the Maputo-Gaza littoral and lower Limpopo coastal-lowland plantation belt; it is not a whole-Mozambique tropical claim.",
+        "citation_1_locator": "Mozambique section: the south coast and beneden-Limpopo are warm coastal-lowland agriculture belts with bananas, rice, sugar, cotton, and irrigated lowland potential.",
+        "citation_2_locator": "[^smz]: Southern Mozambique is a hot coastal and riverine plain; that supports a bounded latent plantation slot even though broad Mozambique-wide tropical potential is excluded.",
+    },
+    "Zambezi": {
+        "classes": {
+            "high_suitability_plantation": 100_000,
+            "moderate_suitability_plantation": 170_000,
+            "marginal_suitability_plantation": 80_000,
+            "unsuitable_or_noncommercial": 0.0,
+        },
+        "capacity_note": "Zambezi carries a bounded latent-rubber row anchored on the warm eastern and lowveld estate fringe inside the state footprint; it is not a whole-Zimbabwe tropical claim.",
+        "citation_1_locator": "Zimbabwe section: Eastern Highlands, Mashonaland plateau, and southern lowveld are distinct belts; the warm fringe can carry a bounded latent plantation counterfactual even though most of the state is grain, tobacco, cattle, and sugar country.",
+        "citation_2_locator": "[^zim]: Zimbabwe is tropical but elevation-bounded; only the warmest eastern and lowveld fringe supports this latent-rubber slot, not the whole state.",
+    },
+    "Hereroland": {
+        "classes": {land_class: 0.0 for land_class, _weight, _note in RUBBER_LAND_CLASSES},
+        "capacity_note": "Hereroland remains outside the latent-rubber model; northern and central Namibia do not support a rubber belt.",
+        "citation_1_locator": "Namibia section: northern communal millet/maize belts and central cattle country dominate rather than humid plantation land.",
+        "citation_2_locator": "Northern Namibia analogues are savanna agropastoral systems, not rubber belts.",
+    },
+    "Namaqualand": {
+        "classes": {land_class: 0.0 for land_class, _weight, _note in RUBBER_LAND_CLASSES},
+        "capacity_note": "Namaqualand remains outside the latent-rubber model; it is arid grazing country with narrow irrigated pockets only.",
+        "citation_1_locator": "Southern Namibia is sheep-and-goat country with small irrigated pockets rather than plantation land.",
+        "citation_2_locator": "[^snam]: Arid southern Namibia supports livestock and river irrigation, not a rubber belt.",
+    },
+}
+RUBBER_COMPARATOR_PROFILE_SHARES = {
+    "plantation_core": {
+        "high_suitability_plantation": 0.60,
+        "moderate_suitability_plantation": 0.30,
+        "marginal_suitability_plantation": 0.10,
+        "unsuitable_or_noncommercial": 0.00,
+    },
+    "mixed_tropical": {
+        "high_suitability_plantation": 0.40,
+        "moderate_suitability_plantation": 0.40,
+        "marginal_suitability_plantation": 0.20,
+        "unsuitable_or_noncommercial": 0.00,
+    },
+    "coastal_tropical": {
+        "high_suitability_plantation": 0.45,
+        "moderate_suitability_plantation": 0.35,
+        "marginal_suitability_plantation": 0.20,
+        "unsuitable_or_noncommercial": 0.00,
+    },
+    "plateau_fringe": {
+        "high_suitability_plantation": 0.25,
+        "moderate_suitability_plantation": 0.45,
+        "marginal_suitability_plantation": 0.30,
+        "unsuitable_or_noncommercial": 0.00,
+    },
+}
+RUBBER_COMPARATOR_SEEDS = [
+    {"comparator_geography": "Mozambique", "benchmark_state_id": "STATE_MOCAMBIQUE", "benchmark_vanilla_rubber_cap": 30.0, "profile": "plantation_core"},
+    {"comparator_geography": "Zambezi", "benchmark_state_id": "STATE_ZAMBEZI", "benchmark_vanilla_rubber_cap": 16.0, "profile": "plateau_fringe"},
+    {"comparator_geography": "Tanganyika", "benchmark_state_id": "STATE_TANGANYIKA", "benchmark_vanilla_rubber_cap": 28.0, "profile": "mixed_tropical"},
+    {"comparator_geography": "Uganda", "benchmark_state_id": "STATE_UGANDA", "benchmark_vanilla_rubber_cap": 28.0, "profile": "mixed_tropical"},
+    {"comparator_geography": "Kenya", "benchmark_state_id": "STATE_KENYA", "benchmark_vanilla_rubber_cap": 16.0, "profile": "coastal_tropical"},
+    {"comparator_geography": "Zanzibar", "benchmark_state_id": "STATE_ZANZIBAR", "benchmark_vanilla_rubber_cap": 16.0, "profile": "coastal_tropical"},
+    {"comparator_geography": "South Cameroon", "benchmark_state_id": "STATE_SOUTH_CAMEROON", "benchmark_vanilla_rubber_cap": 24.0, "profile": "plantation_core"},
+    {"comparator_geography": "Gabon", "benchmark_state_id": "STATE_GABON", "benchmark_vanilla_rubber_cap": 29.0, "profile": "plantation_core"},
+    {"comparator_geography": "Congo", "benchmark_state_id": "STATE_CONGO", "benchmark_vanilla_rubber_cap": 65.0, "profile": "plantation_core"},
+    {"comparator_geography": "Congo Orientale", "benchmark_state_id": "STATE_CONGO_ORIENTALE", "benchmark_vanilla_rubber_cap": 52.0, "profile": "plantation_core"},
+    {"comparator_geography": "Equateur", "benchmark_state_id": "STATE_EQUATEUR", "benchmark_vanilla_rubber_cap": 30.0, "profile": "plantation_core"},
+    {"comparator_geography": "North Angola", "benchmark_state_id": "STATE_NORTH_ANGOLA", "benchmark_vanilla_rubber_cap": 22.0, "profile": "mixed_tropical"},
+    {"comparator_geography": "Gold Coast", "benchmark_state_id": "STATE_GOLD_COAST", "benchmark_vanilla_rubber_cap": 22.0, "profile": "mixed_tropical"},
+    {"comparator_geography": "Guinea", "benchmark_state_id": "STATE_GUINEA", "benchmark_vanilla_rubber_cap": 28.0, "profile": "mixed_tropical"},
+    {"comparator_geography": "Sierra Leone", "benchmark_state_id": "STATE_SIERRA_LEONE", "benchmark_vanilla_rubber_cap": 28.0, "profile": "mixed_tropical"},
+    {"comparator_geography": "Liberia", "benchmark_state_id": "STATE_LIBERIA", "benchmark_vanilla_rubber_cap": 20.0, "profile": "mixed_tropical"},
+    {"comparator_geography": "Windward Coast", "benchmark_state_id": "STATE_WINDWARD_COAST", "benchmark_vanilla_rubber_cap": 22.0, "profile": "mixed_tropical"},
+    {"comparator_geography": "Niger Delta", "benchmark_state_id": "STATE_NIGER_DELTA", "benchmark_vanilla_rubber_cap": 22.0, "profile": "mixed_tropical"},
+    {"comparator_geography": "Nigeria", "benchmark_state_id": "STATE_NIGERIA", "benchmark_vanilla_rubber_cap": 24.0, "profile": "mixed_tropical"},
+    {"comparator_geography": "Togo", "benchmark_state_id": "STATE_TOGO", "benchmark_vanilla_rubber_cap": 20.0, "profile": "mixed_tropical"},
+]
+
 
 def read_csv_rows(path: Path) -> list[dict[str, str]]:
     if not path.exists():
@@ -1431,6 +1646,41 @@ def family_rewrite_flags_by_state(family_rewrite_rows: list[dict[str, Any]]) -> 
     return flags
 
 
+def _archive_file_if_present(source: Path, archive_root: Path) -> None:
+    if not source.exists():
+        return
+    target = archive_root / source.name
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_bytes(source.read_bytes())
+
+
+def ensure_v3_reset() -> None:
+    if V3_RESET_MARKER.exists():
+        return
+    V3_RESET_ARCHIVE_DIR.mkdir(parents=True, exist_ok=True)
+    files_to_archive = [
+        STATE_PASS_TRACKER_CSV,
+        STATE_COUNTERFACTUAL_AUDIT_CSV,
+        FAMILY_REWRITE_LOG_CSV,
+        DERIVED_DIR / "final_resource_caps.csv",
+        DERIVED_DIR / "resource_adjustments.csv",
+        AUDIT_DIR / "row_audit.csv",
+        DERIVED_DIR / "state_resource_deltas.csv",
+        DERIVED_DIR / "state_delta_summary.csv",
+        AUDIT_DIR / "sb_state_delta_report.md",
+        OUTPUT,
+    ]
+    for path in files_to_archive:
+        _archive_file_if_present(path, V3_RESET_ARCHIVE_DIR)
+    write_csv(STATE_PASS_TRACKER_CSV, seed_state_pass_tracker_rows(), STATE_PASS_TRACKER_FIELDNAMES)
+    write_csv(FAMILY_REWRITE_LOG_CSV, [], FAMILY_REWRITE_LOG_FIELDNAMES)
+    write_csv(STATE_COUNTERFACTUAL_AUDIT_CSV, [], COUNTERFACTUAL_AUDIT_FIELDNAMES)
+    V3_RESET_MARKER.write_text(
+        "v3 reset applied: loop artifacts archived and tracker surfaces reset before the rebuilt baseline.\n",
+        encoding="utf-8",
+    )
+
+
 def parse_int(value: Any) -> int | None:
     if value in (None, ""):
         return None
@@ -1441,6 +1691,46 @@ def parse_float(value: Any) -> float | None:
     if value in (None, ""):
         return None
     return float(str(value))
+
+
+def quantity_resource_uses_universal_z(resource: str) -> bool:
+    return resource in SUMMARY_RESOURCES and resource not in UNIVERSAL_Z_EXCLUDED_RESOURCES
+
+
+def universal_z_penalty(
+    earliest_commercial_activity_year: int | None,
+    representative_year: int | None,
+) -> float | None:
+    earliest_commercial_activity_year = parse_int(earliest_commercial_activity_year)
+    representative_year = parse_int(representative_year)
+    if earliest_commercial_activity_year is None or representative_year is None:
+        return None
+    late_start = max(0, earliest_commercial_activity_year - UNIVERSAL_Z_REFERENCE_YEAR)
+    proxy_lag = max(0, representative_year - max(earliest_commercial_activity_year, UNIVERSAL_Z_REFERENCE_YEAR))
+    penalty = (
+        UNIVERSAL_Z_E_COEFFICIENT * late_start * math.log1p(late_start)
+        + UNIVERSAL_Z_PROXY_LAG_COEFFICIENT * proxy_lag
+    )
+    return min(1.0, penalty)
+
+
+def compute_universal_quantity_z(
+    resource: str,
+    observed_output_x: float,
+    adjustment_row: dict[str, Any],
+    representative_year: int | None,
+) -> float | None:
+    if not quantity_resource_uses_universal_z(resource):
+        return None
+    if adjustment_row.get("exception_status"):
+        return None
+    penalty = universal_z_penalty(
+        adjustment_row.get("earliest_commercial_activity_year"),
+        representative_year,
+    )
+    if penalty is None:
+        return None
+    return observed_output_x * penalty
 
 
 def parse_numeric_or_text(value: Any) -> Any:
@@ -1589,7 +1879,7 @@ def conversion_key_for_row(resource: str, unit: str) -> str | None:
     return None
 
 
-def normalize_to_1950(quantity: float, year: int, family: str, growth_index_lookup: dict[tuple[str, int], float]) -> float:
+def normalize_to_1940(quantity: float, year: int, family: str, growth_index_lookup: dict[tuple[str, int], float]) -> float:
     return quantity * growth_index_lookup.get((family, year), 1.0)
 
 
@@ -1606,14 +1896,14 @@ def _interpolate_quantity(q1: float, y1: int, q2: float, y2: int, year: int) -> 
 def build_fallback_growth_series(rate: float, family: str) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     for year in range(GROWTH_YEAR_MIN, GROWTH_YEAR_MAX + 1):
-        quantity = (1 + rate) ** (year - 1950)
+        quantity = (1 + rate) ** (year - OUTPUT_NORMALIZATION_YEAR)
         rows.append(
             {
                 "family": family,
                 "year": year,
                 "quantity": quantity,
                 "unit": "index",
-                "index_to_1950": 1 / quantity if quantity else "",
+                "index_to_1940": 1 / quantity if quantity else "",
                 "method": f"fallback constant annual rate {rate:.4f}",
                 "source_title": "Fallback workbook assumption",
                 "source_url": "",
@@ -1770,11 +2060,19 @@ def build_growth_rows(anchor_series: dict[str, list[dict[str, Any]]]) -> tuple[l
                     series[year] = float(by_year[year]["quantity"])
                     continue
                 if year < years[0]:
-                    hi = 1950 if 1950 in by_year and years[0] != 1950 else years[min(len(years) - 1, 1)]
+                    hi = (
+                        OUTPUT_NORMALIZATION_YEAR
+                        if OUTPUT_NORMALIZATION_YEAR in by_year and years[0] != OUTPUT_NORMALIZATION_YEAR
+                        else years[min(len(years) - 1, 1)]
+                    )
                     lo = years[0]
                     method = f"geometric backcast from {lo}-{hi}"
                 elif year > years[-1]:
-                    lo = 1950 if 1950 in by_year and years[-1] != 1950 else years[max(0, len(years) - 2)]
+                    lo = (
+                        OUTPUT_NORMALIZATION_YEAR
+                        if OUTPUT_NORMALIZATION_YEAR in by_year and years[-1] != OUTPUT_NORMALIZATION_YEAR
+                        else years[max(0, len(years) - 2)]
+                    )
                     hi = years[-1]
                     method = f"geometric forecast from {lo}-{hi}"
                 else:
@@ -1783,30 +2081,38 @@ def build_growth_rows(anchor_series: dict[str, list[dict[str, Any]]]) -> tuple[l
                     method = f"geometric interpolation between {lo}-{hi}"
                 series[year] = _interpolate_quantity(float(by_year[lo]["quantity"]), lo, float(by_year[hi]["quantity"]), hi, year)
                 by_year.setdefault(year, {"year": year, "quantity": series[year], "source_title": by_year[lo]["source_title"], "source_url": by_year[lo]["source_url"], "locator": method, "unit": by_year[lo]["unit"]})
-        quantity_1950 = series.get(1950) or 1.0
+        quantity_1940 = series.get(OUTPUT_NORMALIZATION_YEAR) or 1.0
         for year in range(GROWTH_YEAR_MIN, GROWTH_YEAR_MAX + 1):
             anchor = by_year[year]
             if year in years:
                 method = "anchor"
             elif year < years[0]:
-                hi = 1950 if 1950 in by_year and years[0] != 1950 else years[min(len(years) - 1, 1)]
+                hi = (
+                    OUTPUT_NORMALIZATION_YEAR
+                    if OUTPUT_NORMALIZATION_YEAR in by_year and years[0] != OUTPUT_NORMALIZATION_YEAR
+                    else years[min(len(years) - 1, 1)]
+                )
                 method = f"geometric backcast from {years[0]}-{hi}"
             elif year > years[-1]:
-                lo = 1950 if 1950 in by_year and years[-1] != 1950 else years[max(0, len(years) - 2)]
+                lo = (
+                    OUTPUT_NORMALIZATION_YEAR
+                    if OUTPUT_NORMALIZATION_YEAR in by_year and years[-1] != OUTPUT_NORMALIZATION_YEAR
+                    else years[max(0, len(years) - 2)]
+                )
                 method = f"geometric forecast from {lo}-{years[-1]}"
             else:
                 lo = max(anchor_year for anchor_year in years if anchor_year < year)
                 hi = min(anchor_year for anchor_year in years if anchor_year > year)
                 method = f"geometric interpolation between {lo}-{hi}"
             quantity = series[year]
-            index = quantity_1950 / quantity if quantity else ""
+            index = quantity_1940 / quantity if quantity else ""
             rows.append(
                 {
                     "family": family,
                     "year": year,
                     "quantity": quantity,
                     "unit": anchor["unit"],
-                    "index_to_1950": index,
+                    "index_to_1940": index,
                     "method": method,
                     "source_title": anchor["source_title"],
                     "source_url": anchor["source_url"],
@@ -1820,7 +2126,7 @@ def build_growth_rows(anchor_series: dict[str, list[dict[str, Any]]]) -> tuple[l
             if (family, int(row["year"])) in index_lookup:
                 continue
             rows.append(row)
-            index_lookup[(family, int(row["year"]))] = float(row["index_to_1950"])
+            index_lookup[(family, int(row["year"]))] = float(row["index_to_1940"])
     rows.sort(key=lambda row: (row["family"], row["year"]))
     return rows, index_lookup
 
@@ -2315,6 +2621,216 @@ def compute_wood_denominator(
     return denominator_row, summary_rows
 
 
+def seed_rubber_land_class_weights_rows() -> list[dict[str, Any]]:
+    return [
+        {
+            "land_class": land_class,
+            "default_weight": weight,
+            "weight_note": note,
+        }
+        for land_class, weight, note in RUBBER_LAND_CLASSES
+    ]
+
+
+def load_rubber_land_class_weights() -> dict[str, float]:
+    ensure_csv_schema(RAW_RUBBER_LAND_WEIGHTS_CSV, RUBBER_LAND_CLASS_FIELDNAMES, seed_rubber_land_class_weights_rows())
+    return {
+        row["land_class"]: parse_float(row["default_weight"]) or 0.0
+        for row in read_csv_rows(RAW_RUBBER_LAND_WEIGHTS_CSV)
+    }
+
+
+def seed_rubber_target_capacity_rows() -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for state, payload in RUBBER_TARGET_CAPACITY_SEEDS.items():
+        validation = RUBBER_TARGET_VALIDATION_DEFAULTS_BY_STATE[state]
+        for land_class, weight, _note in RUBBER_LAND_CLASSES:
+            raw_area = float(payload["classes"].get(land_class, 0.0))
+            localization_discount = float(validation["localization_discount"])
+            rows.append(
+                {
+                    "state": state,
+                    "land_class": land_class,
+                    "representative_year": 1936,
+                    "raw_area_ha": raw_area,
+                    "effective_weight": weight,
+                    "effective_area_ha": raw_area * weight * localization_discount,
+                    "year_selection_reason": "Latent rubber is audited as potential effective commercial plantation land; representative year is metadata only and not GDP-selected.",
+                    "capacity_note": payload["capacity_note"],
+                    "citation_1_title": "Zuidelijk Afrika als landbouw- en visserijregio voor een Victoria 3-mod",
+                    "citation_1_url": str(AGRI_RESEARCH_PATH),
+                    "citation_1_locator": payload["citation_1_locator"],
+                    "citation_2_title": "Southern Africa comparator states ranked per region",
+                    "citation_2_url": str(COMPARATOR_RESEARCH_PATH),
+                    "citation_2_locator": payload["citation_2_locator"],
+                    **validation,
+                }
+            )
+    return rows
+
+
+def load_rubber_target_capacity_rows() -> list[dict[str, Any]]:
+    _all_rows, active_rows = load_append_only_rows(
+        RAW_RUBBER_TARGET_CAPACITY_CSV,
+        MAINTAINED_RUBBER_TARGET_CAPACITY_FIELDNAMES,
+        RUBBER_TARGET_CAPACITY_LOGICAL_KEY_FIELDS,
+        "rubber-target-capacity",
+        seed_rubber_target_capacity_rows(),
+    )
+    rows: list[dict[str, Any]] = []
+    for row in active_rows:
+        validation = normalize_validation_fields(row, RUBBER_TARGET_VALIDATION_DEFAULTS_BY_STATE[row["state"]])
+        raw_area = parse_float(row["raw_area_ha"]) or 0.0
+        effective_weight = parse_float(row["effective_weight"]) or 0.0
+        effective_area = raw_area * effective_weight * float(validation["localization_discount"])
+        rows.append(
+            {
+                "state": row["state"],
+                "land_class": row["land_class"],
+                "representative_year": parse_int(row["representative_year"]),
+                "raw_area_ha": raw_area,
+                "effective_weight": effective_weight,
+                "effective_area_ha": effective_area,
+                "year_selection_reason": row["year_selection_reason"],
+                "capacity_note": row["capacity_note"],
+                "citation_1_title": row["citation_1_title"],
+                "citation_1_url": row["citation_1_url"],
+                "citation_1_locator": row["citation_1_locator"],
+                "citation_2_title": row["citation_2_title"],
+                "citation_2_url": row["citation_2_url"],
+                "citation_2_locator": row["citation_2_locator"],
+                **validation,
+            }
+        )
+    return rows
+
+
+def seed_rubber_comparator_capacity_rows() -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for case in RUBBER_COMPARATOR_SEEDS:
+        profile = RUBBER_COMPARATOR_PROFILE_SHARES[case["profile"]]
+        weighted_share = sum(profile[land_class] * RUBBER_LAND_CLASS_WEIGHT_MAP[land_class] for land_class in profile)
+        total_effective = float(case["benchmark_vanilla_rubber_cap"]) * RUBBER_COMPARATOR_EFFECTIVE_HECTARES_PER_CAP
+        total_raw = (total_effective / weighted_share) if weighted_share else 0.0
+        for land_class, weight, _note in RUBBER_LAND_CLASSES:
+            raw_area = total_raw * profile.get(land_class, 0.0)
+            rows.append(
+                {
+                    "comparator_geography": case["comparator_geography"],
+                    "benchmark_state_id": case["benchmark_state_id"],
+                    "representative_year": 1936,
+                    "land_class": land_class,
+                    "raw_area_ha": raw_area,
+                    "effective_weight": weight,
+                    "effective_area_ha": raw_area * weight,
+                    "benchmark_vanilla_rubber_cap": case["benchmark_vanilla_rubber_cap"],
+                    "year_selection_reason": "Rubber comparator capacity is benchmarked as potential effective commercial plantation land rather than GDP-selected realized latex output.",
+                    "capacity_note": (
+                        f"Vanilla latent-rubber benchmark state seeded with the `{case['profile']}` tropical plantation profile; "
+                        "effective hectares per cap are held on the v3 latent-rubber denominator."
+                    ),
+                    "citation_1_title": "Victoria 3 vanilla state_regions rubber benchmark",
+                    "citation_1_url": "",
+                    "citation_1_locator": f"{case['benchmark_state_id']} latent rubber cap = {int(case['benchmark_vanilla_rubber_cap'])} in the shipped vanilla state file.",
+                    "citation_2_title": "Comparator profile rationale",
+                    "citation_2_url": "",
+                    "citation_2_locator": f"Profile `{case['profile']}` distributes effective rubber hectares across high/moderate/marginal plantation suitability rather than treating vanilla cap as direct estate area.",
+                }
+            )
+    return rows
+
+
+def load_rubber_comparator_capacity_rows() -> list[dict[str, Any]]:
+    ensure_csv_schema(
+        RAW_RUBBER_COMPARATOR_CAPACITY_CSV,
+        RUBBER_COMPARATOR_CAPACITY_FIELDNAMES,
+        seed_rubber_comparator_capacity_rows(),
+    )
+    rows: list[dict[str, Any]] = []
+    for row in read_csv_rows(RAW_RUBBER_COMPARATOR_CAPACITY_CSV):
+        rows.append(
+            {
+                "comparator_geography": row["comparator_geography"],
+                "benchmark_state_id": row["benchmark_state_id"],
+                "representative_year": parse_int(row["representative_year"]),
+                "land_class": row["land_class"],
+                "raw_area_ha": parse_float(row["raw_area_ha"]) or 0.0,
+                "effective_weight": parse_float(row["effective_weight"]) or 0.0,
+                "effective_area_ha": parse_float(row["effective_area_ha"]) or 0.0,
+                "benchmark_vanilla_rubber_cap": parse_float(row["benchmark_vanilla_rubber_cap"]) or 0.0,
+                "year_selection_reason": row["year_selection_reason"],
+                "capacity_note": row["capacity_note"],
+                "citation_1_title": row["citation_1_title"],
+                "citation_1_url": row["citation_1_url"],
+                "citation_1_locator": row["citation_1_locator"],
+                "citation_2_title": row["citation_2_title"],
+                "citation_2_url": row["citation_2_url"],
+                "citation_2_locator": row["citation_2_locator"],
+            }
+        )
+    return rows
+
+
+def compute_rubber_state_payloads(target_rows: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    payloads: dict[str, dict[str, Any]] = {
+        info["official_name"]: {
+            "observed_output_x": 0.0,
+            "capacity_note": "",
+        }
+        for info in STATE_INFO
+    }
+    for row in target_rows:
+        payload = payloads[row["state"]]
+        payload["observed_output_x"] += float(row["effective_area_ha"])
+        if row["capacity_note"] and not payload["capacity_note"]:
+            payload["capacity_note"] = row["capacity_note"]
+    return payloads
+
+
+def compute_rubber_denominator(
+    comparator_rows: list[dict[str, Any]],
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    totals: dict[str, dict[str, Any]] = {}
+    for row in comparator_rows:
+        comparator = row["comparator_geography"]
+        payload = totals.setdefault(
+            comparator,
+            {
+                "comparator_geography": comparator,
+                "benchmark_state_id": row["benchmark_state_id"],
+                "representative_year": row["representative_year"],
+                "benchmark_vanilla_rubber_cap": row["benchmark_vanilla_rubber_cap"],
+                "effective_rubber_hectares": 0.0,
+                "year_selection_reason": row["year_selection_reason"],
+                "capacity_note": row["capacity_note"],
+            },
+        )
+        payload["effective_rubber_hectares"] += float(row["effective_area_ha"])
+    summary_rows: list[dict[str, Any]] = []
+    per_cap_values: list[float] = []
+    for payload in totals.values():
+        vanilla_cap = float(payload["benchmark_vanilla_rubber_cap"])
+        effective_per_cap = payload["effective_rubber_hectares"] / vanilla_cap if vanilla_cap else 0.0
+        payload["effective_hectares_per_cap"] = effective_per_cap
+        summary_rows.append(payload)
+        if effective_per_cap:
+            per_cap_values.append(effective_per_cap)
+    denominator = (sum(per_cap_values) / len(per_cap_values)) if per_cap_values else None
+    denominator_row = {
+        "resource_family": "Rubber",
+        "valid_comparator_count": len(per_cap_values),
+        "denominator_units_per_cap": denominator,
+        "status": "formula-driven" if len(per_cap_values) >= 20 else "denominator_unavailable",
+        "method": (
+            "mean_of_effective_latent_rubber_comparator_pool"
+            if len(per_cap_values) >= 20
+            else "insufficient_comparator_pool"
+        ),
+    }
+    summary_rows.sort(key=lambda row: row["comparator_geography"])
+    return denominator_row, summary_rows
+
+
 def load_adjusted_vanilla_totals(vanilla_priors: dict[str, dict[str, Any]]) -> dict[str, dict[str, int]]:
     proxy_by_state = {row["official_name"]: row["vanilla_proxy_id"] for row in STATE_INFO}
     result: dict[str, dict[str, int]] = {}
@@ -2428,12 +2944,12 @@ def _series_value_for_year(series: dict[int, float], year: int) -> float | None:
     return series.get(year)
 
 
-def _anchor_year_for_series(series: dict[int, float], reference_value: float) -> tuple[int | None, float | None, str]:
+def _anchor_year_for_series(series: dict[int, float], reference_value: float, reference_year: int) -> tuple[int | None, float | None, str]:
     if not series:
         return None, None, "manual_override"
     year, value = min(
         series.items(),
-        key=lambda item: (abs(item[1] - reference_value), abs(item[0] - 1950), item[0]),
+        key=lambda item: (abs(item[1] - reference_value), abs(item[0] - reference_year), item[0]),
     )
     if max(series.values()) < reference_value:
         peak_year, peak_value = max(series.items(), key=lambda item: (item[1], item[0]))
@@ -2492,7 +3008,7 @@ def select_year_by_gdp(
 ) -> dict[str, Any]:
     map_row = gdp_map.get((entity_type, entity))
     reference_value = float(gdp_reference["gdp_per_capita"] or 0.0)
-    reference_year = int(gdp_reference.get("reference_year") or 1950)
+    reference_year = int(gdp_reference.get("reference_year") or OUTPUT_NORMALIZATION_YEAR)
     if map_row is None:
         fallback_candidate = _manual_candidate_fallback(candidates, reference_year)
         selection = _build_selection_stub(
@@ -2533,7 +3049,7 @@ def select_year_by_gdp(
         return selection
 
     series = geography_payload["series"]
-    anchor_year, anchor_value, base_mode = _anchor_year_for_series(series, reference_value)
+    anchor_year, anchor_value, base_mode = _anchor_year_for_series(series, reference_value, reference_year)
     candidate_rows = []
     for candidate in candidates:
         year = int(candidate["year"])
@@ -2565,7 +3081,7 @@ def select_year_by_gdp(
         selected = max(candidate_rows, key=lambda row: (row["gdp_value"], row["year"]))
         selection_mode = "economic_peak_fallback"
         selection_note = (
-            f"{geography_used} never reaches GBR 1950 GDP per capita in the frozen series; "
+            f"{geography_used} never reaches GBR {reference_year} GDP per capita in the frozen series; "
             f"candidate year {selected['year']} is the strongest available development match under that ceiling."
         )
     else:
@@ -2575,7 +3091,7 @@ def select_year_by_gdp(
         )
         selection_mode = "gdp_match"
         selection_note = (
-            f"Selected candidate year {selected['year']} because its GDP per capita is closest to the GBR 1950 reference anchor."
+            f"Selected candidate year {selected['year']} because its GDP per capita is closest to the GBR {reference_year} reference anchor."
         )
 
     if any(candidate.get("label") == "peak" for candidate in candidate_rows):
@@ -2648,7 +3164,8 @@ def gdp_profile_for_entity(
             "selection_mode": "manual_override",
             "selection_note": map_row.get("notes", "") or "No frozen GDP series exists for the mapped geography.",
         }
-    anchor_year, anchor_value, mode = _anchor_year_for_series(geography_payload["series"], reference_value)
+    reference_year = int(gdp_reference.get("reference_year") or OUTPUT_NORMALIZATION_YEAR)
+    anchor_year, anchor_value, mode = _anchor_year_for_series(geography_payload["series"], reference_value, reference_year)
     return {
         "gdp_geography_used": geography_used,
         "gdp_geography_level": geography_payload["geography_level"],
@@ -2678,7 +3195,7 @@ def select_observation_rows(
         candidates = [
             {
                 "year": int(row["year"]),
-                "normalized_output": float(row["normalized_1950_output"]),
+                "normalized_output": float(row["normalized_1940_output"]),
                 "row": row,
                 "observation_family": row.get("observation_family", ""),
             }
@@ -2737,9 +3254,9 @@ def build_interpolated_candidate(
                 span = int(later["year"]) - int(earlier["year"])
                 if span <= 0 or span > max_span:
                     continue
-                if earlier.get("row", {}).get("wheat_equivalent_1950_output") in ("", None):
+                if earlier.get("row", {}).get("wheat_equivalent_1940_output") in ("", None):
                     continue
-                if later.get("row", {}).get("wheat_equivalent_1950_output") in ("", None):
+                if later.get("row", {}).get("wheat_equivalent_1940_output") in ("", None):
                     continue
                 interpolated_normalized = linear_interpolate_value(
                     int(earlier["year"]),
@@ -2750,17 +3267,17 @@ def build_interpolated_candidate(
                 )
                 interpolated_wheat = linear_interpolate_value(
                     int(earlier["year"]),
-                    float(earlier["row"]["wheat_equivalent_1950_output"]),
+                    float(earlier["row"]["wheat_equivalent_1940_output"]),
                     int(later["year"]),
-                    float(later["row"]["wheat_equivalent_1950_output"]),
+                    float(later["row"]["wheat_equivalent_1940_output"]),
                     int(anchor_year),
                 )
                 interpolated_row = dict(earlier["row"])
                 interpolated_row.update(
                     {
                         "year": int(anchor_year),
-                        "normalized_1950_output": interpolated_normalized,
-                        "wheat_equivalent_1950_output": interpolated_wheat,
+                        "normalized_1940_output": interpolated_normalized,
+                        "wheat_equivalent_1940_output": interpolated_wheat,
                         "note": (
                             f"{earlier['row'].get('note', '')} | "
                             f"Interpolated to GDP anchor year {anchor_year} from {earlier['year']}-{later['year']}."
@@ -2801,7 +3318,7 @@ def finalize_arable_selection(
         [
             {
                 "year": int(row["year"]),
-                "normalized_output": float(row["normalized_1950_output"]),
+                "normalized_output": float(row["normalized_1940_output"]),
                 "row": row,
                 "observation_family": row.get("observation_family", ""),
             }
@@ -2870,7 +3387,7 @@ def select_arable_observation_rows(
         candidates = [
             {
                 "year": int(row["year"]),
-                "normalized_output": float(row["normalized_1950_output"]),
+                "normalized_output": float(row["normalized_1940_output"]),
                 "row": row,
                 "observation_family": row.get("observation_family", ""),
             }
@@ -2921,8 +3438,8 @@ def estimate_target_bidirectional_x(
         families = {row.get("observation_family", "") for row in observation_rows if row.get("observation_family")}
         for family in families:
             family_rows = [row for row in observation_rows if row.get("observation_family", "") == family]
-            earlier_rows = [row for row in family_rows if int(row["year"]) < anchor_year and row.get("wheat_equivalent_1950_output") not in ("", None)]
-            later_rows = [row for row in family_rows if int(row["year"]) > anchor_year and row.get("wheat_equivalent_1950_output") not in ("", None)]
+            earlier_rows = [row for row in family_rows if int(row["year"]) < anchor_year and row.get("wheat_equivalent_1940_output") not in ("", None)]
+            later_rows = [row for row in family_rows if int(row["year"]) > anchor_year and row.get("wheat_equivalent_1940_output") not in ("", None)]
             for earlier in earlier_rows:
                 for later in later_rows:
                     span = int(later["year"]) - int(earlier["year"])
@@ -2947,15 +3464,15 @@ def estimate_target_bidirectional_x(
         earlier_distance = abs(float(gdp_earlier) - reference_value)
         later_distance = abs(float(gdp_later) - reference_value)
         if earlier_distance == 0:
-            estimate = float(earlier["wheat_equivalent_1950_output"])
+            estimate = float(earlier["wheat_equivalent_1940_output"])
         elif later_distance == 0:
-            estimate = float(later["wheat_equivalent_1950_output"])
+            estimate = float(later["wheat_equivalent_1940_output"])
         else:
             earlier_weight = 1.0 / earlier_distance
             later_weight = 1.0 / later_distance
             estimate = (
-                (earlier_weight * float(earlier["wheat_equivalent_1950_output"]))
-                + (later_weight * float(later["wheat_equivalent_1950_output"]))
+                (earlier_weight * float(earlier["wheat_equivalent_1940_output"]))
+                + (later_weight * float(later["wheat_equivalent_1940_output"]))
             ) / (earlier_weight + later_weight)
         overrides[key] = estimate
         selection["target_estimation_method"] = "bidirectional_target_estimate"
@@ -2983,17 +3500,17 @@ def enrich_observation_rows(rows: list[dict[str, Any]], include_target: bool, gr
         standardized = standardized_quantity(float(row["normalized_quantity"]), str(row["normalized_unit"]))
         standardized_unit = canonical_unit(str(row["normalized_unit"]))
         growth_family = growth_family_for_resource(resource)
-        index_to_1950 = growth_index_lookup.get((growth_family, int(row["year"])), 1.0)
-        normalized_1950 = standardized * index_to_1950
+        index_to_1940 = growth_index_lookup.get((growth_family, int(row["year"])), 1.0)
+        normalized_1940 = standardized * index_to_1940
         conversion_key = conversion_key_for_row(resource, standardized_unit)
         conversion_factor = CONVERSION_FACTOR_MAP.get(conversion_key) if conversion_key else None
-        wheat_equivalent = normalized_1950 * conversion_factor if conversion_factor is not None else None
+        wheat_equivalent = normalized_1940 * conversion_factor if conversion_factor is not None else None
         short_name = short_geography_name(geography)
         validation = {field: row.get(field, "") for field in TARGET_VALIDATION_FIELDS}
         corroboration_count = corroboration_counts.get((STATE_INFO_BY_SHEET[row["sheet"]]["official_name"], resource), 1) if include_target and row["sheet"] in STATE_INFO_BY_SHEET else 1
         drives_x = validation_drives_x(validation, corroboration_count) if include_target else False
         localization_discount = float(validation.get("localization_discount") or 1.0) if include_target else 1.0
-        discounted_normalized_1950 = normalized_1950 * localization_discount if include_target and drives_x else ""
+        discounted_normalized_1940 = normalized_1940 * localization_discount if include_target and drives_x else ""
         discounted_wheat_equivalent = (
             wheat_equivalent * localization_discount
             if include_target and drives_x and wheat_equivalent is not None
@@ -3017,13 +3534,13 @@ def enrich_observation_rows(rows: list[dict[str, Any]], include_target: bool, gr
                 "standardized_unit": standardized_unit,
                 "sector": "Land Economy" if resource in LAND_ECONOMY_RESOURCES else ("Fisheries / Marine" if resource in {"Fishing", "Whaling"} else ("Forestry" if resource == "Wood" else "Mining")),
                 "growth_family": growth_family,
-                "index_to_1950": index_to_1950,
+                "index_to_1940": index_to_1940,
                 "conversion_key": conversion_key or "",
                 "conversion_factor": conversion_factor if conversion_factor is not None else "",
-                "normalized_1950_output": normalized_1950,
-                "wheat_equivalent_1950_output": wheat_equivalent if wheat_equivalent is not None else "",
-                "discounted_normalized_1950_output": discounted_normalized_1950,
-                "discounted_wheat_equivalent_1950_output": discounted_wheat_equivalent,
+                "normalized_1940_output": normalized_1940,
+                "wheat_equivalent_1940_output": wheat_equivalent if wheat_equivalent is not None else "",
+                "discounted_normalized_1940_output": discounted_normalized_1940,
+                "discounted_wheat_equivalent_1940_output": discounted_wheat_equivalent,
                 "drives_x": "yes" if drives_x else "no",
                 "review_action": review_action,
                 "corroboration_count": corroboration_count if include_target else "",
@@ -3079,12 +3596,12 @@ def build_target_observed_maps(
         key = (row["official_state"], row["resource"])
         if row.get("drives_x") != "yes":
             continue
-        normalized_value = row.get("discounted_normalized_1950_output", row["normalized_1950_output"])
+        normalized_value = row.get("discounted_normalized_1940_output", row["normalized_1940_output"])
         normalized[key] = float(normalized_value)
         if key in overrides:
             wheat_eq[key] = float(overrides[key])
         else:
-            discounted_wheat = row.get("discounted_wheat_equivalent_1950_output", row["wheat_equivalent_1950_output"])
+            discounted_wheat = row.get("discounted_wheat_equivalent_1940_output", row["wheat_equivalent_1940_output"])
             if discounted_wheat not in ("", None):
                 wheat_eq[key] = float(discounted_wheat)
     return normalized, wheat_eq
@@ -3094,10 +3611,10 @@ def build_comparator_maxima(selected_comparator_rows: dict[tuple[str, str], dict
     maxima: dict[tuple[str, str], float] = {}
     combined: dict[str, float] = defaultdict(float)
     for row in selected_comparator_rows.values():
-        if row["resource"] not in LAND_ECONOMY_RESOURCES or row["wheat_equivalent_1950_output"] in ("", None):
+        if row["resource"] not in LAND_ECONOMY_RESOURCES or row["wheat_equivalent_1940_output"] in ("", None):
             continue
         key = (row["entity"], row["resource"])
-        maxima[key] = float(row["wheat_equivalent_1950_output"])
+        maxima[key] = float(row["wheat_equivalent_1940_output"])
     for (entity, _resource), value in maxima.items():
         combined[entity] += value
     return maxima, dict(combined)
@@ -3117,24 +3634,24 @@ def compute_benchmark_comparator_rows(
         family = resource_family(str(case["resource"]))
         growth_family = growth_family_for_resource(str(case["resource"]))
         historical_standardized = standardized_quantity(float(case["historical_quantity"]), str(case["historical_unit"]))
-        historical_1950 = normalize_to_1950(historical_standardized, int(case["historical_year"]), growth_family, growth_index_lookup)
-        peak_1950 = None
+        historical_1940 = normalize_to_1940(historical_standardized, int(case["historical_year"]), growth_family, growth_index_lookup)
+        peak_1940 = None
         if case.get("peak_year") not in (None, "") and case.get("peak_quantity") not in (None, ""):
             peak_standardized = standardized_quantity(float(case["peak_quantity"]), str(case["peak_unit"]))
-            peak_1950 = normalize_to_1950(peak_standardized, int(case["peak_year"]), growth_family, growth_index_lookup)
+            peak_1940 = normalize_to_1940(peak_standardized, int(case["peak_year"]), growth_family, growth_index_lookup)
         candidate_rows = [
             {
                 "year": int(case["historical_year"]),
                 "label": "historical",
-                "normalized_output": historical_1950,
+                "normalized_output": historical_1940,
             }
         ]
-        if peak_1950 is not None:
+        if peak_1940 is not None:
             candidate_rows.append(
                 {
                     "year": int(case["peak_year"]),
                     "label": "peak",
-                    "normalized_output": peak_1950,
+                    "normalized_output": peak_1940,
                 }
             )
         selection = select_year_by_gdp(
@@ -3149,7 +3666,7 @@ def compute_benchmark_comparator_rows(
         selected_candidate = selection.pop("candidate")
         selected_year = int(selected_candidate["year"]) if selected_candidate is not None else int(case["historical_year"])
         selected_label = selected_candidate.get("label", "historical") if selected_candidate is not None else "historical"
-        maximum = historical_1950 if selected_label == "historical" else (peak_1950 if peak_1950 is not None else historical_1950)
+        maximum = historical_1940 if selected_label == "historical" else (peak_1940 if peak_1940 is not None else historical_1940)
         vanilla_cap = parse_float(case.get("benchmark_vanilla_cap")) or 0.0
         rows.append(
             {
@@ -3163,11 +3680,11 @@ def compute_benchmark_comparator_rows(
                 "peak_output": standardized_quantity(float(case["peak_quantity"]), str(case["peak_unit"])) if case.get("peak_quantity") not in (None, "") else "",
                 "peak_unit": canonical_unit(str(case.get("peak_unit", ""))) if case.get("peak_quantity") not in (None, "") else "",
                 "growth_family": growth_family,
-                "historical_index_to_1950": growth_index_lookup.get((growth_family, int(case["historical_year"])), ""),
-                "peak_index_to_1950": growth_index_lookup.get((growth_family, int(case["peak_year"])), "") if case.get("peak_year") not in (None, "") else "",
-                "historical_1950_equivalent_output": historical_1950,
-                "peak_1950_equivalent_output": peak_1950 if peak_1950 is not None else "",
-                "normalized_1950_equivalent_maximum": maximum,
+                "historical_index_to_1940": growth_index_lookup.get((growth_family, int(case["historical_year"])), ""),
+                "peak_index_to_1940": growth_index_lookup.get((growth_family, int(case["peak_year"])), "") if case.get("peak_year") not in (None, "") else "",
+                "historical_1940_equivalent_output": historical_1940,
+                "peak_1940_equivalent_output": peak_1940 if peak_1940 is not None else "",
+                "normalized_1940_equivalent_maximum": maximum,
                 "selected_resource_year": selected_year,
                 "selection_mode": selection["selection_mode"],
                 "gdp_geography_used": selection["gdp_geography_used"],
@@ -3214,6 +3731,7 @@ def compute_wood_comparator_rows(
 def compute_resource_denominators(
     mining_rows: list[dict[str, Any]],
     wood_denominator_row: dict[str, Any],
+    rubber_denominator_row: dict[str, Any],
 ) -> tuple[dict[str, dict[str, Any]], list[dict[str, Any]]]:
     families = ["Coal Mine", "Iron Mine", "Gold Fields", "Gold Mine", "Lead Mine", "Sulfur Mine", "Fishing", "Whaling", "Oil", "Rubber", "Wood"]
     payloads: dict[str, dict[str, Any]] = {}
@@ -3221,6 +3739,8 @@ def compute_resource_denominators(
     for family in families:
         if family == "Wood":
             payloads[family] = dict(wood_denominator_row)
+        elif family == "Rubber":
+            payloads[family] = dict(rubber_denominator_row)
         else:
             source_family = "Gold Fields" if family == "Gold Mine" else family
             values = [
@@ -3421,6 +3941,8 @@ ADJUSTMENT_INPUT_FIELDNAMES = [
     "minimum_operating_floor_cap",
     "exception_status",
     "exception_final_cap",
+    "earliest_commercial_activity_year",
+    "flagship_scale_year",
     "representative_max_year",
     "representative_max_output",
     "year_selection_reason",
@@ -3474,6 +3996,8 @@ def seed_adjustment_inputs_if_needed(
             "minimum_operating_floor_cap": "",
             "exception_status": "",
             "exception_final_cap": "",
+            "earliest_commercial_activity_year": "",
+            "flagship_scale_year": "",
             "representative_max_year": "",
             "representative_max_output": "",
             "year_selection_reason": "",
@@ -3520,8 +4044,8 @@ def seed_adjustment_inputs_if_needed(
                 seeded["adjustment_reason"] = "Land-capacity model uses direct effective commercial hectares; legacy output-gap uplift is retired."
                 seeded["calculation_note"] = "Seeded for the land-capacity model: arable no longer uses legacy output-gap Y terms."
             elif row["problem_type"] in {"overstatement", "chronology"}:
-                seeded["plausibility_haircut_z"] = round(max(0.0, observed - desired_output), 6)
-                seeded["calculation_note"] = "Seeded from legacy audited cap as a downward plausibility haircut in output units."
+                seeded["plausibility_haircut_z"] = 0.0
+                seeded["calculation_note"] = "Legacy chronology moderation now requires explicit commercial-activity years before a universal quantity-resource Z can be derived."
             elif resource == "Lead Mine":
                 seeded["output_addition_y"] = round(max(0.0, desired_output - observed), 6)
                 seeded["y_basis"] = "proxy_target_gap"
@@ -3555,6 +4079,7 @@ def load_adjustment_inputs() -> dict[tuple[str, str], dict[str, Any]]:
     )
     inputs: dict[tuple[str, str], dict[str, Any]] = {}
     wood_capacity_by_state: dict[str, dict[str, Any]] = {}
+    rubber_capacity_by_state: dict[str, dict[str, Any]] = {}
     for wood_row in load_wood_target_capacity_rows():
         payload = wood_capacity_by_state.setdefault(
             wood_row["state"],
@@ -3577,6 +4102,28 @@ def load_adjustment_inputs() -> dict[tuple[str, str], dict[str, Any]]:
             payload["citation_2_title"] = wood_row["citation_2_title"]
             payload["citation_2_url"] = wood_row["citation_2_url"]
             payload["citation_2_locator"] = wood_row["citation_2_locator"]
+    for rubber_row in load_rubber_target_capacity_rows():
+        payload = rubber_capacity_by_state.setdefault(
+            rubber_row["state"],
+            {
+                "effective_area_total": 0.0,
+                "citation_1_title": "",
+                "citation_1_url": "",
+                "citation_1_locator": "",
+                "citation_2_title": "",
+                "citation_2_url": "",
+                "citation_2_locator": "",
+            },
+        )
+        payload["effective_area_total"] += float(rubber_row["effective_area_ha"])
+        if not payload["citation_1_title"]:
+            payload["citation_1_title"] = rubber_row["citation_1_title"]
+            payload["citation_1_url"] = rubber_row["citation_1_url"]
+            payload["citation_1_locator"] = rubber_row["citation_1_locator"]
+        if not payload["citation_2_title"]:
+            payload["citation_2_title"] = rubber_row["citation_2_title"]
+            payload["citation_2_url"] = rubber_row["citation_2_url"]
+            payload["citation_2_locator"] = rubber_row["citation_2_locator"]
     for row in active_rows:
         resource = row["resource"]
         parsed = {
@@ -3586,6 +4133,8 @@ def load_adjustment_inputs() -> dict[tuple[str, str], dict[str, Any]]:
             "minimum_operating_floor_cap": parse_int(row["minimum_operating_floor_cap"]),
             "exception_status": row["exception_status"],
             "exception_final_cap": parse_int(row["exception_final_cap"]),
+            "earliest_commercial_activity_year": parse_int(row.get("earliest_commercial_activity_year")),
+            "flagship_scale_year": parse_int(row.get("flagship_scale_year")),
             "representative_max_year": row.get("representative_max_year", ""),
             "representative_max_output": parse_float(row.get("representative_max_output")) if row.get("representative_max_output") not in (None, "") else "",
             "year_selection_reason": row.get("year_selection_reason", ""),
@@ -3611,6 +4160,14 @@ def load_adjustment_inputs() -> dict[tuple[str, str], dict[str, Any]]:
             "citation_2_locator": row["citation_2_locator"],
             "calculation_note": row["calculation_note"],
         }
+        if quantity_resource_uses_universal_z(resource):
+            has_earliest_year = parsed["earliest_commercial_activity_year"] is not None
+            has_flagship_year = parsed["flagship_scale_year"] is not None
+            if has_earliest_year != has_flagship_year:
+                raise ValueError(
+                    f"{resource} / {row['state']} must set both earliest_commercial_activity_year "
+                    "and flagship_scale_year when chronology moderation is used."
+                )
         if resource == "Arable Land":
             parsed.update(
                 {
@@ -3620,6 +4177,8 @@ def load_adjustment_inputs() -> dict[tuple[str, str], dict[str, Any]]:
                     "minimum_operating_floor_cap": None,
                     "exception_status": "",
                     "exception_final_cap": None,
+                    "earliest_commercial_activity_year": None,
+                    "flagship_scale_year": None,
                     "y_basis": "",
                     "y_reason": "No upward addition.",
                     "y_counterevidence_trigger": "No counterevidence-triggered addition.",
@@ -3648,6 +4207,8 @@ def load_adjustment_inputs() -> dict[tuple[str, str], dict[str, Any]]:
                     "problem_type": "" if parsed["exception_status"] != "manual_zero_exception" else parsed["problem_type"],
                     "output_addition_y": parsed["output_addition_y"],
                     "plausibility_haircut_z": parsed["plausibility_haircut_z"],
+                    "earliest_commercial_activity_year": None,
+                    "flagship_scale_year": None,
                     "representative_max_year": 1936,
                     "year_selection_reason": "Representative year is audited metadata only for the forestry-capacity model; wood no longer uses GDP-selected plantation-estate rows.",
                     "observed_output_x_reason": "Wood now uses direct effective commercial forestry hectares from audited wood land-class rows rather than observed plantation-estate area.",
@@ -3669,6 +4230,65 @@ def load_adjustment_inputs() -> dict[tuple[str, str], dict[str, Any]]:
                     ),
                 }
             )
+        elif resource == "Rubber (undiscovered)":
+            rubber_seed = rubber_capacity_by_state.get(row["state"], {})
+            effective_area_total = float(rubber_seed.get("effective_area_total", 0.0))
+            if effective_area_total > 0.0:
+                parsed["exception_status"] = ""
+                parsed["exception_final_cap"] = None
+                parsed["problem_type"] = ""
+                parsed["audit_class"] = ""
+                parsed["counterevidence_status"] = ""
+                parsed["counterevidence_note"] = ""
+            elif not parsed["exception_status"]:
+                parsed["exception_status"] = "manual_zero_exception"
+                parsed["exception_final_cap"] = 0
+            if not parsed["citation_1_title"]:
+                parsed["citation_1_title"] = rubber_seed.get("citation_1_title", "")
+                parsed["citation_1_url"] = rubber_seed.get("citation_1_url", "")
+                parsed["citation_1_locator"] = rubber_seed.get("citation_1_locator", "")
+            if not parsed["citation_2_title"]:
+                parsed["citation_2_title"] = rubber_seed.get("citation_2_title", "")
+                parsed["citation_2_url"] = rubber_seed.get("citation_2_url", "")
+                parsed["citation_2_locator"] = rubber_seed.get("citation_2_locator", "")
+            parsed.update(
+                {
+                    "problem_type": "" if parsed["exception_status"] != "manual_zero_exception" else parsed["problem_type"],
+                    "output_addition_y": 0.0,
+                    "plausibility_haircut_z": 0.0,
+                    "earliest_commercial_activity_year": None,
+                    "flagship_scale_year": None,
+                    "representative_max_year": 1936,
+                    "year_selection_reason": "Representative year is audited metadata only for the latent-rubber land-capacity model; rubber no longer uses GDP-selected output rows here.",
+                    "observed_output_x_reason": "Rubber (undiscovered) now uses direct effective commercial plantation hectares from audited rubber land-class rows.",
+                    "y_basis": parsed["y_basis"] or "",
+                    "y_reason": parsed["y_reason"] or "No upward addition.",
+                    "y_counterevidence_trigger": parsed["y_counterevidence_trigger"] or "No counterevidence-triggered addition.",
+                    "y_quantification_method": parsed["y_quantification_method"] or "No upward addition.",
+                    "z_reason": parsed["z_reason"] or "No downward plausibility haircut.",
+                    "audit_class": parsed["audit_class"] or ("exception" if parsed["exception_status"] else "direct"),
+                    "adjustment_reason": (
+                        "Latent-rubber model keeps this row as an explicit zero exception because the audited state footprint does not support a bounded plantation slot."
+                        if parsed["exception_status"]
+                        else "Latent-rubber model replaces the old explicit-zero policy with direct effective commercial plantation hectares."
+                    ),
+                    "calculation_note": (
+                        "Explicit zero retained under the latent-rubber model because the audited state footprint does not support a bounded plantation slot."
+                        if parsed["exception_status"]
+                        else "Rubber (undiscovered) now uses direct effective commercial plantation hectares with a dedicated latent-rubber denominator."
+                    ),
+                }
+            )
+        elif resource == "Rubber (discovered)":
+            parsed.update(
+                {
+                    "exception_status": parsed["exception_status"] or "manual_zero_exception",
+                    "exception_final_cap": parsed["exception_final_cap"] if parsed["exception_final_cap"] is not None else 0,
+                    "audit_class": parsed["audit_class"] or "exception",
+                    "adjustment_reason": parsed["adjustment_reason"] or "Rubber (discovered) remains an explicit exception in v3; only latent rubber joins the land-capacity model.",
+                    "calculation_note": parsed["calculation_note"] or "Rubber (discovered) is held out of the land-capacity model unless a separate localized discovered-estate chain is frozen.",
+                }
+            )
         inputs[(row["state"], resource)] = parsed
     return inputs
 
@@ -3683,6 +4303,7 @@ def build_base_state_resource_rows(
     shared_arable_denominator: dict[str, Any],
     arable_state_payloads: dict[str, dict[str, Any]],
     wood_state_payloads: dict[str, dict[str, Any]],
+    rubber_state_payloads: dict[str, dict[str, Any]],
     gdp_reference: dict[str, Any],
     gdp_series: dict[str, dict[str, Any]],
     gdp_map: dict[tuple[str, str], dict[str, str]],
@@ -3735,11 +4356,31 @@ def build_base_state_resource_rows(
                     "comparator_basket_coverage_share": "",
                     "selection_note": "Wood is audited from direct effective commercial forestry hectares rather than GDP-selected plantation-estate observations.",
                 }
+            elif resource == "Rubber (undiscovered)":
+                observed_x = rubber_state_payloads[state]["observed_output_x"]
+                denom_payload = resource_denominators.get(family, {})
+                denominator = parse_float(denom_payload.get("denominator_units_per_cap"))
+                denominator_status = denom_payload.get("status", "denominator_unavailable")
+                gdp_fields = {
+                    "gdp_geography_used": "",
+                    "gdp_geography_level": "",
+                    "gdp_anchor_year": "",
+                    "gdp_value_at_anchor_year": "",
+                    "selected_resource_year": "",
+                    "selection_mode": "",
+                    "gdp_distance_ratio": "",
+                    "gdp_comparability_status": "",
+                    "target_estimation_method": "",
+                    "interpolation_used": "",
+                    "comparator_included_in_denominator": resource_denominators.get("Rubber", {}).get("valid_comparator_count", ""),
+                    "comparator_basket_coverage_share": "",
+                    "selection_note": "Rubber (undiscovered) is audited from direct effective commercial plantation hectares rather than GDP-selected latex output.",
+                }
             else:
                 selected_target = selected_target_rows.get((state, resource))
                 selection_meta = target_selection_map.get((state, resource), {})
                 if selected_target is not None and selected_target.get("drives_x") == "yes":
-                    observed_x = float(selected_target.get("discounted_normalized_1950_output", selected_target["normalized_1950_output"]))
+                    observed_x = float(selected_target.get("discounted_normalized_1940_output", selected_target["normalized_1940_output"]))
                 else:
                     observed_x = None
                 denom_payload = resource_denominators.get(family, {})
@@ -3828,17 +4469,21 @@ def apply_adjustments(
             input_row = adjustment_inputs.get((state, resource), {})
             row_cases = counterevidence_cases.get((state, resource), [])
             y_addition = input_row.get("output_addition_y", 0.0)
-            z = input_row.get("plausibility_haircut_z", 0.0)
             minimum_floor = input_row.get("minimum_operating_floor_cap")
             exception_status = input_row.get("exception_status", "")
             denominator = parse_float(base["denominator_units_per_cap"])
             observed = parse_float(base["observed_output_x"]) or 0.0
+            representative_max_year = input_row.get("representative_max_year", "")
+            representative_max_output = input_row.get("representative_max_output", "")
+            selected_resource_year = base.get("selected_resource_year") or representative_max_year
+            computed_z = compute_universal_quantity_z(resource, observed, input_row, selected_resource_year)
+            z = computed_z if computed_z is not None else input_row.get("plausibility_haircut_z", 0.0)
             base_cap = parse_float(base["base_cap"])
             proxy_kind = input_row.get("proxy_kind", "")
             proxy_native_unit = input_row.get("proxy_native_unit", "")
             proxy_to_slot_note = input_row.get("proxy_to_slot_note", "")
-            representative_max_year = input_row.get("representative_max_year", "")
-            representative_max_output = input_row.get("representative_max_output", "")
+            earliest_commercial_activity_year = input_row.get("earliest_commercial_activity_year")
+            flagship_scale_year = input_row.get("flagship_scale_year")
             year_selection_reason = input_row.get("year_selection_reason", "")
             observed_output_x_reason = input_row.get("observed_output_x_reason", "")
             if resource == "Wood":
@@ -3846,6 +4491,11 @@ def apply_adjustments(
                 representative_max_output = observed
                 year_selection_reason = input_row.get("year_selection_reason", "") or "Representative year is audited metadata only for the forestry-capacity model; wood no longer uses GDP-selected plantation-estate rows."
                 observed_output_x_reason = input_row.get("observed_output_x_reason", "") or "Wood now uses direct effective commercial forestry hectares from audited wood land-class rows."
+            elif resource == "Rubber (undiscovered)":
+                representative_max_year = 1936
+                representative_max_output = observed
+                year_selection_reason = input_row.get("year_selection_reason", "") or "Representative year is audited metadata only for the latent-rubber land-capacity model; rubber no longer uses GDP-selected output rows here."
+                observed_output_x_reason = input_row.get("observed_output_x_reason", "") or "Rubber (undiscovered) now uses direct effective commercial plantation hectares from audited rubber land-class rows."
             if not proxy_kind and (state, resource) in PROXY_NOTES:
                 proxy_kind, proxy_native_unit, proxy_to_slot_note = PROXY_NOTES[(state, resource)]
             adjustment_key = ""
@@ -3862,8 +4512,8 @@ def apply_adjustments(
             else:
                 adjusted_output = observed + y_addition - z
                 adjusted_cap = adjusted_output / denominator
-                rounded_cap = round(adjusted_cap)
-                final_cap = max(rounded_cap, minimum_floor) if minimum_floor else rounded_cap
+                ceiled_cap = max(math.ceil(adjusted_cap), 0)
+                final_cap = max(ceiled_cap, minimum_floor) if minimum_floor else ceiled_cap
                 if final_cap == 0 and observed == 0 and not has_adjustment_terms:
                     counterevidence_status, _counterevidence_note = summarize_counterevidence(row_cases, final_cap, exception_status)
                     status = "constrained zero" if counterevidence_status == "supports" else "review required"
@@ -3893,6 +4543,8 @@ def apply_adjustments(
                     "exception_status": exception_status,
                     "problem_type": input_row.get("problem_type", ""),
                     "adjustment_reason": input_row.get("adjustment_reason", ""),
+                    "earliest_commercial_activity_year": earliest_commercial_activity_year or "",
+                    "flagship_scale_year": flagship_scale_year or "",
                     "representative_max_year": representative_max_year,
                     "representative_max_output": representative_max_output,
                     "year_selection_reason": year_selection_reason,
@@ -3932,6 +4584,8 @@ def apply_adjustments(
                     "exception_status": exception_status,
                     "problem_type": input_row.get("problem_type", ""),
                     "adjustment_reason": input_row.get("adjustment_reason", ""),
+                    "earliest_commercial_activity_year": earliest_commercial_activity_year or "",
+                    "flagship_scale_year": flagship_scale_year or "",
                     "representative_max_year": representative_max_year,
                     "representative_max_output": representative_max_output,
                     "year_selection_reason": year_selection_reason,
@@ -4073,9 +4727,14 @@ def build_row_audit_rows(
             representative_output = row["observed_output_x"]
             year_reason = row.get("year_selection_reason") or row.get("selection_note") or "Representative year is audited metadata only for the forestry-capacity model; wood no longer uses GDP-selected plantation-estate rows."
             observed_reason = row.get("observed_output_x_reason") or "Observed x is the summed effective commercial forestry hectares from audited wood land-class rows."
+        elif resource == "Rubber (undiscovered)":
+            representative_year = row.get("representative_max_year", "") or 1936
+            representative_output = row["observed_output_x"]
+            year_reason = row.get("year_selection_reason") or row.get("selection_note") or "Representative year is audited metadata only for the latent-rubber land-capacity model; rubber no longer uses GDP-selected output rows here."
+            observed_reason = row.get("observed_output_x_reason") or "Observed x is the summed effective commercial plantation hectares from audited rubber land-class rows."
         elif representative is not None:
             representative_year = representative["year"]
-            representative_output = representative.get("discounted_normalized_1950_output", representative["normalized_1950_output"])
+            representative_output = representative.get("discounted_normalized_1940_output", representative["normalized_1940_output"])
             year_reason = row.get("year_selection_reason") or row.get("selection_note") or "Representative year selected through the GDP-anchored audit rule."
             observed_reason = row.get("observed_output_x_reason") or representative.get("note") or representative.get("locator") or ""
         else:
@@ -4125,6 +4784,8 @@ def build_row_audit_rows(
                 "resource_family": row["resource_family"],
                 "status": row["status"],
                 "final_audited_cap": row["final_audited_cap"],
+                "earliest_commercial_activity_year": row.get("earliest_commercial_activity_year", ""),
+                "flagship_scale_year": row.get("flagship_scale_year", ""),
                 "representative_max_year": representative_year,
                 "representative_max_output": representative_output,
                 "year_selection_reason": year_reason,
@@ -4197,6 +4858,8 @@ def write_public_outputs(
     arable_comparator_diagnostics: list[dict[str, Any]],
     wood_target_capacity_rows: list[dict[str, Any]],
     wood_comparator_capacity_rows: list[dict[str, Any]],
+    rubber_target_capacity_rows: list[dict[str, Any]],
+    rubber_comparator_capacity_rows: list[dict[str, Any]],
     resource_adjustment_rows: list[dict[str, Any]],
     regional_total_rows: list[dict[str, Any]],
     audit_rows: list[dict[str, Any]],
@@ -4232,13 +4895,13 @@ def write_public_outputs(
             "standardized_unit",
             "sector",
             "growth_family",
-            "index_to_1950",
+            "index_to_1940",
             "conversion_key",
             "conversion_factor",
-            "normalized_1950_output",
-            "wheat_equivalent_1950_output",
-            "discounted_normalized_1950_output",
-            "discounted_wheat_equivalent_1950_output",
+            "normalized_1940_output",
+            "wheat_equivalent_1940_output",
+            "discounted_normalized_1940_output",
+            "discounted_wheat_equivalent_1940_output",
             "drives_x",
             "review_action",
             "corroboration_count",
@@ -4268,13 +4931,13 @@ def write_public_outputs(
             "standardized_unit",
             "sector",
             "growth_family",
-            "index_to_1950",
+            "index_to_1940",
             "conversion_key",
             "conversion_factor",
-            "normalized_1950_output",
-            "wheat_equivalent_1950_output",
-            "discounted_normalized_1950_output",
-            "discounted_wheat_equivalent_1950_output",
+            "normalized_1940_output",
+            "wheat_equivalent_1940_output",
+            "discounted_normalized_1940_output",
+            "discounted_wheat_equivalent_1940_output",
             "drives_x",
             "review_action",
             "corroboration_count",
@@ -4409,6 +5072,16 @@ def write_public_outputs(
         WOOD_COMPARATOR_CAPACITY_FIELDNAMES,
     )
     write_csv(
+        DERIVED_DIR / "rubber_target_capacity_rows.csv",
+        rubber_target_capacity_rows,
+        RUBBER_TARGET_CAPACITY_FIELDNAMES,
+    )
+    write_csv(
+        DERIVED_DIR / "rubber_comparator_capacity_rows.csv",
+        rubber_comparator_capacity_rows,
+        RUBBER_COMPARATOR_CAPACITY_FIELDNAMES,
+    )
+    write_csv(
         DERIVED_DIR / "resource_adjustments.csv",
         resource_adjustment_rows,
         [
@@ -4435,6 +5108,8 @@ def write_public_outputs(
             "adjustment_key",
             "problem_type",
             "adjustment_reason",
+            "earliest_commercial_activity_year",
+            "flagship_scale_year",
             "representative_max_year",
             "representative_max_output",
             "year_selection_reason",
@@ -4486,6 +5161,8 @@ def write_public_outputs(
             "adjustment_key",
             "problem_type",
             "adjustment_reason",
+            "earliest_commercial_activity_year",
+            "flagship_scale_year",
             "representative_max_year",
             "representative_max_output",
             "year_selection_reason",
@@ -4560,6 +5237,8 @@ def write_public_outputs(
             "exception_status",
             "problem_type",
             "adjustment_reason",
+            "earliest_commercial_activity_year",
+            "flagship_scale_year",
             "representative_max_year",
             "representative_max_output",
             "year_selection_reason",
@@ -4595,6 +5274,8 @@ def write_public_outputs(
             "resource_family",
             "status",
             "final_audited_cap",
+            "earliest_commercial_activity_year",
+            "flagship_scale_year",
             "representative_max_year",
             "representative_max_output",
             "year_selection_reason",
@@ -4666,7 +5347,7 @@ def write_public_outputs(
     write_csv(
         DERIVED_DIR / "growth_series.csv",
         growth_rows,
-        ["family", "year", "quantity", "unit", "index_to_1950", "method", "source_title", "source_url", "locator"],
+        ["family", "year", "quantity", "unit", "index_to_1940", "method", "source_title", "source_url", "locator"],
     )
 
 
@@ -4869,6 +5550,7 @@ def build_target_data_validation_rows(
     target_observations: list[dict[str, Any]],
     arable_target_capacity_rows: list[dict[str, Any]],
     wood_target_capacity_rows: list[dict[str, Any]],
+    rubber_target_capacity_rows: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     for row in target_observations:
@@ -4886,7 +5568,7 @@ def build_target_data_validation_rows(
                 "localization_discount": row.get("localization_discount", ""),
                 "validation_note": row.get("validation_note", ""),
                 "drives_x": row.get("drives_x", "no"),
-                "discounted_effective_value": row.get("discounted_normalized_1950_output", ""),
+                "discounted_effective_value": row.get("discounted_normalized_1940_output", ""),
                 "review_action": row.get("review_action", ""),
                 "source_title": row.get("source_title", ""),
                 "source_url": row.get("source_url", ""),
@@ -4896,6 +5578,7 @@ def build_target_data_validation_rows(
     for source_file, resource_name, capacity_rows in [
         ("arable_target_capacity_rows.csv", "Arable Land", arable_target_capacity_rows),
         ("wood_target_capacity_rows.csv", "Wood", wood_target_capacity_rows),
+        ("rubber_target_capacity_rows.csv", "Rubber (undiscovered)", rubber_target_capacity_rows),
     ]:
         for row in capacity_rows:
             validation = {field: row.get(field, "") for field in TARGET_VALIDATION_FIELDS}
@@ -4961,9 +5644,14 @@ def distinct_join(values: list[str], fallback: str) -> str:
 def build_capacity_validation_summary(
     arable_target_capacity_rows: list[dict[str, Any]],
     wood_target_capacity_rows: list[dict[str, Any]],
+    rubber_target_capacity_rows: list[dict[str, Any]],
 ) -> dict[tuple[str, str], dict[str, Any]]:
     summary: dict[tuple[str, str], dict[str, Any]] = {}
-    for resource, rows in [("Arable Land", arable_target_capacity_rows), ("Wood", wood_target_capacity_rows)]:
+    for resource, rows in [
+        ("Arable Land", arable_target_capacity_rows),
+        ("Wood", wood_target_capacity_rows),
+        ("Rubber (undiscovered)", rubber_target_capacity_rows),
+    ]:
         for row in rows:
             key = (row["state"], resource)
             payload = summary.setdefault(
@@ -5008,13 +5696,18 @@ def build_state_resource_counterfactual_audit_rows(
     family_rewrite_rows: list[dict[str, Any]],
     arable_target_capacity_rows: list[dict[str, Any]],
     wood_target_capacity_rows: list[dict[str, Any]],
+    rubber_target_capacity_rows: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
     adjustment_map = {(row["state"], row["resource"]): row for row in resource_adjustment_rows}
     expectation_map = {(row["state"], row["resource"]): row for row in arable_resource_expectation_rows}
     basket_map = {(row["state"], row["resource"]): row for row in arable_basket_rows}
     pass_index_map = state_pass_index_by_state(state_pass_tracker_rows)
     family_flags = family_rewrite_flags_by_state(family_rewrite_rows)
-    capacity_summary = build_capacity_validation_summary(arable_target_capacity_rows, wood_target_capacity_rows)
+    capacity_summary = build_capacity_validation_summary(
+        arable_target_capacity_rows,
+        wood_target_capacity_rows,
+        rubber_target_capacity_rows,
+    )
     category_map = {resource: humanize_label(category) for category, resource in WORKBOOK_STATE_RESOURCE_ORDER}
     rows: list[dict[str, Any]] = []
 
@@ -5291,11 +5984,22 @@ def build_workbook(
     overview.merge_cells(start_row=2, start_column=1, end_row=2, end_column=5)
     overview["A2"] = (
         "Vanilla baseline is compared against the audited SB update. "
-        "Tags: CAP = Cape states, TRN = Transvaal states, SAF = South African states, SWA = Namibian states. "
-        "The progress block tracks the one-state-per-run counterfactual audit loop."
+        "Tags: CAP = Cape states, TRN = Transvaal states, SAF = South African states, SWA = Namibian states."
     )
     overview["A2"].alignment = Alignment(wrap_text=True)
     row = 4
+    row = add_key_value_block(
+        overview,
+        row,
+        "Method notes",
+        [
+            ("Non-land rows", "Representative year closest to GBR 1940 in the frozen Maddison GDP series, then normalized to a 1940-equivalent output frame. Peak override is retained only for depletion or recovery cases."),
+            ("Land-capacity rows", "Arable Land, Wood, and Rubber (undiscovered) use direct effective commercial hectares rather than GDP-selected output."),
+            ("Universal Z", "Quantity-resource haircuts now use earliest commercial activity year plus a linear lag from the selected representative year. Hectare families do not use this rule."),
+            ("Rubber split", "Rubber (undiscovered) is formula-driven where localized plantation hectares exist. Rubber (discovered) remains an explicit exception in v3."),
+            ("Basis labels", "Historical = direct historical support; Counterfactual = bounded local potential; Exception = explicit policy row; Unchanged = vanilla and SB match."),
+        ],
+    )
     row = add_table(
         overview,
         row,
@@ -5338,9 +6042,12 @@ def build_workbook(
         )
         ws["A2"].alignment = Alignment(wrap_text=True)
         ws.merge_cells(start_row=3, start_column=1, end_row=3, end_column=6)
-        ws["A3"] = "The SB update column shows the audited value and the Basis column shows whether that row is historical, counterfactual, an exception, or unchanged."
+        ws["A3"] = "The SB update column shows the current audited value. Basis shows whether the row is historical, bounded counterfactual, explicit exception, or unchanged baseline."
         ws["A3"].alignment = Alignment(wrap_text=True)
-        row = 5
+        ws.merge_cells(start_row=4, start_column=1, end_row=4, end_column=6)
+        ws["A4"] = "Method summary: quantity rows use the GBR 1940 representative-year rule and a shared chronology Z based on earliest commercial activity year plus representative-year lag; Arable Land, Wood, and Rubber (undiscovered) use direct effective hectares."
+        ws["A4"].alignment = Alignment(wrap_text=True)
+        row = 6
         row = add_key_value_block(
             ws,
             row,
@@ -5444,6 +6151,7 @@ def sync_live_state_file(
 
 
 def build_public_workbook() -> dict[str, Any]:
+    ensure_v3_reset()
     growth_rows, growth_index_lookup = build_growth_rows(load_growth_anchor_series())
     historical_rows, modern_rows = load_raw_data()
     gdp_reference = load_gdp_reference_anchor()
@@ -5468,6 +6176,7 @@ def build_public_workbook() -> dict[str, Any]:
     arable_baskets = load_arable_baskets()
     _arable_land_weights = load_arable_land_class_weights()
     _wood_land_weights = load_wood_land_class_weights()
+    _rubber_land_weights = load_rubber_land_class_weights()
     vanilla_totals = load_adjusted_vanilla_totals(vanilla_priors)
     target_normalized, target_wheat_eq = build_target_observed_maps(selected_target_rows)
     comparator_maxima, comparator_totals = build_comparator_maxima(selected_comparator_rows)
@@ -5476,16 +6185,25 @@ def build_public_workbook() -> dict[str, Any]:
     arable_comparator_capacity_rows = load_arable_comparator_capacity_rows(rankings)
     wood_target_capacity_rows = load_wood_target_capacity_rows()
     wood_comparator_capacity_rows = load_wood_comparator_capacity_rows()
+    rubber_target_capacity_rows = load_rubber_target_capacity_rows()
+    rubber_comparator_capacity_rows = load_rubber_comparator_capacity_rows()
     target_data_validation_rows = build_target_data_validation_rows(
         target_observations,
         arable_target_capacity_rows,
         wood_target_capacity_rows,
+        rubber_target_capacity_rows,
     )
     state_regional_advantage_rows = seed_regional_advantages_rows()
     mining_comparator_rows, mining_gdp_selection_rows = compute_mining_comparator_rows(load_benchmark_cases(), growth_index_lookup, gdp_reference, gdp_series, gdp_map)
     wood_state_payloads = compute_wood_state_payloads(wood_target_capacity_rows)
     wood_denominator_row, wood_comparator_summary_rows = compute_wood_denominator(wood_comparator_capacity_rows)
-    resource_denominators, resource_denominator_rows = compute_resource_denominators(mining_comparator_rows, wood_denominator_row)
+    rubber_state_payloads = compute_rubber_state_payloads(rubber_target_capacity_rows)
+    rubber_denominator_row, rubber_comparator_summary_rows = compute_rubber_denominator(rubber_comparator_capacity_rows)
+    resource_denominators, resource_denominator_rows = compute_resource_denominators(
+        mining_comparator_rows,
+        wood_denominator_row,
+        rubber_denominator_row,
+    )
     arable_state_payloads, arable_state_mean_rows, arable_comparator_diagnostics = compute_arable_state_means(
         rankings,
         arable_target_capacity_rows,
@@ -5506,6 +6224,7 @@ def build_public_workbook() -> dict[str, Any]:
         arable_shared_denominator,
         arable_coverage_payloads,
         wood_state_payloads,
+        rubber_state_payloads,
         gdp_reference,
         gdp_series,
         gdp_map,
@@ -5525,9 +6244,10 @@ def build_public_workbook() -> dict[str, Any]:
         family_rewrite_rows,
         arable_target_capacity_rows,
         wood_target_capacity_rows,
+        rubber_target_capacity_rows,
     )
     state_review_status_rows = build_state_review_status_rows(state_pass_tracker_rows)
-    capacity_model_resources = {resource for category, resource in BINARY_RESOURCES if category == "Arable Resource"} | {"Arable Land", "Wood"}
+    capacity_model_resources = {resource for category, resource in BINARY_RESOURCES if category == "Arable Resource"} | {"Arable Land", "Wood", "Rubber (undiscovered)"}
     target_gdp_selection_rows = [row for row in target_gdp_selection_rows if row["resource"] not in capacity_model_resources]
     comparator_gdp_selection_rows = [row for row in comparator_gdp_selection_rows if row["resource"] not in capacity_model_resources]
     gdp_selection_rows = (
@@ -5535,9 +6255,9 @@ def build_public_workbook() -> dict[str, Any]:
         + comparator_gdp_selection_rows
         + mining_gdp_selection_rows
     )
-    gdp_selection_rows = [row for row in gdp_selection_rows if row["resource"] != "Wood"]
-    public_target_observations = [row for row in target_observations if row["resource"] != "Wood"]
-    public_comparator_observations = [row for row in comparator_observations if row["resource"] != "Wood"]
+    gdp_selection_rows = [row for row in gdp_selection_rows if row["resource"] not in {"Wood", "Rubber (undiscovered)"}]
+    public_target_observations = [row for row in target_observations if row["resource"] not in {"Wood", "Rubber (undiscovered)"}]
+    public_comparator_observations = [row for row in comparator_observations if row["resource"] not in {"Wood", "Rubber (undiscovered)"}]
     workbook = build_workbook(
         resource_adjustment_rows,
         regional_total_rows,
@@ -5564,6 +6284,8 @@ def build_public_workbook() -> dict[str, Any]:
         arable_comparator_diagnostics,
         wood_target_capacity_rows,
         wood_comparator_capacity_rows,
+        rubber_target_capacity_rows,
+        rubber_comparator_capacity_rows,
         resource_adjustment_rows,
         regional_total_rows,
         audit_rows,
@@ -5591,6 +6313,9 @@ def build_public_workbook() -> dict[str, Any]:
         "wood_target_capacity_rows": wood_target_capacity_rows,
         "wood_comparator_capacity_rows": wood_comparator_capacity_rows,
         "wood_comparator_summary_rows": wood_comparator_summary_rows,
+        "rubber_target_capacity_rows": rubber_target_capacity_rows,
+        "rubber_comparator_capacity_rows": rubber_comparator_capacity_rows,
+        "rubber_comparator_summary_rows": rubber_comparator_summary_rows,
         "gdp_selection_rows": gdp_selection_rows,
         "resource_adjustment_rows": resource_adjustment_rows,
         "regional_total_rows": regional_total_rows,

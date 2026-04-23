@@ -32,7 +32,7 @@ The rule is append-only for the maintained evidence tables that drive or constra
 - `non_arable_benchmark_cases.csv`
   - authoritative comparator registry for non-land families
 - `gdp_reference_anchor.csv`
-  - frozen GBR 1950 anchor for non-land year selection
+  - frozen GBR 1940 anchor for non-land year selection
 - `gdp_per_capita_series.csv`
   - non-land GDP selector series
 - `gdp_geography_map.csv`

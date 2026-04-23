@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import importlib.util
+import math
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -33,6 +34,8 @@ ARABLE_COMPARATOR_CAPACITY = DERIVED_DIR / "arable_comparator_capacity_rows.csv"
 ARABLE_RESOURCE_EXPECTATIONS = DERIVED_DIR / "arable_resource_expectations.csv"
 WOOD_TARGET_CAPACITY = DERIVED_DIR / "wood_target_capacity_rows.csv"
 WOOD_COMPARATOR_CAPACITY = DERIVED_DIR / "wood_comparator_capacity_rows.csv"
+RUBBER_TARGET_CAPACITY = DERIVED_DIR / "rubber_target_capacity_rows.csv"
+RUBBER_COMPARATOR_CAPACITY = DERIVED_DIR / "rubber_comparator_capacity_rows.csv"
 RESOURCE_ADJUSTMENTS = DERIVED_DIR / "resource_adjustments.csv"
 RESOURCE_DENOMINATORS = DERIVED_DIR / "resource_denominators.csv"
 TARGET_OBSERVATIONS = DERIVED_DIR / "target_observations.csv"
@@ -53,6 +56,9 @@ NON_ARABLE_BENCHMARKS = PUBLIC_ROOT / "data/raw/non_arable_benchmark_cases.csv"
 WOOD_WEIGHTS = PUBLIC_ROOT / "data/raw/wood_land_class_weights.csv"
 RAW_WOOD_TARGET_CAPACITY = PUBLIC_ROOT / "data/raw/wood_target_capacity_rows.csv"
 RAW_WOOD_COMPARATOR_CAPACITY = PUBLIC_ROOT / "data/raw/wood_comparator_capacity_rows.csv"
+RUBBER_WEIGHTS = PUBLIC_ROOT / "data/raw/rubber_land_class_weights.csv"
+RAW_RUBBER_TARGET_CAPACITY = PUBLIC_ROOT / "data/raw/rubber_target_capacity_rows.csv"
+RAW_RUBBER_COMPARATOR_CAPACITY = PUBLIC_ROOT / "data/raw/rubber_comparator_capacity_rows.csv"
 ARABLE_WEIGHTS = PUBLIC_ROOT / "data/raw/arable_land_class_weights.csv"
 ARABLE_BASKETS = PUBLIC_ROOT / "data/raw/arable_baskets.csv"
 RAW_ARABLE_TARGET_CAPACITY = PUBLIC_ROOT / "data/raw/arable_target_capacity_rows.csv"
@@ -158,6 +164,8 @@ def run_tests() -> str:
     arable_resource_expectations = read_csv_rows(ARABLE_RESOURCE_EXPECTATIONS)
     wood_target_capacity_rows = read_csv_rows(WOOD_TARGET_CAPACITY)
     wood_comparator_capacity_rows = read_csv_rows(WOOD_COMPARATOR_CAPACITY)
+    rubber_target_capacity_rows = read_csv_rows(RUBBER_TARGET_CAPACITY)
+    rubber_comparator_capacity_rows = read_csv_rows(RUBBER_COMPARATOR_CAPACITY)
     resource_adjustments = read_csv_rows(RESOURCE_ADJUSTMENTS)
     resource_denominators = read_csv_rows(RESOURCE_DENOMINATORS)
     target_observations = read_csv_rows(TARGET_OBSERVATIONS)
@@ -173,6 +181,7 @@ def run_tests() -> str:
     raw_modern_rows = read_csv_rows(RAW_MODERN)
     raw_arable_target_rows = read_csv_rows(RAW_ARABLE_TARGET_CAPACITY)
     raw_wood_target_rows = read_csv_rows(RAW_WOOD_TARGET_CAPACITY)
+    raw_rubber_target_rows = read_csv_rows(RAW_RUBBER_TARGET_CAPACITY)
     raw_adjustment_rows = read_csv_rows(RAW_ADJUSTMENT_INPUTS)
     raw_counterevidence_rows = read_csv_rows(RAW_COUNTEREVIDENCE)
 
@@ -183,6 +192,7 @@ def run_tests() -> str:
     results.append(CheckResult("public cli entrypoint exists", "PASS" if CLI.exists() else "FAIL", f"Expected {CLI}"))
     results.append(CheckResult("new arable raw files exist", "PASS" if ARABLE_WEIGHTS.exists() and RAW_ARABLE_TARGET_CAPACITY.exists() and RAW_ARABLE_COMPARATOR_CAPACITY.exists() else "FAIL", "Expected land-class, target-capacity, and comparator-capacity raw files."))
     results.append(CheckResult("new wood raw files exist", "PASS" if WOOD_WEIGHTS.exists() and RAW_WOOD_TARGET_CAPACITY.exists() and RAW_WOOD_COMPARATOR_CAPACITY.exists() else "FAIL", "Expected wood land-class, target-capacity, and comparator-capacity raw files."))
+    results.append(CheckResult("new rubber raw files exist", "PASS" if RUBBER_WEIGHTS.exists() and RAW_RUBBER_TARGET_CAPACITY.exists() and RAW_RUBBER_COMPARATOR_CAPACITY.exists() else "FAIL", "Expected rubber land-class, target-capacity, and comparator-capacity raw files."))
     results.append(CheckResult("non-arable benchmark registry exists", "PASS" if NON_ARABLE_BENCHMARKS.exists() and len(non_arable_benchmarks) > 0 else "FAIL", "Expected non_arable_benchmark_cases.csv to be the authoritative non-land comparator registry."))
 
     readme_checks = [
@@ -197,11 +207,60 @@ def run_tests() -> str:
         "state-pass",
         "effective commercial agricultural hectares",
         "effective commercial forestry hectares",
+        "latent rubber",
+        "gbr 1940",
+        "1940-equivalent",
+        "peak override",
         "resources.xlsx",
         "non_arable_benchmark_cases.csv",
+        "earliest commercial activity year",
+        "representative gdp-equivalent year",
+        "representative-year lag",
     ]
     missing_readme = [token for token in readme_checks if token not in readme_text.lower()]
     results.append(CheckResult("readme follows the explanatory paper-style structure", "PASS" if not missing_readme else "FAIL", "Missing README terms: " + ", ".join(missing_readme)))
+    readme_drift_hits = [
+        token
+        for token in ["todo:", "current readme had become too thin", "gbr 1950", "±2 year band", "+/- 2"]
+        if token in readme_text.lower()
+    ]
+    results.append(CheckResult("readme no longer carries v2 drift language or the old GDP anchor", "PASS" if not readme_drift_hits else "FAIL", "Unexpected README text: " + ", ".join(readme_drift_hits)))
+
+    gdp_anchor_rows = read_csv_rows(PUBLIC_ROOT / "data/raw/gdp_reference_anchor.csv")
+    gdp_anchor_failures = []
+    if len(gdp_anchor_rows) != 1:
+        gdp_anchor_failures.append(f"expected 1 anchor row, got {len(gdp_anchor_rows)}")
+    else:
+        anchor_row = gdp_anchor_rows[0]
+        if anchor_row.get("reference_geography") != "GBR":
+            gdp_anchor_failures.append("reference geography should remain GBR")
+        if anchor_row.get("reference_year") != "1940":
+            gdp_anchor_failures.append(f"reference year should be 1940, got {anchor_row.get('reference_year')}")
+    results.append(CheckResult("frozen GDP anchor is GBR 1940", "PASS" if not gdp_anchor_failures else "FAIL", "; ".join(gdp_anchor_failures)))
+
+    z_rule_failures = []
+    if abs(builder.UNIVERSAL_Z_E_COEFFICIENT - 0.0027733851436286447) > 1e-15:
+        z_rule_failures.append("unexpected e coefficient")
+    if abs(builder.UNIVERSAL_Z_PROXY_LAG_COEFFICIENT - 0.01) > 1e-15:
+        z_rule_failures.append("unexpected proxy-lag coefficient")
+    expected_keeps = [
+        ((1930, 1960), 0.8000),
+        ((1940, 1953), 0.8700),
+        ((1950, 1960), 0.8335),
+        ((1960, 1960), 0.8311),
+        ((1970, 1990), 0.5143),
+        ((2020, 2020), 0.0250),
+    ]
+    for (earliest_year, representative_year), expected_keep in expected_keeps:
+        actual_penalty = builder.universal_z_penalty(earliest_year, representative_year)
+        actual_keep = None if actual_penalty is None else (1.0 - actual_penalty)
+        if actual_keep is None or abs(actual_keep - expected_keep) > 5e-4:
+            z_rule_failures.append(
+                f"{earliest_year}/{representative_year}: expected keep about {expected_keep}, got {actual_keep}"
+            )
+    if builder.universal_z_penalty(1930, 1935) != 0.0:
+        z_rule_failures.append("1930/1935 should produce zero chronology penalty")
+    results.append(CheckResult("universal quantity-resource Z formula matches the locked chronology calibration", "PASS" if not z_rule_failures else "FAIL", "; ".join(z_rule_failures[:10])))
 
     visible_sheets = [sheet.title for sheet in workbook.worksheets if sheet.sheet_state == "visible"]
     expected_visible_sheets = ["Overview", *state_sheet_names]
@@ -284,6 +343,7 @@ def run_tests() -> str:
         ("modern_maxima.csv", raw_modern_rows, builder.TARGET_OBSERVATION_LOGICAL_KEY_FIELDS),
         ("arable_target_capacity_rows.csv", raw_arable_target_rows, builder.ARABLE_TARGET_CAPACITY_LOGICAL_KEY_FIELDS),
         ("wood_target_capacity_rows.csv", raw_wood_target_rows, builder.WOOD_TARGET_CAPACITY_LOGICAL_KEY_FIELDS),
+        ("rubber_target_capacity_rows.csv", raw_rubber_target_rows, builder.RUBBER_TARGET_CAPACITY_LOGICAL_KEY_FIELDS),
         ("adjustment_inputs.csv", raw_adjustment_rows, builder.ADJUSTMENT_INPUT_LOGICAL_KEY_FIELDS),
         ("counterevidence_cases.csv", raw_counterevidence_rows, builder.COUNTEREVIDENCE_LOGICAL_KEY_FIELDS),
     ]
@@ -296,11 +356,47 @@ def run_tests() -> str:
     results.append(CheckResult("lifecycle columns exist on maintained evidence tables", "PASS" if not lifecycle_failures else "FAIL", "Missing lifecycle fields in: " + ", ".join(lifecycle_failures)))
     results.append(CheckResult("no maintained logical key has more than one active evidence row", "PASS" if not duplicate_key_failures else "FAIL", "; ".join(duplicate_key_failures[:10])))
 
+    chronology_pair_failures = []
+    for row in raw_adjustment_rows:
+        if row.get("row_status") not in ("", "active"):
+            continue
+        if not builder.quantity_resource_uses_universal_z(row["resource"]):
+            continue
+        earliest_year = row.get("earliest_commercial_activity_year", "")
+        flagship_year = row.get("flagship_scale_year", "")
+        if bool(earliest_year) != bool(flagship_year):
+            chronology_pair_failures.append(f"{row['state']} / {row['resource']}")
+    results.append(CheckResult("quantity-resource chronology moderation rows set both commercial years together", "PASS" if not chronology_pair_failures else "FAIL", "; ".join(chronology_pair_failures[:10])))
+
+    active_floor_by_key = {}
+    for row in raw_adjustment_rows:
+        if row.get("row_status") not in ("", "active"):
+            continue
+        minimum_floor = int(float(row.get("minimum_operating_floor_cap") or 0))
+        active_floor_by_key[(row["state"], row["resource"])] = minimum_floor
+    ceil_failures = []
+    for row in final_caps:
+        if row["status"] in {"explicit exception", "denominator unavailable", "review required", "constrained zero"}:
+            continue
+        adjusted_cap = row.get("adjusted_cap", "")
+        if adjusted_cap in ("", None):
+            continue
+        floor = active_floor_by_key.get((row["state"], row["resource"]), 0)
+        expected_cap = max(math.ceil(float(adjusted_cap)), 0)
+        if floor:
+            expected_cap = max(expected_cap, floor)
+        actual_cap = int(float(row["final_audited_cap"]))
+        if actual_cap != expected_cap:
+            ceil_failures.append(f"{row['state']} / {row['resource']}: expected {expected_cap}, got {actual_cap}")
+    results.append(CheckResult("integer cap conversion now uses ceil with active floors preserved", "PASS" if not ceil_failures else "FAIL", "; ".join(ceil_failures[:10])))
+
     arable_resources = {resource for category, resource in builder.BINARY_RESOURCES if category == "Arable Resource"}
     arable_selection_rows = [row for row in gdp_selection_rows if row["resource"] in arable_resources or row["resource"] == "Arable Land"]
     results.append(CheckResult("arable rows are removed from gdp selection output", "PASS" if not arable_selection_rows else "FAIL", f"Unexpected arable GDP rows: {len(arable_selection_rows)}"))
     wood_selection_rows = [row for row in gdp_selection_rows if row["resource"] == "Wood"]
     results.append(CheckResult("wood rows are removed from gdp selection output", "PASS" if not wood_selection_rows else "FAIL", f"Unexpected wood GDP rows: {len(wood_selection_rows)}"))
+    rubber_selection_rows = [row for row in gdp_selection_rows if row["resource"] == "Rubber (undiscovered)"]
+    results.append(CheckResult("latent-rubber rows are removed from gdp selection output", "PASS" if not rubber_selection_rows else "FAIL", f"Unexpected rubber GDP rows: {len(rubber_selection_rows)}"))
 
     expected_target_capacity_rows = len(builder.STATE_INFO) * len(builder.ARABLE_LAND_CLASSES)
     results.append(CheckResult("arable target capacity rows cover all states and land classes", "PASS" if len(arable_target_capacity_rows) == expected_target_capacity_rows else "FAIL", f"Rows={len(arable_target_capacity_rows)}, expected={expected_target_capacity_rows}"))
@@ -308,6 +404,9 @@ def run_tests() -> str:
     expected_wood_target_rows = len(builder.STATE_INFO) * len(builder.WOOD_LAND_CLASSES)
     results.append(CheckResult("wood target capacity rows cover all states and land classes", "PASS" if len(wood_target_capacity_rows) == expected_wood_target_rows else "FAIL", f"Rows={len(wood_target_capacity_rows)}, expected={expected_wood_target_rows}"))
     results.append(CheckResult("wood comparator capacity rows are populated", "PASS" if len(wood_comparator_capacity_rows) > 0 else "FAIL", f"Rows={len(wood_comparator_capacity_rows)}"))
+    expected_rubber_target_rows = len(builder.STATE_INFO) * len(builder.RUBBER_LAND_CLASSES)
+    results.append(CheckResult("rubber target capacity rows cover all states and land classes", "PASS" if len(rubber_target_capacity_rows) == expected_rubber_target_rows else "FAIL", f"Rows={len(rubber_target_capacity_rows)}, expected={expected_rubber_target_rows}"))
+    results.append(CheckResult("rubber comparator capacity rows are populated", "PASS" if len(rubber_comparator_capacity_rows) >= 20 * len(builder.RUBBER_LAND_CLASSES) else "FAIL", f"Rows={len(rubber_comparator_capacity_rows)}"))
 
     shared_row = arable_shared[0]
     shared_value = float(shared_row["shared_sb_arable_effective_hectares_per_cap"])
@@ -332,6 +431,14 @@ def run_tests() -> str:
         if abs(float(row["output_addition_y"] or 0)) > 0 or abs(float(row["plausibility_haircut_z"] or 0)) > 0:
             arable_contract_failures.append(f"{row['state']} / YZ should be zero")
     results.append(CheckResult("arable rows use direct land-capacity X with no GDP fields or legacy Y/Z", "PASS" if not arable_contract_failures else "FAIL", "; ".join(arable_contract_failures[:10])))
+
+    land_z_failures = []
+    for row in final_caps:
+        if row["resource"] not in {"Arable Land", "Wood", "Rubber (undiscovered)"}:
+            continue
+        if abs(float(row["plausibility_haircut_z"] or 0)) > 1e-9:
+            land_z_failures.append(f"{row['state']} / {row['resource']}")
+    results.append(CheckResult("hectare families bypass the universal quantity-resource Z rule", "PASS" if not land_z_failures else "FAIL", "; ".join(land_z_failures[:10])))
 
     arable_caps = {row["state"]: int(float(row["final_audited_cap"])) for row in final_caps if row["resource"] == "Arable Land"}
     spot_failures = []
@@ -531,8 +638,8 @@ def run_tests() -> str:
 
     target_headers = set(target_observations[0].keys()) if target_observations else set()
     required_target_headers = {
-        "discounted_normalized_1950_output",
-        "discounted_wheat_equivalent_1950_output",
+        "discounted_normalized_1940_output",
+        "discounted_wheat_equivalent_1940_output",
         "drives_x",
         "review_action",
         *builder.TARGET_VALIDATION_FIELDS,
@@ -579,16 +686,39 @@ def run_tests() -> str:
     results.append(CheckResult("wood spot-check outcomes are directionally plausible", "PASS" if not wood_spot_failures else "FAIL", "; ".join(wood_spot_failures)))
 
     rubber_policy_failures = []
+    latent_rubber_caps = {row["state"]: int(float(row["final_audited_cap"])) for row in final_caps if row["resource"] == "Rubber (undiscovered)"}
     for state in ["Lourenço Marques", "Zambezi"]:
         row = next((item for item in final_caps if item["state"] == state and item["resource"] == "Rubber (undiscovered)"), None)
         if row is None:
             rubber_policy_failures.append(f"missing {state} / Rubber (undiscovered)")
             continue
+        if int(float(row["final_audited_cap"])) <= 0:
+            rubber_policy_failures.append(f"{state} / Rubber (undiscovered) should be formula-driven and nonzero under v3")
+        if row["status"] != "formula-driven":
+            rubber_policy_failures.append(f"{state} / Rubber (undiscovered) should now be formula-driven")
+    dry_rubber_row = next((item for item in final_caps if item["state"] == "Namaqualand" and item["resource"] == "Rubber (undiscovered)"), None)
+    if dry_rubber_row is None or int(float(dry_rubber_row["final_audited_cap"])) != 0 or dry_rubber_row["status"] != "explicit exception":
+        rubber_policy_failures.append("Namaqualand / Rubber (undiscovered) should remain a defended zero")
+    discovered_rubber_failures = []
+    for row in final_caps:
+        if row["resource"] != "Rubber (discovered)":
+            continue
         if int(float(row["final_audited_cap"])) != 0:
-            rubber_policy_failures.append(f"{state} / Rubber (undiscovered) should now be disabled")
+            discovered_rubber_failures.append(f"{row['state']} discovered rubber should remain zero")
         if row["status"] != "explicit exception":
-            rubber_policy_failures.append(f"{state} / Rubber (undiscovered) should be an explicit exception, not a denominator failure")
-    results.append(CheckResult("unsupported tropical-rubber carry-over rows are retired", "PASS" if not rubber_policy_failures else "FAIL", "; ".join(rubber_policy_failures)))
+            discovered_rubber_failures.append(f"{row['state']} discovered rubber should remain explicit exception")
+    results.append(CheckResult("latent rubber is hectare-based while discovered rubber stays exceptional", "PASS" if not (rubber_policy_failures or discovered_rubber_failures) else "FAIL", "; ".join((rubber_policy_failures + discovered_rubber_failures)[:12])))
+
+    rubber_denominator = next((row for row in resource_denominators if row["resource_family"] == "Rubber"), None)
+    rubber_denominator_failures = []
+    if rubber_denominator is None:
+        rubber_denominator_failures.append("Rubber denominator row missing")
+    else:
+        if rubber_denominator["status"] != "formula-driven":
+            rubber_denominator_failures.append("Rubber denominator should be formula-driven")
+        if rubber_denominator["method"] != "mean_of_effective_latent_rubber_comparator_pool":
+            rubber_denominator_failures.append("Rubber denominator method mismatch")
+    results.append(CheckResult("latent-rubber denominator is built from the comparator hectare pool", "PASS" if not rubber_denominator_failures else "FAIL", "; ".join(rubber_denominator_failures)))
 
     validation_map = {(row["state"], row["resource"], row["land_class"]): row for row in target_data_validation}
     provenance_failures = []
@@ -609,6 +739,15 @@ def run_tests() -> str:
     drakensberg_row = next((row for row in final_caps if row["state"] == "Drakensberg" and row["resource"] == "Wood"), None)
     if drakensberg_row is None or drakensberg_row["status"] not in {"constrained zero", "explicit exception"}:
         provenance_failures.append("Drakensberg / Wood should remain a defended zero")
+    rubber_lm_row = validation_map.get(("Lourenço Marques", "Rubber (undiscovered)", "high_suitability_plantation"))
+    if rubber_lm_row is None or rubber_lm_row["drives_x"] != "yes":
+        provenance_failures.append("Lourenço Marques / Rubber (undiscovered) lacks accepted bounded plantation evidence")
+    rubber_zam_row = validation_map.get(("Zambezi", "Rubber (undiscovered)", "high_suitability_plantation"))
+    if rubber_zam_row is None or rubber_zam_row["drives_x"] != "yes":
+        provenance_failures.append("Zambezi / Rubber (undiscovered) lacks accepted bounded plantation evidence")
+    rubber_dry_row = validation_map.get(("Namaqualand", "Rubber (undiscovered)", "high_suitability_plantation"))
+    if rubber_dry_row is None or rubber_dry_row["drives_x"] != "no":
+        provenance_failures.append("Namaqualand / Rubber (undiscovered) should remain non-driving")
     results.append(CheckResult("sentinel provenance scenarios behave as intended", "PASS" if not provenance_failures else "FAIL", "; ".join(provenance_failures)))
 
     row_audit_map = {(row["state"], row["resource"]): row for row in row_audit}
@@ -661,6 +800,12 @@ def run_tests() -> str:
         if int(row["pass_order"]) != builder.STATE_PASS_ORDER[state]:
             tracker_failures.append(f"{state} order mismatch")
     results.append(CheckResult("state pass tracker rows are present and in fixed order", "PASS" if not tracker_failures else "FAIL", "; ".join(tracker_failures[:12])))
+    tracker_reset_failures = []
+    if any(row["pass_status"] != builder.TRACKER_NOT_STARTED for row in state_pass_tracker):
+        tracker_reset_failures.append("state pass tracker should be reset to not started for the v3 baseline")
+    if family_rewrite_log:
+        tracker_reset_failures.append("family rewrite log should start empty after the v3 reset")
+    results.append(CheckResult("v3 loop surfaces start clean after archive/reset", "PASS" if not tracker_reset_failures else "FAIL", "; ".join(tracker_reset_failures)))
 
     supersede_failures = []
     for _name, rows, _logical_key_fields in raw_tables_to_check:

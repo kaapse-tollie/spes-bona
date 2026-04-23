@@ -2,7 +2,7 @@
 
 ## Summary
 
-Use one reusable prompt for a repeated CLI loop where **each agent call completes exactly one SB state pass**, updates the evidence package and outward-facing docs for that state, rebuilds, tests, syncs live, and stops.
+Use one reusable prompt for a repeated CLI loop where **each agent call completes exactly one SB state pass**, updates the evidence package and outward-facing docs for that state, rebuilds, tests, and stops.
 
 Locked decisions:
 - Unit of work per call: **one state**
@@ -27,7 +27,7 @@ Before changing any row, read the methodology in:
 
 Do not treat this as a generic 1936 snapshot audit. The package uses two different model families and the agent must preserve that distinction.
 
-### 0A. Non-land families are still `1950-equivalent` models
+### 0A. Non-land families are `1940-equivalent` models
 
 For non-land numeric families such as:
 
@@ -44,25 +44,26 @@ the governing method is:
 
 1. gather target observations
 2. choose a representative year using the frozen GDP-selection protocol
-3. normalize the observation into the common `1950-equivalent` frame
+3. normalize the observation into the common `1940-equivalent` frame
 4. compare against comparator denominators built on the same frame
 
 Hard rules:
 
 - Do **not** treat raw 1936 output as the primary target just because it is chronologically close to game start.
-- A 1936 observation may be used as one candidate year, but it is not privileged over a better representative year once the package's GDP-selection and `1950-equivalent` logic are applied.
+- A 1936 observation may be used as one candidate year, but it is not privileged over a better representative year once the package's GDP-selection and `1940-equivalent` logic are applied.
 - When reviewing a non-land row, ask:
   - is the representative-year choice still defensible?
-  - is the `1950-equivalent` normalized value still the right direct `X` basis?
+  - is the `1940-equivalent` normalized value still the right direct `X` basis?
   - is the comparator denominator family still appropriate?
-- Do not silently replace the package's `1950-equivalent` method with a “closest to 1936” method.
+- Do not silently replace the package's `1940-equivalent` method with a “closest to 1936” method.
 
-### 0B. Land families are not `1950-equivalent` output models
+### 0B. Land families are not `1940-equivalent` output models
 
 For:
 
 - `Arable Land`
 - `Wood`
+- `Rubber (undiscovered)`
 
 the governing method is land capacity, not realized output.
 
@@ -70,8 +71,9 @@ Hard rules:
 
 - `Arable Land` is based on potential effective commercial agricultural land.
 - `Wood` is based on potential effective commercial forestry land.
-- Representative year on these rows is audit metadata only; it is **not** a signal to convert the family back into a 1936 or 1950 output model.
-- Do not introduce GDP-selected output normalization into arable or wood.
+- `Rubber (undiscovered)` is based on potential effective commercial plantation land.
+- Representative year on these rows is audit metadata only; it is **not** a signal to convert the family back into a 1936 or 1940 output model.
+- Do not introduce GDP-selected output normalization into arable, wood, or latent rubber.
 
 ### 0C. Counterfactual review standard
 
@@ -88,7 +90,7 @@ But:
 - later national dominance does not automatically justify earlier local caps
 - later development must be converted into a bounded local counterfactual, not smuggled in as direct 1936 output
 
-When a changed non-land row survives partly because of later evidence, the audit note must say clearly that the row is being carried by bounded counterfactual potential within the package's `1950-equivalent` non-land framework.
+When a changed non-land row survives partly because of later evidence, the audit note must say clearly that the row is being carried by bounded counterfactual potential within the package's `1940-equivalent` non-land framework.
 
 ## Key Changes
 
@@ -195,9 +197,7 @@ Default behavior of one agent call:
 5. update `state_resource_counterfactual_audit.csv`
 6. rebuild outputs and workbook
 7. run tests
-8. sync live
-9. rerun tests
-10. mark the state pass complete and stop
+8. mark the state pass complete and stop
 
 Exception:
 - if a family contradiction appears, log it in `family_rewrite_log.csv`, rewrite the family model immediately, rerun all already-completed affected states, then exit only after the tracker and workbook are coherent again
@@ -234,7 +234,7 @@ Rules:
 - Never output a bare “complete” or “done” without the status lines above.
 - The final response should also include one short paragraph summarizing:
   - what changed
-  - whether live sync happened
+  - that live sync did not happen during the state pass
   - whether tests passed
 
 ### 3. Define the row review model and citation duties
@@ -271,7 +271,7 @@ Citation/update rules for every changed row:
 - preserve old citations on superseded rows
 - do not ship a changed row with only prose and no citations
 - for defended zeroes and exceptions, the limiting rationale must also be documented in `adjustment_inputs.csv` or `counterevidence_cases.csv`
-- for every changed non-land numeric row, document whether the representative-year choice and `1950-equivalent` normalization were kept, revised, or explicitly rejected by a family rewrite
+- for every changed non-land numeric row, document whether the representative-year choice and `1940-equivalent` normalization were kept, revised, or explicitly rejected by a family rewrite
 
 Counterfactual rules:
 - neighboring, provincial, or national claims must be written explicitly into `regional_claim_note`
@@ -339,6 +339,7 @@ Minimum research expectation per state pass:
 - at least one local-package search pass and one external search pass must be completed for any changed contested row
 - if built-in Codex CLI web search is unavailable in the session, note that explicitly in the final response and fall back to SearXNG or direct-source fetching
 - if the SearXNG endpoint is unreachable, note that explicitly in the final response and fall back to direct-source fetching
+- if a touched row or touched README/workbook note still says `GBR 1950`, the old flagship-scale wording, or another stale methodology phrase, update it in the same run instead of carrying stale method text forward
 
 PDF handling rules:
 - prefer `pdftotext <file> -` for quick extraction
@@ -379,7 +380,9 @@ Treat these as explicit trigger rows in the loop:
 - `West Transvaal / Iron Mine`
   - test Pretoria Iron Mines and the Magaliesberg-Marico belt before accepting zero
 - `Drakensberg / Iron Mine`
-  - test Dundee, Vryheid, Sweetwaters, Alverstone, and adjacent Natal-era iron potential before accepting iron-emptiness
+  - test Dundee, Vryheid, Sweetwaters, Alverstone, and adjacent Natal-era / KwaZulu-Natal iron potential before accepting iron-emptiness
+  - do not accept zero until you have explicitly compared the KZN ironworks/mining evidence against the current West Transvaal Pretoria standard
+  - if the evidence looks more like a small bounded Pretoria-style row than a clean hard zero, say that explicitly in the audit note even if the final decision remains zero
 - `Northern Transvaal / Iron Mine`
   - test Phalaborwa/Lowveld and Tshimbupfe-Venda style iron potential against the current split
 - `Northern Cape / Iron Mine`
@@ -399,8 +402,8 @@ After every accepted state pass:
    - `family_rewrite_log.csv`
    - `state_resource_deltas.csv`
    - `Docs/resources/RESOURCES.xlsx`
-4. `sync-live`
-5. rerun `test`
+4. do **not** sync live during the state loop
+5. stop after updating the tracker and outputs for that one state
 
 Add automated checks for:
 - lifecycle columns exist on all maintained evidence tables listed above
@@ -417,7 +420,29 @@ Manual acceptance for each state pass:
 - documentation and citations for changed rows are updated in the same run
 - no placeholder language remains
 - no sourced data was deleted or overwritten away
-- live file and docs remain aligned after sync
+
+## Final release gate
+
+Do **not** sync the live state file during ordinary state passes.
+
+Only allow final live sync after all of the following are true:
+
+- all 13 rows in `state_pass_tracker.csv` are `accepted`
+- `resources.py test` passes cleanly on the full package
+- the high-impact iron rows have been explicitly rechecked:
+  - `West Transvaal / Iron Mine`
+  - `Eastern Transvaal / Iron Mine`
+  - `Northern Transvaal / Iron Mine`
+  - `Northern Cape / Iron Mine`
+  - `Drakensberg / Iron Mine`
+- no touched active row or public doc still carries stale method wording such as `GBR 1950` or obsolete chronology-rule language
+- the final workbook and derived outputs reflect the accepted v3 method
+
+Only then:
+
+1. run `sync-live`
+2. rerun `test`
+3. report whether docs and live state file are aligned
 
 ## Assumptions And Defaults
 
@@ -425,3 +450,4 @@ Manual acceptance for each state pass:
 - “Do not destroy data” means append-only evidence handling inside maintained source tables, not merely relying on git history.
 - One state per call is the normal contract; family rewrites are the only allowed reason to exceed that boundary.
 - The workbook remains outward-facing; detailed reasoning stays in the audit CSVs, not in visible narrative blocks on state sheets.
+- Live sync is a final release action, not part of the ordinary one-state loop.
