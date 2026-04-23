@@ -25,7 +25,7 @@
 - **PASS** `derived data README classifies outputs`: README classification text missing.
 - **PASS** `no .DS_Store files remain under Docs/resources`: 
 - **PASS** `formula-driving raw files expose validation columns`: Missing validation columns in: 
-- **PASS** `target data validation output exists and is populated`: Rows=431
+- **PASS** `target data validation output exists and is populated`: Rows=433
 - **PASS** `validation discount and drive-x rules hold`: 
 - **PASS** `validation notes ship without placeholder language`: 
 - **PASS** `new audit tables exist`: Missing one of the tracker/counterfactual/rewrite/state review audit tables.
@@ -56,7 +56,7 @@
 - **PASS** `overview progress block mirrors state_pass_tracker.csv`: Mismatches: 
 - **PASS** `state sheets mirror vanilla baselines and audited SB updates`: Mismatches: 
 - **PASS** `state sheets expose the public Basis column`: Basis issues: 
-- **PASS** `live state file sync remains frozen`: Auto-sync disabled; 31 live mismatches are expected during the audit pass.
+- **PASS** `live state file sync remains frozen`: Auto-sync disabled; 32 live mismatches are expected during the audit pass.
 - **PASS** `accepted synced states match live arable resources`: No accepted synced states yet.
 - **PASS** `wood uses dedicated effective-forestry denominator path`: Wood path failures: 
 - **PASS** `non-arable benchmark registry and gold-mine denominator path are wired`: 

@@ -292,15 +292,15 @@ Totals: vanilla `141`, live `33`, audited `52`, delta vs vanilla `-89`, delta vs
 
 ## Zululand
 
-Totals: vanilla `101`, live `101`, audited `40`, delta vs vanilla `-61`, delta vs live `-61`.
+Totals: vanilla `101`, live `101`, audited `43`, delta vs vanilla `-58`, delta vs live `-58`.
 
 | Resource | Vanilla | Live | Audited | Delta vs vanilla | Delta vs live | Status |
 |---|---:|---:|---:|---:|---:|---|
 | Arable Land | 38 | 38 | 37 | -1 | -1 | formula-driven |
-| Coal Mine | 48 | 48 | 0 | -48 | -48 | review required |
-| Fishing | 6 | 6 | 0 | -6 | -6 | review required |
+| Coal Mine | 48 | 48 | 1 | -47 | -47 | formula-driven |
+| Fishing | 6 | 6 | 1 | -5 | -5 | quantified adjustment |
 | Gold Mine | 0 | 0 | 0 | 0 | 0 | explicit exception |
-| Iron Mine | 0 | 0 | 0 | 0 | 0 | explicit exception |
+| Iron Mine | 0 | 0 | 1 | 1 | 1 | quantified adjustment |
 | Lead Mine | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Sulfur Mine | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Whaling | 0 | 0 | 0 | 0 | 0 | denominator unavailable |
