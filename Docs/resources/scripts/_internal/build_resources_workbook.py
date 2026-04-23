@@ -748,8 +748,8 @@ ARABLE_BASKET_SEEDS = {
         "citation_2_locator": "[^wc]: Western Cape is Mediterranean with strong wine, wheat, wool, lucerne, and fruit production.",
     },
     "Northern Cape": {
-        "yes_resources": {"Cotton Plantation", "Livestock Ranch", "Maize Farm", "Millet Farm", "Tobacco Plantation", "Vineyard", "Wheat Farm"},
-        "include_summary": "Northern Cape covers inland South African Namaqualand, Karoo grazing, Orange-Vaal irrigation, and only narrow dry-country maize-millet-cotton-tobacco pockets.",
+        "yes_resources": {"Cotton Plantation", "Livestock Ranch", "Maize Farm", "Millet Farm", "Vineyard", "Wheat Farm"},
+        "include_summary": "Northern Cape covers inland South African Namaqualand, Karoo grazing, Orange-Vaal irrigation, and only narrow dry-country maize-millet-cotton pockets.",
         "exclude_summary": "Northern Cape is too dry for humid plantation crops, does not include the small Cape Colony north-coast strip, and does not inherit the plateau-heavy old-North-West cereal belt assigned to West Transvaal.",
         "citation_1_locator": "Northern Cape row: livestock, fishing, and whaling are strongest, with wheat and wine along irrigated rivers later.",
         "citation_2_locator": "Northern Cape is arid, with Orange irrigation, sheep/cattle, grapes, lucerne, cotton, citrus, and wheat concentrated in river corridors.",

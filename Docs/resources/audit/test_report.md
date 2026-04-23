@@ -86,7 +86,7 @@
 - **PASS** `regional totals match final caps aggregation`: 0 regional mismatches.
 - **PASS** `state delta summary matches final caps aggregation`: 
 - **PASS** `state delta exports exist and mirror final caps`: 
-- **PASS** `priority rows file exists`: Priority rows: 162
+- **PASS** `priority rows file exists`: Priority rows: 163
 
 ## Current Priority Rows
 
