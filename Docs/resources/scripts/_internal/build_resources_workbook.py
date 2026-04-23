@@ -5948,7 +5948,11 @@ def build_state_resource_counterfactual_audit_rows(
                     or "No broader regional claim is driving the row."
                 )
             )
-            chronology_note = adjustment.get("year_selection_reason") or "Representative year is audit metadata only for this public row."
+            chronology_note = (
+                adjustment.get("year_selection_reason")
+                or adjustment.get("selection_note")
+                or "No direct target observation is currently frozen for this row; the cap remains under explicit audit handling."
+            )
             citation_1_title = adjustment.get("citation_1_title") or summary.get("citation_1_title", "")
             citation_1_url = adjustment.get("citation_1_url") or summary.get("citation_1_url", "")
             citation_1_locator = adjustment.get("citation_1_locator") or summary.get("citation_1_locator", "")
