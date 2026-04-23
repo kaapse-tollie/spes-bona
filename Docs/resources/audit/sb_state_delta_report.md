@@ -50,13 +50,13 @@ Totals: vanilla `72`, live `60`, audited `67`, delta vs vanilla `-5`, delta vs l
 
 ## Drakensberg
 
-Totals: vanilla `128`, live `9`, audited `10`, delta vs vanilla `-118`, delta vs live `1`.
+Totals: vanilla `128`, live `9`, audited `11`, delta vs vanilla `-117`, delta vs live `2`.
 
 | Resource | Vanilla | Live | Audited | Delta vs vanilla | Delta vs live | Status |
 |---|---:|---:|---:|---:|---:|---|
 | Arable Land | 40 | 9 | 10 | -30 | 1 | formula-driven |
 | Coal Mine | 72 | 0 | 0 | -72 | 0 | explicit exception |
-| Fishing | 5 | 0 | 0 | -5 | 0 | explicit exception |
+| Fishing | 5 | 0 | 1 | -4 | 1 | quantified adjustment |
 | Gold Mine | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Iron Mine | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Lead Mine | 0 | 0 | 0 | 0 | 0 | explicit exception |

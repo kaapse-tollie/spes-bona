@@ -56,7 +56,7 @@
 - **PASS** `overview progress block mirrors state_pass_tracker.csv`: Mismatches: 
 - **PASS** `state sheets mirror vanilla baselines and audited SB updates`: Mismatches: 
 - **PASS** `state sheets expose the public Basis column`: Basis issues: 
-- **PASS** `live state file sync remains frozen`: Auto-sync disabled; 32 live mismatches are expected during the audit pass.
+- **PASS** `live state file sync remains frozen`: Auto-sync disabled; 33 live mismatches are expected during the audit pass.
 - **PASS** `accepted synced states match live arable resources`: No accepted synced states yet.
 - **PASS** `wood uses dedicated effective-forestry denominator path`: Wood path failures: 
 - **PASS** `non-arable benchmark registry and gold-mine denominator path are wired`: 
@@ -101,5 +101,5 @@
 - `P1` `Cape Colony / Sulfur Mine`: explicit audit exception
 - `P1` `Cape Colony / Whaling`: explicit audit exception
 - `P1` `Drakensberg / Coal Mine`: explicit audit exception
-- `P1` `Drakensberg / Fishing`: explicit audit exception
 - `P1` `Drakensberg / Gold Fields (discovered)`: explicit audit exception
+- `P1` `Drakensberg / Gold Fields (undiscovered)`: explicit audit exception

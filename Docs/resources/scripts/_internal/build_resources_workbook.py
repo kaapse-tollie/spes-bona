@@ -5890,8 +5890,13 @@ def build_state_resource_counterfactual_audit_rows(
                 ],
                 adjustment.get("status", ""),
             )
+            bounded_regional_note = (
+                adjustment.get("counterevidence_note")
+                or adjustment.get("selection_note")
+                or "Bounded regional evidence is not required for this row."
+            )
             regional_claim_note = (
-                distinct_join(summary.get("validation_notes", []), "Bounded regional evidence is not required for this row.")
+                distinct_join(summary.get("validation_notes", []), bounded_regional_note)
                 if bounded_proxy
                 else (
                     distinct_join(summary.get("validation_notes", []), "No broader regional claim is driving the row; the accepted evidence is treated as state-localized.")
