@@ -32,6 +32,16 @@ def cmd_build() -> None:
 
 def cmd_sync_live() -> None:
     builder = load_module("resources_builder", "build_resources_workbook.py")
+    tracker_rows = builder.load_state_pass_tracker_rows()
+    incomplete_states = [
+        row["state"]
+        for row in tracker_rows
+        if row["pass_status"] != builder.TRACKER_ACCEPTED
+    ]
+    if incomplete_states:
+        print("Refusing live sync because the state audit loop is still in progress.")
+        print("Remaining states: " + ", ".join(incomplete_states))
+        raise SystemExit(1)
     pre_sync_live = builder.parse_live_state_resources()
     result = builder.build_public_workbook()
     mismatch_count = 0
@@ -79,13 +89,14 @@ def cmd_state_pass() -> None:
         if row["state"] != state:
             continue
         row["pass_status"] = builder.TRACKER_IN_REVIEW
+        row["live_synced"] = "no"
         row["summary_note"] = f"{state} pass {pass_index} is in review."
     builder.write_state_pass_tracker_rows(tracker_rows)
 
     result = builder.build_public_workbook()
     report = tester.run_tests()
     if report_has_failures(report):
-        print(f"Selected {state} for pass {pass_index}, but the pre-sync test run failed.")
+        print(f"Selected {state} for pass {pass_index}, but the in-review build/test cycle failed.")
         print(f"CURRENT_STATE={state}")
         print("STATE_PASS_COMPLETE=no")
         print("LOOP_COMPLETE=no")
@@ -113,39 +124,54 @@ def cmd_state_pass() -> None:
         row["completed_rows"] = len(state_audit_rows)
         row["changed_rows"] = changed_rows
         row["family_rewrites_triggered"] = len(family_rewrite_rows)
-        row["live_synced"] = "yes"
+        row["live_synced"] = "no"
         row["last_completed_pass_index"] = pass_index
         row["summary_note"] = (
-            f"Accepted on pass {pass_index}; {changed_rows} of {len(state_audit_rows)} public rows differ from the vanilla baseline."
+            f"Accepted on pass {pass_index}; {changed_rows} of {len(state_audit_rows)} public rows differ from the vanilla baseline. "
+            "Live sync remains frozen during the audit loop."
         )
     builder.write_state_pass_tracker_rows(tracker_rows)
 
-    builder.sync_live_state_file(result["final_caps"], result["arable_resource_expectation_rows"])
-    synced_result = builder.build_public_workbook()
-    synced_report = tester.run_tests()
-    if report_has_failures(synced_report):
-        print(f"{state} passed the pre-sync test run but failed after live sync on pass {pass_index}.")
+    accepted_result = builder.build_public_workbook()
+    accepted_report = tester.run_tests()
+    if report_has_failures(accepted_report):
+        for row in tracker_rows:
+            if row["state"] != state:
+                continue
+            row["pass_status"] = builder.TRACKER_IN_REVIEW
+            row["completed_rows"] = 0
+            row["changed_rows"] = 0
+            row["family_rewrites_triggered"] = 0
+            row["live_synced"] = "no"
+            row["last_completed_pass_index"] = ""
+            row["summary_note"] = (
+                f"{state} pass {pass_index} remains in review because the post-accept rebuild/test cycle failed."
+            )
+        builder.write_state_pass_tracker_rows(tracker_rows)
+        builder.build_public_workbook()
+        tester.run_tests()
+        print(f"{state} passed the in-review build/test run but failed after the acceptance rebuild on pass {pass_index}.")
         print(f"CURRENT_STATE={state}")
         print("STATE_PASS_COMPLETE=no")
         print("LOOP_COMPLETE=no")
         print(f"NEXT_STATE={state}")
         print(f"FAMILY_REWRITE={'yes' if family_rewrite_rows else 'no'}")
-        print(synced_report)
+        print(accepted_report)
         raise SystemExit(1)
 
     refreshed_tracker_rows = builder.load_state_pass_tracker_rows()
     next_state = builder.select_next_state_for_pass(refreshed_tracker_rows)
     loop_complete = next_state is None
 
-    print(f"Completed {state} (pass {pass_index}).")
-    print(f"Synced {builder.STATE_FILE}")
-    print(f"Tracked {len(synced_result['counterfactual_audit_rows'])} public state-resource audit rows")
+    print(f"Finished {state} state pass {pass_index}.")
+    print("Live state file sync remains frozen during the audit loop.")
+    print(f"Tracked {len(accepted_result['counterfactual_audit_rows'])} public state-resource audit rows")
     print(f"CURRENT_STATE={state}")
     print("STATE_PASS_COMPLETE=yes")
     print(f"LOOP_COMPLETE={'yes' if loop_complete else 'no'}")
     print(f"NEXT_STATE={next_state if next_state is not None else 'NONE'}")
     print(f"FAMILY_REWRITE={'yes' if family_rewrite_rows else 'no'}")
-    print(synced_report)
+    print(accepted_report)
 
 
 def cmd_refresh_public_data() -> None:
@@ -172,7 +198,7 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser("build", help="Rebuild Docs/resources/RESOURCES.xlsx and the derived tables.")
     subparsers.add_parser(
         "state-pass",
-        help="Run exactly one state audit pass: rebuild, test, sync live, retest, and update the tracker.",
+        help="Run exactly one state audit pass: rebuild, test, update the tracker, rebuild, retest, and stop without live sync.",
     )
     subparsers.add_parser("sync-live", help="Sync audited caps into the live SB state file, then rebuild outputs.")
     subparsers.add_parser("test", help="Run the public audit tests and rewrite the test report.")

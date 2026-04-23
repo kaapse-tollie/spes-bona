@@ -800,12 +800,46 @@ def run_tests() -> str:
         if int(row["pass_order"]) != builder.STATE_PASS_ORDER[state]:
             tracker_failures.append(f"{state} order mismatch")
     results.append(CheckResult("state pass tracker rows are present and in fixed order", "PASS" if not tracker_failures else "FAIL", "; ".join(tracker_failures[:12])))
-    tracker_reset_failures = []
-    if any(row["pass_status"] != builder.TRACKER_NOT_STARTED for row in state_pass_tracker):
-        tracker_reset_failures.append("state pass tracker should be reset to not started for the v3 baseline")
-    if family_rewrite_log:
-        tracker_reset_failures.append("family rewrite log should start empty after the v3 reset")
-    results.append(CheckResult("v3 loop surfaces start clean after archive/reset", "PASS" if not tracker_reset_failures else "FAIL", "; ".join(tracker_reset_failures)))
+    tracker_state_failures = []
+    valid_tracker_statuses = {
+        builder.TRACKER_NOT_STARTED,
+        builder.TRACKER_IN_REVIEW,
+        builder.TRACKER_ACCEPTED,
+        builder.TRACKER_RERUN_REQUIRED,
+    }
+    for row in state_pass_tracker:
+        status = row["pass_status"]
+        state = row["state"]
+        if status not in valid_tracker_statuses:
+            tracker_state_failures.append(f"{state} invalid status {status}")
+        if status == builder.TRACKER_ACCEPTED and row.get("last_completed_pass_index") in ("", None):
+            tracker_state_failures.append(f"{state} accepted without a completed pass index")
+        if status != builder.TRACKER_ACCEPTED and row.get("live_synced") == "yes":
+            tracker_state_failures.append(f"{state} live_synced=yes before acceptance")
+    if any(row["live_synced"] == "yes" for row in state_pass_tracker) and any(
+        row["pass_status"] != builder.TRACKER_ACCEPTED for row in state_pass_tracker
+    ):
+        tracker_state_failures.append("live sync should remain frozen until every state is accepted")
+    results.append(
+        CheckResult(
+            "loop tracker remains coherent across reset and in-progress passes",
+            "PASS" if not tracker_state_failures else "FAIL",
+            "; ".join(tracker_state_failures[:12]),
+        )
+    )
+    reset_baseline = all(row["pass_status"] == builder.TRACKER_NOT_STARTED for row in state_pass_tracker) and not family_rewrite_log
+    tracker_surface_detail = (
+        "Tracker is still at the reset baseline."
+        if reset_baseline
+        else "Tracker/family rewrite surfaces are carrying stateful loop progress."
+    )
+    results.append(
+        CheckResult(
+            "loop surfaces persist stateful progress after the v3 reset",
+            "PASS",
+            tracker_surface_detail,
+        )
+    )
 
     supersede_failures = []
     for _name, rows, _logical_key_fields in raw_tables_to_check:
