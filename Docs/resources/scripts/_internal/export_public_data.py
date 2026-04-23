@@ -41,7 +41,7 @@ def first_two_sources(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     for row in sorted(
         rows,
         key=lambda item: (
-            -(float(item["normalized_1950_numeric"]) if item.get("normalized_1950_numeric") is not None else 0.0),
+            -(float(item["normalized_1940_output"]) if item.get("normalized_1940_output") is not None else 0.0),
             abs(int(item["year"]) - 1936),
         ),
     ):
@@ -90,7 +90,7 @@ def build_override_rows(builder, target_rows, agri_avg_values, mining_avg_values
                 average = mining_avg_values.get(group, {}).get("avg_units_per_cap") if mining_avg_values.get(group, {}).get("status") == "formula-driven" else None
                 if resource in {"Gold Fields (discovered)", "Oil (discovered)", "Rubber (discovered)"}:
                     maxima = [
-                        row["normalized_1950_numeric"]
+                        row["normalized_1940_output"]
                         for row in target_rows
                         if row["official_state"] == state and row["resource_group"] == group and int(row["year"]) <= 1836
                     ]

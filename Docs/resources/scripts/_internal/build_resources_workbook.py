@@ -81,6 +81,7 @@ STATE_INFO = [
     {"sheet_key": "Mpm_ESW", "state_id": "STATE_EAST_TRANSVAAL", "official_name": "Eastern Transvaal", "vanilla_proxy_id": "STATE_TRANSVAAL", "vanilla_proxy_name": "Transvaal"},
     {"sheet_key": "Limpopo", "state_id": "STATE_NORTHERN_TRANSVAAL", "official_name": "Northern Transvaal", "vanilla_proxy_id": "STATE_TRANSVAAL", "vanilla_proxy_name": "Transvaal"},
     {"sheet_key": "Free_State", "state_id": "STATE_VRYSTAAT", "official_name": "Transorangia", "vanilla_proxy_id": "STATE_VRYSTAAT", "vanilla_proxy_name": "Transorangia"},
+    {"sheet_key": "Zululand", "state_id": "STATE_ZULULAND", "official_name": "Zululand", "vanilla_proxy_id": "STATE_ZULULAND", "vanilla_proxy_name": "Zululand"},
     {"sheet_key": "Lesotho", "state_id": "STATE_DRAKENSBERG", "official_name": "Drakensberg", "vanilla_proxy_id": "STATE_ZULULAND", "vanilla_proxy_name": "Zululand"},
     {"sheet_key": "Botswana", "state_id": "STATE_BOTSWANA", "official_name": "Botswana", "vanilla_proxy_id": "STATE_BOTSWANA", "vanilla_proxy_name": "Botswana"},
     {"sheet_key": "S_Moz", "state_id": "STATE_LOURENCO_MARQUES", "official_name": "Lourenço Marques", "vanilla_proxy_id": "STATE_LOURENCO_MARQUES", "vanilla_proxy_name": "Lourenço Marques"},
@@ -184,6 +185,7 @@ PRIMARY_BELT_BY_STATE = {
     "Eastern Transvaal": "Mpumalanga escarpment and eastern lowveld belt",
     "Northern Transvaal": "Limpopo mixed-farming belt and eastern escarpment fringe",
     "Transorangia": "Free State grain heartland",
+    "Zululand": "KwaZulu-Natal littoral and northern Natal coal-sugar belt",
     "Drakensberg": "Lesotho highlands and foothill grain belt",
     "Botswana": "eastern corridor cereal strip and cattle range",
     "Lourenço Marques": "Maputo-Gaza littoral and lower Limpopo lowland",
@@ -260,7 +262,7 @@ GROWTH_YEAR_MIN = 1820
 GROWTH_YEAR_MAX = 2025
 OUTPUT_NORMALIZATION_YEAR = 1940
 UNIVERSAL_Z_REFERENCE_YEAR = 1940
-UNIVERSAL_Z_E_COEFFICIENT = 0.0027733851436286447
+UNIVERSAL_Z_E_COEFFICIENT = 0.00275
 UNIVERSAL_Z_PROXY_LAG_COEFFICIENT = 0.01
 UNIVERSAL_Z_EXCLUDED_RESOURCES = {"Arable Land", "Wood", "Rubber (undiscovered)"}
 
@@ -395,8 +397,7 @@ COUNTEREVIDENCE_LOGICAL_KEY_FIELDS = ["state", "resource", "question"]
 RESEARCH_DIR = REPO.parent / "References/research"
 AGRI_RESEARCH_PATH = RESEARCH_DIR / "agriculture and fisheries research.md"
 COMPARATOR_RESEARCH_PATH = RESEARCH_DIR / "southern_africa_comparator_states_ranked_per_region.md"
-V3_RESET_ARCHIVE_DIR = AUDIT_DIR / "archive/v2_pre_v3_reset"
-V3_RESET_MARKER = AUDIT_DIR / "archive/v3_reset_complete.txt"
+AUDIT_RESET_MARKER = AUDIT_DIR / "reset_14_state_complete.txt"
 
 
 def validation_profile(
@@ -423,6 +424,7 @@ OBSERVATION_TARGET_VALIDATION_DEFAULTS_BY_STATE = {
     "Eastern Transvaal": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.95, "Eastern Transvaal target observations rely on a bounded Mpumalanga plus Eswatini proxy rather than a perfect state-only series."),
     "Northern Transvaal": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.90, "Northern Transvaal target observations use a bounded Limpopo proxy for the split northern state footprint."),
     "Transorangia": validation_profile("state_localized", "direct", "distinct_slot_supported", 1.0, "Transorangia target observations are treated as state-localized evidence."),
+    "Zululand": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.95, "Zululand target observations use a bounded KwaZulu-Natal / Natal-side proxy for the restored split coastal-and-coal state."),
     "Drakensberg": validation_profile("state_localized", "direct", "distinct_slot_supported", 1.0, "Drakensberg target observations are treated as state-localized evidence."),
     "Botswana": validation_profile("state_localized", "direct", "distinct_slot_supported", 1.0, "Botswana target observations are treated as state-localized evidence."),
     "Lourenço Marques": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.90, "Lourenço Marques target observations use a bounded southern Mozambique proxy rather than a perfect state-only series."),
@@ -439,6 +441,7 @@ ARABLE_TARGET_VALIDATION_DEFAULTS_BY_STATE = {
     "Eastern Transvaal": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.95, "Eastern Transvaal arable capacity uses a bounded Mpumalanga plus Eswatini land-potential proxy."),
     "Northern Transvaal": validation_profile("state_localized", "direct", "distinct_slot_supported", 1.0, "Northern Transvaal arable capacity is localized to the Limpopo mixed-farming belt and supporting northern pasture country."),
     "Transorangia": validation_profile("state_localized", "direct", "distinct_slot_supported", 1.0, "Transorangia arable capacity rows are treated as state-localized effective commercial land."),
+    "Zululand": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.95, "Zululand arable capacity is bounded to the KwaZulu-Natal littoral, sugar belt, and northern Natal mixed-farming country rather than to whole-province potential."),
     "Drakensberg": validation_profile("state_localized", "direct", "distinct_slot_supported", 1.0, "Drakensberg arable capacity rows are treated as state-localized effective commercial land."),
     "Botswana": validation_profile("state_localized", "direct", "distinct_slot_supported", 1.0, "Botswana arable capacity rows are treated as state-localized effective commercial land."),
     "Lourenço Marques": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.85, "Lourenço Marques arable capacity is bounded to the Maputo-Gaza littoral and lower Limpopo lowland rather than to whole-Mozambique potential."),
@@ -455,6 +458,7 @@ WOOD_TARGET_VALIDATION_DEFAULTS_BY_STATE = {
     "Eastern Transvaal": validation_profile("state_localized", "direct", "distinct_slot_supported", 1.0, "Eastern Transvaal wood capacity is treated as a localized commercial forestry belt."),
     "Northern Transvaal": validation_profile("state_localized", "direct", "distinct_slot_supported", 1.0, "Northern Transvaal wood capacity is localized to a small Limpopo plantation fringe around the eastern escarpment; it is not a broad forestry-state claim."),
     "Transorangia": validation_profile("state_localized", "direct", "broad_potential_only", 1.0, "Transorangia has no distinct commercial forestry slot; woodland does not drive x."),
+    "Zululand": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.95, "Zululand wood capacity is bounded to the KwaZulu-Natal coastal-and-midtier plantation belt rather than treated as a whole-province forest claim."),
     "Drakensberg": validation_profile("state_localized", "direct", "broad_potential_only", 1.0, "Drakensberg remains a defended forestry zero; small woodlots and shelterbelts do not justify a distinct commercial slot."),
     "Botswana": validation_profile("state_localized", "direct", "broad_potential_only", 1.0, "Botswana has no distinct commercial forestry slot; wooded land does not drive x."),
     "Lourenço Marques": validation_profile("regional_proxy", "partial_overlap", "broad_potential_only", 0.35, "Mozambique-wide forestry claims remain non-driving for Lourenço Marques; the reviewed Maputo-Gaza littoral does not show a distinct commercial forestry slot."),
@@ -471,6 +475,7 @@ RUBBER_TARGET_VALIDATION_DEFAULTS_BY_STATE = {
     "Eastern Transvaal": validation_profile("regional_proxy", "partial_overlap", "broad_potential_only", 0.60, "Eastern Transvaal has warm lowveld pockets, but v3 does not freeze a localized latent-rubber slot there."),
     "Northern Transvaal": validation_profile("regional_proxy", "partial_overlap", "broad_potential_only", 0.60, "Northern Transvaal has subtropical fringe agriculture, but no localized latent-rubber slot is frozen in v3."),
     "Transorangia": validation_profile("state_localized", "direct", "broad_potential_only", 1.0, "Transorangia is a grain-and-stock interior state, not a rubber belt."),
+    "Zululand": validation_profile("regional_proxy", "partial_overlap", "broad_potential_only", 0.60, "Zululand is humid and plantation-oriented, but the restored split state still does not freeze a localized latent-rubber slot in v3."),
     "Drakensberg": validation_profile("state_localized", "direct", "broad_potential_only", 1.0, "Drakensberg is a mountain grain-and-pastoral state, not a rubber belt."),
     "Botswana": validation_profile("state_localized", "direct", "broad_potential_only", 1.0, "Botswana is a dry cattle-and-cereal state without a latent-rubber slot."),
     "Lourenço Marques": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.80, "Lourenço Marques latent rubber is bounded to the Maputo-Gaza littoral and lower Limpopo coastal-lowland plantation belt, not to whole-Mozambique tropical potential."),
@@ -579,6 +584,20 @@ REGIONAL_ADVANTAGE_SEEDS = [
         "citation_2_locator": "Free State analogues emphasize scale and consistency more than special crops.",
     },
     {
+        "state": "Zululand",
+        "advantage_type": "coastal_sugar_coal_mix",
+        "primary_resources": "Arable Land; Coal Mine; Fishing; Wood",
+        "preferred_layer": "state_modifier",
+        "keep_out_of_caps": "yes",
+        "note": "Zululand's restored value is the coastal-and-northern-Natal mix of sugar, fishing, coal access, and plantation timber; keep that identity outside raw cap inflation where possible.",
+        "citation_1_title": "Zuidelijk Afrika als landbouw- en visserijregio voor een Victoria 3-mod",
+        "citation_1_url": str(AGRI_RESEARCH_PATH),
+        "citation_1_locator": "KwaZulu-Natal is the strongest South African sugar state and supports bananas, tea pockets, livestock, and a useful fishery arc.",
+        "citation_2_title": "mining research.md",
+        "citation_2_url": str(RESEARCH_DIR / "mining research.md"),
+        "citation_2_locator": "KwaZulu-Natal is the medium-weight coal state between the Eastern Cape start and the heavier Transvaal coal basins.",
+    },
+    {
         "state": "Drakensberg",
         "advantage_type": "niche_pastoral_quality",
         "primary_resources": "Arable Land",
@@ -672,6 +691,7 @@ STATE_REVIEW_STATUS_SEEDS = {
     "Eastern Transvaal": ("accepted", "Comparator and docs polish remain.", "Eastern Transvaal remains directionally strong and the remaining issues are mostly presentation and consistency."),
     "Northern Transvaal": ("accepted", "Gameplay distinctiveness now sits outside the cap provenance pass.", "Northern Transvaal land rows now rest on localized Limpopo evidence; the remaining difference is crop-diversity and frontier flavor outside raw caps."),
     "Transorangia": ("accepted", "No major model blocker remains; only minor wording polish is still open.", "Transorangia's current package is directionally coherent."),
+    "Zululand": ("not_started", "Restored split-state audit lane; Natal-side evidence must now be reviewed on its own sheet.", "Zululand is back in scope and should be audited as the coastal-and-northern-Natal state rather than treated only as a vanilla proxy behind Drakensberg."),
     "Drakensberg": ("needs_gameplay_compensation", "Compensation is assigned to BST frontier journal flavour in 1-07_sb_bst_frontier.txt.", "Drakensberg stays constrained in caps; its mountain-pastoral niche should be expressed through the existing BST frontier / settlement journal flow rather than through more cap volume."),
     "Botswana": ("needs_gameplay_compensation", "Compensation is assigned to a future ranching-quality state modifier in sb_modifiers.txt.", "Botswana keeps its current caps; any extra cattle-first identity should be implemented through a state modifier applied from the BST/Tswana on-action path rather than through cap inflation."),
     "Lourenço Marques": ("accepted", "Port-littoral identity remains better expressed outside caps.", "Lourenço Marques now uses a bounded Maputo-Gaza lowland proxy for arable land and a defended forestry zero; remaining distinctiveness is littoral trade flavor outside the cap model."),
@@ -741,6 +761,13 @@ ARABLE_BASKET_SEEDS = {
         "citation_1_locator": "Free State row: maize, wheat, livestock strong; tobacco weaker.",
         "citation_2_locator": "[^fs]: Free State is a major maize and wheat province with strong cattle and sheep grazing.",
     },
+    "Zululand": {
+        "yes_resources": {"Banana Plantation", "Cotton Plantation", "Livestock Ranch", "Maize Farm", "Millet Farm", "Sugar Plantation", "Tea Plantation", "Tobacco Plantation"},
+        "include_summary": "Zululand is the humid KwaZulu-Natal littoral-and-northern-Natal belt: sugar, maize, livestock, bananas, cotton, tea, tobacco, and some millet all fit the coastal-to-interior gradient.",
+        "exclude_summary": "The reviewed Zululand basket is not the Lesotho highlands and does not inherit the Drakensberg mountain-grain profile.",
+        "citation_1_locator": "KwaZulu-Natal row: sugar, maize, livestock, bananas, and fishing are strongest; tea and tobacco are weaker but real.",
+        "citation_2_locator": "Northern Natal and the KwaZulu-Natal littoral combine sugar, maize, livestock, bananas, cotton, and tea-tobacco pockets across a humid coastal-to-coalfield gradient.",
+    },
     "Drakensberg": {
         "yes_resources": {"Livestock Ranch", "Maize Farm", "Millet Farm", "Wheat Farm"},
         "include_summary": "Lesotho is a grain-and-livestock highland where maize, sorghum, wheat, and stock are all plausible inside a mountain-constrained basket.",
@@ -788,9 +815,9 @@ ARABLE_BASKET_SEEDS = {
 ARABLE_LAND_CLASSES = [
     ("irrigated_perennial", 1.25, "Irrigated or perennial commercial land."),
     ("reliable_rainfed_crop", 1.00, "Reliable rainfed crop land."),
-    ("mixed_farming", 0.70, "Mixed crop-and-stock land."),
-    ("commercial_pasture", 0.35, "Commercial grazing and ranch land."),
-    ("marginal_grazing", 0.10, "Marginal semi-arid grazing land."),
+    ("mixed_farming", 0.75, "Mixed crop-and-stock land."),
+    ("commercial_pasture", 0.40, "Commercial grazing and ranch land."),
+    ("marginal_grazing", 0.15, "Marginal semi-arid grazing land."),
     ("desert_or_unusable", 0.00, "Desert or commercially unusable land."),
 ]
 ARABLE_LAND_CLASS_WEIGHT_MAP = {name: weight for name, weight, _note in ARABLE_LAND_CLASSES}
@@ -916,6 +943,17 @@ ARABLE_TARGET_CAPACITY_SEEDS = {
         },
         "capacity_note": "Classic interior cereal-and-stock heartland with broad effective commercial land but less perennial intensity than the Cape or eastern lowveld.",
     },
+    "Zululand": {
+        "classes": {
+            "irrigated_perennial": 200_000,
+            "reliable_rainfed_crop": 900_000,
+            "mixed_farming": 1_000_000,
+            "commercial_pasture": 500_000,
+            "marginal_grazing": 150_000,
+            "desert_or_unusable": 0,
+        },
+        "capacity_note": "KwaZulu-Natal littoral and northern Natal belt with strong sugar-and-maize land, humid mixed farming, and a smaller interior pasture tail; this is the coastal Zululand split, not Lesotho.",
+    },
     "Drakensberg": {
         "classes": {
             "irrigated_perennial": 0,
@@ -992,6 +1030,7 @@ ARABLE_COMPARATOR_UNITS_PER_CAP_BY_STATE = {
     "Eastern Transvaal": 54_000.0,
     "Northern Transvaal": 55_000.0,
     "Transorangia": 55_000.0,
+    "Zululand": 54_000.0,
     "Drakensberg": 50_000.0,
     "Botswana": 60_000.0,
     "Lourenço Marques": 54_000.0,
@@ -1004,8 +1043,8 @@ WOOD_LAND_CLASSES = [
     ("high_suitability_plantation", 1.00, "High-suitability commercial plantation land."),
     ("moderate_suitability_plantation", 0.65, "Moderate-suitability commercial plantation land."),
     ("restorable_commercial_forest", 0.40, "Historically depleted but commercially restorable forestry land."),
-    ("marginal_forestry", 0.15, "Marginal forestry land that can support only thin commercial activity."),
-    ("noncommercial_wooded_land", 0.00, "Wooded land that is not meaningfully commercial forestry."),
+    ("marginal_forestry", 0.20, "Marginal forestry land that can support only thin commercial activity."),
+    ("noncommercial_wooded_land", 0.05, "Wooded land that is not meaningfully commercial forestry."),
     ("arid_or_unusable", 0.00, "Arid or otherwise unusable forestry land."),
 ]
 WOOD_LAND_CLASS_WEIGHT_MAP = {name: weight for name, weight, _note in WOOD_LAND_CLASSES}
@@ -1147,6 +1186,23 @@ WOOD_TARGET_CAPACITY_SEEDS = {
         "citation_2_title": "Southern Africa comparator states ranked per region",
         "citation_2_url": str(COMPARATOR_RESEARCH_PATH),
         "citation_2_locator": "Free State comparator profile emphasizes cereal-and-stock land use, not a forestry belt.",
+    },
+    "Zululand": {
+        "classes": {
+            "high_suitability_plantation": 35_000,
+            "moderate_suitability_plantation": 65_000,
+            "restorable_commercial_forest": 25_000,
+            "marginal_forestry": 40_000,
+            "noncommercial_wooded_land": 80_000,
+            "arid_or_unusable": 0,
+        },
+        "capacity_note": "Zululand keeps a smaller humid-coastal forestry row built from KwaZulu-Natal plantation and woodland belts; it is distinct from the zero-wood Lesotho highlands split.",
+        "citation_1_title": "Report on Commercial Timber Resources and Primary Roundwood Processing in South Africa 2019/2020",
+        "citation_1_url": "https://www.dffe.gov.za/sites/default/files/reports/research/forestry/annualreport_commercialtimberresources_primaryroundwoodprocessing2019to2020.pdf",
+        "citation_1_locator": "KwaZulu-Natal remains a plantation and forestry province in the humid east and coastal belt; used here as the Zululand-side forestry floor.",
+        "citation_2_title": "Southern Africa comparator states ranked per region",
+        "citation_2_url": str(COMPARATOR_RESEARCH_PATH),
+        "citation_2_locator": "KwaZulu-Natal analogues are humid coastal-and-escarpment mixed systems with a real forestry belt, unlike Lesotho's mountain-pastoral profile.",
     },
     "Drakensberg": {
         "classes": {land_class: 0.0 for land_class, _weight, _note in WOOD_LAND_CLASSES},
@@ -1356,6 +1412,12 @@ RUBBER_TARGET_CAPACITY_SEEDS = {
         "capacity_note": "Transorangia remains outside the latent-rubber model; it is a dry grain-and-livestock interior state.",
         "citation_1_locator": "Free State profile is maize, wheat, tobacco, and livestock rather than tropical plantation land.",
         "citation_2_locator": "Free State analogues are interior grain states, not rubber country.",
+    },
+    "Zululand": {
+        "classes": {land_class: 0.0 for land_class, _weight, _note in RUBBER_LAND_CLASSES},
+        "capacity_note": "Zululand is humid and plantation-oriented, but the reset keeps latent rubber as broad potential only until the restored split state is audited on its own evidence chain.",
+        "citation_1_locator": "KwaZulu-Natal row: sugar, maize, livestock, bananas, and fishing are strongest; no localized rubber chain is frozen at reset time.",
+        "citation_2_locator": "The restored Zululand split carries humid littoral plantation logic, but v3 does not freeze a rubber slot there before the dedicated state pass.",
     },
     "Drakensberg": {
         "classes": {land_class: 0.0 for land_class, _weight, _note in RUBBER_LAND_CLASSES},
@@ -1646,37 +1708,14 @@ def family_rewrite_flags_by_state(family_rewrite_rows: list[dict[str, Any]]) -> 
     return flags
 
 
-def _archive_file_if_present(source: Path, archive_root: Path) -> None:
-    if not source.exists():
+def ensure_audit_reset() -> None:
+    if AUDIT_RESET_MARKER.exists():
         return
-    target = archive_root / source.name
-    target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_bytes(source.read_bytes())
-
-
-def ensure_v3_reset() -> None:
-    if V3_RESET_MARKER.exists():
-        return
-    V3_RESET_ARCHIVE_DIR.mkdir(parents=True, exist_ok=True)
-    files_to_archive = [
-        STATE_PASS_TRACKER_CSV,
-        STATE_COUNTERFACTUAL_AUDIT_CSV,
-        FAMILY_REWRITE_LOG_CSV,
-        DERIVED_DIR / "final_resource_caps.csv",
-        DERIVED_DIR / "resource_adjustments.csv",
-        AUDIT_DIR / "row_audit.csv",
-        DERIVED_DIR / "state_resource_deltas.csv",
-        DERIVED_DIR / "state_delta_summary.csv",
-        AUDIT_DIR / "sb_state_delta_report.md",
-        OUTPUT,
-    ]
-    for path in files_to_archive:
-        _archive_file_if_present(path, V3_RESET_ARCHIVE_DIR)
     write_csv(STATE_PASS_TRACKER_CSV, seed_state_pass_tracker_rows(), STATE_PASS_TRACKER_FIELDNAMES)
     write_csv(FAMILY_REWRITE_LOG_CSV, [], FAMILY_REWRITE_LOG_FIELDNAMES)
     write_csv(STATE_COUNTERFACTUAL_AUDIT_CSV, [], COUNTERFACTUAL_AUDIT_FIELDNAMES)
-    V3_RESET_MARKER.write_text(
-        "v3 reset applied: loop artifacts archived and tracker surfaces reset before the rebuilt baseline.\n",
+    AUDIT_RESET_MARKER.write_text(
+        "14-state reset applied: tracker and audit surfaces were reseeded without carrying forward the obsolete 13-state loop artifacts.\n",
         encoding="utf-8",
     )
 
@@ -3884,7 +3923,7 @@ def compute_shared_arable_denominator(state_payloads: dict[str, dict[str, Any]])
     return {
         "shared_sb_arable_effective_hectares_per_cap": shared,
         "state_mean_count": len(values),
-        "method": "simple_mean_of_13_effective_land_state_means",
+        "method": f"simple_mean_of_{len(values)}_effective_land_state_means",
     }
 
 
@@ -3939,6 +3978,7 @@ ADJUSTMENT_INPUT_FIELDNAMES = [
     "output_addition_y",
     "plausibility_haircut_z",
     "minimum_operating_floor_cap",
+    "documented_working_floor_eligible",
     "exception_status",
     "exception_final_cap",
     "earliest_commercial_activity_year",
@@ -3994,6 +4034,7 @@ def seed_adjustment_inputs_if_needed(
             "output_addition_y": 0.0,
             "plausibility_haircut_z": 0.0,
             "minimum_operating_floor_cap": "",
+            "documented_working_floor_eligible": "",
             "exception_status": "",
             "exception_final_cap": "",
             "earliest_commercial_activity_year": "",
@@ -4131,6 +4172,7 @@ def load_adjustment_inputs() -> dict[tuple[str, str], dict[str, Any]]:
             "output_addition_y": parse_float(row["output_addition_y"]) or 0.0,
             "plausibility_haircut_z": parse_float(row["plausibility_haircut_z"]) or 0.0,
             "minimum_operating_floor_cap": parse_int(row["minimum_operating_floor_cap"]),
+            "documented_working_floor_eligible": str(row.get("documented_working_floor_eligible", "")).strip().lower() in {"yes", "true", "1"},
             "exception_status": row["exception_status"],
             "exception_final_cap": parse_int(row["exception_final_cap"]),
             "earliest_commercial_activity_year": parse_int(row.get("earliest_commercial_activity_year")),
@@ -4175,6 +4217,7 @@ def load_adjustment_inputs() -> dict[tuple[str, str], dict[str, Any]]:
                     "output_addition_y": 0.0,
                     "plausibility_haircut_z": 0.0,
                     "minimum_operating_floor_cap": None,
+                    "documented_working_floor_eligible": False,
                     "exception_status": "",
                     "exception_final_cap": None,
                     "earliest_commercial_activity_year": None,
@@ -4462,6 +4505,7 @@ def apply_adjustments(
     resource_adjustment_rows: list[dict[str, Any]] = []
     final_caps: dict[str, dict[str, int]] = {row["official_name"]: {} for row in STATE_INFO}
     audit_rows: list[dict[str, Any]] = []
+    quantity_floor_resources = {"Coal Mine", "Fishing", "Gold Mine", "Iron Mine", "Lead Mine", "Sulfur Mine", "Whaling", "Wood"}
     for state_info in STATE_INFO:
         state = state_info["official_name"]
         for _category, resource in NUMERIC_RESOURCES:
@@ -4470,6 +4514,7 @@ def apply_adjustments(
             row_cases = counterevidence_cases.get((state, resource), [])
             y_addition = input_row.get("output_addition_y", 0.0)
             minimum_floor = input_row.get("minimum_operating_floor_cap")
+            documented_working_floor_eligible = bool(input_row.get("documented_working_floor_eligible"))
             exception_status = input_row.get("exception_status", "")
             denominator = parse_float(base["denominator_units_per_cap"])
             observed = parse_float(base["observed_output_x"]) or 0.0
@@ -4514,6 +4559,8 @@ def apply_adjustments(
                 adjusted_cap = adjusted_output / denominator
                 ceiled_cap = max(math.ceil(adjusted_cap), 0)
                 final_cap = max(ceiled_cap, minimum_floor) if minimum_floor else ceiled_cap
+                if final_cap == 0 and documented_working_floor_eligible and resource in quantity_floor_resources:
+                    final_cap = 1
                 if final_cap == 0 and observed == 0 and not has_adjustment_terms:
                     counterevidence_status, _counterevidence_note = summarize_counterevidence(row_cases, final_cap, exception_status)
                     status = "constrained zero" if counterevidence_status == "supports" else "review required"
@@ -4539,6 +4586,7 @@ def apply_adjustments(
                     "base_cap": base_cap if base_cap is not None else "",
                     "adjusted_cap": adjusted_cap if adjusted_cap != "" else "",
                     "minimum_operating_floor_cap": minimum_floor or "",
+                    "documented_working_floor_eligible": "yes" if documented_working_floor_eligible else "no",
                     "final_audited_cap": final_cap,
                     "exception_status": exception_status,
                     "problem_type": input_row.get("problem_type", ""),
@@ -4579,6 +4627,7 @@ def apply_adjustments(
                     "adjusted_output": adjusted_output,
                     "adjusted_cap": adjusted_cap,
                     "minimum_operating_floor_cap": minimum_floor or "",
+                    "documented_working_floor_eligible": "yes" if documented_working_floor_eligible else "no",
                     "final_audited_cap": final_cap,
                     "status": status,
                     "exception_status": exception_status,
@@ -5102,6 +5151,7 @@ def write_public_outputs(
             "base_cap",
             "adjusted_cap",
             "minimum_operating_floor_cap",
+            "documented_working_floor_eligible",
             "final_audited_cap",
             "status",
             "exception_status",
@@ -5155,6 +5205,7 @@ def write_public_outputs(
             "denominator_units_per_cap",
             "base_cap",
             "adjusted_cap",
+            "documented_working_floor_eligible",
             "final_audited_cap",
             "status",
             "exception_status",
@@ -5233,6 +5284,7 @@ def write_public_outputs(
             "base_cap",
             "adjusted_cap",
             "minimum_operating_floor_cap",
+            "documented_working_floor_eligible",
             "final_audited_cap",
             "exception_status",
             "problem_type",
@@ -5691,6 +5743,7 @@ def build_state_resource_counterfactual_audit_rows(
     resource_adjustment_rows: list[dict[str, Any]],
     arable_resource_expectation_rows: list[dict[str, Any]],
     arable_basket_rows: list[dict[str, Any]],
+    counterevidence_cases: dict[tuple[str, str], list[dict[str, str]]],
     vanilla_priors: dict[str, dict[str, Any]],
     state_pass_tracker_rows: list[dict[str, Any]],
     family_rewrite_rows: list[dict[str, Any]],
@@ -5725,8 +5778,26 @@ def build_state_resource_counterfactual_audit_rows(
             if category == "Arable Resource":
                 expectation = expectation_map[(state, resource)]
                 basket_row = basket_map.get((state, resource), {})
+                row_cases = counterevidence_cases.get((state, resource), [])
+                counterevidence_case = row_cases[-1] if row_cases else {}
                 current_value = str(vanilla_priors[state].get(resource, "no")).lower()
                 proposed_value = str(expectation["researched_plausible"]).lower()
+                counterevidence_citations = proposed_value == "no" and bool(counterevidence_case)
+                regional_claim_note = (
+                    counterevidence_case.get("decision", "")
+                    if counterevidence_citations
+                    else (
+                        "No broader regional claim is driving the row; the reviewed crop basket is state-specific."
+                        if proposed_value == "yes"
+                        else "Broader climatic or neighboring analogies are not treated as local support when the reviewed basket excludes the crop."
+                    )
+                )
+                notes = (
+                    counterevidence_case.get("decision")
+                    or counterevidence_case.get("result")
+                    or basket_row.get("basket_reason")
+                    or expectation["gameplay_note"]
+                )
                 rows.append(
                     {
                         **base_row,
@@ -5740,20 +5811,16 @@ def build_state_resource_counterfactual_audit_rows(
                         "current_value": current_value,
                         "proposed_value": proposed_value,
                         "decision": "flip_yes_no" if current_value != proposed_value else "keep",
-                        "issue_type": expectation["basket_membership_status"],
+                        "issue_type": counterevidence_case.get("result") or expectation["basket_membership_status"],
                         "chronology_note": "Gameplay crop availability is reviewed against the 1836-1936 state basket rather than a single-year output series.",
-                        "regional_claim_note": (
-                            "No broader regional claim is driving the row; the reviewed crop basket is state-specific."
-                            if proposed_value == "yes"
-                            else "Broader climatic or neighboring analogies are not treated as local support when the reviewed basket excludes the crop."
-                        ),
-                        "citation_1_title": basket_row.get("citation_1_title", ""),
-                        "citation_1_url": basket_row.get("citation_1_url", ""),
-                        "citation_1_locator": basket_row.get("citation_1_locator", ""),
-                        "citation_2_title": basket_row.get("citation_2_title", ""),
-                        "citation_2_url": basket_row.get("citation_2_url", ""),
-                        "citation_2_locator": basket_row.get("citation_2_locator", ""),
-                        "notes": basket_row.get("basket_reason") or expectation["gameplay_note"],
+                        "regional_claim_note": regional_claim_note,
+                        "citation_1_title": counterevidence_case.get("source_a_title", "") if counterevidence_citations else basket_row.get("citation_1_title", ""),
+                        "citation_1_url": counterevidence_case.get("source_a_url", "") if counterevidence_citations else basket_row.get("citation_1_url", ""),
+                        "citation_1_locator": counterevidence_case.get("source_a_locator", "") if counterevidence_citations else basket_row.get("citation_1_locator", ""),
+                        "citation_2_title": counterevidence_case.get("source_b_title", "") if counterevidence_citations else basket_row.get("citation_2_title", ""),
+                        "citation_2_url": counterevidence_case.get("source_b_url", "") if counterevidence_citations else basket_row.get("citation_2_url", ""),
+                        "citation_2_locator": counterevidence_case.get("source_b_locator", "") if counterevidence_citations else basket_row.get("citation_2_locator", ""),
+                        "notes": notes,
                     }
                 )
                 continue
@@ -6151,7 +6218,7 @@ def sync_live_state_file(
 
 
 def build_public_workbook() -> dict[str, Any]:
-    ensure_v3_reset()
+    ensure_audit_reset()
     growth_rows, growth_index_lookup = build_growth_rows(load_growth_anchor_series())
     historical_rows, modern_rows = load_raw_data()
     gdp_reference = load_gdp_reference_anchor()
@@ -6239,6 +6306,7 @@ def build_public_workbook() -> dict[str, Any]:
         resource_adjustment_rows,
         arable_resource_expectation_rows,
         arable_basket_rows,
+        counterevidence_cases,
         vanilla_priors,
         state_pass_tracker_rows,
         family_rewrite_rows,

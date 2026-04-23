@@ -123,7 +123,7 @@ GROWTH_SERIES = {
         {"year": 2023, "quantity": 3_266.418, "unit": "t output", "source_title": WMD_2025_TITLE, "source_url": WMD_2025_URL, "locator": "Gold table, 2023 world total = 3,266,418 kg."},
     ],
     "Sulfur Mine": [
-        {"year": 1950, "quantity": 1.0, "unit": "index", "source_title": NORA_1950_1955_TITLE, "source_url": NORA_1950_1955_URL, "locator": "Synthetic 1950 base index used until a fuller annual sulfur reference series is added."},
+        {"year": 1950, "quantity": 1.0, "unit": "index", "source_title": NORA_1950_1955_TITLE, "source_url": NORA_1950_1955_URL, "locator": "Synthetic postwar base index used until a fuller annual sulfur reference series is added."},
         {"year": 2019, "quantity": 81_997_309.0, "unit": "t output", "source_title": WMD_2025_TITLE, "source_url": WMD_2025_URL, "locator": "Sulfur table, 2019 world total."},
         {"year": 2020, "quantity": 79_339_055.0, "unit": "t output", "source_title": WMD_2025_TITLE, "source_url": WMD_2025_URL, "locator": "Sulfur table, 2020 world total."},
         {"year": 2021, "quantity": 78_586_878.0, "unit": "t output", "source_title": WMD_2025_TITLE, "source_url": WMD_2025_URL, "locator": "Sulfur table, 2021 world total."},

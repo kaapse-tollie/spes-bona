@@ -92,6 +92,21 @@ But:
 
 When a changed non-land row survives partly because of later evidence, the audit note must say clearly that the row is being carried by bounded counterfactual potential within the package's `1940-equivalent` non-land framework.
 
+### 0D. Documented-working floor for quantity rows
+
+For public numeric quantity rows only:
+
+- if the numeric model resolves to `0`
+- and there is documented in-state working, trial production, or commercial operation
+
+then the row should be held at `1`, not `0`.
+
+Hard rules:
+
+- this applies only to quantity-cap public rows such as mines, fishing, whaling, and wood
+- this does **not** apply to `Arable Land`, yes/no arable basket rows, or special-resource rows
+- mere occurrence, geology, archaeological smelting, or unworked potential does not trigger the floor
+
 ## Key Changes
 
 ### 1. Make the loop stateful and append-only
@@ -182,12 +197,13 @@ State order is fixed:
 5. Eastern Transvaal
 6. Northern Transvaal
 7. Transorangia
-8. Drakensberg
-9. Botswana
-10. Lourenço Marques
-11. Zambezi
-12. Hereroland
-13. Namaqualand
+8. Zululand
+9. Drakensberg
+10. Botswana
+11. Lourenço Marques
+12. Zambezi
+13. Hereroland
+14. Namaqualand
 
 Default behavior of one agent call:
 1. read `state_pass_tracker.csv`
@@ -208,7 +224,7 @@ The agent must not continue into the next untouched state in the same normal run
 
 Do not use the word `complete` to mean “one state pass finished”.
 
-Use `complete` only if the entire 13-state loop is finished and `state_pass_tracker.csv` shows no remaining `not started`, `in review`, or `rerun required` rows.
+Use `complete` only if the entire 14-state loop is finished and `state_pass_tracker.csv` shows no remaining `not started`, `in review`, or `rerun required` rows.
 
 At the end of every call, the final response must include these plain-text status lines:
 
@@ -223,7 +239,7 @@ Rules:
   - `STATE_PASS_COMPLETE=yes`
   - `LOOP_COMPLETE=no`
   - `NEXT_STATE=<next state from tracker>`
-- If all 13 states are accepted:
+- If all 14 states are accepted:
   - `STATE_PASS_COMPLETE=yes`
   - `LOOP_COMPLETE=yes`
   - `NEXT_STATE=NONE`
@@ -339,7 +355,7 @@ Minimum research expectation per state pass:
 - at least one local-package search pass and one external search pass must be completed for any changed contested row
 - if built-in Codex CLI web search is unavailable in the session, note that explicitly in the final response and fall back to SearXNG or direct-source fetching
 - if the SearXNG endpoint is unreachable, note that explicitly in the final response and fall back to direct-source fetching
-- if a touched row or touched README/workbook note still says `GBR 1950`, the old flagship-scale wording, or another stale methodology phrase, update it in the same run instead of carrying stale method text forward
+- if a touched row or touched README/workbook note still carries old normalization-anchor wording or another stale methodology phrase, update it in the same run instead of carrying stale method text forward
 
 PDF handling rules:
 - prefer `pdftotext <file> -` for quick extraction
@@ -379,6 +395,16 @@ Treat these as explicit trigger rows in the loop:
 
 - `West Transvaal / Iron Mine`
   - test Pretoria Iron Mines and the Magaliesberg-Marico belt before accepting zero
+- `Zululand / Coal Mine`
+  - treat Dundee, Newcastle, Utrecht, and Vryheid as in-footprint Natal evidence for the restored split state rather than as Drakensberg counterevidence
+- `Zululand / Iron Mine`
+  - recheck Sweetwaters, Alverstone, and the wider Natal-era ironworks chain as Zululand-side evidence before accepting zero
+- `Zululand / Wood`
+  - treat KwaZulu-Natal plantation/woodland belts as Zululand evidence and do not force Drakensberg’s Lesotho zero onto the restored coastal split
+- `Zululand / Sugar Plantation`
+  - keep the humid littoral sugar belt distinct from Drakensberg’s mountain-grain basket
+- `Zululand / Fishing`
+  - recheck the coast-facing fishery row as a real Zululand lane rather than a landlocked Drakensberg comparison
 - `Drakensberg / Iron Mine`
   - test Dundee, Vryheid, Sweetwaters, Alverstone, and adjacent Natal-era / KwaZulu-Natal iron potential before accepting iron-emptiness
   - do not accept zero until you have explicitly compared the KZN ironworks/mining evidence against the current West Transvaal Pretoria standard
@@ -427,15 +453,17 @@ Do **not** sync the live state file during ordinary state passes.
 
 Only allow final live sync after all of the following are true:
 
-- all 13 rows in `state_pass_tracker.csv` are `accepted`
+- all 14 rows in `state_pass_tracker.csv` are `accepted`
 - `resources.py test` passes cleanly on the full package
 - the high-impact iron rows have been explicitly rechecked:
   - `West Transvaal / Iron Mine`
+  - `Zululand / Coal Mine`
+  - `Zululand / Iron Mine`
   - `Eastern Transvaal / Iron Mine`
   - `Northern Transvaal / Iron Mine`
   - `Northern Cape / Iron Mine`
   - `Drakensberg / Iron Mine`
-- no touched active row or public doc still carries stale method wording such as `GBR 1950` or obsolete chronology-rule language
+- no touched active row or public doc still carries stale normalization-anchor wording or obsolete chronology-rule language
 - the final workbook and derived outputs reflect the accepted v3 method
 
 Only then:

@@ -36,7 +36,7 @@ So the goal here is not to preserve vanilla totals mechanically. The goal is to 
 
 ### Scope
 
-The package covers these 13 SB states:
+The package covers these 14 SB states:
 
 - Cape Colony
 - Northern Cape
@@ -45,6 +45,7 @@ The package covers these 13 SB states:
 - Eastern Transvaal
 - Northern Transvaal
 - Transorangia
+- Zululand
 - Drakensberg
 - Botswana
 - Lourenço Marques
@@ -177,7 +178,7 @@ Great Britain, 1940
 We replaced the older postwar British anchor for methodological rather than cosmetic reasons:
 
 - many of the SB target geographies never reach the later postwar British level in a way that gives a stable representative year
-- the 1940-1950 decade adds war noise that is not useful as a universal selector target
+- the immediate postwar decade adds war noise that is not useful as a universal selector target
 - `GBR 1940` is reachable for a larger share of the relevant African target series while still representing substantial development above a strict 1836 frame
 
 The selection rule is:
@@ -238,9 +239,9 @@ The current arable classes are stored in [arable_land_class_weights.csv](./data/
 
 - `irrigated_perennial = 1.25`
 - `reliable_rainfed_crop = 1.00`
-- `mixed_farming = 0.70`
-- `commercial_pasture = 0.35`
-- `marginal_grazing = 0.10`
+- `mixed_farming = 0.75`
+- `commercial_pasture = 0.40`
+- `marginal_grazing = 0.15`
 - `desert_or_unusable = 0.00`
 
 These are weighted classes rather than raw-hectare classes. We do that deliberately:
@@ -319,8 +320,8 @@ The current wood classes are stored in [wood_land_class_weights.csv](./data/raw/
 - `high_suitability_plantation = 1.00`
 - `moderate_suitability_plantation = 0.65`
 - `restorable_commercial_forest = 0.40`
-- `marginal_forestry = 0.15`
-- `noncommercial_wooded_land = 0.00`
+- `marginal_forestry = 0.20`
+- `noncommercial_wooded_land = 0.05`
 - `arid_or_unusable = 0.00`
 
 #### Plantation-first model with capped restoration
@@ -476,7 +477,7 @@ The rule uses:
 
 Then:
 
-`penalty = min(1, 0.0027733851436286447 * late_start * ln(1 + late_start) + 0.01 * proxy_lag)`
+`penalty = min(1, 0.00275 * late_start * ln(1 + late_start) + 0.01 * proxy_lag)`
 
 and:
 

@@ -1,7 +1,7 @@
 # Public Resource Audit Test Report
 
 - Date: 2026-04-22
-- Passes: 76
+- Passes: 78
 - Fails: 0
 
 ## Checks
@@ -15,7 +15,7 @@
 - **PASS** `readme no longer carries v2 drift language or the old GDP anchor`: Unexpected README text: 
 - **PASS** `frozen GDP anchor is GBR 1940`: 
 - **PASS** `universal quantity-resource Z formula matches the locked chronology calibration`: 
-- **PASS** `overview plus one sheet per SB state`: Visible sheets: ['Overview', 'Cape Colony', 'Northern Cape', 'Eastern Cape', 'West Transvaal', 'Eastern Transvaal', 'Northern Transvaal', 'Transorangia', 'Drakensberg', 'Botswana', 'Lourenço Marques', 'Zambezi', 'Hereroland', 'Namaqualand']
+- **PASS** `overview plus one sheet per SB state`: Visible sheets: ['Overview', 'Cape Colony', 'Northern Cape', 'Eastern Cape', 'West Transvaal', 'Eastern Transvaal', 'Northern Transvaal', 'Transorangia', 'Zululand', 'Drakensberg', 'Botswana', 'Lourenço Marques', 'Zambezi', 'Hereroland', 'Namaqualand']
 - **PASS** `overview sheet sections`: Missing sections: 
 - **PASS** `each state sheet has totals and resource table sections`: Missing sections on: 
 - **PASS** `visible sheets are generated output`: Formula cells on visible sheets: 0
@@ -25,25 +25,26 @@
 - **PASS** `derived data README classifies outputs`: README classification text missing.
 - **PASS** `no .DS_Store files remain under Docs/resources`: 
 - **PASS** `formula-driving raw files expose validation columns`: Missing validation columns in: 
-- **PASS** `target data validation output exists and is populated`: Rows=415
+- **PASS** `target data validation output exists and is populated`: Rows=431
 - **PASS** `validation discount and drive-x rules hold`: 
 - **PASS** `validation notes ship without placeholder language`: 
 - **PASS** `new audit tables exist`: Missing one of the tracker/counterfactual/rewrite/state review audit tables.
-- **PASS** `regional advantages and state review status are populated`: advantages=13, review_status=13
+- **PASS** `regional advantages and state review status are populated`: advantages=14, review_status=14
 - **PASS** `lifecycle columns exist on maintained evidence tables`: Missing lifecycle fields in: 
 - **PASS** `no maintained logical key has more than one active evidence row`: 
+- **PASS** `adjustment schema carries the documented-working floor flag`: Expected documented_working_floor_eligible in adjustment input schema.
 - **PASS** `quantity-resource chronology moderation rows set both commercial years together`: 
 - **PASS** `integer cap conversion now uses ceil with active floors preserved`: 
 - **PASS** `arable rows are removed from gdp selection output`: Unexpected arable GDP rows: 0
 - **PASS** `wood rows are removed from gdp selection output`: Unexpected wood GDP rows: 0
 - **PASS** `latent-rubber rows are removed from gdp selection output`: Unexpected rubber GDP rows: 0
-- **PASS** `arable target capacity rows cover all states and land classes`: Rows=78, expected=78
-- **PASS** `arable comparator capacity rows are populated`: Rows=672
-- **PASS** `wood target capacity rows cover all states and land classes`: Rows=78, expected=78
+- **PASS** `arable target capacity rows cover all states and land classes`: Rows=84, expected=84
+- **PASS** `arable comparator capacity rows are populated`: Rows=744
+- **PASS** `wood target capacity rows cover all states and land classes`: Rows=84, expected=84
 - **PASS** `wood comparator capacity rows are populated`: Rows=120
-- **PASS** `rubber target capacity rows cover all states and land classes`: Rows=52, expected=52
+- **PASS** `rubber target capacity rows cover all states and land classes`: Rows=56, expected=56
 - **PASS** `rubber comparator capacity rows are populated`: Rows=80
-- **PASS** `shared arable denominator matches simple mean of state means`: shared=55846.153846153844, expected=55846.153846153844
+- **PASS** `shared arable denominator matches simple mean of state means`: shared=55714.28571428572, expected=55714.28571428572
 - **PASS** `all arable rows use the shared land-capacity denominator`: States with non-shared arable denominator: 
 - **PASS** `arable rows use direct land-capacity X with no GDP fields or legacy Y/Z`: 
 - **PASS** `hectare families bypass the universal quantity-resource Z rule`: 
@@ -55,7 +56,7 @@
 - **PASS** `overview progress block mirrors state_pass_tracker.csv`: Mismatches: 
 - **PASS** `state sheets mirror vanilla baselines and audited SB updates`: Mismatches: 
 - **PASS** `state sheets expose the public Basis column`: Basis issues: 
-- **PASS** `live state file sync remains frozen`: Auto-sync disabled; 18 live mismatches are expected during the audit pass.
+- **PASS** `live state file sync remains frozen`: Auto-sync disabled; 31 live mismatches are expected during the audit pass.
 - **PASS** `accepted synced states match live arable resources`: No accepted synced states yet.
 - **PASS** `wood uses dedicated effective-forestry denominator path`: Wood path failures: 
 - **PASS** `non-arable benchmark registry and gold-mine denominator path are wired`: 
@@ -67,12 +68,13 @@
 - **PASS** `latent rubber is hectare-based while discovered rubber stays exceptional`: 
 - **PASS** `latent-rubber denominator is built from the comparator hectare pool`: 
 - **PASS** `sentinel provenance scenarios behave as intended`: 
-- **PASS** `row audit file exists`: row_audit rows=195, final_caps rows=195
+- **PASS** `row audit file exists`: row_audit rows=210, final_caps rows=210
 - **PASS** `row audit fields are populated`: Rows missing audit fields: 0
 - **PASS** `hard zeros carry explicit audit support or exception status`: Unsupported hard zeros: 0
-- **PASS** `state counterfactual audit covers the full public workbook surface`: audit_rows=390, expected=390
+- **PASS** `state counterfactual audit covers the full public workbook surface`: audit_rows=420, expected=420
 - **PASS** `every audited public row has both labels and one driving basis`: 
 - **PASS** `no changed row lacks citations`: 
+- **PASS** `arable counterevidence rows surface in the public audit when they defend a no row`: 
 - **PASS** `state pass tracker rows are present and in fixed order`: 
 - **PASS** `loop tracker remains coherent across reset and in-progress passes`: 
 - **PASS** `loop surfaces persist stateful progress after the v3 reset`: Tracker/family rewrite surfaces are carrying stateful loop progress.
@@ -81,7 +83,7 @@
 - **PASS** `regional totals match final caps aggregation`: 0 regional mismatches.
 - **PASS** `state delta summary matches final caps aggregation`: 
 - **PASS** `state delta exports exist and mirror final caps`: 
-- **PASS** `priority rows file exists`: Priority rows: 148
+- **PASS** `priority rows file exists`: Priority rows: 163
 
 ## Current Priority Rows
 

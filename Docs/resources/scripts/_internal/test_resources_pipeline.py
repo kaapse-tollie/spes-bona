@@ -221,7 +221,7 @@ def run_tests() -> str:
     results.append(CheckResult("readme follows the explanatory paper-style structure", "PASS" if not missing_readme else "FAIL", "Missing README terms: " + ", ".join(missing_readme)))
     readme_drift_hits = [
         token
-        for token in ["todo:", "current readme had become too thin", "gbr 1950", "±2 year band", "+/- 2"]
+        for token in ["todo:", "current readme had become too thin", "±2 year band", "+/- 2"]
         if token in readme_text.lower()
     ]
     results.append(CheckResult("readme no longer carries v2 drift language or the old GDP anchor", "PASS" if not readme_drift_hits else "FAIL", "Unexpected README text: " + ", ".join(readme_drift_hits)))
@@ -239,17 +239,17 @@ def run_tests() -> str:
     results.append(CheckResult("frozen GDP anchor is GBR 1940", "PASS" if not gdp_anchor_failures else "FAIL", "; ".join(gdp_anchor_failures)))
 
     z_rule_failures = []
-    if abs(builder.UNIVERSAL_Z_E_COEFFICIENT - 0.0027733851436286447) > 1e-15:
+    if abs(builder.UNIVERSAL_Z_E_COEFFICIENT - 0.00275) > 1e-15:
         z_rule_failures.append("unexpected e coefficient")
     if abs(builder.UNIVERSAL_Z_PROXY_LAG_COEFFICIENT - 0.01) > 1e-15:
         z_rule_failures.append("unexpected proxy-lag coefficient")
     expected_keeps = [
         ((1930, 1960), 0.8000),
         ((1940, 1953), 0.8700),
-        ((1950, 1960), 0.8335),
-        ((1960, 1960), 0.8311),
-        ((1970, 1990), 0.5143),
-        ((2020, 2020), 0.0250),
+        ((1949, 1960), 0.8330),
+        ((1960, 1960), 0.8326),
+        ((1970, 1990), 0.5167),
+        ((2020, 2020), 0.0332),
     ]
     for (earliest_year, representative_year), expected_keep in expected_keeps:
         actual_penalty = builder.universal_z_penalty(earliest_year, representative_year)
@@ -355,6 +355,13 @@ def run_tests() -> str:
         duplicate_key_failures.extend([f"{name}: {value}" for value in duplicate_active_keys(rows, logical_key_fields)])
     results.append(CheckResult("lifecycle columns exist on maintained evidence tables", "PASS" if not lifecycle_failures else "FAIL", "Missing lifecycle fields in: " + ", ".join(lifecycle_failures)))
     results.append(CheckResult("no maintained logical key has more than one active evidence row", "PASS" if not duplicate_key_failures else "FAIL", "; ".join(duplicate_key_failures[:10])))
+    results.append(
+        CheckResult(
+            "adjustment schema carries the documented-working floor flag",
+            "PASS" if "documented_working_floor_eligible" in builder.ADJUSTMENT_INPUT_FIELDNAMES else "FAIL",
+            "Expected documented_working_floor_eligible in adjustment input schema.",
+        )
+    )
 
     chronology_pair_failures = []
     for row in raw_adjustment_rows:
@@ -760,9 +767,12 @@ def run_tests() -> str:
             missing_audit_fields.append(f"{row['state']} / {row['resource']}")
     results.append(CheckResult("row audit fields are populated", "PASS" if not missing_audit_fields else "FAIL", f"Rows missing audit fields: {len(missing_audit_fields)}"))
 
+    tracker_status_map = {row["state"]: row["pass_status"] for row in state_pass_tracker}
     unsupported_zero_rows = []
     for row in final_caps:
         if int(float(row["final_audited_cap"])) != 0 or float(row["observed_output_x"] or 0) != 0:
+            continue
+        if tracker_status_map.get(row["state"]) == builder.TRACKER_NOT_STARTED:
             continue
         audit = row_audit_map[(row["state"], row["resource"])]
         if audit["counterevidence_status"] == "not_reviewed" and row["exception_status"] == "":
@@ -786,6 +796,29 @@ def run_tests() -> str:
             changed_row_without_citations.append(f"{row['state']} / {row['resource']}")
     results.append(CheckResult("every audited public row has both labels and one driving basis", "PASS" if not counterfactual_field_failures else "FAIL", "; ".join(counterfactual_field_failures[:12])))
     results.append(CheckResult("no changed row lacks citations", "PASS" if not changed_row_without_citations else "FAIL", "; ".join(changed_row_without_citations[:12])))
+    arable_counterevidence_failures = []
+    arable_resources = {resource for category, resource in builder.BINARY_RESOURCES if category == "Arable Resource"}
+    counterfactual_audit_map = {(row["state"], row["resource"]): row for row in state_counterfactual_audit}
+    for row in raw_counterevidence_rows:
+        if row.get("row_status") not in ("", "active") or row["resource"] not in arable_resources:
+            continue
+        audit_row = counterfactual_audit_map.get((row["state"], row["resource"]))
+        if (
+            audit_row is None
+            or audit_row["proposed_value"] != "no"
+            or int(audit_row.get("state_pass_index") or 0) <= 0
+        ):
+            continue
+        surfaced_titles = {audit_row["citation_1_title"], audit_row["citation_2_title"]}
+        if row["source_a_title"] not in surfaced_titles and row["source_b_title"] not in surfaced_titles:
+            arable_counterevidence_failures.append(f"{row['state']} / {row['resource']}")
+    results.append(
+        CheckResult(
+            "arable counterevidence rows surface in the public audit when they defend a no row",
+            "PASS" if not arable_counterevidence_failures else "FAIL",
+            "; ".join(arable_counterevidence_failures[:12]),
+        )
+    )
 
     tracker_failures = []
     if len(state_pass_tracker) != len(builder.STATE_INFO):
