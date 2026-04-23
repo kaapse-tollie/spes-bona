@@ -107,6 +107,35 @@ Hard rules:
 - this does **not** apply to `Arable Land`, yes/no arable basket rows, or special-resource rows
 - mere occurrence, geology, archaeological smelting, or unworked potential does not trigger the floor
 
+### 0E. State scope before row localization
+
+Before reviewing any row, bind the SB state to its **full split-state footprint**.
+
+Only after that may you localize evidence to narrower belts, districts, estates, coalfields, river corridors, or plantation zones.
+
+Hard rules:
+
+- a localized belt must never redefine the state itself
+- state-level notes must describe the full split-state footprint first
+- row-localized evidence may narrow a specific row inside that footprint, but it does not shrink the state
+- every state pass must actively check whether the corrected full-state footprint contains additional production systems, districts, estates, fisheries, forestry belts, or mine chains that were previously omitted by narrowed shorthand
+- do not treat the listed trigger rows as the only scope-sensitive rows in a state; they are only the most failure-prone places to check first
+
+Lock these mappings:
+
+- `Cape Colony` = Western Cape core plus the small modern Northern Cape coastal strip inside `STATE_CAPE_COLONY`
+- `Northern Cape` = the remainder of `STATE_NORTHERN_CAPE`, including inland South African Namaqualand / Karoo / Orange-Vaal country and the dry western side of the old North West split
+- `West Transvaal` = Gauteng plus the interior plateau / mining-linked side of the old North West split
+- `Zululand` = full modern KwaZulu-Natal / full `STATE_ZULULAND`
+- `Drakensberg` = full Lesotho / full `STATE_DRAKENSBERG`
+- `Botswana` = full `STATE_BOTSWANA`, including the north-west wet corridor and the vanilla-default Caprivi inclusion
+- `Lourenço Marques` = Maputo Province, Maputo City, Inhambane Province, Gaza Province, Sofala south of the Pungwe inclusive, and Manica south of the Pungwe inclusive
+- `Zambezi` = full Zimbabwe / full `STATE_ZAMBEZI`
+- `Hereroland` = full northern Namibia / full `STATE_HEREROLAND`
+- `Namaqualand` = full southern Namibia / full `STATE_NAMAQUALAND`
+
+When a row note later uses labels like `Eastern Highlands`, `Maputo-Gaza lowland`, `Otavi-Grootfontein pocket`, `KwaZulu-Natal littoral`, or `Orange-Vaal corridor`, treat that as row localization only.
+
 ## Key Changes
 
 ### 1. Make the loop stateful and append-only
@@ -128,6 +157,7 @@ Add three control/audit outputs that the CLI agent updates every run:
     - `issue_type`
     - `chronology_note`
     - `regional_claim_note`
+    - `full_state_footprint`
     - `primary_district_or_belt`
     - `citation_1_*`
     - `citation_2_*`
@@ -389,9 +419,13 @@ README policy during the loop:
 
 This keeps public documentation current without turning README edits into per-state noise.
 
-### 5. Hard focus areas for the early passes
+### 5. Hard focus areas for the rerun
 
-Treat these as explicit trigger rows in the loop:
+Treat these as explicit trigger rows in the loop. A state pass is not accepted until any trigger rows in that state have been explicitly rechecked and the audit note says what happened.
+
+These trigger rows are extra-sensitive checks, not a substitute for full-state review. For every state pass, you must still account for the whole corrected state footprint and confirm that no other in-footprint production system has been skipped just because it is not named below.
+
+Immediate trigger rows:
 
 - `West Transvaal / Iron Mine`
   - test Pretoria Iron Mines and the Magaliesberg-Marico belt before accepting zero
@@ -409,12 +443,41 @@ Treat these as explicit trigger rows in the loop:
   - test Dundee, Vryheid, Sweetwaters, Alverstone, and adjacent Natal-era / KwaZulu-Natal iron potential before accepting iron-emptiness
   - do not accept zero until you have explicitly compared the KZN ironworks/mining evidence against the current West Transvaal Pretoria standard
   - if the evidence looks more like a small bounded Pretoria-style row than a clean hard zero, say that explicitly in the audit note even if the final decision remains zero
-- `Northern Transvaal / Iron Mine`
-  - test Phalaborwa/Lowveld and Tshimbupfe-Venda style iron potential against the current split
-- `Northern Cape / Iron Mine`
-  - do not let later nationally dominant Northern Cape iron development substitute for earlier stronger belts elsewhere
+- `Drakensberg / Fishing`
+  - recheck whether the documented-working floor should apply at all to a landlocked Lesotho fishery row
+  - if the statewide commercial-slot standard is not met, say explicitly why the row returns to `0`
+- `Botswana / Coal Mine`
+  - recheck the Palapye-Morupule corridor against the chronology rule and the statewide-slot standard
+  - say explicitly whether the current outcome is a defended late zero or whether a different bounded treatment is required
+- `Botswana / Wood`
+  - recheck the experimental plantation and woodlot record against the commercial-forestry threshold
+  - do not keep a hard zero by inertia if the evidence clears the documented-working standard
 - `Lourenço Marques / Wood`
   - national Mozambique timber claims remain non-driving unless state-footprint commercial forestry evidence appears
+- `Transorangia / Iron Mine`
+  - recheck Kroonstad/Vredefort-style ore occurrence, any localized working evidence, and the documented-working floor standard before keeping an explicit zero
+- `Northern Cape / Tobacco Plantation`
+  - do not keep a yes row on broad basket plausibility alone; require direct state-local support or remove it
+- `Northern Transvaal / Coffee Plantation`
+  - recheck for direct Limpopo-local coffee evidence rather than warm-climate plausibility alone
+
+General review targets:
+
+- `Tobacco review`
+  - explicitly recheck `Northern Cape / Tobacco Plantation` and `Northern Transvaal / Tobacco Plantation`
+  - require direct state-local support, not only broad basket logic or neighboring analogies
+
+Family policy locks:
+
+- `Oil`
+  - no dedicated audit check is required for this rerun
+  - keep oil disabled unless a state pass uncovers direct localized commercial evidence strong enough to break the current explicit-zero rule
+- `Rubber`
+  - treat rubber as discoverable-only through the hectare-based `Rubber (undiscovered)` model
+  - do not spend rerun time defending or extending a separate discovered-rubber family
+- `Whaling`
+  - treat whaling as a relative coastal row rather than a family-wide rewrite target
+  - only escalate to a family rewrite if a state pass shows the current relative treatment is internally inconsistent
 
 ## Test Plan
 
@@ -455,14 +518,26 @@ Only allow final live sync after all of the following are true:
 
 - all 14 rows in `state_pass_tracker.csv` are `accepted`
 - `resources.py test` passes cleanly on the full package
-- the high-impact iron rows have been explicitly rechecked:
+- the high-impact flagged rows and general reviews have been explicitly rechecked:
   - `West Transvaal / Iron Mine`
   - `Zululand / Coal Mine`
   - `Zululand / Iron Mine`
-  - `Eastern Transvaal / Iron Mine`
-  - `Northern Transvaal / Iron Mine`
-  - `Northern Cape / Iron Mine`
+  - `Zululand / Wood`
+  - `Zululand / Sugar Plantation`
+  - `Zululand / Fishing`
   - `Drakensberg / Iron Mine`
+  - `Drakensberg / Fishing`
+  - `Botswana / Coal Mine`
+  - `Botswana / Wood`
+  - `Lourenço Marques / Wood`
+  - `Transorangia / Iron Mine`
+  - `Northern Cape / Tobacco Plantation`
+  - `Northern Transvaal / Tobacco Plantation`
+  - `Northern Transvaal / Coffee Plantation`
+- the family policy locks are still coherent in the final outputs:
+  - `Oil` remains disabled with no open audit contradiction
+  - `Rubber` is still handled only through the hectare-based discoverable model
+  - `Whaling` has no unresolved family contradiction after the rerun
 - no touched active row or public doc still carries stale normalization-anchor wording or obsolete chronology-rule language
 - the final workbook and derived outputs reflect the accepted v3 method
 

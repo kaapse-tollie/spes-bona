@@ -861,6 +861,48 @@ def run_tests() -> str:
         if int(row["pass_order"]) != builder.STATE_PASS_ORDER[state]:
             tracker_failures.append(f"{state} order mismatch")
     results.append(CheckResult("state pass tracker rows are present and in fixed order", "PASS" if not tracker_failures else "FAIL", "; ".join(tracker_failures[:12])))
+
+    expected_full_state_scopes = {
+        "Cape Colony": "Western Cape core plus the small modern Northern Cape coastal strip inside STATE_CAPE_COLONY",
+        "Northern Cape": "Remainder of STATE_NORTHERN_CAPE, including inland South African Namaqualand, Karoo country, Orange-Vaal country, and the dry western side of the old North West split",
+        "West Transvaal": "Gauteng plus the interior plateau and mining-linked side of the old North West / western Transvaal split",
+        "Zululand": "Full modern KwaZulu-Natal / STATE_ZULULAND split-state footprint",
+        "Drakensberg": "Full Lesotho / STATE_DRAKENSBERG split-state footprint",
+        "Botswana": "Full Botswana / STATE_BOTSWANA footprint, including the north-west wet corridor and the vanilla-default Caprivi inclusion",
+        "Lourenço Marques": "Maputo Province, Maputo City, Inhambane Province, Gaza Province, Sofala south of the Pungwe inclusive, and Manica south of the Pungwe inclusive",
+        "Zambezi": "Full Zimbabwe / STATE_ZAMBEZI split-state footprint",
+        "Hereroland": "Full northern Namibia / STATE_HEREROLAND split-state footprint",
+        "Namaqualand": "Full southern Namibia / STATE_NAMAQUALAND split-state footprint",
+    }
+    state_scope_failures = []
+    if len(builder.FULL_STATE_SCOPE_BY_STATE) != len(builder.STATE_INFO):
+        state_scope_failures.append(
+            f"expected {len(builder.STATE_INFO)} full-state scope rows, got {len(builder.FULL_STATE_SCOPE_BY_STATE)}"
+        )
+    for state, expected_scope in expected_full_state_scopes.items():
+        actual_scope = builder.FULL_STATE_SCOPE_BY_STATE.get(state)
+        if actual_scope != expected_scope:
+            state_scope_failures.append(f"{state} scope mismatch")
+    results.append(
+        CheckResult(
+            "full-state scope table covers the audited states",
+            "PASS" if not state_scope_failures else "FAIL",
+            "; ".join(state_scope_failures[:12]),
+        )
+    )
+    audit_scope_failures = []
+    for row in state_counterfactual_audit:
+        expected_scope = builder.FULL_STATE_SCOPE_BY_STATE.get(row["state"])
+        if row.get("full_state_footprint", "") != expected_scope:
+            audit_scope_failures.append(f"{row['state']} / {row['resource']}")
+    results.append(
+        CheckResult(
+            "counterfactual audit rows carry the authoritative full-state footprint",
+            "PASS" if not audit_scope_failures else "FAIL",
+            "; ".join(audit_scope_failures[:12]),
+        )
+    )
+
     tracker_state_failures = []
     valid_tracker_statuses = {
         builder.TRACKER_NOT_STARTED,

@@ -60,6 +60,31 @@ The public workbook also reports aggregate changes for these regional tags:
 - `SAF` = South African states
 - `SWA` = Namibian states
 
+### State binding rule
+
+Every SB state is audited against its **full split-state footprint first**. Only after that do we localize specific rows to narrower belts, districts, corridors, estates, or mineral fields.
+
+That distinction is strict:
+
+- full-state scope defines what geography is in scope for the row family
+- row-level localization narrows evidence **inside** that footprint
+- a localized belt must never redefine the state itself
+
+This matters especially for the split and corridor states:
+
+- `Cape Colony` = Western Cape core plus the small modern Northern Cape coastal strip inside `STATE_CAPE_COLONY`
+- `Northern Cape` = the remainder of `STATE_NORTHERN_CAPE`, including inland South African Namaqualand / Karoo / Orange-Vaal country and the dry western side of the old North West split
+- `West Transvaal` = Gauteng plus the interior plateau / mining-linked side of the old North West split
+- `Zululand` = full modern KwaZulu-Natal / full `STATE_ZULULAND`
+- `Drakensberg` = full Lesotho / full `STATE_DRAKENSBERG`
+- `Botswana` = full `STATE_BOTSWANA`, including the north-west wet corridor and the vanilla-default Caprivi inclusion
+- `Lourenço Marques` = Maputo Province, Maputo City, Inhambane Province, Gaza Province, Sofala south of the Pungwe inclusive, and Manica south of the Pungwe inclusive
+- `Zambezi` = full Zimbabwe / full `STATE_ZAMBEZI`
+- `Hereroland` = full northern Namibia / full `STATE_HEREROLAND`
+- `Namaqualand` = full southern Namibia / full `STATE_NAMAQUALAND`
+
+When a row note later says something like `Eastern Highlands`, `Maputo-Gaza lowland`, `Otavi-Grootfontein pocket`, or `KwaZulu-Natal littoral`, that is row localization only. It is not the state definition.
+
 ### Common cap formula
 
 Across all numeric resource rows we use the same public cap formula:

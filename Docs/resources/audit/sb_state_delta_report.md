@@ -165,7 +165,7 @@ Totals: vanilla `73`, live `4`, audited `5`, delta vs vanilla `-68`, delta vs li
 | Resource | Vanilla | Live | Audited | Delta vs vanilla | Delta vs live | Status |
 |---|---:|---:|---:|---:|---:|---|
 | Arable Land | 30 | 1 | 2 | -28 | 1 | formula-driven |
-| Coal Mine | 32 | 0 | 0 | -32 | 0 | constrained zero |
+| Coal Mine | 32 | 0 | 0 | -32 | 0 | explicit exception |
 | Fishing | 7 | 1 | 1 | -6 | 0 | formula-driven |
 | Gold Mine | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Iron Mine | 0 | 0 | 0 | 0 | 0 | explicit exception |

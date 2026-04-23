@@ -188,21 +188,37 @@ REGIONS = {
 WORKBOOK_TAG_REGIONS = ["CAP", "TRN", "SAF", "SWA"]
 WORKBOOK_STATE_RESOURCE_ORDER = [("Arable", "Arable Land"), *BINARY_RESOURCES, *NUMERIC_RESOURCES[1:]]
 STATE_PASS_ORDER = {row["official_name"]: idx for idx, row in enumerate(STATE_INFO, start=1)}
-PRIMARY_BELT_BY_STATE = {
-    "Cape Colony": "Mediterranean grain-and-vine core and southern coastal timber belt",
-    "Northern Cape": "Orange-Vaal irrigation corridors and Karoo grazing belt",
+FULL_STATE_SCOPE_BY_STATE = {
+    "Cape Colony": "Western Cape core plus the small modern Northern Cape coastal strip inside STATE_CAPE_COLONY",
+    "Northern Cape": "Remainder of STATE_NORTHERN_CAPE, including inland South African Namaqualand, Karoo country, Orange-Vaal country, and the dry western side of the old North West split",
+    "Eastern Cape": "Full Eastern Cape / STATE_EASTERN_CAPE split-state footprint",
+    "West Transvaal": "Gauteng plus the interior plateau and mining-linked side of the old North West / western Transvaal split",
+    "Eastern Transvaal": "Full Eastern Transvaal / STATE_EAST_TRANSVAAL split-state footprint",
+    "Northern Transvaal": "Full Northern Transvaal / STATE_NORTHERN_TRANSVAAL split-state footprint",
+    "Transorangia": "Full Transorangia / STATE_VRYSTAAT split-state footprint",
+    "Zululand": "Full modern KwaZulu-Natal / STATE_ZULULAND split-state footprint",
+    "Drakensberg": "Full Lesotho / STATE_DRAKENSBERG split-state footprint",
+    "Botswana": "Full Botswana / STATE_BOTSWANA footprint, including the north-west wet corridor and the vanilla-default Caprivi inclusion",
+    "Lourenço Marques": "Maputo Province, Maputo City, Inhambane Province, Gaza Province, Sofala south of the Pungwe inclusive, and Manica south of the Pungwe inclusive",
+    "Zambezi": "Full Zimbabwe / STATE_ZAMBEZI split-state footprint",
+    "Hereroland": "Full northern Namibia / STATE_HEREROLAND split-state footprint",
+    "Namaqualand": "Full southern Namibia / STATE_NAMAQUALAND split-state footprint",
+}
+ROW_LOCALIZATION_BELT_BY_STATE = {
+    "Cape Colony": "Mediterranean grain-and-vine core, southern coastal timber belt, and the small north-coast strip inside the split footprint",
+    "Northern Cape": "Orange-Vaal corridors, inland Namaqualand, Karoo grazing, and the dry western old-North-West belt",
     "Eastern Cape": "Mixed-farming interior and Tsitsikamma-Outeniqua coastal belt",
-    "West Transvaal": "western Highveld and Magaliesberg-Marico interior belt",
+    "West Transvaal": "Gauteng-linked western Highveld, Magaliesberg-Marico interior, and eastern old-North-West plateau",
     "Eastern Transvaal": "Mpumalanga escarpment and eastern lowveld belt",
     "Northern Transvaal": "Limpopo mixed-farming belt and eastern escarpment fringe",
     "Transorangia": "Free State grain heartland",
-    "Zululand": "KwaZulu-Natal littoral and northern Natal coal-sugar belt",
+    "Zululand": "KwaZulu-Natal littoral, northern Natal coal-sugar belt, and interior KZN mixed-farming country",
     "Drakensberg": "Lesotho highlands and foothill grain belt",
-    "Botswana": "eastern corridor cereal strip and cattle range",
-    "Lourenço Marques": "Maputo-Gaza littoral and lower Limpopo lowland",
-    "Zambezi": "Eastern Highlands and plateau-centered estate belt",
-    "Hereroland": "Otavi-Grootfontein crop pocket and central plateau",
-    "Namaqualand": "lower Orange irrigation fringe and arid grazing belt",
+    "Botswana": "eastern cereal corridor, north-west wet corridor, and cattle range",
+    "Lourenço Marques": "southern Mozambique littoral, lower Limpopo, and southern Pungwe-facing lowlands",
+    "Zambezi": "Eastern Highlands, plateau core, and connected lowveld belts",
+    "Hereroland": "northern communal belt, Otavi-Grootfontein pocket, and central plateau",
+    "Namaqualand": "Karas grazing country, lower Orange irrigation fringe, and south-western coastal enclave",
 }
 
 LIFECYCLE_FIELDNAMES = [
@@ -232,6 +248,7 @@ COUNTERFACTUAL_AUDIT_FIELDNAMES = [
     "issue_type",
     "chronology_note",
     "regional_claim_note",
+    "full_state_footprint",
     "primary_district_or_belt",
     "citation_1_title",
     "citation_1_url",
@@ -428,71 +445,71 @@ def validation_profile(
 
 
 OBSERVATION_TARGET_VALIDATION_DEFAULTS_BY_STATE = {
-    "Cape Colony": validation_profile("state_localized", "direct", "distinct_slot_supported", 1.0, "Western Cape target observations are treated as state-localized evidence."),
-    "Northern Cape": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.95, "Northern Cape target observations rely on a bounded Northern Cape plus North West proxy rather than a perfect state-only series."),
+    "Cape Colony": validation_profile("state_localized", "direct", "distinct_slot_supported", 1.0, "Cape Colony target observations are treated as state-localized evidence across the Western Cape core and the small Northern Cape coastal strip inside the split-state footprint."),
+    "Northern Cape": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.95, "Northern Cape target observations use a bounded proxy for the remainder of STATE_NORTHERN_CAPE, including inland South African Namaqualand, Karoo country, Orange-Vaal country, and the dry western old-North-West side."),
     "Eastern Cape": validation_profile("state_localized", "direct", "distinct_slot_supported", 1.0, "Eastern Cape target observations are treated as state-localized evidence."),
-    "West Transvaal": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.95, "West Transvaal target observations rely on a bounded Gauteng/interior plateau proxy rather than a perfect state-only series."),
+    "West Transvaal": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.95, "West Transvaal target observations use a bounded Gauteng-plus-interior-plateau proxy for the Gauteng and eastern old-North-West side of the western Transvaal split."),
     "Eastern Transvaal": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.95, "Eastern Transvaal target observations rely on a bounded Mpumalanga plus Eswatini proxy rather than a perfect state-only series."),
     "Northern Transvaal": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.90, "Northern Transvaal target observations use a bounded Limpopo proxy for the split northern state footprint."),
     "Transorangia": validation_profile("state_localized", "direct", "distinct_slot_supported", 1.0, "Transorangia target observations are treated as state-localized evidence."),
-    "Zululand": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.95, "Zululand target observations use a bounded KwaZulu-Natal / Natal-side proxy for the restored split coastal-and-coal state."),
+    "Zululand": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.95, "Zululand target observations are reviewed against the full KwaZulu-Natal split-state footprint; bounded Natal-side proxies may localize rows inside that footprint without redefining the state."),
     "Drakensberg": validation_profile("state_localized", "direct", "distinct_slot_supported", 1.0, "Drakensberg target observations are treated as state-localized evidence."),
-    "Botswana": validation_profile("state_localized", "direct", "distinct_slot_supported", 1.0, "Botswana target observations are treated as state-localized evidence."),
-    "Lourenço Marques": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.90, "Lourenço Marques target observations use a bounded southern Mozambique proxy rather than a perfect state-only series."),
-    "Zambezi": validation_profile("national_fallback", "partial_overlap", "distinct_slot_supported", 0.85, "Zambezi target observations use a bounded Zimbabwe-wide fallback because many published series are national rather than split-state."),
-    "Hereroland": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.90, "Hereroland target observations use a bounded northern Namibia proxy rather than a perfect state-only series."),
-    "Namaqualand": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.90, "Namaqualand target observations use a bounded southern Namibia proxy rather than a perfect state-only series."),
+    "Botswana": validation_profile("state_localized", "direct", "distinct_slot_supported", 1.0, "Botswana target observations are treated as state-localized evidence across the full state footprint, including the north-west wet corridor and the vanilla-default Caprivi inclusion."),
+    "Lourenço Marques": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.90, "Lourenço Marques target observations are reviewed against the full southern Mozambique split-state footprint; bounded subregional proxies may localize rows inside that footprint without redefining the state."),
+    "Zambezi": validation_profile("national_fallback", "partial_overlap", "distinct_slot_supported", 0.85, "Zambezi target observations are reviewed against the full Zimbabwe split-state footprint; national fallback data may localize rows inside that footprint without collapsing the state to the eastern belts."),
+    "Hereroland": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.90, "Hereroland target observations are reviewed against the full northern Namibia split-state footprint; localized northern-Namibia proxies may narrow specific rows without redefining the state."),
+    "Namaqualand": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.90, "Namaqualand target observations are reviewed against the full southern Namibia split-state footprint; localized southern-Namibia proxies may narrow specific rows without redefining the state."),
 }
 
 ARABLE_TARGET_VALIDATION_DEFAULTS_BY_STATE = {
-    "Cape Colony": validation_profile("state_localized", "direct", "distinct_slot_supported", 1.0, "Cape Colony arable capacity rows are treated as state-localized effective commercial land."),
-    "Northern Cape": validation_profile("state_localized", "direct", "distinct_slot_supported", 1.0, "Northern Cape arable capacity is localized to Orange-Vaal irrigation corridors and extensive Karoo grazing; North West cereal intensity is excluded."),
+    "Cape Colony": validation_profile("state_localized", "direct", "distinct_slot_supported", 1.0, "Cape Colony arable capacity rows are treated as state-localized effective commercial land across the Western Cape core and the small Northern Cape coastal strip inside the split-state footprint."),
+    "Northern Cape": validation_profile("state_localized", "direct", "distinct_slot_supported", 1.0, "Northern Cape arable capacity is localized across inland South African Namaqualand, Karoo grazing, Orange-Vaal irrigation country, and the dry western old-North-West side; stronger plateau cereal intensity belongs to West Transvaal."),
     "Eastern Cape": validation_profile("state_localized", "direct", "distinct_slot_supported", 1.0, "Eastern Cape arable capacity rows are treated as state-localized effective commercial land."),
-    "West Transvaal": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.95, "West Transvaal arable capacity uses a bounded Gauteng/interior plateau proxy."),
+    "West Transvaal": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.95, "West Transvaal arable capacity is reviewed against the full Gauteng-plus-interior-plateau split footprint, with plateau maize-and-stock land carrying more weight than the drier western side assigned to Northern Cape."),
     "Eastern Transvaal": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.95, "Eastern Transvaal arable capacity uses a bounded Mpumalanga plus Eswatini land-potential proxy."),
     "Northern Transvaal": validation_profile("state_localized", "direct", "distinct_slot_supported", 1.0, "Northern Transvaal arable capacity is localized to the Limpopo mixed-farming belt and supporting northern pasture country."),
     "Transorangia": validation_profile("state_localized", "direct", "distinct_slot_supported", 1.0, "Transorangia arable capacity rows are treated as state-localized effective commercial land."),
-    "Zululand": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.95, "Zululand arable capacity is bounded to the KwaZulu-Natal littoral, sugar belt, and northern Natal mixed-farming country rather than to whole-province potential."),
+    "Zululand": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.95, "Zululand arable capacity is reviewed across the full KwaZulu-Natal split-state footprint; humid littoral, sugar-belt, and interior mixed-farming subregions may localize specific rows without redefining the state."),
     "Drakensberg": validation_profile("state_localized", "direct", "distinct_slot_supported", 1.0, "Drakensberg arable capacity rows are treated as state-localized effective commercial land."),
-    "Botswana": validation_profile("state_localized", "direct", "distinct_slot_supported", 1.0, "Botswana arable capacity rows are treated as state-localized effective commercial land."),
-    "Lourenço Marques": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.85, "Lourenço Marques arable capacity is bounded to the Maputo-Gaza littoral and lower Limpopo lowland rather than to whole-Mozambique potential."),
-    "Zambezi": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.85, "Zambezi arable capacity is bounded to the Eastern Highlands-Mashonaland plateau and connected lowveld belts rather than to a whole-Zimbabwe fallback."),
-    "Hereroland": validation_profile("state_localized", "direct", "distinct_slot_supported", 1.0, "Hereroland arable capacity is localized to the northern communal belt, Otavi crop pocket, and central plateau grazing country."),
-    "Namaqualand": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.85, "Namaqualand arable capacity uses a bounded southern Namibia proxy."),
+    "Botswana": validation_profile("state_localized", "direct", "distinct_slot_supported", 1.0, "Botswana arable capacity rows are treated as state-localized effective commercial land across the full state footprint, including the north-west wet corridor and the vanilla-default Caprivi inclusion."),
+    "Lourenço Marques": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.85, "Lourenço Marques arable capacity is reviewed against the full southern Mozambique split-state footprint; littoral and lower-Limpopo belts localize many rows inside that footprint without redefining the state."),
+    "Zambezi": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.85, "Zambezi arable capacity is reviewed against the full Zimbabwe split-state footprint; Eastern Highlands, plateau, and lowveld belts localize rows inside that footprint without redefining the state."),
+    "Hereroland": validation_profile("state_localized", "direct", "distinct_slot_supported", 1.0, "Hereroland arable capacity is reviewed across the full northern Namibia split-state footprint; the northern communal belt, Otavi pocket, and central plateau localize rows inside that footprint."),
+    "Namaqualand": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.85, "Namaqualand arable capacity is reviewed against the full southern Namibia split-state footprint; Orange-corridor and coastal-enclave land is localized inside that broader state."),
 }
 
 WOOD_TARGET_VALIDATION_DEFAULTS_BY_STATE = {
-    "Cape Colony": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.85, "Cape Colony wood capacity is bounded by a Western Cape plantation/restoration proxy rather than a perfectly localized surviving estate series."),
+    "Cape Colony": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.85, "Cape Colony wood capacity is reviewed across the full split-state footprint; southern coastal forest belts localize the forestry row inside the broader Cape footprint rather than redefining the state as only Western Cape plantation country."),
     "Northern Cape": validation_profile("state_localized", "direct", "broad_potential_only", 1.0, "Northern Cape has no distinct commercial forestry slot; broad dryland woodedness does not drive x."),
     "Eastern Cape": validation_profile("state_localized", "direct", "distinct_slot_supported", 1.0, "Eastern Cape wood capacity is treated as a localized commercial forestry belt."),
     "West Transvaal": validation_profile("state_localized", "direct", "broad_potential_only", 1.0, "West Transvaal has no distinct commercial forestry slot; wooded land does not drive x."),
     "Eastern Transvaal": validation_profile("state_localized", "direct", "distinct_slot_supported", 1.0, "Eastern Transvaal wood capacity is treated as a localized commercial forestry belt."),
     "Northern Transvaal": validation_profile("state_localized", "direct", "distinct_slot_supported", 1.0, "Northern Transvaal wood capacity is localized to a small Limpopo plantation fringe around the eastern escarpment; it is not a broad forestry-state claim."),
     "Transorangia": validation_profile("state_localized", "direct", "broad_potential_only", 1.0, "Transorangia has no distinct commercial forestry slot; woodland does not drive x."),
-    "Zululand": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.95, "Zululand wood capacity is bounded to the KwaZulu-Natal coastal-and-midtier plantation belt rather than treated as a whole-province forest claim."),
+    "Zululand": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.95, "Zululand wood capacity is reviewed across the full KwaZulu-Natal split-state footprint; forestry localizes to the humid coastal and midtier plantation belts inside that footprint."),
     "Drakensberg": validation_profile("state_localized", "direct", "broad_potential_only", 1.0, "Drakensberg remains a defended forestry zero; small woodlots and shelterbelts do not justify a distinct commercial slot."),
-    "Botswana": validation_profile("state_localized", "direct", "broad_potential_only", 1.0, "Botswana has no distinct commercial forestry slot; wooded land does not drive x."),
-    "Lourenço Marques": validation_profile("regional_proxy", "partial_overlap", "broad_potential_only", 0.35, "Mozambique-wide forestry claims remain non-driving for Lourenço Marques; the reviewed Maputo-Gaza littoral does not show a distinct commercial forestry slot."),
-    "Zambezi": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.80, "Zambezi wood capacity is bounded to the Eastern Highlands plantation belt inside the broader state footprint rather than to a whole-Zimbabwe forestry fallback."),
-    "Hereroland": validation_profile("state_localized", "direct", "broad_potential_only", 1.0, "Hereroland has no distinct commercial forestry slot; wooded savanna does not drive x."),
-    "Namaqualand": validation_profile("state_localized", "direct", "broad_potential_only", 1.0, "Namaqualand has no distinct commercial forestry slot; arid wooded pockets do not drive x."),
+    "Botswana": validation_profile("state_localized", "direct", "broad_potential_only", 1.0, "Botswana has no distinct commercial forestry slot across the full state footprint; the north-west wet corridor and other wooded belts do not by themselves drive x."),
+    "Lourenço Marques": validation_profile("regional_proxy", "partial_overlap", "broad_potential_only", 0.35, "Lourenço Marques reviews the full southern Mozambique split-state footprint, but current evidence still localizes commercial forestry too weakly to drive x."),
+    "Zambezi": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.80, "Zambezi wood capacity is reviewed across the full Zimbabwe split-state footprint, with the Eastern Highlands plantation belt localizing the row inside that broader state."),
+    "Hereroland": validation_profile("state_localized", "direct", "broad_potential_only", 1.0, "Hereroland has no distinct commercial forestry slot across the full northern Namibia split-state footprint; wooded savanna does not drive x."),
+    "Namaqualand": validation_profile("state_localized", "direct", "broad_potential_only", 1.0, "Namaqualand has no distinct commercial forestry slot across the full southern Namibia split-state footprint; arid wooded pockets do not drive x."),
 }
 
 RUBBER_TARGET_VALIDATION_DEFAULTS_BY_STATE = {
-    "Cape Colony": validation_profile("state_localized", "direct", "broad_potential_only", 1.0, "Cape Colony is a Mediterranean grain-and-vine state rather than a humid rubber plantation belt."),
+    "Cape Colony": validation_profile("state_localized", "direct", "broad_potential_only", 1.0, "Cape Colony's full split-state footprint remains a Mediterranean grain-and-vine system rather than a humid rubber plantation belt."),
     "Northern Cape": validation_profile("state_localized", "direct", "broad_potential_only", 1.0, "Northern Cape is arid and does not support a distinct latent-rubber slot."),
     "Eastern Cape": validation_profile("state_localized", "direct", "broad_potential_only", 1.0, "Eastern Cape is a mixed-farming and stock state rather than a localized rubber belt."),
     "West Transvaal": validation_profile("state_localized", "direct", "broad_potential_only", 1.0, "West Transvaal is an interior Highveld state and does not support latent rubber."),
     "Eastern Transvaal": validation_profile("regional_proxy", "partial_overlap", "broad_potential_only", 0.60, "Eastern Transvaal has warm lowveld pockets, but v3 does not freeze a localized latent-rubber slot there."),
     "Northern Transvaal": validation_profile("regional_proxy", "partial_overlap", "broad_potential_only", 0.60, "Northern Transvaal has subtropical fringe agriculture, but no localized latent-rubber slot is frozen in v3."),
     "Transorangia": validation_profile("state_localized", "direct", "broad_potential_only", 1.0, "Transorangia is a grain-and-stock interior state, not a rubber belt."),
-    "Zululand": validation_profile("regional_proxy", "partial_overlap", "broad_potential_only", 0.60, "Zululand is humid and plantation-oriented, but the restored split state still does not freeze a localized latent-rubber slot in v3."),
+    "Zululand": validation_profile("regional_proxy", "partial_overlap", "broad_potential_only", 0.60, "Zululand is reviewed across the full KwaZulu-Natal split-state footprint, but v3 still does not freeze a localized latent-rubber slot inside that broader humid plantation state."),
     "Drakensberg": validation_profile("state_localized", "direct", "broad_potential_only", 1.0, "Drakensberg is a mountain grain-and-pastoral state, not a rubber belt."),
-    "Botswana": validation_profile("state_localized", "direct", "broad_potential_only", 1.0, "Botswana is a dry cattle-and-cereal state without a latent-rubber slot."),
-    "Lourenço Marques": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.80, "Lourenço Marques latent rubber is bounded to the Maputo-Gaza littoral and lower Limpopo coastal-lowland plantation belt, not to whole-Mozambique tropical potential."),
-    "Zambezi": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.75, "Zambezi latent rubber is bounded to the warm eastern and lowveld estate fringe inside the state footprint, not to whole-Zimbabwe tropical potential."),
-    "Hereroland": validation_profile("state_localized", "direct", "broad_potential_only", 1.0, "Hereroland is a savanna agropastoral state and does not support latent rubber."),
-    "Namaqualand": validation_profile("state_localized", "direct", "broad_potential_only", 1.0, "Namaqualand is arid and does not support latent rubber."),
+    "Botswana": validation_profile("state_localized", "direct", "broad_potential_only", 1.0, "Botswana is a dry cattle-and-cereal state across the full footprint and does not support a latent-rubber slot."),
+    "Lourenço Marques": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.80, "Lourenço Marques latent rubber is reviewed against the full southern Mozambique split-state footprint, with any bounded slot localized to the warm littoral and lower-Limpopo subregions inside that footprint."),
+    "Zambezi": validation_profile("regional_proxy", "partial_overlap", "distinct_slot_supported", 0.75, "Zambezi latent rubber is reviewed against the full Zimbabwe split-state footprint, with any bounded slot localized to the warm eastern and lowveld fringes inside that broader state."),
+    "Hereroland": validation_profile("state_localized", "direct", "broad_potential_only", 1.0, "Hereroland is a savanna agropastoral state across the full northern Namibia footprint and does not support latent rubber."),
+    "Namaqualand": validation_profile("state_localized", "direct", "broad_potential_only", 1.0, "Namaqualand is arid across the full southern Namibia footprint and does not support latent rubber."),
 }
 
 REGIONAL_ADVANTAGE_SEEDS = [
@@ -516,7 +533,7 @@ REGIONAL_ADVANTAGE_SEEDS = [
         "primary_resources": "Lead Mine; Gold Fields; Arable Land",
         "preferred_layer": "discoverability_unlock",
         "keep_out_of_caps": "yes",
-        "note": "Northern Cape's regional advantage is patchy discovery and enclave development rather than uniformly high raw capacity.",
+        "note": "Northern Cape's full split-state footprint still behaves as a patchy discovery and enclave-development state rather than a uniformly high raw-capacity one.",
         "citation_1_title": "cape_economics.md",
         "citation_1_url": str(RESEARCH_DIR / "cape_economics.md"),
         "citation_1_locator": "Namaqualand mining is real but enclave-like rather than a broad province-wide economy.",
@@ -600,7 +617,7 @@ REGIONAL_ADVANTAGE_SEEDS = [
         "primary_resources": "Arable Land; Coal Mine; Fishing; Wood",
         "preferred_layer": "state_modifier",
         "keep_out_of_caps": "yes",
-        "note": "Zululand's restored value is the coastal-and-northern-Natal mix of sugar, fishing, coal access, and plantation timber; keep that identity outside raw cap inflation where possible.",
+        "note": "Zululand's full KwaZulu-Natal split-state footprint is still best expressed through a localized sugar-fishing-coal-timber mix rather than through raw cap inflation alone.",
         "citation_1_title": "Zuidelijk Afrika als landbouw- en visserijregio voor een Victoria 3-mod",
         "citation_1_url": str(AGRI_RESEARCH_PATH),
         "citation_1_locator": "KwaZulu-Natal is the strongest South African sugar state and supports bananas, tea pockets, livestock, and a useful fishery arc.",
@@ -628,7 +645,7 @@ REGIONAL_ADVANTAGE_SEEDS = [
         "primary_resources": "Arable Land",
         "preferred_layer": "state_modifier",
         "keep_out_of_caps": "yes",
-        "note": "Implement Botswana as a future ranching-quality state modifier in common/static_modifiers/sb_modifiers.txt, applied from BST/Tswana content in common/on_actions/sb_bst_on_actions.txt or equivalent Botswana ownership logic; do not inflate raw caps.",
+        "note": "Implement Botswana as a future ranching-quality state modifier applied across the full state footprint in common/static_modifiers/sb_modifiers.txt or equivalent ownership logic; do not inflate raw caps.",
         "citation_1_title": "Zuidelijk Afrika als landbouw- en visserijregio voor een Victoria 3-mod",
         "citation_1_url": str(AGRI_RESEARCH_PATH),
         "citation_1_locator": "Botswana is cattle-first with narrow cereal corridors.",
@@ -642,7 +659,7 @@ REGIONAL_ADVANTAGE_SEEDS = [
         "primary_resources": "Arable Land; Fishing",
         "preferred_layer": "state_modifier",
         "keep_out_of_caps": "yes",
-        "note": "Lourenço Marques should benefit from littoral trade and port access outside the raw-cap model.",
+        "note": "Lourenço Marques should benefit from littoral trade and port access across the full southern Mozambique split-state footprint rather than through raw-cap inflation.",
         "citation_1_title": "Zuidelijk Afrika als landbouw- en visserijregio voor een Victoria 3-mod",
         "citation_1_url": str(AGRI_RESEARCH_PATH),
         "citation_1_locator": "Southern Mozambique is coastal, riverine, and plantation-linked rather than just a land-capacity story.",
@@ -656,7 +673,7 @@ REGIONAL_ADVANTAGE_SEEDS = [
         "primary_resources": "Arable Land; Wood; Gold Fields (undiscovered)",
         "preferred_layer": "state_modifier",
         "keep_out_of_caps": "yes",
-        "note": "Zambezi's plateau-and-highlands estate quality should not be represented only as more cap volume.",
+        "note": "Zambezi's full Zimbabwe footprint should not be reduced to eastern estate belts, and its estate-quality differentiation should not be represented only as more cap volume.",
         "citation_1_title": "Zuidelijk Afrika als landbouw- en visserijregio voor een Victoria 3-mod",
         "citation_1_url": str(AGRI_RESEARCH_PATH),
         "citation_1_locator": "Zimbabwe combines tobacco, wheat, sugar, tea, coffee, cotton, maize, and livestock across distinct belts.",
@@ -670,7 +687,7 @@ REGIONAL_ADVANTAGE_SEEDS = [
         "primary_resources": "Lead Mine; Arable Land",
         "preferred_layer": "journal_flavour",
         "keep_out_of_caps": "yes",
-        "note": "Hereroland's mining significance is enclave quality and district identity, not a uniformly rich state-wide endowment.",
+        "note": "Hereroland's full northern Namibia footprint is not a uniformly rich state-wide endowment; its mining significance is enclave quality and district identity.",
         "citation_1_title": "mining research.md",
         "citation_1_url": str(RESEARCH_DIR / "mining research.md"),
         "citation_1_locator": "Tsumeb/Otavi and Berg Aukas are high-quality but concentrated districts.",
@@ -684,7 +701,7 @@ REGIONAL_ADVANTAGE_SEEDS = [
         "primary_resources": "Arable Land; Lead Mine",
         "preferred_layer": "journal_flavour",
         "keep_out_of_caps": "yes",
-        "note": "Namaqualand's advantage is enclave irrigation and niche mining, not broad land or forestry capacity.",
+        "note": "Namaqualand's full southern Namibia footprint is still an enclave irrigation and niche-mining state, not a broad land- or forestry-capacity one.",
         "citation_1_title": "Zuidelijk Afrika als landbouw- en visserijregio voor een Victoria 3-mod",
         "citation_1_url": str(AGRI_RESEARCH_PATH),
         "citation_1_locator": "Southern Namibia is sheep-and-goat country with narrow irrigated river pockets.",
@@ -695,20 +712,20 @@ REGIONAL_ADVANTAGE_SEEDS = [
 ]
 
 STATE_REVIEW_STATUS_SEEDS = {
-    "Cape Colony": ("accepted", "No major model blocker remains; only minor wording polish is still open.", "Core land-family rows are on a defensible model and the remaining work is limited to light presentation cleanup."),
-    "Northern Cape": ("accepted", "Gameplay distinctiveness now sits outside the cap provenance pass.", "Northern Cape land rows are now localized to Orange-Vaal irrigation and Karoo grazing; remaining distinctiveness belongs to enclave/discoverability flavor rather than another cap audit pass."),
+    "Cape Colony": ("accepted", "No major model blocker remains; only minor wording polish is still open.", "Core land-family rows are on a defensible model across the full Cape Colony split footprint and the remaining work is limited to light presentation cleanup."),
+    "Northern Cape": ("accepted", "Gameplay distinctiveness now sits outside the cap provenance pass.", "Northern Cape land rows are now localized across inland Namaqualand, Karoo, and Orange-Vaal country; remaining distinctiveness belongs to enclave/discoverability flavor rather than another cap audit pass."),
     "Eastern Cape": ("accepted", "No major model blocker remains; only minor wording polish is still open.", "Eastern Cape no longer fails basic plausibility and the remaining work is limited to light presentation cleanup."),
     "West Transvaal": ("needs_gameplay_compensation", "Compensation is assigned to a future state modifier in sb_modifiers.txt routed through sb_on_actions.txt.", "West Transvaal keeps its current caps; any extra industrial/infrastructure edge should be implemented as a state modifier applied through the existing Transvaal ownership/on-action flow."),
     "Eastern Transvaal": ("accepted", "Comparator and docs polish remain.", "Eastern Transvaal remains directionally strong and the remaining issues are mostly presentation and consistency."),
     "Northern Transvaal": ("accepted", "Gameplay distinctiveness now sits outside the cap provenance pass.", "Northern Transvaal land rows now rest on localized Limpopo evidence; the remaining difference is crop-diversity and frontier flavor outside raw caps."),
     "Transorangia": ("accepted", "No major model blocker remains; only minor wording polish is still open.", "Transorangia's current package is directionally coherent."),
-    "Zululand": ("not_started", "Restored split-state audit lane; Natal-side evidence must now be reviewed on its own sheet.", "Zululand is back in scope and should be audited as the coastal-and-northern-Natal state rather than treated only as a vanilla proxy behind Drakensberg."),
+    "Zululand": ("not_started", "Restored split-state audit lane; KwaZulu-Natal evidence must now be reviewed on its own sheet.", "Zululand is back in scope and should be audited as the full KwaZulu-Natal split state rather than treated only as a vanilla proxy behind Drakensberg."),
     "Drakensberg": ("needs_gameplay_compensation", "Compensation is assigned to BST frontier journal flavour in 1-07_sb_bst_frontier.txt.", "Drakensberg stays constrained in caps; its mountain-pastoral niche should be expressed through the existing BST frontier / settlement journal flow rather than through more cap volume."),
-    "Botswana": ("needs_gameplay_compensation", "Compensation is assigned to a future ranching-quality state modifier in sb_modifiers.txt.", "Botswana keeps its current caps; any extra cattle-first identity should be implemented through a state modifier applied from the BST/Tswana on-action path rather than through cap inflation."),
-    "Lourenço Marques": ("accepted", "Port-littoral identity remains better expressed outside caps.", "Lourenço Marques now uses a bounded Maputo-Gaza lowland proxy for arable land and a defended forestry zero; remaining distinctiveness is littoral trade flavor outside the cap model."),
-    "Zambezi": ("accepted", "Estate-quality flavor remains better expressed outside caps.", "Zambezi now uses Eastern Highlands and plateau-localized land evidence rather than a whole-Zimbabwe fallback; the remaining differentiation is estate-quality flavor outside raw caps."),
-    "Hereroland": ("accepted", "Enclave-mining flavor remains better expressed outside caps.", "Hereroland now rests on localized northern Namibia land evidence and a defended forestry zero; the remaining distinction is concentrated mineral identity outside raw caps."),
-    "Namaqualand": ("accepted", "No major model blocker remains; only minor wording polish is still open.", "Namaqualand's low-cap enclave profile is now directionally coherent."),
+    "Botswana": ("needs_gameplay_compensation", "Compensation is assigned to a future ranching-quality state modifier in sb_modifiers.txt.", "Botswana keeps its current caps; any extra cattle-first identity across the full state footprint should be implemented through a state modifier rather than through cap inflation."),
+    "Lourenço Marques": ("accepted", "Port-littoral identity remains better expressed outside caps.", "Lourenço Marques now uses full-footprint southern-Mozambique scope with localized lowland evidence for land rows; remaining distinctiveness is littoral trade flavor outside the cap model."),
+    "Zambezi": ("accepted", "Estate-quality flavor remains better expressed outside caps.", "Zambezi now uses full-footprint Zimbabwe scope with localized belt evidence inside that state; the remaining differentiation is estate-quality flavor outside raw caps."),
+    "Hereroland": ("accepted", "Enclave-mining flavor remains better expressed outside caps.", "Hereroland now rests on full-footprint northern-Namibia scope with localized productive subregions and a defended forestry zero; the remaining distinction is concentrated mineral identity outside raw caps."),
+    "Namaqualand": ("accepted", "No major model blocker remains; only minor wording polish is still open.", "Namaqualand's full-footprint southern-Namibia enclave profile is now directionally coherent."),
 }
 ARABLE_BASKET_FIELDNAMES = [
     "state",
@@ -725,15 +742,15 @@ ARABLE_BASKET_FIELDNAMES = [
 ARABLE_BASKET_SEEDS = {
     "Cape Colony": {
         "yes_resources": {"Wheat Farm", "Vineyard", "Livestock Ranch", "Tobacco Plantation"},
-        "include_summary": "Western Cape is the region's clearest wheat-and-wine state with a real livestock base; tobacco exists only in pockets.",
-        "exclude_summary": "Western Cape is not part of the broad eastern cereal or subtropical plantation belts.",
+        "include_summary": "Cape Colony is the Mediterranean Cape grain-and-vine core plus the small Northern Cape coastal strip inside STATE_CAPE_COLONY; wheat, wine, livestock, and only pocket tobacco define the basket.",
+        "exclude_summary": "The reviewed Cape Colony basket is not the eastern cereal belt or a humid plantation state, and the included north-coast strip does not change that core profile.",
         "citation_1_locator": "Western Cape row: wheat, wine, livestock strongly; tobacco only in pockets.",
         "citation_2_locator": "[^wc]: Western Cape is Mediterranean with strong wine, wheat, wool, lucerne, and fruit production.",
     },
     "Northern Cape": {
         "yes_resources": {"Cotton Plantation", "Livestock Ranch", "Maize Farm", "Millet Farm", "Tobacco Plantation", "Vineyard", "Wheat Farm"},
-        "include_summary": "Northern Cape supports sheep and cattle, Orange-Vaal irrigation wheat and vineyards, and only narrow interior maize-millet-cotton pockets.",
-        "exclude_summary": "Northern Cape is too dry for humid plantation crops and does not inherit the full North West cereal belt.",
+        "include_summary": "Northern Cape covers inland South African Namaqualand, Karoo grazing, Orange-Vaal irrigation, and only narrow dry-country maize-millet-cotton-tobacco pockets.",
+        "exclude_summary": "Northern Cape is too dry for humid plantation crops, does not include the small Cape Colony north-coast strip, and does not inherit the plateau-heavy old-North-West cereal belt assigned to West Transvaal.",
         "citation_1_locator": "Northern Cape row: livestock, fishing, and whaling are strongest, with wheat and wine along irrigated rivers later.",
         "citation_2_locator": "Northern Cape is arid, with Orange irrigation, sheep/cattle, grapes, lucerne, cotton, citrus, and wheat concentrated in river corridors.",
     },
@@ -746,8 +763,8 @@ ARABLE_BASKET_SEEDS = {
     },
     "West Transvaal": {
         "yes_resources": {"Livestock Ranch", "Maize Farm", "Millet Farm", "Tobacco Plantation"},
-        "include_summary": "The western Transvaal/Highveld grain belt is best read as maize, millet, livestock, with only a smaller tobacco allowance.",
-        "exclude_summary": "This inland plateau is not a humid plantation or vineyard zone.",
+        "include_summary": "West Transvaal covers Gauteng plus the plateau-side old North West / western Transvaal grain-and-stock belt, where maize, millet, livestock, and only a smaller tobacco allowance fit best.",
+        "exclude_summary": "This inland plateau state is not a humid plantation or vineyard zone, and it should not absorb the drier western old-North-West country assigned to Northern Cape.",
         "citation_1_locator": "North West row: maize, millet, livestock strong; tobacco weaker. Gauteng row: maize and livestock strong; tobacco only small.",
         "citation_2_locator": "[^gau]: Gauteng is mainly urban but retains maize/sorghum/groundnut and dairy farming; [^ncnw] gives the adjacent North West maize-and-stock profile.",
     },
@@ -774,8 +791,8 @@ ARABLE_BASKET_SEEDS = {
     },
     "Zululand": {
         "yes_resources": {"Banana Plantation", "Cotton Plantation", "Livestock Ranch", "Maize Farm", "Millet Farm", "Sugar Plantation", "Tea Plantation", "Tobacco Plantation"},
-        "include_summary": "Zululand is the humid KwaZulu-Natal littoral-and-northern-Natal belt: sugar, maize, livestock, bananas, cotton, tea, tobacco, and some millet all fit the coastal-to-interior gradient.",
-        "exclude_summary": "The reviewed Zululand basket is not the Lesotho highlands and does not inherit the Drakensberg mountain-grain profile.",
+        "include_summary": "Zululand covers the full KwaZulu-Natal split-state footprint; sugar, maize, livestock, bananas, cotton, tea, tobacco, and some millet are localized across different KZN subregions inside one state.",
+        "exclude_summary": "The reviewed Zululand basket is not the Lesotho highlands; coastal, northern-Natal, and interior KZN evidence may localize rows, but none of those subregions redefine the state by themselves.",
         "citation_1_locator": "KwaZulu-Natal row: sugar, maize, livestock, bananas, and fishing are strongest; tea and tobacco are weaker but real.",
         "citation_2_locator": "Northern Natal and the KwaZulu-Natal littoral combine sugar, maize, livestock, bananas, cotton, and tea-tobacco pockets across a humid coastal-to-coalfield gradient.",
     },
@@ -788,36 +805,36 @@ ARABLE_BASKET_SEEDS = {
     },
     "Botswana": {
         "yes_resources": {"Livestock Ranch", "Maize Farm", "Millet Farm"},
-        "include_summary": "Botswana is livestock-first, with only a narrow maize-and-millet cereal bonus in the northeast and eastern corridor.",
-        "exclude_summary": "Botswana is not a breadbasket and does not justify wetter plantation or cool-climate crops as part of its main basket.",
+        "include_summary": "Botswana is livestock-first across the full state footprint, with cereal support concentrated in the east and smaller wetter pockets in the north-west corridor.",
+        "exclude_summary": "Botswana is not a breadbasket or plantation state, even when the north-west wet corridor and vanilla-default Caprivi inclusion remain in scope.",
         "citation_1_locator": "Botswana section: cattle first, with maize, sorghum, and millet only in the northeast and eastern corridor.",
         "citation_2_locator": "[^bot]: Botswana is drought-prone and dominated by cattle, goats, and crops such as maize and sorghum.",
     },
     "Lourenço Marques": {
         "yes_resources": {"Banana Plantation", "Cotton Plantation", "Livestock Ranch", "Maize Farm", "Millet Farm", "Rice Farm", "Sugar Plantation"},
-        "include_summary": "The Maputo-Gaza littoral and lower Limpopo support maize, millet, rice, bananas, sugar, some cotton, and a smaller livestock component.",
-        "exclude_summary": "This lowland belt excludes the highland tea/coffee pockets and does not justify a whole-Mozambique crop suite.",
+        "include_summary": "Lourenço Marques covers the full southern Mozambique split-state footprint from Maputo through Gaza and Inhambane to the southern Pungwe-facing provinces; lowland maize, millet, rice, bananas, sugar, cotton, and some livestock dominate through localized belts inside that footprint.",
+        "exclude_summary": "The reviewed state does not include whole-Mozambique crop logic, and the full southern footprint still excludes the highland tea-and-coffee pockets outside it.",
         "citation_1_locator": "Mozambique section: the south coast and lower Limpopo suit maize, millet/sorghum, late-colonial rice, bananas, and limited sugar; colonial cotton also appears in parts of the lower Limpopo.",
         "citation_2_locator": "[^smz]: Mozambican family farming includes maize and rice, with plantation sugar and southward irrigation especially along the Limpopo.",
     },
     "Zambezi": {
         "yes_resources": {"Coffee Plantation", "Cotton Plantation", "Livestock Ranch", "Maize Farm", "Millet Farm", "Sugar Plantation", "Tea Plantation", "Tobacco Plantation", "Wheat Farm"},
-        "include_summary": "Eastern Highlands and plateau Zimbabwe justify maize, tobacco, cotton, wheat, cattle, sugar, and pocket tea/coffee in a diversified but bounded basket.",
-        "exclude_summary": "The reviewed basket is narrower than a whole-Zimbabwe all-belt claim and keeps estate crops to the humid east and lowveld pockets.",
+        "include_summary": "Zambezi covers the full Zimbabwe split-state footprint; maize, tobacco, cotton, wheat, cattle, sugar, and pocket tea-and-coffee are localized across different belts inside one state.",
+        "exclude_summary": "The reviewed basket does not treat the whole state as only the Eastern Highlands or plateau belt; eastern and lowveld estate crops stay localized inside a broader Zimbabwean basket.",
         "citation_1_locator": "Zimbabwe section: Eastern Highlands, Mashonaland plateau, and southern lowveld belts separate tea/coffee, maize/tobacco, and sugar systems inside one reviewed state footprint.",
         "citation_2_locator": "Zimbabwe's elevation and climate support maize, tobacco, cattle, cotton, wheat, and sugarcane, with the wettest east carrying the strongest high-value estate pockets.",
     },
     "Hereroland": {
         "yes_resources": {"Livestock Ranch", "Maize Farm", "Millet Farm", "Wheat Farm"},
-        "include_summary": "Northern and central Namibia are agropastoral rather than plantation-oriented: millet, maize, livestock, and a smaller wheat allowance in the Otavi-Grootfontein crop pocket.",
-        "exclude_summary": "The reviewed Hereroland basket excludes wine, cotton, and humid plantation crops as non-core identities.",
+        "include_summary": "Hereroland covers the full northern Namibia split-state footprint; millet, maize, livestock, and a smaller wheat allowance are localized between the northern communal belt, the Otavi-Grootfontein pocket, and the central plateau.",
+        "exclude_summary": "The reviewed Hereroland basket excludes wine, cotton, and humid plantation crops as non-core identities, but it also does not collapse the whole state to only the Otavi pocket.",
         "citation_1_locator": "Namibia section: the northern communal belt is strongest in millet, sorghum, and maize; Otavi-Grootfontein allows some commercial maize/wheat; central highlands are mainly cattle.",
         "citation_2_locator": "Northern Namibia is a maize-millet-plus-cattle savanna belt with a small Otavi crop pocket rather than a broad cereal province.",
     },
     "Namaqualand": {
         "yes_resources": {"Livestock Ranch", "Vineyard"},
-        "include_summary": "Southern Namibia is an arid sheep-and-goat state with only a narrow irrigated grape belt along the Orange system.",
-        "exclude_summary": "The reviewed Namaqualand basket excludes broad cereals and humid plantation crops outside the irrigated river fringe.",
+        "include_summary": "Namaqualand covers the full southern Namibia split-state footprint; livestock dominates, with only narrow irrigated vineyard and crop pockets along the Orange and related enclave corridors.",
+        "exclude_summary": "The reviewed Namaqualand basket excludes broad cereals and humid plantation crops, and it should not be collapsed to only the lower Orange fringe when the wider southern Namibian footprint is in scope.",
         "citation_1_locator": "Namibia section: southern and western desert-karoo zones are sheep/goat country, with agriculture surviving mainly in river-irrigated pockets.",
         "citation_2_locator": "[^snam]: Arid southern Namibia supports extensive livestock and lower Orange irrigation belts with fruit and grapes.",
     },
@@ -886,7 +903,7 @@ ARABLE_TARGET_CAPACITY_SEEDS = {
             "marginal_grazing": 600_000,
             "desert_or_unusable": 0,
         },
-        "capacity_note": "Broad Western Cape commercial potential: Mediterranean grain-and-vine core, strong mixed farming, and a moderate pastoral fringe.",
+        "capacity_note": "Cape Colony's full split-state footprint combines the Western Cape Mediterranean core with the small Northern Cape coastal strip inside STATE_CAPE_COLONY; commercial land remains grain-and-vine first with strong mixed farming and a moderate pastoral fringe.",
     },
     "Northern Cape": {
         "classes": {
@@ -897,7 +914,7 @@ ARABLE_TARGET_CAPACITY_SEEDS = {
             "marginal_grazing": 247_500,
             "desert_or_unusable": 0,
         },
-        "capacity_note": "Northern Cape is anchored on Orange-Vaal irrigation strips and extensive Karoo grazing; sparse interior mixed farming matters, but North West cereal intensity is excluded.",
+        "capacity_note": "Northern Cape is reviewed across inland South African Namaqualand, Karoo grazing, Orange-Vaal irrigation country, and the dry western old-North-West side; stronger plateau cereal intensity is assigned to West Transvaal.",
     },
     "Eastern Cape": {
         "classes": {
@@ -919,7 +936,7 @@ ARABLE_TARGET_CAPACITY_SEEDS = {
             "marginal_grazing": 400_000,
             "desert_or_unusable": 0,
         },
-        "capacity_note": "Interior plateau with real cereal-and-livestock potential, but less broad than the eastern escarpment or the Free State grain belt.",
+        "capacity_note": "West Transvaal covers Gauteng plus the interior plateau and grain-and-stock side of the old North West / western Transvaal split; cereal-and-livestock potential is real, but still less broad than the eastern escarpment or the Free State grain belt.",
     },
     "Eastern Transvaal": {
         "classes": {
@@ -963,7 +980,7 @@ ARABLE_TARGET_CAPACITY_SEEDS = {
             "marginal_grazing": 150_000,
             "desert_or_unusable": 0,
         },
-        "capacity_note": "KwaZulu-Natal littoral and northern Natal belt with strong sugar-and-maize land, humid mixed farming, and a smaller interior pasture tail; this is the coastal Zululand split, not Lesotho.",
+        "capacity_note": "Zululand is reviewed across the full KwaZulu-Natal split-state footprint; humid littoral, sugar-belt, and interior mixed-farming land all contribute, but none of those localized subregions redefine the state by themselves.",
     },
     "Drakensberg": {
         "classes": {
@@ -985,7 +1002,7 @@ ARABLE_TARGET_CAPACITY_SEEDS = {
             "marginal_grazing": 150_000,
             "desert_or_unusable": 0,
         },
-        "capacity_note": "Livestock-first dryland state with only narrow cereal corridors; low cap is driven by land quality, not output poverty alone.",
+        "capacity_note": "Botswana is reviewed across the full state footprint, including the north-west wet corridor and the vanilla-default Caprivi inclusion; the low cap still comes from land quality and livestock dominance rather than from silently dropping subregions.",
     },
     "Lourenço Marques": {
         "classes": {
@@ -996,7 +1013,7 @@ ARABLE_TARGET_CAPACITY_SEEDS = {
             "marginal_grazing": 175_000,
             "desert_or_unusable": 0,
         },
-        "capacity_note": "Maputo-Gaza littoral and lower-Limpopo lowland with strong mixed commercial potential across irrigated, rainfed, and coastal systems; this is not a whole-Mozambique land claim.",
+        "capacity_note": "Lourenço Marques is reviewed across the full southern Mozambique split-state footprint; irrigated, rainfed, littoral, and lowland systems localize the strongest commercial land inside that broader state without redefining it as only Maputo-Gaza lowland.",
     },
     "Zambezi": {
         "classes": {
@@ -1007,7 +1024,7 @@ ARABLE_TARGET_CAPACITY_SEEDS = {
             "marginal_grazing": 450_000,
             "desert_or_unusable": 0,
         },
-        "capacity_note": "Eastern Highlands and plateau-centered Zambezi mix with connected lowveld belts; the row is narrower than a whole-Zimbabwe fallback but still supports broad commercial agricultural land.",
+        "capacity_note": "Zambezi is reviewed across the full Zimbabwe split-state footprint; Eastern Highlands, plateau, and lowveld belts localize the strongest commercial land inside that broader state without redefining Zimbabwe as only an eastern-estate belt.",
     },
     "Hereroland": {
         "classes": {
@@ -1018,7 +1035,7 @@ ARABLE_TARGET_CAPACITY_SEEDS = {
             "marginal_grazing": 45_000,
             "desert_or_unusable": 0,
         },
-        "capacity_note": "Hereroland is anchored on the northern communal belt, the Otavi-Grootfontein crop pocket, and broad central-plateau cattle land; it is not a high-cap cereal state.",
+        "capacity_note": "Hereroland is reviewed across the full northern Namibia split-state footprint; the northern communal belt, the Otavi-Grootfontein pocket, and the central plateau localize the productive subregions inside a wider agropastoral state.",
     },
     "Namaqualand": {
         "classes": {
@@ -1029,7 +1046,7 @@ ARABLE_TARGET_CAPACITY_SEEDS = {
             "marginal_grazing": 242_500,
             "desert_or_unusable": 0,
         },
-        "capacity_note": "Arid southern Namibian belt with only tiny irrigated river pockets and minimal broad commercial agricultural potential.",
+        "capacity_note": "Namaqualand is reviewed across the full southern Namibia split-state footprint; aridity dominates, with only tiny irrigated river and enclave pockets supporting limited commercial agriculture.",
     },
 }
 
@@ -1109,7 +1126,7 @@ WOOD_TARGET_CAPACITY_SEEDS = {
             "noncommercial_wooded_land": 0,
             "arid_or_unusable": 0,
         },
-        "capacity_note": "Western Cape remains plantation-first, but depleted southern coastal forest belts justify a capped restoration allowance above the surviving estate footprint.",
+        "capacity_note": "Cape Colony is reviewed across the full split-state footprint; the Western Cape plantation core and southern coastal forest belts still drive the forestry row, while the small Northern Cape coastal strip does not redefine it.",
         "citation_1_title": "Trade & Industrial Policy Strategies: South Africa’s Forestry Value Chain",
         "citation_1_url": "https://www.tips.org.za/policy-briefs/item/download/1951_b81dc50ab22218561eec628aa634d782",
         "citation_1_locator": "Western Cape afforested area = 43,146 ha in 2017; used here as the surviving managed-estate floor, not the full potential ceiling.",
@@ -1207,7 +1224,7 @@ WOOD_TARGET_CAPACITY_SEEDS = {
             "noncommercial_wooded_land": 80_000,
             "arid_or_unusable": 0,
         },
-        "capacity_note": "Zululand keeps a smaller humid-coastal forestry row built from KwaZulu-Natal plantation and woodland belts; it is distinct from the zero-wood Lesotho highlands split.",
+        "capacity_note": "Zululand reviews the full KwaZulu-Natal split-state footprint, but the forestry row is still localized to the humid coastal and midtier plantation belts inside that broader state.",
         "citation_1_title": "Report on Commercial Timber Resources and Primary Roundwood Processing in South Africa 2019/2020",
         "citation_1_url": "https://www.dffe.gov.za/sites/default/files/reports/research/forestry/annualreport_commercialtimberresources_primaryroundwoodprocessing2019to2020.pdf",
         "citation_1_locator": "KwaZulu-Natal remains a plantation and forestry province in the humid east and coastal belt; used here as the Zululand-side forestry floor.",
@@ -1227,7 +1244,7 @@ WOOD_TARGET_CAPACITY_SEEDS = {
     },
     "Botswana": {
         "classes": {land_class: 0.0 for land_class, _weight, _note in WOOD_LAND_CLASSES},
-        "capacity_note": "Dry livestock-first country without a meaningful audited commercial forestry belt.",
+        "capacity_note": "Botswana is reviewed across the full state footprint, including the north-west wet corridor and the vanilla-default Caprivi inclusion, but still lacks a meaningful audited commercial forestry belt.",
         "citation_1_title": "Zuidelijk Afrika als landbouw- en visserijregio voor een Victoria 3-mod",
         "citation_1_url": str(AGRI_RESEARCH_PATH),
         "citation_1_locator": "Botswana is drought-prone and cattle-first, with only narrow cereal corridors rather than plantation or forest systems.",
@@ -1237,7 +1254,7 @@ WOOD_TARGET_CAPACITY_SEEDS = {
     },
     "Lourenço Marques": {
         "classes": {land_class: 0.0 for land_class, _weight, _note in WOOD_LAND_CLASSES},
-        "capacity_note": "Maputo-Gaza and the lower Limpopo are audited here as crop-and-riverine lowland country rather than as a distinct commercial forestry province.",
+        "capacity_note": "Lourenço Marques reviews the full southern Mozambique split-state footprint, but current evidence still localizes commercial forestry too weakly to create a distinct forestry province inside that broader state.",
         "citation_1_title": "Zuidelijk Afrika als landbouw- en visserijregio voor een Victoria 3-mod",
         "citation_1_url": str(AGRI_RESEARCH_PATH),
         "citation_1_locator": "Southern Mozambique and the lower Limpopo are reviewed through maize, millet, rice, bananas, sugar, and cotton rather than forestry.",
@@ -1254,7 +1271,7 @@ WOOD_TARGET_CAPACITY_SEEDS = {
             "noncommercial_wooded_land": 0,
             "arid_or_unusable": 0,
         },
-        "capacity_note": "Zambezi carries a moderate forestry row anchored on the Eastern Highlands plantation belt, not on a generic whole-Zimbabwe forestry claim.",
+        "capacity_note": "Zambezi reviews the full Zimbabwe split-state footprint, with a moderate forestry row localized to the Eastern Highlands plantation belt inside that broader state.",
         "citation_1_title": "Forests and Climate Change Working Paper 12",
         "citation_1_url": "https://www.fao.org/4/i2970e/i2970e.pdf",
         "citation_1_locator": "Zimbabwe had about 108,000 ha of commercial plantations, concentrated in the wetter east.",
@@ -1264,7 +1281,7 @@ WOOD_TARGET_CAPACITY_SEEDS = {
     },
     "Hereroland": {
         "classes": {land_class: 0.0 for land_class, _weight, _note in WOOD_LAND_CLASSES},
-        "capacity_note": "Northern and central Namibian savanna-woodland does not translate into a commercial forestry belt in this audit.",
+        "capacity_note": "Hereroland reviews the full northern Namibia split-state footprint, but savanna-woodland does not translate into a commercial forestry belt across that broader state.",
         "citation_1_title": "Southern Africa comparator states ranked per region",
         "citation_1_url": str(COMPARATOR_RESEARCH_PATH),
         "citation_1_locator": "Northern Namibia is reviewed as a savanna-woodland agropastoral belt where cattle and grains dominate rather than forestry.",
@@ -1274,7 +1291,7 @@ WOOD_TARGET_CAPACITY_SEEDS = {
     },
     "Namaqualand": {
         "classes": {land_class: 0.0 for land_class, _weight, _note in WOOD_LAND_CLASSES},
-        "capacity_note": "Arid southern Namibian terrain and riverine pockets do not justify commercial forestry land in this pass.",
+        "capacity_note": "Namaqualand reviews the full southern Namibia split-state footprint, but arid terrain and riverine pockets still do not justify commercial forestry land across that broader state.",
         "citation_1_title": "Zuidelijk Afrika als landbouw- en visserijregio voor een Victoria 3-mod",
         "citation_1_url": str(AGRI_RESEARCH_PATH),
         "citation_1_locator": "Southern Namibia is reviewed as sheep-and-goat country with tiny irrigated pockets, not a forestry zone.",
@@ -1384,7 +1401,7 @@ RUBBER_COMPARATOR_EFFECTIVE_HECTARES_PER_CAP = 10_000.0
 RUBBER_TARGET_CAPACITY_SEEDS = {
     "Cape Colony": {
         "classes": {land_class: 0.0 for land_class, _weight, _note in RUBBER_LAND_CLASSES},
-        "capacity_note": "Cape Colony stays outside the latent-rubber model; its agricultural identity is Mediterranean grain, vines, fruit, and mixed farming rather than humid plantation land.",
+        "capacity_note": "Cape Colony's full split-state footprint stays outside the latent-rubber model; Mediterranean grain, vines, fruit, and mixed farming still define the state rather than humid plantation land.",
         "citation_1_locator": "Cape winter-rain grain-and-vine system; no humid plantation belt comparable to rubber country is frozen here.",
         "citation_2_locator": "[^wc]: Western Cape is Mediterranean with strong wine, wheat, wool, lucerne, and fruit production.",
     },
@@ -1426,7 +1443,7 @@ RUBBER_TARGET_CAPACITY_SEEDS = {
     },
     "Zululand": {
         "classes": {land_class: 0.0 for land_class, _weight, _note in RUBBER_LAND_CLASSES},
-        "capacity_note": "Zululand is humid and plantation-oriented, but the reset keeps latent rubber as broad potential only until the restored split state is audited on its own evidence chain.",
+        "capacity_note": "Zululand is reviewed across the full KwaZulu-Natal split-state footprint, but v3 still keeps latent rubber as broad potential only rather than freezing a localized slot inside that broader state.",
         "citation_1_locator": "KwaZulu-Natal row: sugar, maize, livestock, bananas, and fishing are strongest; no localized rubber chain is frozen at reset time.",
         "citation_2_locator": "The restored Zululand split carries humid littoral plantation logic, but v3 does not freeze a rubber slot there before the dedicated state pass.",
     },
@@ -1438,7 +1455,7 @@ RUBBER_TARGET_CAPACITY_SEEDS = {
     },
     "Botswana": {
         "classes": {land_class: 0.0 for land_class, _weight, _note in RUBBER_LAND_CLASSES},
-        "capacity_note": "Botswana remains outside the latent-rubber model; it is a dry cattle-and-cereal state without a rubber belt.",
+        "capacity_note": "Botswana remains outside the latent-rubber model across the full state footprint; it is still a dry cattle-and-cereal state without a rubber belt.",
         "citation_1_locator": "Botswana section: cattle first, with maize and millet in narrow corridors only.",
         "citation_2_locator": "[^bot]: Botswana is drought-prone and cattle-dominant rather than humid plantation country.",
     },
@@ -1449,7 +1466,7 @@ RUBBER_TARGET_CAPACITY_SEEDS = {
             "marginal_suitability_plantation": 40_000,
             "unsuitable_or_noncommercial": 0.0,
         },
-        "capacity_note": "Lourenço Marques carries a bounded latent-rubber row anchored on the Maputo-Gaza littoral and lower Limpopo coastal-lowland plantation belt; it is not a whole-Mozambique tropical claim.",
+        "capacity_note": "Lourenço Marques carries a bounded latent-rubber row inside the full southern Mozambique split-state footprint, localized to the warm littoral and lower-Limpopo coastal-lowland subregions rather than treated as a whole-Mozambique claim.",
         "citation_1_locator": "Mozambique section: the south coast and beneden-Limpopo are warm coastal-lowland agriculture belts with bananas, rice, sugar, cotton, and irrigated lowland potential.",
         "citation_2_locator": "[^smz]: Southern Mozambique is a hot coastal and riverine plain; that supports a bounded latent plantation slot even though broad Mozambique-wide tropical potential is excluded.",
     },
@@ -1460,19 +1477,19 @@ RUBBER_TARGET_CAPACITY_SEEDS = {
             "marginal_suitability_plantation": 80_000,
             "unsuitable_or_noncommercial": 0.0,
         },
-        "capacity_note": "Zambezi carries a bounded latent-rubber row anchored on the warm eastern and lowveld estate fringe inside the state footprint; it is not a whole-Zimbabwe tropical claim.",
+        "capacity_note": "Zambezi carries a bounded latent-rubber row inside the full Zimbabwe split-state footprint, localized to the warm eastern and lowveld estate fringe rather than treated as a whole-Zimbabwe tropical claim.",
         "citation_1_locator": "Zimbabwe section: Eastern Highlands, Mashonaland plateau, and southern lowveld are distinct belts; the warm fringe can carry a bounded latent plantation counterfactual even though most of the state is grain, tobacco, cattle, and sugar country.",
         "citation_2_locator": "[^zim]: Zimbabwe is tropical but elevation-bounded; only the warmest eastern and lowveld fringe supports this latent-rubber slot, not the whole state.",
     },
     "Hereroland": {
         "classes": {land_class: 0.0 for land_class, _weight, _note in RUBBER_LAND_CLASSES},
-        "capacity_note": "Hereroland remains outside the latent-rubber model; northern and central Namibia do not support a rubber belt.",
+        "capacity_note": "Hereroland remains outside the latent-rubber model across the full northern Namibia split-state footprint; northern and central Namibia do not support a rubber belt.",
         "citation_1_locator": "Namibia section: northern communal millet/maize belts and central cattle country dominate rather than humid plantation land.",
         "citation_2_locator": "Northern Namibia analogues are savanna agropastoral systems, not rubber belts.",
     },
     "Namaqualand": {
         "classes": {land_class: 0.0 for land_class, _weight, _note in RUBBER_LAND_CLASSES},
-        "capacity_note": "Namaqualand remains outside the latent-rubber model; it is arid grazing country with narrow irrigated pockets only.",
+        "capacity_note": "Namaqualand remains outside the latent-rubber model across the full southern Namibia split-state footprint; it is arid grazing country with narrow irrigated pockets only.",
         "citation_1_locator": "Southern Namibia is sheep-and-goat country with small irrigated pockets rather than plantation land.",
         "citation_2_locator": "[^snam]: Arid southern Namibia supports livestock and river irrigation, not a rubber belt.",
     },
@@ -1719,15 +1736,21 @@ def family_rewrite_flags_by_state(family_rewrite_rows: list[dict[str, Any]]) -> 
     return flags
 
 
-def ensure_audit_reset() -> None:
-    if AUDIT_RESET_MARKER.exists():
-        return
+def reset_audit_progress_surfaces(reset_note: str) -> None:
     write_csv(STATE_PASS_TRACKER_CSV, seed_state_pass_tracker_rows(), STATE_PASS_TRACKER_FIELDNAMES)
     write_csv(FAMILY_REWRITE_LOG_CSV, [], FAMILY_REWRITE_LOG_FIELDNAMES)
     write_csv(STATE_COUNTERFACTUAL_AUDIT_CSV, [], COUNTERFACTUAL_AUDIT_FIELDNAMES)
     AUDIT_RESET_MARKER.write_text(
-        "14-state reset applied: tracker and audit surfaces were reseeded without carrying forward the obsolete 13-state loop artifacts.\n",
+        reset_note.rstrip() + "\n",
         encoding="utf-8",
+    )
+
+
+def ensure_audit_reset() -> None:
+    if AUDIT_RESET_MARKER.exists():
+        return
+    reset_audit_progress_surfaces(
+        "14-state reset applied: tracker and audit surfaces were reseeded without carrying forward the obsolete 13-state loop artifacts."
     )
 
 
@@ -5784,7 +5807,8 @@ def build_state_resource_counterfactual_audit_rows(
                 "row_category": humanize_label(category),
                 "state_pass_index": pass_index_map[state],
                 "family_rewrite_triggered": "yes" if family_flags.get(state, 0) else "no",
-                "primary_district_or_belt": PRIMARY_BELT_BY_STATE[state],
+                "full_state_footprint": FULL_STATE_SCOPE_BY_STATE[state],
+                "primary_district_or_belt": ROW_LOCALIZATION_BELT_BY_STATE[state],
             }
             if category == "Arable Resource":
                 expectation = expectation_map[(state, resource)]
@@ -5793,7 +5817,13 @@ def build_state_resource_counterfactual_audit_rows(
                 counterevidence_case = row_cases[-1] if row_cases else {}
                 current_value = str(vanilla_priors[state].get(resource, "no")).lower()
                 proposed_value = str(expectation["researched_plausible"]).lower()
-                counterevidence_citations = proposed_value == "no" and bool(counterevidence_case)
+                positive_counterevidence = proposed_value == "yes" and "enabled" in " ".join(
+                    [
+                        str(counterevidence_case.get("result", "")),
+                        str(counterevidence_case.get("decision", "")),
+                    ]
+                ).lower()
+                counterevidence_citations = bool(counterevidence_case) and (proposed_value == "no" or positive_counterevidence)
                 regional_claim_note = (
                     counterevidence_case.get("decision", "")
                     if counterevidence_citations
@@ -5812,18 +5842,30 @@ def build_state_resource_counterfactual_audit_rows(
                 rows.append(
                     {
                         **base_row,
-                        "historical_label": "direct_historical_support" if proposed_value == "yes" else "no_material_historical_support",
-                        "counterfactual_label": (
-                            "rejected_counterfactual"
-                            if current_value == "yes" and proposed_value == "no"
-                            else "not_needed"
+                        "historical_label": (
+                            "indirect_historical_support"
+                            if positive_counterevidence
+                            else ("direct_historical_support" if proposed_value == "yes" else "no_material_historical_support")
                         ),
-                        "driving_basis": "historical" if current_value != proposed_value else "unchanged_baseline",
+                        "counterfactual_label": (
+                            "bounded_counterfactual"
+                            if positive_counterevidence
+                            else ("rejected_counterfactual" if current_value == "yes" and proposed_value == "no" else "not_needed")
+                        ),
+                        "driving_basis": (
+                            "counterfactual"
+                            if positive_counterevidence
+                            else ("historical" if current_value != proposed_value else "unchanged_baseline")
+                        ),
                         "current_value": current_value,
                         "proposed_value": proposed_value,
                         "decision": "flip_yes_no" if current_value != proposed_value else "keep",
                         "issue_type": counterevidence_case.get("result") or expectation["basket_membership_status"],
-                        "chronology_note": "Gameplay crop availability is reviewed against the 1836-1936 state basket rather than a single-year output series.",
+                        "chronology_note": (
+                            "Gameplay crop availability is reviewed against the 1836-1936 state basket; later localized irrigation development is only used as bounded counterfactual support for a narrow lane."
+                            if positive_counterevidence
+                            else "Gameplay crop availability is reviewed against the 1836-1936 state basket rather than a single-year output series."
+                        ),
                         "regional_claim_note": regional_claim_note,
                         "citation_1_title": counterevidence_case.get("source_a_title", "") if counterevidence_citations else basket_row.get("citation_1_title", ""),
                         "citation_1_url": counterevidence_case.get("source_a_url", "") if counterevidence_citations else basket_row.get("citation_1_url", ""),

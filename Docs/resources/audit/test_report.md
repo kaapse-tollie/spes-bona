@@ -1,7 +1,7 @@
 # Public Resource Audit Test Report
 
 - Date: 2026-04-22
-- Passes: 79
+- Passes: 81
 - Fails: 0
 
 ## Checks
@@ -77,8 +77,10 @@
 - **PASS** `arable counterevidence rows surface in the public audit when they defend a no row`: 
 - **PASS** `arable counterevidence rows surface in the public audit when they defend a yes row`: 
 - **PASS** `state pass tracker rows are present and in fixed order`: 
+- **PASS** `full-state scope table covers the audited states`: 
+- **PASS** `counterfactual audit rows carry the authoritative full-state footprint`: 
 - **PASS** `loop tracker remains coherent across reset and in-progress passes`: 
-- **PASS** `loop surfaces persist stateful progress after the v3 reset`: Tracker/family rewrite surfaces are carrying stateful loop progress.
+- **PASS** `loop surfaces persist stateful progress after the v3 reset`: Tracker is still at the reset baseline.
 - **PASS** `superseded rows remain present after a change`: 
 - **PASS** `no family rewrite is marked complete unless affected completed states were rerun`: 
 - **PASS** `regional totals match final caps aggregation`: 0 regional mismatches.
