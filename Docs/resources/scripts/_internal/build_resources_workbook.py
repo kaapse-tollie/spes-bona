@@ -1,16 +1,13 @@
 from __future__ import annotations
 
 import csv
+import importlib.util
 import math
 import re
+import sys
 from collections import defaultdict
 from pathlib import Path
 from typing import Any
-
-from openpyxl import Workbook
-from openpyxl.styles import Alignment, Font, PatternFill
-from openpyxl.utils import get_column_letter
-
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 SCRIPTS_DIR = SCRIPT_DIR.parent
@@ -22,6 +19,20 @@ AUDIT_DIR = PUBLIC_ROOT / "audit"
 STATE_COUNTERFACTUAL_AUDIT_CSV = AUDIT_DIR / "state_resource_counterfactual_audit.csv"
 STATE_PASS_TRACKER_CSV = AUDIT_DIR / "state_pass_tracker.csv"
 FAMILY_REWRITE_LOG_CSV = AUDIT_DIR / "family_rewrite_log.csv"
+
+SIMPLE_XLSX_SPEC = importlib.util.spec_from_file_location(
+    "resources_simple_xlsx",
+    SCRIPT_DIR / "simple_xlsx.py",
+)
+assert SIMPLE_XLSX_SPEC is not None and SIMPLE_XLSX_SPEC.loader is not None
+simple_xlsx = importlib.util.module_from_spec(SIMPLE_XLSX_SPEC)
+sys.modules.setdefault("resources_simple_xlsx", simple_xlsx)
+SIMPLE_XLSX_SPEC.loader.exec_module(simple_xlsx)
+Workbook = simple_xlsx.Workbook
+Alignment = simple_xlsx.Alignment
+Font = simple_xlsx.Font
+PatternFill = simple_xlsx.PatternFill
+get_column_letter = simple_xlsx.get_column_letter
 
 RAW_HISTORICAL_CSV = RAW_DIR / "historical_anchors.csv"
 RAW_MODERN_CSV = RAW_DIR / "modern_maxima.csv"

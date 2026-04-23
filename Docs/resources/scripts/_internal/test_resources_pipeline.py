@@ -3,12 +3,10 @@ from __future__ import annotations
 import csv
 import importlib.util
 import math
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
-
-import openpyxl
-
 
 ROOT = Path("/Users/depro/Documents/Paradox Interactive/Victoria 3/mod")
 REPO = ROOT / "Spes Bona - A Southern Africa Flavour Pack"
@@ -67,6 +65,13 @@ RAW_HISTORICAL = PUBLIC_ROOT / "data/raw/historical_anchors.csv"
 RAW_MODERN = PUBLIC_ROOT / "data/raw/modern_maxima.csv"
 RAW_ADJUSTMENT_INPUTS = PUBLIC_ROOT / "data/raw/adjustment_inputs.csv"
 RAW_COUNTEREVIDENCE = PUBLIC_ROOT / "data/raw/counterevidence_cases.csv"
+SIMPLE_XLSX = PUBLIC_ROOT / "scripts/_internal/simple_xlsx.py"
+
+_SIMPLE_XLSX_SPEC = importlib.util.spec_from_file_location("resources_simple_xlsx", SIMPLE_XLSX)
+assert _SIMPLE_XLSX_SPEC is not None and _SIMPLE_XLSX_SPEC.loader is not None
+simple_xlsx = importlib.util.module_from_spec(_SIMPLE_XLSX_SPEC)
+sys.modules.setdefault("resources_simple_xlsx", simple_xlsx)
+_SIMPLE_XLSX_SPEC.loader.exec_module(simple_xlsx)
 
 
 @dataclass
@@ -144,7 +149,7 @@ def run_tests() -> str:
     data_readme_text = DATA_README.read_text(encoding="utf-8") if DATA_README.exists() else ""
     raw_readme_text = RAW_DATA_README.read_text(encoding="utf-8") if RAW_DATA_README.exists() else ""
     derived_readme_text = DERIVED_DATA_README.read_text(encoding="utf-8") if DERIVED_DATA_README.exists() else ""
-    workbook = openpyxl.load_workbook(WORKBOOK, data_only=False)
+    workbook = simple_xlsx.load_workbook(WORKBOOK, data_only=False)
     overview_ws = workbook["Overview"]
     state_sheet_names = [info["official_name"] for info in builder.STATE_INFO]
     state_sheet_map = {name: workbook[name] for name in state_sheet_names}
