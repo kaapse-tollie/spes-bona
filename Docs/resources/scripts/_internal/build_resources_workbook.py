@@ -777,9 +777,9 @@ ARABLE_BASKET_SEEDS = {
     },
     "Northern Transvaal": {
         "yes_resources": {"Banana Plantation", "Coffee Plantation", "Cotton Plantation", "Livestock Ranch", "Maize Farm", "Tobacco Plantation"},
-        "include_summary": "Limpopo is a warm northern state where maize, tobacco, cotton, bananas, livestock, and some coffee fit better than cooler plateau crops.",
+        "include_summary": "Limpopo is a warm northern state where maize, tobacco, cotton, bananas, and livestock are direct basket crops; coffee is retained only as a bounded local counterfactual, not as generic warm-climate plausibility.",
         "exclude_summary": "The reviewed northern basket excludes sugar-heavy and Mediterranean profiles outside Limpopo's core evidence.",
-        "citation_1_locator": "Limpopo row: maize, tobacco, cotton, bananas, livestock strong; coffee weaker.",
+        "citation_1_locator": "Limpopo row: maize, tobacco, cotton, bananas, livestock strong; coffee weaker and only bounded by later local evidence.",
         "citation_2_locator": "[^lim]: Limpopo combines citrus, maize, tea/tobacco/groundnuts, cattle, goats, and sheep in a warm subtropical-to-montane gradient.",
     },
     "Transorangia": {
@@ -5817,12 +5817,23 @@ def build_state_resource_counterfactual_audit_rows(
                 counterevidence_case = row_cases[-1] if row_cases else {}
                 current_value = str(vanilla_priors[state].get(resource, "no")).lower()
                 proposed_value = str(expectation["researched_plausible"]).lower()
-                positive_counterevidence = proposed_value == "yes" and "enabled" in " ".join(
+                counterevidence_text = " ".join(
                     [
                         str(counterevidence_case.get("result", "")),
                         str(counterevidence_case.get("decision", "")),
                     ]
                 ).lower()
+                direct_positive_counterevidence = proposed_value == "yes" and any(
+                    token in counterevidence_text
+                    for token in [
+                        "direct_local_support",
+                        "direct local support",
+                        "direct_historical_support",
+                        "direct historical support",
+                    ]
+                )
+                bounded_positive_counterevidence = proposed_value == "yes" and "enabled" in counterevidence_text and not direct_positive_counterevidence
+                positive_counterevidence = direct_positive_counterevidence or bounded_positive_counterevidence
                 counterevidence_citations = bool(counterevidence_case) and (proposed_value == "no" or positive_counterevidence)
                 regional_claim_note = (
                     counterevidence_case.get("decision", "")
@@ -5843,18 +5854,22 @@ def build_state_resource_counterfactual_audit_rows(
                     {
                         **base_row,
                         "historical_label": (
-                            "indirect_historical_support"
-                            if positive_counterevidence
+                            "direct_historical_support"
+                            if direct_positive_counterevidence
+                            else "indirect_historical_support"
+                            if bounded_positive_counterevidence
                             else ("direct_historical_support" if proposed_value == "yes" else "no_material_historical_support")
                         ),
                         "counterfactual_label": (
                             "bounded_counterfactual"
-                            if positive_counterevidence
+                            if bounded_positive_counterevidence
                             else ("rejected_counterfactual" if current_value == "yes" and proposed_value == "no" else "not_needed")
                         ),
                         "driving_basis": (
                             "counterfactual"
-                            if positive_counterevidence
+                            if bounded_positive_counterevidence
+                            else "historical"
+                            if direct_positive_counterevidence
                             else ("historical" if current_value != proposed_value else "unchanged_baseline")
                         ),
                         "current_value": current_value,
@@ -5862,8 +5877,8 @@ def build_state_resource_counterfactual_audit_rows(
                         "decision": "flip_yes_no" if current_value != proposed_value else "keep",
                         "issue_type": counterevidence_case.get("result") or expectation["basket_membership_status"],
                         "chronology_note": (
-                            "Gameplay crop availability is reviewed against the 1836-1936 state basket; later localized irrigation development is only used as bounded counterfactual support for a narrow lane."
-                            if positive_counterevidence
+                            "Gameplay crop availability is reviewed against the 1836-1936 state basket; later localized crop development is only used as bounded counterfactual support for a narrow in-footprint lane."
+                            if bounded_positive_counterevidence
                             else "Gameplay crop availability is reviewed against the 1836-1936 state basket rather than a single-year output series."
                         ),
                         "regional_claim_note": regional_claim_note,
