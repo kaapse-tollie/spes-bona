@@ -275,16 +275,16 @@ Totals: vanilla `141`, live `33`, audited `52`, delta vs vanilla `-89`, delta vs
 | Resource | Vanilla | Live | Audited | Delta vs vanilla | Delta vs live | Status |
 |---|---:|---:|---:|---:|---:|---|
 | Arable Land | 70 | 25 | 27 | -43 | 2 | formula-driven |
-| Coal Mine | 44 | 4 | 4 | -40 | 0 | formula-driven |
+| Coal Mine | 44 | 4 | 2 | -42 | -2 | quantified adjustment |
 | Fishing | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Gold Mine | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Iron Mine | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Lead Mine | 0 | 1 | 1 | 1 | 0 | formula-driven |
-| Sulfur Mine | 0 | 0 | 0 | 0 | 0 | explicit exception |
+| Sulfur Mine | 0 | 0 | 1 | 1 | 1 | quantified adjustment |
 | Whaling | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Wood | 11 | 3 | 3 | -8 | 0 | formula-driven |
 | Gold Fields (discovered) | 0 | 0 | 0 | 0 | 0 | explicit exception |
-| Gold Fields (undiscovered) | 0 | 0 | 0 | 0 | 0 | explicit exception |
+| Gold Fields (undiscovered) | 0 | 0 | 1 | 1 | 1 | explicit exception |
 | Oil (discovered) | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Oil (undiscovered) | 0 | 0 | 0 | 0 | 0 | explicit exception |
 | Rubber (discovered) | 0 | 0 | 0 | 0 | 0 | explicit exception |
