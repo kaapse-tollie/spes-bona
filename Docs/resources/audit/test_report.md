@@ -1,7 +1,7 @@
 # Public Resource Audit Test Report
 
 - Date: 2026-04-22
-- Passes: 78
+- Passes: 79
 - Fails: 0
 
 ## Checks
@@ -75,6 +75,7 @@
 - **PASS** `every audited public row has both labels and one driving basis`: 
 - **PASS** `no changed row lacks citations`: 
 - **PASS** `arable counterevidence rows surface in the public audit when they defend a no row`: 
+- **PASS** `arable counterevidence rows surface in the public audit when they defend a yes row`: 
 - **PASS** `state pass tracker rows are present and in fixed order`: 
 - **PASS** `loop tracker remains coherent across reset and in-progress passes`: 
 - **PASS** `loop surfaces persist stateful progress after the v3 reset`: Tracker/family rewrite surfaces are carrying stateful loop progress.
@@ -83,7 +84,7 @@
 - **PASS** `regional totals match final caps aggregation`: 0 regional mismatches.
 - **PASS** `state delta summary matches final caps aggregation`: 
 - **PASS** `state delta exports exist and mirror final caps`: 
-- **PASS** `priority rows file exists`: Priority rows: 163
+- **PASS** `priority rows file exists`: Priority rows: 162
 
 ## Current Priority Rows
 

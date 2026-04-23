@@ -819,6 +819,29 @@ def run_tests() -> str:
             "; ".join(arable_counterevidence_failures[:12]),
         )
     )
+    arable_positive_counterevidence_failures = []
+    for row in raw_counterevidence_rows:
+        if row.get("row_status") not in ("", "active") or row["resource"] not in arable_resources:
+            continue
+        if "enabled" not in str(row.get("decision", "")).lower():
+            continue
+        audit_row = counterfactual_audit_map.get((row["state"], row["resource"]))
+        if (
+            audit_row is None
+            or audit_row["proposed_value"] != "yes"
+            or int(audit_row.get("state_pass_index") or 0) <= 0
+        ):
+            continue
+        surfaced_titles = {audit_row["citation_1_title"], audit_row["citation_2_title"]}
+        if row["source_a_title"] not in surfaced_titles and row["source_b_title"] not in surfaced_titles:
+            arable_positive_counterevidence_failures.append(f"{row['state']} / {row['resource']}")
+    results.append(
+        CheckResult(
+            "arable counterevidence rows surface in the public audit when they defend a yes row",
+            "PASS" if not arable_positive_counterevidence_failures else "FAIL",
+            "; ".join(arable_positive_counterevidence_failures[:12]),
+        )
+    )
 
     tracker_failures = []
     if len(state_pass_tracker) != len(builder.STATE_INFO):
