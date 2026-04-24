@@ -1858,6 +1858,29 @@ sb_on_spes_bona_diplomatic_play_started = {
 	effect = {
 		if = {
 			limit = {
+				is_diplomatic_play_type = dp_return_state
+				scope:initiator ?= {
+					country_definition = cd:ORA
+					is_ai = yes
+					has_variable = sb_ora_phl_scripted_play_opening_var
+					sb_ai_trn_available_for_ora_scripted_play = yes
+				}
+				scope:target ?= {
+					country_definition = cd:PHL
+				}
+				NOT = {
+					any_scope_play_involved = {
+						c:TRN ?= THIS
+					}
+				}
+			}
+			add_initiator_backers = { c:TRN }
+			scope:initiator = {
+				remove_variable = sb_ora_phl_scripted_play_opening_var
+			}
+		}
+		if = {
+			limit = {
 				is_diplomatic_play_type = dp_sb_natal_crisis
 			}
 			if = {
@@ -2175,6 +2198,23 @@ sb_on_spes_bona_war_end = {
 # War-goal hooks for the Phase 1 frontier wars.
 sb_on_spes_bona_wargoal_enforced = {
 	effect = {
+		if = {
+			limit = {
+				country_definition = cd:CAP
+				scope:diplomatic_play ?= {
+					OR = {
+						is_diplomatic_play_type = dp_sb_xhosa_war_7
+						is_diplomatic_play_type = dp_sb_xhosa_war_8
+						is_diplomatic_play_type = dp_sb_xhosa_war_9
+					}
+				}
+			}
+			add_modifier = {
+				name = sb_cape_victory_against_xhosa
+				months = 24
+			}
+		}
+
 		if = {
 			limit = {
 				country_definition = cd:ZUL
