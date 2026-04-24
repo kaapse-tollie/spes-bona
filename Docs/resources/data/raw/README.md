@@ -61,4 +61,4 @@ The rule is append-only for the maintained evidence tables that drive or constra
 - `wood_comparator_cases.csv`
   - retained only as seed material for the maintained wood comparator-capacity table
 
-Use [../README.md](/Users/depro/Documents/Paradox%20Interactive/Victoria%203/mod/Spes%20Bona%20-%20A%20Southern%20Africa%20Flavour%20Pack/Docs/resources/data/README.md) for the package-level classification rule.
+Use [../README.md](../README.md) for the package-level classification rule.

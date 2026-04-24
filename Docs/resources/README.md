@@ -510,6 +510,14 @@ and:
 
 This is a chronology rule, not a balancing knob. The late-start term is nonlinear and the representative-year lag is linear, so very late proxy years are moderated without reintroducing the earlier double-penalty problem. It does not apply to hectare-based land-capacity families such as `Arable Land`, `Wood`, and `Rubber (undiscovered)`.
 
+#### Documented-working floor
+
+For public numeric quantity rows, the final cap can be raised from `0` to `1` only when there is documented in-state working of that resource.
+
+This is narrow by design. It can apply to rows such as mines, fisheries, whaling, or final wood caps, but it does not apply to `Arable Land`, crop basket yes/no rows, `Rubber (undiscovered)` land-capacity arithmetic, or special-resource policy rows.
+
+The trigger is real working: trial production, commercial operation, or equivalent in-state use. Mere occurrence, geology, archaeological smelting, or unworked potential does not trigger the floor.
+
 #### Explicit exceptions
 
 Some rows remain explicit exceptions because a weak fake formula would be worse than an explicitly documented zero or policy row.
@@ -600,7 +608,7 @@ The main ones are:
 
 - `Whaling` and `Oil` remain explicit-exception heavy
 - `Rubber (discovered)` is still held outside the land-capacity model
-- the second counterfactual state-by-state audit still needs to be rerun on the v3 baseline
+- the resource package is now on the post-sync v3 baseline: all 14 states have been accepted, live sync has run, and the final test gate passes
 
 ## How To Modify / Run
 
@@ -637,16 +645,18 @@ The point of the package is that a later reviewer can still see:
 
 ### Rebuild the package
 
+Run commands from the repo root.
+
 ```bash
-python3 '/Users/depro/Documents/Paradox Interactive/Victoria 3/mod/Spes Bona - A Southern Africa Flavour Pack/Docs/resources/scripts/resources.py' build
-python3 '/Users/depro/Documents/Paradox Interactive/Victoria 3/mod/Spes Bona - A Southern Africa Flavour Pack/Docs/resources/scripts/resources.py' test
+python3 Docs/resources/scripts/resources.py build
+python3 Docs/resources/scripts/resources.py test
 ```
 
 ### Sync accepted changes to the live state file
 
 ```bash
-python3 '/Users/depro/Documents/Paradox Interactive/Victoria 3/mod/Spes Bona - A Southern Africa Flavour Pack/Docs/resources/scripts/resources.py' sync-live
-python3 '/Users/depro/Documents/Paradox Interactive/Victoria 3/mod/Spes Bona - A Southern Africa Flavour Pack/Docs/resources/scripts/resources.py' test
+python3 Docs/resources/scripts/resources.py sync-live
+python3 Docs/resources/scripts/resources.py test
 ```
 
 ### State-by-state counterfactual audit
@@ -654,7 +664,7 @@ python3 '/Users/depro/Documents/Paradox Interactive/Victoria 3/mod/Spes Bona - A
 The package also supports the state-pass loop:
 
 ```bash
-python3 '/Users/depro/Documents/Paradox Interactive/Victoria 3/mod/Spes Bona - A Southern Africa Flavour Pack/Docs/resources/scripts/resources.py' state-pass
+python3 Docs/resources/scripts/resources.py state-pass
 ```
 
 The normal sequence during the loop is:

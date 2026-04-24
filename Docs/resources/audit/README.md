@@ -31,8 +31,8 @@ This folder contains generated review surfaces.
 
 These are review surfaces, not formula-driving inputs.
 
-Rebuild them with:
+Rebuild them from the repo root with:
 
 ```bash
-python3 '/Users/depro/Documents/Paradox Interactive/Victoria 3/mod/Spes Bona - A Southern Africa Flavour Pack/Docs/resources/scripts/resources.py' build
+python3 Docs/resources/scripts/resources.py build
 ```

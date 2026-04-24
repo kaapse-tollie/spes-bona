@@ -5,6 +5,7 @@ import importlib.util
 import math
 import sys
 from dataclasses import dataclass
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -95,7 +96,8 @@ def load_builder():
 
 
 def status_line(result: CheckResult) -> str:
-    return f"- **{result.status}** `{result.name}`: {result.detail}"
+    detail = result.detail.rstrip()
+    return f"- **{result.status}** `{result.name}`: {detail}" if detail else f"- **{result.status}** `{result.name}`"
 
 
 def find_row_by_first_cell(ws, value: str) -> int | None:
@@ -194,7 +196,7 @@ def run_tests() -> str:
 
     results: list[CheckResult] = []
 
-    results.append(CheckResult("public cli entrypoint exists", "PASS" if CLI.exists() else "FAIL", f"Expected {CLI}"))
+    results.append(CheckResult("public cli entrypoint exists", "PASS" if CLI.exists() else "FAIL", f"Expected {CLI.relative_to(REPO)}"))
     results.append(CheckResult("new arable raw files exist", "PASS" if ARABLE_WEIGHTS.exists() and RAW_ARABLE_TARGET_CAPACITY.exists() and RAW_ARABLE_COMPARATOR_CAPACITY.exists() else "FAIL", "Expected land-class, target-capacity, and comparator-capacity raw files."))
     results.append(CheckResult("new wood raw files exist", "PASS" if WOOD_WEIGHTS.exists() and RAW_WOOD_TARGET_CAPACITY.exists() and RAW_WOOD_COMPARATOR_CAPACITY.exists() else "FAIL", "Expected wood land-class, target-capacity, and comparator-capacity raw files."))
     results.append(CheckResult("new rubber raw files exist", "PASS" if RUBBER_WEIGHTS.exists() and RAW_RUBBER_TARGET_CAPACITY.exists() and RAW_RUBBER_COMPARATOR_CAPACITY.exists() else "FAIL", "Expected rubber land-class, target-capacity, and comparator-capacity raw files."))
@@ -221,6 +223,7 @@ def run_tests() -> str:
         "earliest commercial activity year",
         "representative gdp-equivalent year",
         "representative-year lag",
+        "documented-working floor",
     ]
     missing_readme = [token for token in readme_checks if token not in readme_text.lower()]
     results.append(CheckResult("readme follows the explanatory paper-style structure", "PASS" if not missing_readme else "FAIL", "Missing README terms: " + ", ".join(missing_readme)))
@@ -691,8 +694,8 @@ def run_tests() -> str:
         wood_spot_failures.append("Eastern Cape should outrank Cape Colony")
     if wood_caps.get("Eastern Transvaal", 0) < wood_caps.get("Eastern Cape", 0):
         wood_spot_failures.append("Eastern Transvaal should remain the strongest wood state")
-    if wood_caps.get("Botswana", 0) != 0:
-        wood_spot_failures.append("Botswana should stay at zero")
+    if wood_caps.get("Botswana", 0) != 1:
+        wood_spot_failures.append("Botswana should keep only the one-cap gameplay exception")
     if wood_caps.get("Namaqualand", 0) != 0:
         wood_spot_failures.append("Namaqualand should stay at zero")
     results.append(CheckResult("wood spot-check outcomes are directionally plausible", "PASS" if not wood_spot_failures else "FAIL", "; ".join(wood_spot_failures)))
@@ -1018,7 +1021,7 @@ def run_tests() -> str:
         [
             "# Public Resource Audit Test Report",
             "",
-            "- Date: 2026-04-22",
+            f"- Date: {date.today().isoformat()}",
             f"- Passes: {passes}",
             f"- Fails: {fails}",
             "",

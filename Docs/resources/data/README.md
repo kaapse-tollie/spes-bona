@@ -23,5 +23,5 @@ Classification rule:
 
 Read these next:
 
-- [raw/README.md](/Users/depro/Documents/Paradox%20Interactive/Victoria%203/mod/Spes%20Bona%20-%20A%20Southern%20Africa%20Flavour%20Pack/Docs/resources/data/raw/README.md)
-- [derived/README.md](/Users/depro/Documents/Paradox%20Interactive/Victoria%203/mod/Spes%20Bona%20-%20A%20Southern%20Africa%20Flavour%20Pack/Docs/resources/data/derived/README.md)
+- [raw/README.md](./raw/README.md)
+- [derived/README.md](./derived/README.md)

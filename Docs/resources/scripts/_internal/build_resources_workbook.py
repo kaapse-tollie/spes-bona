@@ -1553,10 +1553,14 @@ def read_csv_rows(path: Path) -> list[dict[str, str]]:
 def write_csv(path: Path, rows: list[dict[str, Any]], fieldnames: list[str]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer = csv.DictWriter(handle, fieldnames=fieldnames, lineterminator="\n")
         writer.writeheader()
         for row in rows:
-            writer.writerow({field: row.get(field, "") for field in fieldnames})
+            output_row = {}
+            for field in fieldnames:
+                value = row.get(field, "")
+                output_row[field] = value.rstrip() if isinstance(value, str) else value
+            writer.writerow(output_row)
 
 
 def ensure_csv_schema(path: Path, fieldnames: list[str], seed_rows: list[dict[str, Any]] | None = None) -> None:
@@ -4279,9 +4283,22 @@ def load_adjustment_inputs() -> dict[tuple[str, str], dict[str, Any]]:
                 parsed["citation_2_title"] = wood_seed.get("citation_2_title", "")
                 parsed["citation_2_url"] = wood_seed.get("citation_2_url", "")
                 parsed["citation_2_locator"] = wood_seed.get("citation_2_locator", "")
+            wood_exception_final_cap = parsed["exception_final_cap"]
+            wood_is_zero_exception = parsed["exception_status"] and (
+                wood_exception_final_cap in (None, 0)
+            )
+            if wood_is_zero_exception:
+                wood_adjustment_reason = "Potential-forestry model keeps this row as an explicit zero exception; wooded land alone does not count as commercial forestry."
+                wood_calculation_note = "Explicit zero retained under the potential-forestry model because the audited footprint lacks a defensible commercial forestry belt."
+            elif parsed["exception_status"]:
+                wood_adjustment_reason = parsed["adjustment_reason"] or "Potential-forestry model carries this row as an explicit qualitative exception."
+                wood_calculation_note = parsed["calculation_note"] or "Explicit qualitative forestry exception retained after the potential-forestry model resolves below a normal public cap."
+            else:
+                wood_adjustment_reason = "Potential-forestry model replaces observed plantation estate area with direct effective commercial forestry hectares."
+                wood_calculation_note = "Wood now uses direct effective commercial forestry hectares with plantation-first potential and capped restoration allowances."
             parsed.update(
                 {
-                    "problem_type": "" if parsed["exception_status"] != "manual_zero_exception" else parsed["problem_type"],
+                    "problem_type": parsed["problem_type"] if parsed["exception_status"] else "",
                     "output_addition_y": parsed["output_addition_y"],
                     "plausibility_haircut_z": parsed["plausibility_haircut_z"],
                     "earliest_commercial_activity_year": None,
@@ -4295,16 +4312,8 @@ def load_adjustment_inputs() -> dict[tuple[str, str], dict[str, Any]]:
                     "y_quantification_method": parsed["y_quantification_method"] or "No upward addition.",
                     "z_reason": parsed["z_reason"] or "No downward plausibility haircut.",
                     "audit_class": parsed["audit_class"] or ("exception" if parsed["exception_status"] else "direct"),
-                    "adjustment_reason": (
-                        "Potential-forestry model keeps this row as an explicit zero exception; wooded land alone does not count as commercial forestry."
-                        if parsed["exception_status"]
-                        else "Potential-forestry model replaces observed plantation estate area with direct effective commercial forestry hectares."
-                    ),
-                    "calculation_note": (
-                        "Explicit zero retained under the potential-forestry model because the audited footprint lacks a defensible commercial forestry belt."
-                        if parsed["exception_status"]
-                        else "Wood now uses direct effective commercial forestry hectares with plantation-first potential and capped restoration allowances."
-                    ),
+                    "adjustment_reason": wood_adjustment_reason,
+                    "calculation_note": wood_calculation_note,
                 }
             )
         elif resource == "Rubber (undiscovered)":
