@@ -191,32 +191,8 @@ sb_ensure_trn_ai_natal_front_commitment = {
 			}
 			fully_mobilize_army = yes
 		}
-		if = {
-			limit = {
-				any_scope_war = {
-					any_scope_front = {
-						always = yes
-					}
-				}
-			}
-			random_scope_war = {
-				random_scope_front = {
-					save_temporary_scope_as = sb_natal_front_scope
-				}
-			}
-			every_military_formation = {
-				limit = {
-					is_army = yes
-					num_units >= 1
-				}
-				teleport_to_front = {
-					front = scope:sb_natal_front_scope
-					base_camp = p:x04FA29
-				}
-			}
 		}
 	}
-}
 
 sb_ensure_ora_ai_natal_front_commitment = {
 	if = {
@@ -232,32 +208,8 @@ sb_ensure_ora_ai_natal_front_commitment = {
 			}
 			fully_mobilize_army = yes
 		}
-		if = {
-			limit = {
-				any_scope_war = {
-					any_scope_front = {
-						always = yes
-					}
-				}
-			}
-			random_scope_war = {
-				random_scope_front = {
-					save_temporary_scope_as = sb_natal_front_scope
-				}
-			}
-			every_military_formation = {
-				limit = {
-					is_army = yes
-					num_units >= 1
-				}
-				teleport_to_front = {
-					front = scope:sb_natal_front_scope
-					base_camp = p:xF95B36
-				}
-			}
 		}
 	}
-}
 
 sb_seed_ora_blood_river_relief_manpower = {
 			random_scope_state = {
@@ -300,7 +252,8 @@ sb_seed_trn_blood_river_relief_manpower = {
 }
 
 sb_raise_ora_blood_river_relief_force = {
-	# Standard AI-vs-AI ORA relief package for Blood River.
+	# Standard ORA relief package for Blood River. This is the baseline:
+	# keep ORA at the five-barracks militia ceiling in every Blood River play.
 	if = {
 		limit = {
 			country_definition = cd:ORA
@@ -456,57 +409,33 @@ sb_raise_ora_blood_river_relief_force = {
 					reserves = 1
 				}
 			}
-		}
-		if = {
-			limit = {
-				c:ZUL ?= {
-					is_player = yes
-				}
-				army_size <= 0
 			}
-			create_military_formation = {
-				type = army
-				hq_region = sr:region_southern_africa
-				name = potgieter_relief_commando
+			if = {
+				limit = {
+					has_variable = sb_ora_blood_river_player_zul_extra_force_var
+					c:ZUL ?= {
+						is_player = yes
+					}
+				}
+				create_military_formation = {
+					type = army
+					hq_region = sr:region_southern_africa
+					name = potgieter_relief_commando
 
-				combat_unit = {
-					type = unit_type:combat_unit_type_line_infantry
-					state_region = s:STATE_VRYSTAAT
-					count = 3
-				}
-				combat_unit = {
-					type = unit_type:combat_unit_type_dragoons
-					state_region = s:STATE_VRYSTAAT
-					count = 2
-				}
-			}
-		}
-		else_if = {
-			limit = {
-				c:ZUL ?= {
-					is_player = yes
-				}
-				army_size == 1
-			}
-			create_military_formation = {
-				type = army
-				hq_region = sr:region_southern_africa
-				name = potgieter_relief_commando
-
-				combat_unit = {
-					type = unit_type:combat_unit_type_line_infantry
-					state_region = s:STATE_VRYSTAAT
-					count = 3
-				}
-				combat_unit = {
-					type = unit_type:combat_unit_type_dragoons
-					state_region = s:STATE_VRYSTAAT
-					count = 1
+					combat_unit = {
+						type = unit_type:combat_unit_type_line_infantry
+						state_region = s:STATE_VRYSTAAT
+						count = 3
+					}
+					combat_unit = {
+						type = unit_type:combat_unit_type_dragoons
+						state_region = s:STATE_VRYSTAAT
+						count = 2
+					}
 				}
 			}
 		}
 	}
-}
 
 sb_raise_ora_blood_river_player_relief_force = {
 	# Legacy compatibility shim. Older branches can still call the "player"
@@ -635,14 +564,13 @@ sb_raise_trn_blood_river_relief_force = {
 	}
 }
 
-# This effect runs in diplomatic-play scope when the Natal crisis becomes a war.
+# This effect runs in diplomatic-play scope when the Natal crisis starts.
 sb_raise_blood_river_ai_boer_relief_forces = {
-	# Live V2 path: only ORA receives deterministic AI relief here.
+	# Live V2 path: ORA always receives deterministic baseline relief here.
 	if = {
 		limit = {
 			c:ORA ?= {
 				is_country_alive = yes
-				is_ai = yes
 				has_variable = sb_natal_war_active_var
 			}
 		}
@@ -917,7 +845,7 @@ sb_found_natalia_after_blood_river = {
 					ruler = yes
 					is_general = yes
 					interest_group = ig_landowners
-					ideology = ideology_sb_volksraad_elitism
+					ideology = ideology_sb_volksraad_elitism_leader
 				}
 			}
 			random_scope_character = {
@@ -949,7 +877,7 @@ sb_found_natalia_after_blood_river = {
 				ruler = yes
 				is_general = yes
 				interest_group = ig_landowners
-				ideology = ideology_sb_volksraad_elitism
+				ideology = ideology_sb_volksraad_elitism_leader
 			}
 		}
 	}

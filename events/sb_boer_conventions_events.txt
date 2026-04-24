@@ -176,29 +176,33 @@ sb_boer_conventions.142 = {
 		if = {
 			limit = {
 				exists = scope:highveld_target
-				scope:highveld_target ?= {
-					is_country_alive = yes
-					is_subject = no
-					is_at_war = no
-					aggressive_diplomatic_plays_permitted = yes
-					OR = {
-						has_law = law_type:law_slave_trade
-						has_law = law_type:law_legacy_slavery
+					scope:highveld_target ?= {
+						is_country_alive = yes
+						is_subject = no
+						is_at_war = no
+						is_active_in_diplomatic_play = no
+						aggressive_diplomatic_plays_permitted = yes
+						OR = {
+							has_law = law_type:law_slave_trade
+							has_law = law_type:law_legacy_slavery
+						}
 					}
+					aggressive_diplomatic_plays_permitted = yes
+					is_at_war = no
+					is_active_in_diplomatic_play = no
 				}
-				aggressive_diplomatic_plays_permitted = yes
-				is_at_war = no
-			}
-			scope:highveld_target ?= {
-				if = {
-					limit = { has_variable = sb_gbr_highveld_slavery_response_pending_var }
-					remove_variable = sb_gbr_highveld_slavery_response_pending_var
-				}
-				if = {
-					limit = { has_variable = sb_gbr_highveld_zpb_response_pending_var }
-					remove_variable = sb_gbr_highveld_zpb_response_pending_var
-				}
-				if = {
+				scope:highveld_target ?= {
+					if = {
+						limit = { has_variable = sb_gbr_highveld_slavery_response_pending_var }
+						remove_variable = sb_gbr_highveld_slavery_response_pending_var
+						set_variable = sb_gbr_highveld_slavery_response_consumed_var
+					}
+					if = {
+						limit = { has_variable = sb_gbr_highveld_zpb_response_pending_var }
+						remove_variable = sb_gbr_highveld_zpb_response_pending_var
+						set_variable = sb_gbr_highveld_zpb_response_consumed_var
+					}
+					if = {
 					limit = { is_country_type = recognized }
 					set_country_type = unrecognized
 				}
@@ -225,35 +229,26 @@ sb_boer_conventions.142 = {
 				}
 			}
 			scope:highveld_target ?= {
-				if = {
-					limit = { has_variable = sb_gbr_highveld_slavery_response_pending_var }
-					remove_variable = sb_gbr_highveld_slavery_response_pending_var
-				}
-				if = {
-					limit = { has_variable = sb_gbr_highveld_zpb_response_pending_var }
-					remove_variable = sb_gbr_highveld_zpb_response_pending_var
-				}
-			}
-		}
-		else_if = {
-			limit = {
-				exists = scope:highveld_target
-			}
-			trigger_event = { id = sb_boer_conventions.142 days = 90 popup = no }
-		}
-
-		if = {
-			limit = {
-				OR = {
-					c:TRN ?= { has_variable = sb_gbr_highveld_slavery_response_pending_var }
-					c:ORA ?= { has_variable = sb_gbr_highveld_slavery_response_pending_var }
-					c:ZPB ?= { has_variable = sb_gbr_highveld_zpb_response_pending_var }
+					if = {
+						limit = { has_variable = sb_gbr_highveld_slavery_response_pending_var }
+						remove_variable = sb_gbr_highveld_slavery_response_pending_var
+						set_variable = sb_gbr_highveld_slavery_response_consumed_var
+					}
+					if = {
+						limit = { has_variable = sb_gbr_highveld_zpb_response_pending_var }
+						remove_variable = sb_gbr_highveld_zpb_response_pending_var
+						set_variable = sb_gbr_highveld_zpb_response_consumed_var
+					}
 				}
 			}
-			trigger_event = { id = sb_boer_conventions.142 days = 30 popup = no }
+			else_if = {
+				limit = {
+					exists = scope:highveld_target
+				}
+				trigger_event = { id = sb_boer_conventions.142 days = 90 popup = no }
+			}
 		}
 	}
-}
 
 sb_boer_conventions.143 = {
 	type = country_event

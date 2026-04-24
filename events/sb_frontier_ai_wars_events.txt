@@ -13,7 +13,20 @@ sb_frontier_ai_wars.010 = {
 	trigger = {
 		country_definition = cd:ORA
 		is_ai = yes
+		is_country_alive = yes
+		is_subject = no
+		is_at_war = no
+		is_active_in_diplomatic_play = no
+		aggressive_diplomatic_plays_permitted = yes
 		sb_frontier_ai_scripting_enabled = yes
+		c:PHL ?= {
+			is_country_alive = yes
+			is_ai = yes
+			is_subject = no
+			is_at_war = no
+			is_active_in_diplomatic_play = no
+			aggressive_diplomatic_plays_permitted = yes
+		}
 	}
 
 	immediate = {
@@ -28,6 +41,22 @@ sb_frontier_ai_wars.010 = {
 				type = humiliation
 			}
 		}
+		if = {
+			limit = { sb_ai_trn_available_for_ora_scripted_play = yes }
+			random_diplomatic_play = {
+				limit = {
+					initiator = root
+					target = c:PHL
+					NOT = {
+						any_scope_play_involved = {
+							c:TRN ?= THIS
+						}
+					}
+				}
+				add_initiator_backers = { c:TRN }
+			}
+		}
+		set_variable = sb_ora_phl_scripted_war_resolved_var
 	}
 }
 
@@ -38,7 +67,20 @@ sb_frontier_ai_wars.020 = {
 	trigger = {
 		country_definition = cd:ORA
 		is_ai = yes
+		is_country_alive = yes
+		is_subject = no
+		is_at_war = no
+		is_active_in_diplomatic_play = no
+		aggressive_diplomatic_plays_permitted = yes
 		sb_frontier_ai_scripting_enabled = yes
+		c:BST ?= {
+			is_country_alive = yes
+			is_ai = yes
+			is_subject = no
+			is_at_war = no
+			is_active_in_diplomatic_play = no
+			aggressive_diplomatic_plays_permitted = yes
+		}
 	}
 
 	immediate = {
@@ -58,24 +100,19 @@ sb_frontier_ai_wars.020 = {
 				80 = { }
 			}
 		}
-		create_diplomatic_play = {
-			type = dp_return_state
-			target_country = c:BST
-			target_state = s:STATE_VRYSTAAT.region_state:BST
+			create_diplomatic_play = {
+				type = dp_sb_ora_bst_return_state_locked
+				target_country = c:BST
+				target_state = s:STATE_VRYSTAAT.region_state:BST
 
-			add_war_goal = {
+				add_war_goal = {
 				holder = c:BST
 				target_state = s:STATE_VRYSTAAT.region_state:ORA
 				type = return_state
 			}
 		}
 		if = {
-			limit = {
-				c:TRN ?= {
-					is_country_alive = yes
-					is_ai = yes
-				}
-			}
+			limit = { sb_ai_trn_available_for_ora_scripted_play = yes }
 			random_diplomatic_play = {
 				limit = {
 					initiator = root
@@ -86,9 +123,10 @@ sb_frontier_ai_wars.020 = {
 						}
 					}
 				}
-				add_target_backers = { c:TRN }
+				add_initiator_backers = { c:TRN }
 			}
 		}
+		set_variable = sb_ora_bst_scripted_war_1848_resolved_var
 	}
 }
 
@@ -99,7 +137,20 @@ sb_frontier_ai_wars.030 = {
 	trigger = {
 		country_definition = cd:ORA
 		is_ai = yes
+		is_country_alive = yes
+		is_subject = no
+		is_at_war = no
+		is_active_in_diplomatic_play = no
+		aggressive_diplomatic_plays_permitted = yes
 		sb_frontier_ai_scripting_enabled = yes
+		c:BST ?= {
+			is_country_alive = yes
+			is_ai = yes
+			is_subject = no
+			is_at_war = no
+			is_active_in_diplomatic_play = no
+			aggressive_diplomatic_plays_permitted = yes
+		}
 	}
 
 	immediate = {
@@ -129,6 +180,7 @@ sb_frontier_ai_wars.030 = {
 				type = return_state
 			}
 		}
+		set_variable = sb_ora_bst_scripted_war_1856_resolved_var
 	}
 }
 
@@ -139,7 +191,11 @@ sb_frontier_ai_wars.040 = {
 	trigger = {
 		sb_is_zulu_dynasty_country = yes
 		is_ai = yes
+		is_active_in_diplomatic_play = no
 		sb_frontier_ai_behavior_dynamic_historical = yes
+		c:GZA ?= {
+			is_active_in_diplomatic_play = no
+		}
 	}
 
 	immediate = {
@@ -159,21 +215,49 @@ sb_frontier_ai_wars.100 = {
 	hidden = yes
 
 	trigger = {
-		country_definition = cd:XHR
+		country_definition = cd:XHT
 		is_country_alive = yes
-		is_at_war = no
-		aggressive_diplomatic_plays_permitted = yes
 		c:CAP ?= {
 			is_country_alive = yes
-			is_at_war = no
-			aggressive_diplomatic_plays_permitted = yes
 		}
 	}
 
 	immediate = {
-		create_diplomatic_play = {
-			type = dp_native_uprising
-			target_country = c:CAP
+		if = {
+			limit = {
+				game_date < 1848.1.1
+				any_scope_state = {
+					state_region = s:STATE_EASTERN_CAPE
+					num_provinces >= 1
+				}
+				NOT = { sb_xht_owns_all_eastern_cape_starting_provinces = yes }
+				c:CAP ?= {
+					has_technology_researched = colonization
+				}
+			}
+			create_diplomatic_play = {
+				type = dp_sb_xhosa_war_7
+				target_country = c:CAP
+			}
+			c:CAP ?= {
+				set_variable = sb_xhosa_frontier_war_7_resolved_var
+				if = {
+					limit = { has_variable = sb_xhosa_frontier_war_7_scheduled_var }
+					remove_variable = sb_xhosa_frontier_war_7_scheduled_var
+				}
+			}
+		}
+		else = {
+			c:CAP ?= {
+				if = {
+					limit = { has_variable = sb_xhosa_frontier_war_7_scheduled_var }
+					remove_variable = sb_xhosa_frontier_war_7_scheduled_var
+				}
+				if = {
+					limit = { game_date >= 1848.1.1 }
+					set_variable = sb_xhosa_frontier_war_7_resolved_var
+				}
+			}
 		}
 	}
 }
@@ -183,21 +267,49 @@ sb_frontier_ai_wars.110 = {
 	hidden = yes
 
 	trigger = {
-		country_definition = cd:XHT
+		country_definition = cd:XHR
 		is_country_alive = yes
-		is_at_war = no
-		aggressive_diplomatic_plays_permitted = yes
 		c:CAP ?= {
 			is_country_alive = yes
-			is_at_war = no
-			aggressive_diplomatic_plays_permitted = yes
 		}
 	}
 
 	immediate = {
-		create_diplomatic_play = {
-			type = dp_native_uprising
-			target_country = c:CAP
+		if = {
+			limit = {
+				game_date < 1852.1.1
+				any_scope_state = {
+					state_region = s:STATE_EASTERN_CAPE
+					num_provinces >= 1
+				}
+				NOT = { sb_xhr_owns_all_eastern_cape_starting_provinces = yes }
+				c:CAP ?= {
+					has_technology_researched = colonization
+				}
+			}
+			create_diplomatic_play = {
+				type = dp_sb_xhosa_war_8
+				target_country = c:CAP
+			}
+			c:CAP ?= {
+				set_variable = sb_xhosa_frontier_war_8_resolved_var
+				if = {
+					limit = { has_variable = sb_xhosa_frontier_war_8_scheduled_var }
+					remove_variable = sb_xhosa_frontier_war_8_scheduled_var
+				}
+			}
+		}
+		else = {
+			c:CAP ?= {
+				if = {
+					limit = { has_variable = sb_xhosa_frontier_war_8_scheduled_var }
+					remove_variable = sb_xhosa_frontier_war_8_scheduled_var
+				}
+				if = {
+					limit = { game_date >= 1852.1.1 }
+					set_variable = sb_xhosa_frontier_war_8_resolved_var
+				}
+			}
 		}
 	}
 }
@@ -209,19 +321,47 @@ sb_frontier_ai_wars.120 = {
 	trigger = {
 		country_definition = cd:XHG
 		is_country_alive = yes
-		is_at_war = no
-		aggressive_diplomatic_plays_permitted = yes
 		c:CAP ?= {
 			is_country_alive = yes
-			is_at_war = no
-			aggressive_diplomatic_plays_permitted = yes
 		}
 	}
 
 	immediate = {
-		create_diplomatic_play = {
-			type = dp_native_uprising
-			target_country = c:CAP
+		if = {
+			limit = {
+				game_date < 1881.1.1
+				any_scope_state = {
+					state_region = s:STATE_EASTERN_CAPE
+					num_provinces >= 1
+				}
+				NOT = { sb_xhg_owns_all_eastern_cape_starting_provinces = yes }
+				c:CAP ?= {
+					has_technology_researched = colonization
+				}
+			}
+			create_diplomatic_play = {
+				type = dp_sb_xhosa_war_9
+				target_country = c:CAP
+			}
+			c:CAP ?= {
+				set_variable = sb_xhosa_frontier_war_9_resolved_var
+				if = {
+					limit = { has_variable = sb_xhosa_frontier_war_9_scheduled_var }
+					remove_variable = sb_xhosa_frontier_war_9_scheduled_var
+				}
+			}
+		}
+		else = {
+			c:CAP ?= {
+				if = {
+					limit = { has_variable = sb_xhosa_frontier_war_9_scheduled_var }
+					remove_variable = sb_xhosa_frontier_war_9_scheduled_var
+				}
+				if = {
+					limit = { game_date >= 1881.1.1 }
+					set_variable = sb_xhosa_frontier_war_9_resolved_var
+				}
+			}
 		}
 	}
 }

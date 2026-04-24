@@ -483,13 +483,13 @@ def run_tests() -> str:
 
     expectation_map = {(row["state"], row["resource"]): row for row in arable_resource_expectations}
     basket_logic_failures = []
-    eastern_cape_wheat = expectation_map.get(("Eastern Cape", "Wheat Farm"))
-    if eastern_cape_wheat is None or not (
-        eastern_cape_wheat["researched_plausible"] == "yes"
-        and eastern_cape_wheat["live_enabled_in_state"] == "yes"
-        and eastern_cape_wheat["basket_membership_status"] == "researched_and_live"
+    eastern_cape_maize = expectation_map.get(("Eastern Cape", "Maize Farm"))
+    if eastern_cape_maize is None or not (
+        eastern_cape_maize["researched_plausible"] == "yes"
+        and eastern_cape_maize["live_enabled_in_state"] == "yes"
+        and eastern_cape_maize["basket_membership_status"] == "researched_and_live"
     ):
-        basket_logic_failures.append("Eastern Cape / Wheat Farm")
+        basket_logic_failures.append("Eastern Cape / Maize Farm")
     cape_tea = expectation_map.get(("Cape Colony", "Tea Plantation"))
     if cape_tea is None or not (
         cape_tea["researched_plausible"] == "no"
@@ -498,6 +498,25 @@ def run_tests() -> str:
     ):
         basket_logic_failures.append("Cape Colony / Tea Plantation")
     results.append(CheckResult("arable basket/live expectations reflect the synced gameplay state", "PASS" if not basket_logic_failures else "FAIL", "Basket logic failures: " + ", ".join(basket_logic_failures)))
+
+    staple_resources = {"Wheat Farm", "Rice Farm", "Maize Farm", "Millet Farm"}
+    double_staple_failures = []
+    for state in state_sheet_names:
+        researched_staples = [
+            resource
+            for resource in staple_resources
+            if expectation_map[(state, resource)]["researched_plausible"] == "yes"
+        ]
+        live_staples = [
+            resource
+            for resource in staple_resources
+            if str(live_values[state].get(resource, "no")).lower() == "yes"
+        ]
+        if len(researched_staples) > 1:
+            double_staple_failures.append(f"{state} researched={','.join(sorted(researched_staples))}")
+        if len(live_staples) > 1:
+            double_staple_failures.append(f"{state} live={','.join(sorted(live_staples))}")
+    results.append(CheckResult("SB states expose at most one staple crop farm", "PASS" if not double_staple_failures else "FAIL", "; ".join(double_staple_failures[:12])))
 
     overview_headers, overview_rows = extract_table(overview_ws, "SB totals before and after")
     overview_map = {str(row["Resource"]): row for row in overview_rows}

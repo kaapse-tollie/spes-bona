@@ -1,0 +1,109 @@
+﻿REPLACE:grant_command_to_ruler = {
+	icon = "gfx/interface/character_panel/grant_command.dds"
+	clicksound = "event:/SFX/UI/Military/command_grant"
+
+	potential = {
+		is_ruler = yes
+		NOR = {
+			has_role = general
+			has_role = admiral
+		}
+		owner ?= scope:actor
+	}
+
+	possible = {
+		age >= define:NCharacters|ADULT_AGE
+		OR = {
+			is_female = no
+			owner ?= {
+				has_law_or_variant = law_type:law_womens_suffrage
+			}
+		}
+		owner ?= {
+			ruler_can_have_command = yes
+		}
+		exists = owner.capital.land_hq
+	}
+
+	effect = {
+		add_character_role = general
+	}
+
+	ai_chance = {
+		value = 0
+		if = {
+			limit = {
+				AND = {
+					age <= 50
+					OR = {
+						has_trait = reckless
+						has_trait = direct
+						has_trait = imposing
+					}
+					NOR = {
+						has_trait = psychological_affliction
+						has_trait = wounded
+						has_trait = shellshocked
+					}
+				}
+			}
+			add = 100
+		}
+		if = {
+			limit = {
+				has_trait = sb_moshoeshoe_lifeline
+				owner ?= {
+					country_definition = cd:BST
+				}
+			}
+			add = 1000
+		}
+	}
+}
+
+REPLACE:remove_command_from_ruler = {
+	icon = "gfx/interface/character_panel/grant_command_not.dds"
+	clicksound = "event:/SFX/UI/Military/command_remove"
+
+	potential = {
+		is_ruler = yes
+		has_role = general
+		owner ?= scope:actor
+	}
+
+	possible = {
+		commander_military_formation ?= {
+			is_mobilized = no
+		}
+	}
+
+	effect = {
+		remove_character_role = general
+	}
+
+	ai_chance = {
+		value = 0
+		if = {
+			limit = {
+				OR = {
+					age > 50
+					OR = {
+						has_trait = psychological_affliction
+						has_trait = wounded
+						has_trait = shellshocked
+					}
+				}
+			}
+			add = 100
+		}
+		if = {
+			limit = {
+				has_trait = sb_moshoeshoe_lifeline
+				owner ?= {
+					country_definition = cd:BST
+				}
+			}
+			add = -1000
+		}
+	}
+}

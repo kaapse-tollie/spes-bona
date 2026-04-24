@@ -45,7 +45,7 @@
 			limit = { NOT = { has_ideology = ideology:ideology_sb_settler_colonialist } }
 			add_ideology = ideology_sb_settler_colonialist
 		}
-		set_ig_trait = ig_trait:ig_trait_born_particularists
+			set_ig_trait = ig_trait:sb_ig_trait_frontier_particularism
 		set_ig_trait = ig_trait:ig_trait_honest_work
 		set_ig_trait = ig_trait:ig_trait_farmers_markets
 	}
@@ -90,11 +90,21 @@ sb_apply_boer_republic_interest_group_identity = {
 
 		set_ig_trait = ig_trait:sb_ig_trait_laager_politics
 		set_ig_trait = ig_trait:ig_trait_family_ties
-		set_ig_trait = ig_trait:sb_ig_trait_republican_notables
-	}
-	ig:ig_armed_forces ?= {
-		set_interest_group_name = ig_kommandante
-		if = {
+			set_ig_trait = ig_trait:sb_ig_trait_republican_notables
+		}
+		every_scope_character = {
+			limit = {
+				has_role = politician
+				interest_group = {
+					is_interest_group_type = ig_landowners
+				}
+				NOT = { has_ideology = ideology:ideology_sb_volksraad_elitism_leader }
+			}
+			set_ideology = ideology:ideology_sb_volksraad_elitism_leader
+		}
+		ig:ig_armed_forces ?= {
+			set_interest_group_name = ig_kommandante
+			if = {
 			limit = { has_ideology = ideology:ideology_loyalist }
 			remove_ideology = ideology_loyalist
 		}

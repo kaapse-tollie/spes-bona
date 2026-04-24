@@ -1,0 +1,252 @@
+﻿sb_martinus_create_presidential_union_with_ora = {
+	set_variable = sb_martinus_ambition_resolved_var
+	set_variable = sb_martinus_presidential_union_active_var
+	if = {
+		limit = { has_variable = sb_martinus_coercive_chain_active_var }
+		remove_variable = sb_martinus_coercive_chain_active_var
+	}
+	if = {
+		limit = { has_variable = sb_martinus_coercive_chain_pending_var }
+		remove_variable = sb_martinus_coercive_chain_pending_var
+	}
+	if = {
+		limit = {
+			c:ORA ?= {
+				is_country_alive = yes
+				is_subject = no
+			}
+		}
+		create_diplomatic_pact = {
+			country = c:ORA
+			type = sb_boer_presidential_union
+		}
+	}
+	c:ORA ?= {
+		set_variable = sb_martinus_presidential_union_junior_var
+		if = {
+			limit = { has_variable = sb_martinus_legal_union_pending_var }
+			remove_variable = sb_martinus_legal_union_pending_var
+		}
+		change_relations = {
+			country = c:TRN
+			value = 30
+		}
+	}
+}
+
+sb_martinus_coercive_compromise = {
+	set_variable = sb_martinus_ambition_resolved_var
+	if = {
+		limit = { has_variable = sb_martinus_coercive_chain_active_var }
+		remove_variable = sb_martinus_coercive_chain_active_var
+	}
+	add_modifier = {
+		name = sb_martinus_mutual_recognition
+		months = 120
+	}
+	change_relations = {
+		country = c:ORA
+		value = 20
+	}
+	c:ORA ?= {
+		add_modifier = {
+			name = sb_martinus_mutual_recognition
+			months = 120
+		}
+		change_relations = {
+			country = c:TRN
+			value = 20
+		}
+	}
+}
+
+sb_martinus_break_presidential_union_with_ora = {
+	if = {
+		limit = {
+			c:ORA ?= {
+				is_country_alive = yes
+				is_direct_subject_of = root
+				is_subject_type = subject_type_sb_boer_presidential_union
+			}
+		}
+		c:ORA ?= {
+			make_independent = yes
+		}
+	}
+	if = {
+		limit = { has_variable = sb_martinus_presidential_union_active_var }
+		remove_variable = sb_martinus_presidential_union_active_var
+	}
+	c:ORA ?= {
+		if = {
+			limit = { has_variable = sb_martinus_presidential_union_junior_var }
+			remove_variable = sb_martinus_presidential_union_junior_var
+		}
+	}
+}
+
+sb_martinus_create_confederation_with_ora = {
+	set_variable = sb_martinus_confederation_active_var
+	if = {
+		limit = { has_variable = sb_martinus_presidential_union_active_var }
+		remove_variable = sb_martinus_presidential_union_active_var
+	}
+	c:ORA ?= {
+		if = {
+			limit = {
+				is_country_alive = yes
+				is_direct_subject_of = c:TRN
+				is_subject_type = subject_type_sb_boer_presidential_union
+			}
+			change_subject_type = subject_type_sb_boer_confederal_partner
+		}
+		set_variable = sb_martinus_confederal_partner_var
+		if = {
+			limit = { has_variable = sb_martinus_presidential_union_junior_var }
+			remove_variable = sb_martinus_presidential_union_junior_var
+		}
+	}
+	sb_martinus_sync_ora_laws_to_trn = yes
+	c:GBR ?= {
+		if = {
+			limit = {
+				sb_martinus_gbr_can_respond_to_confederation = yes
+			}
+			trigger_event = { id = sb_martinus_confederation.110 days = 14 popup = yes }
+		}
+	}
+}
+
+sb_martinus_revert_confederation_to_presidential_union = {
+	if = {
+		limit = {
+			c:ORA ?= {
+				is_country_alive = yes
+				is_direct_subject_of = root
+				is_subject_type = subject_type_sb_boer_confederal_partner
+			}
+		}
+		c:ORA ?= {
+			change_subject_type = subject_type_sb_boer_presidential_union
+			if = {
+				limit = { has_variable = sb_martinus_confederal_partner_var }
+				remove_variable = sb_martinus_confederal_partner_var
+			}
+			set_variable = sb_martinus_presidential_union_junior_var
+		}
+	}
+	if = {
+		limit = { has_variable = sb_martinus_confederation_active_var }
+		remove_variable = sb_martinus_confederation_active_var
+	}
+	set_variable = sb_martinus_presidential_union_active_var
+}
+
+sb_martinus_break_gbr_trn_trade_through = {
+	c:GBR ?= {
+		every_scope_treaty = {
+			limit = {
+				binds = c:TRN
+				any_scope_article = {
+					has_type = transit_rights
+					source_country = c:GBR
+					target_country = c:TRN
+				}
+			}
+			withdraw = {
+				country = c:GBR
+			}
+		}
+	}
+}
+
+sb_martinus_sync_ora_laws_to_trn = {
+	if = {
+		limit = {
+			c:ORA ?= {
+				is_country_alive = yes
+				is_direct_subject_of = root
+				is_subject_type = subject_type_sb_boer_confederal_partner
+			}
+		}
+		if = {
+			limit = { has_law = law_type:law_monarchy }
+			c:ORA ?= { activate_law = law_type:law_monarchy }
+		}
+		if = {
+			limit = { has_law = law_type:law_sb_commandant_general_republic }
+			c:ORA ?= {
+				set_variable = sb_commandant_general_visible_var
+				activate_law = law_type:law_sb_commandant_general_republic
+			}
+		}
+		else_if = {
+			limit = { has_law = law_type:law_presidential_republic }
+			c:ORA ?= { activate_law = law_type:law_presidential_republic }
+		}
+		if = {
+			limit = { has_law = law_type:law_parliamentary_republic }
+			c:ORA ?= { activate_law = law_type:law_parliamentary_republic }
+		}
+		if = {
+			limit = { has_law = law_type:law_theocracy }
+			c:ORA ?= { activate_law = law_type:law_theocracy }
+		}
+		if = {
+			limit = { has_law = law_type:law_council_republic }
+			c:ORA ?= { activate_law = law_type:law_council_republic }
+		}
+		if = {
+			limit = { has_law = law_type:law_ethnostate }
+			c:ORA ?= { activate_law = law_type:law_ethnostate }
+		}
+		if = {
+			limit = { has_law = law_type:law_national_supremacy }
+			c:ORA ?= { activate_law = law_type:law_national_supremacy }
+		}
+		if = {
+			limit = { has_law = law_type:law_racial_segregation }
+			c:ORA ?= { activate_law = law_type:law_racial_segregation }
+		}
+		if = {
+			limit = { has_law = law_type:law_cultural_exclusion }
+			c:ORA ?= { activate_law = law_type:law_cultural_exclusion }
+		}
+		if = {
+			limit = { has_law_or_variant = law_type:law_multicultural }
+			c:ORA ?= { activate_law = law_type:law_multicultural }
+		}
+		if = {
+			limit = { has_law = law_type:law_slavery_banned }
+			c:ORA ?= { activate_law = law_type:law_slavery_banned }
+		}
+		if = {
+			limit = { has_law = law_type:law_debt_slavery }
+			c:ORA ?= { activate_law = law_type:law_debt_slavery }
+		}
+		if = {
+			limit = { has_law = law_type:law_slave_trade }
+			c:ORA ?= { activate_law = law_type:law_slave_trade }
+		}
+		if = {
+			limit = { has_law = law_type:law_legacy_slavery }
+			c:ORA ?= { activate_law = law_type:law_legacy_slavery }
+		}
+		if = {
+			limit = { has_law = law_type:law_peasant_levies }
+			c:ORA ?= { activate_law = law_type:law_peasant_levies }
+		}
+		if = {
+			limit = { has_law = law_type:law_professional_army }
+			c:ORA ?= { activate_law = law_type:law_professional_army }
+		}
+		if = {
+			limit = { has_law = law_type:law_national_militia }
+			c:ORA ?= { activate_law = law_type:law_national_militia }
+		}
+		if = {
+			limit = { has_law = law_type:law_mass_conscription }
+			c:ORA ?= { activate_law = law_type:law_mass_conscription }
+		}
+	}
+}

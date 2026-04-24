@@ -1,7 +1,7 @@
 # Public Resource Audit Test Report
 
 - Date: 2026-04-24
-- Passes: 81
+- Passes: 82
 - Fails: 0
 
 ## Checks
@@ -51,6 +51,7 @@
 - **PASS** `arable spot-check outcomes are playable and directionally plausible`
 - **PASS** `arable resource expectations are now a gameplay audit surface`: Missing fields:
 - **PASS** `arable basket/live expectations reflect the synced gameplay state`: Basket logic failures:
+- **PASS** `SB states expose at most one staple crop farm`
 - **PASS** `overview totals mirror regional_resource_totals.csv`: Mismatches:
 - **PASS** `major tag changes mirror regional_resource_totals.csv`: Mismatches:
 - **PASS** `overview progress block mirrors state_pass_tracker.csv`: Mismatches:
