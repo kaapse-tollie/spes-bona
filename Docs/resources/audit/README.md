@@ -24,8 +24,6 @@ This folder contains generated review surfaces.
   - current acceptance status per SB state
 - `sb_state_delta_report.md`
   - readable per-state delta report
-- `resource_rework_checklist.md`
-  - remaining backlog
 - `test_report.md`
   - latest pipeline checks
 
