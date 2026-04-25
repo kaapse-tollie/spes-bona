@@ -45,6 +45,27 @@ sb_frontier_ai_wars.010 = {
 				type = humiliation
 			}
 		}
+		if = {
+			limit = {
+				c:TRN ?= {
+					is_country_alive = yes
+					is_ai = yes
+				}
+			}
+			random_diplomatic_play = {
+				limit = {
+					is_diplomatic_play_type = dp_return_state
+					initiator = { c:ORA ?= this }
+					target = { c:PHL ?= this }
+					NOT = {
+						any_scope_play_involved = {
+							c:TRN ?= THIS
+						}
+					}
+				}
+				add_initiator_backers = { c:TRN }
+			}
+		}
 		trigger_event = { id = sb_frontier_ai_wars.011 days = 1 popup = no }
 		trigger_event = { id = sb_frontier_ai_wars.011 days = 7 popup = no }
 		set_variable = sb_ora_phl_scripted_war_resolved_var
@@ -63,12 +84,17 @@ sb_frontier_ai_wars.011 = {
 
 	immediate = {
 		if = {
-			limit = { sb_ai_trn_available_for_ora_scripted_play = yes }
+			limit = {
+				c:TRN ?= {
+					is_country_alive = yes
+					is_ai = yes
+				}
+			}
 			random_diplomatic_play = {
 				limit = {
 					is_diplomatic_play_type = dp_return_state
-					initiator = root
-					target = c:PHL
+					initiator = { c:ORA ?= this }
+					target = { c:PHL ?= this }
 					NOT = {
 						any_scope_play_involved = {
 							c:TRN ?= THIS
