@@ -151,15 +151,36 @@ sb_frontier_ai_wars.020 = {
 				80 = { }
 			}
 		}
-			create_diplomatic_play = {
-				type = dp_sb_ora_bst_return_state_locked
-				target_country = c:BST
-				target_state = s:STATE_VRYSTAAT.region_state:BST
+		create_diplomatic_play = {
+			type = dp_sb_ora_bst_return_state_locked
+			target_country = c:BST
+			target_state = s:STATE_VRYSTAAT.region_state:BST
 
-				add_war_goal = {
+			add_war_goal = {
 				holder = c:BST
 				target_state = s:STATE_VRYSTAAT.region_state:ORA
 				type = return_state
+			}
+		}
+		if = {
+			limit = {
+				c:TRN ?= {
+					is_country_alive = yes
+					is_ai = yes
+				}
+			}
+			random_diplomatic_play = {
+				limit = {
+					is_diplomatic_play_type = dp_sb_ora_bst_return_state_locked
+					initiator = { c:ORA ?= this }
+					target = { c:BST ?= this }
+					NOT = {
+						any_scope_play_involved = {
+							c:TRN ?= THIS
+						}
+					}
+				}
+				add_initiator_backers = { c:TRN }
 			}
 		}
 		trigger_event = { id = sb_frontier_ai_wars.021 days = 1 popup = no }
@@ -180,12 +201,17 @@ sb_frontier_ai_wars.021 = {
 
 	immediate = {
 		if = {
-			limit = { sb_ai_trn_available_for_ora_scripted_play = yes }
+			limit = {
+				c:TRN ?= {
+					is_country_alive = yes
+					is_ai = yes
+				}
+			}
 			random_diplomatic_play = {
 				limit = {
 					is_diplomatic_play_type = dp_sb_ora_bst_return_state_locked
-					initiator = root
-					target = c:BST
+					initiator = { c:ORA ?= this }
+					target = { c:BST ?= this }
 					NOT = {
 						any_scope_play_involved = {
 							c:TRN ?= THIS
