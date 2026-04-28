@@ -16,25 +16,38 @@ je_sb_bst_ora_frontier = {
 		always = no
 	}
 
+	is_shown_in_lobby = {
+		OR = {
+			c:BST ?= this
+			c:ORA ?= this
+			c:TRN ?= this
+			c:LYD ?= this
+			c:ZPB ?= this
+			c:NAL ?= this
+		}
+	}
+
 	is_shown_when_inactive = {
 		c:ORA ?= {
 			is_country_alive = yes
+			sb_ora_holds_vrystaat = yes
 		}
 		c:BST ?= {
 			is_country_alive = yes
 			is_subject = no
-			sb_bst_holds_drakensberg = yes
+			sb_bst_holds_frontier_land = yes
 		}
 	}
 
 	possible = {
 		c:ORA ?= {
 			is_country_alive = yes
+			sb_ora_holds_vrystaat = yes
 		}
 		c:BST ?= {
 			is_country_alive = yes
 			is_subject = no
-			sb_bst_holds_drakensberg = yes
+			sb_bst_holds_frontier_land = yes
 		}
 	}
 
@@ -46,16 +59,62 @@ je_sb_bst_ora_frontier = {
 
 	complete = {
 		OR = {
-			NOT = {
-				c:BST ?= {
-					is_country_alive = yes
+
+				AND = {
+				c:ORA ?= {
+					owns_entire_state_region = STATE_VRYSTAAT
+				}
+				c:ORA ?= {
+					owns_entire_state_region = STATE_DRAKENSBERG
 				}
 			}
 			c:BST ?= {
-				is_subject = yes
-			}
-			c:BST ?= {
 				owns_entire_state_region = STATE_VRYSTAAT
+			}
+
+		}
+	}
+
+	on_complete = {
+		c:ORA ?= {
+			if = {
+				limit = {
+					is_country_alive = yes
+					owns_entire_state_region = STATE_DRAKENSBERG
+					NOT = { has_variable = sb_settled_drakensberg_var }
+					NOT = {
+						c:BST ?= {
+							is_country_alive = yes
+						}
+					}
+				}
+				if = {
+					limit = {
+						NOT = { has_variable = sb_ora_annexed_bst_var }
+						NOT = { has_variable = sb_settled_drakensberg_var }
+					}
+					set_variable = sb_ora_annexed_bst_var
+				}
+				trigger_event = { id = sb_bst_frontier.300 days = 1 popup = yes }
+			}
+		}
+		c:BST ?= {
+			if = {
+				limit = {
+					is_country_alive = yes
+					is_subject = no
+					owns_entire_state_region = STATE_VRYSTAAT
+				}
+				if = {
+					limit = {
+						NOT = { has_journal_entry = je_sb_sotho_tswana_nation }
+						NOT = { has_variable = sb_sotho_tswana_nation_completed_var }
+					}
+					add_journal_entry = {
+						type = je_sb_sotho_tswana_nation
+					}
+				}
+				trigger_event = { id = sb_bst_frontier.310 days = 1 popup = yes }
 			}
 		}
 	}
@@ -77,16 +136,16 @@ je_sb_bst_ora_frontier = {
 
 	invalid = {
 		OR = {
-			NOT = {
-				c:ORA ?= {
-					is_country_alive = yes
-				}
+			c:ORA ?= {
+				is_country_alive = yes
+				NOT = { sb_ora_holds_vrystaat = yes }
 			}
-			NOT = {
-				c:BST ?= {
-					is_country_alive = yes
-					sb_bst_holds_drakensberg = yes
-				}
+			c:BST ?= {
+				is_country_alive = yes
+				NOT = { sb_bst_holds_frontier_land = yes }
+			}
+			c:BST ?= {
+				is_subject = yes
 			}
 		}
 	}

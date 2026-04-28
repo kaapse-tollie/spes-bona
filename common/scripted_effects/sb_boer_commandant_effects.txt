@@ -80,9 +80,24 @@ sb_apply_boer_commandant_general_baseline = {
 # Shared hidden setup for mid-game Boer splinter republics. This keeps event
 # flows readable while ensuring the spawned country immediately lands on the
 # intended commandant-general government and custom IG identity stack.
+sb_ensure_boer_supremacist_movement = {
+	if = {
+		limit = {
+			country_has_primary_culture = cu:boer
+			NOT = {
+				any_political_movement = {
+					is_political_movement_type = movement_cultural_majority
+				}
+			}
+		}
+		create_political_movement = { type = movement_cultural_majority }
+	}
+}
+
 sb_apply_boer_republic_spawn_setup = {
 	sb_apply_boer_commandant_general_baseline = yes
 	sb_apply_boer_republic_interest_group_identity = yes
+	sb_ensure_boer_supremacist_movement = yes
 	if = {
 		limit = {
 			sb_can_use_frontier_colonization = yes

@@ -374,7 +374,6 @@ sb_martinus_confederation.041 = {
 
 	option = {
 		name = sb_martinus_confederation.041.a
-		default_option = yes
 		c:ORA ?= {
 			trigger_event = { id = sb_martinus_confederation.050 days = 7 popup = yes }
 		}
@@ -385,6 +384,7 @@ sb_martinus_confederation.041 = {
 
 	option = {
 		name = sb_martinus_confederation.041.b
+		default_option = yes
 		sb_martinus_coercive_compromise = yes
 		ai_chance = {
 			base = 35
@@ -415,7 +415,6 @@ sb_martinus_confederation.042 = {
 
 	option = {
 		name = sb_martinus_confederation.041.a
-		default_option = yes
 		c:ORA ?= {
 			trigger_event = { id = sb_martinus_confederation.050 days = 7 popup = yes }
 		}
@@ -426,6 +425,7 @@ sb_martinus_confederation.042 = {
 
 	option = {
 		name = sb_martinus_confederation.041.b
+		default_option = yes
 		sb_martinus_coercive_compromise = yes
 		ai_chance = {
 			base = 45
@@ -456,7 +456,6 @@ sb_martinus_confederation.043 = {
 
 	option = {
 		name = sb_martinus_confederation.041.a
-		default_option = yes
 		c:ORA ?= {
 			trigger_event = { id = sb_martinus_confederation.050 days = 7 popup = yes }
 		}
@@ -467,6 +466,7 @@ sb_martinus_confederation.043 = {
 
 	option = {
 		name = sb_martinus_confederation.041.b
+		default_option = yes
 		sb_martinus_coercive_compromise = yes
 		ai_chance = {
 			base = 45
@@ -497,7 +497,6 @@ sb_martinus_confederation.044 = {
 
 	option = {
 		name = sb_martinus_confederation.041.a
-		default_option = yes
 		c:ORA ?= {
 			trigger_event = { id = sb_martinus_confederation.050 days = 7 popup = yes }
 		}
@@ -508,6 +507,7 @@ sb_martinus_confederation.044 = {
 
 	option = {
 		name = sb_martinus_confederation.041.b
+		default_option = yes
 		sb_martinus_coercive_compromise = yes
 		ai_chance = {
 			base = 55
@@ -569,9 +569,15 @@ sb_martinus_confederation.050 = {
 				limit = { has_variable = sb_martinus_coercive_chain_active_var }
 				remove_variable = sb_martinus_coercive_chain_active_var
 			}
+			sb_martinus_break_boer_war_path_compacts = yes
 			create_diplomatic_play = {
 				type = dp_sb_martinus_humiliation
 				target_country = root
+				add_war_goal = {
+					holder = root
+					target_country = c:TRN
+					type = humiliation
+				}
 			}
 			if = {
 				limit = {
@@ -663,39 +669,64 @@ sb_martinus_confederation.080 = {
 	duration = 3
 
 	trigger = {
-		country_definition = cd:ORA
-		c:TRN ?= {
-			sb_martinus_trn_can_open_legal_union = yes
+		country_definition = cd:TRN
+		sb_martinus_trn_can_open_legal_union = yes
+		has_variable = sb_martinus_legal_union_pending_var
+	}
+
+	immediate = {
+		ruler = {
+			add_modifier = {
+				name = sb_martinus_free_state_mandate
+				months = 36
+			}
+		}
+		c:ORA ?= {
+			set_variable = {
+				name = sb_martinus_legal_union_pending_var
+				months = 12
+			}
+			trigger_event = { id = sb_martinus_confederation.081 days = 1 popup = yes }
 		}
 	}
 
 	option = {
 		name = sb_martinus_confederation.080.a
+		default_option = yes
+	}
+}
+
+sb_martinus_confederation.081 = {
+	type = country_event
+	placement = root
+
+	title = sb_martinus_confederation.081.t
+	desc = sb_martinus_confederation.081.d
+	flavor = sb_martinus_confederation.081.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:ORA
+		has_variable = sb_martinus_legal_union_pending_var
 		c:TRN ?= {
-			remove_variable = sb_martinus_legal_union_pending_var
-			set_variable = sb_martinus_legal_union_resolved_var
-			sb_martinus_create_presidential_union_with_ora = yes
-		}
-		ai_chance = {
-			base = 50
+			has_variable = sb_martinus_legal_union_pending_var
 		}
 	}
 
+	immediate = {
+		sb_martinus_prepare_ora_pretorius_candidate = yes
+	}
+
 	option = {
-		name = sb_martinus_confederation.080.b
+		name = sb_martinus_confederation.081.a
 		default_option = yes
-		set_variable = sb_martinus_ora_separate_republic_path_var
-		add_modifier = {
-			name = sb_ora_separate_republic
-			months = 120
-		}
-		c:TRN ?= {
-			remove_variable = sb_martinus_legal_union_pending_var
-			set_variable = sb_martinus_legal_union_resolved_var
-		}
-		ai_chance = {
-			base = 50
-		}
 	}
 }
 

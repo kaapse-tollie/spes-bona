@@ -13,18 +13,6 @@
 
 	scripted_button = je_sb_delegate_south_west_affairs_to_cape_button
 
-	immediate = {
-		if = {
-			limit = {
-				NOT = { has_variable = sb_nam_consolidation_seeded_var }
-			}
-			set_variable = sb_nam_consolidation_seeded_var
-			sb_nam_seed_consolidation_harshness = yes
-			sb_nam_schedule_next_consolidation_event = yes
-		}
-		sb_nam_sync_consolidation_modifiers = yes
-	}
-
 	status_desc = {
 		first_valid = {
 			triggered_desc = {
@@ -103,6 +91,7 @@
 
 	on_monthly_pulse = {
 		effect = {
+			sb_nam_repair_consolidation_seed = yes
 			sb_nam_sync_consolidation_modifiers = yes
 		}
 	}
@@ -110,6 +99,7 @@
 	on_complete = {
 		set_variable = sb_nam_consolidation_resolved_var
 		sb_nam_clear_final_harshness_flags = yes
+		sb_nam_clear_administration_package_flags = yes
 		if = {
 			limit = {
 				scope:journal_entry = {
@@ -144,6 +134,33 @@
 		}
 		else = {
 			set_variable = sb_nam_final_harshness_0_var
+		}
+		if = {
+			limit = {
+				scope:journal_entry = {
+					"scripted_bar_progress(sb_nam_rule_harshness_bar)" >= 9
+				}
+			}
+			set_variable = sb_nam_administration_exterminatory_var
+		}
+		else_if = {
+			limit = {
+				scope:journal_entry = {
+					"scripted_bar_progress(sb_nam_rule_harshness_bar)" >= 6
+				}
+			}
+			set_variable = sb_nam_administration_extractive_var
+		}
+		else_if = {
+			limit = {
+				scope:journal_entry = {
+					"scripted_bar_progress(sb_nam_rule_harshness_bar)" >= 3
+				}
+			}
+			set_variable = sb_nam_administration_charter_var
+		}
+		else = {
+			set_variable = sb_nam_administration_mission_var
 		}
 		if = {
 			limit = {

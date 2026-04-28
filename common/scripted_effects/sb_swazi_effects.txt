@@ -2,8 +2,9 @@
 #
 # Chain order:
 #   1. TRN completes Transvaal Unity
-#   2. SWZ answers Boer consolidation pressure (sell land or resist)
-#   3. only after that, and only if Natal is British, SWZ can choose whether to
+#   2. TRN chooses whether to press the western border claims
+#   3. SWZ answers Boer consolidation pressure (cede land or resist)
+#   4. only after that, and only if Natal is British, SWZ can choose whether to
 #      seek British shelter or stand apart
 
 sb_swazi_raise_zulu_campaign_muster = {
@@ -82,14 +83,14 @@ sb_swazi_apply_guns_for_land_bonus = {
 			limit = { var:sb_firearms_treaty_progress_months_var < 24 }
 			change_variable = {
 				name = sb_firearms_treaty_progress_months_var
-				add = 4
+				add = 9.6
 			}
 		}
 		if = {
 			limit = { var:sb_firearms_industry_progress_months_var < 24 }
 			change_variable = {
 				name = sb_firearms_industry_progress_months_var
-				add = 4
+				add = 9.6
 			}
 		}
 		sb_update_firearms_progress = yes
@@ -118,22 +119,46 @@ sb_swazi_apply_boer_buy_time_settlement = {
 		remove_claim = c:SWZ
 	}
 
-	c:TRN ?= {
-		if = {
-			limit = { has_modifier = sb_swazi_frontier_grievance }
-			remove_modifier = sb_swazi_frontier_grievance
-		}
-	}
-
 	change_relations = {
 		country = c:TRN
 		value = 25
 	}
-	create_bidirectional_truce = {
-		country = c:TRN
-		months = 96
+	hidden_effect = {
+		create_bidirectional_truce = {
+			country = c:TRN
+			months = 300
+		}
 	}
-	sb_swazi_apply_guns_for_land_bonus = yes
+	custom_description = {
+		text = sb_swzai_frontier_concede_truce
+	}
+	hidden_effect = {
+		sb_swazi_apply_guns_for_land_bonus = yes
+	}
+	custom_description = {
+		text = sb_swzai_frontier_concede_guns
+	}
+
+
+
+}
+
+sb_trn_apply_swazi_reject_posture = {
+	# Attitudes are derived, so make the inputs unambiguous: a rejected frontier
+	# settlement leaves TRN hostile and, for AI TRN, actively claim-focused.
+	if = {
+		limit = {
+			c:SWZ ?= { is_country_alive = yes }
+		}
+		change_relations = {
+			country = c:SWZ
+			value = -100
+		}
+	}
+	if = {
+		limit = { is_ai = yes }
+		set_strategy = ai_strategy_sb_boer_frontier_republic
+	}
 }
 
 sb_swazi_apply_boer_resistance = {
@@ -146,16 +171,10 @@ sb_swazi_apply_boer_resistance = {
 		remove_variable = sb_swazi_boer_land_sold_var
 	}
 
-	change_relations = {
-		country = c:TRN
-		value = -25
-	}
 	c:TRN ?= {
-		add_modifier = {
-			name = sb_swazi_frontier_grievance
-			months = 60
-		}
+		sb_trn_apply_swazi_reject_posture = yes
 	}
+
 }
 
 sb_swazi_apply_stand_apart = {

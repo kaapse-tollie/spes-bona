@@ -6,6 +6,25 @@ sb_bst_holds_drakensberg = {
 	}
 }
 
+sb_bst_holds_vrystaat = {
+	any_scope_state = {
+		state_region = s:STATE_VRYSTAAT
+	}
+}
+
+sb_bst_holds_frontier_land = {
+	OR = {
+		sb_bst_holds_drakensberg = yes
+		sb_bst_holds_vrystaat = yes
+	}
+}
+
+sb_ora_holds_vrystaat = {
+	any_scope_state = {
+		state_region = s:STATE_VRYSTAAT
+	}
+}
+
 sb_bst_holds_vrystaat_foothold = {
 	OR = {
 		p:x19AE59.state.owner = root
@@ -63,6 +82,26 @@ sb_cap_controls_bst_frontier = {
 	p:x7524D4.state.owner = c:CAP
 	p:xC57FEF.state.owner = c:CAP
 	p:xCA8474.state.owner = c:CAP
+}
+
+sb_cap_is_self_governing_colony = {
+	OR = {
+		is_subject_type = subject_type_dominion
+		is_subject_type = subject_type_sb_dominion
+		is_subject_type = subject_type_sb_responsible_colony
+		is_subject_type = subject_type_sb_responsible_colony_monarchy
+	}
+}
+
+sb_cap_has_bst_subject_for_disarmament = {
+	country_definition = cd:CAP
+	is_country_alive = yes
+	sb_cap_is_self_governing_colony = yes
+	c:BST ?= {
+		is_country_alive = yes
+		is_direct_subject_of = root
+		is_subject_type = subject_type_puppet
+	}
 }
 
 sb_bst_boer_free_sta_route = {

@@ -1,0 +1,292 @@
+﻿namespace = sb_swazi_border
+
+# =============================================================================
+# Spes Bona - Swazi Border Pressure
+# =============================================================================
+# Ownership: TRN-initiated border claims after Transvaal Unity.
+# Cross-ref: common/scripted_effects/sb_swazi_effects.txt
+# =============================================================================
+
+sb_swazi_border.1 = {
+	type = country_event
+	placement = root
+
+	title = sb_swazi_border.1.t
+	desc = sb_swazi_border.1.d
+	flavor = sb_swazi_border.1.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:TRN
+		is_country_alive = yes
+		is_subject = no
+		has_variable = sb_transvaal_unity_resolved_var
+		c:SWZ ?= {
+			is_country_alive = yes
+			is_subject = no
+			NOT = { has_variable = sb_swazi_boer_pressure_resolved_var }
+			OR = {
+				p:x73CDE8.state.owner = this
+				p:x25A652.state.owner = this
+				p:x50A011.state.owner = this
+				p:x452304.state.owner = this
+			}
+		}
+	}
+
+		option = {
+			name = sb_swazi_border.1.a
+			default_option = yes
+			c:SWZ ?= {
+				trigger_event = { id = sb_swazi_border.2 days = 7 popup = yes }
+			}
+		ai_chance = {
+			base = 80
+			modifier = {
+				factor = 0
+				sb_frontier_ai_behavior_off = yes
+			}
+			modifier = {
+				factor = 100
+				sb_frontier_ai_behavior_strict_historical = yes
+			}
+		}
+	}
+
+	option = {
+		name = sb_swazi_border.1.b
+		c:SWZ ?= {
+			set_variable = sb_swazi_boer_pressure_resolved_var
+			change_relations = {
+				country = c:TRN
+				value = 25
+			}
+		}
+		ai_chance = {
+			base = 20
+			modifier = {
+				factor = 100
+				sb_frontier_ai_behavior_off = yes
+			}
+			modifier = {
+				factor = 0
+				sb_frontier_ai_behavior_strict_historical = yes
+			}
+		}
+	}
+}
+
+sb_swazi_border.2 = {
+	type = country_event
+	placement = root
+
+	title = sb_swazi_border.2.t
+	desc = sb_swazi_border.2.d
+	flavor = sb_swazi_border.2.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:SWZ
+		is_country_alive = yes
+		is_subject = no
+		NOT = { has_variable = sb_swazi_boer_pressure_resolved_var }
+		c:TRN ?= {
+			is_country_alive = yes
+			has_variable = sb_transvaal_unity_resolved_var
+		}
+		OR = {
+			p:x73CDE8.state.owner = root
+			p:x25A652.state.owner = root
+			p:x50A011.state.owner = root
+			p:x452304.state.owner = root
+		}
+	}
+
+		option = {
+			name = sb_swazi_border.2.a
+			default_option = yes
+			c:TRN ?= {
+				trigger_event = { id = sb_swazi_border.3 days = 7 popup = yes }
+			}
+		ai_chance = {
+			base = 45
+			modifier = {
+				factor = 1.75
+				has_journal_entry = je_sb_adopt_firearms
+				NOT = { has_variable = sb_firearms_modernized_var }
+			}
+			modifier = {
+				factor = 1.5
+				c:TRN ?= {
+					gdp > {
+						value = root.gdp
+						multiply = 1.5
+					}
+				}
+			}
+		}
+	}
+
+		option = {
+			name = sb_swazi_border.2.b
+			c:TRN ?= {
+				trigger_event = { id = sb_swazi_border.4 days = 7 popup = yes }
+			}
+		ai_chance = {
+			base = 55
+			modifier = {
+				factor = 0.5
+				has_journal_entry = je_sb_adopt_firearms
+				NOT = { has_variable = sb_firearms_modernized_var }
+			}
+			modifier = {
+				factor = 0.7
+				c:TRN ?= {
+					gdp > {
+						value = root.gdp
+						multiply = 1.5
+					}
+				}
+			}
+		}
+	}
+}
+
+sb_swazi_border.3 = {
+	type = country_event
+	placement = root
+
+	title = sb_swazi_border.3.t
+	desc = sb_swazi_border.3.d
+	flavor = sb_swazi_border.3.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:TRN
+		is_country_alive = yes
+		has_variable = sb_transvaal_unity_resolved_var
+		c:SWZ ?= {
+			is_country_alive = yes
+			is_subject = no
+			NOT = { has_variable = sb_swazi_boer_pressure_resolved_var }
+		}
+	}
+
+	option = {
+		name = sb_swazi_border.3.a
+		default_option = yes
+		c:SWZ ?= {
+			sb_swazi_apply_boer_buy_time_settlement = yes
+		}
+		ai_chance = {
+			base = 90
+		}
+	}
+
+	option = {
+		name = sb_swazi_border.3.b
+		c:SWZ ?= {
+			set_variable = sb_swazi_boer_pressure_resolved_var
+			set_variable = sb_swazi_boer_resisted_var
+			if = {
+				limit = { has_variable = sb_swazi_boer_land_sold_var }
+				remove_variable = sb_swazi_boer_land_sold_var
+			}
+		}
+		s:STATE_EAST_TRANSVAAL = {
+			add_claim = root
+		}
+		sb_trn_apply_swazi_reject_posture = yes
+		add_radicals = {
+			value = 0.20
+			strata = upper
+		}
+		add_modifier = {
+			name = sb_trn_swazi_frontier_overreach
+			months = 60
+		}
+		ai_chance = {
+			base = 10
+			modifier = {
+				factor = 2
+				NOT = {
+					OR = {
+						ig:ig_landowners ?= { ig_approval >= 14 }
+						ig:ig_armed_forces ?= { ig_approval >= 14 }
+					}
+				}
+				OR = {
+					ig:ig_landowners ?= { ig_approval >= 9 }
+					ig:ig_armed_forces ?= { ig_approval >= 9 }
+				}
+			}
+			modifier = {
+				factor = 4
+				OR = {
+					ig:ig_landowners ?= { ig_approval >= 14 }
+					ig:ig_armed_forces ?= { ig_approval >= 14 }
+				}
+			}
+		}
+	}
+}
+
+sb_swazi_border.4 = {
+	type = country_event
+	placement = root
+
+	title = sb_swazi_border.4.t
+	desc = sb_swazi_border.4.d
+	flavor = sb_swazi_border.4.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:TRN
+		is_country_alive = yes
+		has_variable = sb_transvaal_unity_resolved_var
+		c:SWZ ?= {
+			is_country_alive = yes
+			is_subject = no
+			NOT = { has_variable = sb_swazi_boer_pressure_resolved_var }
+		}
+	}
+
+	option = {
+		name = sb_swazi_border.4.a
+		default_option = yes
+		s:STATE_EAST_TRANSVAAL = {
+			add_claim = root
+		}
+		c:SWZ ?= {
+			sb_swazi_apply_boer_resistance = yes
+		}
+	}
+}

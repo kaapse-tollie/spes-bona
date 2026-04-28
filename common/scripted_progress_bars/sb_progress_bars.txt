@@ -573,7 +573,7 @@ sb_cape_balance_bar = {
 			if = {
 				limit = {
 					has_variable = sb_cape_balance_current
-					var:sb_cape_balance_current >= 25
+					var:sb_cape_balance_current >= 50
 				}
 				subtract = {
 					desc = "sb_cape_central_tendency"
@@ -584,7 +584,7 @@ sb_cape_balance_bar = {
 			if = {
 				limit = {
 					has_variable = sb_cape_balance_current
-					var:sb_cape_balance_current <= -25
+					var:sb_cape_balance_current <= -50
 				}
 				add = {
 					desc = "sb_cape_central_tendency"
@@ -623,6 +623,16 @@ sb_zulu_dynastic_stability_bar = {
 			}
 			add = {
 				desc = "sb_zulu_drift_command"
+				value = 0.5
+			}
+		}
+
+		if = {
+			limit = {
+				is_at_war = yes
+			}
+			add = {
+				desc = "sb_zulu_drift_at_war"
 				value = 0.5
 			}
 		}
@@ -693,7 +703,7 @@ sb_zulu_dynastic_stability_bar = {
 			}
 			add = {
 				desc = "sb_zulu_drift_compliant"
-				value = -0.5
+				value = -1 #down from -0.5, otherwise too quick for mpande
 			}
 		}
 
@@ -703,7 +713,7 @@ sb_zulu_dynastic_stability_bar = {
 			}
 			add = {
 				desc = "sb_zulu_drift_tactful"
-				value = 1
+					value = 0.5 # down from 1 otherwise too quick for mpande
 			}
 		}
 
@@ -729,7 +739,7 @@ sb_zulu_dynastic_stability_bar = {
 
 		if = {
 			limit = {
-				ruler = { popularity >= 50 }
+				ruler = { popularity > 50 }
 			}
 			add = {
 				desc = "sb_zulu_drift_popular_ruler"
@@ -738,7 +748,7 @@ sb_zulu_dynastic_stability_bar = {
 		}
 		else_if = {
 			limit = {
-				ruler = { popularity >= 25 }
+				ruler = { popularity > 25 }
 			}
 			add = {
 				desc = "sb_zulu_drift_respected_ruler"
@@ -748,7 +758,7 @@ sb_zulu_dynastic_stability_bar = {
 
 		if = {
 			limit = {
-				ruler = { popularity <= -50 }
+				ruler = { popularity < -50 }
 			}
 			add = {
 				desc = "sb_zulu_drift_hated_ruler"
@@ -757,7 +767,7 @@ sb_zulu_dynastic_stability_bar = {
 		}
 		else_if = {
 			limit = {
-				ruler = { popularity <= -25 }
+				ruler = { popularity < -25 }
 			}
 			add = {
 				desc = "sb_zulu_drift_unpopular_ruler"

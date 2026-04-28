@@ -30,80 +30,59 @@ sb_frontier_ai_wars.010 = {
 	}
 
 	immediate = {
-		set_variable = {
-			name = sb_ora_phl_scripted_play_opening_var
-			days = 30
+		if = {
+			limit = {
+				sb_frontier_ai_behavior_dynamic_historical = yes
+			}
+			random_list = {
+				80 = {
+					add_modifier = {
+						name = sb_ora_scripted_frontier_edge
+						months = 36
+					}
+				}
+				20 = { }
+			}
 		}
-		create_diplomatic_play = {
-			type = dp_return_state
-			target_country = c:PHL
-			target_state = s:STATE_VRYSTAAT.region_state:PHL
-
-			add_war_goal = {
-				holder = root
+		if = {
+			limit = {
+				sb_frontier_ai_behavior_strict_historical = yes
+			}
+			add_modifier = {
+				name = sb_ora_scripted_frontier_edge
+				months = 36
+			}
+		}
+		if = {
+			limit = { sb_ai_trn_available_for_ora_scripted_play = yes }
+			create_diplomatic_play = {
+				type = dp_return_state
 				target_country = c:PHL
-				type = humiliation
-			}
-		}
-		if = {
-			limit = {
-				c:TRN ?= {
-					is_country_alive = yes
-					is_ai = yes
-				}
-			}
-			random_diplomatic_play = {
-				limit = {
-					is_diplomatic_play_type = dp_return_state
-					initiator = { c:ORA ?= this }
-					target = { c:PHL ?= this }
-					NOT = {
-						any_scope_play_involved = {
-							c:TRN ?= THIS
-						}
-					}
-				}
+				target_state = s:STATE_VRYSTAAT.region_state:PHL
+
 				add_initiator_backers = { c:TRN }
+
+				add_war_goal = {
+					holder = root
+					target_country = c:PHL
+					type = humiliation
+				}
 			}
 		}
-		trigger_event = { id = sb_frontier_ai_wars.011 days = 1 popup = no }
-		trigger_event = { id = sb_frontier_ai_wars.011 days = 7 popup = no }
+		else = {
+			create_diplomatic_play = {
+				type = dp_return_state
+				target_country = c:PHL
+				target_state = s:STATE_VRYSTAAT.region_state:PHL
+
+				add_war_goal = {
+					holder = root
+					target_country = c:PHL
+					type = humiliation
+				}
+			}
+		}
 		set_variable = sb_ora_phl_scripted_war_resolved_var
-	}
-}
-
-sb_frontier_ai_wars.011 = {
-	type = country_event
-	hidden = yes
-
-	trigger = {
-		country_definition = cd:ORA
-		is_country_alive = yes
-		has_variable = sb_ora_phl_scripted_play_opening_var
-	}
-
-	immediate = {
-		if = {
-			limit = {
-				c:TRN ?= {
-					is_country_alive = yes
-					is_ai = yes
-				}
-			}
-			random_diplomatic_play = {
-				limit = {
-					is_diplomatic_play_type = dp_return_state
-					initiator = { c:ORA ?= this }
-					target = { c:PHL ?= this }
-					NOT = {
-						any_scope_play_involved = {
-							c:TRN ?= THIS
-						}
-					}
-				}
-				add_initiator_backers = { c:TRN }
-			}
-		}
 	}
 }
 
@@ -126,15 +105,11 @@ sb_frontier_ai_wars.020 = {
 			is_subject = no
 			is_at_war = no
 			is_active_in_diplomatic_play = no
-			aggressive_diplomatic_plays_permitted = yes
 		}
+		sb_ai_bst_available_for_ora_return_play = yes
 	}
 
 	immediate = {
-		set_variable = {
-			name = sb_ora_bst_1848_scripted_play_opening_var
-			days = 30
-		}
 		if = {
 			limit = {
 				sb_frontier_ai_behavior_dynamic_historical = yes
@@ -148,79 +123,54 @@ sb_frontier_ai_wars.020 = {
 						}
 					}
 				}
-				80 = { }
-			}
-		}
-		create_diplomatic_play = {
-			type = dp_sb_ora_bst_return_state_locked
-			target_country = c:BST
-			target_state = s:STATE_VRYSTAAT.region_state:BST
-
-			add_war_goal = {
-				holder = c:BST
-				target_state = s:STATE_VRYSTAAT.region_state:ORA
-				type = return_state
+				80 = {
+					add_modifier = {
+						name = sb_ora_scripted_frontier_edge
+						months = 36
+					}
+				}
 			}
 		}
 		if = {
 			limit = {
-				c:TRN ?= {
-					is_country_alive = yes
-					is_ai = yes
-				}
+				sb_frontier_ai_behavior_strict_historical = yes
 			}
-			random_diplomatic_play = {
-				limit = {
-					is_diplomatic_play_type = dp_sb_ora_bst_return_state_locked
-					initiator = { c:ORA ?= this }
-					target = { c:BST ?= this }
-					NOT = {
-						any_scope_play_involved = {
-							c:TRN ?= THIS
-						}
-					}
-				}
-				add_initiator_backers = { c:TRN }
+			add_modifier = {
+				name = sb_ora_scripted_frontier_edge
+				months = 36
 			}
 		}
-		trigger_event = { id = sb_frontier_ai_wars.021 days = 1 popup = no }
-		trigger_event = { id = sb_frontier_ai_wars.021 days = 7 popup = no }
+		if = {
+			limit = { sb_ai_trn_available_for_ora_scripted_play = yes }
+			create_diplomatic_play = {
+				type = dp_sb_ora_bst_return_state_locked
+				target_country = c:BST
+				target_state = s:STATE_VRYSTAAT.region_state:BST
+
+				add_initiator_backers = { c:TRN }
+
+				add_war_goal = {
+					holder = c:BST
+					target_state = s:STATE_VRYSTAAT.region_state:ORA
+					type = return_state
+				}
+			}
+		}
+		else = {
+			create_diplomatic_play = {
+				type = dp_sb_ora_bst_return_state_locked
+				target_country = c:BST
+				target_state = s:STATE_VRYSTAAT.region_state:BST
+
+				add_war_goal = {
+					holder = c:BST
+					target_state = s:STATE_VRYSTAAT.region_state:ORA
+					type = return_state
+				}
+			}
+		}
+		set_variable = sb_ora_bst_scripted_war_1848_created_var
 		set_variable = sb_ora_bst_scripted_war_1848_resolved_var
-	}
-}
-
-sb_frontier_ai_wars.021 = {
-	type = country_event
-	hidden = yes
-
-	trigger = {
-		country_definition = cd:ORA
-		is_country_alive = yes
-		has_variable = sb_ora_bst_1848_scripted_play_opening_var
-	}
-
-	immediate = {
-		if = {
-			limit = {
-				c:TRN ?= {
-					is_country_alive = yes
-					is_ai = yes
-				}
-			}
-			random_diplomatic_play = {
-				limit = {
-					is_diplomatic_play_type = dp_sb_ora_bst_return_state_locked
-					initiator = { c:ORA ?= this }
-					target = { c:BST ?= this }
-					NOT = {
-						any_scope_play_involved = {
-							c:TRN ?= THIS
-						}
-					}
-				}
-				add_initiator_backers = { c:TRN }
-			}
-		}
 	}
 }
 
@@ -261,7 +211,21 @@ sb_frontier_ai_wars.030 = {
 						}
 					}
 				}
-				80 = { }
+				80 = {
+					add_modifier = {
+						name = sb_ora_scripted_annex_war_overreach
+						months = 48
+					}
+				}
+			}
+		}
+		if = {
+			limit = {
+				sb_frontier_ai_behavior_strict_historical = yes
+			}
+			add_modifier = {
+				name = sb_ora_scripted_annex_war_overreach
+				months = 48
 			}
 		}
 		create_diplomatic_play = {
@@ -301,6 +265,22 @@ sb_frontier_ai_wars.040 = {
 			type = dp_annex_war
 			target_country = c:GZA
 		}
+	}
+}
+
+sb_frontier_ai_wars.900 = {
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		country_definition = cd:TRN
+		is_ai = yes
+		is_country_alive = yes
+		is_at_war = yes
+	}
+
+	immediate = {
+		sb_trn_deploy_armies_to_active_frontier_war = yes
 	}
 }
 
@@ -423,7 +403,7 @@ sb_frontier_ai_wars.120 = {
 	immediate = {
 		if = {
 			limit = {
-				game_date < 1881.1.1
+				game_date < 1880.1.1
 				any_scope_state = {
 					state_region = s:STATE_EASTERN_CAPE
 					num_provinces >= 1
@@ -452,7 +432,7 @@ sb_frontier_ai_wars.120 = {
 					remove_variable = sb_xhosa_frontier_war_9_scheduled_var
 				}
 				if = {
-					limit = { game_date >= 1881.1.1 }
+					limit = { game_date >= 1880.1.1 }
 					set_variable = sb_xhosa_frontier_war_9_resolved_var
 				}
 			}

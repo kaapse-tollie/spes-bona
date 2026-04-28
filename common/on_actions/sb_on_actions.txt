@@ -53,6 +53,10 @@ on_monthly_pulse_country = {
 	on_actions = { sb_on_cape_monthly_pulse_country sb_on_trek_monthly_pulse_country sb_on_zpb_monthly_pulse_country sb_on_gbr_colonial_offices_monthly_pulse_country sb_on_namibia_monthly_pulse_country }
 }
 
+on_election_campaign_end = {
+	on_actions = { sb_on_martinus_ora_election_end }
+}
+
 on_colony_created = {
 	on_actions = { sb_on_spes_bona_colony_created }
 }
@@ -83,6 +87,10 @@ on_war_end = {
 
 on_country_formed = {
 	on_actions = { sb_on_spes_bona_country_formed }
+}
+
+on_law_activated = {
+	on_actions = { sb_on_boer_convention_law_activated }
 }
 
 sb_on_game_started = {
@@ -385,6 +393,19 @@ sb_on_game_started = {
 			}
 		}
 
+	}
+}
+
+sb_on_boer_convention_law_activated = {
+	effect = {
+		owner = {
+			if = {
+				limit = {
+					sb_should_queue_post_recognition_slavery_response = yes
+				}
+				sb_queue_gbr_highveld_slavery_response = yes
+			}
+		}
 	}
 }
 
@@ -752,29 +773,29 @@ sb_on_cape_monthly_pulse_country = {
 					if = {
 						limit = {
 							OR = {
-							NOT = { c:XHG ?= { is_country_alive = yes } }
-							c:XHG ?= {
-								NOT = {
-									any_scope_state = {
-										state_region = s:STATE_EASTERN_CAPE
-										num_provinces >= 1
+								NOT = { c:XHG ?= { is_country_alive = yes } }
+								c:XHG ?= {
+									NOT = {
+										any_scope_state = {
+											state_region = s:STATE_EASTERN_CAPE
+											num_provinces >= 1
+										}
 									}
 								}
 							}
 						}
+						set_variable = sb_xhosa_frontier_war_9_resolved_var
+					}
+					else_if = {
+						limit = {
+							game_date >= 1880.1.1
 						}
 						set_variable = sb_xhosa_frontier_war_9_resolved_var
 					}
 					else_if = {
 						limit = {
-							game_date >= 1881.1.1
-						}
-						set_variable = sb_xhosa_frontier_war_9_resolved_var
-					}
-					else_if = {
-						limit = {
-							game_date >= 1860.1.1
-							game_date < 1881.1.1
+							game_date >= 1875.1.1
+							game_date < 1880.1.1
 							NOT = { has_variable = sb_xhosa_frontier_war_9_scheduled_var }
 							has_technology_researched = colonization
 							c:XHG ?= {
@@ -790,10 +811,10 @@ sb_on_cape_monthly_pulse_country = {
 						c:XHG ?= {
 							random_list = {
 								1 = { trigger_event = { id = sb_frontier_ai_wars.120 days = 30 } }
-								1 = { trigger_event = { id = sb_frontier_ai_wars.120 days = 180 } }
 								1 = { trigger_event = { id = sb_frontier_ai_wars.120 days = 365 } }
 								1 = { trigger_event = { id = sb_frontier_ai_wars.120 days = 730 } }
 								1 = { trigger_event = { id = sb_frontier_ai_wars.120 days = 1095 } }
+								1 = { trigger_event = { id = sb_frontier_ai_wars.120 days = 1460 } }
 							}
 						}
 					}
@@ -1216,7 +1237,7 @@ sb_on_cape_monthly_pulse_country = {
 				c:TRN ?= {
 					set_variable = sb_zoutpansberg_spawned_var
 					}
-					trigger_event = { id = sb_boer_republics.110 days = 540 popup = yes }
+					trigger_event = { id = sb_boer_republics.110 days = 180 popup = yes }
 				}
 			}
 		}
@@ -1430,30 +1451,16 @@ sb_on_trek_monthly_pulse_country = {
 			}
 		}
 
-		# Legacy compatibility for pre-V2 saves where TRN could still appear in the
-		# Natal crisis. Fresh V2 starts should never set this up, but keeping the
-		# hook avoids stranding those older branches.
-		if = {
-			limit = {
-				country_definition = cd:TRN
-				is_ai = yes
-				sb_frontier_ai_behavior_dynamic_historical = yes
-				has_variable = sb_trn_joined_natal_war_var
-				is_at_war = yes
+			if = {
+				limit = {
+					country_definition = cd:ORA
+					is_ai = yes
+					sb_frontier_ai_behavior_dynamic_historical = yes
+					has_variable = sb_natal_war_active_var
+					is_at_war = yes
+				}
+				sb_ensure_ora_ai_natal_front_commitment = yes
 			}
-			sb_ensure_trn_ai_natal_front_commitment = yes
-		}
-
-		if = {
-			limit = {
-				country_definition = cd:ORA
-				is_ai = yes
-				sb_frontier_ai_behavior_dynamic_historical = yes
-				has_variable = sb_natal_war_active_var
-				is_at_war = yes
-			}
-			sb_ensure_ora_ai_natal_front_commitment = yes
-		}
 
 		# ORA opens the Natal diplomacy out of the January monthly pulse so the
 		# Retief-at-uMgungundlovu approach lands around February 1838 in practice.
@@ -1549,14 +1556,15 @@ sb_on_trek_monthly_pulse_country = {
 			limit = {
 				sb_martinus_trn_can_open_legal_union = yes
 				NOT = { has_variable = sb_martinus_legal_union_pending_var }
+				c:ORA ?= {
+					NOT = { has_variable = sb_martinus_legal_union_pending_var }
+				}
 			}
 			set_variable = {
 				name = sb_martinus_legal_union_pending_var
-				days = 120
+				months = 12
 			}
-			c:ORA ?= {
-				trigger_event = { id = sb_martinus_confederation.080 days = 14 popup = yes }
-			}
+			trigger_event = { id = sb_martinus_confederation.080 days = 1 popup = yes }
 		}
 
 		if = {
@@ -1584,7 +1592,7 @@ sb_on_trek_monthly_pulse_country = {
 							NOT = { is_country_alive = yes }
 							NOT = { is_direct_subject_of = root }
 							NOT = { is_subject_type = subject_type_sb_boer_presidential_union }
-							NOT = { sb_martinus_trn_ruler_is_pretorius = yes }
+							NOT = { sb_martinus_ora_ruler_is_pretorius = yes }
 						}
 					}
 				}
@@ -1686,6 +1694,20 @@ sb_on_trek_monthly_pulse_country = {
 				sb_frontier_ai_scripting_enabled = yes
 				country_definition = cd:ORA
 				is_ai = yes
+				has_variable = sb_ora_bst_scripted_war_1848_resolved_var
+				NOT = { has_variable = sb_ora_bst_scripted_war_1848_created_var }
+				game_date >= 1847.1.1
+				game_date < 1856.1.1
+				sb_ai_bst_available_for_ora_return_play = yes
+			}
+			remove_variable = sb_ora_bst_scripted_war_1848_resolved_var
+		}
+
+		if = {
+			limit = {
+				sb_frontier_ai_scripting_enabled = yes
+				country_definition = cd:ORA
+				is_ai = yes
 				is_country_alive = yes
 				is_subject = no
 				is_at_war = no
@@ -1698,19 +1720,7 @@ sb_on_trek_monthly_pulse_country = {
 						is_ai = yes
 					}
 				}
-				c:BST ?= {
-					is_country_alive = yes
-					is_ai = yes
-					is_subject = no
-					is_at_war = no
-					aggressive_diplomatic_plays_permitted = yes
-					any_scope_state = {
-						state_region = s:STATE_VRYSTAAT
-					}
-				}
-				any_scope_state = {
-					state_region = s:STATE_VRYSTAAT
-				}
+				sb_ai_bst_available_for_ora_return_play = yes
 			}
 			trigger_event = { id = sb_frontier_ai_wars.020 days = 14 }
 		}
@@ -1749,6 +1759,29 @@ sb_on_trek_monthly_pulse_country = {
 	}
 }
 
+sb_on_martinus_ora_election_end = {
+	effect = {
+		if = {
+			limit = {
+				country_definition = cd:ORA
+				has_variable = sb_martinus_legal_union_pending_var
+			}
+			if = {
+				limit = {
+					sb_martinus_ora_ruler_is_pretorius = yes
+					c:TRN ?= {
+						sb_martinus_trn_can_complete_legal_union = yes
+					}
+				}
+				sb_martinus_resolve_legal_union_success = yes
+			}
+			else = {
+				sb_martinus_resolve_legal_union_failure = yes
+			}
+		}
+	}
+}
+
 # Post-trek republican recognition and Zoutpansberg crisis timing.
 sb_on_zpb_monthly_pulse_country = {
 	effect = {
@@ -1757,8 +1790,8 @@ sb_on_zpb_monthly_pulse_country = {
 				country_definition = cd:TRN
 				is_subject = no
 				is_at_war = no
-				NOT = { has_journal_entry = je_sb_great_trek }
-				NOT = { has_variable = sb_early_republic_var }
+					NOT = { has_journal_entry = je_sb_great_trek }
+					NOT = { has_variable = sb_early_republic_var }
 					NOT = { has_variable = sb_sand_river_convention_pending_var }
 					NOT = { has_variable = sb_sand_river_convention_resolved_var }
 					OR = {
@@ -1768,11 +1801,20 @@ sb_on_zpb_monthly_pulse_country = {
 							is_homeland = cu:boer
 						}
 					}
+					sb_swazi_border_pressure_cleared_for_sand_river = yes
 					game_date >= 1852.1.1
 				}
-			set_variable = sb_sand_river_convention_pending_var
-			trigger_event = { id = sb_boer_conventions.140 days = 21 popup = yes }
-		}
+				set_variable = sb_sand_river_convention_pending_var
+				random_list = {
+					1 = { trigger_event = { id = sb_boer_conventions.140 days = 60 popup = yes } }
+					1 = { trigger_event = { id = sb_boer_conventions.140 days = 90 popup = yes } }
+					1 = { trigger_event = { id = sb_boer_conventions.140 days = 120 popup = yes } }
+					1 = { trigger_event = { id = sb_boer_conventions.140 days = 150 popup = yes } }
+					1 = { trigger_event = { id = sb_boer_conventions.140 days = 180 popup = yes } }
+					1 = { trigger_event = { id = sb_boer_conventions.140 days = 210 popup = yes } }
+					1 = { trigger_event = { id = sb_boer_conventions.140 days = 240 popup = yes } }
+				}
+			}
 
 		if = {
 			limit = {
@@ -1791,17 +1833,19 @@ sb_on_zpb_monthly_pulse_country = {
 
 		if = {
 			limit = {
-				country_definition = cd:TRN
-				is_subject = no
-				is_at_war = no
-				is_country_type = recognized
-				has_variable = sb_sand_river_convention_accepted_var
-				NOT = { has_variable = sb_zpb_lawlessness_pending_var }
-				NOT = { has_variable = sb_zpb_lawlessness_resolved_var }
-				NOT = { has_variable = sb_zpb_crackdown_active_var }
-				NOT = { has_variable = sb_zpb_unity_active_var }
-				NOT = { has_journal_entry = je_sb_zpb_crackdown }
-				NOT = { has_journal_entry = je_sb_zpb_unity }
+					country_definition = cd:TRN
+					is_subject = no
+					is_at_war = no
+					is_active_in_diplomatic_play = no
+					is_country_type = recognized
+					has_variable = sb_sand_river_convention_accepted_var
+					has_law = law_type:law_slavery_banned
+					NOT = { has_variable = sb_zpb_lawlessness_pending_var }
+					NOT = { has_variable = sb_zpb_lawlessness_resolved_var }
+					NOT = { has_variable = sb_zpb_crackdown_active_var }
+					NOT = { has_variable = sb_zpb_unity_active_var }
+					NOT = { has_journal_entry = je_sb_zpb_crackdown }
+					NOT = { has_journal_entry = je_sb_zpb_unity }
 				c:ZPB ?= {
 					is_country_alive = yes
 					is_subject = no
@@ -1810,10 +1854,15 @@ sb_on_zpb_monthly_pulse_country = {
 						has_law = law_type:law_legacy_slavery
 					}
 				}
+				}
+				set_variable = sb_zpb_lawlessness_pending_var
+				random_list = {
+					1 = { trigger_event = { id = sb_boer_conventions.143 days = 45 popup = yes } }
+					1 = { trigger_event = { id = sb_boer_conventions.143 days = 60 popup = yes } }
+					1 = { trigger_event = { id = sb_boer_conventions.143 days = 90 popup = yes } }
+					1 = { trigger_event = { id = sb_boer_conventions.143 days = 120 popup = yes } }
+				}
 			}
-			set_variable = sb_zpb_lawlessness_pending_var
-			trigger_event = { id = sb_boer_conventions.143 days = 14 popup = yes }
-		}
 	}
 }
 
@@ -1957,6 +2006,7 @@ sb_on_spes_bona_diplomatic_play_started = {
 				}
 			}
 		}
+		sb_schedule_trn_frontier_deployment_for_play = yes
 	}
 }
 
@@ -1973,6 +2023,18 @@ sb_on_spes_bona_country_formed = {
 
 sb_on_spes_bona_diplo_play_war_start = {
 	effect = {
+		sb_schedule_trn_frontier_deployment_for_play = yes
+		c:TRN ?= {
+			if = {
+				limit = {
+					is_country_alive = yes
+					is_ai = yes
+				}
+				trigger_event = { id = sb_frontier_ai_wars.900 days = 1 }
+				trigger_event = { id = sb_frontier_ai_wars.900 days = 7 }
+				trigger_event = { id = sb_frontier_ai_wars.900 days = 21 }
+			}
+		}
 		if = {
 			limit = {
 				is_diplomatic_play_type = dp_sb_natal_crisis

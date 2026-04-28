@@ -1,32 +1,48 @@
 ﻿# Spes Bona - BST frontier, protection, and STA effects
 
 sb_bst_execute_oranje_raid = {
-	set_variable = sb_bst_oranje_raid_cooldown_var
-	trigger_event = { id = sb_bst_frontier.001 days = 1095 popup = no }
+	hidden_effect = {
+		set_variable = {
+			name = sb_bst_oranje_raid_cooldown_var
+			days = 365
+		}
+	}
 
 	c:ORA ?= {
 		random_scope_state = {
 			limit = {
 				state_region = s:STATE_VRYSTAAT
 			}
-			add_radicals_in_state = {
-				value = {
-					add = 0.01
-				}
-			}
-			kill_population_percent_in_state = {
-				percent = 0.001
+			kill_population_in_state = {
+				value = 10
 			}
 		}
-		add_treasury = -5000
-		add_modifier = {
-			name = sb_bst_frontier_raided
-			months = 12
-		}
+		add_treasury = -1000
 		trigger_event = { id = sb_bst_frontier.010 days = 1 popup = yes }
 	}
 
-	add_treasury = 5000
+	add_treasury = 1000
+	random_scope_state = {
+		limit = {
+			OR = {
+				state_region = s:STATE_VRYSTAAT
+				state_region = s:STATE_DRAKENSBERG
+			}
+		}
+		kill_population_in_state = {
+			value = 50
+		}
+	}
+	if = {
+		limit = {
+			has_journal_entry = je_sb_adopt_firearms
+			NOT = { has_variable = sb_firearms_modernized_var }
+		}
+		custom_tooltip = sb_bst_raid_firearms_progress_tt
+		hidden_effect = {
+			sb_boost_firearms_progress_raid = yes
+		}
+	}
 }
 
 sb_bst_restore_gbr_protectorate = {

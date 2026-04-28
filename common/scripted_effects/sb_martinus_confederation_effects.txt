@@ -34,6 +34,112 @@
 	}
 }
 
+sb_martinus_ensure_ora_pretorius_candidate = {
+	if = {
+		limit = {
+			NOT = {
+				any_scope_character = {
+					has_template = ORA_marthinus_wessel_pretorius
+				}
+			}
+		}
+		create_character = {
+			template = ORA_marthinus_wessel_pretorius
+			ig_leader = yes
+			interest_group = ig_landowners
+			ideology = ideology_sb_volksraad_elitism_leader
+		}
+	}
+	random_scope_character = {
+		limit = {
+			has_template = ORA_marthinus_wessel_pretorius
+			is_character_alive = yes
+		}
+		if = {
+			limit = {
+				NOT = { has_role = politician }
+			}
+			add_character_role = politician
+		}
+		set_interest_group = c:ORA.ig:ig_landowners
+		set_as_interest_group_leader = yes
+	}
+}
+
+sb_martinus_prepare_ora_pretorius_candidate = {
+	sb_martinus_ensure_ora_pretorius_candidate = yes
+	add_modifier = {
+		name = sb_ora_pretorius_groot_boere_campaign
+		months = 36
+	}
+}
+
+sb_martinus_restore_ora_historical_groot_boere_leader = {
+	if = {
+		limit = {
+			NOT = {
+				any_scope_character = {
+					has_template = ORA_johannes_brand
+				}
+			}
+		}
+		create_character = {
+			template = ORA_johannes_brand
+			ig_leader = yes
+			interest_group = ig_landowners
+		}
+	}
+	random_scope_character = {
+		limit = {
+			has_template = ORA_johannes_brand
+			is_character_alive = yes
+		}
+		if = {
+			limit = {
+				NOT = { has_role = politician }
+			}
+			add_character_role = politician
+		}
+		set_interest_group = c:ORA.ig:ig_landowners
+		set_as_interest_group_leader = yes
+	}
+}
+
+sb_martinus_resolve_legal_union_failure = {
+	sb_martinus_restore_ora_historical_groot_boere_leader = yes
+	set_variable = sb_martinus_ora_separate_republic_path_var
+	if = {
+		limit = { has_variable = sb_martinus_legal_union_pending_var }
+		remove_variable = sb_martinus_legal_union_pending_var
+	}
+	add_modifier = {
+		name = sb_ora_separate_republic
+		months = 120
+	}
+	c:TRN ?= {
+		if = {
+			limit = { has_variable = sb_martinus_legal_union_pending_var }
+			remove_variable = sb_martinus_legal_union_pending_var
+		}
+		set_variable = sb_martinus_legal_union_resolved_var
+	}
+}
+
+sb_martinus_resolve_legal_union_success = {
+	if = {
+		limit = { has_variable = sb_martinus_legal_union_pending_var }
+		remove_variable = sb_martinus_legal_union_pending_var
+	}
+	c:TRN ?= {
+		if = {
+			limit = { has_variable = sb_martinus_legal_union_pending_var }
+			remove_variable = sb_martinus_legal_union_pending_var
+		}
+		set_variable = sb_martinus_legal_union_resolved_var
+		sb_martinus_create_presidential_union_with_ora = yes
+	}
+}
+
 sb_martinus_coercive_compromise = {
 	set_variable = sb_martinus_ambition_resolved_var
 	if = {
@@ -56,6 +162,82 @@ sb_martinus_coercive_compromise = {
 		change_relations = {
 			country = c:TRN
 			value = 20
+		}
+	}
+}
+
+sb_martinus_break_boer_war_path_compacts = {
+	sb_martinus_withdraw_trn_compact_with_ora = yes
+	if = {
+		limit = {
+			c:LYD ?= {
+				is_country_alive = yes
+				has_variable = sb_martinus_backed_ora_var
+			}
+		}
+		sb_martinus_withdraw_trn_compact_with_lyd = yes
+	}
+	if = {
+		limit = {
+			c:ZPB ?= {
+				is_country_alive = yes
+				has_variable = sb_martinus_backed_ora_var
+			}
+		}
+		sb_martinus_withdraw_trn_compact_with_zpb = yes
+	}
+}
+
+sb_martinus_withdraw_trn_compact_with_ora = {
+	c:ORA ?= {
+		every_scope_treaty = {
+			limit = {
+				binds = c:TRN
+				any_scope_article = {
+					OR = {
+						has_type = defensive_pact
+						has_type = alliance
+						has_type = transit_rights
+					}
+				}
+			}
+			withdraw = { country = c:ORA }
+		}
+	}
+}
+
+sb_martinus_withdraw_trn_compact_with_lyd = {
+	c:LYD ?= {
+		every_scope_treaty = {
+			limit = {
+				binds = c:TRN
+				any_scope_article = {
+					OR = {
+						has_type = defensive_pact
+						has_type = alliance
+						has_type = transit_rights
+					}
+				}
+			}
+			withdraw = { country = c:LYD }
+		}
+	}
+}
+
+sb_martinus_withdraw_trn_compact_with_zpb = {
+	c:ZPB ?= {
+		every_scope_treaty = {
+			limit = {
+				binds = c:TRN
+				any_scope_article = {
+					OR = {
+						has_type = defensive_pact
+						has_type = alliance
+						has_type = transit_rights
+					}
+				}
+			}
+			withdraw = { country = c:ZPB }
 		}
 	}
 }

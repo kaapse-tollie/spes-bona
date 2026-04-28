@@ -5,6 +5,23 @@
 	}
 }
 
+sb_martinus_ora_ruler_is_pretorius = {
+	exists = ruler
+	ruler = {
+		OR = {
+			has_template = ORA_marthinus_wessel_pretorius
+			has_template = TRN_marthinus_wessel_pretorius
+		}
+	}
+}
+
+sb_martinus_trn_has_east_transvaal_consolidation = {
+	OR = {
+		has_variable = sb_transvaal_unity_resolved_var
+		has_variable = sb_eastern_transvaal_frontier_resolved_var
+	}
+}
+
 sb_martinus_ora_is_independent_candidate = {
 	country_definition = cd:ORA
 	is_country_alive = yes
@@ -62,8 +79,7 @@ sb_martinus_trn_can_open_legal_union = {
 	is_active_in_diplomatic_play = no
 	has_law_or_variant = law_type:law_presidential_republic
 	sb_martinus_trn_ruler_is_pretorius = yes
-	has_variable = sb_transvaal_unity_resolved_var
-	owns_entire_state_region = STATE_NORTHERN_TRANSVAAL
+	sb_martinus_trn_has_east_transvaal_consolidation = yes
 	NOT = { has_variable = sb_martinus_legal_union_resolved_var }
 	game_date >= 1859.1.1
 	game_date < 1861.1.1
@@ -71,6 +87,23 @@ sb_martinus_trn_can_open_legal_union = {
 		sb_martinus_ora_is_independent_candidate = yes
 		has_law_or_variant = law_type:law_presidential_republic
 		in_election_campaign = yes
+	}
+}
+
+sb_martinus_trn_can_complete_legal_union = {
+	country_definition = cd:TRN
+	is_country_alive = yes
+	is_subject = no
+	is_active_in_diplomatic_play = no
+	has_law_or_variant = law_type:law_presidential_republic
+	sb_martinus_trn_ruler_is_pretorius = yes
+	sb_martinus_trn_has_east_transvaal_consolidation = yes
+	has_variable = sb_martinus_legal_union_pending_var
+	NOT = { has_variable = sb_martinus_legal_union_resolved_var }
+	c:ORA ?= {
+		sb_martinus_ora_is_independent_candidate = yes
+		has_law_or_variant = law_type:law_presidential_republic
+		has_variable = sb_martinus_legal_union_pending_var
 	}
 }
 

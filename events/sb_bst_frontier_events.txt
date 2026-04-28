@@ -5,20 +5,6 @@
 
 namespace = sb_bst_frontier
 
-sb_bst_frontier.001 = {
-	type = country_event
-	hidden = yes
-
-	trigger = {
-		country_definition = cd:BST
-		has_variable = sb_bst_oranje_raid_cooldown_var
-	}
-
-	immediate = {
-		remove_variable = sb_bst_oranje_raid_cooldown_var
-	}
-}
-
 sb_bst_frontier.010 = {
 	type = country_event
 	placement = root
@@ -82,6 +68,7 @@ sb_bst_frontier.020 = {
 					country = root
 					value = -20
 				}
+				set_variable = sb_bst_frontier_claim_seeded_var
 				s:STATE_DRAKENSBERG = {
 					add_claim = c:ORA
 				}
@@ -116,6 +103,7 @@ sb_bst_frontier.100 = {
 			is_country_alive = yes
 			is_subject = no
 			has_journal_entry = je_sb_bst_ora_frontier
+			sb_bst_controls_only_drakensberg = yes
 			sb_has_adjacent_british_protection_route = yes
 		}
 	}
@@ -148,6 +136,130 @@ sb_bst_frontier.100 = {
 		ai_chance = {
 			base = 0
 		}
+	}
+}
+
+sb_bst_frontier.220 = {
+	type = country_event
+	placement = root
+
+	title = sb_bst_frontier.220.t
+	desc = sb_bst_frontier.220.d
+	flavor = sb_bst_frontier.220.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_soldiers_breaking_protest.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_military.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:CAP
+		is_at_war = no
+		aggressive_diplomatic_plays_permitted = yes
+		sb_cap_has_bst_subject_for_disarmament = yes
+		NOT = { has_variable = sb_bst_cap_annexation_crisis_var }
+		c:BST ?= {
+			has_variable = sb_bst_cap_disarmament_pending_var
+			NOT = { has_variable = sb_bst_cap_annexation_crisis_var }
+			NOT = { has_variable = sb_bst_cap_disarmament_resolved_var }
+		}
+	}
+
+	immediate = {
+		c:BST ?= {
+			remove_variable = sb_bst_cap_disarmament_pending_var
+		}
+	}
+
+	option = {
+		name = sb_bst_frontier.220.a
+		default_option = yes
+		set_variable = sb_bst_cap_annexation_crisis_var
+		c:BST ?= {
+			set_variable = sb_bst_cap_annexation_crisis_var
+			set_variable = sb_bst_cap_disarmament_resolved_var
+		}
+		create_diplomatic_play = {
+			type = dp_sb_basotho_gun_war
+			target_country = c:BST
+		}
+		ai_chance = {
+			base = 75
+		}
+	}
+
+	option = {
+		name = sb_bst_frontier.220.b
+		c:BST ?= {
+			set_variable = sb_bst_cap_disarmament_resolved_var
+		}
+		ai_chance = {
+			base = 25
+		}
+	}
+}
+
+sb_bst_frontier.300 = {
+	type = country_event
+	placement = root
+
+	title = sb_bst_frontier.300.t
+	desc = sb_bst_frontier.300.d
+	flavor = sb_bst_frontier.300.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:ORA
+		has_variable = sb_ora_annexed_bst_var
+		NOT = { has_variable = sb_settled_drakensberg_var }
+		NOT = {
+			c:BST ?= {
+				is_country_alive = yes
+			}
+		}
+	}
+
+	option = {
+		name = sb_bst_frontier.300.a
+		default_option = yes
+	}
+}
+
+sb_bst_frontier.310 = {
+	type = country_event
+	placement = root
+
+	title = sb_bst_frontier.310.t
+	desc = sb_bst_frontier.310.d
+	flavor = sb_bst_frontier.310.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_soldiers_breaking_protest.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:BST
+		is_country_alive = yes
+		owns_entire_state_region = STATE_VRYSTAAT
+	}
+
+	option = {
+		name = sb_bst_frontier.310.a
+		default_option = yes
 	}
 }
 

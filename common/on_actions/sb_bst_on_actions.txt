@@ -23,10 +23,29 @@ sb_on_bst_monthly_pulse_country = {
 				country_definition = cd:ORA
 				has_journal_entry = je_sb_bst_ora_frontier
 				NOT = { has_variable = sb_bst_frontier_claim_seeded_var }
+				c:BST ?= {
+					sb_bst_controls_only_drakensberg = yes
+				}
 			}
 			set_variable = sb_bst_frontier_claim_seeded_var
 			s:STATE_DRAKENSBERG = {
 				add_claim = c:ORA
+			}
+		}
+		if = {
+			limit = {
+				country_definition = cd:ORA
+				has_journal_entry = je_sb_bst_ora_frontier
+				has_variable = sb_bst_frontier_claim_seeded_var
+				NOT = {
+					c:BST ?= {
+						sb_bst_controls_only_drakensberg = yes
+					}
+				}
+			}
+			remove_variable = sb_bst_frontier_claim_seeded_var
+			s:STATE_DRAKENSBERG = {
+				remove_claim = c:ORA
 			}
 		}
 
@@ -38,6 +57,27 @@ sb_on_bst_monthly_pulse_country = {
 				NOT = { has_variable = sb_bst_into_the_mountains_var }
 			}
 			trigger_event = { id = sb_bst_frontier.020 days = 1 popup = yes }
+		}
+
+		if = {
+			limit = {
+				country_definition = cd:BST
+				is_ai = yes
+				is_country_alive = yes
+				is_subject = no
+				has_journal_entry = je_sb_bst_ora_frontier
+				sb_bst_controls_only_drakensberg = yes
+				sb_has_adjacent_british_protection_route = yes
+				NOT = { has_variable = sb_bst_gbr_protection_request_resolved_var }
+				game_date >= 1868.5.1
+				c:GBR ?= {
+					is_country_alive = yes
+				}
+			}
+			set_variable = sb_bst_gbr_protection_request_resolved_var
+			c:GBR ?= {
+				trigger_event = { id = sb_bst_frontier.100 popup = yes }
+			}
 		}
 
 		if = {
@@ -58,6 +98,7 @@ sb_on_bst_monthly_pulse_country = {
 			limit = {
 				country_definition = cd:ORA
 				NOT = { has_variable = sb_ora_annexed_bst_var }
+				NOT = { has_variable = sb_settled_drakensberg_var }
 				NOT = {
 					c:BST ?= {
 						is_country_alive = yes
@@ -73,6 +114,7 @@ sb_on_bst_monthly_pulse_country = {
 				country_definition = cd:ORA
 				has_variable = sb_ora_annexed_bst_var
 				NOT = { has_journal_entry = je_sb_settle_drakensberg }
+				NOT = { has_variable = sb_settled_drakensberg_var }
 				NOT = {
 					c:BST ?= {
 						is_country_alive = yes
@@ -140,10 +182,52 @@ sb_on_bst_monthly_pulse_country = {
 				set_variable = sb_bst_cap_transfer_pending_var
 			}
 			random_list = {
-				1 = { trigger_event = { id = sb_bst_frontier.200 days = 180 popup = yes } }
-				1 = { trigger_event = { id = sb_bst_frontier.200 days = 360 popup = yes } }
-				1 = { trigger_event = { id = sb_bst_frontier.200 days = 540 popup = yes } }
-				1 = { trigger_event = { id = sb_bst_frontier.200 days = 719 popup = yes } }
+				1 = { trigger_event = { id = sb_bst_frontier.200 days = 730 popup = yes } }
+				1 = { trigger_event = { id = sb_bst_frontier.200 days = 1095 popup = yes } }
+				1 = { trigger_event = { id = sb_bst_frontier.200 days = 1460 popup = yes } }
+				1 = { trigger_event = { id = sb_bst_frontier.200 days = 1825 popup = yes } }
+			}
+		}
+
+		if = {
+			limit = {
+				country_definition = cd:CAP
+				c:BST ?= {
+					has_variable = sb_bst_cap_disarmament_pending_var
+				}
+				OR = {
+					is_at_war = yes
+					NOT = { aggressive_diplomatic_plays_permitted = yes }
+					NOT = { sb_cap_has_bst_subject_for_disarmament = yes }
+				}
+			}
+			c:BST ?= {
+				remove_variable = sb_bst_cap_disarmament_pending_var
+			}
+		}
+
+		if = {
+			limit = {
+				country_definition = cd:CAP
+				is_at_war = no
+				aggressive_diplomatic_plays_permitted = yes
+				sb_cap_has_bst_subject_for_disarmament = yes
+				NOT = { has_variable = sb_bst_cap_annexation_crisis_var }
+				c:BST ?= {
+					NOT = { has_variable = sb_bst_cap_annexation_crisis_var }
+					NOT = { has_variable = sb_bst_cap_disarmament_pending_var }
+					NOT = { has_variable = sb_bst_cap_disarmament_resolved_var }
+				}
+			}
+			c:BST ?= {
+				set_variable = sb_bst_cap_disarmament_pending_var
+			}
+			random_list = {
+				1 = { trigger_event = { id = sb_bst_frontier.220 days = 365 popup = yes } }
+				1 = { trigger_event = { id = sb_bst_frontier.220 days = 730 popup = yes } }
+				1 = { trigger_event = { id = sb_bst_frontier.220 days = 1095 popup = yes } }
+				1 = { trigger_event = { id = sb_bst_frontier.220 days = 1460 popup = yes } }
+				1 = { trigger_event = { id = sb_bst_frontier.220 days = 1825 popup = yes } }
 			}
 		}
 	}
@@ -160,6 +244,7 @@ sb_on_bst_wargoal_enforced = {
 				scope:diplomatic_play ?= {
 					is_diplomatic_play_type = dp_annex_war
 				}
+				NOT = { has_variable = sb_settled_drakensberg_var }
 			}
 			set_variable = sb_ora_annexed_bst_var
 		}
@@ -171,7 +256,10 @@ sb_on_bst_wargoal_enforced = {
 					country_definition = cd:BST
 				}
 				scope:diplomatic_play ?= {
-					is_diplomatic_play_type = dp_annex_subject
+					OR = {
+						is_diplomatic_play_type = dp_annex_subject
+						is_diplomatic_play_type = dp_sb_basotho_gun_war
+					}
 				}
 				has_variable = sb_bst_cap_annexation_crisis_var
 			}
@@ -226,6 +314,7 @@ sb_on_bst_diplo_play_back_down = {
 				}
 				scope:actor ?= {
 					country_definition = cd:ORA
+					NOT = { has_variable = sb_settled_drakensberg_var }
 				}
 				scope:target ?= {
 					country_definition = cd:BST
@@ -239,7 +328,10 @@ sb_on_bst_diplo_play_back_down = {
 		if = {
 			limit = {
 				root = {
-					is_diplomatic_play_type = dp_annex_subject
+					OR = {
+						is_diplomatic_play_type = dp_annex_subject
+						is_diplomatic_play_type = dp_sb_basotho_gun_war
+					}
 				}
 				scope:actor ?= {
 					country_definition = cd:CAP
@@ -258,7 +350,10 @@ sb_on_bst_diplo_play_back_down = {
 		if = {
 			limit = {
 				root = {
-					is_diplomatic_play_type = dp_annex_subject
+					OR = {
+						is_diplomatic_play_type = dp_annex_subject
+						is_diplomatic_play_type = dp_sb_basotho_gun_war
+					}
 				}
 				scope:actor ?= {
 					country_definition = cd:BST

@@ -94,8 +94,21 @@ je_sb_transvaal_unity = {
 				name = sb_boer_grand_principality_status
 			}
 		}
-		c:SWZ ?= {
-			trigger_event = { id = sb_swazi_frontier.095 days = 21 popup = yes }
+		if = {
+			limit = {
+				c:SWZ ?= {
+					is_country_alive = yes
+					is_subject = no
+					NOT = { has_variable = sb_swazi_boer_pressure_resolved_var }
+					OR = {
+						p:x73CDE8.state.owner = this
+						p:x25A652.state.owner = this
+						p:x50A011.state.owner = this
+						p:x452304.state.owner = this
+					}
+				}
+			}
+			trigger_event = { id = sb_swazi_border.1 days = 21 popup = yes }
 		}
 		remove_variable = sb_transvaal_unity_progress
 	}

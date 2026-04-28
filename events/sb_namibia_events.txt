@@ -18,33 +18,125 @@ sb_nam.010 = {
 
 	trigger = {
 		country_definition = cd:GER
-		game_date >= 1870.1.1
+		game_date >= 1869.11.11
 		game_date <= 1875.12.31
 		NOT = { has_variable = sb_nam_colonial_prestige_resolved_var }
 		NOT = { has_law = law_type:law_frontier_colonization }
 		NOT = { has_law = law_type:law_colonial_resettlement }
 		NOT = { has_law = law_type:law_colonial_exploitation }
-		ig:ig_landowners ?= { is_in_government = yes }
+		OR = {
+			ig:ig_landowners   ?= { is_in_government = yes }
+			ig:ig_armed_forces ?= { is_in_government = yes }
+		}
+		OR = {
+			NOT = { has_journal_entry = je_government_petition_negotiation_version }
+			NOT = { has_journal_entry = je_government_petition_negotiation_version_b }
+		}
 	}
 
 	option = {
 		name = sb_nam.010.a
 		default_option = yes
-		set_variable = sb_nam_colonial_prestige_resolved_var
-		add_modifier = {
-			name = sb_nam_german_colonial_lobby
-			months = 60
+		custom_tooltip = sb_nam_010_a_tt
+		hidden_effect = {
+			set_variable = sb_nam_colonial_prestige_resolved_var
+			set_variable = sb_nam_angra_pequena_purchase_pending_var
+			random_law = {
+				limit = {
+					type = law_type:law_colonial_exploitation
+				}
+				save_scope_as = sb_nam_promised_law
+			}
+			if = {
+				limit = {
+					ig:ig_landowners ?= { is_in_government = yes }
+				}
+				ig:ig_landowners ?= {
+					save_scope_as = ig
+					set_variable = {
+						name = desired_law_var
+						value = scope:sb_nam_promised_law
+					}
+					set_variable = {
+						name = promise_quest_degree
+						value = 1
+					}
+					set_variable = {
+						name = promise_quest_type
+						value = 2
+					}
+				}
+			}
+			else = {
+				ig:ig_armed_forces ?= {
+					save_scope_as = ig
+					set_variable = {
+						name = desired_law_var
+						value = scope:sb_nam_promised_law
+					}
+					set_variable = {
+						name = promise_quest_degree
+						value = 1
+					}
+					set_variable = {
+						name = promise_quest_type
+						value = 2
+					}
+				}
+			}
+			promise_quest = yes
+			if = {
+				limit = { has_journal_entry = je_government_petition_negotiation_version }
+				add_journal_entry = {
+					type = je_government_petition_negotiation_version_b
+				}
+			}
+			else = {
+				add_journal_entry = {
+					type = je_government_petition_negotiation_version
+				}
+			}
+			if = {
+				limit = {
+					is_ai = yes
+					NOT = { has_law = law_type:law_colonial_exploitation }
+				}
+				if = {
+					limit = { enacting_any_law = yes }
+					cancel_enactment = yes
+				}
+				start_enactment = law_type:law_colonial_exploitation
+			}
+			sb_nam_schedule_angra_pequena_purchase = yes
 		}
-		sb_nam_schedule_angra_pequena_purchase = yes
 	}
 
 	option = {
 		name = sb_nam.010.b
-		set_variable = sb_nam_colonial_prestige_resolved_var
-		add_modifier = {
-			name = sb_nam_german_colonial_rebuff
-			months = 60
+		custom_tooltip = sb_nam_010_b_tt
+		hidden_effect = {
+			set_variable = sb_nam_colonial_prestige_resolved_var
+			if = {
+				limit = {
+					ig:ig_landowners ?= { is_in_government = yes }
+				}
+				ig:ig_landowners ?= {
+					add_modifier = {
+						name = sb_nam_german_colonial_rebuff
+						months = 60
+					}
+				}
+			}
+			else = {
+				ig:ig_armed_forces ?= {
+					add_modifier = {
+						name = sb_nam_german_colonial_rebuff
+						months = 60
+					}
+				}
+			}
 		}
+		ai_chance = { base = -1 }
 	}
 }
 
@@ -67,6 +159,8 @@ sb_nam.011 = {
 	trigger = {
 		country_definition = cd:GER
 		game_date >= 1883.1.1
+		NOT = { has_variable = sb_nam_angra_pequena_purchased_var }
+		NOT = { has_variable = sb_nam_angra_pequena_purchase_declined_var }
 		OR = {
 			has_law = law_type:law_colonial_resettlement
 			has_law = law_type:law_colonial_exploitation
@@ -95,13 +189,62 @@ sb_nam.011 = {
 	option = {
 		name = sb_nam.011.a
 		default_option = yes
-		s:STATE_NAMAQUALAND = {
-			set_owner_of_provinces = {
-				country = root
-				provinces = { xDEAA3C }
+		custom_tooltip = sb_nam_011_a_tt
+		hidden_effect = {
+			add_treasury = -100000
+			set_variable = sb_nam_angra_pequena_purchased_var
+			if = {
+				limit = { has_variable = sb_nam_angra_pequena_purchase_pending_var }
+				remove_variable = sb_nam_angra_pequena_purchase_pending_var
 			}
-			add_claim = root
+			s:STATE_NAMAQUALAND = {
+				set_owner_of_provinces = {
+					country = root
+					provinces = { xDEAA3C }
+				}
+				add_claim = root
+			}
+			if = {
+				limit = {
+					any_scope_state = {
+						state_region = s:STATE_NAMAQUALAND
+						NOT = { has_building = building_port }
+					}
+				}
+				random_scope_state = {
+					limit = {
+						state_region = s:STATE_NAMAQUALAND
+						NOT = { has_building = building_port }
+					}
+					create_building = {
+						building = building_port
+						level = 1
+						reserves = 1
+					}
+				}
+			}
+			if = {
+				limit = {
+					NOT = { has_technology_researched = malaria_prevention }
+					can_research = malaria_prevention
+				}
+				add_technology_progress = { progress = 7500 technology = malaria_prevention }
+			}
 		}
+		ai_chance = { base = 1 }
+	}
+
+	option = {
+		name = sb_nam.011.b
+		custom_tooltip = sb_nam_011_b_tt
+		hidden_effect = {
+			set_variable = sb_nam_angra_pequena_purchase_declined_var
+			if = {
+				limit = { has_variable = sb_nam_angra_pequena_purchase_pending_var }
+				remove_variable = sb_nam_angra_pequena_purchase_pending_var
+			}
+		}
+		ai_chance = { base = 0 }
 	}
 }
 
@@ -121,13 +264,13 @@ sb_nam.020 = {
 	icon = "gfx/interface/icons/event_icons/event_default.dds"
 	duration = 3
 
-	trigger = {
-		country_definition = cd:CAP
-		game_date >= 1868.1.1
-		game_date <= 1885.12.31
-		NOT = { has_variable = sb_nam_rehoboth_branch_resolved_var }
-		OR = {
-			sb_nam_has_any_colonial_law = yes
+		trigger = {
+			country_definition = cd:CAP
+			game_date >= 1867.1.1
+			game_date <= 1871.12.31
+			NOT = { has_variable = sb_nam_rehoboth_branch_resolved_var }
+			OR = {
+				sb_nam_has_any_colonial_law = yes
 			has_modifier = sb_cape_favour_settlers
 		}
 	}
@@ -135,20 +278,28 @@ sb_nam.020 = {
 	option = {
 		name = sb_nam.020.a
 		default_option = yes
-		set_variable = sb_nam_rehoboth_branch_resolved_var
-		if = {
-			limit = { NOT = { exists = c:RHB } }
-			create_country = {
-				tag = RHB
-				origin = root
-				province = p:xB1939F
+		custom_tooltip = sb_nam_020_a_tt
+		hidden_effect = {
+			set_variable = sb_nam_rehoboth_branch_resolved_var
+			if = {
+				limit = { NOT = { exists = c:RHB } }
+				create_country = {
+					tag = RHB
+					origin = root
+					province = p:xEC2F99
+				}
 			}
-		}
-		if = {
-			limit = { exists = c:RHB }
-			root.capital = {
-				every_scope_pop = {
-					limit = {
+			if = {
+				limit = { exists = c:RHB }
+				s:STATE_NAMAQUALAND = {
+					set_owner_of_provinces = {
+						country = c:RHB
+						provinces = { xEC2F99 x8D6395 x9C401C x21DD01 }
+					}
+				}
+				root.capital = {
+					every_scope_pop = {
+						limit = {
 						culture = cu:griqua
 					}
 					move_partial_pop = {
@@ -157,23 +308,27 @@ sb_nam.020 = {
 					}
 				}
 			}
+			}
 		}
 	}
 
 	option = {
 		name = sb_nam.020.b
-		set_variable = sb_nam_rehoboth_branch_resolved_var
-		add_modifier = {
-			name = sb_nam_rehoboth_discouraged
-			months = 60
-		}
-		every_political_movement = {
-			limit = {
-				is_political_movement_type = movement_sb_cape_liberal
-			}
+		custom_tooltip = sb_nam_020_b_tt
+		hidden_effect = {
+			set_variable = sb_nam_rehoboth_branch_resolved_var
 			add_modifier = {
-				name = sb_cape_liberal_autonomy_pressure
+				name = sb_nam_rehoboth_discouraged
 				months = 60
+			}
+			every_political_movement = {
+				limit = {
+					is_political_movement_type = movement_sb_cape_liberal
+				}
+				add_modifier = {
+					name = sb_cape_liberal_autonomy_pressure
+					months = 60
+				}
 			}
 		}
 	}
@@ -203,9 +358,13 @@ sb_nam.100 = {
 	option = {
 		name = sb_nam.100.a
 		default_option = yes
-		set_variable = sb_nam_stage_100_done_var
-		sb_nam_adjust_consolidation_harshness_up = yes
-		sb_nam_schedule_next_consolidation_event = yes
+		custom_tooltip = sb_nam_rule_harshness_increase_tt
+		hidden_effect = {
+			set_variable = sb_nam_stage_100_done_var
+			sb_nam_adjust_consolidation_harshness_up = yes
+			sb_nam_schedule_next_consolidation_event = yes
+		}
+
 		ai_chance = {
 			base = 40
 			modifier = {
@@ -230,9 +389,12 @@ sb_nam.100 = {
 
 	option = {
 		name = sb_nam.100.b
-		set_variable = sb_nam_stage_100_done_var
-		sb_nam_adjust_consolidation_harshness_down = yes
-		sb_nam_schedule_next_consolidation_event = yes
+		custom_tooltip = sb_nam_rule_harshness_decrease_tt
+		hidden_effect = {
+			set_variable = sb_nam_stage_100_done_var
+			sb_nam_adjust_consolidation_harshness_down = yes
+			sb_nam_schedule_next_consolidation_event = yes
+		}
 		ai_chance = {
 			base = 60
 			modifier = {
@@ -281,9 +443,12 @@ sb_nam.110 = {
 	option = {
 		name = sb_nam.110.a
 		default_option = yes
-		set_variable = sb_nam_stage_110_done_var
-		sb_nam_adjust_consolidation_harshness_up = yes
-		sb_nam_schedule_next_consolidation_event = yes
+		custom_tooltip = sb_nam_rule_harshness_increase_tt
+		hidden_effect = {
+			set_variable = sb_nam_stage_110_done_var
+			sb_nam_adjust_consolidation_harshness_up = yes
+			sb_nam_schedule_next_consolidation_event = yes
+		}
 		ai_chance = {
 			base = 40
 			modifier = {
@@ -308,9 +473,12 @@ sb_nam.110 = {
 
 	option = {
 		name = sb_nam.110.b
-		set_variable = sb_nam_stage_110_done_var
-		sb_nam_adjust_consolidation_harshness_down = yes
-		sb_nam_schedule_next_consolidation_event = yes
+		custom_tooltip = sb_nam_rule_harshness_decrease_tt
+		hidden_effect = {
+			set_variable = sb_nam_stage_110_done_var
+			sb_nam_adjust_consolidation_harshness_down = yes
+			sb_nam_schedule_next_consolidation_event = yes
+		}
 		ai_chance = {
 			base = 60
 			modifier = {
@@ -359,9 +527,12 @@ sb_nam.120 = {
 	option = {
 		name = sb_nam.120.a
 		default_option = yes
-		set_variable = sb_nam_stage_120_done_var
-		sb_nam_adjust_consolidation_harshness_up = yes
-		sb_nam_schedule_next_consolidation_event = yes
+		custom_tooltip = sb_nam_rule_harshness_increase_tt
+		hidden_effect = {
+			set_variable = sb_nam_stage_120_done_var
+			sb_nam_adjust_consolidation_harshness_up = yes
+			sb_nam_schedule_next_consolidation_event = yes
+		}
 		ai_chance = {
 			base = 40
 			modifier = {
@@ -386,9 +557,12 @@ sb_nam.120 = {
 
 	option = {
 		name = sb_nam.120.b
-		set_variable = sb_nam_stage_120_done_var
-		sb_nam_adjust_consolidation_harshness_down = yes
-		sb_nam_schedule_next_consolidation_event = yes
+		custom_tooltip = sb_nam_rule_harshness_decrease_tt
+		hidden_effect = {
+			set_variable = sb_nam_stage_120_done_var
+			sb_nam_adjust_consolidation_harshness_down = yes
+			sb_nam_schedule_next_consolidation_event = yes
+		}
 		ai_chance = {
 			base = 60
 			modifier = {
@@ -437,8 +611,11 @@ sb_nam.130 = {
 	option = {
 		name = sb_nam.130.a
 		default_option = yes
-		set_variable = sb_nam_stage_130_done_var
-		sb_nam_adjust_consolidation_harshness_up = yes
+		custom_tooltip = sb_nam_rule_harshness_increase_tt
+		hidden_effect = {
+			set_variable = sb_nam_stage_130_done_var
+			sb_nam_adjust_consolidation_harshness_up = yes
+		}
 		ai_chance = {
 			base = 40
 			modifier = {
@@ -463,8 +640,11 @@ sb_nam.130 = {
 
 	option = {
 		name = sb_nam.130.b
-		set_variable = sb_nam_stage_130_done_var
-		sb_nam_adjust_consolidation_harshness_down = yes
+		custom_tooltip = sb_nam_rule_harshness_decrease_tt
+		hidden_effect = {
+			set_variable = sb_nam_stage_130_done_var
+			sb_nam_adjust_consolidation_harshness_down = yes
+		}
 		ai_chance = {
 			base = 60
 			modifier = {
@@ -497,11 +677,11 @@ sb_nam.140 = {
 	flavor = sb_nam.140.f
 
 	event_image = {
-		video = "gfx/event_pictures/africa_construction_colony.bk2"
+		video = "votp_french_algeria"
 	}
 
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
 	duration = 3
 
 	trigger = {
@@ -509,238 +689,72 @@ sb_nam.140 = {
 		NOT = { country_definition = cd:CAP }
 	}
 
+	immediate = {
+		if = {
+			limit = {
+				NOT = { exists = c:SWA }
+			}
+			create_country = {
+				tag = SWA
+				origin = root
+				province = p:xB04050
+			}
+		}
+	}
+
 	option = {
 		name = sb_nam.140.a
 		default_option = yes
-		create_country = {
-			tag = SWA
-			origin = root
-			province = p:xB04050
-			on_created = {
-				activate_law = law_type:law_colonial_administration
-				activate_law = law_type:law_oligarchy
-				activate_law = law_type:law_subjecthood
-				activate_law = law_type:law_extraction_economy
-				activate_law = law_type:law_colonial_exploitation
-				activate_law = law_type:law_no_schools
-				activate_law = law_type:law_no_health_system
-				activate_law = law_type:law_censorship
-				activate_law = law_type:law_no_workers_rights
-				activate_law = law_type:law_child_labor_allowed
-				activate_law = law_type:law_no_social_security
-				activate_law = law_type:law_migration_controls
-			}
+		trigger = {
+			has_variable = sb_nam_administration_exterminatory_var
 		}
-		create_diplomatic_pact = {
-			country = c:SWA
-			type = chartered_company
+		custom_tooltip = sb_nam_140_exterminatory_tt
+		hidden_effect = {
+			sb_nam_finalize_swa_administration = yes
 		}
-		c:SWA ?= {
-			remove_primary_culture = cu:british
-		}
-		every_primary_culture = {
-			limit = {
-				has_discrimination_trait_group = heritage_group_european
-				NOT = { is_primary_culture_of = c:SWA }
-			}
-			c:SWA ?= {
-				add_primary_culture = prev
-			}
-		}
-		transfer_state = {
-			STATE = s:STATE_NAMAQUALAND
-			GIVER = root
-			TAKER = c:SWA
-		}
-		transfer_state = {
-			STATE = s:STATE_HEREROLAND
-			GIVER = root
-			TAKER = c:SWA
-		}
-		c:SWA ?= {
-			sb_nam_copy_final_harshness_flags_from_root = yes
-			add_modifier = {
-				name = sb_nam_colonial_charter
-				months = -1
-			}
-			trigger_event = { id = sb_nam.150 days = 1 popup = yes }
-		}
-		sb_nam_clear_final_harshness_flags = yes
 	}
 
 	option = {
-		name = sb_nam.140.b
-		create_country = {
-			tag = SWA
-			origin = root
-			province = p:xB04050
-			on_created = {
-				activate_law = law_type:law_colonial_administration
-				activate_law = law_type:law_oligarchy
-				activate_law = law_type:law_subjecthood
-				activate_law = law_type:law_extraction_economy
-				activate_law = law_type:law_colonial_exploitation
-				activate_law = law_type:law_state_religion
-				activate_law = law_type:law_religious_schools
-				activate_law = law_type:law_no_health_system
-				activate_law = law_type:law_censorship
-				activate_law = law_type:law_no_workers_rights
-				activate_law = law_type:law_child_labor_allowed
-				activate_law = law_type:law_no_social_security
-				activate_law = law_type:law_migration_controls
-			}
+		name = sb_nam.140.a
+		default_option = yes
+		trigger = {
+			has_variable = sb_nam_administration_extractive_var
 		}
-		create_diplomatic_pact = {
-			country = c:SWA
-			type = chartered_company
+		custom_tooltip = sb_nam_140_extractive_tt
+		hidden_effect = {
+			sb_nam_finalize_swa_administration = yes
 		}
-		c:SWA ?= {
-			remove_primary_culture = cu:british
-		}
-		every_primary_culture = {
-			limit = {
-				has_discrimination_trait_group = heritage_group_european
-				NOT = { is_primary_culture_of = c:SWA }
-			}
-			c:SWA ?= {
-				add_primary_culture = prev
-			}
-		}
-		transfer_state = {
-			STATE = s:STATE_NAMAQUALAND
-			GIVER = root
-			TAKER = c:SWA
-		}
-		transfer_state = {
-			STATE = s:STATE_HEREROLAND
-			GIVER = root
-			TAKER = c:SWA
-		}
-		c:SWA ?= {
-			sb_nam_copy_final_harshness_flags_from_root = yes
-			add_modifier = {
-				name = sb_nam_mission_colony
-				months = -1
-			}
-			trigger_event = { id = sb_nam.150 days = 1 popup = yes }
-		}
-		sb_nam_clear_final_harshness_flags = yes
 	}
 
 	option = {
-		name = sb_nam.140.c
-		create_country = {
-			tag = SWA
-			origin = root
-			province = p:xB04050
-			on_created = {
-				activate_law = law_type:law_colonial_administration
-				activate_law = law_type:law_oligarchy
-				activate_law = law_type:law_subjecthood
-				activate_law = law_type:law_agrarianism
-				activate_law = law_type:law_colonial_resettlement
-				activate_law = law_type:law_no_schools
-				activate_law = law_type:law_no_health_system
-				activate_law = law_type:law_censorship
-				activate_law = law_type:law_no_workers_rights
-				activate_law = law_type:law_child_labor_allowed
-				activate_law = law_type:law_no_social_security
-				activate_law = law_type:law_migration_controls
-			}
+		name = sb_nam.140.a
+		default_option = yes
+		trigger = {
+			has_variable = sb_nam_administration_charter_var
 		}
-		create_diplomatic_pact = {
-			country = c:SWA
-			type = chartered_company
+		custom_tooltip = sb_nam_140_charter_tt
+		hidden_effect = {
+			sb_nam_finalize_swa_administration = yes
 		}
-		c:SWA ?= {
-			remove_primary_culture = cu:british
-		}
-		every_primary_culture = {
-			limit = {
-				has_discrimination_trait_group = heritage_group_european
-				NOT = { is_primary_culture_of = c:SWA }
-			}
-			c:SWA ?= {
-				add_primary_culture = prev
-			}
-		}
-		transfer_state = {
-			STATE = s:STATE_NAMAQUALAND
-			GIVER = root
-			TAKER = c:SWA
-		}
-		transfer_state = {
-			STATE = s:STATE_HEREROLAND
-			GIVER = root
-			TAKER = c:SWA
-		}
-		c:SWA ?= {
-			sb_nam_copy_final_harshness_flags_from_root = yes
-			add_modifier = {
-				name = sb_nam_settlement_campaigns
-				months = -1
-			}
-			trigger_event = { id = sb_nam.150 days = 1 popup = yes }
-		}
-		sb_nam_clear_final_harshness_flags = yes
 	}
 
 	option = {
-		name = sb_nam.140.d_option
-		create_country = {
-			tag = SWA
-			origin = root
-			province = p:xB04050
-			on_created = {
-				activate_law = law_type:law_colonial_administration
-				activate_law = law_type:law_oligarchy
-				activate_law = law_type:law_subjecthood
-				activate_law = law_type:law_extraction_economy
-				activate_law = law_type:law_colonial_exploitation
-				activate_law = law_type:law_no_schools
-				activate_law = law_type:law_no_health_system
-				activate_law = law_type:law_censorship
-				activate_law = law_type:law_no_workers_rights
-				activate_law = law_type:law_child_labor_allowed
-				activate_law = law_type:law_no_social_security
-				activate_law = law_type:law_migration_controls
+		name = sb_nam.140.a
+		default_option = yes
+		trigger = {
+			OR = {
+				has_variable = sb_nam_administration_mission_var
+				NOR = {
+					has_variable = sb_nam_administration_exterminatory_var
+					has_variable = sb_nam_administration_extractive_var
+					has_variable = sb_nam_administration_charter_var
+				}
 			}
 		}
-		create_diplomatic_pact = {
-			country = c:SWA
-			type = chartered_company
+		custom_tooltip = sb_nam_140_mission_tt
+		hidden_effect = {
+			sb_nam_finalize_swa_administration = yes
 		}
-		c:SWA ?= {
-			remove_primary_culture = cu:british
-		}
-		every_primary_culture = {
-			limit = {
-				has_discrimination_trait_group = heritage_group_european
-				NOT = { is_primary_culture_of = c:SWA }
-			}
-			c:SWA ?= {
-				add_primary_culture = prev
-			}
-		}
-		transfer_state = {
-			STATE = s:STATE_NAMAQUALAND
-			GIVER = root
-			TAKER = c:SWA
-		}
-		transfer_state = {
-			STATE = s:STATE_HEREROLAND
-			GIVER = root
-			TAKER = c:SWA
-		}
-		c:SWA ?= {
-			sb_nam_copy_final_harshness_flags_from_root = yes
-			add_modifier = {
-				name = sb_nam_coercive_colony
-				months = -1
-			}
-			trigger_event = { id = sb_nam.150 days = 1 popup = yes }
-		}
-		sb_nam_clear_final_harshness_flags = yes
 	}
 }
 
@@ -767,8 +781,71 @@ sb_nam.150 = {
 	option = {
 		name = sb_nam.150.a
 		default_option = yes
-		root = {
-			sb_nam_seed_minority_rights_from_harshness = yes
+		custom_tooltip = sb_nam_150_a_tt
+		hidden_effect = {
+			root = {
+				sb_nam_seed_minority_rights_from_harshness = yes
+			}
+		}
+	}
+}
+
+sb_nam.151 = {
+	type = country_event
+	placement = root
+
+	title = sb_nam.151.t
+	desc = sb_nam.151.d
+	flavor = sb_nam.151.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		is_player = yes
+		NOT = { country_definition = cd:SWA }
+		has_interest_marker_in_region = sr:region_southern_africa
+		NOT = { has_variable = sb_nam_swa_player_switch_offer_var }
+		NOT = { has_global_variable = sb_nam_swa_player_switch_taken_var }
+		c:SWA ?= {
+			is_ai = yes
+		}
+	}
+
+	immediate = {
+		set_variable = sb_nam_swa_player_switch_offer_var
+		c:SWA ?= {
+			save_scope_as = swa_scope
+		}
+	}
+
+	option = {
+		name = sb_nam.151.a
+		default_option = yes
+		custom_tooltip = sb_nam_151_a_tt
+	}
+
+	option = {
+		name = sb_nam.151.b
+		trigger = {
+			NOT = { has_global_variable = sb_nam_swa_player_switch_taken_var }
+			c:SWA ?= {
+				is_ai = yes
+			}
+		}
+		custom_tooltip = sb_nam_151_b_tt
+		play_as = c:SWA
+		hidden_effect = {
+			set_global_variable = sb_nam_swa_player_switch_taken_var
+			every_country = {
+				limit = { has_variable = sb_nam_swa_player_switch_offer_var }
+				remove_variable = sb_nam_swa_player_switch_offer_var
+			}
 		}
 	}
 }
@@ -804,51 +881,57 @@ sb_nam.200 = {
 		any_political_movement = {
 			is_political_movement_type = movement_minority_rights
 			political_movement_radicalism >= 0.30
-			political_movement_radicalism < 0.70
+			political_movement_radicalism < 0.75
 		}
 	}
 
 	option = {
 		name = sb_nam.200.a
 		default_option = yes
-		set_variable = sb_nam_forced_camps_fired_var
-		s:STATE_NAMAQUALAND = {
-			every_scope_state = {
-				add_modifier = {
-					name = sb_nam_forced_camps_state
-					months = 120
+		custom_tooltip = sb_nam_200_a_tt
+		hidden_effect = {
+			set_variable = sb_nam_forced_camps_fired_var
+			s:STATE_NAMAQUALAND = {
+				every_scope_state = {
+					add_modifier = {
+						name = sb_nam_forced_camps_state
+						months = 120
+					}
 				}
 			}
-		}
-		s:STATE_HEREROLAND = {
-			every_scope_state = {
-				add_modifier = {
-					name = sb_nam_forced_camps_state
-					months = 120
+			s:STATE_HEREROLAND = {
+				every_scope_state = {
+					add_modifier = {
+						name = sb_nam_forced_camps_state
+						months = 120
+					}
 				}
 			}
-		}
-		every_political_movement = {
-			limit = {
-				is_political_movement_type = movement_minority_rights
-			}
-			add_modifier = {
-				name = sb_nam_forced_camps_movement
-				months = 120
+			every_political_movement = {
+				limit = {
+					is_political_movement_type = movement_minority_rights
+				}
+				add_modifier = {
+					name = sb_nam_forced_camps_movement
+					months = 120
+				}
 			}
 		}
 	}
 
 	option = {
 		name = sb_nam.200.b
-		set_variable = sb_nam_forced_camps_fired_var
-		every_political_movement = {
-			limit = {
-				is_political_movement_type = movement_minority_rights
-			}
-			add_modifier = {
-				name = sb_nam_resistance_allowed_minor
-				months = 60
+		custom_tooltip = sb_nam_200_b_tt
+		hidden_effect = {
+			set_variable = sb_nam_forced_camps_fired_var
+			every_political_movement = {
+				limit = {
+					is_political_movement_type = movement_minority_rights
+				}
+				add_modifier = {
+					name = sb_nam_resistance_allowed_minor
+					months = 60
+				}
 			}
 		}
 	}
@@ -883,51 +966,61 @@ sb_nam.201 = {
 		}
 		any_political_movement = {
 			is_political_movement_type = movement_minority_rights
-			political_movement_radicalism >= 0.70
+			political_movement_radicalism >= 0.75
 		}
 	}
 
 	option = {
 		name = sb_nam.201.a
 		default_option = yes
-		set_variable = sb_nam_extermination_fired_var
-		s:STATE_NAMAQUALAND = {
-			every_scope_state = {
-				add_modifier = {
-					name = sb_nam_extermination_orders_state
-					months = 120
-				}
-			}
-		}
-		s:STATE_HEREROLAND = {
-			every_scope_state = {
-				add_modifier = {
-					name = sb_nam_extermination_orders_state
-					months = 120
-				}
-			}
-		}
-		every_political_movement = {
-			limit = {
-				is_political_movement_type = movement_minority_rights
-			}
+		custom_tooltip = sb_nam_201_a_tt
+		hidden_effect = {
 			add_modifier = {
-				name = sb_nam_extermination_orders_movement
-				months = 120
+				name = sb_nam_extermination_orders_country
+				months = 48
+			}
+			set_variable = sb_nam_extermination_fired_var
+			s:STATE_NAMAQUALAND = {
+				every_scope_state = {
+					add_modifier = {
+						name = sb_nam_extermination_orders_state
+						months = 120
+					}
+				}
+			}
+			s:STATE_HEREROLAND = {
+				every_scope_state = {
+					add_modifier = {
+						name = sb_nam_extermination_orders_state
+						months = 120
+					}
+				}
+			}
+			every_political_movement = {
+				limit = {
+					is_political_movement_type = movement_minority_rights
+				}
+				add_modifier = {
+					name = sb_nam_extermination_orders_movement
+					months = 120
+				}
 			}
 		}
 	}
 
 	option = {
 		name = sb_nam.201.b
-		set_variable = sb_nam_extermination_fired_var
-		every_political_movement = {
-			limit = {
-				is_political_movement_type = movement_minority_rights
-			}
-			add_modifier = {
-				name = sb_nam_resistance_allowed_major
-				months = 60
+		custom_tooltip = sb_nam_201_b_tt
+		hidden_effect = {
+			set_variable = sb_nam_extermination_fired_var
+			every_political_movement = {
+				limit = {
+					is_political_movement_type = movement_minority_rights
+				}
+				add_modifier = {
+					name = sb_nam_resistance_allowed_major
+					months = 60
+				}
 			}
 		}
 	}

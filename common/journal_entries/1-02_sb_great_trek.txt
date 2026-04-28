@@ -55,12 +55,13 @@ je_sb_great_trek = {
 	}
 
 	# Only active for Boer trek republics, and only while independent. In V2 this
-	# means ORA starts with the JE while TRN/ZPB/NAL receive it fresh on spawn.
+	# means ORA starts with the JE while TRN/ZPB/LYD/NAL receive it fresh on spawn.
 	possible = {
 		OR = {
 			country_definition = cd:TRN
 			country_definition = cd:ORA
 			country_definition = cd:ZPB
+			country_definition = cd:LYD
 			country_definition = cd:NAL
 		}
 		country_has_primary_culture = cu:boer
@@ -123,6 +124,7 @@ je_sb_great_trek = {
 					country_definition = cd:TRN
 					country_definition = cd:ORA
 					country_definition = cd:ZPB
+					country_definition = cd:LYD
 					country_definition = cd:NAL
 				}
 				has_variable = sb_early_republic_var
@@ -161,6 +163,14 @@ je_sb_great_trek = {
 		}
 		if = {
 			limit = {
+				country_definition = cd:LYD
+			}
+			s:STATE_EAST_TRANSVAAL = {
+				add_homeland = cu:boer
+			}
+		}
+		if = {
+			limit = {
 				country_definition = cd:NAL
 			}
 			s:STATE_ZULULAND = {
@@ -173,6 +183,7 @@ je_sb_great_trek = {
 					country_definition = cd:TRN
 					country_definition = cd:ORA
 					country_definition = cd:ZPB
+					country_definition = cd:LYD
 					country_definition = cd:NAL
 				}
 				NOT = { has_modifier = sb_boer_principality_status }
@@ -249,6 +260,14 @@ je_sb_great_trek = {
 					}
 					set_variable = sb_trek_stage2_complete
 					trigger_event = { id = sb_great_trek.042 popup = yes }
+				}
+				else_if = {
+					limit = {
+						country_definition = cd:LYD
+						sb_controls_east_transvaal_core = yes
+					}
+					set_variable = sb_trek_stage2_complete
+					trigger_event = { id = sb_great_trek.044 popup = yes }
 				}
 				else_if = {
 					limit = {

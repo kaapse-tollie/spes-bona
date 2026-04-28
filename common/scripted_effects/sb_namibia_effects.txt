@@ -56,6 +56,263 @@ sb_nam_schedule_next_consolidation_event = {
 	}
 }
 
+sb_nam_finalize_swa_administration = {
+	create_diplomatic_pact = {
+		country = c:SWA
+		type = chartered_company
+	}
+	c:SWA ?= {
+		remove_primary_culture = cu:british
+	}
+	every_primary_culture = {
+		limit = {
+			has_discrimination_trait_group = heritage_group_european
+			NOT = { is_primary_culture_of = c:SWA }
+		}
+		c:SWA ?= {
+			add_primary_culture = prev
+		}
+	}
+	transfer_state = {
+		STATE = s:STATE_NAMAQUALAND
+		GIVER = root
+		TAKER = c:SWA
+	}
+	s:STATE_NAMAQUALAND = {
+		region_state:SWA ?= {
+			set_state_type = incorporated
+		}
+	}
+	transfer_state = {
+		STATE = s:STATE_HEREROLAND
+		GIVER = root
+		TAKER = c:SWA
+	}
+	if = {
+		limit = { has_claim = s:STATE_NAMAQUALAND }
+		s:STATE_NAMAQUALAND = {
+			remove_claim = root
+		}
+	}
+	if = {
+		limit = {
+			c:SWA ?= {
+				NOT = { has_claim = s:STATE_NAMAQUALAND }
+			}
+		}
+		s:STATE_NAMAQUALAND = {
+			add_claim = c:SWA
+		}
+	}
+	c:SWA ?= {
+		sb_nam_copy_final_harshness_flags_from_root = yes
+		sb_nam_apply_swa_administration_package = yes
+		trigger_event = { id = sb_nam.150 days = 1 popup = yes }
+	}
+	sb_nam_offer_swa_play_as_to_interested_players = yes
+	sb_nam_clear_final_harshness_flags = yes
+	sb_nam_clear_administration_package_flags = yes
+}
+
+sb_nam_apply_swa_subjecthood_amendment = {
+	active_law:lawgroup_citizenship ?= {
+		if = {
+			limit = {
+				NOT = { has_amendment = amendment_type:amendment_racialized_subjecthood }
+			}
+			add_amendment = {
+				type = amendment_racialized_subjecthood
+				sponsor = PREV.ig:ig_armed_forces
+			}
+		}
+	}
+}
+
+sb_nam_apply_swa_mission_laws = {
+	activate_law = law_type:law_colonial_administration
+	activate_law = law_type:law_oligarchy
+	activate_law = law_type:law_subjecthood
+	sb_nam_apply_swa_subjecthood_amendment = yes
+	activate_law = law_type:law_agrarianism
+	activate_law = law_type:law_colonial_resettlement
+	if = {
+		limit = {
+			root = {
+				OR = {
+					has_law_or_variant = law_type:law_state_religion
+					has_law_or_variant = law_type:law_freedom_of_conscience
+				}
+			}
+		}
+		activate_law = law_type:law_state_religion
+		activate_law = law_type:law_religious_schools
+	}
+	else = {
+		activate_law = law_type:law_no_schools
+	}
+	activate_law = law_type:law_no_health_system
+	activate_law = law_type:law_censorship
+	activate_law = law_type:law_no_workers_rights
+	activate_law = law_type:law_child_labor_allowed
+	activate_law = law_type:law_no_social_security
+	activate_law = law_type:law_migration_controls
+}
+
+sb_nam_apply_swa_charter_laws = {
+	activate_law = law_type:law_colonial_administration
+	activate_law = law_type:law_oligarchy
+	activate_law = law_type:law_subjecthood
+	sb_nam_apply_swa_subjecthood_amendment = yes
+	activate_law = law_type:law_extraction_economy
+	activate_law = law_type:law_colonial_exploitation
+	activate_law = law_type:law_no_schools
+	activate_law = law_type:law_no_health_system
+	activate_law = law_type:law_censorship
+	activate_law = law_type:law_no_workers_rights
+	activate_law = law_type:law_child_labor_allowed
+	activate_law = law_type:law_no_social_security
+	activate_law = law_type:law_migration_controls
+}
+
+sb_nam_apply_swa_extractive_laws = {
+	activate_law = law_type:law_colonial_administration
+	activate_law = law_type:law_oligarchy
+	activate_law = law_type:law_racial_segregation
+	activate_law = law_type:law_extraction_economy
+	activate_law = law_type:law_colonial_exploitation
+	activate_law = law_type:law_no_schools
+	activate_law = law_type:law_no_health_system
+	activate_law = law_type:law_censorship
+	activate_law = law_type:law_no_workers_rights
+	activate_law = law_type:law_child_labor_allowed
+	activate_law = law_type:law_no_social_security
+	activate_law = law_type:law_migration_controls
+}
+
+sb_nam_apply_swa_exterminatory_laws = {
+	activate_law = law_type:law_colonial_administration
+	activate_law = law_type:law_autocracy
+	activate_law = law_type:law_racial_segregation
+	activate_law = law_type:law_extraction_economy
+	activate_law = law_type:law_colonial_exploitation
+	activate_law = law_type:law_no_schools
+	activate_law = law_type:law_no_health_system
+	activate_law = law_type:law_censorship
+	activate_law = law_type:law_no_workers_rights
+	activate_law = law_type:law_child_labor_allowed
+	activate_law = law_type:law_no_social_security
+	activate_law = law_type:law_migration_controls
+}
+
+sb_nam_add_swa_extractive_state_modifier = {
+	s:STATE_NAMAQUALAND = {
+		every_scope_state = {
+			limit = { owner = c:SWA }
+			add_modifier = {
+				name = sb_nam_extractive_colony_state
+				months = -1
+			}
+		}
+	}
+	s:STATE_HEREROLAND = {
+		every_scope_state = {
+			limit = { owner = c:SWA }
+			add_modifier = {
+				name = sb_nam_extractive_colony_state
+				months = -1
+			}
+		}
+	}
+}
+
+sb_nam_add_swa_exterminatory_state_modifier = {
+	s:STATE_NAMAQUALAND = {
+		every_scope_state = {
+			limit = { owner = c:SWA }
+			add_modifier = {
+				name = sb_nam_exterminatory_settler_extractive_colony_state
+				months = -1
+			}
+		}
+	}
+	s:STATE_HEREROLAND = {
+		every_scope_state = {
+			limit = { owner = c:SWA }
+			add_modifier = {
+				name = sb_nam_exterminatory_settler_extractive_colony_state
+				months = -1
+			}
+		}
+	}
+}
+
+sb_nam_apply_swa_administration_package = {
+	if = {
+		limit = { has_variable = sb_nam_administration_exterminatory_var }
+		sb_nam_apply_swa_exterminatory_laws = yes
+		add_modifier = {
+			name = sb_nam_exterminatory_settler_extractive_colony
+			months = -1
+		}
+		sb_nam_add_swa_exterminatory_state_modifier = yes
+	}
+	else_if = {
+		limit = { has_variable = sb_nam_administration_extractive_var }
+		sb_nam_apply_swa_extractive_laws = yes
+		add_modifier = {
+			name = sb_nam_extractive_colony
+			months = -1
+		}
+		sb_nam_add_swa_extractive_state_modifier = yes
+	}
+	else_if = {
+		limit = { has_variable = sb_nam_administration_charter_var }
+		sb_nam_apply_swa_charter_laws = yes
+		add_modifier = {
+			name = sb_nam_colonial_charter
+			months = -1
+		}
+	}
+	else = {
+		sb_nam_apply_swa_mission_laws = yes
+		add_modifier = {
+			name = sb_nam_mission_colony
+			months = -1
+		}
+	}
+}
+
+sb_nam_offer_swa_play_as_to_interested_players = {
+	every_country = {
+		limit = {
+			is_player = yes
+			NOT = { country_definition = cd:SWA }
+			has_interest_marker_in_region = sr:region_southern_africa
+			c:SWA ?= {
+				is_ai = yes
+			}
+			NOT = { has_global_variable = sb_nam_swa_player_switch_taken_var }
+		}
+		trigger_event = { id = sb_nam.151 days = 1 popup = yes }
+	}
+}
+
+sb_nam_add_consolidation_je_and_seed = {
+	if = {
+		limit = { NOT = { has_journal_entry = je_sb_consolidation_of_south_west_africa } }
+		add_journal_entry = { type = je_sb_consolidation_of_south_west_africa }
+	}
+	if = {
+		limit = {
+			has_journal_entry = je_sb_consolidation_of_south_west_africa
+			NOT = { has_variable = sb_nam_consolidation_seeded_var }
+		}
+		sb_nam_seed_consolidation_harshness = yes
+		set_variable = sb_nam_consolidation_seeded_var
+		sb_nam_schedule_next_consolidation_event = yes
+	}
+}
+
 sb_nam_seed_consolidation_harshness = {
 	je:je_sb_consolidation_of_south_west_africa ?= {
 		set_bar_progress = {
@@ -164,6 +421,29 @@ sb_nam_seed_consolidation_harshness = {
 	sb_nam_sync_consolidation_modifiers = yes
 }
 
+sb_nam_repair_consolidation_seed = {
+	if = {
+		limit = {
+			has_journal_entry = je_sb_consolidation_of_south_west_africa
+			has_variable = sb_nam_consolidation_seeded_var
+			NOT = { has_variable = sb_nam_stage_100_done_var }
+			NOT = { has_variable = sb_nam_stage_110_done_var }
+			NOT = { has_variable = sb_nam_stage_120_done_var }
+			NOT = { has_variable = sb_nam_stage_130_done_var }
+			OR = {
+				has_law = law_type:law_colonial_exploitation
+				has_law = law_type:law_ethnostate
+				has_law = law_type:law_national_supremacy
+				has_law = law_type:law_racial_segregation
+			}
+			je:je_sb_consolidation_of_south_west_africa ?= {
+				"scripted_bar_progress(sb_nam_rule_harshness_bar)" < 1
+			}
+		}
+		sb_nam_seed_consolidation_harshness = yes
+	}
+}
+
 sb_nam_adjust_consolidation_harshness_up = {
 	je:je_sb_consolidation_of_south_west_africa ?= {
 		add_progress = {
@@ -185,11 +465,11 @@ sb_nam_adjust_consolidation_harshness_down = {
 }
 
 sb_nam_clear_consolidation_modifiers = {
-	remove_modifier = sb_nam_rule_accommodating
-	remove_modifier = sb_nam_rule_supervised
-	remove_modifier = sb_nam_rule_coercive
-	remove_modifier = sb_nam_rule_brutal
-	remove_modifier = sb_nam_rule_exterminatory
+	if = { limit = { has_modifier = sb_nam_rule_accommodating } remove_modifier = sb_nam_rule_accommodating }
+	if = { limit = { has_modifier = sb_nam_rule_supervised } remove_modifier = sb_nam_rule_supervised }
+	if = { limit = { has_modifier = sb_nam_rule_coercive } remove_modifier = sb_nam_rule_coercive }
+	if = { limit = { has_modifier = sb_nam_rule_brutal } remove_modifier = sb_nam_rule_brutal }
+	if = { limit = { has_modifier = sb_nam_rule_exterminatory } remove_modifier = sb_nam_rule_exterminatory }
 }
 
 sb_nam_sync_consolidation_modifiers = {
@@ -263,8 +543,16 @@ sb_nam_clear_final_harshness_flags = {
 	remove_variable = sb_nam_final_harshness_0_var
 }
 
+sb_nam_clear_administration_package_flags = {
+	remove_variable = sb_nam_administration_exterminatory_var
+	remove_variable = sb_nam_administration_extractive_var
+	remove_variable = sb_nam_administration_charter_var
+	remove_variable = sb_nam_administration_mission_var
+}
+
 sb_nam_copy_final_harshness_flags_from_root = {
 	sb_nam_clear_final_harshness_flags = yes
+	sb_nam_clear_administration_package_flags = yes
 	if = {
 		limit = { root = { has_variable = sb_nam_final_harshness_10_var } }
 		set_variable = sb_nam_final_harshness_10_var
@@ -284,6 +572,22 @@ sb_nam_copy_final_harshness_flags_from_root = {
 	else_if = {
 		limit = { root = { has_variable = sb_nam_final_harshness_0_var } }
 		set_variable = sb_nam_final_harshness_0_var
+	}
+	if = {
+		limit = { root = { has_variable = sb_nam_administration_exterminatory_var } }
+		set_variable = sb_nam_administration_exterminatory_var
+	}
+	else_if = {
+		limit = { root = { has_variable = sb_nam_administration_extractive_var } }
+		set_variable = sb_nam_administration_extractive_var
+	}
+	else_if = {
+		limit = { root = { has_variable = sb_nam_administration_charter_var } }
+		set_variable = sb_nam_administration_charter_var
+	}
+	else_if = {
+		limit = { root = { has_variable = sb_nam_administration_mission_var } }
+		set_variable = sb_nam_administration_mission_var
 	}
 }
 

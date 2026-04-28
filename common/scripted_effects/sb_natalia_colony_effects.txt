@@ -417,39 +417,10 @@ sb_join_natalia_against_britain = {
 	}
 }
 
-# Support Natalia against Britain with both a live war join and a short-term
-# defensive pact, so the diplomatic relationship survives beyond the first war.
+# Support Natalia against Britain through the standard Boer compact helper; do
+# not create separate short defensive-pact-only treaties here.
 sb_support_natalia_against_britain = {
-	c:NAL ?= {
-		save_scope_as = natalia
-	}
-	if = {
-		limit = {
-			NOT = {
-				any_scope_treaty = {
-					binds = root
-					binds = scope:natalia
-					any_scope_article = {
-						OR = {
-							has_type = defensive_pact
-							has_type = alliance
-						}
-					}
-				}
-			}
-		}
-		create_treaty = {
-			first_country = root
-			second_country = scope:natalia
-			is_draft = no
-			binding_period = { years = 10 }
-			articles_to_create = {
-				{
-					article = defensive_pact
-				}
-			}
-		}
-	}
+	sb_ensure_boer_republic_compacts_for_root = yes
 	sb_join_natalia_against_britain = yes
 }
 

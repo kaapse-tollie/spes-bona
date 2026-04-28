@@ -74,17 +74,28 @@ sb_remove_iron_age_weapons_modifiers = {
 
 sb_seed_initial_firearms_progress = {
 	# Balance seeding:
-	#   SWZ starts close to completion for gameplay viability.
+	#   SWZ starts with a meaningful but incomplete firearms base.
 	#   GZA starts part-way there.
 	if = {
 		limit = { country_definition = cd:SWZ }
 		set_variable = {
 			name = sb_firearms_treaty_progress_months_var
-			value = 19.2
+			value = 9.6
 		}
 		set_variable = {
 			name = sb_firearms_industry_progress_months_var
-			value = 19.2
+			value = 9.6
+		}
+	}
+	else_if = {
+		limit = { country_definition = cd:BST }
+		set_variable = {
+			name = sb_firearms_treaty_progress_months_var
+			value = 0
+		}
+		set_variable = {
+			name = sb_firearms_industry_progress_months_var
+			value = 0
 		}
 	}
 	else_if = {
@@ -131,6 +142,43 @@ sb_apply_port_natal_raid_firearms_windfall = {
 		change_variable = {
 			name = sb_firearms_industry_progress_months_var
 			add = 2.4
+		}
+		sb_update_firearms_progress = yes
+		sb_sync_iron_age_weapons_penalty = yes
+	}
+}
+
+sb_boost_firearms_progress_raid = {
+	if = {
+		limit = {
+			has_journal_entry = je_sb_adopt_firearms
+			NOT = { has_variable = sb_firearms_modernized_var }
+		}
+		if = {
+			limit = {
+				NOT = { has_variable = sb_firearms_treaty_progress_months_var }
+			}
+			set_variable = {
+				name = sb_firearms_treaty_progress_months_var
+				value = 0
+			}
+		}
+		if = {
+			limit = {
+				NOT = { has_variable = sb_firearms_industry_progress_months_var }
+			}
+			set_variable = {
+				name = sb_firearms_industry_progress_months_var
+				value = 0
+			}
+		}
+		change_variable = {
+			name = sb_firearms_treaty_progress_months_var
+			add = 1.2
+		}
+		change_variable = {
+			name = sb_firearms_industry_progress_months_var
+			add = 1.2
 		}
 		sb_update_firearms_progress = yes
 		sb_sync_iron_age_weapons_penalty = yes
@@ -1242,6 +1290,30 @@ sb_raise_zul_blood_river_relief_force = {
 	}
 }
 
+sb_spawn_zul_blood_river_player_relief_force = {
+	if = {
+		limit = {
+			NOT = { has_variable = sb_zul_blood_river_relief_force_var }
+		}
+		set_variable = sb_zul_blood_river_relief_force_var
+		add_modifier = {
+			name = sb_blood_river_zulu_relief_mobilization
+			months = 12
+		}
+		create_military_formation = {
+			type = army
+			hq_region = sr:region_southern_africa
+			name = dingane_amabutho
+
+			combat_unit = {
+				type = unit_type:combat_unit_type_irregular_infantry
+				state_region = s:STATE_ZULULAND
+				count = 7
+			}
+		}
+	}
+}
+
 sb_raise_gza_firearms_emergency_barracks = {
 	if = {
 		limit = {
@@ -1261,6 +1333,7 @@ sb_raise_gza_firearms_emergency_barracks = {
 	}
 }
 
+#?????
 sb_ensure_zul_ai_army_failsafe = {
 	if = {
 		limit = {

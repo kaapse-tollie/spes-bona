@@ -6,6 +6,12 @@ sb_apply_responsible_colony_subject_type_from_overlord = {
 	# inside the parent dynasty without inventing a cadet branch in script.
 	if = {
 		limit = {
+			is_subject_of = c:GBR
+		}
+		change_subject_type = subject_type_sb_responsible_colony
+	}
+	else_if = {
+		limit = {
 			scope:actor = {
 				has_law_or_variant = law_type:law_monarchy
 				NOT = { country_definition = cd:GBR }
@@ -21,9 +27,15 @@ sb_apply_responsible_colony_subject_type_from_overlord = {
 sb_apply_responsible_colony_governance_from_overlord = {
 	# Responsible government should move the subject out of the colonial
 	# administration family and into the ordinary governance-principles family.
-	# Britain is the historical monarchical exception and still maps to the
-	# parliamentary path; other monarchies remain monarchies.
+	# British responsible colonies use parliamentary republic so Victoria does
+	# not become their head of state; other monarchies remain monarchies.
 	if = {
+		limit = {
+			is_subject_of = c:GBR
+		}
+		activate_law = law_type:law_parliamentary_republic
+	}
+	else_if = {
 		limit = {
 			scope:actor = {
 				has_law_or_variant = law_type:law_council_republic
@@ -87,5 +99,21 @@ sb_grant_responsible_government_effect = {
 	change_relations = {
 		country = scope:actor
 		value = 20
+	}
+	sb_queue_cape_empire_trade_tie_if_needed = yes
+}
+
+sb_queue_cape_empire_trade_tie_if_needed = {
+	if = {
+		limit = {
+			country_definition = cd:CAP
+			c:GBR ?= { is_country_alive = yes }
+			NOT = { has_variable = sb_cape_empire_trade_tie_pending_var }
+			NOT = { has_variable = sb_cape_empire_trade_tie_resolved_var }
+		}
+		set_variable = sb_cape_empire_trade_tie_pending_var
+		c:GBR ?= {
+			trigger_event = { id = sb_cape.021 days = 7 popup = yes }
+		}
 	}
 }

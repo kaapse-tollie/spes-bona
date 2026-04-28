@@ -1,0 +1,118 @@
+﻿# Spes Bona - AI frontier deployment helpers
+#
+# These effects are intentionally narrow. They exist to push AI Transvaal's
+# mobilized armies onto the actual front in scripted frontier wars where simple
+# mobilization is not enough for the AI to assign orders reliably.
+
+sb_trn_deploy_armies_to_phl_front = {
+	if = {
+		limit = {
+			country_definition = cd:TRN
+			is_ai = yes
+			has_war_with = c:PHL
+			NOT = { has_variable = sb_trn_phl_front_deployment_cooldown_var }
+		}
+		set_variable = {
+			name = sb_trn_phl_front_deployment_cooldown_var
+			days = 14
+		}
+		every_military_formation = {
+			limit = { is_army = yes }
+			fully_mobilize_army = yes
+			teleport_to_front = p:xC5B1AF.front
+		}
+	}
+}
+
+sb_trn_deploy_armies_to_bst_front = {
+	if = {
+		limit = {
+			country_definition = cd:TRN
+			is_ai = yes
+			has_war_with = c:BST
+			NOT = { has_variable = sb_trn_bst_front_deployment_cooldown_var }
+		}
+		set_variable = {
+			name = sb_trn_bst_front_deployment_cooldown_var
+			days = 14
+		}
+		every_military_formation = {
+			limit = { is_army = yes }
+			fully_mobilize_army = yes
+			teleport_to_front = p:x19AE59.front
+		}
+	}
+}
+
+sb_trn_deploy_armies_to_swz_front = {
+	if = {
+		limit = {
+			country_definition = cd:TRN
+			is_ai = yes
+			has_war_with = c:SWZ
+			NOT = { has_variable = sb_trn_swz_front_deployment_cooldown_var }
+		}
+		set_variable = {
+			name = sb_trn_swz_front_deployment_cooldown_var
+			days = 14
+		}
+		every_military_formation = {
+			limit = { is_army = yes }
+			fully_mobilize_army = yes
+			teleport_to_front = p:xA30505.front
+		}
+	}
+}
+
+sb_trn_deploy_armies_to_zul_front = {
+	if = {
+		limit = {
+			country_definition = cd:TRN
+			is_ai = yes
+			has_war_with = c:ZUL
+			NOT = { has_variable = sb_trn_zul_front_deployment_cooldown_var }
+		}
+		set_variable = {
+			name = sb_trn_zul_front_deployment_cooldown_var
+			days = 14
+		}
+		every_military_formation = {
+			limit = { is_army = yes }
+			fully_mobilize_army = yes
+			teleport_to_front = p:x5B124F.front
+		}
+	}
+}
+
+sb_trn_deploy_armies_to_active_frontier_war = {
+	sb_trn_deploy_armies_to_phl_front = yes
+	sb_trn_deploy_armies_to_bst_front = yes
+	sb_trn_deploy_armies_to_swz_front = yes
+	sb_trn_deploy_armies_to_zul_front = yes
+}
+
+sb_schedule_trn_frontier_deployment_for_play = {
+	if = {
+		limit = {
+			c:TRN ?= {
+				is_country_alive = yes
+				is_ai = yes
+			}
+			any_scope_play_involved = { c:ORA ?= THIS }
+			OR = {
+				any_scope_play_involved = { c:PHL ?= THIS }
+				any_scope_play_involved = { c:BST ?= THIS }
+				any_scope_play_involved = { c:SWZ ?= THIS }
+				any_scope_play_involved = { c:ZUL ?= THIS }
+			}
+		}
+		c:TRN ?= {
+			trigger_event = { id = sb_frontier_ai_wars.900 days = 1 }
+			trigger_event = { id = sb_frontier_ai_wars.900 days = 7 }
+			trigger_event = { id = sb_frontier_ai_wars.900 days = 21 }
+			trigger_event = { id = sb_frontier_ai_wars.900 days = 45 }
+			trigger_event = { id = sb_frontier_ai_wars.900 days = 90 }
+			trigger_event = { id = sb_frontier_ai_wars.900 days = 180 }
+		}
+	}
+}

@@ -1258,6 +1258,93 @@ sb_cape.020 = {
 	}
 }
 
+sb_cape.021 = {
+	type = country_event
+	placement = root
+
+	title = sb_cape.021.t
+	desc = sb_cape.021.d
+	flavor = sb_cape.021.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:GBR
+		c:CAP ?= {
+			is_country_alive = yes
+			sb_cap_is_self_governing_colony = yes
+			has_variable = sb_cape_empire_trade_tie_pending_var
+		}
+	}
+
+	option = {
+		name = sb_cape.021.a
+		default_option = yes
+		sb_ensure_gbr_power_bloc_embassies_for_cape_frontier_network = yes
+		c:CAP ?= {
+			trigger_event = { id = sb_cape.022 days = 7 popup = yes }
+		}
+		ai_chance = {
+			base = 85
+		}
+	}
+
+	option = {
+		name = sb_cape.021.b
+		c:CAP ?= {
+			remove_variable = sb_cape_empire_trade_tie_pending_var
+			set_variable = sb_cape_empire_trade_tie_resolved_var
+		}
+		add_modifier = {
+			name = sb_prestige_loss_small
+			months = 60
+		}
+		ai_chance = {
+			base = 15
+		}
+	}
+}
+
+sb_cape.022 = {
+	type = country_event
+	placement = root
+
+	title = sb_cape.022.t
+	desc = sb_cape.022.d
+	flavor = sb_cape.022.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:CAP
+		sb_cap_is_self_governing_colony = yes
+		has_variable = sb_cape_empire_trade_tie_pending_var
+	}
+
+	option = {
+		name = sb_cape.022.a
+		default_option = yes
+		remove_variable = sb_cape_empire_trade_tie_pending_var
+		set_variable = sb_cape_empire_trade_tie_resolved_var
+		sb_ensure_cap_trade_through_for_cape_frontier_network = yes
+		ai_chance = {
+			base = 100
+		}
+	}
+}
+
 # =============================================================================
 # Albany Question — Britain can defuse a full ECSL secession crisis by hiving
 # the Eastern Cape off into a separate colonial tag.

@@ -526,6 +526,57 @@ sb_great_trek.043 = {
 	}
 }
 
+sb_great_trek.044 = {
+	type = country_event
+	placement = root
+
+	title = sb_great_trek.044.t
+	desc = sb_great_trek.044.d
+	flavor = sb_great_trek.044.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = { }
+
+	immediate = {
+		c:CAP ?= {
+			save_scope_as = migration_source
+		}
+		cu:boer = {
+			save_scope_as = migration_culture
+		}
+		ordered_scope_state = {
+			order_by = migration_pull
+			position = 0
+			check_range_bounds = no
+			save_scope_as = migration_target
+		}
+	}
+
+	option = {
+		name = sb_great_trek.044.a
+		default_option = yes
+		scope:migration_target = {
+			create_mass_migration = {
+				origin = scope:migration_source
+				culture = scope:migration_culture
+			}
+		}
+		root = {
+			add_modifier = {
+				name = sb_trek_migration_cost
+				months = 24
+			}
+		}
+	}
+}
+
 sb_great_trek.100 = {
 	type = country_event
 	placement = root

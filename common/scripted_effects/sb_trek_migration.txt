@@ -430,43 +430,7 @@ sb_spawn_transvaal_republic_v2 = {
 		country = c:TRN
 		value = 25
 	}
-		if = {
-			limit = {
-				NOT = {
-					any_scope_treaty = {
-						binds = c:TRN
-						any_scope_article = {
-							OR = {
-								has_type = defensive_pact
-								has_type = alliance
-							}
-						}
-					}
-				}
-			}
-			create_treaty = {
-				first_country = root
-				second_country = c:TRN
-				is_draft = no
-				binding_period = { years = 25 }
-				articles_to_create = {
-					{
-						article = alliance
-					}
-					{
-						article = transit_rights
-						source_country = root
-						target_country = c:TRN
-					}
-					{
-						article = transit_rights
-						source_country = c:TRN
-						target_country = root
-					}
-				}
-			}
-			}
-		sb_ensure_trn_nal_frontier_compact = yes
+	c:TRN ?= { sb_ensure_boer_republic_compacts_for_root = yes }
 		c:ORA ?= {
 		if = {
 			limit = { has_variable = sb_voortrekker_start_var }
@@ -584,10 +548,10 @@ sb_found_zoutpansberg_republic = {
 			months = 24
 		}
 		sb_seed_zpb_initial_trekker_arrivals = yes
-		}
-		c:ZPB ?= {
-			sb_ensure_boer_transit_from_ora_trn_to_root = yes
-		}
+			}
+			c:ZPB ?= {
+				sb_ensure_boer_republic_compacts_for_root = yes
+			}
 		c:GBR ?= {
 			if = {
 				limit = { is_country_alive = yes }
@@ -719,25 +683,32 @@ sb_found_zoutpansberg_republic = {
 				country = root
 			value = -25
 		}
-		add_modifier = {
-			name = sb_trek_migration_cost
-			months = 24
-		}
-		random_scope_state = {
-			limit = {
-				state_region = s:STATE_EAST_TRANSVAAL
-			}
 			add_modifier = {
-				name = sb_trek_migration_pull
+				name = sb_trek_migration_cost
 				months = 24
 			}
-			create_mass_migration = {
-				origin = scope:migration_source
+			if = {
+				limit = { NOT = { has_journal_entry = je_sb_great_trek } }
+				add_journal_entry = { type = je_sb_great_trek }
+			}
+			random_scope_state = {
+				limit = {
+					state_region = s:STATE_EAST_TRANSVAAL
+				}
+				if = {
+					limit = { NOT = { has_modifier = sb_trek_migration_pull } }
+					add_modifier = {
+						name = sb_trek_migration_pull
+						months = 24
+					}
+				}
+				create_mass_migration = {
+					origin = scope:migration_source
 				culture = scope:migration_culture
 				}
 			}
-			sb_ensure_boer_transit_from_ora_trn_to_root = yes
-		}
+				sb_ensure_boer_republic_compacts_for_root = yes
+			}
 		if = {
 			limit = {
 			country_definition = cd:TRN
@@ -749,8 +720,7 @@ sb_found_zoutpansberg_republic = {
 			country = c:LYD
 			value = -25
 		}
-		sb_ensure_lyd_zpb_defensive_pact = yes
-		c:GBR ?= {
+			c:GBR ?= {
 			if = {
 				limit = { is_country_alive = yes }
 				trigger_event = { id = sb_boer_republics.009 days = 14 popup = yes }
