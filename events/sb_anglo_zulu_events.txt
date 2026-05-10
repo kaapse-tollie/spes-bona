@@ -1,0 +1,144 @@
+﻿namespace = sb_anglo_zulu
+
+sb_anglo_zulu.010 = {
+	type = country_event
+	placement = root
+
+	title = sb_anglo_zulu.010.t
+	desc = sb_anglo_zulu.010.d
+	flavor = sb_anglo_zulu.010.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:NAL
+		is_subject = yes
+		has_technology_researched = civilizing_mission
+		has_claim = s:STATE_ZULULAND
+		NOT = { has_variable = sb_anglo_zulu_pressure_resolved_var }
+		c:ZUL ?= {
+			is_country_alive = yes
+			is_at_war = no
+			is_active_in_diplomatic_play = no
+		}
+		is_at_war = no
+		is_active_in_diplomatic_play = no
+	}
+
+	option = {
+		name = sb_anglo_zulu.010.a
+		default_option = yes
+		set_variable = sb_anglo_zulu_pressure_active_var
+		c:ZUL ?= { set_variable = sb_anglo_zulu_pressure_active_var }
+		create_diplomatic_play = {
+			type = dp_sb_anglo_zulu_return_state_locked
+			target_country = c:ZUL
+			target_state = s:STATE_ZULULAND.region_state:ZUL
+		}
+		if = {
+			limit = {
+				s:STATE_ZULULAND = {
+					any_scope_state = {
+						owner = root
+					}
+				}
+			}
+			random_diplomatic_play = {
+				limit = {
+					initiator = root
+					target = c:ZUL
+					is_diplomatic_play_type = dp_sb_anglo_zulu_return_state_locked
+				}
+				add_war_goal = {
+					holder = c:ZUL
+					target_state = s:STATE_ZULULAND.region_state:NAL
+					type = return_state
+				}
+			}
+		}
+	}
+
+	option = {
+		name = sb_anglo_zulu.010.b
+		set_variable = {
+			name = sb_anglo_zulu_ultimatum_cooldown_var
+			months = 12
+		}
+	}
+}
+
+sb_anglo_zulu.020 = {
+	type = country_event
+	placement = root
+
+	title = sb_anglo_zulu.020.t
+	desc = sb_anglo_zulu.020.d
+	flavor = sb_anglo_zulu.020.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_soldiers_breaking_protest.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_military.dds"
+	duration = 3
+
+	trigger = {
+		sb_is_zulu_dynasty_country = yes
+	}
+
+	option = {
+		name = sb_anglo_zulu.020.a
+		default_option = yes
+		if = {
+			limit = {
+				has_journal_entry = je_sb_adopt_firearms
+			}
+			sb_boost_firearms_progress_50 = yes
+		}
+		set_variable = sb_anglo_zulu_pressure_resolved_var
+		if = { limit = { has_variable = sb_anglo_zulu_pressure_active_var } remove_variable = sb_anglo_zulu_pressure_active_var }
+		c:NAL ?= {
+			if = { limit = { has_variable = sb_anglo_zulu_pressure_active_var } remove_variable = sb_anglo_zulu_pressure_active_var }
+			set_variable = sb_anglo_zulu_pressure_resolved_var
+		}
+	}
+}
+
+sb_anglo_zulu.030 = {
+	type = country_event
+	placement = root
+
+	title = sb_anglo_zulu.030.t
+	desc = sb_anglo_zulu.030.d
+	flavor = sb_anglo_zulu.030.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:NAL
+	}
+
+	option = {
+		name = sb_anglo_zulu.030.a
+		default_option = yes
+		set_variable = sb_anglo_zulu_pressure_resolved_var
+		if = { limit = { has_variable = sb_anglo_zulu_pressure_active_var } remove_variable = sb_anglo_zulu_pressure_active_var }
+		c:ZUL ?= {
+			if = { limit = { has_variable = sb_anglo_zulu_pressure_active_var } remove_variable = sb_anglo_zulu_pressure_active_var }
+			set_variable = sb_anglo_zulu_pressure_resolved_var
+		}
+	}
+}

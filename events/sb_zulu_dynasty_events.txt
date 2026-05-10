@@ -126,7 +126,96 @@ sb_zulu_dynasty.093 = {
 
 	option = {
 		name = sb_zulu_dynasty.093.a
+		trigger = {
+			ruler = {
+				has_template = ZUL_dingane
+			}
+		}
 		default_option = yes
 		sb_resolve_zulu_dynasty_secured = yes
+	}
+
+	option = {
+		name = sb_zulu_dynasty.093.b
+		trigger = {
+			ruler = {
+				has_template = ZUL_mpande_zulu
+			}
+		}
+		sb_resolve_zulu_dynasty_secured_cetshwayo_for_mpande = yes
+	}
+
+	option = {
+		name = sb_zulu_dynasty.093.c
+		trigger = {
+			ruler = {
+				has_template = ZUL_mpande_zulu
+			}
+		}
+		sb_resolve_zulu_dynasty_secured_mbuyazi = yes
+	}
+
+	option = {
+		name = sb_zulu_dynasty.093.d
+		trigger = {
+			ruler = {
+				NOR = {
+					has_template = ZUL_dingane
+					has_template = ZUL_mpande_zulu
+				}
+			}
+		}
+		sb_resolve_zulu_dynasty_secured = yes
+	}
+}
+
+sb_zulu_dynasty.094 = {
+	type = country_event
+	placement = root
+
+	title = sb_zulu_dynasty.094.t
+	desc = sb_zulu_dynasty.094.d
+	flavor = sb_zulu_dynasty.094.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		sb_is_zulu_dynasty_country = yes
+		has_variable = sb_zulu_mpande_succession_secured_var
+		NOT = { has_variable = sb_zulu_mpande_withdrawal_delay_var }
+		NOT = { has_variable = sb_zulu_mpande_withdrawal_fired_var }
+		ruler = {
+			has_template = ZUL_mpande_zulu
+		}
+	}
+
+	option = {
+		name = sb_zulu_dynasty.094.a
+		trigger = {
+			any_scope_character = {
+				has_template = ZUL_cetshwayo_heir
+				is_character_alive = yes
+			}
+		}
+		sb_zulu_prepare_cetshwayo_claimant = yes
+		set_variable = sb_zulu_mpande_withdrawal_fired_var
+	}
+
+	option = {
+		name = sb_zulu_dynasty.094.b
+		default_option = yes
+		set_variable = sb_zulu_mpande_withdrawal_fired_var
+		ruler = {
+			add_modifier = {
+				name = sb_zulu_mpande_transition
+				months = 60
+			}
+		}
 	}
 }

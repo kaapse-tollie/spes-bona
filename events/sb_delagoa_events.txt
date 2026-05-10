@@ -1,0 +1,121 @@
+﻿namespace = sb_delagoa
+
+sb_delagoa.010 = {
+	type = country_event
+	placement = root
+
+	title = sb_delagoa.010.t
+	desc = sb_delagoa.010.d
+	flavor = sb_delagoa.010.f
+
+	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_trade.dds"
+	duration = 3
+
+	trigger = {
+		OR = {
+			country_definition = cd:POR
+			country_definition = cd:MZQ
+		}
+		c:TRN ?= {
+			is_country_alive = yes
+			is_ai = yes
+			is_subject = no
+			has_journal_entry = je_sb_delagoa_route_to_sea
+			NOT = { has_variable = sb_delagoa_treaty_refused_var }
+			sb_has_railway_in_transvaal = yes
+			sb_has_railway_in_east_transvaal = yes
+			NOT = { sb_trn_has_delagoa_trade_through = yes }
+		}
+		any_scope_state = {
+			state_region = s:STATE_LOURENCO_MARQUES
+			owner = root
+		}
+	}
+
+	option = {
+		name = sb_delagoa.010.a
+		default_option = yes
+		custom_tooltip = sb_delagoa_010_accept_tt
+		hidden_effect = {
+			sb_delagoa_create_trade_treaty_with_trn = yes
+			c:TRN ?= {
+				trigger_event = { id = sb_delagoa.020 days = 1 popup = yes }
+			}
+			trigger_event = { id = sb_delagoa.021 days = 1 popup = yes }
+		}
+		ai_chance = { base = 100 }
+	}
+
+	option = {
+		name = sb_delagoa.010.b
+		custom_tooltip = sb_delagoa_010_reject_tt
+		hidden_effect = {
+			change_relations = { country = c:TRN value = -25 }
+			c:TRN ?= {
+				set_variable = sb_delagoa_treaty_refused_var
+			}
+		}
+		ai_chance = { base = 0 }
+	}
+}
+
+sb_delagoa.020 = {
+	type = country_event
+	placement = root
+
+	title = sb_delagoa.020.t
+	desc = sb_delagoa.020.d
+	flavor = sb_delagoa.020.f
+
+	event_image = { video = "gfx/event_pictures/africa_construction_colony.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_trade.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:TRN
+		NOT = { has_variable = sb_delagoa_route_notified_var }
+	}
+
+	option = {
+		name = sb_delagoa.020.a
+		default_option = yes
+		set_variable = sb_delagoa_route_notified_var
+		set_variable = sb_delagoa_route_complete_var
+		add_modifier = { name = sb_delagoa_route_opened months = 120 }
+		if = { limit = { exists = c:MZQ } change_relations = { country = c:MZQ value = 25 } }
+		if = { limit = { exists = c:POR } change_relations = { country = c:POR value = 25 } }
+	}
+}
+
+sb_delagoa.021 = {
+	type = country_event
+	placement = root
+
+	title = sb_delagoa.021.t
+	desc = sb_delagoa.021.d
+	flavor = sb_delagoa.021.f
+
+	event_image = { video = "gfx/event_pictures/africa_construction_colony.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_trade.dds"
+	duration = 3
+
+	trigger = {
+		OR = {
+			country_definition = cd:POR
+			country_definition = cd:MZQ
+		}
+		NOT = { has_variable = sb_delagoa_partner_notified_var }
+	}
+
+	option = {
+		name = sb_delagoa.021.a
+		default_option = yes
+		set_variable = sb_delagoa_partner_notified_var
+		change_relations = { country = c:TRN value = 25 }
+		sb_delagoa_apply_partner_state_bonuses = yes
+	}
+}

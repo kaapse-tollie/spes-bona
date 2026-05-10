@@ -1,0 +1,209 @@
+﻿namespace = sb_gaza
+
+sb_gaza.010 = {
+	type = country_event
+	placement = root
+
+	title = sb_gaza.010.t
+	desc = sb_gaza.010.d
+	flavor = sb_gaza.010.f
+
+	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		has_journal_entry = je_sb_consolidating_gaza
+		NOT = { has_variable = sb_gaza_010_fired_var }
+	}
+
+	option = {
+		name = sb_gaza.010.a
+		default_option = yes
+		set_variable = sb_gaza_010_fired_var
+		s:STATE_ZAMBEZIA = {
+			every_scope_state = {
+				limit = { owner = root }
+				add_loyalists_in_state = { value = medium_radicals }
+			}
+		}
+		s:STATE_LOURENCO_MARQUES = {
+			every_scope_state = {
+				limit = { owner = root }
+				add_modifier = { name = sb_gaza_local_unrest months = 36 }
+			}
+		}
+		add_modifier = { name = sb_gaza_northern_focus months = 60 }
+		ai_chance = { base = 50 }
+	}
+
+	option = {
+		name = sb_gaza.010.b
+		set_variable = sb_gaza_010_fired_var
+		s:STATE_LOURENCO_MARQUES = {
+			every_scope_state = {
+				limit = { owner = root }
+				add_loyalists_in_state = { value = medium_radicals }
+			}
+		}
+		s:STATE_ZAMBEZIA = {
+			every_scope_state = {
+				limit = { owner = root }
+				add_modifier = { name = sb_gaza_local_unrest months = 36 }
+			}
+		}
+		add_modifier = { name = sb_gaza_southern_focus months = 60 }
+		ai_chance = { base = 50 }
+	}
+}
+
+sb_gaza.020 = {
+	type = country_event
+	placement = root
+
+	title = sb_gaza.020.t
+	desc = sb_gaza.020.d
+	flavor = sb_gaza.020.f
+
+	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		has_journal_entry = je_sb_consolidating_gaza
+		NOT = { has_variable = sb_gaza_020_fired_var }
+	}
+
+	option = {
+		name = sb_gaza.020.a
+		default_option = yes
+		set_variable = sb_gaza_020_fired_var
+		add_treasury = 2500
+		sb_gaza_target_states_add_non_nguni_radicals = yes
+		add_modifier = { name = sb_gaza_collectors months = 36 }
+		ai_chance = { base = 45 }
+	}
+
+	option = {
+		name = sb_gaza.020.b
+		set_variable = sb_gaza_020_fired_var
+		sb_gaza_target_states_add_local_order = yes
+		ai_chance = { base = 55 }
+	}
+}
+
+sb_gaza.030 = {
+	type = country_event
+	placement = root
+
+	title = sb_gaza.030.t
+	desc = sb_gaza.030.d
+	flavor = sb_gaza.030.f
+
+	event_image = { video = "gfx/event_pictures/africa_soldiers_breaking_protest.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_military.dds"
+	duration = 3
+
+	trigger = {
+		has_journal_entry = je_sb_consolidating_gaza
+		NOT = { has_variable = sb_gaza_030_fired_var }
+	}
+
+	option = {
+		name = sb_gaza.030.a
+		default_option = yes
+		set_variable = sb_gaza_030_fired_var
+		add_modifier = { name = sb_gaza_open_regiments months = 60 }
+		sb_gaza_target_states_add_non_nguni_radicals = yes
+		ai_chance = { base = 50 }
+	}
+
+	option = {
+		name = sb_gaza.030.b
+		set_variable = sb_gaza_030_fired_var
+		add_modifier = { name = sb_gaza_narrow_regiments months = 60 }
+		sb_gaza_target_states_add_local_order = yes
+		ai_chance = { base = 50 }
+	}
+}
+
+sb_gaza.040 = {
+	type = country_event
+	placement = root
+
+	title = sb_gaza.040.t
+	desc = sb_gaza.040.d
+	flavor = sb_gaza.040.f
+
+	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_trade.dds"
+	duration = 3
+
+	trigger = {
+		has_journal_entry = je_sb_consolidating_gaza
+		NOT = { has_variable = sb_gaza_040_fired_var }
+		c:POR ?= {
+			is_country_alive = yes
+		}
+	}
+
+	option = {
+		name = sb_gaza.040.a
+		default_option = yes
+		set_variable = sb_gaza_040_fired_var
+		sb_boost_firearms_progress_10 = yes
+		change_relations = { country = c:POR value = -25 }
+		sb_gaza_target_states_add_local_unrest = yes
+		ai_chance = { base = 40 }
+	}
+
+	option = {
+		name = sb_gaza.040.b
+		set_variable = sb_gaza_040_fired_var
+		change_relations = { country = c:POR value = 15 }
+		sb_gaza_target_states_add_local_order = yes
+		ai_chance = { base = 60 }
+	}
+}
+
+sb_gaza.090 = {
+	type = country_event
+	placement = root
+
+	title = sb_gaza.090.t
+	desc = sb_gaza.090.d
+	flavor = sb_gaza.090.f
+
+	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	option = {
+		name = sb_gaza.090.a
+		default_option = yes
+	}
+}
+
+sb_gaza.095 = {
+	type = country_event
+	placement = root
+
+	title = sb_gaza.095.t
+	desc = sb_gaza.095.d
+	flavor = sb_gaza.095.f
+
+	event_image = { video = "gfx/event_pictures/africa_public_protest.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	option = {
+		name = sb_gaza.095.a
+		default_option = yes
+	}
+}

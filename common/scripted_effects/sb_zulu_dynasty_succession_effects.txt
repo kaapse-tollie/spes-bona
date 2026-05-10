@@ -108,6 +108,35 @@ sb_zulu_prepare_cetshwayo_heir = {
 	set_character_of_unknown_status_as_heir = yes
 }
 
+sb_zulu_prepare_mbuyazi_heir = {
+	if = {
+		limit = {
+			NOT = {
+				any_scope_character = {
+					has_template = ZUL_mbuyazi_heir
+					is_character_alive = yes
+				}
+			}
+		}
+		create_character = {
+			template = ZUL_mbuyazi_heir
+			on_created = {
+				save_scope_as = new_heir_scope
+			}
+		}
+	}
+	else = {
+		random_scope_character = {
+			limit = {
+				has_template = ZUL_mbuyazi_heir
+				is_character_alive = yes
+			}
+			save_scope_as = new_heir_scope
+		}
+	}
+	set_character_of_unknown_status_as_heir = yes
+}
+
 sb_zulu_prepare_dinuzulu_heir = {
 	if = {
 		limit = {
@@ -263,6 +292,35 @@ sb_zulu_prepare_cetshwayo_claimant = {
 	sb_zulu_install_summoned_claimant_as_ruler = yes
 }
 
+sb_zulu_prepare_mbuyazi_claimant = {
+	if = {
+		limit = {
+			NOT = {
+				any_scope_character = {
+					has_template = ZUL_mbuyazi_heir
+					is_character_alive = yes
+				}
+			}
+		}
+		create_character = {
+			template = ZUL_mbuyazi_heir
+			on_created = {
+				save_scope_as = summoned_character_scope
+			}
+		}
+	}
+	else = {
+		random_scope_character = {
+			limit = {
+				has_template = ZUL_mbuyazi_heir
+				is_character_alive = yes
+			}
+			save_scope_as = summoned_character_scope
+		}
+	}
+	sb_zulu_install_summoned_claimant_as_ruler = yes
+}
+
 sb_zulu_prepare_dinuzulu_claimant = {
 	if = {
 		limit = {
@@ -327,6 +385,17 @@ sb_zulu_apply_swazi_campaign_defeat = {
 sb_zulu_monthly_dynasty_housekeeping = {
 	sb_zulu_update_dynastic_stability_modifiers = yes
 	sb_zulu_maybe_open_swazi_question = yes
+	if = {
+		limit = {
+			has_variable = sb_zulu_mpande_succession_secured_var
+			NOT = { has_variable = sb_zulu_mpande_withdrawal_delay_var }
+			NOT = { has_variable = sb_zulu_mpande_withdrawal_fired_var }
+			ruler = {
+				has_template = ZUL_mpande_zulu
+			}
+		}
+		trigger_event = { id = sb_zulu_dynasty.094 days = 1 popup = yes }
+	}
 	if = {
 		limit = {
 			NOT = { has_variable = sb_zulu_dynastic_event_cooldown_var }
@@ -524,5 +593,47 @@ sb_resolve_zulu_dynasty_secured = {
 	else = {
 		sb_zulu_kill_current_heir = yes
 		sb_zulu_prepare_cetshwayo_heir = yes
+	}
+}
+
+sb_resolve_zulu_dynasty_secured_mbuyazi = {
+	if = {
+		limit = {
+			has_modifier = sb_zulu_dynastic_crisis
+		}
+		remove_modifier = sb_zulu_dynastic_crisis
+	}
+	if = {
+		limit = {
+			has_variable = sb_zulu_dynastic_collapse_pending_var
+		}
+		remove_variable = sb_zulu_dynastic_collapse_pending_var
+	}
+	set_variable = sb_zulu_dynasty_secured_var
+	set_variable = sb_zulu_mpande_succession_secured_var
+	set_variable = {
+		name = sb_zulu_mpande_withdrawal_delay_var
+		months = 60
+	}
+	sb_zulu_disable_dynastic_claims = yes
+	sb_zulu_clear_dynastic_stability_modifiers = yes
+	ruler = {
+		if = {
+			limit = {
+				NOT = { has_modifier = sb_zulu_secured_the_throne }
+			}
+			add_modifier = { name = sb_zulu_secured_the_throne }
+		}
+	}
+	sb_zulu_kill_current_heir = yes
+	sb_zulu_prepare_mbuyazi_heir = yes
+}
+
+sb_resolve_zulu_dynasty_secured_cetshwayo_for_mpande = {
+	sb_resolve_zulu_dynasty_secured = yes
+	set_variable = sb_zulu_mpande_succession_secured_var
+	set_variable = {
+		name = sb_zulu_mpande_withdrawal_delay_var
+		months = 60
 	}
 }

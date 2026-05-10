@@ -1,0 +1,209 @@
+﻿# Spes Bona - Eastern Sphere journal entries
+
+je_sb_consolidating_gaza = {
+	group = je_group_historical_content
+
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+
+	is_shown_in_lobby = {
+		hidden_trigger = {
+			OR = {
+				country_definition = cd:GZA
+				country_definition = cd:NGU
+			}
+		}
+	}
+
+	is_shown_when_inactive = {
+		hidden_trigger = {
+			OR = {
+				country_definition = cd:GZA
+				AND = {
+					country_definition = cd:NGU
+					has_variable = sb_ngu_inherited_gza_content_var
+				}
+			}
+			is_subject = no
+			NOT = { has_variable = sb_gaza_consolidated_var }
+			NOT = { has_variable = sb_gaza_consolidation_failed_var }
+			sb_gaza_has_target_holdings = yes
+		}
+	}
+
+	possible = {
+		OR = {
+			country_definition = cd:GZA
+			AND = {
+				country_definition = cd:NGU
+				has_variable = sb_ngu_inherited_gza_content_var
+			}
+		}
+		is_subject = no
+		NOT = { has_variable = sb_gaza_consolidated_var }
+		NOT = { has_variable = sb_gaza_consolidation_failed_var }
+		sb_gaza_has_target_holdings = yes
+	}
+
+	immediate = {
+		if = {
+			limit = { NOT = { has_variable = sb_gaza_consolidation_seeded_var } }
+			set_variable = sb_gaza_consolidation_seeded_var
+			sb_gaza_apply_startup_consolidation_effects = yes
+		}
+	}
+
+	status_desc = {
+		desc = je_sb_consolidating_gaza_status
+	}
+
+	complete = {
+		sb_gaza_target_states_have_zero_turmoil = yes
+	}
+
+	fail = {
+		game_date >= 1860.1.1
+		sb_gaza_has_target_holdings = yes
+		NOT = { sb_gaza_target_states_have_zero_turmoil = yes }
+	}
+
+	invalid = {
+		OR = {
+			is_subject = yes
+			NOT = { sb_gaza_has_target_holdings = yes }
+		}
+	}
+
+	on_monthly_pulse = {
+		effect = {
+			sb_gaza_monthly_random_event = yes
+		}
+	}
+
+	on_complete = {
+		sb_gaza_completion_effect = yes
+	}
+
+	on_fail = {
+		sb_gaza_failure_effect = yes
+	}
+
+	on_invalid = {
+		sb_gaza_clear_runtime = yes
+	}
+
+	weight = 1000
+	should_be_pinned_by_default = yes
+}
+
+je_sb_delagoa_route_to_sea = {
+	group = je_group_historical_content
+
+	icon = "gfx/interface/icons/event_icons/event_trade.dds"
+
+	possible = {
+		country_definition = cd:TRN
+		has_journal_entry = je_sb_imperial_confederation_scheme
+		any_scope_state = {
+			state_region = s:STATE_EAST_TRANSVAAL
+			owner = root
+			is_incorporated = yes
+		}
+		sb_delagoa_owner_outside_gbr_bloc = yes
+		NOT = { has_variable = sb_delagoa_route_complete_var }
+	}
+
+	status_desc = {
+		desc = je_sb_delagoa_route_to_sea_status
+	}
+
+	complete = {
+		is_subject = no
+		sb_trn_has_delagoa_trade_through = yes
+		sb_has_railway_in_transvaal = yes
+		sb_has_railway_in_east_transvaal = yes
+	}
+
+	invalid = {
+		OR = {
+			has_variable = sb_delagoa_route_complete_var
+			NOT = { sb_delagoa_owner_outside_gbr_bloc = yes }
+			NOT = {
+				any_scope_state = {
+					state_region = s:STATE_EAST_TRANSVAAL
+					owner = root
+					is_incorporated = yes
+				}
+			}
+		}
+	}
+
+	on_complete = {
+		set_variable = sb_delagoa_route_complete_var
+		trigger_event = { id = sb_delagoa.020 days = 1 popup = yes }
+		if = {
+			limit = {
+				c:MZQ ?= {
+					any_scope_state = { state_region = s:STATE_LOURENCO_MARQUES owner = c:MZQ }
+				}
+			}
+			c:MZQ ?= { trigger_event = { id = sb_delagoa.021 days = 1 popup = yes } }
+		}
+		else_if = {
+			limit = {
+				c:POR ?= {
+					any_scope_state = { state_region = s:STATE_LOURENCO_MARQUES owner = c:POR }
+				}
+			}
+			c:POR ?= { trigger_event = { id = sb_delagoa.021 days = 1 popup = yes } }
+		}
+	}
+
+	weight = 1000
+	should_be_pinned_by_default = yes
+}
+
+je_sb_imperial_confederation_scheme = {
+	group = je_group_global_international_situations
+
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+
+	should_be_involved = {
+		OR = {
+			sb_is_imperial_confederation_participant = yes
+			sb_is_imperial_confederation_owner = yes
+		}
+	}
+
+	should_show_when_not_involved = {
+		OR = {
+			sb_is_imperial_confederation_participant = yes
+			sb_is_imperial_confederation_owner = yes
+		}
+	}
+
+	is_shown_in_lobby = {
+		always = yes
+	}
+
+	is_shown_when_inactive = {
+		always = yes
+	}
+
+	possible = {
+		NOT = { exists = c:SAF }
+	}
+
+	scripted_button = je_sb_imperial_confederation_bind_trade_button
+	scripted_button = je_sb_imperial_confederation_form_saf_button
+
+	status_desc = {
+		desc = je_sb_imperial_confederation_scheme_status
+	}
+
+	complete = {
+		exists = c:SAF
+	}
+
+	weight = 1000
+	should_be_pinned_by_default = yes
+}

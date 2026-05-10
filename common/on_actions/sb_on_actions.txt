@@ -50,7 +50,7 @@ on_become_subject = {
 }
 
 on_monthly_pulse_country = {
-	on_actions = { sb_on_cape_monthly_pulse_country sb_on_trek_monthly_pulse_country sb_on_zpb_monthly_pulse_country sb_on_gbr_colonial_offices_monthly_pulse_country sb_on_namibia_monthly_pulse_country }
+	on_actions = { sb_on_cape_monthly_pulse_country sb_on_trek_monthly_pulse_country sb_on_zpb_monthly_pulse_country sb_on_gbr_colonial_offices_monthly_pulse_country sb_on_namibia_monthly_pulse_country sb_on_eastern_sphere_monthly_pulse_country }
 }
 
 on_election_campaign_end = {
@@ -393,6 +393,12 @@ sb_on_game_started = {
 			}
 		}
 
+	}
+}
+
+sb_on_eastern_sphere_monthly_pulse_country = {
+	effect = {
+		sb_eastern_sphere_monthly_housekeeping = yes
 	}
 }
 
@@ -2104,6 +2110,31 @@ sb_on_spes_bona_diplo_play_back_down = {
 
 sb_on_spes_bona_war_end = {
 	effect = {
+		if = {
+			limit = {
+				scope:actor ?= {
+					OR = {
+						country_definition = cd:NAL
+						country_definition = cd:ZUL
+					}
+					has_variable = sb_anglo_zulu_pressure_active_var
+				}
+				scope:target ?= {
+					OR = {
+						country_definition = cd:NAL
+						country_definition = cd:ZUL
+					}
+					has_variable = sb_anglo_zulu_pressure_active_var
+				}
+			}
+			scope:actor = {
+				remove_variable = sb_anglo_zulu_pressure_active_var
+			}
+			scope:target = {
+				remove_variable = sb_anglo_zulu_pressure_active_var
+			}
+		}
+
 		# White peace in the Natal crisis should still let ZUL decide whether to
 		# consolidate the frontier or opportunistically strike at Port Natal, but
 		# it should NOT count as a full defeat that deposes Dingane.
@@ -2239,6 +2270,26 @@ sb_on_spes_bona_wargoal_enforced = {
 	effect = {
 		if = {
 			limit = {
+				country_definition = cd:ZUL
+				scope:diplomatic_play ?= {
+					is_diplomatic_play_type = dp_sb_anglo_zulu_return_state_locked
+				}
+			}
+			trigger_event = { id = sb_anglo_zulu.020 days = 3 popup = yes }
+		}
+
+		if = {
+			limit = {
+				country_definition = cd:NAL
+				scope:diplomatic_play ?= {
+					is_diplomatic_play_type = dp_sb_anglo_zulu_return_state_locked
+				}
+			}
+			trigger_event = { id = sb_anglo_zulu.030 days = 3 popup = yes }
+		}
+
+		if = {
+			limit = {
 				country_definition = cd:CAP
 				scope:diplomatic_play ?= {
 					OR = {
@@ -2257,6 +2308,9 @@ sb_on_spes_bona_wargoal_enforced = {
 		if = {
 			limit = {
 				country_definition = cd:ZUL
+				scope:diplomatic_play ?= {
+					NOT = { is_diplomatic_play_type = dp_sb_anglo_zulu_return_state_locked }
+				}
 				NOT = { has_variable = sb_zulu_generic_war_resolution_recent_var }
 				NOT = { has_variable = sb_natal_war_active_var }
 				NOT = { has_variable = sb_port_natal_british_war_var }
@@ -2273,6 +2327,9 @@ sb_on_spes_bona_wargoal_enforced = {
 					NOT = { has_variable = sb_natal_war_active_var }
 					NOT = { has_variable = sb_port_natal_british_war_var }
 					NOT = { has_variable = sb_zulu_swazi_war_active_var }
+				}
+				scope:diplomatic_play ?= {
+					NOT = { is_diplomatic_play_type = dp_sb_anglo_zulu_return_state_locked }
 				}
 			}
 			scope:target = {

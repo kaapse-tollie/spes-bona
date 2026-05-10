@@ -1,0 +1,217 @@
+﻿sb_gaza_has_target_holdings = {
+	OR = {
+		any_scope_state = {
+			state_region = s:STATE_LOURENCO_MARQUES
+			owner = root
+		}
+		any_scope_state = {
+			state_region = s:STATE_ZAMBEZIA
+			owner = root
+		}
+	}
+}
+
+sb_gaza_target_states_have_zero_turmoil = {
+	NOT = {
+		any_scope_state = {
+			OR = {
+				state_region = s:STATE_LOURENCO_MARQUES
+				state_region = s:STATE_ZAMBEZIA
+			}
+			owner = root
+			turmoil > 0
+		}
+	}
+}
+
+sb_portuguese_controls_mozambique_admin_area = {
+	OR = {
+		owns_entire_state_region = STATE_LOURENCO_MARQUES
+		any_subject_or_below = { owns_entire_state_region = STATE_LOURENCO_MARQUES }
+	}
+	OR = {
+		owns_entire_state_region = STATE_ZAMBEZIA
+		any_subject_or_below = { owns_entire_state_region = STATE_ZAMBEZIA }
+	}
+	OR = {
+		owns_entire_state_region = STATE_MOCAMBIQUE
+		any_subject_or_below = { owns_entire_state_region = STATE_MOCAMBIQUE }
+	}
+}
+
+sb_is_imperial_confederation_participant = {
+	OR = {
+		country_has_primary_culture = cu:boer
+		country_has_primary_culture = cu:anglo_african
+	}
+	capital = {
+		OR = {
+			state_region = s:STATE_CAPE_COLONY
+			state_region = s:STATE_EASTERN_CAPE
+			state_region = s:STATE_NORTHERN_CAPE
+			state_region = s:STATE_ZULULAND
+			state_region = s:STATE_TRANSVAAL
+			state_region = s:STATE_EAST_TRANSVAAL
+			state_region = s:STATE_NORTHERN_TRANSVAAL
+			state_region = s:STATE_VRYSTAAT
+			state_region = s:STATE_DRAKENSBERG
+			state_region = s:STATE_BOTSWANA
+			state_region = s:STATE_LOURENCO_MARQUES
+			state_region = s:STATE_ZAMBEZIA
+			state_region = s:STATE_ZAMBEZI
+			state_region = s:STATE_NAMAQUALAND
+			state_region = s:STATE_HEREROLAND
+		}
+	}
+	NOT = { is_country_type = decentralized }
+	NOT = { country_definition = cd:SAF }
+}
+
+sb_is_autonomous_anglo_african_british_subject = {
+	country_has_primary_culture = cu:anglo_african
+	is_subject_of = c:GBR
+	NOT = { is_subject_type = subject_type_puppet }
+	NOT = { is_subject_type = subject_type_tributary }
+	NOT = { is_subject_type = subject_type_vassal }
+	NOT = { is_subject_type = subject_type_personal_union }
+	NOT = { is_subject_type = subject_type_chartered_company }
+}
+
+sb_is_imperial_confederation_owner = {
+	OR = {
+		AND = {
+			country_definition = cd:GBR
+			NOT = {
+				any_country = {
+					sb_is_autonomous_anglo_african_british_subject = yes
+				}
+			}
+		}
+		AND = {
+			sb_is_autonomous_anglo_african_british_subject = yes
+			NOT = {
+				any_country = {
+					sb_is_autonomous_anglo_african_british_subject = yes
+					prestige > root.prestige
+				}
+			}
+		}
+	}
+}
+
+sb_controls_any_complete_southern_africa_state = {
+	OR = {
+		owns_entire_state_region = STATE_CAPE_COLONY
+		owns_entire_state_region = STATE_EASTERN_CAPE
+		owns_entire_state_region = STATE_NORTHERN_CAPE
+		owns_entire_state_region = STATE_ZULULAND
+		owns_entire_state_region = STATE_TRANSVAAL
+		owns_entire_state_region = STATE_EAST_TRANSVAAL
+		owns_entire_state_region = STATE_NORTHERN_TRANSVAAL
+		owns_entire_state_region = STATE_VRYSTAAT
+		owns_entire_state_region = STATE_DRAKENSBERG
+		owns_entire_state_region = STATE_BOTSWANA
+		owns_entire_state_region = STATE_LOURENCO_MARQUES
+		owns_entire_state_region = STATE_ZAMBEZIA
+		owns_entire_state_region = STATE_ZAMBEZI
+		owns_entire_state_region = STATE_NAMAQUALAND
+		owns_entire_state_region = STATE_HEREROLAND
+	}
+}
+
+sb_imperial_confederation_has_two_complete_state_owners = {
+	any_country = {
+		sb_is_imperial_confederation_participant = yes
+		sb_controls_any_complete_southern_africa_state = yes
+		any_country = {
+			sb_is_imperial_confederation_participant = yes
+			NOT = { this = prev }
+			sb_controls_any_complete_southern_africa_state = yes
+		}
+	}
+}
+
+sb_imperial_confederation_all_participants_subjects_of_owner_network = {
+	NOT = {
+		any_country = {
+			sb_is_imperial_confederation_participant = yes
+			NOT = { this = root }
+			NOR = {
+				is_subject_of = root
+				AND = {
+					exists = top_overlord
+					top_overlord = c:GBR
+				}
+			}
+		}
+	}
+}
+
+sb_imperial_confederation_has_unbound_independent_participant = {
+	any_country = {
+		sb_is_imperial_confederation_participant = yes
+		is_subject = no
+		NOT = { this = root }
+		NOT = { has_variable = sb_imperial_trade_binding_var }
+	}
+}
+
+sb_delagoa_owner_outside_gbr_bloc = {
+	OR = {
+		c:POR ?= {
+			is_country_alive = yes
+			OR = {
+				any_scope_state = { state_region = s:STATE_LOURENCO_MARQUES owner = c:POR }
+				owns_entire_state_region = STATE_LOURENCO_MARQUES
+			}
+			NOT = { is_in_same_power_bloc = c:GBR }
+		}
+		c:MZQ ?= {
+			is_country_alive = yes
+			OR = {
+				any_scope_state = { state_region = s:STATE_LOURENCO_MARQUES owner = c:MZQ }
+				owns_entire_state_region = STATE_LOURENCO_MARQUES
+			}
+			NOT = { is_in_same_power_bloc = c:GBR }
+		}
+	}
+}
+
+sb_has_railway_in_transvaal = {
+	s:STATE_TRANSVAAL = {
+		any_scope_state = {
+			owner = root
+			has_active_building = building_railway
+		}
+	}
+}
+
+sb_has_railway_in_east_transvaal = {
+	s:STATE_EAST_TRANSVAAL = {
+		any_scope_state = {
+			owner = root
+			has_active_building = building_railway
+		}
+	}
+}
+
+sb_trn_has_delagoa_trade_through = {
+	OR = {
+		any_scope_treaty = {
+			binds = c:POR
+			any_scope_article = {
+				has_type = transit_rights
+				source_country = c:POR
+				target_country = root
+			}
+		}
+		any_scope_treaty = {
+			binds = c:MZQ
+			any_scope_article = {
+				has_type = transit_rights
+				source_country = c:MZQ
+				target_country = root
+			}
+		}
+	}
+}

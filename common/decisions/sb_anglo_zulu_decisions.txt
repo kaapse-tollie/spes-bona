@@ -1,0 +1,43 @@
+﻿decision_sb_anglo_zulu_ultimatum = {
+	is_shown = {
+		country_definition = cd:NAL
+		is_subject = yes
+		has_technology_researched = civilizing_mission
+		has_claim = s:STATE_ZULULAND
+		NOT = { has_variable = sb_anglo_zulu_pressure_resolved_var }
+		NOT = { has_variable = sb_anglo_zulu_ultimatum_cooldown_var }
+		c:ZUL ?= {
+			is_country_alive = yes
+		}
+		s:STATE_ZULULAND = {
+			any_scope_state = {
+				owner = c:ZUL
+			}
+		}
+	}
+
+	possible = {
+		is_at_war = no
+		is_active_in_diplomatic_play = no
+		c:ZUL ?= {
+			is_at_war = no
+			is_active_in_diplomatic_play = no
+		}
+		aggressive_diplomatic_plays_permitted = yes
+	}
+
+	when_taken = {
+		trigger_event = { id = sb_anglo_zulu.010 popup = yes }
+	}
+
+	ai_chance = {
+		value = 0
+		if = {
+			limit = {
+				is_ai = yes
+				has_variable = sb_nal_anglo_zulu_accelerated_var
+			}
+			value = 100
+		}
+	}
+}

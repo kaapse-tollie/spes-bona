@@ -1,0 +1,45 @@
+﻿# Spes Bona - Eastern Sphere scripted buttons
+
+je_sb_imperial_confederation_bind_trade_button = {
+	name = "je_sb_imperial_confederation_bind_trade_button"
+	desc = "je_sb_imperial_confederation_bind_trade_button_desc"
+
+	visible = {
+		has_journal_entry = je_sb_imperial_confederation_scheme
+		sb_is_imperial_confederation_owner = yes
+	}
+
+	possible = {
+		sb_imperial_confederation_has_unbound_independent_participant = yes
+	}
+
+	effect = {
+		sb_imperial_confederation_bind_trade = yes
+	}
+}
+
+je_sb_imperial_confederation_form_saf_button = {
+	name = "je_sb_imperial_confederation_form_saf_button"
+	desc = "je_sb_imperial_confederation_form_saf_button_desc"
+
+	visible = {
+		has_journal_entry = je_sb_imperial_confederation_scheme
+		sb_is_imperial_confederation_owner = yes
+	}
+
+	possible = {
+		OR = {
+			NOT = { country_definition = cd:GBR }
+			c:CAP ?= {
+				is_country_alive = yes
+				is_subject_of = c:GBR
+			}
+		}
+		sb_imperial_confederation_all_participants_subjects_of_owner_network = yes
+		sb_imperial_confederation_has_two_complete_state_owners = yes
+	}
+
+	effect = {
+		sb_imperial_confederation_form_saf = yes
+	}
+}

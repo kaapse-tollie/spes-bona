@@ -1,0 +1,172 @@
+﻿namespace = sb_imperial_confederation
+
+sb_imperial_confederation.030 = {
+	type = country_event
+	placement = root
+
+	title = sb_imperial_confederation.030.t
+	desc = sb_imperial_confederation.030.d
+	flavor = sb_imperial_confederation.030.f
+
+	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:GBR
+		is_ai = yes
+		has_journal_entry = je_sb_imperial_confederation_scheme
+		c:TRN ?= {
+			is_country_alive = yes
+			NOT = { has_variable = sb_imperial_confederation_delagoa_response_var }
+			NOT = { is_in_same_power_bloc = c:GBR }
+			any_scope_state = {
+				state_region = s:STATE_LOURENCO_MARQUES
+				owner = c:TRN
+				has_active_building = building_port
+				has_active_building = building_trade_center
+			}
+		}
+	}
+
+	option = {
+		name = sb_imperial_confederation.030.a
+		trigger = {
+			c:POR ?= {
+				is_country_alive = yes
+				is_in_same_power_bloc = c:GBR
+				has_claim = s:STATE_LOURENCO_MARQUES
+			}
+		}
+		custom_tooltip = sb_imperial_confederation_030_relinquish_tt
+		hidden_effect = {
+			c:TRN ?= {
+				set_variable = sb_imperial_confederation_delagoa_response_var
+				trigger_event = { id = sb_imperial_confederation.031 days = 7 popup = yes }
+			}
+		}
+		ai_chance = { base = 70 }
+	}
+
+	option = {
+		name = sb_imperial_confederation.030.b
+		trigger = {
+			c:TRN ?= {
+				NOT = { has_truce_with = c:GBR }
+			}
+		}
+		custom_tooltip = sb_imperial_confederation_030_vassalize_tt
+		hidden_effect = {
+			c:TRN ?= { set_variable = sb_imperial_confederation_delagoa_response_var }
+			create_diplomatic_play = {
+				type = dp_make_protectorate
+				target_country = c:TRN
+			}
+		}
+		ai_chance = { base = 30 }
+	}
+
+	option = {
+		name = sb_imperial_confederation.030.c
+		default_option = yes
+		hidden_effect = {
+			c:TRN ?= { set_variable = sb_imperial_confederation_delagoa_response_var }
+			add_modifier = { name = sb_imperial_confederation_ignored_delagoa months = 60 }
+		}
+		ai_chance = { base = 5 }
+	}
+}
+
+sb_imperial_confederation.031 = {
+	type = country_event
+	placement = root
+
+	title = sb_imperial_confederation.031.t
+	desc = sb_imperial_confederation.031.d
+	flavor = sb_imperial_confederation.031.f
+
+	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:TRN
+		c:POR ?= {
+			is_country_alive = yes
+			has_claim = s:STATE_LOURENCO_MARQUES
+		}
+		any_scope_state = {
+			state_region = s:STATE_LOURENCO_MARQUES
+			owner = root
+		}
+	}
+
+	option = {
+		name = sb_imperial_confederation.031.a
+		default_option = yes
+		custom_tooltip = sb_imperial_confederation_031_back_down_tt
+		hidden_effect = {
+			transfer_state = {
+				STATE = s:STATE_LOURENCO_MARQUES
+				GIVER = root
+				TAKER = c:POR
+			}
+			remove_variable = sb_delagoa_route_complete_var
+		}
+		ai_chance = { base = 70 }
+	}
+
+	option = {
+		name = sb_imperial_confederation.031.b
+		custom_tooltip = sb_imperial_confederation_031_refuse_tt
+		hidden_effect = {
+			c:POR ?= {
+				create_diplomatic_play = {
+					type = dp_return_state
+					target_country = root
+					target_state = s:STATE_LOURENCO_MARQUES.region_state:TRN
+				}
+			}
+			random_diplomatic_play = {
+				limit = {
+					initiator = c:POR
+					target = root
+					is_diplomatic_play_type = dp_return_state
+				}
+				add_initiator_backers = { c:GBR }
+				add_war_goal = { holder = c:GBR target_country = root type = make_protectorate }
+			}
+		}
+		ai_chance = { base = 30 }
+	}
+}
+
+sb_imperial_confederation.040 = {
+	type = country_event
+	placement = root
+
+	title = sb_imperial_confederation.040.t
+	desc = sb_imperial_confederation.040.d
+	flavor = sb_imperial_confederation.040.f
+
+	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:GBR
+		is_ai = yes
+		has_variable = sb_nal_anglo_zulu_accelerated_var
+	}
+
+	option = {
+		name = sb_imperial_confederation.040.a
+		default_option = yes
+		hidden_effect = {
+			c:NAL ?= { trigger_event = { id = sb_anglo_zulu.010 days = 30 popup = yes } }
+		}
+	}
+}
