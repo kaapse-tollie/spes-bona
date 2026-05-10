@@ -1,4 +1,8 @@
 ﻿# Spes Bona - Eastern Sphere journal entries
+# TODO v0.12 / 1.13 migration cleanup:
+#   `je_sb_imperial_confederation_scheme` does not belong in the Eastern Sphere
+#   scope file. Move it into a dedicated Southern Africa / Union-confederation
+#   file during the planned file-scope cleanup.
 
 je_sb_consolidating_gaza = {
 	group = je_group_historical_content
@@ -6,11 +10,9 @@ je_sb_consolidating_gaza = {
 	icon = "gfx/interface/icons/event_icons/event_default.dds"
 
 	is_shown_in_lobby = {
-		hidden_trigger = {
-			OR = {
-				country_definition = cd:GZA
-				country_definition = cd:NGU
-			}
+		OR = {
+			c:GZA ?= this
+			c:NGU ?= this
 		}
 	}
 
@@ -165,7 +167,7 @@ je_sb_delagoa_route_to_sea = {
 je_sb_imperial_confederation_scheme = {
 	group = je_group_global_international_situations
 
-	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	icon = "gfx/interface/icons/event_icons/waving_flag.dds"
 
 	should_be_involved = {
 		OR = {
@@ -182,14 +184,19 @@ je_sb_imperial_confederation_scheme = {
 	}
 
 	is_shown_in_lobby = {
-		always = yes
+		OR = {
+			c:CAP ?= this
+			c:ORA ?= this
+			c:GBR ?= this
+		}
 	}
 
 	is_shown_when_inactive = {
-		always = yes
+		always = no
 	}
 
 	possible = {
+		has_global_variable = sb_imperial_confederation_scheme_unlocked_var
 		NOT = { exists = c:SAF }
 	}
 

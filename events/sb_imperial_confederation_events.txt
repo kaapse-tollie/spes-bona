@@ -1,5 +1,40 @@
 ﻿namespace = sb_imperial_confederation
 
+sb_imperial_confederation.001 = {
+	type = country_event
+	placement = root
+
+	title = sb_imperial_confederation.001.t
+	desc = sb_imperial_confederation.001.d
+	flavor = sb_imperial_confederation.001.f
+
+	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/waving_flag.dds"
+	duration = 3
+
+	trigger = {
+		has_global_variable = sb_imperial_confederation_scheme_unlocked_var
+		NOT = { exists = c:SAF }
+		OR = {
+			country_definition = cd:GBR
+			country_definition = cd:CAP
+			country_definition = cd:ORA
+		}
+	}
+
+	option = {
+		name = sb_imperial_confederation.001.a
+		default_option = yes
+		hidden_effect = {
+			if = {
+				limit = { NOT = { has_journal_entry = je_sb_imperial_confederation_scheme } }
+				add_journal_entry = { type = je_sb_imperial_confederation_scheme }
+			}
+		}
+	}
+}
+
 sb_imperial_confederation.030 = {
 	type = country_event
 	placement = root

@@ -585,7 +585,35 @@ c:SAF ?= {
 	}
 }
 
+sb_unlock_imperial_confederation_scheme = {
+	if = {
+		limit = {
+			NOT = { has_global_variable = sb_imperial_confederation_scheme_unlocked_var }
+			c:ORA ?= {
+				is_country_alive = yes
+				NOT = { has_variable = sb_voortrekker_start_var }
+			}
+			c:TRN ?= { is_country_alive = yes }
+			c:ZPB ?= { is_country_alive = yes }
+		}
+		set_global_variable = sb_imperial_confederation_scheme_unlocked_var
+		if = {
+			limit = { c:GBR ?= { is_country_alive = yes } }
+			c:GBR ?= { trigger_event = { id = sb_imperial_confederation.001 days = 1 popup = yes } }
+		}
+		else_if = {
+			limit = { c:CAP ?= { is_country_alive = yes } }
+			c:CAP ?= { trigger_event = { id = sb_imperial_confederation.001 days = 1 popup = yes } }
+		}
+		else_if = {
+			limit = { c:ORA ?= { is_country_alive = yes } }
+			c:ORA ?= { trigger_event = { id = sb_imperial_confederation.001 days = 1 popup = yes } }
+		}
+	}
+}
+
 sb_eastern_sphere_monthly_housekeeping = {
+	sb_unlock_imperial_confederation_scheme = yes
 	if = {
 		limit = {
 			OR = {
