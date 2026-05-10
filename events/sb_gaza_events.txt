@@ -1,5 +1,44 @@
 ﻿namespace = sb_gaza
 
+sb_gaza.001 = {
+	type = country_event
+	placement = root
+
+	title = sb_gaza.001.t
+	desc = sb_gaza.001.d
+	flavor = sb_gaza.001.f
+
+	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		OR = {
+			country_definition = cd:GZA
+			AND = {
+				country_definition = cd:NGU
+				has_variable = sb_ngu_inherited_gza_content_var
+			}
+		}
+		is_subject = no
+		NOT = { has_variable = sb_gaza_consolidated_var }
+		NOT = { has_variable = sb_gaza_consolidation_failed_var }
+		NOT = { has_journal_entry = je_sb_consolidating_gaza }
+		sb_gaza_has_target_holdings = yes
+	}
+
+	option = {
+		name = sb_gaza.001.a
+		default_option = yes
+		set_variable = sb_gaza_consolidation_seeded_var
+		set_variable = { name = sb_gaza_consolidation_grace_var months = 1 }
+		sb_gaza_apply_startup_consolidation_effects = yes
+		add_journal_entry = { type = je_sb_consolidating_gaza }
+		ai_chance = { base = 1 }
+	}
+}
+
 sb_gaza.010 = {
 	type = country_event
 	placement = root

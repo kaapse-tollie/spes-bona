@@ -16,6 +16,14 @@ sb_gaza_apply_startup_consolidation_effects = {
 				value = 0.20
 				culture = cu:shona
 			}
+			add_radicals_in_state = {
+				value = 0.20
+				culture = cu:sena
+			}
+			add_radicals_in_state = {
+				value = 0.20
+				culture = cu:lacustrine_bantu
+			}
 		}
 	}
 	s:STATE_ZAMBEZIA = {
@@ -32,6 +40,14 @@ sb_gaza_apply_startup_consolidation_effects = {
 			add_radicals_in_state = {
 				value = 0.20
 				culture = cu:shona
+			}
+			add_radicals_in_state = {
+				value = 0.20
+				culture = cu:sena
+			}
+			add_radicals_in_state = {
+				value = 0.20
+				culture = cu:lacustrine_bantu
 			}
 		}
 	}
@@ -89,6 +105,7 @@ sb_gaza_target_states_add_non_nguni_radicals = {
 			add_radicals_in_state = { value = 0.25 culture = cu:shona }
 			add_radicals_in_state = { value = 0.25 culture = cu:sena }
 			add_radicals_in_state = { value = 0.25 culture = cu:makua }
+			add_radicals_in_state = { value = 0.25 culture = cu:lacustrine_bantu }
 		}
 	}
 	s:STATE_ZAMBEZIA = {
@@ -98,16 +115,19 @@ sb_gaza_target_states_add_non_nguni_radicals = {
 			add_radicals_in_state = { value = 0.25 culture = cu:shona }
 			add_radicals_in_state = { value = 0.25 culture = cu:sena }
 			add_radicals_in_state = { value = 0.25 culture = cu:makua }
+			add_radicals_in_state = { value = 0.25 culture = cu:lacustrine_bantu }
 		}
 	}
 }
 
 sb_gaza_clear_runtime = {
+	remove_variable = sb_gaza_intro_scheduled_var
 	remove_variable = sb_gaza_event_cooldown_var
 	remove_variable = sb_gaza_010_fired_var
 	remove_variable = sb_gaza_020_fired_var
 	remove_variable = sb_gaza_030_fired_var
 	remove_variable = sb_gaza_040_fired_var
+	remove_variable = sb_gaza_consolidation_grace_var
 }
 
 sb_gaza_monthly_random_event = {
@@ -627,9 +647,11 @@ sb_eastern_sphere_monthly_housekeeping = {
 			NOT = { has_variable = sb_gaza_consolidated_var }
 			NOT = { has_variable = sb_gaza_consolidation_failed_var }
 			NOT = { has_journal_entry = je_sb_consolidating_gaza }
+			NOT = { has_variable = sb_gaza_intro_scheduled_var }
 			sb_gaza_has_target_holdings = yes
 		}
-		add_journal_entry = { type = je_sb_consolidating_gaza }
+		set_variable = { name = sb_gaza_intro_scheduled_var months = 2 }
+		trigger_event = { id = sb_gaza.001 days = 7 popup = yes }
 	}
 	if = {
 		limit = {
