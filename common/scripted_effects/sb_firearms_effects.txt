@@ -74,17 +74,17 @@ sb_remove_iron_age_weapons_modifiers = {
 
 sb_seed_initial_firearms_progress = {
 	# Balance seeding:
-	#   SWZ starts with a meaningful but incomplete firearms base.
-	#   GZA starts part-way there.
+	#   SWZ starts with a small but real firearms base.
+	#   GZA starts only barely into the process.
 	if = {
 		limit = { country_definition = cd:SWZ }
 		set_variable = {
 			name = sb_firearms_treaty_progress_months_var
-			value = 9.6
+			value = 4.8
 		}
 		set_variable = {
 			name = sb_firearms_industry_progress_months_var
-			value = 9.6
+			value = 4.8
 		}
 	}
 	else_if = {
@@ -102,11 +102,11 @@ sb_seed_initial_firearms_progress = {
 		limit = { country_definition = cd:GZA }
 		set_variable = {
 			name = sb_firearms_treaty_progress_months_var
-			value = 7.2
+			value = 1.2
 		}
 		set_variable = {
 			name = sb_firearms_industry_progress_months_var
-			value = 7.2
+			value = 1.2
 		}
 	}
 }
@@ -812,6 +812,49 @@ sb_create_ora_zul_firearms_treaty = {
 						article = goods_transfer
 						source_country = c:ORA
 						target_country = c:ZUL
+						inputs = {
+							{ goods = g:small_arms }
+							{ quantity = 10 }
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+sb_create_trn_swz_firearms_treaty = {
+	if = {
+		limit = {
+			c:TRN ?= {
+				is_country_alive = yes
+				NOT = {
+					any_scope_treaty = {
+						binds = c:SWZ
+						any_scope_article = {
+							has_type = goods_transfer
+							source_country = c:TRN
+							target_country = c:SWZ
+							input_goods = g:small_arms
+						}
+					}
+				}
+			}
+			c:SWZ ?= {
+				is_country_alive = yes
+			}
+		}
+		c:TRN ?= {
+			create_treaty = {
+				first_country = c:TRN
+				second_country = c:SWZ
+				is_draft = no
+				binding_period = { years = 5 }
+				articles_to_create = {
+					{
+						article = goods_transfer
+						source_country = c:TRN
+						target_country = c:SWZ
 						inputs = {
 							{ goods = g:small_arms }
 							{ quantity = 10 }

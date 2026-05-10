@@ -59,20 +59,34 @@ je_sb_consolidating_gaza = {
 	}
 
 	complete = {
-		NOT = { has_variable = sb_gaza_consolidation_grace_var }
-		sb_gaza_target_states_have_zero_turmoil = yes
+		hidden_trigger = {
+			NOT = { has_variable = sb_gaza_consolidation_grace_var }
+		}
+		custom_tooltip = {
+			text = je_sb_consolidating_gaza_complete_tt
+			sb_gaza_target_states_have_zero_turmoil = yes
+		}
 	}
 
 	fail = {
-		game_date >= 1860.1.1
-		sb_gaza_has_target_holdings = yes
-		NOT = { sb_gaza_target_states_have_zero_turmoil = yes }
+		custom_tooltip = {
+			text = je_sb_consolidating_gaza_fail_soshangane_tt
+			ruler = {
+				NOT = { has_template = GZA_soshangane }
+			}
+		}
 	}
 
 	invalid = {
 		OR = {
-			is_subject = yes
-			NOT = { sb_gaza_has_target_holdings = yes }
+			custom_tooltip = {
+				text = je_sb_consolidating_gaza_invalid_subject_tt
+				is_subject = yes
+			}
+			custom_tooltip = {
+				text = je_sb_consolidating_gaza_invalid_holdings_tt
+				NOT = { sb_gaza_has_target_holdings = yes }
+			}
 		}
 	}
 
