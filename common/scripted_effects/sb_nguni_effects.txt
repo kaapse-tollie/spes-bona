@@ -1,22 +1,7 @@
 ﻿# Spes Bona - Nguni formation helpers
 
 sb_nguni_apply_formation_inheritance = {
-	# The formation itself keeps the live country object, so JEs normally survive
-	# as long as their possible triggers still allow NGU. This effect handles the
-	# extra post-formation claims and guarded JE fallbacks for edge cases.
-
-	if = {
-		limit = { was_formed_from = ZUL }
-		set_variable = sb_ngu_inherited_zul_content_var
-	}
-	if = {
-		limit = { was_formed_from = GZA }
-		set_variable = sb_ngu_inherited_gza_content_var
-	}
-	if = {
-		limit = { was_formed_from = SWZ }
-		set_variable = sb_ngu_inherited_swz_content_var
-	}
+	set_variable = sb_nguni_nation_proclaimed_var
 
 	s:STATE_EASTERN_CAPE = { add_claim = ROOT }
 	s:STATE_ZULULAND = { add_claim = ROOT }
@@ -29,35 +14,5 @@ sb_nguni_apply_formation_inheritance = {
 			NOT = { has_journal_entry = je_sb_adopt_firearms }
 		}
 		add_journal_entry = { type = je_sb_adopt_firearms }
-	}
-
-	if = {
-		limit = {
-			was_formed_from = ZUL
-			NOT = { has_variable = sb_zulu_dynasty_secured_var }
-			NOT = { has_journal_entry = je_sb_zulu_kingdom }
-		}
-		add_journal_entry = { type = je_sb_zulu_kingdom }
-	}
-
-	if = {
-		limit = {
-			has_variable = sb_ngu_inherited_gza_content_var
-			NOT = { has_variable = sb_gaza_consolidated_var }
-			NOT = { has_variable = sb_gaza_consolidation_failed_var }
-			NOT = { has_journal_entry = je_sb_consolidating_gaza }
-			NOT = { has_variable = sb_gaza_intro_scheduled_var }
-			OR = {
-				any_scope_state = { state_region = s:STATE_LOURENCO_MARQUES owner = root }
-				any_scope_state = { state_region = s:STATE_ZAMBEZIA owner = root }
-			}
-		}
-		set_variable = { name = sb_gaza_intro_scheduled_var months = 2 }
-		trigger_event = { id = sb_gaza.001 days = 7 popup = yes }
-	}
-
-	if = {
-		limit = { has_journal_entry = je_sb_zulu_kingdom }
-		sb_zulu_update_dynastic_stability_modifiers = yes
 	}
 }
