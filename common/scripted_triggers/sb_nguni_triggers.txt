@@ -1,62 +1,15 @@
 ﻿# Spes Bona - Nguni formation triggers
 
-sb_nguni_controls_80_percent_eastern_cape = {
-	s:STATE_EASTERN_CAPE = {
-		any_scope_state = {
-			owner = ROOT
-			num_provinces >= 31
-		}
-	}
-}
-
-sb_nguni_controls_80_percent_zululand = {
-	s:STATE_ZULULAND = {
-		any_scope_state = {
-			owner = ROOT
-			num_provinces >= 18
-		}
-	}
-}
-
-sb_nguni_controls_80_percent_east_transvaal = {
-	s:STATE_EAST_TRANSVAAL = {
-		any_scope_state = {
-			owner = ROOT
-			num_provinces >= 16
-		}
-	}
-}
-
-sb_nguni_controls_80_percent_lourenco_marques = {
-	s:STATE_LOURENCO_MARQUES = {
-		any_scope_state = {
-			owner = ROOT
-			num_provinces >= 34
-		}
-	}
-}
-
-sb_nguni_controls_three_core_state_province_blocks = {
+sb_nguni_controls_any_eastern_sphere_land = {
 	OR = {
-		AND = {
-			sb_nguni_controls_80_percent_eastern_cape = yes
-			sb_nguni_controls_80_percent_zululand = yes
-			sb_nguni_controls_80_percent_east_transvaal = yes
+		s:STATE_ZULULAND = {
+			any_scope_state = { owner = ROOT }
 		}
-		AND = {
-			sb_nguni_controls_80_percent_eastern_cape = yes
-			sb_nguni_controls_80_percent_zululand = yes
-			sb_nguni_controls_80_percent_lourenco_marques = yes
+		s:STATE_EAST_TRANSVAAL = {
+			any_scope_state = { owner = ROOT }
 		}
-		AND = {
-			sb_nguni_controls_80_percent_eastern_cape = yes
-			sb_nguni_controls_80_percent_east_transvaal = yes
-			sb_nguni_controls_80_percent_lourenco_marques = yes
-		}
-		AND = {
-			sb_nguni_controls_80_percent_zululand = yes
-			sb_nguni_controls_80_percent_east_transvaal = yes
-			sb_nguni_controls_80_percent_lourenco_marques = yes
+		s:STATE_LOURENCO_MARQUES = {
+			any_scope_state = { owner = ROOT }
 		}
 	}
 }
@@ -95,57 +48,22 @@ sb_xhg_owns_all_eastern_cape_starting_provinces = {
 }
 
 sb_nguni_conqueror_path_open = {
+	sb_nguni_controls_any_eastern_sphere_land = yes
 	OR = {
 		AND = {
 			country_definition = cd:ZUL
-			OR = {
-				NOT = { c:SWZ ?= { is_country_alive = yes } }
-				c:SWZ ?= {
-					is_direct_subject_of = ROOT
-					is_subject_type = subject_type_vassal
-				}
-			}
-			OR = {
-				NOT = { c:GZA ?= { is_country_alive = yes } }
-				c:GZA ?= {
-					is_direct_subject_of = ROOT
-					is_subject_type = subject_type_vassal
-				}
-			}
+			NOT = { c:SWZ ?= { is_country_alive = yes } }
+			NOT = { c:GZA ?= { is_country_alive = yes } }
 		}
 		AND = {
 			country_definition = cd:SWZ
-			OR = {
-				NOT = { c:ZUL ?= { is_country_alive = yes } }
-				c:ZUL ?= {
-					is_direct_subject_of = ROOT
-					is_subject_type = subject_type_vassal
-				}
-			}
-			OR = {
-				NOT = { c:GZA ?= { is_country_alive = yes } }
-				c:GZA ?= {
-					is_direct_subject_of = ROOT
-					is_subject_type = subject_type_vassal
-				}
-			}
+			NOT = { c:ZUL ?= { is_country_alive = yes } }
+			NOT = { c:GZA ?= { is_country_alive = yes } }
 		}
 		AND = {
 			country_definition = cd:GZA
-			OR = {
-				NOT = { c:ZUL ?= { is_country_alive = yes } }
-				c:ZUL ?= {
-					is_direct_subject_of = ROOT
-					is_subject_type = subject_type_vassal
-				}
-			}
-			OR = {
-				NOT = { c:SWZ ?= { is_country_alive = yes } }
-				c:SWZ ?= {
-					is_direct_subject_of = ROOT
-					is_subject_type = subject_type_vassal
-				}
-			}
+			NOT = { c:ZUL ?= { is_country_alive = yes } }
+			NOT = { c:SWZ ?= { is_country_alive = yes } }
 		}
 	}
 }
