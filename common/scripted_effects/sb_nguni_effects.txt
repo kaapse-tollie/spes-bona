@@ -15,4 +15,31 @@ sb_nguni_apply_formation_inheritance = {
 		}
 		add_journal_entry = { type = je_sb_adopt_firearms }
 	}
+
+	if = {
+		limit = {
+			has_variable = sb_ngu_inherited_zul_content_var
+			NOT = { has_variable = sb_zulu_dynasty_secured_var }
+			NOT = { has_journal_entry = je_sb_zulu_kingdom }
+		}
+		add_journal_entry = { type = je_sb_zulu_kingdom }
+	}
+
+	if = {
+		limit = {
+			has_variable = sb_ngu_inherited_gza_content_var
+			NOT = { has_variable = sb_gaza_consolidated_var }
+			NOT = { has_variable = sb_gaza_consolidation_failed_var }
+			NOT = { has_journal_entry = je_sb_consolidating_gaza }
+			NOT = { has_variable = sb_gaza_intro_scheduled_var }
+			sb_gaza_has_target_holdings = yes
+		}
+		set_variable = { name = sb_gaza_intro_scheduled_var months = 2 }
+		trigger_event = { id = sb_gaza.001 days = 7 popup = yes }
+	}
+
+	if = {
+		limit = { has_journal_entry = je_sb_zulu_kingdom }
+		sb_zulu_update_dynastic_stability_modifiers = yes
+	}
 }
