@@ -57,43 +57,44 @@ sb_gaza.010 = {
 		NOT = { has_variable = sb_gaza_010_fired_var }
 	}
 
+	# Stay south
 	option = {
 		name = sb_gaza.010.a
-		default_option = yes
 		set_variable = sb_gaza_010_fired_var
-		s:STATE_ZAMBEZIA = {
-			every_scope_state = {
-				limit = { owner = root }
-				add_loyalists_in_state = { value = medium_radicals }
-			}
-		}
+		default_option = yes
 		s:STATE_LOURENCO_MARQUES = {
 			every_scope_state = {
 				limit = { owner = root }
-				add_modifier = { name = sb_gaza_local_unrest months = 36 }
+				add_loyalists_in_state = { value = 0.05 culture = cu:nguni }
 			}
 		}
-		add_modifier = { name = sb_gaza_northern_focus months = 60 }
-		ai_chance = { base = 50 }
+		s:STATE_ZAMBEZIA = {
+			every_scope_state = {
+				limit = { owner = root }
+				add_radicals_in_state = { value = 0.05 culture = cu:nguni }
+			}
+		}
+		ai_chance = { base = 70 }
 	}
 
+	# Move north
 	option = {
 		name = sb_gaza.010.b
 		set_variable = sb_gaza_010_fired_var
-		s:STATE_LOURENCO_MARQUES = {
-			every_scope_state = {
-				limit = { owner = root }
-				add_loyalists_in_state = { value = medium_radicals }
-			}
-		}
 		s:STATE_ZAMBEZIA = {
 			every_scope_state = {
 				limit = { owner = root }
-				add_modifier = { name = sb_gaza_local_unrest months = 36 }
+				add_loyalists_in_state = { value = 0.05 culture = cu:nguni }
 			}
 		}
-		add_modifier = { name = sb_gaza_southern_focus months = 60 }
-		ai_chance = { base = 50 }
+		s:STATE_LOURENCO_MARQUES = {
+			every_scope_state = {
+				limit = { owner = root }
+				add_radicals_in_state = { value = 0.05 culture = cu:nguni }
+			}
+		}
+		set_capital = STATE_ZAMBEZIA
+		ai_chance = { base = 30 }
 	}
 }
 
@@ -119,17 +120,18 @@ sb_gaza.020 = {
 		name = sb_gaza.020.a
 		default_option = yes
 		set_variable = sb_gaza_020_fired_var
-		add_treasury = 2500
-		sb_gaza_target_states_add_non_nguni_radicals = yes
-		add_modifier = { name = sb_gaza_collectors months = 36 }
-		ai_chance = { base = 45 }
+		add_modifier = { name = sb_gaza_collectors months = 60 }
+		sb_gaza_lourenco_marques_add_10_non_nguni_radicals = yes
+		sb_gaza_zambezia_add_10_non_nguni_radicals = yes
+		ai_chance = { base = 50 }
 	}
 
 	option = {
 		name = sb_gaza.020.b
 		set_variable = sb_gaza_020_fired_var
-		sb_gaza_target_states_add_local_order = yes
-		ai_chance = { base = 55 }
+		sb_gaza_lourenco_marques_add_5_non_nguni_loyalists = yes
+		sb_gaza_zambezia_add_5_non_nguni_loyalists = yes
+		ai_chance = { base = 50 }
 	}
 }
 
@@ -156,15 +158,16 @@ sb_gaza.030 = {
 		default_option = yes
 		set_variable = sb_gaza_030_fired_var
 		add_modifier = { name = sb_gaza_open_regiments months = 60 }
-		sb_gaza_target_states_add_non_nguni_radicals = yes
+		sb_gaza_lourenco_marques_add_10_non_nguni_radicals = yes
+		sb_gaza_zambezia_add_10_non_nguni_radicals = yes
 		ai_chance = { base = 50 }
 	}
 
 	option = {
 		name = sb_gaza.030.b
 		set_variable = sb_gaza_030_fired_var
-		add_modifier = { name = sb_gaza_narrow_regiments months = 60 }
-		sb_gaza_target_states_add_local_order = yes
+		sb_gaza_lourenco_marques_add_5_non_nguni_loyalists = yes
+		sb_gaza_zambezia_add_5_non_nguni_loyalists = yes
 		ai_chance = { base = 50 }
 	}
 }
@@ -190,21 +193,30 @@ sb_gaza.040 = {
 		}
 	}
 
+	# Raid
 	option = {
 		name = sb_gaza.040.a
 		default_option = yes
 		set_variable = sb_gaza_040_fired_var
-		sb_boost_firearms_progress_10 = yes
+		hidden_effect = {
+			sb_boost_firearms_progress_10 = yes
+		}
+		custom_tooltip = sb_desc_firearms_gain_10
+		add_treasury = 2000
 		change_relations = { country = c:POR value = -25 }
-		sb_gaza_target_states_add_local_unrest = yes
+		s:STATE_LOURENCO_MARQUES = {
+			every_scope_state = {
+				add_devastation = 10
+			}
+		}
 		ai_chance = { base = 40 }
 	}
 
+	# Don't raid
 	option = {
 		name = sb_gaza.040.b
 		set_variable = sb_gaza_040_fired_var
-		change_relations = { country = c:POR value = 15 }
-		sb_gaza_target_states_add_local_order = yes
+		change_relations = { country = c:POR value = 25 }
 		ai_chance = { base = 60 }
 	}
 }
@@ -226,7 +238,8 @@ sb_gaza.090 = {
 		name = sb_gaza.090.a
 		default_option = yes
 		set_variable = sb_gaza_consolidated_var
-		sb_gaza_target_states_add_local_order = yes
+		sb_gaza_zambezia_add_10_non_nguni_loyalists = yes
+		sb_gaza_lourenco_marques_add_10_non_nguni_loyalists = yes
 		sb_gaza_clear_runtime = yes
 		ai_chance = { base = 60 }
 	}
@@ -238,7 +251,8 @@ sb_gaza.090 = {
 			name = sb_gaza_consolidated_recruitment
 			months = -1
 		}
-		sb_gaza_target_states_add_local_unrest = yes
+		sb_gaza_lourenco_marques_add_10_non_nguni_radicals = yes
+		sb_gaza_zambezia_add_10_non_nguni_radicals = yes
 		sb_gaza_clear_runtime = yes
 		ai_chance = { base = 40 }
 	}
@@ -261,7 +275,8 @@ sb_gaza.095 = {
 		name = sb_gaza.095.a
 		default_option = yes
 		set_variable = sb_gaza_consolidation_failed_var
-		sb_gaza_target_states_add_non_nguni_radicals = yes
+		sb_gaza_lourenco_marques_add_50_non_nguni_radicals = yes
+		sb_gaza_zambezia_add_50_non_nguni_radicals = yes
 		sb_gaza_clear_runtime = yes
 	}
 }
