@@ -13,7 +13,7 @@
 #   frontier settlements into viable, recognized states.
 #
 # TWO-STAGE DESIGN:
-#   Stage 1 — ECONOMY (GDP >= 100k):
+#   Stage 1 — ECONOMY (GDP >= 50k):
 #     The republic has a functioning economy. Rewards: prestige, name/flag update.
 #     Historically: the trek communities needed to establish farms, churches,
 #     and basic governance before being taken seriously.
@@ -131,11 +131,8 @@ je_sb_great_trek = {
 			}
 			remove_variable = sb_early_republic_var
 		}
-		# Remove migration pull from all states — the trek is complete,
-		# no longer need to attract additional Boer settlers.
-		every_scope_state = {
-			remove_modifier = sb_trek_migration_pull
-		}
+			# Migration pull is removed by the closing event after the final
+			# Cape Boer slice has selected the strongest trekker settlement.
 		# Great Trek completion cements Boer settlement into homeland claims.
 		if = {
 			limit = {
@@ -198,15 +195,15 @@ je_sb_great_trek = {
 	on_monthly_pulse = {
 		effect = {
 			# ==================================================================
-			# STAGE 1: GDP threshold (100k) — economy established
+			# STAGE 1: GDP threshold (50k) — economy established
 			# ==================================================================
-			# 100k GDP represents a minimal viable economy — roughly equivalent
+			# 50k GDP represents a minimal viable economy — roughly equivalent
 			# to a small agrarian state with a few thousand pops. This is
 			# intentionally low to be achievable within 5-10 years of game start.
 			if = {
 				limit = {
 					NOT = { has_variable = sb_trek_stage1_complete }
-					root.gdp >= 100000
+					root.gdp >= 50000
 				}
 				set_variable = sb_trek_stage1_complete
 				# Tag-specific events are flavor and migration rewards only. The

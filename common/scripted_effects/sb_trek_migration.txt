@@ -5,7 +5,7 @@
 #   - the delayed TRN spawn package used by the V2 ORA-first setup
 #   - later inland republican splinters and convention helpers
 
-# Creates mass migration of Boer pops from Cape Colony to the calling country
+# Creates mass migration of Boer pops from Cape Colony to the calling country (DEPRECATED)
 sb_trigger_boer_migration_effect = {
 	# Find the Cape Colony as migration origin
 	random_country = {
@@ -52,6 +52,68 @@ sb_trigger_boer_migration_effect = {
 				months = 24
 			}
 		}
+	}
+}
+
+sb_move_great_trek_completion_cape_boer_slice = {
+	if = {
+		limit = {
+			NOT = { exists = scope:migration_target }
+		}
+		ordered_scope_state = {
+			order_by = migration_pull
+			position = 0
+			check_range_bounds = no
+			save_scope_as = migration_target
+		}
+	}
+	if = {
+		limit = {
+			exists = c:CAP
+			exists = scope:migration_target
+		}
+		c:CAP = {
+			every_scope_state = {
+				limit = {
+					any_scope_pop = {
+						culture = cu:boer
+					}
+				}
+				every_scope_pop = {
+					limit = {
+						culture = cu:boer
+					}
+					move_partial_pop = {
+						state = scope:migration_target
+							population_ratio = 0.05 # 5% up from 3.3%
+					}
+				}
+			}
+		}
+	}
+}
+
+sb_great_trek_stage_item_boer_slice_reward = {
+	if = {
+		limit = {
+			NOT = {
+				AND = {
+					has_variable = sb_trek_stage1_complete
+					has_variable = sb_trek_stage2_complete
+				}
+			}
+		}
+		custom_tooltip = sb_great_trek_boer_slice_tt
+		hidden_effect = {
+			sb_move_great_trek_completion_cape_boer_slice = yes
+		}
+	}
+}
+
+sb_great_trek_final_boer_slice_reward = {
+	custom_tooltip = sb_great_trek_boer_slice_tt
+	hidden_effect = {
+		sb_move_great_trek_completion_cape_boer_slice = yes
 	}
 }
 
@@ -103,6 +165,108 @@ sb_seed_zpb_initial_trekker_arrivals = {
 	}
 }
 
+sb_move_mtb_defeat_cape_ec_trekkers_to_vrystaat = {
+	if = {
+		limit = {
+			exists = c:ORA
+			NOT = { has_global_variable = sb_mtb_defeat_cape_ec_trekkers_moved_var }
+			}
+			set_global_variable = sb_mtb_defeat_cape_ec_trekkers_moved_var
+			c:CAP ?= {
+				save_scope_as = cape_colony
+			}
+			c:ORA ?= {
+				save_scope_as = oranje
+			}
+			custom_tooltip = {
+				text = sb_great_trek.002_tt
+			}
+		hidden_effect = {
+			s:STATE_EASTERN_CAPE = {
+				region_state:CAP ?= {
+					every_scope_pop = {
+						limit = {
+							culture = cu:boer
+						}
+						move_partial_pop = {
+							state = s:STATE_VRYSTAAT.region_state:ORA
+							population_ratio = 0.075
+						}
+					}
+				}
+			}
+			s:STATE_CAPE_COLONY = {
+				region_state:CAP ?= {
+					every_scope_pop = {
+						limit = {
+							culture = cu:boer
+						}
+						move_partial_pop = {
+							state = s:STATE_VRYSTAAT.region_state:ORA
+							population_ratio = 0.05
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+sb_move_trn_v2_cape_trekkers_to_transvaal = {
+	c:TRN ?= {
+		random_scope_state = {
+			limit = {
+				state_region = s:STATE_TRANSVAAL
+			}
+			save_scope_as = trn_v2_settler_target
+		}
+	}
+	if = {
+		limit = {
+			exists = scope:trn_v2_settler_target
+		}
+		s:STATE_CAPE_COLONY = {
+			region_state:CAP ?= {
+				every_scope_pop = {
+					limit = {
+						culture = cu:boer
+					}
+					move_partial_pop = {
+						state = scope:trn_v2_settler_target
+						population_ratio = 0.1 # up from 7.5% otherwise there is some issues with colonisation in edge cases
+					}
+				}
+			}
+		}
+		s:STATE_NORTHERN_CAPE = {
+			region_state:CAP ?= {
+				every_scope_pop = {
+					limit = {
+						culture = cu:boer
+					}
+					move_partial_pop = {
+						state = scope:trn_v2_settler_target
+						population_ratio = 0.05
+					}
+				}
+			}
+		}
+		s:STATE_EASTERN_CAPE = {
+			region_state:CAP ?= {
+				every_scope_pop = {
+					limit = {
+						culture = cu:boer
+					}
+					move_partial_pop = {
+						state = scope:trn_v2_settler_target
+						population_ratio = 0.05
+					}
+				}
+			}
+		}
+	}
+}
+
 sb_seed_trn_v2_start_package = {
 	# Minimal scripted replacement for the old day-1 TRN history package.
 	# This is applied only after the delayed split event creates the country.
@@ -111,20 +275,6 @@ sb_seed_trn_v2_start_package = {
 			limit = {
 				state_region = s:STATE_TRANSVAAL
 			}
-			create_pop = {
-				culture = boer
-				religion = protestant
-				size = 10192
-			}
-				create_pop = {
-					culture = ndebele
-					size = 30000
-				}
-				create_pop = {
-					pop_type = slaves
-					culture = san
-					size = 10000
-				}
 			create_building = {
 				building = building_trade_center
 				add_ownership = {
@@ -137,11 +287,11 @@ sb_seed_trn_v2_start_package = {
 				}
 				reserves = 1
 				activate_production_methods = { "pm_trade_center_trade_quantity_normal" }
-			}
-			create_building = {
-				building = building_millet_farm
-				add_ownership = {
-					building = {
+				}
+				create_building = {
+					building = building_maize_farm
+					add_ownership = {
+						building = {
 						type = building_manor_house
 						country = c:TRN
 						levels = 1
@@ -164,18 +314,8 @@ sb_seed_trn_v2_start_package = {
 				reserves = 1
 				activate_production_methods = { "pm_open_air_stockyards" "pm_simple_ranch" "pm_standard_fences" "pm_unrefrigerated" }
 			}
-			create_building = {
-				building = building_barrack
-				add_ownership = {
-					country = {
-						country = c:TRN
-						levels = 1
-					}
-				}
-				reserves = 1
-				activate_production_methods = { "pm_no_organization" }
-			}
 		}
+		sb_move_trn_v2_cape_trekkers_to_transvaal = yes
 		if = {
 			limit = { army_size <= 0 }
 			create_military_formation = {
@@ -321,9 +461,10 @@ sb_spawn_transvaal_republic_v2 = {
 		activate_law = law_type:law_agrarianism
 		activate_law = law_type:law_land_based_taxation
 		activate_law = law_type:law_homesteading
-		activate_law = law_type:law_national_militia
-		activate_law = law_type:law_legacy_slavery
-		activate_law = law_type:law_frontier_colonization
+			activate_law = law_type:law_national_militia
+			activate_law = law_type:law_discrete_inboekstelsel
+			sb_add_inboekstelsel_journal_entry = yes
+			activate_law = law_type:law_frontier_colonization
 			add_modifier = {
 				name = sb_trek_frontier_drive
 				months = 120
@@ -350,7 +491,6 @@ sb_spawn_transvaal_republic_v2 = {
 			}
 			create_character = {
 				template = TRN_stephanus_schoeman
-				is_general = yes
 				ig_leader = yes
 				interest_group = ig_armed_forces
 			}
@@ -375,7 +515,6 @@ sb_spawn_transvaal_republic_v2 = {
 				create_character = {
 					template = TRN_marthinus_wessel_pretorius
 					ruler = yes
-					is_general = yes
 					ig_leader = yes
 					interest_group = ig_landowners
 					ideology = ideology_sb_volksraad_elitism_leader
@@ -431,6 +570,7 @@ sb_spawn_transvaal_republic_v2 = {
 		value = 25
 	}
 	c:TRN ?= { sb_ensure_boer_republic_compacts_for_root = yes }
+	c:TRN ?= { trigger_event = { id = sb_boer_republics.121 days = 1 popup = no } }
 		c:ORA ?= {
 		if = {
 			limit = { has_variable = sb_voortrekker_start_var }
@@ -477,25 +617,52 @@ sb_found_zoutpansberg_republic = {
 		set_owner_of_provinces = {
 			country = c:ZPB
 			provinces = {
-				x4760DD x24A528 xD34CB1 xCAEAEB xC9D165 x8DF37C
+				x4760DD x24A528 xD34CB1 xCAEAEB xC9D165
 			}
 		}
 		add_claim = c:ZPB
 		region_state:ZPB ?= {
 			set_state_type = incorporated
+			create_building = {
+				building = building_maize_farm
+				add_ownership = {
+					building = {
+						type = building_manor_house
+						country = c:ZPB
+						levels = 1
+						region = "STATE_NORTHERN_TRANSVAAL"
+					}
+				}
+				reserves = 1
+				activate_production_methods = { "pm_simple_farming" "pm_no_secondary" "pm_tools_disabled" }
+			}
+			create_building = {
+				building = building_livestock_ranch
+				add_ownership = {
+					building = {
+						type = building_manor_house
+						country = c:ZPB
+						levels = 1
+						region = "STATE_NORTHERN_TRANSVAAL"
+					}
+				}
+				reserves = 1
+				activate_production_methods = { "pm_open_air_stockyards" "pm_simple_ranch" "pm_standard_fences" "pm_unrefrigerated" }
+			}
 		}
 	}
 	c:ZPB ?= {
 		set_country_type = unrecognized
 		set_variable = sb_early_republic_var
-		sb_apply_boer_republic_spawn_setup = yes
-		activate_law = law_type:law_slave_trade
-		activate_law = law_type:law_frontier_colonization
+			sb_apply_boer_republic_spawn_setup = yes
+			activate_law = law_type:law_expanded_inboekstelsel
+			sb_add_inboekstelsel_journal_entry = yes
+			activate_law = law_type:law_frontier_colonization
 		add_modifier = {
-			name = sb_trek_frontier_drive
+			name = sb_trek_frontier_drive_zpb
 			months = 180
 		}
-		if = {
+			if = {
 			limit = { NOT = { has_journal_entry = je_sb_great_trek } }
 			add_journal_entry = { type = je_sb_great_trek }
 		}
@@ -620,9 +787,55 @@ sb_found_zoutpansberg_republic = {
 		}
 	}
 	if = {
-		limit = { exists = c:PDI }
-		c:LYD ?= {
-			annex = c:PDI
+		limit = { exists = c:LYD }
+		s:STATE_EAST_TRANSVAAL = {
+			region_state:PDI ?= {
+				set_state_owner = c:LYD
+			}
+			region_state:TSO ?= {
+				set_state_owner = c:LYD
+			}
+			region_state:LYD ?= {
+				create_building = {
+					building = building_trade_center
+					add_ownership = {
+						building = {
+							type = building_trade_center
+							country = c:LYD
+							levels = 1
+							region = "STATE_EAST_TRANSVAAL"
+						}
+					}
+					reserves = 1
+					activate_production_methods = { "pm_trade_center_trade_quantity_normal" }
+				}
+				create_building = {
+					building = building_maize_farm
+					add_ownership = {
+						building = {
+							type = building_manor_house
+							country = c:LYD
+							levels = 1
+							region = "STATE_EAST_TRANSVAAL"
+						}
+					}
+					reserves = 1
+					activate_production_methods = { "pm_simple_farming" "pm_no_secondary" "pm_tools_disabled" }
+				}
+				create_building = {
+					building = building_livestock_ranch
+					add_ownership = {
+						building = {
+							type = building_manor_house
+							country = c:LYD
+							levels = 1
+							region = "STATE_EAST_TRANSVAAL"
+						}
+					}
+					reserves = 1
+					activate_production_methods = { "pm_open_air_stockyards" "pm_simple_ranch" "pm_standard_fences" "pm_unrefrigerated" }
+				}
+			}
 		}
 	}
 	s:STATE_EAST_TRANSVAAL = {
@@ -633,14 +846,19 @@ sb_found_zoutpansberg_republic = {
 			save_scope_as = lyd_settler_target
 		}
 	}
-	root.capital ?= {
-		every_scope_pop = {
-			limit = {
-				culture = cu:boer
-			}
-			move_partial_pop = {
-				state = scope:lyd_settler_target
-				population_ratio = 0.12
+	if = {
+		limit = { exists = scope:lyd_settler_target }
+		c:TRN ?= {
+			every_scope_state = {
+				every_scope_pop = {
+					limit = {
+						culture = cu:boer
+					}
+					move_partial_pop = {
+						state = scope:lyd_settler_target
+						population_ratio = 0.2
+					}
+				}
 			}
 		}
 	}
@@ -683,32 +901,12 @@ sb_found_zoutpansberg_republic = {
 				country = root
 			value = -25
 		}
-			add_modifier = {
-				name = sb_trek_migration_cost
-				months = 24
-			}
-			if = {
-				limit = { NOT = { has_journal_entry = je_sb_great_trek } }
-				add_journal_entry = { type = je_sb_great_trek }
-			}
-			random_scope_state = {
-				limit = {
-					state_region = s:STATE_EAST_TRANSVAAL
-				}
 				if = {
-					limit = { NOT = { has_modifier = sb_trek_migration_pull } }
-					add_modifier = {
-						name = sb_trek_migration_pull
-						months = 24
-					}
+					limit = { NOT = { has_journal_entry = je_sb_great_trek } }
+					add_journal_entry = { type = je_sb_great_trek }
 				}
-				create_mass_migration = {
-					origin = scope:migration_source
-				culture = scope:migration_culture
+					sb_ensure_boer_republic_compacts_for_root = yes
 				}
-			}
-				sb_ensure_boer_republic_compacts_for_root = yes
-			}
 		if = {
 			limit = {
 			country_definition = cd:TRN

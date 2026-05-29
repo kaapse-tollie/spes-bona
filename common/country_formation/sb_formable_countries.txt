@@ -44,10 +44,32 @@ STA = {
 		is_subject = no
 		has_variable = sb_sotho_tswana_nation_completed_var
 		c:TSW ?= {
-			is_country_alive = yes
-			is_subject_of = root
-			is_subject_type = subject_type_vassal
-			liberty_desire <= 25
+			OR = {
+				NOT = { is_country_alive = yes }
+				AND = {
+					is_country_alive = yes
+					is_direct_subject_of = root
+					OR = {
+						is_subject_type = subject_type_tributary
+						is_subject_type = subject_type_vassal
+					}
+					liberty_desire <= 25
+				}
+			}
+		}
+		c:PDI ?= {
+			OR = {
+				NOT = { is_country_alive = yes }
+				AND = {
+					is_country_alive = yes
+					is_direct_subject_of = root
+					OR = {
+						is_subject_type = subject_type_tributary
+						is_subject_type = subject_type_vassal
+					}
+					liberty_desire <= 25
+				}
+			}
 		}
 	}
 }

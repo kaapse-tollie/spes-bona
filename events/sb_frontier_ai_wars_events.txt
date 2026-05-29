@@ -10,26 +10,53 @@ sb_frontier_ai_wars.010 = {
 	type = country_event
 	hidden = yes
 
-	trigger = {
-		country_definition = cd:ORA
-		is_ai = yes
-		is_country_alive = yes
-		is_subject = no
-		is_at_war = no
-		is_active_in_diplomatic_play = no
-		aggressive_diplomatic_plays_permitted = yes
-		sb_frontier_ai_scripting_enabled = yes
-		c:PHL ?= {
-			is_country_alive = yes
-			is_ai = yes
-			is_subject = no
-			is_at_war = no
-			is_active_in_diplomatic_play = no
-			aggressive_diplomatic_plays_permitted = yes
-		}
-	}
+	# Not needed called externally
+	# trigger = {
+	# 	country_definition = cd:ORA
+	# 	is_ai = yes
+	# 	is_country_alive = yes
+	# 	is_subject = no
+	# 	is_at_war = no
+	# 	is_active_in_diplomatic_play = no
+	# 	aggressive_diplomatic_plays_permitted = yes
+	# 	sb_frontier_ai_scripting_enabled = yes
+	# 	c:PHL ?= {
+	# 		is_country_alive = yes
+	# 		is_ai = yes
+	# 		is_subject = no
+	# 		is_at_war = no
+	# 		is_active_in_diplomatic_play = no
+	# 		aggressive_diplomatic_plays_permitted = yes
+	# 	}
+	# }
 
 	immediate = {
+		add_modifier = {
+			name = sb_ora_scripted_return_war_supplies
+			months = 12
+		}
+		if = {
+			limit = {
+				NOT = { has_variable = sb_ora_phl_no_zul_infantry_spawned_var }
+				NOT = {
+					c:ZUL ?= {
+						has_variable = sb_zulu_blood_river_resolved_var
+					}
+				}
+			}
+			set_variable = sb_ora_phl_no_zul_infantry_spawned_var
+			create_military_formation = {
+				type = army
+				hq_region = sr:region_southern_africa
+				name = ora_phl_frontier_commando
+
+				combat_unit = {
+					type = unit_type:combat_unit_type_line_infantry
+					state_region = s:STATE_VRYSTAAT
+					count = 1
+				}
+			}
+		}
 		if = {
 			limit = {
 				sb_frontier_ai_behavior_dynamic_historical = yes
@@ -38,7 +65,7 @@ sb_frontier_ai_wars.010 = {
 				80 = {
 					add_modifier = {
 						name = sb_ora_scripted_frontier_edge
-						months = 36
+						months = 12
 					}
 				}
 				20 = { }
@@ -50,7 +77,7 @@ sb_frontier_ai_wars.010 = {
 			}
 			add_modifier = {
 				name = sb_ora_scripted_frontier_edge
-				months = 36
+				months = 12
 			}
 		}
 		if = {
@@ -90,26 +117,31 @@ sb_frontier_ai_wars.020 = {
 	type = country_event
 	hidden = yes
 
-	trigger = {
-		country_definition = cd:ORA
-		is_ai = yes
-		is_country_alive = yes
-		is_subject = no
-		is_at_war = no
-		is_active_in_diplomatic_play = no
-		aggressive_diplomatic_plays_permitted = yes
-		sb_frontier_ai_scripting_enabled = yes
-		c:BST ?= {
-			is_country_alive = yes
-			is_ai = yes
-			is_subject = no
-			is_at_war = no
-			is_active_in_diplomatic_play = no
-		}
-		sb_ai_bst_available_for_ora_return_play = yes
-	}
+	# Not needed, triggered externally
+	# trigger = {
+	# 	country_definition = cd:ORA
+	# 	is_ai = yes
+	# 	is_country_alive = yes
+	# 	is_subject = no
+	# 	is_at_war = no
+	# 	is_active_in_diplomatic_play = no
+	# 	aggressive_diplomatic_plays_permitted = yes
+	# 	sb_frontier_ai_scripting_enabled = yes
+	# 	c:BST ?= {
+	# 		is_country_alive = yes
+	# 		is_ai = yes
+	# 		is_subject = no
+	# 		is_at_war = no
+	# 		is_active_in_diplomatic_play = no
+	# 	}
+	# 	sb_ai_bst_available_for_ora_return_play = yes
+	# }
 
 	immediate = {
+		add_modifier = {
+			name = sb_ora_scripted_return_war_supplies
+			months = 12
+		}
 		if = {
 			limit = {
 				sb_frontier_ai_behavior_dynamic_historical = yes
@@ -119,14 +151,14 @@ sb_frontier_ai_wars.020 = {
 					c:BST ?= {
 						add_modifier = {
 							name = sb_bst_scripted_frontier_edge
-							months = 36
+							months = 12
 						}
 					}
 				}
 				80 = {
 					add_modifier = {
 						name = sb_ora_scripted_frontier_edge
-						months = 36
+						months = 12
 					}
 				}
 			}
@@ -137,18 +169,23 @@ sb_frontier_ai_wars.020 = {
 			}
 			add_modifier = {
 				name = sb_ora_scripted_frontier_edge
-				months = 36
+				months = 12
 			}
 		}
 		if = {
 			limit = { sb_ai_trn_available_for_ora_scripted_play = yes }
 			create_diplomatic_play = {
-				type = dp_sb_ora_bst_return_state_locked
+				type = dp_return_state
 				target_country = c:BST
 				target_state = s:STATE_VRYSTAAT.region_state:BST
 
 				add_initiator_backers = { c:TRN }
 
+				add_war_goal = {
+					holder = root
+					target_country = c:BST
+					type = humiliation
+				}
 				add_war_goal = {
 					holder = c:BST
 					target_state = s:STATE_VRYSTAAT.region_state:ORA
@@ -158,10 +195,15 @@ sb_frontier_ai_wars.020 = {
 		}
 		else = {
 			create_diplomatic_play = {
-				type = dp_sb_ora_bst_return_state_locked
+				type = dp_return_state
 				target_country = c:BST
 				target_state = s:STATE_VRYSTAAT.region_state:BST
 
+				add_war_goal = {
+					holder = root
+					target_country = c:BST
+					type = humiliation
+				}
 				add_war_goal = {
 					holder = c:BST
 					target_state = s:STATE_VRYSTAAT.region_state:ORA
@@ -169,7 +211,6 @@ sb_frontier_ai_wars.020 = {
 				}
 			}
 		}
-		set_variable = sb_ora_bst_scripted_war_1848_created_var
 		set_variable = sb_ora_bst_scripted_war_1848_resolved_var
 	}
 }
@@ -178,45 +219,70 @@ sb_frontier_ai_wars.030 = {
 	type = country_event
 	hidden = yes
 
-	trigger = {
-		country_definition = cd:ORA
-		is_ai = yes
-		is_country_alive = yes
-		is_subject = no
-		is_at_war = no
-		is_active_in_diplomatic_play = no
-		aggressive_diplomatic_plays_permitted = yes
-		sb_frontier_ai_scripting_enabled = yes
-		c:BST ?= {
-			is_country_alive = yes
-			is_ai = yes
-			is_subject = no
-			is_at_war = no
-			is_active_in_diplomatic_play = no
-			aggressive_diplomatic_plays_permitted = yes
-		}
-	}
+	# Not needed called externally
+	# trigger = {
+	# 	country_definition = cd:ORA
+	# 	is_ai = yes
+	# 	is_country_alive = yes
+	# 	is_subject = no
+	# 	is_at_war = no
+	# 	is_active_in_diplomatic_play = no
+	# 	aggressive_diplomatic_plays_permitted = yes
+	# 	sb_frontier_ai_scripting_enabled = yes
+	# 	c:BST ?= {
+	# 		is_country_alive = yes
+	# 		is_ai = yes
+	# 		is_subject = no
+	# 		is_at_war = no
+	# 		is_active_in_diplomatic_play = no
+	# 		aggressive_diplomatic_plays_permitted = yes
+	# 	}
+	# }
 
 	immediate = {
 		if = {
 			limit = {
 				sb_frontier_ai_behavior_dynamic_historical = yes
 			}
+			# Dynamic:
+			# 60% push to Stalemate
+			# 20% BST major comeback
+			# 20% ORA kills BST
 			random_list = {
+				# BST defensive edge
+				60 = {
+					add_modifier = {
+						name = sb_ora_scripted_annex_war_overreach
+						months = 12
+					}
+					c:BST ?= {
+						add_modifier = {
+							name = sb_bst_scripted_thaba_bosiu
+							months = 12
+						}
+					}
+				}
+				# BST offensive edge to win
 				20 = {
 					c:BST ?= {
 						add_modifier = {
 							name = sb_bst_scripted_frontier_major_edge
-							months = 48
+							months = 12
 						}
 					}
-				}
-				80 = {
 					add_modifier = {
 						name = sb_ora_scripted_annex_war_overreach
-						months = 48
+						months = 12
 					}
 				}
+					# ORA offensive edge
+				20 = {
+					add_modifier = {
+						name = sb_ora_scripted_return_war_supplies
+						months = 12
+					}
+				}
+
 			}
 		}
 		if = {
@@ -225,7 +291,13 @@ sb_frontier_ai_wars.030 = {
 			}
 			add_modifier = {
 				name = sb_ora_scripted_annex_war_overreach
-				months = 48
+				months = 12
+			}
+			c:BST ?= {
+				add_modifier = {
+					name = sb_bst_scripted_thaba_bosiu
+					months = 12
+				}
 			}
 		}
 		create_diplomatic_play = {
@@ -249,10 +321,25 @@ sb_frontier_ai_wars.040 = {
 	trigger = {
 		sb_is_zulu_dynasty_country = yes
 		is_ai = yes
+		is_country_alive = yes
+		is_at_war = no
 		is_active_in_diplomatic_play = no
-		sb_frontier_ai_behavior_dynamic_historical = yes
+		aggressive_diplomatic_plays_permitted = yes
+		sb_frontier_ai_scripting_enabled = yes
+		sb_frontier_ai_behavior_strict_historical = no
+		has_variable = sb_zulu_blood_river_victory_var
+		has_variable = sb_zulu_dynasty_secured_var
+		NOT = { has_journal_entry = je_sb_zulu_kingdom }
+		ruler = {
+			has_template = ZUL_dingane
+		}
 		c:GZA ?= {
+			is_country_alive = yes
+			is_ai = yes
+			is_subject = no
+			is_at_war = no
 			is_active_in_diplomatic_play = no
+			aggressive_diplomatic_plays_permitted = yes
 		}
 	}
 

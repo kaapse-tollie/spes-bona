@@ -1,0 +1,68 @@
+﻿# Spes Bona - Inboekstelsel scripted buttons
+
+je_sb_inboekstelsel_enforce_button = {
+	name = "je_sb_inboekstelsel_enforce_button"
+	desc = "je_sb_inboekstelsel_enforce_button_desc"
+
+	visible = {
+		has_journal_entry = je_sb_inboekstelsel_system
+		sb_has_inboekstelsel_law = yes
+	}
+
+	possible = {
+		custom_tooltip = {
+			text = sb_inboekstelsel_cooldown_tt
+			NOT = { has_variable = sb_inboekstelsel_action_cooldown_var }
+		}
+		custom_tooltip = {
+			text = sb_inboekstelsel_valid_pops_tt
+			any_scope_state = {
+				any_scope_pop = {
+					religion = rel:animist
+					pop_acceptance <= acceptance_status_1
+				}
+			}
+		}
+	}
+
+	effect = {
+		sb_inboekstelsel_enforce = yes
+	}
+
+	ai_chance = {
+		value = 1000
+		if = {
+			limit = { sb_should_relax_inboekstelsel_ai = yes }
+			add = -1000
+		}
+	}
+}
+
+je_sb_inboekstelsel_relax_button = {
+	name = "je_sb_inboekstelsel_relax_button"
+	desc = "je_sb_inboekstelsel_relax_button_desc"
+
+	visible = {
+		has_journal_entry = je_sb_inboekstelsel_system
+		sb_has_inboekstelsel_law = yes
+	}
+
+	possible = {
+		custom_tooltip = {
+			text = sb_inboekstelsel_cooldown_tt
+			NOT = { has_variable = sb_inboekstelsel_action_cooldown_var }
+		}
+	}
+
+	effect = {
+		sb_inboekstelsel_relax = yes
+	}
+
+	ai_chance = {
+		value = 0
+		if = {
+			limit = { sb_should_relax_inboekstelsel_ai = yes }
+			add = 1000
+		}
+	}
+}

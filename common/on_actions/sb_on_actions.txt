@@ -210,9 +210,7 @@ sb_on_game_started = {
 		}
 
 		# Force the trekker republics into their intended opening coalitions after
-		# startup character generation has completed. ORA's V2 player-facing start
-		# is anchored on Potgieter, Retief, and Maritz, so keep the opening
-		# government tied to those named figures rather than to generated filler.
+		# startup character generation has completed.
 		c:ORA ?= {
 			every_interest_group = {
 				remove_ruling_interest_group = yes
@@ -223,7 +221,7 @@ sb_on_game_started = {
 			ig:ig_landowners ?= {
 				add_ruling_interest_group = yes
 			}
-			ig:ig_petty_bourgeoisie ?= {
+			ig:ig_devout ?= {
 				add_ruling_interest_group = yes
 			}
 		}
@@ -1321,16 +1319,25 @@ sb_on_trek_monthly_pulse_country = {
 			limit = {
 				sb_is_zulu_dynasty_country = yes
 				is_ai = yes
-				sb_frontier_ai_behavior_dynamic_historical = yes
+				sb_frontier_ai_scripting_enabled = yes
+				sb_frontier_ai_behavior_strict_historical = no
 				has_variable = sb_zulu_gaza_followup_pending_var
+				has_variable = sb_zulu_blood_river_victory_var
+				has_variable = sb_zulu_dynasty_secured_var
+				NOT = { has_journal_entry = je_sb_zulu_kingdom }
+				ruler = {
+					has_template = ZUL_dingane
+				}
 				is_country_alive = yes
 				is_at_war = no
+				is_active_in_diplomatic_play = no
 				aggressive_diplomatic_plays_permitted = yes
 				c:GZA ?= {
 					is_country_alive = yes
 					is_ai = yes
 					is_subject = no
 					is_at_war = no
+					is_active_in_diplomatic_play = no
 					aggressive_diplomatic_plays_permitted = yes
 				}
 			}
@@ -1341,9 +1348,15 @@ sb_on_trek_monthly_pulse_country = {
 				sb_is_zulu_dynasty_country = yes
 				has_variable = sb_zulu_gaza_followup_pending_var
 				OR = {
-					sb_frontier_ai_behavior_dynamic_historical = no
+					sb_frontier_ai_scripting_enabled = no
+					sb_frontier_ai_behavior_strict_historical = yes
 					is_ai = no
+					NOT = { has_variable = sb_zulu_blood_river_victory_var }
+					ruler = {
+						NOT = { has_template = ZUL_dingane }
+					}
 					NOT = { c:GZA ?= { is_country_alive = yes } }
+					c:GZA ?= { is_subject = yes }
 					c:GZA ?= { is_ai = no }
 				}
 			}
@@ -1500,7 +1513,10 @@ sb_on_trek_monthly_pulse_country = {
 				NOT = { has_variable = sb_british_natal_ultimatum_pending_var }
 				c:NAL ?= {
 					is_country_alive = yes
+					is_active_in_diplomatic_play = no
+					NOT = { has_war_with = c:GBR }
 					NOT = { is_subject_of = c:GBR }
+					NOT = { has_variable = sb_natalia_british_colony_resolved_var }
 					any_scope_building = {
 						is_building_type = building_port
 						level >= 1
@@ -1665,7 +1681,6 @@ sb_on_trek_monthly_pulse_country = {
 				is_country_alive = yes
 				is_subject = no
 				is_at_war = no
-				aggressive_diplomatic_plays_permitted = yes
 				NOT = { has_variable = sb_ora_phl_scripted_war_resolved_var }
 				game_date >= 1840.1.1
 				c:PHL ?= {
@@ -1673,33 +1688,15 @@ sb_on_trek_monthly_pulse_country = {
 					is_ai = yes
 					is_subject = no
 					is_at_war = no
-					aggressive_diplomatic_plays_permitted = yes
 					any_scope_state = {
 						state_region = s:STATE_VRYSTAAT
 					}
-				}
-				c:BST ?= {
-					is_country_alive = yes
-					is_ai = yes
 				}
 			}
 			trigger_event = { id = sb_frontier_ai_wars.010 days = 14 }
 		}
 
-		if = {
-			limit = {
-				sb_frontier_ai_scripting_enabled = yes
-				country_definition = cd:ORA
-				is_ai = yes
-				has_variable = sb_ora_bst_scripted_war_1848_resolved_var
-				NOT = { has_variable = sb_ora_bst_scripted_war_1848_created_var }
-				game_date >= 1847.1.1
-				game_date < 1856.1.1
-				sb_ai_bst_available_for_ora_return_play = yes
-			}
-			remove_variable = sb_ora_bst_scripted_war_1848_resolved_var
-		}
-
+		# ORA-BST return war trigger
 		if = {
 			limit = {
 				sb_frontier_ai_scripting_enabled = yes
@@ -1708,20 +1705,22 @@ sb_on_trek_monthly_pulse_country = {
 				is_country_alive = yes
 				is_subject = no
 				is_at_war = no
-				aggressive_diplomatic_plays_permitted = yes
 				NOT = { has_variable = sb_ora_bst_scripted_war_1848_resolved_var }
-				game_date >= 1847.1.1
-				c:PHL ?= {
-					OR = {
-						NOT = { is_country_alive = yes }
-						is_ai = yes
+				game_date >= 1847.6.1
+				c:BST ?= {
+					is_country_alive = yes
+					is_ai = yes
+					is_subject = no
+					is_at_war = no
+					any_scope_state = {
+						state_region = s:STATE_VRYSTAAT
 					}
 				}
-				sb_ai_bst_available_for_ora_return_play = yes
 			}
 			trigger_event = { id = sb_frontier_ai_wars.020 days = 14 }
 		}
 
+		# Ai ORA-BST annex war trigger
 		if = {
 			limit = {
 				sb_frontier_ai_scripting_enabled = yes
@@ -1732,23 +1731,17 @@ sb_on_trek_monthly_pulse_country = {
 				is_at_war = no
 				aggressive_diplomatic_plays_permitted = yes
 				NOT = { has_variable = sb_ora_bst_scripted_war_1856_resolved_var }
-				game_date >= 1856.1.1
+				game_date >= 1865.8.4
 				c:PHL ?= {
-					OR = {
-						NOT = { is_country_alive = yes }
-						is_ai = yes
-					}
+						is_country_alive = no
 				}
 				c:BST ?= {
 					is_country_alive = yes
 					is_ai = yes
 					is_subject = no
 					is_at_war = no
-					aggressive_diplomatic_plays_permitted = yes
 				}
-				any_scope_state = {
-					state_region = s:STATE_VRYSTAAT
-				}
+
 			}
 			trigger_event = { id = sb_frontier_ai_wars.030 days = 14 }
 		}
@@ -1843,14 +1836,11 @@ sb_on_zpb_monthly_pulse_country = {
 					NOT = { has_variable = sb_zpb_unity_active_var }
 					NOT = { has_journal_entry = je_sb_zpb_crackdown }
 					NOT = { has_journal_entry = je_sb_zpb_unity }
-				c:ZPB ?= {
-					is_country_alive = yes
-					is_subject = no
-					OR = {
-						has_law = law_type:law_slave_trade
-						has_law = law_type:law_legacy_slavery
+					c:ZPB ?= {
+						is_country_alive = yes
+						is_subject = no
+						sb_has_boer_slavery_system = yes
 					}
-				}
 				}
 				set_variable = sb_zpb_lawlessness_pending_var
 				random_list = {
@@ -2334,8 +2324,12 @@ sb_on_spes_bona_wargoal_enforced = {
 			if = {
 				limit = {
 					is_ai = yes
-					sb_frontier_ai_behavior_dynamic_historical = yes
-					NOT = { c:SWZ ?= { is_country_alive = yes } }
+					sb_frontier_ai_scripting_enabled = yes
+					sb_frontier_ai_behavior_strict_historical = no
+					has_variable = sb_zulu_blood_river_victory_var
+					ruler = {
+						has_template = ZUL_dingane
+					}
 					c:GZA ?= {
 						is_country_alive = yes
 						is_ai = yes
@@ -2345,10 +2339,10 @@ sb_on_spes_bona_wargoal_enforced = {
 				}
 				set_variable = sb_zulu_gaza_followup_resolved_var
 				random_list = {
-					33 = {
+					50 = {
 						set_variable = sb_zulu_gaza_followup_pending_var
 					}
-					67 = { }
+					50 = { }
 				}
 			}
 		}
@@ -2386,7 +2380,7 @@ sb_on_spes_bona_wargoal_enforced = {
 			scope:target = {
 				remove_variable = sb_natal_war_active_var
 			}
-			trigger_event = { id = sb_natal_crisis.070 days = 3 popup = yes }
+				trigger_event = { id = sb_natal_crisis.070 days = 3 popup = yes }
 		}
 
 		# ZUL wins the Natal crisis war.

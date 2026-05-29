@@ -2,8 +2,74 @@
 	OR = {
 		has_law = law_type:law_slave_trade
 		has_law = law_type:law_legacy_slavery
+		has_law = law_type:law_discrete_inboekstelsel
+		has_law = law_type:law_expanded_inboekstelsel
 		has_law = law_type:law_debt_slavery
 		has_law = law_type:law_colonial_slavery
+	}
+}
+
+sb_is_boer_inboekstelsel_country = {
+	country_has_primary_culture = cu:boer
+	OR = {
+		country_definition = cd:ORA
+		country_definition = cd:TRN
+		country_definition = cd:ZPB
+		country_definition = cd:LYD
+		country_definition = cd:NAL
+	}
+}
+
+sb_has_inboekstelsel_law = {
+	OR = {
+		has_law = law_type:law_discrete_inboekstelsel
+		has_law = law_type:law_expanded_inboekstelsel
+	}
+}
+
+sb_has_boer_slavery_system = {
+	OR = {
+		has_law = law_type:law_discrete_inboekstelsel
+		has_law = law_type:law_expanded_inboekstelsel
+		has_law = law_type:law_legacy_slavery
+		has_law = law_type:law_slave_trade
+	}
+}
+
+sb_has_discrete_inboekstelsel_or_legacy_slavery = {
+	OR = {
+		has_law = law_type:law_discrete_inboekstelsel
+		has_law = law_type:law_legacy_slavery
+	}
+}
+
+sb_has_expanded_inboekstelsel_or_slave_trade = {
+	OR = {
+		has_law = law_type:law_expanded_inboekstelsel
+		has_law = law_type:law_slave_trade
+	}
+}
+
+sb_should_relax_inboekstelsel_ai = {
+	OR = {
+		radical_fraction = { value >= 0.66 }
+		c:GBR ?= { relations:root <= -20 }
+		any_political_movement = {
+			political_movement_radicalism >= 0.50
+			OR = {
+				is_political_movement_type = movement_anti_slavery
+				is_political_movement_type = movement_slave_revolt
+				is_political_movement_type = movement_minority_rights
+				is_political_movement_type = movement_cultural_minority
+				is_political_movement_type = movement_religious_minority
+				is_political_movement_type = movement_liberal
+				is_political_movement_type = movement_radical
+				is_political_movement_type = movement_labor
+				is_political_movement_type = movement_socialist
+				is_political_movement_type = movement_communist
+				is_political_movement_type = movement_anarchist
+			}
+		}
 	}
 }
 

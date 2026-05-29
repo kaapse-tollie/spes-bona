@@ -85,7 +85,6 @@ sb_convert_natalia_to_british_crown_colony = {
 		}
 		change_subject_type = subject_type_colony
 	}
-	sb_trigger_british_natal_colony_migration_effect = yes
 }
 
 sb_apply_british_natal_colony_setup = {
@@ -101,10 +100,6 @@ sb_apply_british_natal_colony_setup = {
 			has_variable = sb_early_republic_var
 		}
 		remove_variable = sb_early_republic_var
-	}
-	if = {
-		limit = { has_modifier = sb_trek_frontier_drive_natalia }
-		remove_modifier = sb_trek_frontier_drive_natalia
 	}
 	if = {
 		limit = {
@@ -163,7 +158,7 @@ sb_apply_british_natal_colony_setup = {
 			provinces = { x279045 }
 		}
 		region_state:NAL ?= {
-			set_state_type = unincorporated
+			set_state_type = incorporated
 			every_scope_pop = {
 				limit = {
 					culture = cu:british
@@ -583,77 +578,4 @@ sb_trigger_natal_refugee_migration_effect = {
 		}
 	}
 	remove_variable = sb_natal_refugee_receiver_count_var
-}
-
-# Natalia needs its own trekker migration helper because the generic trek effect
-# targets the calling country, which is ORA in the formation chain.
-sb_trigger_natalia_boer_migration_effect = {
-	random_country = {
-		limit = {
-			country_definition = cd:CAP
-			is_country_alive = yes
-		}
-		save_scope_as = boer_migration_origin
-	}
-	c:NAL ?= {
-		ordered_scope_state = {
-			order_by = migration_pull
-			position = 0
-			check_range_bounds = no
-			save_scope_as = boer_migration_target
-		}
-	}
-	if = {
-		limit = {
-			exists = scope:boer_migration_origin
-			exists = scope:boer_migration_target
-		}
-		scope:boer_migration_target = {
-			create_mass_migration = {
-				origin = scope:boer_migration_origin
-				culture = cu:boer
-			}
-		}
-		scope:boer_migration_origin = {
-			add_modifier = {
-				name = sb_trek_migration_cost
-				months = 24
-			}
-		}
-	}
-}
-
-# Submission to Britain should encourage an English inflow toward the port
-# colony, underscoring that the coast has been pulled back into imperial orbit.
-sb_trigger_british_natal_colony_migration_effect = {
-	random_country = {
-		limit = {
-			country_definition = cd:GBR
-			is_country_alive = yes
-			any_primary_culture = {
-				this = cu:british
-			}
-		}
-		save_scope_as = british_migration_origin
-	}
-	c:NAL ?= {
-		ordered_scope_state = {
-			order_by = migration_pull
-			position = 0
-			check_range_bounds = no
-			save_scope_as = british_migration_target
-		}
-	}
-	if = {
-		limit = {
-			exists = scope:british_migration_origin
-			exists = scope:british_migration_target
-		}
-		scope:british_migration_target = {
-			create_mass_migration = {
-				origin = scope:british_migration_origin
-				culture = cu:british
-			}
-		}
-	}
 }

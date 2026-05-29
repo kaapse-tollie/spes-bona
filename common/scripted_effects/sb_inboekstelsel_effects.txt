@@ -1,0 +1,225 @@
+﻿# Spes Bona - Inboekstelsel effects
+
+sb_add_inboekstelsel_journal_entry = {
+	if = {
+		limit = {
+			sb_is_boer_inboekstelsel_country = yes
+			sb_has_inboekstelsel_law = yes
+			NOT = { has_journal_entry = je_sb_inboekstelsel_system }
+		}
+		add_journal_entry = { type = je_sb_inboekstelsel_system }
+	}
+}
+
+sb_inboekstelsel_enforce = {
+	set_variable = { name = sb_inboekstelsel_action_cooldown_var days = 375 }
+
+	if = {
+		limit = { has_law = law_type:law_expanded_inboekstelsel }
+		add_modifier = {
+			name = sb_inboekstelsel_enforced_slave_trade
+			months = 13
+		}
+		custom_tooltip = sb_inboekstelsel_expanded_effect_tt
+		if = { limit = { exists = c:CAP } change_relations = { country = c:CAP value = -5 } }
+		if = { limit = { exists = c:GBR } change_relations = { country = c:GBR value = -5 } }
+	}
+	else = {
+		add_modifier = {
+			name = sb_inboekstelsel_enforced
+			months = 13
+		}
+		custom_tooltip = sb_inboekstelsel_discrete_effect_tt
+		if = { limit = { exists = c:CAP } change_relations = { country = c:CAP value = -2 } }
+		if = { limit = { exists = c:GBR } change_relations = { country = c:GBR value = -2 } }
+	}
+
+	every_scope_state = {
+		limit = {
+			any_scope_pop = {
+				culture = cu:boer
+			}
+		}
+		if = {
+			limit = { root = { has_law = law_type:law_expanded_inboekstelsel } }
+			add_loyalists_in_state = {
+				value = 0.05
+				culture = cu:boer
+			}
+		}
+		else = {
+			add_loyalists_in_state = {
+				value = 0.025
+				culture = cu:boer
+			}
+		}
+	}
+
+	hidden_effect = {
+		if = {
+			limit = {
+				exists = c:BUG
+				c:BUG = { sb_has_any_slavery_law = yes }
+			}
+			c:BUG.capital = { save_scope_as = sb_inboekstelsel_staging_state }
+			every_scope_state = {
+				limit = {
+					any_scope_pop = {
+						religion = rel:animist
+						pop_acceptance <= acceptance_status_1
+					}
+				}
+				save_scope_as = sb_inboekstelsel_source_state
+				every_scope_pop = {
+					limit = {
+						religion = rel:animist
+						pop_acceptance <= acceptance_status_1
+					}
+					culture = { save_scope_as = sb_inboekstelsel_source_culture }
+					scope:sb_inboekstelsel_source_state = {
+						if = {
+							limit = { root = { has_law = law_type:law_expanded_inboekstelsel } }
+							add_radicals_in_state = {
+								value = 0.01
+								culture = scope:sb_inboekstelsel_source_culture
+								religion = rel:animist
+							}
+						}
+						else = {
+							add_radicals_in_state = {
+								value = 0.005
+								culture = scope:sb_inboekstelsel_source_culture
+								religion = rel:animist
+							}
+						}
+					}
+					if = {
+						limit = { root = { has_law = law_type:law_expanded_inboekstelsel } }
+						move_partial_pop = {
+							state = scope:sb_inboekstelsel_staging_state
+							population_ratio = 0.025
+						}
+					}
+					else = {
+						move_partial_pop = {
+							state = scope:sb_inboekstelsel_staging_state
+							population_ratio = 0.01
+						}
+					}
+					scope:sb_inboekstelsel_staging_state = {
+						every_scope_pop = {
+							limit = {
+								religion = rel:animist
+								culture = scope:sb_inboekstelsel_source_culture
+								NOT = { is_pop_type = slaves }
+							}
+							change_poptype = pop_type:slaves
+						}
+						every_scope_pop = {
+							limit = {
+								is_pop_type = slaves
+								religion = rel:animist
+								culture = scope:sb_inboekstelsel_source_culture
+							}
+							move_partial_pop = {
+								state = scope:sb_inboekstelsel_source_state
+								population_ratio = 1
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+sb_inboekstelsel_relax = {
+	set_variable = { name = sb_inboekstelsel_action_cooldown_var days = 375 }
+	add_modifier = {
+		name = sb_inboekstelsel_relaxed
+		months = 13
+	}
+	custom_tooltip = sb_inboekstelsel_relax_effect_tt
+	if = { limit = { exists = c:GBR } change_relations = { country = c:GBR value = 5 } }
+
+	every_scope_state = {
+		limit = {
+			any_scope_pop = {
+				culture = cu:boer
+			}
+		}
+		add_loyalists_in_state = {
+			value = -0.01
+			culture = cu:boer
+		}
+	}
+
+	hidden_effect = {
+		every_scope_state = {
+			limit = {
+				any_scope_pop = {
+					pop_acceptance <= acceptance_status_1
+				}
+			}
+			save_scope_as = sb_inboekstelsel_source_state
+			every_scope_pop = {
+				limit = {
+					pop_acceptance <= acceptance_status_1
+				}
+				culture = { save_scope_as = sb_inboekstelsel_source_culture }
+				religion = { save_scope_as = sb_inboekstelsel_source_religion }
+				scope:sb_inboekstelsel_source_state = {
+					add_radicals_in_state = {
+						value = -0.01
+						culture = scope:sb_inboekstelsel_source_culture
+						religion = scope:sb_inboekstelsel_source_religion
+					}
+				}
+			}
+		}
+		if = {
+			limit = { exists = c:BUG }
+			c:BUG.capital = { save_scope_as = sb_inboekstelsel_staging_state }
+			every_scope_state = {
+				limit = {
+					any_scope_pop = {
+						is_pop_type = slaves
+					}
+				}
+				save_scope_as = sb_inboekstelsel_source_state
+				every_scope_pop = {
+					limit = {
+						is_pop_type = slaves
+					}
+					culture = { save_scope_as = sb_inboekstelsel_source_culture }
+					religion = { save_scope_as = sb_inboekstelsel_source_religion }
+					move_partial_pop = {
+						state = scope:sb_inboekstelsel_staging_state
+						population_ratio = 0.01
+					}
+					scope:sb_inboekstelsel_staging_state = {
+						every_scope_pop = {
+							limit = {
+								is_pop_type = slaves
+								culture = scope:sb_inboekstelsel_source_culture
+								religion = scope:sb_inboekstelsel_source_religion
+							}
+							change_poptype = pop_type:laborers
+						}
+						every_scope_pop = {
+							limit = {
+								is_pop_type = laborers
+								culture = scope:sb_inboekstelsel_source_culture
+								religion = scope:sb_inboekstelsel_source_religion
+							}
+							move_partial_pop = {
+								state = scope:sb_inboekstelsel_source_state
+								population_ratio = 1
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}

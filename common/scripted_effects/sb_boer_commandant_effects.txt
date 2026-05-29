@@ -46,6 +46,27 @@ sb_ensure_commandant_general_ruler_landowner_leadership = {
 	}
 }
 
+sb_transition_ruler_landowner_leadership = {
+	if = {
+		limit = {
+			has_law = law_type:law_presidential_republic
+			exists = ruler
+			ruler = {
+				is_ruler = yes
+			}
+		}
+		ruler = {
+			if = {
+				limit = {
+					NOT = { has_role = politician }
+				}
+				add_character_role = politician
+			}
+			set_as_interest_group_leader = yes
+		}
+	}
+}
+
 # Refresh the custom Boer government type when the law is already active but
 # the engine has left the country on the generic presidential-republic shell.
 # This can happen for mid-game spawned republics such as Natalia, where the

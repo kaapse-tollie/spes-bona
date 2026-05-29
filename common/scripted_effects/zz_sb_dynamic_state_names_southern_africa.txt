@@ -59,8 +59,16 @@ REPLACE:assign_state_name_region_southern_africa = {
             }
         }
         STATE_VRYSTAAT_state_name_assign = yes
+		}
+    if = {
+        limit = {
+            state_region = {
+                s:STATE_ZAMBEZI ?= this
+            }
+        }
+        STATE_ZAMBEZI_state_name_assign = yes
+    }
 	}
-}
 
 REPLACE:STATE_ZULULAND_state_name_assign = {
     if = {
@@ -354,6 +362,162 @@ STATE_DRAKENSBERG_state_name_assign = {
         }
         set_state_name = STATE_DRAKENSBERG_british
         set_hub_names = british
+    }
+    else = {
+        reset_state_name = yes
+        reset_hub_names = yes
+    }
+}
+
+REPLACE:STATE_VRYSTAAT_state_name_assign = {
+    if = {
+        limit = {
+            owner = {
+                country_has_primary_culture = cu:zulu
+            }
+        }
+        set_state_name = STATE_VRYSTAAT_zulu
+        reset_hub_names = yes
+    }
+    else_if = {
+        limit = {
+            owner = {
+                any_primary_culture = {
+                    has_discrimination_trait = heritage_southern_bantu
+                }
+            }
+        }
+        set_state_name = STATE_VRYSTAAT_southern_bantu
+        reset_hub_names = yes
+    }
+    else_if = {
+        limit = {
+            owner = {
+                NOT = { country_has_primary_culture = cu:british }
+                any_primary_culture = {
+                    has_discrimination_trait = language_dutch
+                }
+            }
+        }
+        set_state_name = STATE_VRYSTAAT_boer
+        set_hub_names = boer
+    }
+    else_if = {
+        limit = {
+            owner = {
+                OR = {
+                    any_primary_culture = {
+                        has_discrimination_trait = language_anglophone
+                    }
+                    c:SAF ?= this
+                }
+            }
+        }
+        set_state_name = STATE_VRYSTAAT_anglophone
+        reset_hub_names = yes
+    }
+    else = {
+        reset_state_name = yes
+        reset_hub_names = yes
+    }
+}
+
+REPLACE:STATE_LOURENCO_MARQUES_state_name_assign = {
+    if = {
+        limit = {
+            owner = {
+                country_has_primary_culture = cu:zulu
+            }
+        }
+        set_state_name = STATE_LOURENCO_MARQUES_zulu
+        set_hub_names = zulu
+    }
+    else_if = {
+        limit = {
+            owner = {
+                any_primary_culture = {
+                    has_discrimination_trait = heritage_southern_bantu
+                }
+            }
+        }
+        set_state_name = STATE_LOURENCO_MARQUES_southern_bantu
+        set_hub_names = southern_bantu
+    }
+    else_if = {
+        limit = {
+            owner = {
+                any_primary_culture = {
+                    has_discrimination_trait = language_lusophone
+                }
+            }
+        }
+        set_state_name = STATE_LOURENCO_MARQUES_portuguese
+        set_hub_names = portuguese
+    }
+    else = {
+        reset_state_name = yes
+        reset_hub_names = yes
+    }
+}
+
+REPLACE:STATE_ZAMBEZIA_state_name_assign = {
+    if = {
+        limit = {
+            owner = {
+                country_has_primary_culture = cu:zulu
+            }
+        }
+        set_state_name = STATE_ZAMBEZIA_zulu
+        reset_hub_names = yes
+    }
+    else_if = {
+        limit = {
+            owner = {
+                any_primary_culture = {
+                    has_discrimination_trait = heritage_southern_bantu
+                }
+            }
+        }
+        set_state_name = STATE_ZAMBEZIA_southern_bantu
+        reset_hub_names = yes
+    }
+    else_if = {
+        limit = {
+            owner = {
+                any_primary_culture = {
+                    has_discrimination_trait = language_lusophone
+                }
+            }
+        }
+        set_state_name = STATE_ZAMBEZIA_portuguese
+        set_hub_names = portuguese
+    }
+    else = {
+        reset_state_name = yes
+        reset_hub_names = yes
+    }
+}
+
+STATE_ZAMBEZI_state_name_assign = {
+    if = {
+        limit = {
+            owner = {
+                country_has_primary_culture = cu:zulu
+            }
+        }
+        set_state_name = STATE_ZAMBEZI_zulu
+        reset_hub_names = yes
+    }
+    else_if = {
+        limit = {
+            owner = {
+                any_primary_culture = {
+                    has_discrimination_trait = heritage_southern_bantu
+                }
+            }
+        }
+        set_state_name = STATE_ZAMBEZI_southern_bantu
+        reset_hub_names = yes
     }
     else = {
         reset_state_name = yes

@@ -45,23 +45,22 @@ sb_assign_natalia_republic_territory = {
 sb_transfer_ora_boer_founders_to_natalia = {
 	if = {
 		limit = {
-			c:ORA ?= { is_country_alive = yes }
 			c:NAL ?= {
 				is_country_alive = yes
 				NOT = { has_variable = sb_natalia_ora_boer_founders_transferred_var }
 			}
 		}
-		c:ORA.capital ?= {
-			kill_population_in_state = {
-				value = 500
-				culture = cu:boer
-			}
-		}
-		c:NAL.capital ?= {
-			create_pop = {
-				culture = boer
-				religion = protestant
-				size = 500
+		s:STATE_CAPE_COLONY = {
+			region_state:CAP ?= {
+				every_scope_pop = {
+					limit = {
+						culture = cu:boer
+					}
+					move_partial_pop = {
+						state = c:NAL.capital
+						population_ratio = 0.05
+					}
+				}
 			}
 		}
 		c:NAL ?= {
@@ -84,10 +83,6 @@ sb_apply_natalia_boer_republic_setup = {
 	if = {
 		limit = { has_variable = sb_natalia_british_colony_resolved_var }
 		remove_variable = sb_natalia_british_colony_resolved_var
-	}
-	if = {
-		limit = { has_modifier = sb_trek_frontier_drive_natalia }
-		remove_modifier = sb_trek_frontier_drive_natalia
 	}
 	effect_starting_technology_tier_3_tech = yes
 	effect_starting_politics_conservative = yes
@@ -119,9 +114,10 @@ sb_apply_natalia_boer_republic_setup = {
 	activate_law = law_type:law_agrarianism
 	activate_law = law_type:law_land_based_taxation
 	activate_law = law_type:law_homesteading
-	activate_law = law_type:law_national_militia
-	activate_law = law_type:law_legacy_slavery
-	activate_law = law_type:law_no_colonial_affairs
+		activate_law = law_type:law_national_militia
+		activate_law = law_type:law_discrete_inboekstelsel
+		sb_add_inboekstelsel_journal_entry = yes
+		activate_law = law_type:law_no_colonial_affairs
 	sb_apply_boer_republic_interest_group_identity = yes
 	if = {
 		limit = {
@@ -191,29 +187,9 @@ sb_ensure_ora_ai_natal_front_commitment = {
 	}
 }
 
-sb_seed_ora_blood_river_relief_manpower = {
-			random_scope_state = {
-				limit = {
-					state_region = s:STATE_VRYSTAAT
-				}
-		create_pop = {
-			pop_type = officers
-			culture = boer
-			religion = protestant
-			size = 2500
-		}
-		create_pop = {
-			pop_type = soldiers
-			culture = boer
-			religion = protestant
-			size = 25000
-		}
-	}
-}
-
 sb_raise_ora_blood_river_relief_force = {
-	# Standard ORA relief package for Blood River. This is the baseline:
-	# top up ORA to the five-barracks militia ceiling in every Blood River play.
+	# Standard ORA relief package for Blood River. Baseline support is a small
+	# commando formation; heavier manpower/barracks support is reserved for player ZUL.
 	if = {
 		limit = {
 			country_definition = cd:ORA
@@ -227,104 +203,115 @@ sb_raise_ora_blood_river_relief_force = {
 			name = sb_blood_river_emergency_mobilization
 			months = 12
 		}
-		sb_seed_ora_blood_river_relief_manpower = yes
+		create_military_formation = {
+			type = army
+			hq_region = sr:region_southern_africa
+			name = potgieter_relief_commando
+
+			combat_unit = {
+				type = unit_type:combat_unit_type_line_infantry
+				state_region = s:STATE_VRYSTAAT
+				count = 2
+			}
+			combat_unit = {
+				type = unit_type:combat_unit_type_dragoons
+				state_region = s:STATE_VRYSTAAT
+				count = 1
+			}
+		}
 		if = {
 			limit = {
-				any_scope_state = {
-					state_region = s:STATE_VRYSTAAT
-					any_scope_building = {
-						is_building_type = building_barrack
-					}
+				has_variable = sb_ora_blood_river_player_zul_extra_force_var
+				c:ZUL ?= {
+					is_player = yes
 				}
-			}
-			random_scope_state = {
-				limit = {
-					state_region = s:STATE_VRYSTAAT
-					any_scope_building = {
-						is_building_type = building_barrack
-					}
-				}
-				save_scope_as = ora_blood_river_relief_state
-			}
-		}
-		else = {
-			random_scope_state = {
-				limit = {
-					state_region = s:STATE_VRYSTAAT
-				}
-				save_scope_as = ora_blood_river_relief_state
-			}
-		}
-		scope:ora_blood_river_relief_state = {
-			if = {
-				limit = {
-					NOT = { has_building = building_barrack }
-				}
-				create_building = {
-					building = building_barrack
-					level = 5
-					reserves = 1
-				}
-			}
-			else_if = {
-				limit = { b:building_barrack.level == 1 }
-				create_building = {
-					building = building_barrack
-					level = 4
-					reserves = 1
-				}
-			}
-			else_if = {
-				limit = { b:building_barrack.level == 2 }
-				create_building = {
-					building = building_barrack
-					level = 3
-					reserves = 1
-				}
-			}
-			else_if = {
-				limit = { b:building_barrack.level == 3 }
-				create_building = {
-					building = building_barrack
-					level = 2
-					reserves = 1
-				}
-			}
-			else_if = {
-				limit = { b:building_barrack.level == 4 }
-				create_building = {
-					building = building_barrack
-					level = 1
-					reserves = 1
-				}
-			}
 			}
 			if = {
 				limit = {
-					has_variable = sb_ora_blood_river_player_zul_extra_force_var
-					c:ZUL ?= {
-						is_player = yes
+					any_scope_state = {
+						state_region = s:STATE_VRYSTAAT
+						any_scope_building = {
+							is_building_type = building_barrack
+						}
 					}
 				}
-				create_military_formation = {
-					type = army
-					hq_region = sr:region_southern_africa
-					name = potgieter_relief_commando
-
-					combat_unit = {
-						type = unit_type:combat_unit_type_line_infantry
+				random_scope_state = {
+					limit = {
 						state_region = s:STATE_VRYSTAAT
-						count = 3
+						any_scope_building = {
+							is_building_type = building_barrack
+						}
 					}
-					combat_unit = {
-						type = unit_type:combat_unit_type_dragoons
+					save_scope_as = ora_blood_river_relief_state
+				}
+			}
+			else = {
+				random_scope_state = {
+					limit = {
 						state_region = s:STATE_VRYSTAAT
-						count = 2
+					}
+					save_scope_as = ora_blood_river_relief_state
+				}
+			}
+			scope:ora_blood_river_relief_state = {
+				create_pop = {
+					pop_type = officers
+					culture = boer
+					religion = protestant
+					size = 1000
+				}
+				create_pop = {
+					pop_type = soldiers
+					culture = boer
+					religion = protestant
+					size = 5000
+				}
+				if = {
+					limit = {
+						NOT = { has_building = building_barrack }
+					}
+					create_building = {
+						building = building_barrack
+						level = 5
+						reserves = 1
+					}
+				}
+				else_if = {
+					limit = { b:building_barrack.level == 1 }
+					create_building = {
+						building = building_barrack
+						level = 4
+						reserves = 1
+					}
+				}
+				else_if = {
+					limit = { b:building_barrack.level == 2 }
+					create_building = {
+						building = building_barrack
+						level = 3
+						reserves = 1
+					}
+				}
+				else_if = {
+					limit = { b:building_barrack.level == 3 }
+					create_building = {
+						building = building_barrack
+						level = 2
+						reserves = 1
+					}
+				}
+				else_if = {
+					limit = { b:building_barrack.level == 4 }
+					create_building = {
+						building = building_barrack
+						level = 1
+						reserves = 1
 					}
 				}
 			}
 		}
 	}
+}
 
 # This effect runs in diplomatic-play scope when the Natal crisis starts.
 sb_raise_blood_river_ai_boer_relief_forces = {
@@ -469,10 +456,8 @@ sb_found_natalia_peacefully = {
 			}
 		}
 	}
-		c:NAL ?= { sb_ensure_boer_republic_compacts_for_root = yes }
-	c:NAL ?= {
-		sb_trigger_natalia_boer_migration_effect = yes
-	}
+	c:NAL ?= { sb_ensure_boer_republic_compacts_for_root = yes }
+	c:NAL ?= { trigger_event = { id = sb_boer_republics.121 days = 1 popup = no } }
 	set_variable = sb_natal_path_resolved_var
 	remove_variable = sb_natal_diplomacy_started_var
 }
@@ -531,6 +516,16 @@ sb_found_natalia_after_blood_river = {
 			add_character_role = politician
 			set_interest_group = c:NAL.ig:ig_landowners
 		}
+		c:TRN ?= {
+			if = {
+				limit = {
+					is_player = yes
+					NOT = { has_variable = sb_natalia_trn_player_handoff_offered_var }
+				}
+				set_variable = sb_natalia_trn_player_handoff_offered_var
+				trigger_event = { id = sb_natal_crisis.071 days = 1 popup = yes }
+			}
+		}
 	}
 	c:NAL ?= {
 		if = {
@@ -576,7 +571,8 @@ sb_found_natalia_after_blood_river = {
 			months = 120
 		}
 	}
-		c:NAL ?= { sb_ensure_boer_republic_compacts_for_root = yes }
+	c:NAL ?= { sb_ensure_boer_republic_compacts_for_root = yes }
+	c:NAL ?= { trigger_event = { id = sb_boer_republics.121 days = 1 popup = no } }
 	set_variable = sb_natal_path_resolved_var
 	remove_variable = sb_natal_diplomacy_started_var
 	remove_variable = sb_natal_war_active_var
@@ -594,9 +590,6 @@ sb_found_natalia_after_blood_river = {
 			limit = { has_variable = sb_trn_joined_natal_war_var }
 			remove_variable = sb_trn_joined_natal_war_var
 		}
-	}
-	c:NAL ?= {
-		sb_trigger_natalia_boer_migration_effect = yes
 	}
 }
 

@@ -281,6 +281,21 @@ sb_boer_republics.120 = {
 	}
 }
 
+sb_boer_republics.121 = {
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		is_country_alive = yes
+		country_has_primary_culture = cu:boer
+		NOT = { country_has_primary_culture = cu:anglo_african }
+	}
+
+	immediate = {
+		sb_ensure_live_boer_republic_compacts = yes
+	}
+}
+
 sb_boer_republics.130 = {
 	type = country_event
 	placement = root
@@ -322,6 +337,7 @@ sb_boer_republics.130 = {
 		activate_law = law_type:law_presidential_republic
 		activate_law = law_type:law_interventionism
 		activate_law = law_type:law_landed_voting
+		sb_transition_ruler_landowner_leadership = yes
 		if = {
 			limit = {
 				country_definition = cd:TRN
@@ -349,7 +365,6 @@ sb_boer_republics.130 = {
 		set_variable = sb_commandant_general_visible_var
 		sb_refresh_boer_commandant_general_government = yes
 		sb_ensure_commandant_general_ruler_command = yes
-		sb_ensure_commandant_general_ruler_landowner_leadership = yes
 		if = {
 			limit = {
 				country_definition = cd:TRN
@@ -396,18 +411,12 @@ sb_boer_republics.131 = {
 		NOT = { exists = c:LYD }
 	}
 
-	immediate = {
-		save_scope_as = migration_source
-		cu:boer = {
-			save_scope_as = migration_culture
-		}
-	}
-
 	option = {
 		name = sb_boer_republics.131.a
 		default_option = yes
 		remove_variable = sb_lydenburg_spawn_var
 		set_variable = sb_lydenburg_spawned_var
+		custom_tooltip = sb_boer_republics_131_dont_play_as_lyd_tt
 		hidden_effect = {
 			sb_found_lydenburg_republic = yes
 		}

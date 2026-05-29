@@ -9,16 +9,10 @@ sb_bst_execute_oranje_raid = {
 	}
 
 	c:ORA ?= {
-		random_scope_state = {
-			limit = {
-				state_region = s:STATE_VRYSTAAT
-			}
-			kill_population_in_state = {
-				value = 10
-			}
+		custom_tooltip = sb_bst_raid_ora_tt
+		hidden_effect = {
+			trigger_event = { id = sb_bst_frontier.010 days = 1 popup = yes }
 		}
-		add_treasury = -1000
-		trigger_event = { id = sb_bst_frontier.010 days = 1 popup = yes }
 	}
 
 	add_treasury = 1000
@@ -30,7 +24,7 @@ sb_bst_execute_oranje_raid = {
 			}
 		}
 		kill_population_in_state = {
-			value = 50
+			value = 25
 		}
 	}
 	if = {
@@ -87,36 +81,73 @@ sb_bst_restore_gbr_protectorate = {
 	}
 }
 
-sb_bst_centralize_tswana_client = {
+sb_bst_centralize_sotho_tswana_clients = {
 	c:TSW ?= {
 		if = {
-			limit = {
-				is_country_type = decentralized
+			limit = { is_country_alive = yes }
+			if = {
+				limit = {
+					is_country_type = decentralized
+				}
+				set_country_type = unrecognized
 			}
-			set_country_type = unrecognized
-		}
-		if = {
-			limit = {
-				NOT = { is_subject_of = root }
-			}
-			root = {
-				create_diplomatic_pact = {
-					country = c:TSW
-					type = tributary
+			if = {
+				limit = {
+					NOT = { is_subject_of = root }
+				}
+				root = {
+					create_diplomatic_pact = {
+						country = c:TSW
+						type = tributary
+					}
 				}
 			}
-		}
-		else_if = {
-			limit = {
-				is_subject_of = root
-				NOT = { is_subject_type = subject_type_tributary }
+			else_if = {
+				limit = {
+					is_subject_of = root
+					NOT = { is_subject_type = subject_type_tributary }
+				}
+				change_subject_type = subject_type_tributary
 			}
-			change_subject_type = subject_type_tributary
+			change_relations = {
+				country = root
+				value = 50
+			}
+			add_liberty_desire = -50
 		}
-		change_relations = {
-			country = root
-			value = 50
+	}
+	c:PDI ?= {
+		if = {
+			limit = { is_country_alive = yes }
+			if = {
+				limit = {
+					is_country_type = decentralized
+				}
+				set_country_type = unrecognized
+			}
+			if = {
+				limit = {
+					NOT = { is_subject_of = root }
+				}
+				root = {
+					create_diplomatic_pact = {
+						country = c:PDI
+						type = tributary
+					}
+				}
+			}
+			else_if = {
+				limit = {
+					is_subject_of = root
+					NOT = { is_subject_type = subject_type_tributary }
+				}
+				change_subject_type = subject_type_tributary
+			}
+			change_relations = {
+				country = root
+				value = 50
+			}
+			add_liberty_desire = -50
 		}
-		add_liberty_desire = -50
 	}
 }
