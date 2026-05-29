@@ -4,11 +4,11 @@
 	potential = {
 		owner ?= scope:actor
 		is_commander = yes
-		is_ruler = no
+		is_ruler_of_own_country = no
 	}
 
 	possible = {
-		is_ruler = no
+		is_ruler_of_own_country = no
 		interest_group ?= {
 			is_insurrectionary = no
 		}
@@ -66,18 +66,8 @@
 		}
 		else = {
 			hidden_effect = {
-				if = {
-					limit = {
-						has_role = general
-					}
-					remove_character_role = general
-				}
-				if = {
-					limit = {
-						has_role = admiral
-					}
-					remove_character_role = admiral
-				}
+				replace_character_roles = { remove = { general admiral } }
+				retire_character_if_should_be_culled = yes
 			}
 
 			interest_group ?= {
