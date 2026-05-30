@@ -12,7 +12,7 @@ je_sb_consolidating_gaza = {
 	is_shown_in_lobby = {
 		OR = {
 			c:GZA ?= this
-			c:NGU ?= this
+			c:NGN ?= this
 		}
 	}
 
@@ -21,7 +21,7 @@ je_sb_consolidating_gaza = {
 			OR = {
 				country_definition = cd:GZA
 				AND = {
-					country_definition = cd:NGU
+					country_definition = cd:NGN
 					has_variable = sb_ngu_inherited_gza_content_var
 				}
 			}
@@ -36,7 +36,7 @@ je_sb_consolidating_gaza = {
 		OR = {
 			country_definition = cd:GZA
 			AND = {
-				country_definition = cd:NGU
+				country_definition = cd:NGN
 				has_variable = sb_ngu_inherited_gza_content_var
 			}
 		}
@@ -134,7 +134,8 @@ je_sb_delagoa_route_to_sea = {
 
 	possible = {
 		country_definition = cd:TRN
-		has_journal_entry = je_sb_imperial_confederation_scheme
+		has_global_variable = sb_imperial_confederation_scheme_unlocked_var
+		NOT = { has_global_variable = sb_imperial_confederation_scheme_failed_var }
 		any_scope_state = {
 			state_region = s:STATE_EAST_TRANSVAAL
 			owner = root
@@ -157,6 +158,7 @@ je_sb_delagoa_route_to_sea = {
 
 	invalid = {
 		OR = {
+			has_global_variable = sb_imperial_confederation_scheme_failed_var
 			has_variable = sb_delagoa_route_complete_var
 			NOT = { sb_delagoa_owner_outside_gbr_bloc = yes }
 			NOT = {
@@ -171,6 +173,7 @@ je_sb_delagoa_route_to_sea = {
 
 	on_complete = {
 		set_variable = sb_delagoa_route_complete_var
+		sb_imperial_confederation_start_sea_access_warning_if_needed = yes
 		trigger_event = { id = sb_delagoa.020 days = 1 popup = yes }
 		if = {
 			limit = {
@@ -227,7 +230,9 @@ je_sb_imperial_confederation_scheme = {
 
 	possible = {
 		has_global_variable = sb_imperial_confederation_scheme_unlocked_var
+		NOT = { has_global_variable = sb_imperial_confederation_scheme_failed_var }
 		NOT = { exists = c:SAF }
+		sb_imperial_confederation_has_live_boer_participant = yes
 	}
 
 	scripted_button = je_sb_imperial_confederation_bind_trade_button
@@ -241,6 +246,14 @@ je_sb_imperial_confederation_scheme = {
 		exists = c:SAF
 	}
 
+	invalid = {
+		OR = {
+			has_global_variable = sb_imperial_confederation_scheme_failed_var
+			NOT = { sb_imperial_confederation_has_live_boer_participant = yes }
+		}
+	}
+
 	weight = 1000
+	should_be_pinned_by_default_involved = yes
 	should_be_pinned_by_default_uninvolved_or_context = yes
 }

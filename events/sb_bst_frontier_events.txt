@@ -121,6 +121,31 @@ sb_bst_frontier.020 = {
 	option = {
 		name = sb_bst_frontier.020.a
 		default_option = yes
+		custom_tooltip = sb_bst_frontier_020_sotho_retreat_tt
+		hidden_effect = {
+			c:ORA ?= {
+				s:STATE_VRYSTAAT = {
+					region_state:ORA ?= {
+						ordered_scope_pop = {
+							position = 0
+							order_by = total_size
+							limit = {
+								culture = cu:sotho
+								total_size >= 5000
+							}
+							save_scope_as = sb_bst_mountain_retreat_sotho_pop
+							move_partial_pop = {
+								state = c:BST.capital
+								population_ratio = {
+									add = 5000
+									divide = scope:sb_bst_mountain_retreat_sotho_pop.total_size
+								}
+							}
+						}
+					}
+				}
+			}
+		}
 		c:ORA ?= {
 			if = {
 				limit = { is_country_alive = yes }
@@ -137,6 +162,65 @@ sb_bst_frontier.020 = {
 		add_modifier = {
 			name = sb_bst_biding_time
 			months = 60
+		}
+		if = {
+			limit = { is_ai = yes }
+			hidden_effect = {
+				create_military_formation = {
+					type = army
+					hq_region = sr:region_southern_africa
+					name = basotho_mountain_levies
+
+					combat_unit = {
+						type = unit_type:combat_unit_type_line_infantry
+						state_region = s:STATE_DRAKENSBERG
+						count = 1
+					}
+				}
+				s:STATE_DRAKENSBERG = {
+					region_state:BST ?= {
+						create_building = {
+							building = building_maize_farm
+							add_ownership = {
+								building = {
+									type = building_manor_house
+									country = c:BST
+									levels = 1
+									region = "STATE_DRAKENSBERG"
+								}
+							}
+							reserves = 1
+							activate_production_methods = { "pm_simple_farming" "pm_no_secondary" "pm_tools_disabled" }
+						}
+						create_building = {
+							building = building_livestock_ranch
+							add_ownership = {
+								building = {
+									type = building_manor_house
+									country = c:BST
+									levels = 1
+									region = "STATE_DRAKENSBERG"
+								}
+							}
+							reserves = 1
+							activate_production_methods = { "pm_open_air_stockyards" "pm_simple_ranch" "pm_standard_fences" "pm_unrefrigerated" }
+						}
+						create_building = {
+							building = building_logging_camp
+							add_ownership = {
+								building = {
+									type = building_logging_camp
+									country = c:BST
+									levels = 1
+									region = "STATE_DRAKENSBERG"
+								}
+							}
+							reserves = 1
+							activate_production_methods = { "pm_simple_forestry" "pm_no_hardwood" "pm_no_equipment" "pm_road_carts" }
+						}
+					}
+				}
+			}
 		}
 	}
 }

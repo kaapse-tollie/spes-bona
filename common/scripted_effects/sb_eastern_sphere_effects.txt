@@ -518,25 +518,47 @@ sb_imperial_confederation_bind_trade = {
 			name = sb_imperial_trade_binding_var
 			months = 60
 		}
-		scope:sb_confed_owner = {
-			create_treaty = {
-				first_country = scope:sb_confed_owner
-				second_country = scope:sb_bound_participant
-				is_draft = no
-				binding_period = { years = 5 }
-				articles_to_create = {
-					{
-						article = transit_rights
-						source_country = scope:sb_confed_owner
-						target_country = scope:sb_bound_participant
+		# Existing treaties cannot be extended directly, so reuse them and refresh
+		# the scheme marker rather than creating parallel trade-through treaties.
+		if = {
+			limit = {
+				NOT = {
+					any_scope_treaty = {
+						binds = scope:sb_confed_owner
+						any_scope_article = {
+							has_type = transit_rights
+							source_country = scope:sb_confed_owner
+							target_country = scope:sb_bound_participant
+						}
+						any_scope_article = {
+							has_type = goods_transfer
+							input_goods = g:merchant_marine
+							source_country = scope:sb_confed_owner
+							target_country = scope:sb_bound_participant
+						}
 					}
-					{
-						article = goods_transfer
-						source_country = scope:sb_confed_owner
-						target_country = scope:sb_bound_participant
-						inputs = {
-							{ goods = g:merchant_marine }
-							{ quantity = 10 }
+				}
+			}
+			scope:sb_confed_owner = {
+				create_treaty = {
+					first_country = scope:sb_confed_owner
+					second_country = scope:sb_bound_participant
+					is_draft = no
+					binding_period = { years = 5 }
+					articles_to_create = {
+						{
+							article = transit_rights
+							source_country = scope:sb_confed_owner
+							target_country = scope:sb_bound_participant
+						}
+						{
+							article = goods_transfer
+							source_country = scope:sb_confed_owner
+							target_country = scope:sb_bound_participant
+							inputs = {
+								{ goods = g:merchant_marine }
+								{ quantity = 10 }
+							}
 						}
 					}
 				}
@@ -602,41 +624,169 @@ c:SAF ?= {
 	}
 }
 
+sb_imperial_confederation_clear_sea_access_warning = {
+	if = {
+		limit = { has_variable = sb_imperial_confederation_sea_access_warning_var }
+		remove_variable = sb_imperial_confederation_sea_access_warning_var
+	}
+	if = {
+		limit = { has_variable = sb_imperial_confederation_sea_access_warned_var }
+		remove_variable = sb_imperial_confederation_sea_access_warned_var
+	}
+}
+
+sb_imperial_confederation_fail_scheme = {
+	if = {
+		limit = {
+			has_global_variable = sb_imperial_confederation_scheme_unlocked_var
+			NOT = { has_global_variable = sb_imperial_confederation_scheme_failed_var }
+			NOT = { exists = c:SAF }
+		}
+		set_global_variable = sb_imperial_confederation_scheme_failed_var
+		every_country = {
+			limit = { has_variable = sb_imperial_confederation_sea_access_warning_var }
+			remove_variable = sb_imperial_confederation_sea_access_warning_var
+		}
+		every_country = {
+			limit = { has_variable = sb_imperial_confederation_sea_access_warned_var }
+			remove_variable = sb_imperial_confederation_sea_access_warned_var
+		}
+		if = {
+			limit = { any_country = { sb_is_imperial_confederation_owner = yes } }
+			every_country = {
+				limit = { sb_is_imperial_confederation_owner = yes }
+				trigger_event = { id = sb_imperial_confederation.051 days = 1 popup = yes }
+			}
+		}
+		else_if = {
+			limit = { c:GBR ?= { is_country_alive = yes } }
+			c:GBR ?= { trigger_event = { id = sb_imperial_confederation.051 days = 1 popup = yes } }
+		}
+	}
+}
+
+sb_imperial_confederation_start_sea_access_warning_if_needed = {
+	if = {
+		limit = {
+			has_global_variable = sb_imperial_confederation_scheme_unlocked_var
+			NOT = { has_global_variable = sb_imperial_confederation_scheme_failed_var }
+			NOT = { exists = c:SAF }
+			sb_boer_has_non_british_sea_access = yes
+			NOT = { has_variable = sb_imperial_confederation_sea_access_warned_var }
+		}
+		set_variable = {
+			name = sb_imperial_confederation_sea_access_warning_var
+			months = 36
+		}
+		set_variable = sb_imperial_confederation_sea_access_warned_var
+		if = {
+			limit = { any_country = { sb_is_imperial_confederation_owner = yes } }
+			every_country = {
+				limit = { sb_is_imperial_confederation_owner = yes }
+				trigger_event = { id = sb_imperial_confederation.050 days = 1 popup = yes }
+			}
+		}
+		else_if = {
+			limit = { c:GBR ?= { is_country_alive = yes } }
+			c:GBR ?= { trigger_event = { id = sb_imperial_confederation.050 days = 1 popup = yes } }
+		}
+	}
+}
+
+sb_imperial_confederation_check_failure_state = {
+	if = {
+		limit = {
+			has_global_variable = sb_imperial_confederation_scheme_unlocked_var
+			NOT = { has_global_variable = sb_imperial_confederation_scheme_failed_var }
+			NOT = { exists = c:SAF }
+		}
+		if = {
+			limit = { NOT = { sb_imperial_confederation_has_live_boer_participant = yes } }
+			sb_imperial_confederation_fail_scheme = yes
+		}
+		else = {
+			every_country = {
+				limit = {
+					sb_is_imperial_confederation_participant = yes
+					country_has_primary_culture = cu:boer
+					is_country_alive = yes
+				}
+				if = {
+					limit = { sb_boer_has_non_british_sea_access = yes }
+					if = {
+						limit = { NOT = { has_variable = sb_imperial_confederation_sea_access_warned_var } }
+						sb_imperial_confederation_start_sea_access_warning_if_needed = yes
+					}
+					else_if = {
+						limit = { NOT = { has_variable = sb_imperial_confederation_sea_access_warning_var } }
+						sb_imperial_confederation_fail_scheme = yes
+					}
+				}
+				else_if = {
+					limit = { has_variable = sb_imperial_confederation_sea_access_warned_var }
+					sb_imperial_confederation_clear_sea_access_warning = yes
+				}
+			}
+		}
+	}
+}
+
+sb_imperial_confederation_ensure_active_owner_je = {
+	if = {
+		limit = {
+			has_global_variable = sb_imperial_confederation_scheme_unlocked_var
+			NOT = { has_global_variable = sb_imperial_confederation_scheme_failed_var }
+			NOT = { exists = c:SAF }
+			sb_imperial_confederation_has_live_boer_participant = yes
+		}
+		every_country = {
+			limit = {
+				sb_is_imperial_confederation_owner = yes
+				NOT = { has_journal_entry = je_sb_imperial_confederation_scheme }
+			}
+			add_contextless_journal_entry = je_sb_imperial_confederation_scheme
+		}
+	}
+}
+
 sb_unlock_imperial_confederation_scheme = {
 	if = {
 		limit = {
 			NOT = { has_global_variable = sb_imperial_confederation_scheme_unlocked_var }
+			NOT = { has_global_variable = sb_imperial_confederation_scheme_failed_var }
 			c:ORA ?= {
 				is_country_alive = yes
 				NOT = { has_variable = sb_voortrekker_start_var }
 			}
-			c:TRN ?= { is_country_alive = yes }
-			c:ZPB ?= { is_country_alive = yes }
+			sb_imperial_confederation_two_great_treks_completed = yes
 		}
 		set_global_variable = sb_imperial_confederation_scheme_unlocked_var
+		sb_imperial_confederation_ensure_active_owner_je = yes
 		if = {
-			limit = { c:GBR ?= { is_country_alive = yes } }
-			c:GBR ?= { trigger_event = { id = sb_imperial_confederation.001 days = 1 popup = yes } }
-		}
-		else_if = {
-			limit = { c:CAP ?= { is_country_alive = yes } }
-			c:CAP ?= { trigger_event = { id = sb_imperial_confederation.001 days = 1 popup = yes } }
-		}
-		else_if = {
-			limit = { c:ORA ?= { is_country_alive = yes } }
-			c:ORA ?= { trigger_event = { id = sb_imperial_confederation.001 days = 1 popup = yes } }
+			limit = {
+				any_country = { sb_is_imperial_confederation_owner = yes }
+			}
+			every_country = {
+				limit = { sb_is_imperial_confederation_owner = yes }
+				trigger_event = { id = sb_imperial_confederation.001 days = 1 popup = yes }
+			}
 		}
 	}
 }
 
 sb_eastern_sphere_monthly_housekeeping = {
-	sb_unlock_imperial_confederation_scheme = yes
+	if = {
+		limit = { country_definition = cd:GBR }
+		sb_unlock_imperial_confederation_scheme = yes
+		sb_imperial_confederation_check_failure_state = yes
+		sb_imperial_confederation_ensure_active_owner_je = yes
+	}
 	if = {
 		limit = {
 			OR = {
 				country_definition = cd:GZA
 				AND = {
-					country_definition = cd:NGU
+					country_definition = cd:NGN
 					has_variable = sb_ngu_inherited_gza_content_var
 				}
 			}
@@ -673,7 +823,8 @@ sb_eastern_sphere_monthly_housekeeping = {
 			NOT = { has_journal_entry = je_sb_delagoa_route_to_sea }
 			exists = c:POR
 			sb_delagoa_owner_outside_gbr_bloc = yes
-			has_journal_entry = je_sb_imperial_confederation_scheme
+			has_global_variable = sb_imperial_confederation_scheme_unlocked_var
+			NOT = { has_global_variable = sb_imperial_confederation_scheme_failed_var }
 			any_scope_state = {
 				state_region = s:STATE_EAST_TRANSVAAL
 				owner = root
@@ -688,6 +839,7 @@ sb_eastern_sphere_monthly_housekeeping = {
 			is_ai = yes
 			has_journal_entry = je_sb_delagoa_route_to_sea
 			is_subject = no
+			NOT = { has_global_variable = sb_imperial_confederation_scheme_failed_var }
 			NOT = { has_variable = sb_delagoa_treaty_refused_var }
 			sb_has_railway_in_transvaal = yes
 			sb_has_railway_in_east_transvaal = yes
@@ -716,7 +868,8 @@ sb_eastern_sphere_monthly_housekeeping = {
 		limit = {
 			country_definition = cd:GBR
 			is_ai = yes
-			has_journal_entry = je_sb_imperial_confederation_scheme
+			has_global_variable = sb_imperial_confederation_scheme_unlocked_var
+			NOT = { has_global_variable = sb_imperial_confederation_scheme_failed_var }
 		}
 		if = {
 			limit = {

@@ -7,33 +7,20 @@
 #   4. only after that, and only if Natal is British, SWZ can choose whether to
 #      seek British shelter or stand apart
 
-sb_swazi_raise_zulu_campaign_muster = {
+sb_swazi_raise_defensive_muster = {
 	if = {
 		limit = {
-			NOT = { has_variable = sb_swazi_zulu_campaign_muster_var }
+			NOT = { has_variable = sb_swazi_defensive_muster_var }
 		}
 		set_variable = {
-			name = sb_swazi_zulu_campaign_muster_var
+			name = sb_swazi_defensive_muster_var
 			months = 24
 		}
-		every_scope_state = {
-			limit = {
-				state_region = s:STATE_EAST_TRANSVAAL
-			}
-				create_pop = {
-					pop_type = officers
-					culture = swazi
-					size = 600
-				}
-				create_pop = {
-					pop_type = soldiers
-					culture = swazi
-					size = 6000
-				}
-			create_building = {
-				building = building_barrack
-				level = 4
-				reserves = 1
+		if = {
+			limit = { NOT = { has_modifier = sb_swazi_frontier_muster } }
+			add_modifier = {
+				name = sb_swazi_frontier_muster
+				months = 24
 			}
 		}
 		create_military_formation = {
@@ -45,6 +32,40 @@ sb_swazi_raise_zulu_campaign_muster = {
 				type = unit_type:combat_unit_type_irregular_infantry
 				state_region = s:STATE_EAST_TRANSVAAL
 				count = 6
+			}
+		}
+	}
+}
+
+sb_swazi_raise_defensive_muster_vs_player = {
+	if = {
+		limit = {
+			NOT = { has_variable = sb_swazi_defensive_muster_vs_player_var }
+		}
+		set_variable = {
+			name = sb_swazi_defensive_muster_vs_player_var
+			months = 24
+		}
+		if = {
+			limit = { NOT = { has_modifier = sb_swazi_frontier_muster_vs_player } }
+			add_modifier = {
+				name = sb_swazi_frontier_muster_vs_player
+				months = 24
+			}
+		}
+		every_scope_state = {
+			limit = {
+				state_region = s:STATE_EAST_TRANSVAAL
+			}
+			create_pop = {
+				pop_type = soldiers
+				culture = sotho
+				size = 5000
+			}
+			create_pop = {
+				pop_type = officers
+				culture = sotho
+				size = 1000
 			}
 		}
 	}

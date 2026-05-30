@@ -57,11 +57,11 @@ sb_is_imperial_confederation_participant = {
 sb_is_autonomous_anglo_african_british_subject = {
 	country_has_primary_culture = cu:anglo_african
 	is_subject_of = c:GBR
-	NOT = { is_subject_type = subject_type_puppet }
-	NOT = { is_subject_type = subject_type_tributary }
-	NOT = { is_subject_type = subject_type_vassal }
-	NOT = { is_subject_type = subject_type_personal_union }
-	NOT = { is_subject_type = subject_type_chartered_company }
+	OR = {
+		is_subject_type = subject_type_dominion
+		is_subject_type = subject_type_sb_responsible_colony
+		is_subject_type = subject_type_sb_responsible_colony_monarchy
+	}
 }
 
 sb_is_imperial_confederation_owner = {
@@ -80,6 +80,190 @@ sb_is_imperial_confederation_owner = {
 				any_country = {
 					sb_is_autonomous_anglo_african_british_subject = yes
 					prestige > root.prestige
+				}
+			}
+		}
+	}
+}
+
+sb_imperial_confederation_has_live_boer_participant = {
+	any_country = {
+		sb_is_imperial_confederation_participant = yes
+		country_has_primary_culture = cu:boer
+		is_country_alive = yes
+	}
+}
+
+sb_is_outside_british_imperial_network = {
+	NOT = { country_definition = cd:GBR }
+	NOT = { is_in_same_power_bloc = c:GBR }
+	NOT = {
+		AND = {
+			exists = top_overlord
+			top_overlord = c:GBR
+		}
+	}
+}
+
+sb_is_non_british_port_owner = {
+	is_country_alive = yes
+	sb_is_outside_british_imperial_network = yes
+	any_scope_state = {
+		owner = root
+		has_active_building = building_port
+	}
+}
+
+sb_boer_has_non_british_sea_access = {
+	sb_is_imperial_confederation_participant = yes
+	country_has_primary_culture = cu:boer
+	is_country_alive = yes
+	sb_is_outside_british_imperial_network = yes
+	OR = {
+		any_scope_state = {
+			owner = root
+			has_active_building = building_port
+		}
+		AND = {
+			c:POR ?= { sb_is_non_british_port_owner = yes }
+			any_scope_treaty = {
+				binds = c:POR
+				any_scope_article = {
+					has_type = transit_rights
+					source_country = c:POR
+					target_country = root
+				}
+			}
+		}
+		AND = {
+			c:MZQ ?= { sb_is_non_british_port_owner = yes }
+			any_scope_treaty = {
+				binds = c:MZQ
+				any_scope_article = {
+					has_type = transit_rights
+					source_country = c:MZQ
+					target_country = root
+				}
+			}
+		}
+		AND = {
+			c:ZUL ?= { sb_is_non_british_port_owner = yes }
+			any_scope_treaty = {
+				binds = c:ZUL
+				any_scope_article = {
+					has_type = transit_rights
+					source_country = c:ZUL
+					target_country = root
+				}
+			}
+		}
+		AND = {
+			c:GZA ?= { sb_is_non_british_port_owner = yes }
+			any_scope_treaty = {
+				binds = c:GZA
+				any_scope_article = {
+					has_type = transit_rights
+					source_country = c:GZA
+					target_country = root
+				}
+			}
+		}
+		AND = {
+			c:NGN ?= { sb_is_non_british_port_owner = yes }
+			any_scope_treaty = {
+				binds = c:NGN
+				any_scope_article = {
+					has_type = transit_rights
+					source_country = c:NGN
+					target_country = root
+				}
+			}
+		}
+		AND = {
+			c:NAL ?= { sb_is_non_british_port_owner = yes }
+			any_scope_treaty = {
+				binds = c:NAL
+				any_scope_article = {
+					has_type = transit_rights
+					source_country = c:NAL
+					target_country = root
+				}
+			}
+		}
+		AND = {
+			c:CAP ?= { sb_is_non_british_port_owner = yes }
+			any_scope_treaty = {
+				binds = c:CAP
+				any_scope_article = {
+					has_type = transit_rights
+					source_country = c:CAP
+					target_country = root
+				}
+			}
+		}
+		AND = {
+			c:ALB ?= { sb_is_non_british_port_owner = yes }
+			any_scope_treaty = {
+				binds = c:ALB
+				any_scope_article = {
+					has_type = transit_rights
+					source_country = c:ALB
+					target_country = root
+				}
+			}
+		}
+		AND = {
+			c:BUG ?= { sb_is_non_british_port_owner = yes }
+			any_scope_treaty = {
+				binds = c:BUG
+				any_scope_article = {
+					has_type = transit_rights
+					source_country = c:BUG
+					target_country = root
+				}
+			}
+		}
+		AND = {
+			c:SWA ?= { sb_is_non_british_port_owner = yes }
+			any_scope_treaty = {
+				binds = c:SWA
+				any_scope_article = {
+					has_type = transit_rights
+					source_country = c:SWA
+					target_country = root
+				}
+			}
+		}
+		AND = {
+			c:XHT ?= { sb_is_non_british_port_owner = yes }
+			any_scope_treaty = {
+				binds = c:XHT
+				any_scope_article = {
+					has_type = transit_rights
+					source_country = c:XHT
+					target_country = root
+				}
+			}
+		}
+		AND = {
+			c:XHR ?= { sb_is_non_british_port_owner = yes }
+			any_scope_treaty = {
+				binds = c:XHR
+				any_scope_article = {
+					has_type = transit_rights
+					source_country = c:XHR
+					target_country = root
+				}
+			}
+		}
+		AND = {
+			c:XHG ?= { sb_is_non_british_port_owner = yes }
+			any_scope_treaty = {
+				binds = c:XHG
+				any_scope_article = {
+					has_type = transit_rights
+					source_country = c:XHG
+					target_country = root
 				}
 			}
 		}
@@ -114,6 +298,51 @@ sb_imperial_confederation_has_two_complete_state_owners = {
 			sb_is_imperial_confederation_participant = yes
 			NOT = { this = prev }
 			sb_controls_any_complete_southern_africa_state = yes
+		}
+	}
+}
+
+sb_imperial_confederation_two_great_treks_completed = {
+	OR = {
+		AND = {
+			c:ORA ?= { has_variable = sb_great_trek_completed_var }
+			c:TRN ?= { has_variable = sb_great_trek_completed_var }
+		}
+		AND = {
+			c:ORA ?= { has_variable = sb_great_trek_completed_var }
+			c:ZPB ?= { has_variable = sb_great_trek_completed_var }
+		}
+		AND = {
+			c:ORA ?= { has_variable = sb_great_trek_completed_var }
+			c:LYD ?= { has_variable = sb_great_trek_completed_var }
+		}
+		AND = {
+			c:ORA ?= { has_variable = sb_great_trek_completed_var }
+			c:NAL ?= { has_variable = sb_great_trek_completed_var }
+		}
+		AND = {
+			c:TRN ?= { has_variable = sb_great_trek_completed_var }
+			c:ZPB ?= { has_variable = sb_great_trek_completed_var }
+		}
+		AND = {
+			c:TRN ?= { has_variable = sb_great_trek_completed_var }
+			c:LYD ?= { has_variable = sb_great_trek_completed_var }
+		}
+		AND = {
+			c:TRN ?= { has_variable = sb_great_trek_completed_var }
+			c:NAL ?= { has_variable = sb_great_trek_completed_var }
+		}
+		AND = {
+			c:ZPB ?= { has_variable = sb_great_trek_completed_var }
+			c:LYD ?= { has_variable = sb_great_trek_completed_var }
+		}
+		AND = {
+			c:ZPB ?= { has_variable = sb_great_trek_completed_var }
+			c:NAL ?= { has_variable = sb_great_trek_completed_var }
+		}
+		AND = {
+			c:LYD ?= { has_variable = sb_great_trek_completed_var }
+			c:NAL ?= { has_variable = sb_great_trek_completed_var }
 		}
 	}
 }

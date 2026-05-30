@@ -36,7 +36,7 @@ sb_zulu_court.200 = {
 		hidden_effect = {
 			sb_zulu_add_dynastic_stability_5 = yes
 		}
-		add_treasury = -10000
+		add_treasury = -1500
 		ai_chance = {
 			base = 55
 		}
@@ -53,6 +53,7 @@ sb_zulu_court.200 = {
 				value = medium_radicals
 			}
 		}
+		add_treasury = 500
 		ai_chance = {
 			base = 45
 		}
@@ -83,9 +84,22 @@ sb_zulu_court.201 = {
 	option = {
 		name = sb_zulu_court.201.a
 		default_option = yes
-		custom_tooltip = sb_zulu_dynasty_gain_stability_10
-		sb_zulu_add_dynastic_stability_10 = yes
-		add_treasury = -20000
+		custom_tooltip = sb_zulu_court_201_a_tt
+		hidden_effect = {
+			sb_zulu_add_dynastic_stability_5 = yes
+			kill_population = {
+				pop_type = officers
+				value = 50
+			}
+			kill_population = {
+				pop_type = soldiers
+				value = 500
+			}
+		}
+		add_modifier = {
+			name = sb_zulu_impis_purged
+			months = 12
+		}
 		ai_chance = {
 			base = 60
 		}
@@ -94,11 +108,12 @@ sb_zulu_court.201 = {
 	option = {
 		name = sb_zulu_court.201.b
 		custom_tooltip = sb_zulu_dynasty_lose_stability_5
-		sb_zulu_remove_dynastic_stability_5 = yes
-		capital = {
-			add_radicals_in_state = {
-				value = medium_radicals
-			}
+		hidden_effect = {
+			sb_zulu_remove_dynastic_stability_5 = yes
+		}
+		add_modifier = {
+			name = sb_zulu_impis_placated
+			months = 12
 		}
 		ai_chance = {
 			base = 40
@@ -130,9 +145,24 @@ sb_zulu_court.202 = {
 	option = {
 		name = sb_zulu_court.202.a
 		default_option = yes
-		custom_tooltip = sb_zulu_dynasty_gain_stability_5
-		sb_zulu_add_dynastic_stability_5 = yes
-		add_treasury = -15000
+		custom_tooltip = sb_zulu_court_202_a_tt
+		hidden_effect = {
+			sb_zulu_add_dynastic_stability_5 = yes
+		}
+		add_modifier = {
+			name = sb_zulu_upper_strata_exactions_authority
+			months = 12
+		}
+		capital = {
+			add_modifier = {
+				name = sb_zulu_upper_strata_exactions_sol
+				months = 12
+			}
+		}
+		add_radicals = {
+			value = 0.20
+			strata = upper
+		}
 		ai_chance = {
 			base = 50
 		}
@@ -140,12 +170,13 @@ sb_zulu_court.202 = {
 
 	option = {
 		name = sb_zulu_court.202.b
-		custom_tooltip = sb_zulu_dynasty_lose_stability_5
-		sb_zulu_remove_dynastic_stability_5 = yes
-		capital = {
-			add_loyalists_in_state = {
-				value = medium_radicals
-			}
+		custom_tooltip = sb_zulu_court_202_b_tt
+		hidden_effect = {
+			sb_zulu_remove_dynastic_stability_2 = yes
+		}
+		add_loyalists = {
+			value = 0.20
+			strata = upper
 		}
 		ai_chance = {
 			base = 50
@@ -172,19 +203,6 @@ sb_zulu_court.203 = {
 	trigger = {
 		sb_is_zulu_dynasty_country = yes
 		has_journal_entry = je_sb_zulu_kingdom
-		OR = {
-			has_variable = sb_natal_war_active_var
-			has_variable = sb_natal_guns_bargain_war_var
-			has_variable = sb_zulu_blood_river_resolved_var
-			has_variable = sb_zulu_port_natal_raid_available_var
-			has_variable = sb_port_natal_british_war_var
-			c:ORA ?= {
-				has_variable = sb_natal_diplomacy_started_var
-			}
-			c:ORA ?= {
-				has_variable = sb_natal_path_resolved_var
-			}
-		}
 	}
 
 	option = {
@@ -195,8 +213,6 @@ sb_zulu_court.203 = {
 			sb_zulu_remove_dynastic_stability_10 = yes
 			sb_boost_firearms_progress_minor = yes
 		}
-
-		add_treasury = 10000
 		ai_chance = {
 			base = 55
 		}

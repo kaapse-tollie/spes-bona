@@ -15,12 +15,10 @@ sb_imperial_confederation.001 = {
 
 	trigger = {
 		has_global_variable = sb_imperial_confederation_scheme_unlocked_var
+		NOT = { has_global_variable = sb_imperial_confederation_scheme_failed_var }
 		NOT = { exists = c:SAF }
-		OR = {
-			country_definition = cd:GBR
-			country_definition = cd:CAP
-			country_definition = cd:ORA
-		}
+		sb_imperial_confederation_has_live_boer_participant = yes
+		sb_is_imperial_confederation_owner = yes
 	}
 
 	option = {
@@ -51,7 +49,8 @@ sb_imperial_confederation.030 = {
 	trigger = {
 		country_definition = cd:GBR
 		is_ai = yes
-		has_journal_entry = je_sb_imperial_confederation_scheme
+		has_global_variable = sb_imperial_confederation_scheme_unlocked_var
+		NOT = { has_global_variable = sb_imperial_confederation_scheme_failed_var }
 		c:TRN ?= {
 			is_country_alive = yes
 			NOT = { has_variable = sb_imperial_confederation_delagoa_response_var }
@@ -149,6 +148,7 @@ sb_imperial_confederation.031 = {
 				TAKER = c:POR
 			}
 			remove_variable = sb_delagoa_route_complete_var
+			sb_imperial_confederation_clear_sea_access_warning = yes
 		}
 		ai_chance = { base = 70 }
 	}
@@ -175,6 +175,63 @@ sb_imperial_confederation.031 = {
 			}
 		}
 		ai_chance = { base = 30 }
+	}
+}
+
+sb_imperial_confederation.050 = {
+	type = country_event
+	placement = root
+
+	title = sb_imperial_confederation.050.t
+	desc = sb_imperial_confederation.050.d
+	flavor = sb_imperial_confederation.050.f
+
+	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_trade.dds"
+	duration = 3
+
+	trigger = {
+		has_global_variable = sb_imperial_confederation_scheme_unlocked_var
+		NOT = { has_global_variable = sb_imperial_confederation_scheme_failed_var }
+		NOT = { exists = c:SAF }
+		OR = {
+			sb_is_imperial_confederation_owner = yes
+			country_definition = cd:GBR
+		}
+	}
+
+	option = {
+		name = sb_imperial_confederation.050.a
+		default_option = yes
+	}
+}
+
+sb_imperial_confederation.051 = {
+	type = country_event
+	placement = root
+
+	title = sb_imperial_confederation.051.t
+	desc = sb_imperial_confederation.051.d
+	flavor = sb_imperial_confederation.051.f
+
+	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/waving_flag.dds"
+	duration = 3
+
+	trigger = {
+		has_global_variable = sb_imperial_confederation_scheme_failed_var
+		NOT = { exists = c:SAF }
+		OR = {
+			sb_is_imperial_confederation_owner = yes
+			country_definition = cd:GBR
+		}
+	}
+
+	option = {
+		name = sb_imperial_confederation.051.a
+		default_option = yes
 	}
 }
 

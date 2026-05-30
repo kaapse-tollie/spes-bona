@@ -5,6 +5,34 @@
 #   - the delayed TRN spawn package used by the V2 ORA-first setup
 #   - later inland republican splinters and convention helpers
 
+sb_move_mzilikazi_ndebele_to_zimbabwe = {
+	s:STATE_ZAMBEZI = {
+		region_state:MTB ?= {
+			save_scope_as = mzilikazi_zimbabwe_target
+		}
+	}
+	if = {
+		limit = { exists = scope:mzilikazi_zimbabwe_target }
+		every_scope_state = {
+			limit = {
+				NOT = { this = scope:mzilikazi_zimbabwe_target }
+				any_scope_pop = {
+					culture = cu:ndebele
+				}
+			}
+			every_scope_pop = {
+				limit = {
+					culture = cu:ndebele
+				}
+				move_partial_pop = {
+					state = scope:mzilikazi_zimbabwe_target
+					population_ratio = 0.2
+				}
+			}
+		}
+	}
+}
+
 # Creates mass migration of Boer pops from Cape Colony to the calling country (DEPRECATED)
 sb_trigger_boer_migration_effect = {
 	# Find the Cape Colony as migration origin
