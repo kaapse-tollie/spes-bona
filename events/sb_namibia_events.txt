@@ -279,56 +279,52 @@ sb_nam.020 = {
 		name = sb_nam.020.a
 		default_option = yes
 		custom_tooltip = sb_nam_020_a_tt
-		hidden_effect = {
-			set_variable = sb_nam_rehoboth_branch_resolved_var
-			if = {
-				limit = { NOT = { exists = c:RHB } }
-				create_country = {
-					tag = RHB
-					origin = root
-					province = p:xEC2F99
+		set_variable = sb_nam_rehoboth_branch_resolved_var
+		if = {
+			limit = { NOT = { exists = c:RHB } }
+			create_country = {
+				tag = RHB
+				origin = root
+				province = p:xEC2F99
+			}
+		}
+		if = {
+			limit = { exists = c:RHB }
+			s:STATE_NAMAQUALAND = {
+				set_owner_of_provinces = {
+					country = c:RHB
+					provinces = { xEC2F99 x8D6395 x9C401C x21DD01 }
 				}
 			}
-			if = {
-				limit = { exists = c:RHB }
-				s:STATE_NAMAQUALAND = {
-					set_owner_of_provinces = {
-						country = c:RHB
-						provinces = { xEC2F99 x8D6395 x9C401C x21DD01 }
-					}
+			root.capital = {
+				every_scope_pop = {
+					limit = {
+					culture = cu:griqua
 				}
-				root.capital = {
-					every_scope_pop = {
-						limit = {
-						culture = cu:griqua
-					}
-					move_partial_pop = {
-						state = c:RHB.capital
-						population = 2000
-					}
+				move_partial_pop = {
+					state = c:RHB.capital
+					population = 2000
 				}
 			}
-			}
+		}
 		}
 	}
 
 	option = {
 		name = sb_nam.020.b
-		custom_tooltip = sb_nam_020_b_tt
-		hidden_effect = {
-			set_variable = sb_nam_rehoboth_branch_resolved_var
-			add_modifier = {
-				name = sb_nam_rehoboth_discouraged
-				months = 60
+		#custom_tooltip = sb_nam_020_b_tt
+		set_variable = sb_nam_rehoboth_branch_resolved_var
+		add_modifier = {
+			name = sb_nam_rehoboth_discouraged
+			months = 60
+		}
+		every_political_movement = {
+			limit = {
+				is_political_movement_type = movement_sb_cape_liberal
 			}
-			every_political_movement = {
-				limit = {
-					is_political_movement_type = movement_sb_cape_liberal
-				}
-				add_modifier = {
-					name = sb_cape_liberal_autonomy_pressure
-					months = 60
-				}
+			add_modifier = {
+				name = sb_cape_liberal_autonomy_pressure
+				months = 60
 			}
 		}
 	}

@@ -1,115 +1,5 @@
 ﻿namespace = sb_griqualand_west
 
-# =============================================================================
-# Spes Bona - Griqualand West Events
-# =============================================================================
-# Ownership: Kimberley discovery, Cape response, and British expedition answer.
-# TOC: 020 Cape response, 021 local discovery, 022 British answer.
-# Cross-ref: common/on_actions/sb_phase3_on_actions.txt, common/scripted_effects/sb_phase3_effects.txt
-# =============================================================================
-
-sb_griqualand_west.020 = {
-	type = country_event
-	placement = root
-
-	title = sb_griqualand_west.020.t
-	desc = sb_griqualand_west.020.d
-	flavor = sb_griqualand_west.020.f
-
-	event_image = {
-		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
-	}
-
-	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-	icon = "gfx/interface/icons/event_icons/event_map.dds"
-	duration = 3
-
-	trigger = {
-		country_definition = cd:CAP
-		has_variable = sb_phase3_glw_question_active_var
-		has_variable = sb_phase3_kimberley_discovered_var
-		NOT = { has_variable = sb_phase3_glw_question_resolved_var }
-	}
-
-	immediate = {
-		p:x68B5E8.state.owner = {
-			save_scope_as = kimberley_holder
-		}
-	}
-
-	option = {
-		name = sb_griqualand_west.020.a
-		trigger = {
-			c:WBL ?= scope:kimberley_holder
-			sb_cap_can_petition_london_over_kimberley = yes
-		}
-		custom_tooltip = sb_griqualand_west_kimberley_london_expedition_tt
-		c:GBR ?= {
-			trigger_event = { id = sb_griqualand_west.022 days = 7 popup = yes }
-		}
-		ai_chance = {
-			base = 35
-			modifier = {
-				factor = 2.0
-				has_modifier = sb_settler_victory
-			}
-		}
-	}
-
-	option = {
-		name = sb_griqualand_west.020.b
-		default_option = yes
-		trigger = {
-			c:WBL ?= scope:kimberley_holder
-			sb_cap_can_offer_wbl_protection = yes
-		}
-		custom_tooltip = sb_griqualand_west_kimberley_wbl_protection_tt
-		sb_phase3_apply_wbl_protection_path = yes
-		ai_chance = {
-			base = 65
-			modifier = {
-				factor = 2.0
-				sb_cap_is_full_liberal_griqua_route = yes
-			}
-			modifier = {
-				factor = 0
-				has_modifier = sb_settler_victory
-			}
-		}
-	}
-
-	option = {
-		name = sb_griqualand_west.020.c
-		trigger = {
-			NOT = { c:WBL ?= scope:kimberley_holder }
-			is_subject_of = c:GBR
-		}
-		custom_tooltip = sb_griqualand_west_kimberley_london_expedition_tt
-		c:GBR ?= {
-			trigger_event = { id = sb_griqualand_west.022 days = 7 popup = yes }
-		}
-		ai_chance = {
-			base = 75
-		}
-	}
-
-	option = {
-		name = sb_griqualand_west.020.e
-		add_modifier = {
-			name = sb_prestige_loss_small
-			months = short_modifier_time
-		}
-		set_variable = sb_phase3_glw_question_resolved_var
-		ai_chance = {
-			base = 5
-			modifier = {
-				add = 20
-				is_subject_of = c:GBR
-			}
-		}
-	}
-}
-
 sb_griqualand_west.021 = {
 	type = country_event
 	placement = root
@@ -119,7 +9,7 @@ sb_griqualand_west.021 = {
 	flavor = sb_griqualand_west.021.f
 
 	event_image = {
-		video = "gfx/event_pictures/europenorthamerica_gold_prospectors.bk2"
+		video = "europenorthamerica_gold_prospectors"
 	}
 
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
@@ -127,19 +17,63 @@ sb_griqualand_west.021 = {
 	duration = 3
 
 	trigger = {
-		p:x68B5E8.state.owner = root
-		sb_kimberley_owner_has_pneumatic_tools = yes
-		NOT = { has_variable = sb_phase3_local_kimberley_discovery_var }
+		has_global_variable = sb_kimberley_discovery_pending_var
+		OR = {
+			p:x68B5E8.state.owner = root
+			AND = {
+				country_definition = cd:CAP
+				c:WBL ?= {
+					is_country_alive = yes
+					p:x68B5E8.state.owner = this
+				}
+			}
+		}
 	}
 
 	option = {
 		name = sb_griqualand_west.021.a
 		default_option = yes
-		set_variable = sb_phase3_local_kimberley_discovery_var
-		sb_phase3_create_kimberley_goldfield_building_if_missing = yes
-		ai_chance = {
-			base = 100
+		custom_tooltip = sb_griqualand_west_021_tt
+		hidden_effect = {
+			sb_phase3_discover_kimberley_diamonds = yes
+			if = {
+				limit = {
+					c:CAP ?= {
+						is_country_alive = yes
+						has_claim = s:STATE_NORTHERN_CAPE
+					}
+					c:ORA ?= {
+						is_country_alive = yes
+						is_subject = no
+					}
+				}
+				c:ORA ?= {
+					trigger_event = { id = sb_griqualand_west.022 days = 3 popup = yes }
+				}
+			}
+			else_if = {
+				limit = {
+					c:CAP ?= {
+						is_country_alive = yes
+						has_claim = s:STATE_NORTHERN_CAPE
+					}
+					c:WBL ?= {
+						is_country_alive = yes
+						p:x68B5E8.state.owner = this
+					}
+					NOT = {
+						c:ORA ?= {
+							is_country_alive = yes
+							is_subject = no
+						}
+					}
+				}
+				c:CAP ?= {
+					trigger_event = { id = sb_griqualand_west.244 days = 3 popup = yes }
+				}
+			}
 		}
+		ai_chance = { base = 100 }
 	}
 }
 
@@ -152,44 +86,506 @@ sb_griqualand_west.022 = {
 	flavor = sb_griqualand_west.022.f
 
 	event_image = {
-		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
+		video = "africa_diplomats_negotiating"
 	}
 
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	icon = "gfx/interface/icons/event_icons/event_newspaper.dds"
 	duration = 3
 
 	trigger = {
-		country_definition = cd:GBR
+		country_definition = cd:ORA
 		c:CAP ?= {
 			is_country_alive = yes
-			has_variable = sb_phase3_glw_question_active_var
-			NOT = { has_variable = sb_phase3_glw_question_resolved_var }
+			has_claim = s:STATE_NORTHERN_CAPE
 		}
+		NOT = { has_claim = s:STATE_NORTHERN_CAPE }
 	}
 
 	option = {
 		name = sb_griqualand_west.022.a
 		default_option = yes
+		set_variable = sb_phase3_ora_pressed_kimberley_claim_var
 		c:CAP ?= {
-			sb_phase3_apply_kimberley_london_expedition_path = yes
+			trigger_event = { id = sb_griqualand_west.023 days = 3 popup = yes }
 		}
 		ai_chance = {
-			base = 100
+			base = 80
 		}
 	}
 
 	option = {
 		name = sb_griqualand_west.022.b
+		custom_tooltip = sb_griqualand_west_022_cede_tt
 		c:CAP ?= {
-			add_modifier = {
-				name = sb_prestige_loss_small
-				months = short_modifier_time
+			set_variable = sb_phase3_glw_arbitration_path_var
+			change_relations = {
+				country = root
+				value = 50
 			}
-			set_variable = sb_phase3_glw_question_resolved_var
+			trigger_event = { id = sb_griqualand_west.244 days = 3 popup = yes }
 		}
 		ai_chance = {
-			base = 0
+			base = 20
+		}
+	}
+}
+
+sb_griqualand_west.023 = {
+	type = country_event
+	placement = root
+
+	title = sb_griqualand_west.023.t
+	desc = sb_griqualand_west.023.d
+	flavor = sb_griqualand_west.023.f
+
+	event_image = {
+		video = "africa_diplomats_negotiating"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_newspaper.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:CAP
+		has_claim = s:STATE_NORTHERN_CAPE
+		c:ORA ?= {
+			is_country_alive = yes
+			has_variable = sb_phase3_ora_pressed_kimberley_claim_var
+		}
+	}
+
+	option = {
+		name = sb_griqualand_west.023.a
+		default_option = yes
+		custom_tooltip = sb_griqualand_west_023_no_compromise_tt
+		set_variable = sb_phase3_glw_hardline_path_var
+		change_relations = {
+			country = c:ORA
+			value = -50
+		}
+		c:ORA ?= {
+			trigger_event = { id = sb_griqualand_west.241 days = 3 popup = yes }
+		}
+		ai_chance = {
+			base = 20
+		}
+	}
+
+	option = {
+		name = sb_griqualand_west.023.b
+		custom_tooltip = sb_griqualand_west_023_compensation_tt
+		set_variable = sb_phase3_glw_arbitration_path_var
+		c:ORA ?= {
+			trigger_event = { id = sb_griqualand_west.242 days = 3 popup = yes }
+		}
+		ai_chance = {
+			base = 75
+		}
+	}
+
+	option = {
+		name = sb_griqualand_west.023.c
+		custom_tooltip = sb_griqualand_west_023_cede_tt
+		set_variable = sb_phase3_glw_arbitration_path_var
+		s:STATE_NORTHERN_CAPE = {
+			if = { limit = { has_claim_by = c:CAP } remove_claim = c:CAP }
+			if = { limit = { NOT = { has_claim_by = c:ORA } } add_claim = c:ORA }
+		}
+		change_relations = {
+			country = c:ORA
+			value = 50
+		}
+		c:ORA ?= {
+			trigger_event = { id = sb_griqualand_west.243 days = 3 popup = yes }
+		}
+		ai_chance = {
+			base = 5
+		}
+	}
+}
+
+sb_griqualand_west.241 = {
+	type = country_event
+	placement = root
+
+	title = sb_griqualand_west.241.t
+	desc = sb_griqualand_west.241.d
+	flavor = sb_griqualand_west.241.f
+
+	event_image = {
+		video = "africa_diplomats_negotiating"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_newspaper.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:ORA
+		c:CAP ?= {
+			is_country_alive = yes
+			has_claim = s:STATE_NORTHERN_CAPE
+		}
+	}
+
+	option = {
+		name = sb_griqualand_west.241.a
+		default_option = yes
+		custom_tooltip = sb_griqualand_west_241_war_tt
+		set_variable = sb_phase3_cap_ora_kimberley_dispute_var
+		c:CAP ?= {
+			set_variable = sb_phase3_cap_ora_kimberley_dispute_var
+			create_diplomatic_play = {
+				type = dp_humiliation
+				target_country = root
+				add_war_goal = {
+					holder = root
+					type = revoke_claim
+					target_country = c:CAP
+					target_state = s:STATE_NORTHERN_CAPE.region_state:CAP
+				}
+			}
+		}
+		ai_chance = {
+			base = 20
+		}
+	}
+
+	option = {
+		name = sb_griqualand_west.241.b
+		custom_tooltip = sb_griqualand_west_241_backdown_tt
+		c:CAP ?= {
+			trigger_event = { id = sb_griqualand_west.244 days = 3 popup = yes }
+		}
+		ai_chance = {
+			base = 80
+		}
+	}
+}
+
+sb_griqualand_west.242 = {
+	type = country_event
+	placement = root
+
+	title = sb_griqualand_west.242.t
+	desc = sb_griqualand_west.242.d
+	flavor = sb_griqualand_west.242.f
+
+	event_image = {
+		video = "africa_diplomats_negotiating"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_newspaper.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:ORA
+		c:CAP ?= {
+			is_country_alive = yes
+			has_claim = s:STATE_NORTHERN_CAPE
+		}
+	}
+
+	option = {
+		name = sb_griqualand_west.242.a
+		default_option = yes
+		custom_tooltip = sb_griqualand_west_242_accept_tt
+		add_modifier = {
+			name = sb_kimberley_compensation
+			months = 120
+		}
+		change_relations = {
+			country = c:CAP
+			value = 10
+		}
+		c:CAP ?= {
+			add_modifier = {
+				name = sb_kimberley_compensation_burden
+				months = 120
+			}
+			trigger_event = { id = sb_griqualand_west.244 days = 3 popup = yes }
+		}
+		ai_chance = {
+			base = 90
+		}
+	}
+
+	option = {
+		name = sb_griqualand_west.242.b
+		custom_tooltip = sb_griqualand_west_242_war_tt
+		set_variable = sb_phase3_cap_ora_kimberley_dispute_var
+		c:CAP ?= {
+			set_variable = sb_phase3_cap_ora_kimberley_dispute_var
+		}
+		create_diplomatic_play = {
+			type = dp_sb_griqualand_revoke_claim
+			target_country = c:CAP
+		}
+		ai_chance = {
+			base = 10
+		}
+	}
+}
+
+sb_griqualand_west.243 = {
+	type = country_event
+	placement = root
+
+	title = sb_griqualand_west.243.t
+	desc = sb_griqualand_west.243.d
+	flavor = sb_griqualand_west.243.f
+
+	event_image = {
+		video = "africa_diplomats_negotiating"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_newspaper.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:ORA
+		has_claim = s:STATE_NORTHERN_CAPE
+		c:CAP ?= {
+			is_country_alive = yes
+			NOT = { has_claim = s:STATE_NORTHERN_CAPE }
+		}
+	}
+
+	option = {
+		name = sb_griqualand_west.243.a
+		default_option = yes
+		custom_tooltip = sb_griqualand_west_243_tt
+		sb_phase3_prepare_wbl_ora_protection_demand = yes
+		ai_chance = { base = 100 }
+	}
+}
+
+sb_griqualand_west.244 = {
+	type = country_event
+	placement = root
+
+	title = sb_griqualand_west.244.t
+	desc = sb_griqualand_west.244.d
+	flavor = sb_griqualand_west.244.f
+
+	event_image = {
+		video = "africa_diplomats_negotiating"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_newspaper.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:CAP
+		c:WBL ?= {
+			is_country_alive = yes
+			p:x68B5E8.state.owner = this
+		}
+	}
+
+	option = {
+		name = sb_griqualand_west.244.a
+		default_option = yes
+		custom_tooltip = sb_griqualand_west_244_tt
+		sb_phase3_prepare_wbl_cap_protection_demand = yes
+		ai_chance = { base = 100 }
+	}
+}
+
+sb_griqualand_west.245 = {
+	type = country_event
+	placement = root
+
+	title = sb_griqualand_west.245.t
+	desc = sb_griqualand_west.245.d
+	flavor = sb_griqualand_west.245.f
+
+	event_image = {
+		video = "africa_diplomats_negotiating"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_newspaper.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:ORA
+		c:WBL ?= {
+			is_country_alive = yes
+			p:x68B5E8.state.owner = this
+		}
+	}
+
+	option = {
+		name = sb_griqualand_west.245.a
+		default_option = yes
+		custom_tooltip = sb_griqualand_west_245_tt
+		sb_phase3_prepare_wbl_ora_protection_demand = yes
+		ai_chance = { base = 100 }
+	}
+}
+
+sb_griqualand_west.025 = {
+	type = country_event
+	placement = root
+
+	title = sb_griqualand_west.025.t
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				desc = sb_griqualand_west.025.cap_d
+				trigger = { has_variable = sb_phase3_wbl_cap_protection_demand_var }
+			}
+			triggered_desc = {
+				desc = sb_griqualand_west.025.ora_d
+				trigger = { has_variable = sb_phase3_wbl_ora_protection_demand_var }
+			}
+			triggered_desc = {
+				desc = sb_griqualand_west.025.d
+				trigger = { always = yes }
+			}
+		}
+	}
+	flavor = sb_griqualand_west.025.f
+
+	event_image = {
+		video = "africa_diplomats_negotiating"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_newspaper.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:WBL
+		p:x68B5E8.state.owner = root
+		OR = {
+			has_variable = sb_phase3_wbl_cap_protection_demand_var
+			has_variable = sb_phase3_wbl_ora_protection_demand_var
+		}
+	}
+
+	option = {
+		name = sb_griqualand_west.025.a
+		default_option = yes
+		custom_tooltip = sb_griqualand_west_025_accept_tt
+		if = {
+			limit = { has_variable = sb_phase3_wbl_cap_protection_demand_var }
+			c:CAP ?= {
+				if = {
+					limit = { root = { is_subject = yes } }
+					transfer_subject = root
+				}
+				annex = root
+			}
+			sb_phase3_finalize_kimberley_cap_route = yes
+		}
+		if = {
+			limit = { has_variable = sb_phase3_wbl_ora_protection_demand_var }
+			c:ORA ?= {
+				if = {
+					limit = { root = { is_subject = yes } }
+					transfer_subject = root
+				}
+				else = {
+					create_diplomatic_pact = {
+						country = root
+						type = puppet
+					}
+				}
+			}
+			if = {
+				limit = {
+					is_subject_of = c:ORA
+					NOT = { is_subject_type = subject_type_puppet }
+				}
+				change_subject_type = subject_type_puppet
+			}
+			sb_phase3_finalize_kimberley_ora_route = yes
+		}
+		ai_chance = { base = 60 }
+	}
+
+	option = {
+		name = sb_griqualand_west.025.b
+		custom_tooltip = sb_griqualand_west_025_refuse_tt
+		if = {
+			limit = { has_variable = sb_phase3_wbl_cap_protection_demand_var }
+			set_variable = sb_phase3_wbl_cap_crisis_war_var
+			c:CAP ?= {
+				set_variable = sb_phase3_wbl_cap_crisis_war_var
+				create_diplomatic_play = {
+					type = dp_annex_war
+					target_country = root
+				}
+			}
+		}
+		if = {
+			limit = { has_variable = sb_phase3_wbl_ora_protection_demand_var }
+			set_variable = sb_phase3_wbl_ora_crisis_war_var
+			c:ORA ?= {
+				set_variable = sb_phase3_wbl_ora_crisis_war_var
+				create_diplomatic_play = {
+					type = dp_make_protectorate
+					target_country = root
+				}
+			}
+		}
+		ai_chance = { base = 40 }
+	}
+}
+
+sb_griqualand_west.260 = {
+	type = country_event
+	placement = root
+
+	title = sb_griqualand_west.260.t
+	desc = sb_griqualand_west.260.d
+	flavor = sb_griqualand_west.260.f
+
+	event_image = {
+		video = "europenorthamerica_gold_prospectors"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_trade.dds"
+	duration = 3
+
+	trigger = {
+		has_global_variable = sb_phase3_kimberley_remaining_potential_seeded_var
+		p:x68B5E8.state = {
+			NOT = { has_modifier = state_gold_rush }
+			NOT = { has_modifier = state_gold_rush_exploitation }
+		}
+	}
+
+	option = {
+		name = sb_griqualand_west.260.a
+		default_option = yes
+		p:x68B5E8.state = {
+			add_modifier = {
+				name = state_gold_rush
+				days = long_modifier_time
+			}
+		}
+	}
+
+	option = {
+		name = sb_griqualand_west.260.b
+		p:x68B5E8.state = {
+			add_modifier = {
+				name = state_gold_rush_less_migration
+				days = long_modifier_time
+			}
+			add_modifier = {
+				name = state_gold_rush_exploitation
+				days = long_modifier_time
+			}
 		}
 	}
 }

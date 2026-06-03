@@ -473,14 +473,19 @@ sb_cape.111 = {
 
 	option = {
 		name = sb_cape.111.a
-		if = {
-			limit = {
-				NOT = { has_amendment = amendment_type:amendment_sb_convict_transportation_scheme }
-			}
-			add_amendment = {
-				type = amendment_sb_convict_transportation_scheme
+		set_variable = sb_convict_transportation_scheme_event_var
+		active_law:lawgroup_migration ?= {
+			if = {
+				limit = {
+					NOT = { has_amendment = amendment_type:amendment_sb_convict_transportation_scheme }
+				}
+				add_amendment = {
+					type = amendment_sb_convict_transportation_scheme
+					sponsor = PREV.ig:ig_landowners
+				}
 			}
 		}
+		remove_variable = sb_convict_transportation_scheme_event_var
 		add_modifier = {
 			name = sb_convict_ship_accepted
 			months = 120

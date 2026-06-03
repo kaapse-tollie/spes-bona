@@ -1,148 +1,161 @@
-﻿# Spes Bona - Phase 3 branch snapshot and Wave 1 helpers
+﻿# Spes Bona - Phase 3 Kimberley/Griqualand West helpers
 
-# Apply the inherited Phase 1-2 branch interface onto the current country.
-# This is intentionally snapshot-based: later Phase 3 content should read these
-# fixed route markers rather than re-deciding branch outcomes every year.
-sb_phase3_initialize_branch_snapshot = {
-	# CAP branch family
+# Kimberley uses 1.13 dynamic resource potential: the initial rush creates a
+# small discovered field, while the settlement unlocks the remaining potential.
+sb_phase3_discover_kimberley_diamonds = {
 	if = {
-		limit = { c:CAP ?= { has_variable = sb_cape_liberal_resolved_var } }
-		set_variable = sb_phase3_cape_liberal_path_var
+		limit = { has_global_variable = sb_kimberley_discovery_pending_var }
+		remove_global_variable = sb_kimberley_discovery_pending_var
 	}
-	if = {
-		limit = { c:CAP ?= { has_modifier = sb_settler_victory } }
-		set_variable = sb_phase3_cape_settler_path_var
-	}
-	if = {
-		limit = { c:CAP ?= { has_modifier = sb_cape_frontier_compromise } }
-		set_variable = sb_phase3_cape_compromise_path_var
-	}
-	# Shell-only late-century snapshot rails are intentionally commented out
-	# until their downstream Phase 3 waves land. Keeping them live now only
-	# creates startup "set but never used" noise.
-}
-
-# Seed the player-facing Wave 1 interface on whichever country should carry the
-# opening late-century content in the current run.
-sb_phase3_seed_public_wave1_interface = {
-	set_variable = sb_phase3_mineral_revolution_available_var
-}
-
-# Resolve the initial Griqualand West route. The heavier territorial/dynamic-
-# naming work is a later Wave 1 expansion; for now we land the political
-# direction cleanly so later content has a stable branch to build on.
-sb_phase3_apply_glw_arbitration_path = {
-	set_variable = sb_phase3_glw_question_resolved_var
-	set_variable = sb_phase3_glw_arbitration_path_var
-
-	if = {
-		limit = {
-			c:WBL ?= {
-				is_country_alive = yes
-			}
-		}
-		change_relations = {
-			country = c:WBL
-			value = 20
-		}
-	}
-	if = {
-		limit = {
-			c:TRN ?= {
-				is_country_alive = yes
-				has_variable = sb_sand_river_convention_accepted_var
-			}
-		}
-		c:TRN ?= {
-			change_relations = {
-				country = ROOT
-				value = 5
-			}
-		}
-	}
-}
-
-sb_phase3_apply_glw_hardline_path = {
-	set_variable = sb_phase3_glw_question_resolved_var
-	set_variable = sb_phase3_glw_hardline_path_var
-
-	if = {
-		limit = {
-			c:WBL ?= {
-				is_country_alive = yes
-			}
-		}
-		change_relations = {
-			country = c:WBL
-			value = -20
-		}
-	}
-	if = {
-		limit = {
-			c:CAP ?= {
-				is_country_alive = yes
-			}
-		}
-		s:STATE_NORTHERN_CAPE = {
-			add_claim = c:CAP
-		}
-	}
-	else = {
-		s:STATE_NORTHERN_CAPE = {
-			add_claim = ROOT
-		}
-	}
-	if = {
-		limit = {
-			c:TRN ?= {
-				is_country_alive = yes
-				has_variable = sb_sand_river_convention_accepted_var
-			}
-		}
-		c:TRN ?= {
-			change_relations = {
-				country = ROOT
-				value = -10
-			}
-		}
-	}
-}
-
-sb_phase3_apply_kimberley_london_expedition_path = {
-	set_variable = sb_phase3_glw_question_resolved_var
-	set_variable = sb_phase3_glw_hardline_path_var
-
-	p:x68B5E8.state.owner = {
-		save_scope_as = kimberley_holder
-	}
-
+	set_global_variable = sb_kimberley_discovered_global_var
 	s:STATE_NORTHERN_CAPE = {
-		add_claim = root
+		change_resource_potential = {
+			type = building_gold_field
+			amount = 4
+		}
+	}
+	p:x68B5E8.state = {
+		force_resource_discovery = building_gold_field
+	}
+	c:CAP ?= {
 		if = {
-			limit = {
-				c:GBR ?= {
-					is_country_alive = yes
+			limit = { is_country_alive = yes }
+			set_variable = sb_phase3_glw_question_active_var
+		}
+	}
+}
+
+sb_phase3_seed_remaining_kimberley_potential = {
+	if = {
+		limit = {
+			NOT = { has_global_variable = sb_phase3_kimberley_remaining_potential_seeded_var }
+		}
+		set_global_variable = sb_phase3_kimberley_remaining_potential_seeded_var
+		s:STATE_NORTHERN_CAPE = {
+			change_resource_potential = {
+				type = building_gold_field
+				amount = 16
+			}
+		}
+	}
+}
+
+sb_phase3_clear_griqualand_west_crisis_vars = {
+	if = {
+		limit = { has_global_variable = sb_kimberley_discovery_pending_var }
+		remove_global_variable = sb_kimberley_discovery_pending_var
+	}
+	c:CAP ?= {
+		if = { limit = { has_variable = sb_phase3_glw_question_active_var } remove_variable = sb_phase3_glw_question_active_var }
+		if = { limit = { has_variable = sb_phase3_cap_ora_kimberley_dispute_var } remove_variable = sb_phase3_cap_ora_kimberley_dispute_var }
+		if = { limit = { has_variable = sb_phase3_wbl_cap_crisis_war_var } remove_variable = sb_phase3_wbl_cap_crisis_war_var }
+		if = { limit = { has_variable = sb_phase3_wbl_ora_crisis_war_var } remove_variable = sb_phase3_wbl_ora_crisis_war_var }
+	}
+	c:ORA ?= {
+		if = { limit = { has_variable = sb_phase3_ora_pressed_kimberley_claim_var } remove_variable = sb_phase3_ora_pressed_kimberley_claim_var }
+		if = { limit = { has_variable = sb_phase3_cap_ora_kimberley_dispute_var } remove_variable = sb_phase3_cap_ora_kimberley_dispute_var }
+		if = { limit = { has_variable = sb_phase3_wbl_cap_crisis_war_var } remove_variable = sb_phase3_wbl_cap_crisis_war_var }
+		if = { limit = { has_variable = sb_phase3_wbl_ora_crisis_war_var } remove_variable = sb_phase3_wbl_ora_crisis_war_var }
+	}
+	c:WBL ?= {
+		if = { limit = { has_variable = sb_phase3_wbl_cap_protection_demand_var } remove_variable = sb_phase3_wbl_cap_protection_demand_var }
+		if = { limit = { has_variable = sb_phase3_wbl_ora_protection_demand_var } remove_variable = sb_phase3_wbl_ora_protection_demand_var }
+		if = { limit = { has_variable = sb_phase3_wbl_cap_crisis_war_var } remove_variable = sb_phase3_wbl_cap_crisis_war_var }
+		if = { limit = { has_variable = sb_phase3_wbl_ora_crisis_war_var } remove_variable = sb_phase3_wbl_ora_crisis_war_var }
+	}
+}
+
+sb_phase3_mark_griqualand_west_resolved = {
+	c:CAP ?= {
+		if = {
+			limit = { is_country_alive = yes }
+			set_variable = sb_phase3_glw_question_resolved_var
+			if = { limit = { has_variable = sb_phase3_glw_question_active_var } remove_variable = sb_phase3_glw_question_active_var }
+		}
+	}
+}
+
+sb_phase3_finalize_kimberley_cap_route = {
+	c:WBL ?= {
+		if = {
+			limit = { is_country_alive = yes }
+			c:CAP ?= {
+				if = {
+					limit = { is_country_alive = yes }
+					annex = c:WBL
 				}
 			}
-			add_claim = c:GBR
 		}
 	}
-	scope:kimberley_holder ?= {
-		change_relations = {
-			country = root
-			value = -30
+	sb_phase3_seed_remaining_kimberley_potential = yes
+	sb_phase3_mark_griqualand_west_resolved = yes
+	sb_phase3_clear_griqualand_west_crisis_vars = yes
+	c:CAP ?= {
+		if = {
+			limit = { is_country_alive = yes }
+			trigger_event = { id = sb_griqualand_west.260 days = 14 popup = yes }
 		}
-		c:GBR ?= {
-			change_relations = {
-				country = scope:kimberley_holder
-				value = -20
+	}
+}
+
+sb_phase3_finalize_kimberley_ora_route = {
+	c:WBL ?= {
+		if = {
+			limit = {
+				is_country_alive = yes
+				NOT = { is_subject_of = c:ORA }
+			}
+			c:ORA ?= {
+				if = {
+					limit = {
+						is_country_alive = yes
+						c:WBL ?= { is_subject = yes }
+					}
+					transfer_subject = c:WBL
+				}
+				else_if = {
+					limit = { is_country_alive = yes }
+					create_diplomatic_pact = {
+						country = c:WBL
+						type = puppet
+					}
+				}
 			}
 		}
+		if = {
+			limit = {
+				is_country_alive = yes
+				is_subject_of = c:ORA
+				NOT = { is_subject_type = subject_type_puppet }
+			}
+			change_subject_type = subject_type_puppet
+		}
 	}
-	c:GBR ?= {
-		change_relations = {
-			country = root
-			value = 10
+	sb_phase3_seed_remaining_kimberley_potential = yes
+	p:x68B5E8.state = {
+		force_resource_discovery = building_gold_field
+	}
+	sb_phase3_mark_griqualand_west_resolved = yes
+	sb_phase3_clear_griqualand_west_crisis_vars = yes
+	c:WBL ?= {
+		if = {
+			limit = { is_country_alive = yes }
+			trigger_event = { id = sb_griqualand_west.260 days = 14 popup = yes }
+		}
+	}
+}
+
+sb_phase3_finalize_kimberley_wbl_route = {
+	sb_phase3_seed_remaining_kimberley_potential = yes
+	p:x68B5E8.state = {
+		force_resource_discovery = building_gold_field
+	}
+	sb_phase3_mark_griqualand_west_resolved = yes
+	sb_phase3_clear_griqualand_west_crisis_vars = yes
+	c:WBL ?= {
+		if = {
+			limit = { is_country_alive = yes }
+			trigger_event = { id = sb_griqualand_west.260 days = 14 popup = yes }
 		}
 	}
 }
@@ -176,62 +189,55 @@ sb_phase3_annul_wbl_guarantee_frame = {
 	}
 }
 
-sb_phase3_apply_wbl_protection_path = {
-	set_variable = sb_phase3_glw_question_resolved_var
-	set_variable = sb_phase3_glw_arbitration_path_var
+sb_phase3_prepare_wbl_cap_protection_demand = {
 	sb_phase3_annul_wbl_guarantee_frame = yes
-
-	if = {
-		limit = {
-			sb_cap_is_full_liberal_griqua_route = yes
-		}
-		annex = c:WBL
-	}
-	else = {
-		if = {
-			limit = {
-				c:WBL ?= {
-					is_country_alive = yes
-					NOT = { is_subject_of = root }
-				}
-			}
-			create_diplomatic_pact = {
-				country = c:WBL
-				type = puppet
-			}
-		}
-		else_if = {
-			limit = {
-				c:WBL ?= {
-					is_country_alive = yes
-					is_subject_of = root
-					NOT = { is_subject_type = subject_type_puppet }
-				}
-			}
-			c:WBL ?= {
-				change_subject_type = subject_type_puppet
-			}
-		}
-		c:WBL ?= {
-			change_relations = {
-				country = root
-				value = 30
-			}
-		}
+	c:WBL ?= {
+		if = { limit = { has_variable = sb_phase3_wbl_ora_protection_demand_var } remove_variable = sb_phase3_wbl_ora_protection_demand_var }
+		set_variable = sb_phase3_wbl_cap_protection_demand_var
+		trigger_event = { id = sb_griqualand_west.025 days = 7 popup = yes }
 	}
 }
 
-sb_phase3_create_kimberley_goldfield_building_if_missing = {
-	random_scope_state = {
+sb_phase3_prepare_wbl_ora_protection_demand = {
+	sb_phase3_annul_wbl_guarantee_frame = yes
+	c:WBL ?= {
+		if = { limit = { has_variable = sb_phase3_wbl_cap_protection_demand_var } remove_variable = sb_phase3_wbl_cap_protection_demand_var }
+		set_variable = sb_phase3_wbl_ora_protection_demand_var
+		trigger_event = { id = sb_griqualand_west.025 days = 7 popup = yes }
+	}
+}
+
+sb_phase3_finalize_griqualand_west_settlement = {
+	sb_phase3_finalize_kimberley_cap_route = yes
+}
+
+sb_phase3_create_stellaland_goshen = {
+	if = {
 		limit = {
-			state_region = s:STATE_NORTHERN_CAPE
+			NOT = { exists = c:SGO }
+			s:STATE_NORTHERN_CAPE = {
+				any_scope_state = { owner = root }
+			}
+		}
+		random_scope_state = {
+			limit = {
+				state_region = s:STATE_NORTHERN_CAPE
+				owner = root
+			}
+			save_scope_as = sb_phase3_sgo_colony_state
 		}
 		if = {
-			limit = {
-				has_potential_resource = building_gold_field
-				NOT = { has_building = building_gold_field }
+			limit = { exists = scope:sb_phase3_sgo_colony_state }
+			create_country = {
+				tag = SGO
+				origin = root
+				state = scope:sb_phase3_sgo_colony_state
+				on_created = {
+					set_country_type = unrecognized
+					s:STATE_NORTHERN_CAPE = { add_claim = c:SGO }
+					s:STATE_BOTSWANA = { add_claim = c:SGO }
+				}
 			}
-			force_resource_discovery = building_gold_field
 		}
 	}
 }

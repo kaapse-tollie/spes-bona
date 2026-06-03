@@ -13,32 +13,26 @@
 #   frontier settlements into viable, recognized states.
 #
 # TWO-STAGE DESIGN:
-#   Stage 1 — ECONOMY (GDP >= 50k):
-#     The republic has a functioning economy. Rewards: prestige, name/flag update.
+#   Stage 1 — ECONOMY (GDP >= 25k):
+#     The republic has a fledgling economy. Reward: first Cape Boer migration slice.
 #     Historically: the trek communities needed to establish farms, churches,
 #     and basic governance before being taken seriously.
 #
 #   Stage 2 — TERRITORY (secure the claimed homeland):
-#     Territorial control of the homeland. Checked independently from GDP so the
-#     territorial milestone and migration wave can fire as soon as the land is held.
+#     Territorial control of the homeland. Checked after Stage 1 so the final
+#     settlement event owns the second migration slice and republic cleanup.
 #     TRN must control the western Transvaal core;
 #     ORA must own all of STATE_VRYSTAAT.
 #     Historically: consolidating authority over Ndebele, Griqua, and other
 #     groups contesting the interior took years of conflict and diplomacy.
 #
 # ON COMPLETE:
-#   - TRN / ORA: removes sb_early_republic_var, triggering the mature republic
-#     name and flag set. For TRN this now represents consolidation of the
-#     western republican core rather than ownership of the whole oversized
-#     STATE_TRANSVAAL shell.
-#   - Both: removes sb_trek_migration_pull from all states (trek is over,
-#     settlers have arrived).
-#   - Fires sb_great_trek.100 completion event, which now hands off to a post-trek
-#     constitutional choice instead of auto-centralizing every Boer republic.
+#   The territorial milestone event performs the final settlement effects; the
+#   JE only marks the trek as completed for later systems.
 #
 # CROSS-REFERENCES:
 #   - Migration modifier: common/static_modifiers/sb_modifiers.txt (sb_trek_migration_pull)
-#   - Events: events/sb_great_trek_events.txt (sb_great_trek.030-.031, .040-.041, .100)
+#   - Events: events/sb_great_trek_events.txt (sb_great_trek.030-.031, .040-.044)
 #   - Country names: common/dynamic_country_names/ (sb_early_republic_var usage)
 #   - Transvaal helpers: common/scripted_triggers/sb_great_trek_triggers.txt
 # ==============================================================================
@@ -116,110 +110,35 @@ je_sb_great_trek = {
 
 	on_complete = {
 		set_variable = sb_great_trek_completed_var
-
-		# Remove the early-republic variable once the whole JE completes. This keeps
-		# Winburg / Potchefstroom-style provisional naming until both the economic
-		# and territorial stages are done.
-		if = {
-			limit = {
-				OR = {
-					country_definition = cd:TRN
-					country_definition = cd:ORA
-					country_definition = cd:ZPB
-					country_definition = cd:LYD
-					country_definition = cd:NAL
-				}
-				has_variable = sb_early_republic_var
-			}
-			remove_variable = sb_early_republic_var
-		}
-			# Migration pull is removed by the closing event after the final
-			# Cape Boer slice has selected the strongest trekker settlement.
-		# Great Trek completion cements Boer settlement into homeland claims.
-		if = {
-			limit = {
-				country_definition = cd:TRN
-			}
-			s:STATE_TRANSVAAL = {
-				add_homeland = cu:boer
-			}
-		}
-		if = {
-			limit = {
-				country_definition = cd:ORA
-			}
-			s:STATE_VRYSTAAT = {
-				add_homeland = cu:boer
-			}
-		}
-		if = {
-			limit = {
-				country_definition = cd:ZPB
-			}
-			s:STATE_NORTHERN_TRANSVAAL = {
-				add_homeland = cu:boer
-			}
-		}
-		if = {
-			limit = {
-				country_definition = cd:LYD
-			}
-			s:STATE_EAST_TRANSVAAL = {
-				add_homeland = cu:boer
-			}
-		}
-		if = {
-			limit = {
-				country_definition = cd:NAL
-			}
-			s:STATE_ZULULAND = {
-				add_homeland = cu:boer
-			}
-		}
-		if = {
-			limit = {
-				OR = {
-					country_definition = cd:TRN
-					country_definition = cd:ORA
-					country_definition = cd:ZPB
-					country_definition = cd:LYD
-					country_definition = cd:NAL
-				}
-				NOT = { has_modifier = sb_boer_principality_status }
-			}
-			add_modifier = {
-				name = sb_boer_principality_status
-			}
-		}
-		trigger_event = { id = sb_great_trek.100 days = 21 popup = yes }
 	}
 
-	on_monthly_pulse = {
-		effect = {
-			# ==================================================================
-			# STAGE 1: GDP threshold (50k) — economy established
-			# ==================================================================
-			# 50k GDP represents a minimal viable economy — roughly equivalent
-			# to a small agrarian state with a few thousand pops. This is
-			# intentionally low to be achievable within 5-10 years of game start.
-			if = {
-				limit = {
-					NOT = { has_variable = sb_trek_stage1_complete }
-					root.gdp >= 50000
-				}
-				set_variable = sb_trek_stage1_complete
-				# Tag-specific events are flavor and migration rewards only. The
-				# visible republic name/flag now change on JE completion, not here.
+		on_monthly_pulse = {
+			effect = {
+				# ==================================================================
+				# STAGE 1: GDP threshold (25k) — fledgling economy established
+				# ==================================================================
+				# 25k GDP represents a fledgling economy after the v0.12 pop rebalance.
 				if = {
-					limit = { country_definition = cd:ORA }
-					trigger_event = { id = sb_great_trek.030 popup = yes }
-				}
-				# TRN: the western republican core is now economically viable enough
-				# to support a mature inland state.
-				else_if = {
-					limit = { country_definition = cd:TRN }
-					trigger_event = { id = sb_great_trek.031 popup = yes }
-				}
+					limit = {
+						NOT = { has_variable = sb_trek_stage1_complete }
+						root.gdp >= 25000
+					}
+					set_variable = sb_trek_stage1_complete
+					# Tag-specific events are flavor and migration rewards only. The
+					# visible republic name/flag now change on JE completion, not here.
+					if = {
+						limit = { country_definition = cd:ORA }
+						trigger_event = { id = sb_great_trek.030 popup = yes }
+					}
+					# TRN: the western republican core is now economically viable enough
+					# to support a mature inland state.
+					else_if = {
+						limit = { country_definition = cd:TRN }
+						trigger_event = { id = sb_great_trek.031 popup = yes }
+					}
+					else = {
+						trigger_event = { id = sb_great_trek.030 popup = yes }
+					}
 			}
 
 			# ==================================================================
@@ -227,7 +146,9 @@ je_sb_great_trek = {
 			# ==================================================================
 			if = {
 				limit = {
+					has_variable = sb_trek_stage1_complete
 					NOT = { has_variable = sb_trek_stage2_complete }
+					NOT = { has_variable = sb_trek_stage2_pending_var }
 				}
 				# ORA must control all of Vrystaat (Orange Free State homeland)
 				if = {
@@ -235,11 +156,7 @@ je_sb_great_trek = {
 						country_definition = cd:ORA
 						owns_entire_state_region = STATE_VRYSTAAT
 					}
-					if = {
-						limit = { has_variable = sb_voortrekker_start_var }
-						remove_variable = sb_voortrekker_start_var
-					}
-					set_variable = sb_trek_stage2_complete
+					set_variable = sb_trek_stage2_pending_var
 					trigger_event = { id = sb_great_trek.040 popup = yes }
 				}
 				# TRN must control the full west-Transvaal state shell created by the
@@ -249,7 +166,7 @@ je_sb_great_trek = {
 						country_definition = cd:TRN
 						sb_controls_west_transvaal_core = yes
 					}
-					set_variable = sb_trek_stage2_complete
+					set_variable = sb_trek_stage2_pending_var
 					trigger_event = { id = sb_great_trek.041 popup = yes }
 				}
 				else_if = {
@@ -257,7 +174,7 @@ je_sb_great_trek = {
 						country_definition = cd:ZPB
 						sb_controls_north_transvaal_core = yes
 					}
-					set_variable = sb_trek_stage2_complete
+					set_variable = sb_trek_stage2_pending_var
 					trigger_event = { id = sb_great_trek.042 popup = yes }
 				}
 				else_if = {
@@ -265,7 +182,7 @@ je_sb_great_trek = {
 						country_definition = cd:LYD
 						sb_controls_east_transvaal_core = yes
 					}
-					set_variable = sb_trek_stage2_complete
+					set_variable = sb_trek_stage2_pending_var
 					trigger_event = { id = sb_great_trek.044 popup = yes }
 				}
 				else_if = {
@@ -273,7 +190,7 @@ je_sb_great_trek = {
 						country_definition = cd:NAL
 						sb_controls_natalia_core = yes
 					}
-					set_variable = sb_trek_stage2_complete
+					set_variable = sb_trek_stage2_pending_var
 					trigger_event = { id = sb_great_trek.043 popup = yes }
 				}
 			}
