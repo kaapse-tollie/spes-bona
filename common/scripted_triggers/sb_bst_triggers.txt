@@ -25,6 +25,22 @@ sb_ora_holds_vrystaat = {
 	}
 }
 
+sb_bst_oranje_frontier_actor = {
+	is_country_alive = yes
+	OR = {
+		country_has_primary_culture = cu:boer
+		country_has_primary_culture = cu:anglo_african
+	}
+	NOT = { country_definition = cd:BST }
+	sb_ora_holds_vrystaat = yes
+}
+
+sb_bst_any_oranje_frontier_actor_exists = {
+	any_country = {
+		sb_bst_oranje_frontier_actor = yes
+	}
+}
+
 sb_bst_holds_vrystaat_foothold = {
 	OR = {
 		p:x19AE59.state.owner = root
@@ -50,13 +66,10 @@ sb_bst_controls_only_drakensberg = {
 }
 
 sb_bst_frontier_raid_valid = {
-	NOT = { has_war_with = c:ORA }
-	c:ORA ?= {
-		is_country_alive = yes
+	any_country = {
+		sb_bst_oranje_frontier_actor = yes
 		NOT = { has_war_with = root }
-		any_scope_state = {
-			state_region = s:STATE_VRYSTAAT
-		}
+		NOT = { has_truce_with = root }
 	}
 }
 

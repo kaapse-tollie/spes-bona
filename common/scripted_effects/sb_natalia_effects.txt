@@ -142,10 +142,11 @@ sb_apply_natalia_boer_republic_setup = {
 	ig:ig_armed_forces ?= { add_ruling_interest_group = yes }
 	ig:ig_landowners ?= { add_ruling_interest_group = yes }
 	ig:ig_rural_folk ?= { add_ruling_interest_group = yes }
-	ig:ig_devout ?= { add_ruling_interest_group = yes }
-	sb_refresh_boer_commandant_general_government = yes
-	sb_ensure_commandant_general_ruler_command = yes
-}
+		ig:ig_devout ?= { add_ruling_interest_group = yes }
+		sb_refresh_boer_commandant_general_government = yes
+		sb_ensure_commandant_general_ruler_command = yes
+		sb_ensure_boer_anti_british_lobby = yes
+	}
 
 sb_create_british_natal_colony_if_missing = {
 	if = {
@@ -187,8 +188,8 @@ sb_ensure_ora_ai_natal_front_commitment = {
 }
 
 sb_raise_ora_blood_river_relief_force = {
-	# Standard ORA relief package for Blood River. Baseline support is a small
-	# commando formation; heavier manpower/barracks support is reserved for player ZUL.
+	# Standard ORA relief package for Blood River. The normal AI path is
+	# modifier-only; the player-ZUL branch below remains a separate balance gate.
 	if = {
 		limit = {
 			country_definition = cd:ORA
@@ -200,24 +201,8 @@ sb_raise_ora_blood_river_relief_force = {
 			months = 24
 		}
 		add_modifier = {
-			name = sb_blood_river_emergency_mobilization
+			name = sb_laager_defence
 			months = 12
-		}
-		create_military_formation = {
-			type = army
-			hq_region = sr:region_southern_africa
-			name = potgieter_relief_commando
-
-			combat_unit = {
-				type = unit_type:combat_unit_type_line_infantry
-				state_region = s:STATE_VRYSTAAT
-				count = 2
-			}
-			combat_unit = {
-				type = unit_type:combat_unit_type_dragoons
-				state_region = s:STATE_VRYSTAAT
-				count = 1
-			}
 		}
 		if = {
 			limit = {
@@ -225,10 +210,6 @@ sb_raise_ora_blood_river_relief_force = {
 				c:ZUL ?= {
 					is_player = yes
 				}
-			}
-			add_modifier = {
-				name = sb_ora_blood_river_player_supply
-				months = 12
 			}
 			if = {
 				limit = {

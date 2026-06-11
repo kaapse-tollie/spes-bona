@@ -1,19 +1,4 @@
-﻿sb_nam_schedule_angra_pequena_purchase = {
-	random_list = {
-		10 = { trigger_event = { id = sb_nam.011 days = 365 popup = no } }
-		10 = { trigger_event = { id = sb_nam.011 days = 730 popup = no } }
-		10 = { trigger_event = { id = sb_nam.011 days = 1095 popup = no } }
-		10 = { trigger_event = { id = sb_nam.011 days = 1460 popup = no } }
-		10 = { trigger_event = { id = sb_nam.011 days = 1825 popup = no } }
-		10 = { trigger_event = { id = sb_nam.011 days = 2190 popup = no } }
-		10 = { trigger_event = { id = sb_nam.011 days = 2555 popup = no } }
-		10 = { trigger_event = { id = sb_nam.011 days = 2920 popup = no } }
-		10 = { trigger_event = { id = sb_nam.011 days = 3285 popup = no } }
-		10 = { trigger_event = { id = sb_nam.011 days = 3650 popup = no } }
-	}
-}
-
-sb_nam_schedule_next_consolidation_event = {
+﻿sb_nam_schedule_next_consolidation_event = {
 	if = {
 		limit = { NOT = { has_variable = sb_nam_stage_100_done_var } }
 		random_list = {
@@ -464,21 +449,135 @@ sb_nam_adjust_consolidation_harshness_down = {
 	sb_nam_sync_consolidation_modifiers = yes
 }
 
+sb_nam_sync_consolidation_harshness_value = {
+	if = {
+		limit = { has_journal_entry = je_sb_consolidation_of_south_west_africa }
+		je:je_sb_consolidation_of_south_west_africa ?= {
+			set_global_variable = {
+				name = sb_nam_rule_harshness_current_var
+				value = "scripted_bar_progress(sb_nam_rule_harshness_bar)"
+			}
+		}
+	}
+}
+
 sb_nam_clear_consolidation_modifiers = {
 	if = { limit = { has_modifier = sb_nam_rule_accommodating } remove_modifier = sb_nam_rule_accommodating }
 	if = { limit = { has_modifier = sb_nam_rule_supervised } remove_modifier = sb_nam_rule_supervised }
 	if = { limit = { has_modifier = sb_nam_rule_coercive } remove_modifier = sb_nam_rule_coercive }
 	if = { limit = { has_modifier = sb_nam_rule_brutal } remove_modifier = sb_nam_rule_brutal }
 	if = { limit = { has_modifier = sb_nam_rule_exterminatory } remove_modifier = sb_nam_rule_exterminatory }
+	s:STATE_NAMAQUALAND = {
+		every_scope_state = {
+			limit = { owner = root }
+			sb_nam_clear_consolidation_state_modifiers = yes
+		}
+	}
+	s:STATE_HEREROLAND = {
+		every_scope_state = {
+			limit = { owner = root }
+			sb_nam_clear_consolidation_state_modifiers = yes
+		}
+	}
+}
+
+sb_nam_clear_consolidation_state_modifiers = {
+	if = { limit = { has_modifier = sb_nam_rule_supervised_state } remove_modifier = sb_nam_rule_supervised_state }
+	if = { limit = { has_modifier = sb_nam_rule_coercive_state } remove_modifier = sb_nam_rule_coercive_state }
+	if = { limit = { has_modifier = sb_nam_rule_brutal_state } remove_modifier = sb_nam_rule_brutal_state }
+	if = { limit = { has_modifier = sb_nam_rule_exterminatory_state } remove_modifier = sb_nam_rule_exterminatory_state }
+}
+
+sb_nam_add_supervised_state_modifier = {
+	s:STATE_NAMAQUALAND = {
+		every_scope_state = {
+			limit = { owner = root }
+			add_modifier = {
+				name = sb_nam_rule_supervised_state
+				months = -1
+			}
+		}
+	}
+	s:STATE_HEREROLAND = {
+		every_scope_state = {
+			limit = { owner = root }
+			add_modifier = {
+				name = sb_nam_rule_supervised_state
+				months = -1
+			}
+		}
+	}
+}
+
+sb_nam_add_coercive_state_modifier = {
+	s:STATE_NAMAQUALAND = {
+		every_scope_state = {
+			limit = { owner = root }
+			add_modifier = {
+				name = sb_nam_rule_coercive_state
+				months = -1
+			}
+		}
+	}
+	s:STATE_HEREROLAND = {
+		every_scope_state = {
+			limit = { owner = root }
+			add_modifier = {
+				name = sb_nam_rule_coercive_state
+				months = -1
+			}
+		}
+	}
+}
+
+sb_nam_add_brutal_state_modifier = {
+	s:STATE_NAMAQUALAND = {
+		every_scope_state = {
+			limit = { owner = root }
+			add_modifier = {
+				name = sb_nam_rule_brutal_state
+				months = -1
+			}
+		}
+	}
+	s:STATE_HEREROLAND = {
+		every_scope_state = {
+			limit = { owner = root }
+			add_modifier = {
+				name = sb_nam_rule_brutal_state
+				months = -1
+			}
+		}
+	}
+}
+
+sb_nam_add_exterminatory_state_modifier = {
+	s:STATE_NAMAQUALAND = {
+		every_scope_state = {
+			limit = { owner = root }
+			add_modifier = {
+				name = sb_nam_rule_exterminatory_state
+				months = -1
+			}
+		}
+	}
+	s:STATE_HEREROLAND = {
+		every_scope_state = {
+			limit = { owner = root }
+			add_modifier = {
+				name = sb_nam_rule_exterminatory_state
+				months = -1
+			}
+		}
+	}
 }
 
 sb_nam_sync_consolidation_modifiers = {
+	sb_nam_sync_consolidation_harshness_value = yes
 	sb_nam_clear_consolidation_modifiers = yes
 	if = {
 		limit = {
-			je:je_sb_consolidation_of_south_west_africa ?= {
-				"scripted_bar_progress(sb_nam_rule_harshness_bar)" < 2
-			}
+			global_var:sb_nam_rule_harshness_current_var < 2
 		}
 		add_modifier = {
 			name = sb_nam_rule_accommodating
@@ -487,42 +586,40 @@ sb_nam_sync_consolidation_modifiers = {
 	}
 	else_if = {
 		limit = {
-			je:je_sb_consolidation_of_south_west_africa ?= {
-				"scripted_bar_progress(sb_nam_rule_harshness_bar)" < 5
-			}
+			global_var:sb_nam_rule_harshness_current_var < 5
 		}
 		add_modifier = {
 			name = sb_nam_rule_supervised
 			months = -1
 		}
+		sb_nam_add_supervised_state_modifier = yes
 	}
 	else_if = {
 		limit = {
-			je:je_sb_consolidation_of_south_west_africa ?= {
-				"scripted_bar_progress(sb_nam_rule_harshness_bar)" < 7
-			}
+			global_var:sb_nam_rule_harshness_current_var < 7
 		}
 		add_modifier = {
 			name = sb_nam_rule_coercive
 			months = -1
 		}
+		sb_nam_add_coercive_state_modifier = yes
 	}
 	else_if = {
 		limit = {
-			je:je_sb_consolidation_of_south_west_africa ?= {
-				"scripted_bar_progress(sb_nam_rule_harshness_bar)" < 10
-			}
+			global_var:sb_nam_rule_harshness_current_var < 10
 		}
 		add_modifier = {
 			name = sb_nam_rule_brutal
 			months = -1
 		}
+		sb_nam_add_brutal_state_modifier = yes
 	}
 	else = {
 		add_modifier = {
 			name = sb_nam_rule_exterminatory
 			months = -1
 		}
+		sb_nam_add_exterminatory_state_modifier = yes
 	}
 }
 

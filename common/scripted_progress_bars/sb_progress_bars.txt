@@ -49,7 +49,7 @@
 #     -0.4  Rural Folk in government
 #     -0.2 Landowners in government
 #     -0.1 Armed Forces in government
-#     -0.1 Xhosa frontier threat active (state_trait_sb_xhosa_resistance)
+#     -0.2 Xhosa frontier threat active (state_trait_sb_xhosa_resistance)
 #     +0.1 favour liberals campaign active
 #     -0.1 favour settlers campaign active
 #
@@ -477,7 +477,6 @@ sb_cape_balance_bar = {
 						has_law = law_type:law_discrete_inboekstelsel
 						has_law = law_type:law_debt_slavery
 						has_law = law_type:law_slave_trade
-						has_law = law_type:law_expanded_inboekstelsel
 						has_law = law_type:law_colonial_slavery
 					}
 			}
@@ -494,7 +493,6 @@ sb_cape_balance_bar = {
 							is_enacting_law = law_type:law_discrete_inboekstelsel
 							is_enacting_law = law_type:law_debt_slavery
 							is_enacting_law = law_type:law_slave_trade
-							is_enacting_law = law_type:law_expanded_inboekstelsel
 							is_enacting_law = law_type:law_colonial_slavery
 						}
 				}
@@ -562,7 +560,7 @@ sb_cape_balance_bar = {
 				}
 				subtract = {
 					desc = "sb_cape_xhosa_frontier_pressure"
-					value = 0.1
+					value = 0.2
 				}
 			}
 
@@ -577,7 +575,7 @@ sb_cape_balance_bar = {
 			if = {
 				limit = {
 					has_variable = sb_cape_balance_current
-					var:sb_cape_balance_current >= 50
+					var:sb_cape_balance_current >= 60
 				}
 				subtract = {
 					desc = "sb_cape_central_tendency"
@@ -588,7 +586,7 @@ sb_cape_balance_bar = {
 			if = {
 				limit = {
 					has_variable = sb_cape_balance_current
-					var:sb_cape_balance_current <= -50
+					var:sb_cape_balance_current <= -60
 				}
 				add = {
 					desc = "sb_cape_central_tendency"
@@ -637,7 +635,7 @@ sb_zulu_dynastic_stability_bar = {
 			}
 			add = {
 				desc = "sb_zulu_drift_at_war"
-				value = 0.5
+				value = 1
 			}
 		}
 
@@ -651,15 +649,15 @@ sb_zulu_dynastic_stability_bar = {
 			}
 		}
 
-		if = {
-			limit = {
-				ruler = { has_trait = reserved }
-			}
-			add = {
-				desc = "sb_zulu_drift_reserved"
-				value = -0.5
-			}
-		}
+		# if = {
+		# 	limit = {
+		# 		ruler = { has_trait = reserved }
+		# 	}
+		# 	add = {
+		# 		desc = "sb_zulu_drift_reserved"
+		# 		value = -0.5
+		# 	}
+		# }
 
 		if = {
 			limit = {
@@ -862,6 +860,77 @@ sb_firearms_adoption_bar = {
 	start_value = 0
 	min_value = 0
 	max_value = 60
+	default = yes
+}
+
+sb_transvaal_unity_bar = {
+	name = "sb_transvaal_unity_bar"
+	desc = "sb_transvaal_unity_bar_low"
+	second_desc = "sb_transvaal_unity_bar_high"
+	start_value = 0
+	min_value = 0
+	max_value = 36
+	default_green = yes
+}
+
+sb_zpb_unity_bar = {
+	name = "sb_zpb_unity_bar"
+	desc = "sb_zpb_unity_bar_low"
+	second_desc = "sb_zpb_unity_bar_high"
+	start_value = 0
+	min_value = 0
+	max_value = 36
+	default_green = yes
+}
+
+sb_imperial_confederation_subject_control_bar = {
+	name = "sb_imperial_confederation_subject_control_bar"
+	desc = "sb_imperial_confederation_subject_control_bar_low"
+	second_desc = "sb_imperial_confederation_subject_control_bar_high"
+	start_value = 0
+	min_value = 0
+	max_value = 100
+	default_green = yes
+}
+
+sb_imperial_confederation_sea_access_bar = {
+	name = "sb_imperial_confederation_sea_access_bar"
+	desc = "sb_imperial_confederation_sea_access_bar_safe"
+	start_value = 0
+	min_value = 0
+	max_value = 36
+	default = yes
+
+	monthly_progress = {
+		if = {
+			limit = {
+				any_country = {
+					sb_is_imperial_confederation_participant = yes
+					country_has_primary_culture = cu:boer
+					has_variable = sb_imperial_confederation_sea_access_warning_var
+				}
+			}
+			add = {
+				desc = "sb_imperial_confederation_boer_sea_access_drift"
+				value = 1
+			}
+		}
+			else = {
+				subtract = {
+					desc = "sb_imperial_confederation_no_boer_sea_access_drift"
+					value = 36
+				}
+			}
+		}
+	}
+
+sb_bechuanaland_boer_swa_influence_bar = {
+	name = "sb_bechuanaland_boer_swa_influence_bar"
+	desc = "sb_bechuanaland_boer_swa_influence_bar_swa"
+	second_desc = "sb_bechuanaland_boer_swa_influence_bar_boer"
+	start_value = 0
+	min_value = -100
+	max_value = 100
 	default = yes
 }
 

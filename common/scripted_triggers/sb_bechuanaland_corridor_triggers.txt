@@ -1,0 +1,175 @@
+﻿# Spes Bona - Bechuanaland Corridor / Caprivi Crisis triggers
+
+sb_bechuanaland_has_no_british_security_treaty = {
+	NOT = {
+		any_scope_treaty = {
+			binds = c:GBR
+			any_scope_article = {
+				OR = {
+					has_type = alliance
+					has_type = defensive_pact
+				}
+			}
+		}
+	}
+}
+
+sb_bechuanaland_swa_overlord_candidate = {
+	is_country_alive = yes
+	country_rank = rank_value:great_power
+	NOT = { country_definition = cd:GBR }
+	c:SWA ?= {
+		is_country_alive = yes
+		is_direct_subject_of = root
+	}
+	sb_bechuanaland_has_no_british_security_treaty = yes
+}
+
+sb_bechuanaland_trn_is_sar_like = {
+	country_definition = cd:TRN
+	is_country_alive = yes
+	NOT = { has_variable = sb_early_republic_var }
+	OR = {
+		has_variable = sb_martinus_presidential_union_active_var
+		has_variable = sb_transvaal_unity_resolved_var
+	}
+}
+
+sb_bechuanaland_boer_actor = {
+	OR = {
+		AND = {
+			country_definition = cd:TRN
+			is_country_alive = yes
+			OR = {
+				has_variable = sb_kimberley_trn_claimant_var
+				sb_bechuanaland_trn_is_sar_like = yes
+			}
+		}
+		AND = {
+			country_definition = cd:ORA
+			is_country_alive = yes
+			has_variable = sb_kimberley_ora_claimant_var
+		}
+	}
+}
+
+sb_bechuanaland_tsw_holds_beachhead_province = {
+	OR = {
+		p:xD76CB9.state.owner = c:TSW
+		p:x20CAA7.state.owner = c:TSW
+		p:xA494F8.state.owner = c:TSW
+		p:x4AFDFD.state.owner = c:TSW
+	}
+}
+
+sb_bechuanaland_tsw_owns_nw_corridor_nc_land = {
+	sb_bechuanaland_tsw_holds_beachhead_province = yes
+}
+
+sb_bechuanaland_cap_controls_nw_corridor = {
+	NOT = { sb_bechuanaland_tsw_owns_nw_corridor_nc_land = yes }
+	OR = {
+		p:xD76CB9.state.owner = c:CAP
+		p:x20CAA7.state.owner = c:CAP
+		p:xA494F8.state.owner = c:CAP
+		p:x4AFDFD.state.owner = c:CAP
+	}
+}
+
+sb_bechuanaland_sgo_controls_nw_corridor = {
+	exists = c:SGO
+	NOT = { sb_bechuanaland_tsw_owns_nw_corridor_nc_land = yes }
+	OR = {
+		p:xD76CB9.state.owner = c:SGO
+		p:x20CAA7.state.owner = c:SGO
+		p:xA494F8.state.owner = c:SGO
+		p:x4AFDFD.state.owner = c:SGO
+	}
+}
+
+sb_bechuanaland_caprivi_not_held_by_swa = {
+	OR = {
+		NOT = { p:x773A13.state.owner = c:SWA }
+		NOT = { p:x4401C5.state.owner = c:SWA }
+		NOT = { p:x3D4350.state.owner = c:SWA }
+		NOT = { p:x6001D0.state.owner = c:SWA }
+		NOT = { p:x0DDFB8.state.owner = c:SWA }
+	}
+}
+
+sb_bechuanaland_cap_hardline_for_botswana = {
+	country_definition = cd:CAP
+	OR = {
+		ig:ig_landowners ?= { is_in_government = yes }
+		ig:ig_armed_forces ?= { is_in_government = yes }
+		AND = {
+			ig:ig_industrialists ?= { is_in_government = yes }
+			any_scope_character = { has_template = SAF_cecil_rhodes }
+		}
+	}
+}
+
+sb_bechuanaland_cap_liberal_botswana_route = {
+	country_definition = cd:CAP
+	sb_cap_is_responsible_or_dominion = yes
+	NOT = { sb_bechuanaland_cap_hardline_for_botswana = yes }
+	sb_cap_has_liberal_franchise_route = yes
+}
+
+sb_bechuanaland_sgo_or_wbl_in_boer_sphere = {
+	OR = {
+		c:SGO ?= {
+			is_country_alive = yes
+			OR = {
+				is_subject_of = c:ORA
+				is_subject_of = c:TRN
+			}
+		}
+		c:WBL ?= {
+			is_country_alive = yes
+			OR = {
+				is_subject_of = c:ORA
+				is_subject_of = c:TRN
+			}
+		}
+	}
+}
+
+sb_bechuanaland_corridor_can_open = {
+	has_global_variable = sb_bechuanaland_corridor_watch_global_var
+	NOT = { has_global_variable = sb_bechuanaland_corridor_open_global_var }
+	NOT = { has_global_variable = sb_bechuanaland_corridor_resolved_global_var }
+	c:SWA ?= { is_country_alive = yes }
+	any_country = { sb_bechuanaland_swa_overlord_candidate = yes }
+	c:CAP ?= {
+		is_country_alive = yes
+		is_subject_of = c:GBR
+	}
+	OR = {
+		has_global_variable = sb_kimberley_boer_victory_global_var
+		c:TRN ?= { sb_bechuanaland_trn_is_sar_like = yes }
+	}
+}
+
+sb_bechuanaland_is_involved_actor = {
+	OR = {
+		country_definition = cd:GBR
+		country_definition = cd:CAP
+		country_definition = cd:SWA
+		country_definition = cd:SGO
+		country_definition = cd:WBL
+		sb_bechuanaland_boer_actor = yes
+		sb_bechuanaland_swa_overlord_candidate = yes
+	}
+}
+
+sb_bechuanaland_can_sponsor_sgo = {
+	sb_bechuanaland_boer_actor = yes
+	c:CAP ?= {
+		is_country_alive = yes
+		has_claim = s:STATE_NORTHERN_CAPE
+	}
+	NOT = { exists = c:SGO }
+	c:TSW ?= { is_country_alive = yes }
+	sb_bechuanaland_tsw_holds_beachhead_province = yes
+}

@@ -10,6 +10,7 @@ je_sb_imperial_confederation_bind_trade_button = {
 	}
 
 	possible = {
+		sb_imperial_confederation_has_unbound_independent_participant = yes
 		custom_tooltip = {
 			text = je_sb_imperial_confederation_bind_trade_possible_tt
 			hidden_trigger = {
@@ -36,19 +37,16 @@ je_sb_imperial_confederation_form_saf_button = {
 		custom_tooltip = {
 			text = je_sb_imperial_confederation_form_british_cape_tt
 			hidden_trigger = {
-				OR = {
-					NOT = { country_definition = cd:GBR }
-					c:CAP ?= {
-						is_country_alive = yes
-						is_subject_of = c:GBR
-					}
+				c:CAP ?= {
+					is_country_alive = yes
+					is_subject_of = c:GBR
 				}
 			}
 		}
 		custom_tooltip = {
-			text = je_sb_imperial_confederation_form_subjects_tt
+			text = je_sb_imperial_confederation_form_level_1_subjects_tt
 			hidden_trigger = {
-				sb_imperial_confederation_all_participants_subjects_of_owner_network = yes
+				sb_imperial_confederation_all_participants_level_1_british_subjects = yes
 			}
 		}
 		custom_tooltip = {
@@ -61,5 +59,40 @@ je_sb_imperial_confederation_form_saf_button = {
 
 	effect = {
 		sb_imperial_confederation_form_saf = yes
+	}
+}
+
+je_sb_confederate_southern_africa_button = {
+	name = "je_sb_confederate_southern_africa_button"
+	desc = "je_sb_confederate_southern_africa_button_desc"
+
+	visible = {
+		has_journal_entry = je_sb_confederate_southern_africa
+		country_definition = cd:SAF
+		has_variable = sb_confederated_south_africa_var
+	}
+
+	possible = {
+		is_at_war = no
+		is_active_in_diplomatic_play = no
+		custom_tooltip = {
+			text = je_sb_confederate_southern_africa_button_possible_tt
+			hidden_trigger = {
+				sb_confederated_south_africa_has_expand_target = yes
+			}
+		}
+	}
+
+	effect = {
+		custom_tooltip = je_sb_confederate_southern_africa_button_effect_tt
+		hidden_effect = {
+			sb_confederated_south_africa_expand = yes
+		}
+	}
+
+	cooldown = { days = 365 }
+
+	ai_chance = {
+		value = 100
 	}
 }

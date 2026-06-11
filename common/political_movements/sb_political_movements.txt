@@ -93,13 +93,8 @@ movement_sb_eastern_cape_separatist = {
 					}
 				}
 			}
-			# All Xhosa polities destroyed — no more frontier threat, separatism loses purpose.
-			# XHG = Gcaleka Xhosa, XHR = Rharhabe Xhosa, XHT = Thembu.
-			AND = {
-				NOT = { c:XHG ?= { is_country_alive = yes } }
-				NOT = { c:XHR ?= { is_country_alive = yes } }
-				NOT = { c:XHT ?= { is_country_alive = yes } }
-			}
+			# XHO destroyed — no more frontier threat, separatism loses purpose.
+			NOT = { c:XHO ?= { is_country_alive = yes } }
 			# Resolved peacefully by Cape JE settler victory path.
 			# See 1-01_sb_cape_politics.txt on_complete settler branch.
 			owner = { has_variable = sb_ecsl_resolved_var }
@@ -262,6 +257,15 @@ movement_sb_eastern_cape_separatist = {
 					multiply = {
 						value = 2.0
 						desc = "sb_frontier_state"
+					}
+				}
+				if = {
+					limit = {
+					owner ?= { has_law = law_type:law_homesteading }
+					}
+					multiply = {
+						value = 1.5
+						desc = "sb_ecsl_homesteading_support"
 					}
 				}
 

@@ -1,0 +1,109 @@
+﻿TRY_REPLACE:civilizing_mission = {
+	# Unlocks Panama Canal survey expedition decision
+	# Unlocks the Panama Canal
+
+	era = era_3
+	texture = "gfx/interface/icons/invention_icons/civilizing_mission.dds"
+	category = society
+
+	modifier = {
+		country_institution_colonial_affairs_max_investment_add = 1
+		country_infamy_generation_against_unrecognized_mult = -0.25
+	}
+
+	unlocking_technologies = {
+		quinine
+		nationalism
+	}
+
+	ai_weight = {
+		value = 1
+
+		# Important for colonizers
+		if = {
+			limit = {
+				navy_size >= 25
+				is_country_type = recognized
+			}
+			add = 1
+		}
+		if = {
+			limit = {
+				has_strategy = ai_strategy_colonial_expansion
+			}
+			add = 1
+		}
+	}
+}
+
+TRY_REPLACE:malaria_prevention = {
+	# Should permit for colonization of state regions with severe malaria
+	era = era_4
+	texture = "gfx/interface/icons/invention_icons/malaria_prevention.dds"
+	category = society
+
+	modifier = {
+		country_institution_colonial_affairs_max_investment_add = 1
+		country_institution_health_system_max_investment_add = 1
+	}
+
+	unlocking_technologies = {
+		civilizing_mission
+	}
+
+	ai_weight = {
+		value = 1
+
+		# Important for colonizers
+		if = {
+			limit = {
+				navy_size >= 25
+				is_country_type = recognized
+			}
+			add = 1
+		}
+		if = {
+			limit = {
+				has_strategy = ai_strategy_colonial_expansion
+			}
+			add = 1
+		}
+		if = {
+			limit = {
+				has_institution = institution_colonial_affairs
+			}
+			add = 1
+		}
+		if = {
+			limit = {
+				OR = {
+					has_strategic_region_interest_tier = {
+						strategic_region = sr:region_west_africa
+						value >= 2
+					}
+					has_strategic_region_interest_tier = {
+						strategic_region = sr:region_east_africa
+						value >= 2
+					}
+					has_strategic_region_interest_tier = {
+						strategic_region = sr:region_nile_basin
+						value >= 2
+					}
+					has_strategic_region_interest_tier = {
+						strategic_region = sr:region_southern_africa
+						value >= 2
+					}
+					has_strategic_region_interest_tier = {
+						strategic_region = sr:region_oceania
+						value >= 2
+					}
+					has_strategic_region_interest_tier = {
+						strategic_region = sr:region_indonesia
+						value >= 2
+					}
+				}
+			}
+			add = 1
+		}
+	}
+}

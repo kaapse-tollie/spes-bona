@@ -20,7 +20,7 @@ sb_on_bst_monthly_pulse_country = {
 	effect = {
 		if = {
 			limit = {
-				country_definition = cd:ORA
+				sb_bst_oranje_frontier_actor = yes
 				has_journal_entry = je_sb_bst_ora_frontier
 				NOT = { has_variable = sb_bst_frontier_claim_seeded_var }
 				c:BST ?= {
@@ -29,12 +29,12 @@ sb_on_bst_monthly_pulse_country = {
 			}
 			set_variable = sb_bst_frontier_claim_seeded_var
 			s:STATE_DRAKENSBERG = {
-				add_claim = c:ORA
+				add_claim = root
 			}
 		}
 		if = {
 			limit = {
-				country_definition = cd:ORA
+				sb_bst_oranje_frontier_actor = yes
 				has_journal_entry = je_sb_bst_ora_frontier
 				has_variable = sb_bst_frontier_claim_seeded_var
 				NOT = {
@@ -45,7 +45,7 @@ sb_on_bst_monthly_pulse_country = {
 			}
 			remove_variable = sb_bst_frontier_claim_seeded_var
 			s:STATE_DRAKENSBERG = {
-				remove_claim = c:ORA
+				remove_claim = root
 			}
 		}
 
@@ -57,6 +57,23 @@ sb_on_bst_monthly_pulse_country = {
 				NOT = { has_variable = sb_bst_into_the_mountains_var }
 			}
 			trigger_event = { id = sb_bst_frontier.020 days = 1 popup = yes }
+		}
+
+		if = {
+			limit = {
+				sb_bst_oranje_frontier_actor = yes
+				NOT = { country_definition = cd:ORA }
+				NOT = { has_journal_entry = je_sb_bst_ora_frontier }
+				NOT = { c:ORA ?= { is_country_alive = yes } }
+				c:BST ?= {
+					is_country_alive = yes
+					is_subject = no
+					sb_bst_holds_frontier_land = yes
+				}
+			}
+			add_journal_entry = {
+				type = je_sb_bst_ora_frontier
+			}
 		}
 
 		if = {
@@ -96,14 +113,10 @@ sb_on_bst_monthly_pulse_country = {
 
 		if = {
 			limit = {
-				country_definition = cd:ORA
+				country_has_primary_culture = cu:boer
 				NOT = { has_variable = sb_ora_annexed_bst_var }
 				NOT = { has_variable = sb_settled_drakensberg_var }
-				NOT = {
-					c:BST ?= {
-						is_country_alive = yes
-					}
-				}
+				NOT = { c:BST ?= { is_country_alive = yes } }
 				owns_entire_state_region = STATE_DRAKENSBERG
 			}
 			set_variable = sb_ora_annexed_bst_var
@@ -111,16 +124,12 @@ sb_on_bst_monthly_pulse_country = {
 
 		if = {
 			limit = {
-					country_definition = cd:ORA
-					has_variable = sb_ora_annexed_bst_var
-					NOT = { has_journal_entry = je_sb_settle_drakensberg }
-					NOT = { has_journal_entry = je_sb_bst_ora_frontier }
-					NOT = { has_variable = sb_settled_drakensberg_var }
-					NOT = {
-						c:BST ?= {
-						is_country_alive = yes
-					}
-				}
+				country_has_primary_culture = cu:boer
+				has_variable = sb_ora_annexed_bst_var
+				NOT = { has_journal_entry = je_sb_settle_drakensberg }
+				NOT = { has_journal_entry = je_sb_bst_ora_frontier }
+				NOT = { has_variable = sb_settled_drakensberg_var }
+				NOT = { c:BST ?= { is_country_alive = yes } }
 			}
 			add_journal_entry = {
 				type = je_sb_settle_drakensberg
@@ -238,7 +247,7 @@ sb_on_bst_wargoal_enforced = {
 	effect = {
 		if = {
 			limit = {
-				country_definition = cd:ORA
+				sb_bst_oranje_frontier_actor = yes
 				scope:target ?= {
 					country_definition = cd:BST
 				}
@@ -314,7 +323,7 @@ sb_on_bst_diplo_play_back_down = {
 					is_diplomatic_play_type = dp_annex_war
 				}
 				scope:actor ?= {
-					country_definition = cd:ORA
+					sb_bst_oranje_frontier_actor = yes
 					NOT = { has_variable = sb_settled_drakensberg_var }
 				}
 				scope:target ?= {

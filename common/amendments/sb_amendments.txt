@@ -38,7 +38,7 @@ amendment_sb_cape_qualified_franchise = {
 
 amendment_sb_convict_transportation_scheme = {
 
-	parent = law_migration_controls
+	parent = law_no_migration_controls
 
 	allowed_laws = {
 		law_no_migration_controls
@@ -55,14 +55,12 @@ amendment_sb_convict_transportation_scheme = {
 		NOT = { has_law = law_type:law_closed_borders }
 		OR = {
 			has_variable = sb_convict_transportation_scheme_event_var
-			active_law:lawgroup_migration ?= {
-				has_amendment = amendment_type:amendment_sb_convict_transportation_scheme
-			}
+			has_variable = sb_convict_transportation_scheme_unlocked_var
 		}
 	}
 
 	would_sponsor = {
-		is_interest_group_type = ig_landowners
+		always = no
 	}
 
 	ai_will_revoke = {
@@ -90,13 +88,11 @@ amendment_sb_commando_corps = {
 		law_national_militia
 	}
 
-	# Current Phase 1 target: keep the commandos fast to raise and train without
-	# creating huge flat combat-stat spikes.
 	modifier = {
 		interest_group_ig_rural_folk_pol_str_mult = 0.25
 		interest_group_ig_landowners_pol_str_mult = 0.15
 		building_training_rate_mult = 0.50
-		military_formation_mobilization_speed_mult = 0.25
+		unit_supply_consumption_mult = -0.50
 		unit_experience_gain_mult = 0.25
 	}
 
@@ -139,4 +135,44 @@ amendment_sb_commando_corps = {
 	}
 
 	amendment_activism_multiplier = 0.5
+}
+
+amendment_sb_expanded_inboekstelsel = {
+
+	parent = law_discrete_inboekstelsel
+
+	allowed_laws = {
+		law_discrete_inboekstelsel
+	}
+
+	modifier = {
+		interest_group_ig_landowners_pol_str_mult = 0.25
+		country_influence_mult = -0.15
+		country_standard_of_living_full_acceptance_add = 1
+	}
+
+	possible = {
+		sb_is_boer_inboekstelsel_country = yes
+		has_law = law_type:law_discrete_inboekstelsel
+	}
+
+	would_sponsor = {
+		ROOT = {
+			OR = {
+				is_interest_group_type = ig_landowners
+				is_interest_group_type = ig_rural_folk
+				is_interest_group_type = ig_armed_forces
+			}
+		}
+	}
+
+	ai_will_revoke = {
+		always = no
+	}
+
+	can_repeal = {
+		legitimacy >= legitimacy_to_repeal_amendment
+	}
+
+	amendment_activism_multiplier = 0.8
 }

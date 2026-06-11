@@ -54,34 +54,34 @@ sb_is_imperial_confederation_participant = {
 	NOT = { country_definition = cd:SAF }
 }
 
-sb_is_autonomous_anglo_african_british_subject = {
-	country_has_primary_culture = cu:anglo_african
-	is_subject_of = c:GBR
+sb_is_imperial_confederation_war_failure_actor = {
+	is_country_alive = yes
+	is_revolutionary = no
+	is_secessionist = no
+	sb_is_imperial_confederation_participant = yes
 	OR = {
-		is_subject_type = subject_type_dominion
-		is_subject_type = subject_type_sb_responsible_colony
-		is_subject_type = subject_type_sb_responsible_colony_monarchy
+		country_definition = cd:ORA
+		country_definition = cd:TRN
+		country_definition = cd:ZPB
+		country_definition = cd:LYD
+		country_definition = cd:NAL
+		country_definition = cd:SGO
+		country_definition = cd:CAP
+		country_definition = cd:ABY
 	}
 }
 
 sb_is_imperial_confederation_owner = {
+	country_definition = cd:GBR
+	is_country_alive = yes
+}
+
+sb_should_be_involved_in_imperial_confederation = {
 	OR = {
+		sb_is_imperial_confederation_owner = yes
 		AND = {
-			country_definition = cd:GBR
-			NOT = {
-				any_country = {
-					sb_is_autonomous_anglo_african_british_subject = yes
-				}
-			}
-		}
-		AND = {
-			sb_is_autonomous_anglo_african_british_subject = yes
-			NOT = {
-				any_country = {
-					sb_is_autonomous_anglo_african_british_subject = yes
-					prestige > root.prestige
-				}
-			}
+			is_country_alive = yes
+			sb_is_imperial_confederation_participant = yes
 		}
 	}
 }
@@ -92,6 +92,55 @@ sb_imperial_confederation_has_live_boer_participant = {
 		country_has_primary_culture = cu:boer
 		is_country_alive = yes
 	}
+}
+
+sb_imperial_confederation_britain_at_war_with_participant = {
+	c:GBR ?= {
+		is_at_war = yes
+		any_enemy_in_war = {
+			sb_is_imperial_confederation_war_failure_actor = yes
+		}
+	}
+}
+
+sb_imperial_confederation_bound_subject_escaped = {
+	any_country = {
+		is_country_alive = yes
+		has_variable = sb_imperial_confederation_bound_subject_var
+		is_subject = no
+		NOT = { country_definition = cd:SAF }
+	}
+}
+
+sb_is_imperial_confederation_level_1_british_subject = {
+	is_country_alive = yes
+	is_subject = yes
+	exists = top_overlord
+	top_overlord = c:GBR
+	OR = {
+		is_subject_type = subject_type_colony
+		is_subject_type = subject_type_puppet
+		is_subject_type = subject_type_vassal
+		is_subject_type = subject_type_crown_land
+		is_subject_type = subject_type_sb_responsible_colony
+		is_subject_type = subject_type_sb_responsible_colony_monarchy
+		is_subject_type = subject_type_sb_boer_confederal_partner
+	}
+}
+
+sb_imperial_confederation_all_participants_level_1_british_subjects = {
+	NOT = {
+		any_country = {
+			sb_is_imperial_confederation_participant = yes
+			is_country_alive = yes
+			NOT = { sb_is_imperial_confederation_level_1_british_subject = yes }
+		}
+	}
+}
+
+sb_is_imperial_confederation_saf_candidate = {
+	sb_is_imperial_confederation_participant = yes
+	sb_is_imperial_confederation_level_1_british_subject = yes
 }
 
 sb_is_outside_british_imperial_network = {
@@ -234,39 +283,27 @@ sb_boer_has_non_british_sea_access = {
 				}
 			}
 		}
-		AND = {
-			c:XHT ?= { sb_is_non_british_port_owner = yes }
-			any_scope_treaty = {
-				binds = c:XHT
-				any_scope_article = {
-					has_type = transit_rights
-					source_country = c:XHT
-					target_country = root
+			AND = {
+				c:XHO ?= { sb_is_non_british_port_owner = yes }
+				any_scope_treaty = {
+					binds = c:XHO
+					any_scope_article = {
+						has_type = transit_rights
+						target_country = root
+					}
 				}
 			}
-		}
-		AND = {
-			c:XHR ?= { sb_is_non_british_port_owner = yes }
-			any_scope_treaty = {
-				binds = c:XHR
-				any_scope_article = {
-					has_type = transit_rights
-					source_country = c:XHR
-					target_country = root
-				}
-			}
-		}
-		AND = {
-			c:XHG ?= { sb_is_non_british_port_owner = yes }
-			any_scope_treaty = {
-				binds = c:XHG
-				any_scope_article = {
-					has_type = transit_rights
-					source_country = c:XHG
-					target_country = root
-				}
-			}
-		}
+	}
+}
+
+sb_imperial_confederation_sea_access_failure_ready = {
+	any_country = {
+		sb_is_imperial_confederation_participant = yes
+		country_has_primary_culture = cu:boer
+		is_country_alive = yes
+		has_variable = sb_imperial_confederation_sea_access_warned_var
+		NOT = { has_variable = sb_imperial_confederation_sea_access_warning_var }
+		sb_boer_has_non_british_sea_access = yes
 	}
 }
 
@@ -348,28 +385,100 @@ sb_imperial_confederation_two_great_treks_completed = {
 }
 
 sb_imperial_confederation_all_participants_subjects_of_owner_network = {
-	NOT = {
+	sb_imperial_confederation_all_participants_level_1_british_subjects = yes
+}
+
+sb_imperial_confederation_has_unbound_independent_participant = {
+	OR = {
+		c:ORA ?= { sb_imperial_confederation_needs_trade_binding_from_gbr = yes }
+		c:TRN ?= { sb_imperial_confederation_needs_trade_binding_from_gbr = yes }
+		c:ZPB ?= { sb_imperial_confederation_needs_trade_binding_from_gbr = yes }
+		c:LYD ?= { sb_imperial_confederation_needs_trade_binding_from_gbr = yes }
+		c:NAL ?= { sb_imperial_confederation_needs_trade_binding_from_gbr = yes }
+		c:SGO ?= { sb_imperial_confederation_needs_trade_binding_from_gbr = yes }
+		c:CAP ?= { sb_imperial_confederation_needs_trade_binding_from_gbr = yes }
+		c:ABY ?= { sb_imperial_confederation_needs_trade_binding_from_gbr = yes }
+	}
+}
+
+sb_has_imperial_trade_binding_with_gbr = {
+	OR = {
+		has_variable = sb_imperial_trade_binding_var
+		sb_has_gbr_transit_access = yes
+	}
+}
+
+sb_has_gbr_transit_access = {
+	any_scope_treaty = {
+		binds = root
+		binds = c:GBR
+		any_scope_article = {
+			has_type = transit_rights
+			source_country = c:GBR
+			target_country = root
+		}
+	}
+}
+
+sb_has_gbr_power_bloc_embassy = {
+	any_scope_treaty = {
+		binds = root
+		binds = c:GBR
+		any_scope_article = {
+			has_type = host_power_bloc_embassy
+			source_country = root
+			target_country = c:GBR
+		}
+	}
+}
+
+sb_imperial_confederation_needs_trade_binding_from_gbr = {
+	sb_is_imperial_confederation_participant = yes
+	is_country_alive = yes
+	is_subject = no
+	NOT = { country_definition = cd:GBR }
+	NOT = { sb_has_imperial_trade_binding_with_gbr = yes }
+}
+
+sb_confederated_south_africa_has_expand_target = {
+	OR = {
+		c:GBR ?= {
+			any_scope_state = {
+				region = sr:region_southern_africa
+				is_under_colonization = no
+			}
+		}
 		any_country = {
-			sb_is_imperial_confederation_participant = yes
-			NOT = { this = root }
-			NOR = {
-				is_subject_of = root
-				AND = {
-					exists = top_overlord
-					top_overlord = c:GBR
-				}
+			is_country_alive = yes
+			is_ai = yes
+			is_at_war = no
+			is_active_in_diplomatic_play = no
+			NOT = { country_definition = cd:SAF }
+			sb_is_imperial_confederation_level_1_british_subject = yes
+			any_scope_state = {
+				region = sr:region_southern_africa
+				is_under_colonization = no
 			}
 		}
 	}
 }
 
-sb_imperial_confederation_has_unbound_independent_participant = {
-	any_country = {
-		sb_is_imperial_confederation_participant = yes
-		is_subject = no
-		NOT = { this = root }
-		NOT = { has_variable = sb_imperial_trade_binding_var }
-	}
+sb_confederated_south_africa_controls_required_region = {
+	owns_entire_state_region = STATE_CAPE_COLONY
+	owns_entire_state_region = STATE_EASTERN_CAPE
+	owns_entire_state_region = STATE_NORTHERN_CAPE
+	owns_entire_state_region = STATE_ZULULAND
+	owns_entire_state_region = STATE_TRANSVAAL
+	owns_entire_state_region = STATE_EAST_TRANSVAAL
+	owns_entire_state_region = STATE_NORTHERN_TRANSVAAL
+	owns_entire_state_region = STATE_VRYSTAAT
+	owns_entire_state_region = STATE_DRAKENSBERG
+	owns_entire_state_region = STATE_BOTSWANA
+	owns_entire_state_region = STATE_LOURENCO_MARQUES
+	owns_entire_state_region = STATE_ZAMBEZIA
+	owns_entire_state_region = STATE_ZAMBEZI
+	owns_entire_state_region = STATE_NAMAQUALAND
+	owns_entire_state_region = STATE_HEREROLAND
 }
 
 sb_delagoa_owner_outside_gbr_bloc = {

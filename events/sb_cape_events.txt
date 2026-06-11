@@ -271,8 +271,8 @@ sb_cape.102 = {
 	}
 }
 
-# Cape Qualified Franchise demand — fired from the first advance checkpoint
-# while CAP is enacting Cultural Exclusion. This keeps CQF tied to parliamentary
+# Cape Qualified Franchise demand — fired shortly after CAP starts enacting
+# Cultural Exclusion. This keeps CQF tied to parliamentary
 # reform politics rather than making it an automatic pragmatic-victory reward.
 sb_cape.130 = {
 	type = country_event
@@ -473,6 +473,7 @@ sb_cape.111 = {
 
 	option = {
 		name = sb_cape.111.a
+		set_variable = sb_convict_transportation_scheme_unlocked_var
 		set_variable = sb_convict_transportation_scheme_event_var
 		active_law:lawgroup_migration ?= {
 			if = {
@@ -481,7 +482,7 @@ sb_cape.111 = {
 				}
 				add_amendment = {
 					type = amendment_sb_convict_transportation_scheme
-					sponsor = PREV.ig:ig_landowners
+					sponsor = PREV.ig:ig_devout
 				}
 			}
 		}
@@ -657,11 +658,11 @@ sb_cape.120 = {
 			}
 			start_enactment = law_type:law_cultural_exclusion
 		}
-		set_strategy = ai_strategy_progressive_agenda
-		ai_chance = {
-			base = 80
+			set_strategy = ai_strategy_progressive_agenda
+			ai_chance = {
+				base = 70
+			}
 		}
-	}
 
 	option = {
 		name = sb_cape.120.b
@@ -673,11 +674,11 @@ sb_cape.120 = {
 				name = sb_cape_liberal_refused
 				months = 60
 			}
+			}
+			ai_chance = {
+				base = 30
+			}
 		}
-		ai_chance = {
-			base = 20
-		}
-	}
 }
 
 # If the liberals dominate without any colonial law in force, Godlonton or the
@@ -778,11 +779,11 @@ sb_cape.121 = {
 			}
 			start_enactment = law_type:law_frontier_colonization
 		}
-		set_strategy = ai_strategy_conservative_agenda
-		ai_chance = {
-			base = 80
+			set_strategy = ai_strategy_conservative_agenda
+			ai_chance = {
+				base = 70
+			}
 		}
-	}
 
 	option = {
 		name = sb_cape.121.b
@@ -794,11 +795,11 @@ sb_cape.121 = {
 				name = sb_cape_settler_refused
 				months = 60
 			}
+			}
+			ai_chance = {
+				base = 30
+			}
 		}
-		ai_chance = {
-			base = 20
-		}
-	}
 }
 
 sb_cape.122 = {
@@ -889,11 +890,11 @@ sb_cape.122 = {
 			}
 			start_enactment = law_type:law_frontier_colonization
 		}
-		set_strategy = ai_strategy_conservative_agenda
-		ai_chance = {
-			base = 80
+			set_strategy = ai_strategy_conservative_agenda
+			ai_chance = {
+				base = 70
+			}
 		}
-	}
 
 	option = {
 		name = sb_cape.122.b
@@ -905,166 +906,14 @@ sb_cape.122 = {
 				name = sb_cape_settler_refused
 				months = 60
 			}
+			}
+			ai_chance = {
+				base = 30
+			}
 		}
-		ai_chance = {
-			base = 20
-		}
-	}
 }
 
-# Late constitutional demand — if the Cape question is still unresolved by the
-# mid-1870s, the liberal movement forces the missing legal settlement back onto
-# the ministry's desk.
-sb_cape.123 = {
-	type = country_event
-	placement = root
-
-	title = sb_cape.123.t
-	desc = sb_cape.123.d
-	flavor = sb_cape.123.f
-
-	event_image = {
-		video = "gfx/event_pictures/europenorthamerica_sufferage.bk2"
-	}
-
-	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-	icon = "gfx/interface/icons/principles_icons/creative_legislature.dds"
-	duration = 3
-
-	trigger = {
-		country_definition = cd:CAP
-		has_journal_entry = je_sb_cape_politics
-		NOT = {
-			OR = {
-				has_law = law_type:law_cultural_exclusion
-				has_law_or_variant = law_type:law_multicultural
-			}
-		}
-	}
-
-	option = {
-		name = sb_cape.123.a
-		default_option = yes
-		custom_tooltip = sb_cape.123.a.tt
-		add_modifier = {
-			name = sb_cape_liberal_commitment
-			months = 24
-		}
-		set_variable = sb_cape_liberal_law_obligation_active_var
-		set_variable = {
-			name = sb_cape_liberal_law_obligation_due_var
-			days = 730
-		}
-		if = {
-			limit = {
-				is_ai = yes
-				NOT = { has_law = law_type:law_cultural_exclusion }
-			}
-			if = {
-				limit = { enacting_any_law = yes }
-				cancel_enactment = yes
-			}
-			start_enactment = law_type:law_cultural_exclusion
-		}
-		ai_chance = {
-			base = 80
-		}
-	}
-
-	option = {
-		name = sb_cape.123.b
-		every_political_movement = {
-			limit = {
-				is_political_movement_type = movement_sb_cape_liberal
-			}
-			add_modifier = {
-				name = sb_cape_liberal_deadline_broken
-				months = 60
-			}
-		}
-		ai_chance = {
-			base = 20
-		}
-	}
-}
-
-# Late frontier demand — if the Cape question still hangs open by the
-# mid-1870s, the eastern bloc insists that frontier policy be settled in law.
-sb_cape.124 = {
-	type = country_event
-	placement = root
-
-	title = sb_cape.124.t
-	desc = sb_cape.124.d
-	flavor = sb_cape.124.f
-
-	event_image = {
-		video = "gfx/event_pictures/africa_public_protest.bk2"
-	}
-
-	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-	icon = "gfx/interface/icons/principles_icons/creative_legislature.dds"
-	duration = 3
-
-	trigger = {
-		country_definition = cd:CAP
-		has_journal_entry = je_sb_cape_politics
-		NOT = {
-			OR = {
-				has_law = law_type:law_frontier_colonization
-				has_law = law_type:law_colonial_resettlement
-				has_law = law_type:law_colonial_exploitation
-			}
-		}
-	}
-
-	option = {
-		name = sb_cape.124.a
-		default_option = yes
-		custom_tooltip = sb_cape.124.a.tt
-		add_modifier = {
-			name = sb_cape_settler_commitment
-			months = 24
-		}
-		set_variable = sb_cape_settler_law_obligation_active_var
-		set_variable = {
-			name = sb_cape_settler_law_obligation_due_var
-			days = 730
-		}
-		if = {
-			limit = {
-				is_ai = yes
-				NOT = { has_law = law_type:law_frontier_colonization }
-			}
-			if = {
-				limit = { enacting_any_law = yes }
-				cancel_enactment = yes
-			}
-			start_enactment = law_type:law_frontier_colonization
-		}
-		ai_chance = {
-			base = 80
-		}
-	}
-
-	option = {
-		name = sb_cape.124.b
-		every_political_movement = {
-			limit = {
-				is_political_movement_type = movement_sb_eastern_cape_separatist
-			}
-			add_modifier = {
-				name = sb_cape_settler_deadline_broken
-				months = 60
-			}
-		}
-		ai_chance = {
-			base = 20
-		}
-	}
-}
-
-sb_cape.125 = {
+	sb_cape.125 = {
 	type = country_event
 	placement = root
 
@@ -1234,14 +1083,18 @@ sb_cape.020 = {
 		name = sb_cape.020.a
 		default_option = yes
 		je:je_sb_cape_politics ?= {
-			if = {
-				limit = { has_modifier = sb_cape_autonomy_pressure }
-				remove_modifier = sb_cape_autonomy_pressure
-			}
 			add_progress = {
 				value = 10
 				name = sb_cape_balance_bar
 			}
+		}
+		if = {
+			limit = {
+				has_modifier = sb_cape_autonomy_pressure
+				NOT = { has_variable = sb_cape_autonomy_pressure_resolution_pending_var }
+			}
+			set_variable = sb_cape_autonomy_pressure_resolution_pending_var
+			trigger_event = { id = sb_cape.031 days = 7 popup = yes }
 		}
 		add_modifier = {
 			name = sb_cape_favour_liberals
@@ -1262,90 +1115,86 @@ sb_cape.020 = {
 	}
 }
 
-sb_cape.021 = {
+sb_cape.030 = {
 	type = country_event
 	placement = root
 
-	title = sb_cape.021.t
-	desc = sb_cape.021.d
-	flavor = sb_cape.021.f
+	title = sb_cape.030.t
+	desc = sb_cape.030.d
+	flavor = sb_cape.030.f
 
 	event_image = {
-		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
+		video = "gfx/event_pictures/europenorthamerica_sufferage.bk2"
 	}
 
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-	icon = "gfx/interface/icons/event_icons/event_default.dds"
-	duration = 3
-
-	trigger = {
-		country_definition = cd:GBR
-		c:CAP ?= {
-			is_country_alive = yes
-			sb_cap_is_self_governing_colony = yes
-			has_variable = sb_cape_empire_trade_tie_pending_var
-		}
-	}
-
-	option = {
-		name = sb_cape.021.a
-		default_option = yes
-		sb_ensure_gbr_power_bloc_embassies_for_cape_frontier_network = yes
-		c:CAP ?= {
-			trigger_event = { id = sb_cape.022 days = 7 popup = yes }
-		}
-		ai_chance = {
-			base = 85
-		}
-	}
-
-	option = {
-		name = sb_cape.021.b
-		c:CAP ?= {
-			remove_variable = sb_cape_empire_trade_tie_pending_var
-			set_variable = sb_cape_empire_trade_tie_resolved_var
-		}
-		add_modifier = {
-			name = sb_prestige_loss_small
-			months = 60
-		}
-		ai_chance = {
-			base = 15
-		}
-	}
-}
-
-sb_cape.022 = {
-	type = country_event
-	placement = root
-
-	title = sb_cape.022.t
-	desc = sb_cape.022.d
-	flavor = sb_cape.022.f
-
-	event_image = {
-		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
-	}
-
-	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	icon = "gfx/interface/icons/principles_icons/creative_legislature.dds"
 	duration = 3
 
 	trigger = {
 		country_definition = cd:CAP
-		sb_cap_is_self_governing_colony = yes
-		has_variable = sb_cape_empire_trade_tie_pending_var
+		has_variable = sb_cape_autonomy_pressure_pending_var
+		is_subject_of = c:GBR
+		has_technology_researched = nationalism
+		NOT = {
+			OR = {
+				is_subject_type = subject_type_dominion
+				is_subject_type = subject_type_sb_dominion
+				is_subject_type = subject_type_sb_responsible_colony
+				is_subject_type = subject_type_sb_responsible_colony_monarchy
+			}
+		}
+		NOT = { has_modifier = sb_cape_autonomy_pressure }
 	}
 
 	option = {
-		name = sb_cape.022.a
+		name = sb_cape.030.a
 		default_option = yes
-		remove_variable = sb_cape_empire_trade_tie_pending_var
-		set_variable = sb_cape_empire_trade_tie_resolved_var
-		sb_ensure_cap_trade_through_for_cape_frontier_network = yes
-		ai_chance = {
-			base = 100
+		remove_variable = sb_cape_autonomy_pressure_pending_var
+		add_modifier = { name = sb_cape_autonomy_pressure }
+		ai_chance = { base = 100 }
+	}
+}
+
+sb_cape.031 = {
+	type = country_event
+	placement = root
+
+	title = sb_cape.031.t
+	desc = sb_cape.031.d
+	flavor = sb_cape.031.f
+
+	event_image = {
+		video = "gfx/event_pictures/europenorthamerica_political_extremism.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/principles_icons/creative_legislature.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:CAP
+		has_variable = sb_cape_autonomy_pressure_resolution_pending_var
+		has_modifier = sb_cape_autonomy_pressure
+		OR = {
+			NOT = { is_subject_of = c:GBR }
+			is_subject_type = subject_type_dominion
+			is_subject_type = subject_type_sb_dominion
+			is_subject_type = subject_type_sb_responsible_colony
+			is_subject_type = subject_type_sb_responsible_colony_monarchy
 		}
+	}
+
+	option = {
+		name = sb_cape.031.a
+		default_option = yes
+		remove_variable = sb_cape_autonomy_pressure_resolution_pending_var
+		if = {
+			limit = { has_variable = sb_cape_autonomy_pressure_pending_var }
+			remove_variable = sb_cape_autonomy_pressure_pending_var
+		}
+		remove_modifier = sb_cape_autonomy_pressure
+		ai_chance = { base = 100 }
 	}
 }
 
@@ -1467,24 +1316,24 @@ sb_cape.200 = {
 						}
 						add_primary_culture = cu:boer
 					}
+					if = {
+						limit = { has_law = law_type:law_legacy_slavery }
+						activate_law = law_type:law_discrete_inboekstelsel
+					}
+					if = {
+						limit = { NOT = { has_journal_entry = je_sb_inboekstelsel_system } }
+						add_journal_entry = { type = je_sb_inboekstelsel_system }
+					}
 				
 					change_relations = {
 						country = c:CAP
 						value = -40
 					}
-					change_tension = {
-						country = c:XHR
-						value = 100
+						change_tension = {
+							country = c:XHO
+							value = 100
+						}
 					}
-					change_tension = {
-						country = c:XHG
-						value = 100
-					}
-					change_tension = {
-						country = c:XHT
-						value = 100
-					}
-				}
 			}
 
 			s:STATE_EASTERN_CAPE = {

@@ -16,11 +16,10 @@ sb_nam.010 = {
 	icon = "gfx/interface/icons/event_icons/event_map.dds"
 	duration = 3
 
-	trigger = {
-		country_definition = cd:GER
-		game_date >= 1869.11.11
-		game_date <= 1875.12.31
-		NOT = { has_variable = sb_nam_colonial_prestige_resolved_var }
+		trigger = {
+			country_definition = cd:GER
+			game_date >= 1870.1.1
+			NOT = { has_variable = sb_nam_colonial_prestige_resolved_var }
 		NOT = { has_law = law_type:law_frontier_colonization }
 		NOT = { has_law = law_type:law_colonial_resettlement }
 		NOT = { has_law = law_type:law_colonial_exploitation }
@@ -34,17 +33,17 @@ sb_nam.010 = {
 		}
 	}
 
-	option = {
-		name = sb_nam.010.a
-		default_option = yes
-		custom_tooltip = sb_nam_010_a_tt
-		hidden_effect = {
-			set_variable = sb_nam_colonial_prestige_resolved_var
-			set_variable = sb_nam_angra_pequena_purchase_pending_var
-			random_law = {
-				limit = {
-					type = law_type:law_colonial_exploitation
-				}
+		option = {
+			name = sb_nam.010.a
+			default_option = yes
+			custom_tooltip = sb_nam_010_a_tt
+			hidden_effect = {
+				set_variable = sb_nam_colonial_prestige_resolved_var
+				set_variable = sb_nam_colonial_programme_backed_var
+				random_law = {
+					limit = {
+						type = law_type:law_colonial_exploitation
+					}
 				save_scope_as = sb_nam_promised_law
 			}
 			if = {
@@ -107,7 +106,6 @@ sb_nam.010 = {
 				}
 				start_enactment = law_type:law_colonial_exploitation
 			}
-			sb_nam_schedule_angra_pequena_purchase = yes
 		}
 	}
 
@@ -156,14 +154,14 @@ sb_nam.011 = {
 	icon = "gfx/interface/icons/event_icons/event_trade.dds"
 	duration = 3
 
-	trigger = {
-		country_definition = cd:GER
-		game_date >= 1883.1.1
-		NOT = { has_variable = sb_nam_angra_pequena_purchased_var }
-		NOT = { has_variable = sb_nam_angra_pequena_purchase_declined_var }
-		OR = {
-			has_law = law_type:law_colonial_resettlement
-			has_law = law_type:law_colonial_exploitation
+		trigger = {
+			country_definition = cd:GER
+			has_technology_researched = malaria_prevention
+			NOT = { has_variable = sb_nam_angra_pequena_purchased_var }
+			NOT = { has_variable = sb_nam_angra_pequena_purchase_declined_var }
+			OR = {
+				has_law = law_type:law_colonial_resettlement
+				has_law = law_type:law_colonial_exploitation
 		}
 		NOT = {
 			any_scope_state = {
@@ -171,14 +169,17 @@ sb_nam.011 = {
 				owner = root
 				num_provinces >= 1
 			}
-		}
-		p:xDEAA3C.state.owner = {
-			is_country_type = decentralized
-		}
-		c:CAP ?= {
-			NOT = {
-				any_scope_state = {
-					state_region = s:STATE_NAMAQUALAND
+			}
+			p:xDEAA3C.state.owner = {
+				is_country_type = decentralized
+			}
+			p:xB04050.state.owner = {
+				is_country_type = decentralized
+			}
+			c:CAP ?= {
+				NOT = {
+					any_scope_state = {
+						state_region = s:STATE_NAMAQUALAND
 					owner = prev
 					num_provinces >= 2
 				}
@@ -193,17 +194,28 @@ sb_nam.011 = {
 		hidden_effect = {
 			add_treasury = -100000
 			set_variable = sb_nam_angra_pequena_purchased_var
-			if = {
-				limit = { has_variable = sb_nam_angra_pequena_purchase_pending_var }
-				remove_variable = sb_nam_angra_pequena_purchase_pending_var
-			}
-			s:STATE_NAMAQUALAND = {
-				set_owner_of_provinces = {
-					country = root
-					provinces = { xDEAA3C }
+				if = {
+					limit = { has_variable = sb_nam_angra_pequena_purchase_pending_var }
+					remove_variable = sb_nam_angra_pequena_purchase_pending_var
 				}
-				add_claim = root
-			}
+				add_involvement = {
+					strategic_region = sr:region_southern_africa
+					value = 2500
+				}
+				s:STATE_NAMAQUALAND = {
+					set_owner_of_provinces = {
+						country = root
+						provinces = { xDEAA3C }
+					}
+					add_claim = root
+				}
+				s:STATE_HEREROLAND = {
+					set_owner_of_provinces = {
+						country = root
+						provinces = { xB04050 }
+					}
+					add_claim = root
+				}
 			if = {
 				limit = {
 					any_scope_state = {
@@ -222,13 +234,6 @@ sb_nam.011 = {
 						reserves = 1
 					}
 				}
-			}
-			if = {
-				limit = {
-					NOT = { has_technology_researched = malaria_prevention }
-					can_research = malaria_prevention
-				}
-				add_technology_progress = { progress = 7500 technology = malaria_prevention }
 			}
 		}
 		ai_chance = { base = 1 }

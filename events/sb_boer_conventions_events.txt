@@ -39,6 +39,7 @@ sb_boer_conventions.140 = {
 	option = {
 		name = sb_boer_conventions.140.a
 		default_option = yes
+		custom_tooltip = sb_boer_conventions_abolition_commitment_tt
 		remove_variable = sb_sand_river_convention_pending_var
 		set_variable = sb_sand_river_convention_resolved_var
 		set_variable = sb_sand_river_convention_accepted_var
@@ -109,6 +110,7 @@ sb_boer_conventions.141 = {
 	option = {
 		name = sb_boer_conventions.141.a
 		default_option = yes
+		custom_tooltip = sb_boer_conventions_abolition_commitment_tt
 		remove_variable = sb_bloemfontein_convention_pending_var
 		set_variable = sb_bloemfontein_convention_resolved_var
 		set_variable = sb_bloemfontein_convention_accepted_var
@@ -177,30 +179,30 @@ sb_boer_conventions.142 = {
 		if = {
 			limit = {
 				exists = scope:highveld_target
-					scope:highveld_target ?= {
-						is_country_alive = yes
-						is_subject = no
-						is_at_war = no
-						is_active_in_diplomatic_play = no
-						aggressive_diplomatic_plays_permitted = yes
-						sb_has_any_slavery_law = yes
-					}
-					aggressive_diplomatic_plays_permitted = yes
+				scope:highveld_target ?= {
+					is_country_alive = yes
+					is_subject = no
 					is_at_war = no
 					is_active_in_diplomatic_play = no
+					aggressive_diplomatic_plays_permitted = yes
+					sb_has_any_slavery_law = yes
 				}
-				scope:highveld_target ?= {
-					if = {
-						limit = { has_variable = sb_gbr_highveld_slavery_response_pending_var }
-						remove_variable = sb_gbr_highveld_slavery_response_pending_var
-						set_variable = sb_gbr_highveld_slavery_response_consumed_var
-					}
-					if = {
-						limit = { has_variable = sb_gbr_highveld_zpb_response_pending_var }
-						remove_variable = sb_gbr_highveld_zpb_response_pending_var
-						set_variable = sb_gbr_highveld_zpb_response_consumed_var
-					}
-					if = {
+				aggressive_diplomatic_plays_permitted = yes
+				is_at_war = no
+				is_active_in_diplomatic_play = no
+			}
+			scope:highveld_target ?= {
+				if = {
+					limit = { has_variable = sb_gbr_highveld_slavery_response_pending_var }
+					remove_variable = sb_gbr_highveld_slavery_response_pending_var
+					set_variable = sb_gbr_highveld_slavery_response_consumed_var
+				}
+				if = {
+					limit = { has_variable = sb_gbr_highveld_zpb_response_pending_var }
+					remove_variable = sb_gbr_highveld_zpb_response_pending_var
+					set_variable = sb_gbr_highveld_zpb_response_consumed_var
+				}
+				if = {
 					limit = { is_country_type = recognized }
 					set_country_type = unrecognized
 				}
@@ -213,6 +215,18 @@ sb_boer_conventions.142 = {
 			create_diplomatic_play = {
 				type = dp_ban_slavery
 				target_country = scope:highveld_target
+			}
+			random_diplomatic_play = {
+				limit = {
+					initiator = root
+					target = scope:highveld_target
+					is_diplomatic_play_type = dp_ban_slavery
+				}
+				add_war_goal = {
+					holder = root
+					target_country = scope:highveld_target
+					type = make_protectorate
+				}
 			}
 		}
 		else_if = {
@@ -245,8 +259,45 @@ sb_boer_conventions.142 = {
 				}
 				trigger_event = { id = sb_boer_conventions.142 days = 90 popup = no }
 			}
+	}
+}
+
+sb_boer_conventions.160 = {
+	type = country_event
+	placement = root
+
+	title = sb_boer_conventions.160.t
+	desc = sb_boer_conventions.160.d
+	flavor = sb_boer_conventions.160.f
+
+	event_image = {
+		video = "gfx/event_pictures/europenorthamerica_political_extremism.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:ABY
+		is_country_alive = yes
+		is_subject_of = c:GBR
+		has_variable = sb_albany_abolition_pending_var
+		sb_has_any_slavery_law = yes
+	}
+
+	option = {
+		name = sb_boer_conventions.160.a
+		default_option = yes
+		remove_variable = sb_albany_abolition_pending_var
+		set_variable = sb_albany_abolition_imposed_var
+		activate_law = law_type:law_slavery_banned
+		change_relations = {
+			country = c:GBR
+			value = 10
 		}
 	}
+}
 
 sb_boer_conventions.143 = {
 	type = country_event
@@ -287,6 +338,7 @@ sb_boer_conventions.143 = {
 	option = {
 		name = sb_boer_conventions.143.a
 		default_option = yes
+		custom_tooltip = sb_boer_conventions_zpb_crackdown_warning_tt
 		remove_variable = sb_zpb_lawlessness_pending_var
 		set_variable = sb_zpb_crackdown_active_var
 		s:STATE_NORTHERN_TRANSVAAL = {
@@ -318,7 +370,7 @@ sb_boer_conventions.143 = {
 		name = sb_boer_conventions.143.b
 		custom_tooltip = sb_boer_conventions_zpb_frontier_spirit_warning_tt
 		remove_variable = sb_zpb_lawlessness_pending_var
-		set_variable = sb_zpb_lawlessness_resolved_var
+		sb_open_trn_zpb_frontier_unity_path = yes
 		trigger_event = { id = sb_boer_conventions.145 days = 14 popup = yes }
 		ai_chance = {
 			base = 20
@@ -960,39 +1012,7 @@ sb_boer_conventions.150 = {
 		default_option = yes
 		sb_open_trn_zpb_crackdown_play = yes
 		ai_chance = {
-			base = 80
-			modifier = {
-				trigger = { sb_frontier_ai_behavior_strict_historical = yes }
-				add = 20
-			}
-			modifier = {
-				trigger = { sb_frontier_ai_behavior_off = yes }
-				add = -1000
-			}
-		}
-	}
-
-	option = {
-		name = sb_boer_conventions.150.b
-		if = {
-			limit = { has_variable = sb_zpb_crackdown_active_var }
-			remove_variable = sb_zpb_crackdown_active_var
-		}
-		if = {
-			limit = { NOT = { has_variable = sb_zpb_lawlessness_resolved_var } }
-			set_variable = sb_zpb_lawlessness_resolved_var
-		}
-		trigger_event = { id = sb_boer_conventions.145 days = 7 popup = yes }
-		ai_chance = {
-			base = 20
-			modifier = {
-				trigger = { sb_frontier_ai_behavior_strict_historical = yes }
-				add = -20
-			}
-			modifier = {
-				trigger = { sb_frontier_ai_behavior_off = yes }
-				add = 1000
-			}
+			base = 100
 		}
 	}
 }

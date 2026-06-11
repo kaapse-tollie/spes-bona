@@ -1,0 +1,68 @@
+﻿# Spes Bona - Bechuanaland Corridor / Caprivi Crisis
+
+je_sb_bechuanaland_corridor = {
+	group = je_group_global_international_situations
+
+	icon = "gfx/interface/icons/event_icons/waving_flag.dds"
+	scripted_progress_bar = sb_bechuanaland_boer_swa_influence_bar
+
+	should_be_involved = {
+		sb_bechuanaland_is_involved_actor = yes
+	}
+
+	should_show_when_not_involved = {
+		always = no
+	}
+
+	is_shown_when_inactive = {
+		always = no
+	}
+
+	possible = {
+		has_global_variable = sb_bechuanaland_corridor_open_global_var
+		NOT = { has_global_variable = sb_bechuanaland_corridor_resolved_global_var }
+	}
+
+	scripted_button = je_sb_bechuanaland_sponsor_boer_settlers_button
+	scripted_button = je_sb_bechuanaland_send_warren_expedition_button
+	scripted_button = je_sb_bechuanaland_gbr_direct_warren_button
+	scripted_button = je_sb_bechuanaland_demand_caprivi_button
+	scripted_button = je_sb_bechuanaland_formalize_british_corridor_button
+	scripted_button = je_sb_bechuanaland_formalize_boer_swa_corridor_button
+	scripted_button = je_sb_bechuanaland_send_crisis_support_button
+
+	status_desc = {
+		desc = je_sb_bechuanaland_corridor_status
+	}
+
+	custom_completion_header = je_sb_bechuanaland_corridor_british_victory_header
+
+	complete = {
+		has_global_variable = sb_bechuanaland_british_victory_global_var
+	}
+
+	on_complete = {
+		sb_bechuanaland_apply_british_settlement = yes
+	}
+
+	custom_failure_header = je_sb_bechuanaland_corridor_boer_swa_victory_header
+
+	fail = {
+		has_global_variable = sb_bechuanaland_boer_swa_victory_global_var
+	}
+
+	on_fail = {
+		sb_bechuanaland_apply_boer_swa_settlement = yes
+	}
+
+	invalid = {
+		OR = {
+			has_global_variable = sb_bechuanaland_corridor_resolved_global_var
+			NOT = { has_global_variable = sb_bechuanaland_corridor_open_global_var }
+		}
+	}
+
+	weight = 1000
+	should_be_pinned_by_default_involved = yes
+	should_be_pinned_by_default_uninvolved_or_context = yes
+}

@@ -1,0 +1,604 @@
+﻿# Spes Bona - Kimberley and Griqualand West helpers
+
+# Kimberley starts as a direct WBL building. Resource potential is delayed
+# until the sovereignty chain resolves to avoid split Northern Cape leakage.
+
+sb_griqualand_west_save_country_loc_scopes = {
+	c:CAP ?= {
+		if = {
+			limit = { is_country_alive = yes }
+			save_scope_as = sb_cap_scope
+		}
+	}
+
+	if = {
+		limit = {
+			c:TRN ?= {
+				is_country_alive = yes
+				OR = {
+					has_variable = sb_kimberley_oranje_proxy_var
+					has_variable = sb_kimberley_ora_pressed_claim_var
+					c:ORA ?= {
+						is_country_alive = yes
+						is_direct_subject_of = c:TRN
+						OR = {
+							is_subject_type = subject_type_sb_boer_presidential_union
+							is_subject_type = subject_type_sb_boer_confederal_partner
+						}
+					}
+				}
+			}
+		}
+		c:TRN ?= { save_scope_as = sb_oranje_claimant_scope }
+	}
+	else_if = {
+		limit = {
+			c:ORA ?= { is_country_alive = yes }
+		}
+		c:ORA ?= { save_scope_as = sb_oranje_claimant_scope }
+	}
+
+	if = {
+		limit = {
+			c:WBL ?= { is_country_alive = yes }
+		}
+		c:WBL ?= { save_scope_as = sb_local_authority_scope }
+	}
+	else = {
+		save_scope_as = sb_local_authority_scope
+	}
+
+	if = {
+		limit = { has_variable = sb_griqualand_west_cap_annexation_demand_var }
+		c:CAP ?= { save_scope_as = sb_demanding_claimant_scope }
+	}
+	else_if = {
+		limit = { has_variable = sb_griqualand_west_trn_submission_demand_var }
+		c:TRN ?= { save_scope_as = sb_demanding_claimant_scope }
+	}
+	else_if = {
+		limit = { has_variable = sb_griqualand_west_ora_submission_demand_var }
+		c:ORA ?= { save_scope_as = sb_demanding_claimant_scope }
+	}
+}
+
+sb_kimberley_create_initial_diamond_mine = {
+	if = {
+		limit = {
+			NOT = { has_building = building_diamond_mine }
+		}
+		create_building = {
+			building = building_diamond_mine
+			level = 1
+			reserves = 1
+			activate_production_methods = {
+				"pm_picks_and_shovels_building_gold_mine"
+				"pm_no_explosives"
+				"pm_no_steam_automation"
+				"pm_road_carts"
+			}
+		}
+	}
+}
+
+sb_kimberley_add_remaining_diamond_mine_levels = {
+	if = {
+		limit = {
+			has_building = building_diamond_mine
+		}
+		remove_building = building_diamond_mine
+	}
+	create_building = {
+		building = building_diamond_mine
+		level = 20
+		reserves = 1
+		activate_production_methods = {
+			"pm_picks_and_shovels_building_gold_mine"
+			"pm_no_explosives"
+			"pm_no_steam_automation"
+			"pm_road_carts"
+		}
+	}
+}
+
+sb_kimberley_discover_diamonds = {
+	if = {
+		limit = { has_global_variable = sb_kimberley_discovery_pending_var }
+		remove_global_variable = sb_kimberley_discovery_pending_var
+	}
+	set_global_variable = sb_kimberley_discovered_global_var
+	sb_kimberley_discover_initial_diamond_mines_in_kimberley_state = yes
+	c:CAP ?= {
+		if = {
+			limit = { is_country_alive = yes }
+			set_variable = sb_griqualand_west_question_active_var
+		}
+	}
+}
+
+sb_kimberley_discover_direct_owner_diamonds = {
+	if = {
+		limit = { has_global_variable = sb_kimberley_discovery_pending_var }
+		remove_global_variable = sb_kimberley_discovery_pending_var
+	}
+	set_global_variable = sb_kimberley_discovered_global_var
+	sb_kimberley_discover_initial_diamond_mines_in_kimberley_state = yes
+	sb_kimberley_seed_remaining_potential = yes
+}
+
+sb_kimberley_discover_initial_diamond_mines_in_kimberley_state = {
+	p:x68B5E8.state = {
+		sb_kimberley_create_initial_diamond_mine = yes
+	}
+}
+
+sb_kimberley_seed_remaining_potential = {
+	if = {
+		limit = {
+			NOT = { has_global_variable = sb_kimberley_remaining_potential_seeded_var }
+		}
+		set_global_variable = sb_kimberley_remaining_potential_seeded_var
+		p:x68B5E8.state = {
+			if = {
+				limit = {
+					NOT = { has_potential_resource = building_diamond_mine }
+				}
+				add_resource_potential = building_diamond_mine
+				change_resource_potential = {
+					type = building_diamond_mine
+					amount = 18
+				}
+			}
+			else = {
+				change_resource_potential = {
+					type = building_diamond_mine
+					amount = 19
+				}
+			}
+		}
+	}
+}
+
+sb_kimberley_discover_remaining_diamond_mines_in_kimberley_state = {
+	if = {
+		limit = {
+			NOT = { has_global_variable = sb_kimberley_remaining_potential_seeded_var }
+		}
+		set_global_variable = sb_kimberley_remaining_potential_seeded_var
+		p:x68B5E8.state = {
+			sb_kimberley_add_remaining_diamond_mine_levels = yes
+		}
+	}
+}
+
+sb_griqualand_west_clear_crisis_vars = {
+	if = {
+		limit = { has_global_variable = sb_kimberley_discovery_pending_var }
+		remove_global_variable = sb_kimberley_discovery_pending_var
+	}
+	c:CAP ?= {
+		if = { limit = { has_variable = sb_griqualand_west_question_active_var } remove_variable = sb_griqualand_west_question_active_var }
+		if = { limit = { has_variable = sb_kimberley_cap_ora_dispute_war_var } remove_variable = sb_kimberley_cap_ora_dispute_war_var }
+		if = { limit = { has_variable = sb_griqualand_west_cap_annexation_war_var } remove_variable = sb_griqualand_west_cap_annexation_war_var }
+		if = { limit = { has_variable = sb_griqualand_west_ora_submission_war_var } remove_variable = sb_griqualand_west_ora_submission_war_var }
+	}
+	c:ORA ?= {
+		if = { limit = { has_variable = sb_kimberley_ora_pressed_claim_var } remove_variable = sb_kimberley_ora_pressed_claim_var }
+		if = { limit = { has_variable = sb_kimberley_cap_ora_dispute_war_var } remove_variable = sb_kimberley_cap_ora_dispute_war_var }
+		if = { limit = { has_variable = sb_griqualand_west_cap_annexation_war_var } remove_variable = sb_griqualand_west_cap_annexation_war_var }
+		if = { limit = { has_variable = sb_griqualand_west_ora_submission_war_var } remove_variable = sb_griqualand_west_ora_submission_war_var }
+	}
+	c:TRN ?= {
+		if = { limit = { has_variable = sb_kimberley_ora_pressed_claim_var } remove_variable = sb_kimberley_ora_pressed_claim_var }
+		if = { limit = { has_variable = sb_kimberley_oranje_proxy_var } remove_variable = sb_kimberley_oranje_proxy_var }
+		if = { limit = { has_variable = sb_kimberley_cap_ora_dispute_war_var } remove_variable = sb_kimberley_cap_ora_dispute_war_var }
+		if = { limit = { has_variable = sb_griqualand_west_cap_annexation_war_var } remove_variable = sb_griqualand_west_cap_annexation_war_var }
+		if = { limit = { has_variable = sb_griqualand_west_ora_submission_war_var } remove_variable = sb_griqualand_west_ora_submission_war_var }
+	}
+	c:WBL ?= {
+		if = { limit = { has_variable = sb_griqualand_west_cap_annexation_demand_var } remove_variable = sb_griqualand_west_cap_annexation_demand_var }
+		if = { limit = { has_variable = sb_griqualand_west_ora_submission_demand_var } remove_variable = sb_griqualand_west_ora_submission_demand_var }
+		if = { limit = { has_variable = sb_griqualand_west_trn_submission_demand_var } remove_variable = sb_griqualand_west_trn_submission_demand_var }
+		if = { limit = { has_variable = sb_griqualand_west_cap_annexation_war_var } remove_variable = sb_griqualand_west_cap_annexation_war_var }
+		if = { limit = { has_variable = sb_griqualand_west_ora_submission_war_var } remove_variable = sb_griqualand_west_ora_submission_war_var }
+	}
+}
+
+sb_griqualand_west_mark_resolved = {
+	every_country = {
+		every_scope_state = {
+			limit = {
+				state_region = s:STATE_NORTHERN_CAPE
+				NOT = { has_modifier = sb_arid_interior_corridor }
+			}
+			add_modifier = { name = sb_arid_interior_corridor }
+		}
+	}
+	c:CAP ?= {
+		if = {
+			limit = { is_country_alive = yes }
+			set_variable = sb_griqualand_west_question_resolved_var
+			if = { limit = { has_variable = sb_griqualand_west_question_active_var } remove_variable = sb_griqualand_west_question_active_var }
+		}
+	}
+}
+
+sb_kimberley_finalize_cap_annexation_route = {
+	set_global_variable = sb_kimberley_cap_victory_global_var
+	set_global_variable = sb_bechuanaland_corridor_watch_global_var
+	c:WBL ?= {
+		if = {
+			limit = { is_country_alive = yes }
+				c:CAP ?= {
+					if = {
+						limit = { is_country_alive = yes }
+						if = {
+							limit = { c:WBL ?= { is_subject = yes } }
+							transfer_subject = c:WBL
+						}
+						annex = c:WBL
+					}
+				}
+			}
+	}
+	sb_kimberley_seed_remaining_potential = yes
+	sb_griqualand_west_mark_resolved = yes
+	sb_griqualand_west_clear_crisis_vars = yes
+	c:CAP ?= {
+		if = {
+			limit = { is_country_alive = yes }
+			trigger_event = { id = sb_griqualand_west.260 days = 14 popup = yes }
+		}
+	}
+}
+
+sb_kimberley_finalize_ora_puppet_route = {
+	set_global_variable = sb_kimberley_boer_victory_global_var
+	set_global_variable = sb_bechuanaland_corridor_watch_global_var
+	c:ORA ?= {
+		if = { limit = { is_country_alive = yes } set_variable = sb_kimberley_ora_claimant_var }
+	}
+	c:WBL ?= {
+		if = {
+			limit = {
+				is_country_alive = yes
+				NOT = { is_subject_of = c:ORA }
+			}
+			c:ORA ?= {
+				if = {
+					limit = {
+						is_country_alive = yes
+						c:WBL ?= { is_subject = yes }
+					}
+					transfer_subject = c:WBL
+				}
+				else_if = {
+					limit = { is_country_alive = yes }
+					create_diplomatic_pact = {
+						country = c:WBL
+						type = puppet
+					}
+				}
+			}
+		}
+		if = {
+			limit = {
+				is_country_alive = yes
+				is_subject_of = c:ORA
+				NOT = { is_subject_type = subject_type_puppet }
+			}
+			change_subject_type = subject_type_puppet
+		}
+	}
+	sb_kimberley_discover_remaining_diamond_mines_in_kimberley_state = yes
+	sb_griqualand_west_mark_resolved = yes
+	sb_griqualand_west_clear_crisis_vars = yes
+	c:WBL ?= {
+		if = {
+			limit = { is_country_alive = yes }
+			trigger_event = { id = sb_griqualand_west.260 days = 14 popup = yes }
+		}
+	}
+}
+
+sb_kimberley_finalize_trn_puppet_route = {
+	set_global_variable = sb_kimberley_boer_victory_global_var
+	set_global_variable = sb_bechuanaland_corridor_watch_global_var
+	c:TRN ?= {
+		if = { limit = { is_country_alive = yes } set_variable = sb_kimberley_trn_claimant_var }
+	}
+	c:WBL ?= {
+		if = {
+			limit = {
+				is_country_alive = yes
+				NOT = { is_subject_of = c:TRN }
+			}
+			c:TRN ?= {
+				if = {
+					limit = {
+						is_country_alive = yes
+						c:WBL ?= { is_subject = yes }
+					}
+					transfer_subject = c:WBL
+				}
+				else_if = {
+					limit = { is_country_alive = yes }
+					create_diplomatic_pact = {
+						country = c:WBL
+						type = puppet
+					}
+				}
+			}
+		}
+		if = {
+			limit = {
+				is_country_alive = yes
+				is_subject_of = c:TRN
+				NOT = { is_subject_type = subject_type_puppet }
+			}
+			change_subject_type = subject_type_puppet
+		}
+	}
+	sb_kimberley_discover_remaining_diamond_mines_in_kimberley_state = yes
+	sb_griqualand_west_mark_resolved = yes
+	sb_griqualand_west_clear_crisis_vars = yes
+	c:WBL ?= {
+		if = {
+			limit = { is_country_alive = yes }
+			trigger_event = { id = sb_griqualand_west.260 days = 14 popup = yes }
+		}
+	}
+}
+
+sb_kimberley_finalize_wbl_diamond_mines_route = {
+	set_global_variable = sb_bechuanaland_corridor_watch_global_var
+	sb_kimberley_discover_remaining_diamond_mines_in_kimberley_state = yes
+	sb_griqualand_west_mark_resolved = yes
+	sb_griqualand_west_clear_crisis_vars = yes
+	c:WBL ?= {
+		if = {
+			limit = { is_country_alive = yes }
+			trigger_event = { id = sb_griqualand_west.260 days = 14 popup = yes }
+		}
+	}
+}
+
+sb_griqualand_west_annul_wbl_guarantee = {
+	c:GBR ?= {
+		every_scope_treaty = {
+			limit = {
+				binds = c:WBL
+				any_scope_article = {
+					has_type = guarantee_independence
+					target_country = c:WBL
+				}
+			}
+			withdraw = {
+				country = c:GBR
+			}
+		}
+	}
+	every_scope_treaty = {
+		limit = {
+			binds = c:WBL
+			any_scope_article = {
+				has_type = guarantee_independence
+				target_country = c:WBL
+			}
+		}
+		withdraw = {
+			country = root
+		}
+	}
+}
+
+sb_griqualand_west_prepare_cap_annexation_demand = {
+	sb_griqualand_west_annul_wbl_guarantee = yes
+	c:WBL ?= {
+		if = { limit = { has_variable = sb_griqualand_west_ora_submission_demand_var } remove_variable = sb_griqualand_west_ora_submission_demand_var }
+		set_variable = sb_griqualand_west_cap_annexation_demand_var
+		trigger_event = { id = sb_griqualand_west.025 days = 7 popup = yes }
+	}
+}
+
+sb_griqualand_west_prepare_ora_submission_demand = {
+	sb_griqualand_west_annul_wbl_guarantee = yes
+	c:WBL ?= {
+		if = { limit = { has_variable = sb_griqualand_west_cap_annexation_demand_var } remove_variable = sb_griqualand_west_cap_annexation_demand_var }
+		if = {
+			limit = { root = { country_definition = cd:TRN } }
+			set_variable = sb_griqualand_west_trn_submission_demand_var
+		}
+		else = {
+			set_variable = sb_griqualand_west_ora_submission_demand_var
+		}
+		trigger_event = { id = sb_griqualand_west.025 days = 7 popup = yes }
+	}
+}
+
+sb_stellaland_goshen_create_from_boer_colony = {
+	if = {
+		limit = {
+			NOT = { exists = c:SGO }
+			s:STATE_NORTHERN_CAPE = {
+				any_scope_state = { owner = root }
+			}
+		}
+		random_scope_state = {
+			limit = {
+				state_region = s:STATE_NORTHERN_CAPE
+				owner = root
+			}
+			save_scope_as = sb_stellaland_goshen_colony_state
+		}
+		if = {
+			limit = { exists = scope:sb_stellaland_goshen_colony_state }
+			create_country = {
+				tag = SGO
+				origin = root
+				state = scope:sb_stellaland_goshen_colony_state
+				on_created = {
+					set_country_type = unrecognized
+					s:STATE_NORTHERN_CAPE = { add_claim = c:SGO }
+				}
+			}
+			sb_bechuanaland_ensure_sgo_protectorate_of_root = yes
+		}
+	}
+}
+
+sb_griqualand_east_create_march_state = {
+	set_variable = sb_griqualand_east_resolved_var
+
+	if = {
+		limit = {
+			NOT = { exists = c:GLE }
+		}
+		if = {
+			limit = { p:x708ADB.state.owner = c:XHO }
+			create_country = {
+				tag = GLE
+				origin = root
+				province = p:x708ADB
+			}
+		}
+		else_if = {
+			limit = { p:xCA8474.state.owner = c:XHO }
+			create_country = {
+				tag = GLE
+				origin = root
+				province = p:xCA8474
+			}
+		}
+		else_if = {
+			limit = { p:x678D6E.state.owner = c:XHO }
+			create_country = {
+				tag = GLE
+				origin = root
+				province = p:x678D6E
+			}
+		}
+		else_if = {
+			limit = { p:x7524D4.state.owner = c:XHO }
+			create_country = {
+				tag = GLE
+				origin = root
+				province = p:x7524D4
+			}
+		}
+	}
+
+	c:GLE ?= {
+		set_country_type = unrecognized
+		if = {
+			limit = {
+				NOT = { is_subject_of = root }
+			}
+			root = {
+				create_diplomatic_pact = {
+					country = c:GLE
+					type = puppet
+				}
+			}
+		}
+				if = {
+					limit = { p:x708ADB.state.owner = c:XHO }
+					s:STATE_EASTERN_CAPE = {
+						set_owner_of_provinces = {
+							country = c:GLE
+							provinces = { x708ADB }
+						}
+					}
+				}
+				if = {
+					limit = { p:xC57FEF.state.owner = c:XHO }
+					s:STATE_EASTERN_CAPE = {
+						set_owner_of_provinces = {
+							country = c:GLE
+							provinces = { xC57FEF }
+						}
+					}
+				}
+				if = {
+					limit = { p:xCA8474.state.owner = c:XHO }
+					s:STATE_EASTERN_CAPE = {
+						set_owner_of_provinces = {
+							country = c:GLE
+						provinces = { xCA8474 }
+					}
+				}
+			}
+			if = {
+				limit = { p:x678D6E.state.owner = c:XHO }
+				s:STATE_EASTERN_CAPE = {
+					set_owner_of_provinces = {
+						country = c:GLE
+						provinces = { x678D6E }
+					}
+				}
+			}
+			if = {
+				limit = { p:x7524D4.state.owner = c:XHO }
+				s:STATE_EASTERN_CAPE = {
+					set_owner_of_provinces = {
+						country = c:GLE
+						provinces = { x7524D4 }
+					}
+				}
+			}
+		change_relations = {
+			country = root
+			value = 30
+		}
+	}
+
+	p:xC5B1AF.state.owner = {
+		save_scope_as = griqua_migration_source
+	}
+	cu:griqua = {
+		save_scope_as = griqua_migration_culture
+	}
+	c:GLE ?= {
+		random_scope_state = {
+			limit = {
+				state_region = s:STATE_EASTERN_CAPE
+			}
+			save_scope_as = griqua_migration_target
+		}
+	}
+	scope:griqua_migration_target ?= {
+		create_mass_migration = {
+			origin = scope:griqua_migration_source
+			culture = scope:griqua_migration_culture
+		}
+	}
+	scope:griqua_migration_source ?= {
+		random_scope_state = {
+			limit = {
+				state_region = s:STATE_VRYSTAAT
+			}
+			every_scope_pop = {
+				limit = {
+					culture = cu:griqua
+				}
+				move_partial_pop = {
+					state = scope:griqua_migration_target
+					population_ratio = 0.20
+				}
+			}
+		}
+	}
+
+	if = {
+		limit = {
+			sb_cap_is_full_liberal_griqua_route = yes
+			c:GLE ?= {
+				is_country_alive = yes
+			}
+		}
+		c:GLE ?= {
+			set_variable = sb_gle_willing_annexation_pending_var
+			trigger_event = { id = sb_griqualand_east.221 days = 1825 popup = yes }
+		}
+	}
+}

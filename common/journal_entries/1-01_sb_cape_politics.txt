@@ -8,20 +8,20 @@
 #   shared bar, and the further from center, the worse the instability.
 #
 # PROGRESS BAR LAYOUT:
-#   -95 ........ -50 .......... 0 .......... 50 ........ 95
-#   Settler win    Settler adv   Balance   Liberal adv   Liberal win
+#   -90 ........ -60 .... -30 ... 0 ... 30 .... 60 ........ 90
+#   Settler win   dominant  adv  Balance adv  dominant   Liberal win
 #
 # 5-TIER STATUS DISPLAY:
-#   >= 50  Liberal Dominant
-#   >= 25  Liberal Advantage
-#   <= -50 Settler Dominant
-#   <= -25 Settler Advantage
+#   >= 60  Liberal Dominant
+#   >= 30  Liberal Advantage
+#   <= -60 Settler Dominant
+#   <= -30 Settler Advantage
 #   else   Balance (default fallback)
 #
 # COMPLETION CONDITIONS:
 #   - ECSL reaches crisis point --> CAP crisis event + London question
-#   - Liberal balance = 100 + Cultural Exclusion --> Liberal victory
-#   - Settler balance = -100 + frontier pacified --> Settler victory
+#   - Liberal balance >= 90 + Cultural Exclusion --> Liberal victory
+#   - Settler balance <= -90 + frontier pacified --> Settler victory
 #   - Balance remains centered + Cultural Exclusion + frontier pacified
 #       --> Pragmatic compromise
 # OUTCOME EVENTS:
@@ -69,7 +69,7 @@ je_sb_cape_politics = {
 	scripted_button = je_sb_cape_favour_settlers_button
 
 	# 5-tier status description — evaluated top-to-bottom via first_valid.
-	# Order matters: dominant checks (50/-50) must come before advantage checks (20/-20),
+	# Order matters: dominant checks (60/-60) must come before advantage checks (30/-30),
 	# and the balance fallback (always = yes) must be last.
 	status_desc = {
 		first_valid = {
@@ -77,7 +77,7 @@ je_sb_cape_politics = {
 				desc = je_sb_cape_politics_liberal_dominant
 				trigger = {
 					scope:journal_entry = {
-						"scripted_bar_progress(sb_cape_balance_bar)" >= 50
+						"scripted_bar_progress(sb_cape_balance_bar)" >= 60
 					}
 				}
 			}
@@ -85,7 +85,7 @@ je_sb_cape_politics = {
 				desc = je_sb_cape_politics_liberal_advantage
 				trigger = {
 					scope:journal_entry = {
-						"scripted_bar_progress(sb_cape_balance_bar)" >= 25
+						"scripted_bar_progress(sb_cape_balance_bar)" >= 30
 
 					}
 				}
@@ -95,7 +95,7 @@ je_sb_cape_politics = {
 				desc = je_sb_cape_politics_settler_dominant
 				trigger = {
 					scope:journal_entry = {
-						"scripted_bar_progress(sb_cape_balance_bar)" <= -50
+						"scripted_bar_progress(sb_cape_balance_bar)" <= -60
 					}
 				}
 			}
@@ -103,7 +103,7 @@ je_sb_cape_politics = {
 				desc = je_sb_cape_politics_settler_advantage
 				trigger = {
 					scope:journal_entry = {
-						"scripted_bar_progress(sb_cape_balance_bar)" <= -25
+						"scripted_bar_progress(sb_cape_balance_bar)" <= -30
 					}
 				}
 			}
@@ -126,7 +126,7 @@ je_sb_cape_politics = {
 				custom_tooltip = {
 					text = je_sb_cape_politics_complete_liberal
 					scope:journal_entry = {
-						"scripted_bar_progress(sb_cape_balance_bar)" >= 95
+						"scripted_bar_progress(sb_cape_balance_bar)" >= 90
 					}
 				}
 				custom_tooltip = {
@@ -138,24 +138,20 @@ je_sb_cape_politics = {
 					custom_tooltip = {
 						text = je_sb_cape_politics_complete_settler
 						scope:journal_entry = {
-							"scripted_bar_progress(sb_cape_balance_bar)" <= -95
+							"scripted_bar_progress(sb_cape_balance_bar)" <= -90
 						}
 					}
 					custom_tooltip = {
-						text = je_sb_cape_politics_complete_frontier_pacified
-						AND = {
-							NOT = { c:XHG ?= { is_country_alive = yes } }
-							NOT = { c:XHR ?= { is_country_alive = yes } }
-							NOT = { c:XHT ?= { is_country_alive = yes } }
-						}
+							text = je_sb_cape_politics_complete_frontier_pacified
+							NOT = { c:XHO ?= { is_country_alive = yes } }
 					}
 				}
 			AND = {
 				custom_tooltip = {
 					text = je_sb_cape_politics_complete_compromise
 					scope:journal_entry = {
-						"scripted_bar_progress(sb_cape_balance_bar)" >= -50
-						"scripted_bar_progress(sb_cape_balance_bar)" <= 50
+						"scripted_bar_progress(sb_cape_balance_bar)" >= -30
+						"scripted_bar_progress(sb_cape_balance_bar)" <= 30
 					}
 				}
 					custom_tooltip = {
@@ -163,12 +159,8 @@ je_sb_cape_politics = {
 						has_law = law_type:law_cultural_exclusion
 					}
 					custom_tooltip = {
-						text = je_sb_cape_politics_complete_frontier_pacified
-						AND = {
-							NOT = { c:XHG ?= { is_country_alive = yes } }
-							NOT = { c:XHR ?= { is_country_alive = yes } }
-							NOT = { c:XHT ?= { is_country_alive = yes } }
-						}
+							text = je_sb_cape_politics_complete_frontier_pacified
+							NOT = { c:XHO ?= { is_country_alive = yes } }
 					}
 			}
 
@@ -215,7 +207,7 @@ je_sb_cape_politics = {
 			else_if = {
 				limit = {
 					scope:journal_entry = {
-						"scripted_bar_progress(sb_cape_balance_bar)" >= 99
+						"scripted_bar_progress(sb_cape_balance_bar)" >= 90
 					}
 					has_law = law_type:law_cultural_exclusion
 				}
@@ -223,25 +215,21 @@ je_sb_cape_politics = {
 			}
 			else_if = {
 				limit = {
-					scope:journal_entry = {
-						"scripted_bar_progress(sb_cape_balance_bar)" <= -99
-					}
-					NOT = { c:XHG ?= { is_country_alive = yes } }
-					NOT = { c:XHR ?= { is_country_alive = yes } }
-					NOT = { c:XHT ?= { is_country_alive = yes } }
+						scope:journal_entry = {
+							"scripted_bar_progress(sb_cape_balance_bar)" <= -90
+						}
+						NOT = { c:XHO ?= { is_country_alive = yes } }
 				}
 				trigger_event = { id = sb_cape.101 popup = yes }
 			}
 			else_if = {
 				limit = {
-					scope:journal_entry = {
-						"scripted_bar_progress(sb_cape_balance_bar)" >= -24
-						"scripted_bar_progress(sb_cape_balance_bar)" <= 24
-					}
-					has_law = law_type:law_cultural_exclusion
-					NOT = { c:XHG ?= { is_country_alive = yes } }
-					NOT = { c:XHR ?= { is_country_alive = yes } }
-					NOT = { c:XHT ?= { is_country_alive = yes } }
+						scope:journal_entry = {
+							"scripted_bar_progress(sb_cape_balance_bar)" >= -30
+							"scripted_bar_progress(sb_cape_balance_bar)" <= 30
+						}
+						has_law = law_type:law_cultural_exclusion
+						NOT = { c:XHO ?= { is_country_alive = yes } }
 				}
 				trigger_event = { id = sb_cape.102 popup = yes }
 			}

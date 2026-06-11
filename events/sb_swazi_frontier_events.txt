@@ -69,6 +69,49 @@ sb_swazi_frontier.094 = {
 	option = {
 		name = sb_swazi_frontier.094.a
 		default_option = yes
+		hidden_effect = {
+				if = {
+					limit = {
+						is_ai = yes
+						sb_frontier_ai_scripting_enabled = yes
+						c:SWZ ?= {
+							is_country_alive = yes
+							is_ai = yes
+						}
+				}
+				if = {
+					limit = { has_variable = sb_zulu_swazi_ai_won_blood_river_var }
+					random_list = {
+						20 = { c:SWZ ?= { sb_swazi_raise_defensive_muster = yes } }
+						80 = { }
+					}
+				}
+				else_if = {
+					limit = { has_variable = sb_zulu_swazi_ai_lost_blood_river_var }
+					random_list = {
+						80 = { c:SWZ ?= { sb_swazi_raise_defensive_muster = yes } }
+						20 = { }
+					}
+				}
+				else_if = {
+					limit = { has_variable = sb_zulu_swazi_ai_honour_deal_var }
+					random_list = {
+						60 = { c:SWZ ?= { sb_swazi_raise_defensive_muster = yes } }
+						40 = { }
+					}
+				}
+				else_if = {
+					limit = { has_variable = sb_zulu_swazi_ai_guns_south_var }
+					random_list = {
+						40 = { c:SWZ ?= { sb_swazi_raise_defensive_muster = yes } }
+						60 = { }
+					}
+				}
+				else = {
+					c:SWZ ?= { sb_swazi_raise_defensive_muster = yes }
+				}
+			}
+		}
 		sb_zulu_clear_swazi_question_ai_context = yes
 		set_variable = sb_zulu_swazi_war_active_var
 		c:SWZ ?= {

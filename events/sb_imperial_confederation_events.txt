@@ -212,8 +212,54 @@ sb_imperial_confederation.051 = {
 	placement = root
 
 	title = sb_imperial_confederation.051.t
-	desc = sb_imperial_confederation.051.d
-	flavor = sb_imperial_confederation.051.f
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_global_variable = sb_imperial_confederation_failure_war_var }
+				desc = sb_imperial_confederation.051.d_war
+			}
+			triggered_desc = {
+				trigger = { has_global_variable = sb_imperial_confederation_failure_subject_escape_var }
+				desc = sb_imperial_confederation.051.d_subject_escape
+			}
+			triggered_desc = {
+				trigger = { has_global_variable = sb_imperial_confederation_failure_economic_var }
+				desc = sb_imperial_confederation.051.d_economic
+			}
+			triggered_desc = {
+				trigger = { has_global_variable = sb_imperial_confederation_failure_no_boers_var }
+				desc = sb_imperial_confederation.051.d_no_boers
+			}
+			triggered_desc = {
+				trigger = { always = yes }
+				desc = sb_imperial_confederation.051.d
+			}
+		}
+	}
+	flavor = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { has_global_variable = sb_imperial_confederation_failure_war_var }
+				desc = sb_imperial_confederation.051.f_war
+			}
+			triggered_desc = {
+				trigger = { has_global_variable = sb_imperial_confederation_failure_subject_escape_var }
+				desc = sb_imperial_confederation.051.f_subject_escape
+			}
+			triggered_desc = {
+				trigger = { has_global_variable = sb_imperial_confederation_failure_economic_var }
+				desc = sb_imperial_confederation.051.f_economic
+			}
+			triggered_desc = {
+				trigger = { has_global_variable = sb_imperial_confederation_failure_no_boers_var }
+				desc = sb_imperial_confederation.051.f_no_boers
+			}
+			triggered_desc = {
+				trigger = { always = yes }
+				desc = sb_imperial_confederation.051.f
+			}
+		}
+	}
 
 	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
@@ -232,6 +278,9 @@ sb_imperial_confederation.051 = {
 	option = {
 		name = sb_imperial_confederation.051.a
 		default_option = yes
+		c:GBR ?= {
+			add_modifier = { name = sb_imperial_confederation_failed_prestige months = 120 }
+		}
 	}
 }
 

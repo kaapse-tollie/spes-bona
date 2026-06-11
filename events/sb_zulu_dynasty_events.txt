@@ -27,6 +27,11 @@ sb_zulu_dynasty.090 = {
 
 	trigger = {
 		sb_is_zulu_dynasty_country = yes
+		has_variable = sb_zulu_dynastic_collapse_pending_var
+		has_journal_entry = je_sb_zulu_kingdom
+		je:je_sb_zulu_kingdom ?= {
+			"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 0
+		}
 	}
 
 	option = {
@@ -221,6 +226,43 @@ sb_zulu_dynasty.094 = {
 				name = sb_zulu_mpande_transition
 				months = 60
 			}
+		}
+	}
+}
+
+sb_zulu_dynasty.095 = {
+	type = country_event
+	placement = root
+
+	title = sb_zulu_dynasty.095.t
+	desc = sb_zulu_dynasty.095.d
+	flavor = sb_zulu_dynasty.095.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		sb_is_zulu_dynasty_country = yes
+		has_variable = sb_zulu_mpande_pretender_heir_pending_var
+	}
+
+	option = {
+		name = sb_zulu_dynasty.095.a
+		default_option = yes
+		remove_variable = sb_zulu_mpande_pretender_heir_pending_var
+		if = {
+			limit = {
+				ruler = {
+					has_template = ZUL_mpande_zulu
+				}
+				NOT = { has_variable = sb_zulu_dynasty_secured_var }
+			}
+			sb_zulu_prepare_gqugqu_heir = yes
 		}
 	}
 }

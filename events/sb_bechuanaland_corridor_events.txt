@@ -1,0 +1,262 @@
+﻿namespace = sb_bechuanaland_corridor
+
+sb_bechuanaland_corridor.001 = {
+	type = country_event
+	placement = root
+
+	title = sb_bechuanaland_corridor.001.t
+	desc = sb_bechuanaland_corridor.001.d
+	flavor = sb_bechuanaland_corridor.001.f
+
+	event_image = {
+		video = "africa_diplomats_negotiating"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_newspaper.dds"
+	duration = 3
+
+	immediate = { sb_bechuanaland_save_loc_scopes = yes }
+
+	trigger = {
+		has_journal_entry = je_sb_bechuanaland_corridor
+	}
+
+	option = {
+		name = sb_bechuanaland_corridor.001.a
+		default_option = yes
+	}
+}
+
+sb_bechuanaland_corridor.010 = {
+	type = country_event
+	placement = root
+
+	title = sb_bechuanaland_corridor.010.t
+	desc = sb_bechuanaland_corridor.010.d
+	flavor = sb_bechuanaland_corridor.010.f
+
+	event_image = {
+		video = "africa_diplomats_negotiating"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_newspaper.dds"
+	duration = 3
+
+	immediate = { sb_bechuanaland_save_loc_scopes = yes }
+
+	trigger = {
+		OR = {
+			has_variable = sb_bechuanaland_cap_warren_demand_var
+			has_variable = sb_bechuanaland_gbr_warren_demand_var
+		}
+	}
+
+	option = {
+		name = sb_bechuanaland_corridor.010.a
+		default_option = yes
+		custom_tooltip = sb_bechuanaland_corridor_010_backdown_tt
+		if = {
+			limit = { has_variable = sb_bechuanaland_gbr_warren_demand_var }
+			s:STATE_NORTHERN_CAPE = { add_claim = c:CAP }
+			sb_bechuanaland_annex_sgo_and_wbl_to_cap = yes
+		}
+		else = {
+			c:CAP ?= {
+				if = {
+					limit = { c:SGO ?= { is_country_alive = yes } }
+					if = { limit = { c:SGO ?= { is_subject = yes } } transfer_subject = c:SGO }
+					annex = c:SGO
+				}
+			}
+		}
+		set_global_variable = sb_bechuanaland_british_victory_global_var
+		ai_chance = {
+			base = 35
+		}
+	}
+
+	option = {
+		name = sb_bechuanaland_corridor.010.b
+		custom_tooltip = sb_bechuanaland_corridor_010_refuse_tt
+		sb_bechuanaland_prepare_swa_intervention_choice = yes
+		ai_chance = {
+			base = 65
+			modifier = {
+				trigger = {
+					c:CAP.army_power_projection > army_power_projection
+				}
+				add = -20
+			}
+		}
+	}
+}
+
+sb_bechuanaland_corridor.020 = {
+	type = country_event
+	placement = root
+
+	title = sb_bechuanaland_corridor.020.t
+	desc = sb_bechuanaland_corridor.020.d
+	flavor = sb_bechuanaland_corridor.020.f
+
+	event_image = {
+		video = "africa_diplomats_negotiating"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_newspaper.dds"
+	duration = 3
+
+	immediate = { sb_bechuanaland_save_loc_scopes = yes }
+
+	trigger = {
+		sb_bechuanaland_swa_overlord_candidate = yes
+		OR = {
+			has_variable = sb_bechuanaland_cap_warren_refusal_var
+			has_variable = sb_bechuanaland_gbr_warren_refusal_var
+		}
+	}
+
+	option = {
+		name = sb_bechuanaland_corridor.020.a
+		custom_tooltip = sb_bechuanaland_corridor_020_direct_tt
+		sb_bechuanaland_start_direct_gp_war = yes
+		ai_chance = {
+			base = 15
+			modifier = {
+				trigger = { has_variable = sb_bechuanaland_caprivi_conceded_var }
+				add = -10
+			}
+		}
+	}
+
+	option = {
+		name = sb_bechuanaland_corridor.020.b
+		custom_tooltip = sb_bechuanaland_corridor_020_proxy_tt
+		sb_bechuanaland_start_proxy_war = yes
+		ai_chance = {
+			base = 35
+			modifier = {
+				trigger = { has_variable = sb_bechuanaland_caprivi_conceded_var }
+				add = -15
+			}
+		}
+	}
+
+	option = {
+		name = sb_bechuanaland_corridor.020.c
+		default_option = yes
+		custom_tooltip = sb_bechuanaland_corridor_020_no_intervention_tt
+		if = {
+			limit = { has_variable = sb_bechuanaland_cap_warren_refusal_var }
+			sb_bechuanaland_start_cap_sgo_annex_war = yes
+		}
+		else_if = {
+			limit = { has_variable = sb_bechuanaland_gbr_warren_refusal_var }
+			sb_bechuanaland_start_gbr_direct_warren_war = yes
+		}
+		ai_chance = {
+			base = 50
+			modifier = {
+				trigger = { has_variable = sb_bechuanaland_caprivi_conceded_var }
+				add = 25
+			}
+		}
+	}
+}
+
+sb_bechuanaland_corridor.030 = {
+	type = country_event
+	placement = root
+
+	title = sb_bechuanaland_corridor.030.t
+	desc = sb_bechuanaland_corridor.030.d
+	flavor = sb_bechuanaland_corridor.030.f
+
+	event_image = {
+		video = "africa_diplomats_negotiating"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_newspaper.dds"
+	duration = 3
+
+	immediate = { sb_bechuanaland_save_loc_scopes = yes }
+
+	trigger = {
+		country_definition = cd:GBR
+		has_global_variable = sb_bechuanaland_corridor_open_global_var
+	}
+
+	option = {
+		name = sb_bechuanaland_corridor.030.a
+		default_option = yes
+		custom_tooltip = sb_bechuanaland_corridor_030_accept_tt
+		sb_bechuanaland_transfer_caprivi_to_swa = yes
+		every_country = {
+			limit = { sb_bechuanaland_swa_overlord_candidate = yes }
+			set_variable = sb_bechuanaland_caprivi_conceded_var
+		}
+		ai_chance = {
+			base = 45
+		}
+	}
+
+	option = {
+		name = sb_bechuanaland_corridor.030.b
+		custom_tooltip = sb_bechuanaland_corridor_030_reject_tt
+		every_country = {
+			limit = { sb_bechuanaland_swa_overlord_candidate = yes }
+			trigger_event = { id = sb_bechuanaland_corridor.031 days = 3 popup = yes }
+		}
+		ai_chance = {
+			base = 55
+		}
+	}
+}
+
+sb_bechuanaland_corridor.031 = {
+	type = country_event
+	placement = root
+
+	title = sb_bechuanaland_corridor.031.t
+	desc = sb_bechuanaland_corridor.031.d
+	flavor = sb_bechuanaland_corridor.031.f
+
+	event_image = {
+		video = "africa_diplomats_negotiating"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_newspaper.dds"
+	duration = 3
+
+	immediate = { sb_bechuanaland_save_loc_scopes = yes }
+
+	trigger = {
+		sb_bechuanaland_swa_overlord_candidate = yes
+	}
+
+	option = {
+		name = sb_bechuanaland_corridor.031.a
+		custom_tooltip = sb_bechuanaland_corridor_031_gp_tt
+		sb_bechuanaland_start_direct_gp_war = yes
+		ai_chance = { base = 20 }
+	}
+
+	option = {
+		name = sb_bechuanaland_corridor.031.b
+		custom_tooltip = sb_bechuanaland_corridor_031_proxy_tt
+		sb_bechuanaland_start_proxy_war = yes
+		ai_chance = { base = 45 }
+	}
+
+	option = {
+		name = sb_bechuanaland_corridor.031.c
+		default_option = yes
+		custom_tooltip = sb_bechuanaland_corridor_031_backdown_tt
+		ai_chance = { base = 35 }
+	}
+}

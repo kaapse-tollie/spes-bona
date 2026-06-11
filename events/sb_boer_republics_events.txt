@@ -4,7 +4,7 @@
 # Spes Bona - Boer Republic Events
 # =============================================================================
 # Ownership: immediate inland republic setup after the trek spine, including ZPB, LYD, and republican forks.
-# TOC: 007-009 British transit reactions, 110-121 ZPB split and play-as prompt, 130-131 constitutional fork and LYD spawn.
+# TOC: 007 British transit reaction, 110-121 ZPB split and play-as prompt, 130-131 constitutional fork and LYD spawn.
 # Cross-ref: common/scripted_effects/sb_trek_migration.txt, common/on_actions/sb_on_actions.txt
 # =============================================================================
 
@@ -48,106 +48,6 @@ sb_boer_republics.007 = {
 
 	option = {
 		name = sb_boer_republics.007.b
-		add_modifier = {
-			name = sb_prestige_loss_small
-			months = 60
-		}
-		ai_chance = {
-			base = 15
-		}
-	}
-}
-
-sb_boer_republics.008 = {
-	type = country_event
-	placement = root
-
-	title = sb_boer_republics.008.t
-	desc = sb_boer_republics.008.d
-	flavor = sb_boer_republics.008.f
-
-	event_image = {
-		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
-	}
-
-	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-	icon = "gfx/interface/icons/event_icons/event_default.dds"
-	duration = 3
-
-	trigger = {
-		country_definition = cd:GBR
-		c:ZPB ?= {
-			is_country_alive = yes
-		}
-	}
-
-	option = {
-		name = sb_boer_republics.008.a
-		default_option = yes
-		c:ZPB ?= {
-			sb_ensure_convention_trade_through_with_root = yes
-		}
-		change_relations = {
-			country = c:ZPB
-			value = 10
-		}
-		ai_chance = {
-			base = 85
-		}
-	}
-
-	option = {
-		name = sb_boer_republics.008.b
-		add_modifier = {
-			name = sb_prestige_loss_small
-			months = 60
-		}
-		ai_chance = {
-			base = 15
-		}
-	}
-}
-
-sb_boer_republics.009 = {
-	type = country_event
-	placement = root
-
-	title = sb_boer_republics.009.t
-	desc = sb_boer_republics.009.d
-	flavor = sb_boer_republics.009.f
-
-	event_image = {
-		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
-	}
-
-	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-	icon = "gfx/interface/icons/event_icons/event_default.dds"
-	duration = 3
-
-	trigger = {
-		country_definition = cd:GBR
-		c:LYD ?= {
-			is_country_alive = yes
-		}
-	}
-
-	option = {
-		name = sb_boer_republics.009.a
-		default_option = yes
-		c:LYD ?= {
-			sb_ensure_convention_trade_through_with_root = yes
-		}
-		change_relations = {
-			country = c:LYD
-			value = 10
-		}
-		ai_chance = {
-			base = 85
-		}
-	}
-
-	option = {
-		name = sb_boer_republics.009.b
 		add_modifier = {
 			name = sb_prestige_loss_small
 			months = 60
@@ -293,6 +193,21 @@ sb_boer_republics.121 = {
 
 	immediate = {
 		sb_ensure_live_boer_republic_compacts = yes
+		sb_cleanup_trn_generated_commanders = yes
+	}
+}
+
+sb_boer_republics.122 = {
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		country_definition = cd:ORA
+		is_country_alive = yes
+	}
+
+	immediate = {
+		sb_ensure_boer_anti_british_lobby = yes
 	}
 }
 

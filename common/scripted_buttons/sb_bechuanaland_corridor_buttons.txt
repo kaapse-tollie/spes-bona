@@ -1,0 +1,181 @@
+﻿# Spes Bona - Bechuanaland Corridor / Caprivi Crisis buttons
+
+je_sb_bechuanaland_sponsor_boer_settlers_button = {
+	name = "je_sb_bechuanaland_sponsor_boer_settlers_button"
+	desc = "je_sb_bechuanaland_sponsor_boer_settlers_button_desc"
+
+	visible = {
+		has_journal_entry = je_sb_bechuanaland_corridor
+		sb_bechuanaland_boer_actor = yes
+	}
+
+	possible = {
+		custom_tooltip = {
+			text = je_sb_bechuanaland_sponsor_boer_settlers_possible_tt
+			hidden_trigger = { sb_bechuanaland_can_sponsor_sgo = yes }
+		}
+	}
+
+	effect = {
+		sb_bechuanaland_create_sgo_beachhead_for_root = yes
+	}
+}
+
+je_sb_bechuanaland_send_warren_expedition_button = {
+	name = "je_sb_bechuanaland_send_warren_expedition_button"
+	desc = "je_sb_bechuanaland_send_warren_expedition_button_desc"
+
+	visible = {
+		has_journal_entry = je_sb_bechuanaland_corridor
+		country_definition = cd:CAP
+	}
+
+	possible = {
+		custom_tooltip = {
+			text = je_sb_bechuanaland_send_warren_expedition_possible_tt
+			hidden_trigger = {
+				is_subject_of = c:GBR
+				exists = c:SGO
+				NOT = { sb_bechuanaland_tsw_owns_nw_corridor_nc_land = yes }
+			}
+		}
+	}
+
+	effect = {
+		sb_bechuanaland_prepare_cap_warren_demand = yes
+	}
+}
+
+je_sb_bechuanaland_gbr_direct_warren_button = {
+	name = "je_sb_bechuanaland_gbr_direct_warren_button"
+	desc = "je_sb_bechuanaland_gbr_direct_warren_button_desc"
+
+	visible = {
+		has_journal_entry = je_sb_bechuanaland_corridor
+		country_definition = cd:GBR
+	}
+
+	possible = {
+		custom_tooltip = {
+			text = je_sb_bechuanaland_gbr_direct_warren_possible_tt
+			hidden_trigger = {
+				has_global_variable = sb_kimberley_boer_victory_global_var
+				sb_bechuanaland_sgo_or_wbl_in_boer_sphere = yes
+				c:CAP ?= { is_country_alive = yes }
+			}
+		}
+	}
+
+	effect = {
+		sb_bechuanaland_prepare_gbr_warren_demand = yes
+	}
+}
+
+je_sb_bechuanaland_demand_caprivi_button = {
+	name = "je_sb_bechuanaland_demand_caprivi_button"
+	desc = "je_sb_bechuanaland_demand_caprivi_button_desc"
+
+	visible = {
+		has_journal_entry = je_sb_bechuanaland_corridor
+		sb_bechuanaland_swa_overlord_candidate = yes
+	}
+
+	possible = {
+		custom_tooltip = {
+			text = je_sb_bechuanaland_demand_caprivi_possible_tt
+			hidden_trigger = {
+				sb_bechuanaland_caprivi_not_held_by_swa = yes
+				NOT = { has_variable = sb_bechuanaland_caprivi_demanded_var }
+			}
+		}
+	}
+
+	effect = {
+		set_variable = sb_bechuanaland_caprivi_demanded_var
+		c:GBR ?= { trigger_event = { id = sb_bechuanaland_corridor.030 days = 3 popup = yes } }
+	}
+}
+
+je_sb_bechuanaland_formalize_british_corridor_button = {
+	name = "je_sb_bechuanaland_formalize_british_corridor_button"
+	desc = "je_sb_bechuanaland_formalize_british_corridor_button_desc"
+
+	visible = {
+		has_journal_entry = je_sb_bechuanaland_corridor
+		OR = {
+			country_definition = cd:GBR
+			country_definition = cd:CAP
+		}
+	}
+
+	possible = {
+		custom_tooltip = {
+			text = je_sb_bechuanaland_formalize_british_possible_tt
+			hidden_trigger = { sb_bechuanaland_cap_controls_nw_corridor = yes }
+		}
+	}
+
+	effect = {
+		set_global_variable = sb_bechuanaland_british_victory_global_var
+	}
+}
+
+je_sb_bechuanaland_formalize_boer_swa_corridor_button = {
+	name = "je_sb_bechuanaland_formalize_boer_swa_corridor_button"
+	desc = "je_sb_bechuanaland_formalize_boer_swa_corridor_button_desc"
+
+	visible = {
+		has_journal_entry = je_sb_bechuanaland_corridor
+		OR = {
+			sb_bechuanaland_boer_actor = yes
+			sb_bechuanaland_swa_overlord_candidate = yes
+			country_definition = cd:SGO
+		}
+	}
+
+	possible = {
+		custom_tooltip = {
+			text = je_sb_bechuanaland_formalize_boer_swa_possible_tt
+			hidden_trigger = { sb_bechuanaland_sgo_controls_nw_corridor = yes }
+		}
+	}
+
+	effect = {
+		set_global_variable = sb_bechuanaland_boer_swa_victory_global_var
+	}
+}
+
+je_sb_bechuanaland_send_crisis_support_button = {
+	name = "je_sb_bechuanaland_send_crisis_support_button"
+	desc = "je_sb_bechuanaland_send_crisis_support_button_desc"
+
+	visible = {
+		has_journal_entry = je_sb_bechuanaland_corridor
+		OR = {
+			country_definition = cd:GBR
+			sb_bechuanaland_swa_overlord_candidate = yes
+		}
+	}
+
+	possible = {
+		custom_tooltip = {
+			text = je_sb_bechuanaland_send_crisis_support_possible_tt
+			hidden_trigger = {
+				has_global_variable = sb_bechuanaland_crisis_war_active_var
+				NOT = { has_variable = sb_bechuanaland_support_cooldown_var }
+			}
+		}
+	}
+
+	effect = {
+		set_variable = { name = sb_bechuanaland_support_cooldown_var months = 12 }
+		if = {
+			limit = { country_definition = cd:GBR }
+			sb_bechuanaland_apply_support_to_british_side = yes
+		}
+		else_if = {
+			limit = { sb_bechuanaland_swa_overlord_candidate = yes }
+			sb_bechuanaland_apply_support_to_boer_swa_side = yes
+		}
+	}
+}

@@ -10,6 +10,32 @@
 #   Blood River, Port Natal, and the Swazi question all feed back into the same
 #   dynastic-stability story rather than opening disconnected minigames.
 
+sb_zulu_sync_ai_dynasty_authority = {
+	if = {
+		limit = {
+			is_ai = yes
+			NOT = { has_modifier = sb_zulu_ai_dynasty_authority }
+		}
+		add_modifier = { name = sb_zulu_ai_dynasty_authority }
+	}
+	if = {
+		limit = {
+			NOT = { is_ai = yes }
+			has_modifier = sb_zulu_ai_dynasty_authority
+		}
+		remove_modifier = sb_zulu_ai_dynasty_authority
+	}
+}
+
+sb_zulu_clear_ai_dynasty_authority = {
+	if = {
+		limit = {
+			has_modifier = sb_zulu_ai_dynasty_authority
+		}
+		remove_modifier = sb_zulu_ai_dynasty_authority
+	}
+}
+
 sb_zulu_add_dynastic_stability_5 = {
 	if = {
 		limit = {
@@ -164,13 +190,24 @@ sb_boost_firearms_progress_minor = {
 # -----------------------------------------------------------------------------
 
 sb_zulu_apply_blood_river_victory = {
+	if = { limit = { has_variable = sb_zulu_dynastic_collapse_pending_var } remove_variable = sb_zulu_dynastic_collapse_pending_var }
 	set_variable = sb_zulu_blood_river_victory_var
-	sb_zulu_add_dynastic_stability_10 = yes
+	sb_zulu_add_dynastic_stability_20 = yes
 	sb_boost_firearms_progress_minor = yes
 }
 
 sb_zulu_apply_blood_river_defeat = {
 	sb_zulu_remove_dynastic_stability_10 = yes
+	random_scope_character = {
+		limit = {
+			has_template = ZUL_dingane
+			is_character_alive = yes
+		}
+		add_modifier = {
+			name = sb_dingane_humbled
+			months = 120
+		}
+	}
 	sb_boost_firearms_progress_minor = yes
 }
 

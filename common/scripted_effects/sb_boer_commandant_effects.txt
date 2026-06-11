@@ -46,6 +46,41 @@ sb_ensure_commandant_general_ruler_landowner_leadership = {
 	}
 }
 
+sb_force_ora_potgieter_commandant_general = {
+	if = {
+		limit = {
+			country_definition = cd:ORA
+			has_law = law_type:law_sb_commandant_general_republic
+			any_scope_character = {
+				has_template = ORA_hendrik_potgieter
+			}
+		}
+		random_scope_character = {
+			limit = {
+				has_template = ORA_hendrik_potgieter
+			}
+			set_interest_group = c:ORA.ig:ig_landowners
+			if = {
+				limit = {
+					NOT = { has_role_of_type = politician }
+				}
+				add_character_role = politician
+			}
+			set_as_interest_group_leader = yes
+			set_character_as_ruler = yes
+			if = {
+				limit = {
+					c:ORA ?= { exists = capital.land_hq }
+					age >= define:NCharacters|ADULT_AGE
+					age < 60
+					NOT = { has_role_of_type = general }
+				}
+				add_character_role = general
+			}
+		}
+	}
+}
+
 sb_transition_ruler_landowner_leadership = {
 	if = {
 		limit = {
@@ -115,6 +150,79 @@ sb_ensure_boer_supremacist_movement = {
 	}
 }
 
+sb_ensure_boer_republic_starting_commando = {
+	if = {
+		limit = {
+			country_has_primary_culture = cu:boer
+			NOT = { country_definition = cd:TRN }
+			army_size <= 0
+		}
+		if = {
+			limit = {
+				country_definition = cd:ZPB
+				any_scope_state = { state_region = s:STATE_NORTHERN_TRANSVAAL }
+			}
+			create_military_formation = {
+				type = army
+				hq_region = sr:region_southern_africa
+				name = zoutpansberg_commando
+				combat_unit = {
+					type = unit_type:combat_unit_type_dragoons
+					state_region = s:STATE_NORTHERN_TRANSVAAL
+					count = 1
+				}
+				combat_unit = {
+					type = unit_type:combat_unit_type_irregular_infantry
+					state_region = s:STATE_NORTHERN_TRANSVAAL
+					count = 1
+				}
+			}
+		}
+		else_if = {
+			limit = {
+				country_definition = cd:LYD
+				any_scope_state = { state_region = s:STATE_EAST_TRANSVAAL }
+			}
+			create_military_formation = {
+				type = army
+				hq_region = sr:region_southern_africa
+				name = lydenburg_commando
+				combat_unit = {
+					type = unit_type:combat_unit_type_dragoons
+					state_region = s:STATE_EAST_TRANSVAAL
+					count = 1
+				}
+				combat_unit = {
+					type = unit_type:combat_unit_type_irregular_infantry
+					state_region = s:STATE_EAST_TRANSVAAL
+					count = 1
+				}
+			}
+		}
+	}
+}
+
+sb_ensure_boer_anti_british_lobby = {
+	if = {
+		limit = {
+			country_has_primary_culture = cu:boer
+			NOT = {
+				any_political_lobby = {
+					is_political_lobby_type = lobby_anti_country
+					target = c:GBR
+				}
+			}
+		}
+		create_political_lobby = {
+			type = lobby_anti_country
+			target = c:GBR
+			add_interest_group = ig:ig_landowners
+			add_interest_group = ig:ig_rural_folk
+			add_interest_group = ig:ig_armed_forces
+		}
+	}
+}
+
 sb_apply_boer_republic_spawn_setup = {
 	sb_apply_boer_commandant_general_baseline = yes
 	sb_apply_boer_republic_interest_group_identity = yes
@@ -159,7 +267,7 @@ sb_apply_boer_republic_spawn_setup = {
 	active_law:lawgroup_army_model ?= {
 		if = {
 			limit = {
-			NOT = { has_amendment = amendment_type:amendment_sb_commando_corps }
+				NOT = { has_amendment = amendment_type:amendment_sb_commando_corps }
 			}
 			add_amendment = {
 				type = amendment_sb_commando_corps
@@ -167,6 +275,8 @@ sb_apply_boer_republic_spawn_setup = {
 			}
 		}
 	}
+	sb_ensure_boer_republic_starting_commando = yes
+	sb_ensure_boer_anti_british_lobby = yes
 	every_interest_group = {
 		remove_ruling_interest_group = yes
 	}

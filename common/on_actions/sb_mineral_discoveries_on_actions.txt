@@ -1,0 +1,158 @@
+﻿# Spes Bona - mineral discovery hooks
+#
+# Kimberley, Griqualand East, and gold-potential hooks live here.
+
+on_monthly_pulse_country = {
+	on_actions = { sb_on_griqualand_east_monthly_pulse_country }
+}
+
+on_yearly_pulse = {
+	on_actions = {
+		sb_on_kimberley_yearly_pulse
+		sb_on_boer_ai_economy_yearly_pulse
+		sb_on_bechuanaland_corridor_yearly_pulse
+	}
+}
+
+on_acquired_technology = {
+	on_actions = { sb_on_mineral_discoveries_acquired_technology }
+}
+
+sb_on_mineral_discoveries_acquired_technology = {
+	effect = {
+		if = {
+			limit = {
+				has_technology_researched = pneumatic_tools
+				NOT = { has_global_variable = sb_vrystaat_gold_potential_seeded_var }
+			}
+			set_global_variable = sb_vrystaat_gold_potential_seeded_var
+			s:STATE_VRYSTAAT = {
+				change_resource_potential = {
+					type = building_gold_field
+					amount = 4
+				}
+			}
+		}
+		if = {
+			limit = {
+				has_technology_researched = dynamite
+				# Gauteng is the localized name for STATE_TRANSVAAL.
+				any_scope_state = { state_region = s:STATE_TRANSVAAL }
+				NOT = { has_global_variable = sb_transvaal_gold_potential_seeded_var }
+			}
+			set_global_variable = sb_transvaal_gold_potential_seeded_var
+			s:STATE_TRANSVAAL = {
+				change_resource_potential = {
+					type = building_gold_field
+					amount = 94
+				}
+			}
+			s:STATE_EAST_TRANSVAAL = {
+				change_resource_potential = {
+					type = building_gold_field
+					amount = 4
+				}
+			}
+		}
+	}
+}
+
+sb_on_kimberley_yearly_pulse = {
+	effect = {
+		if = {
+			limit = {
+				sb_can_discover_kimberley_diamonds = yes
+			}
+			set_global_variable = sb_kimberley_discovery_pending_var
+			if = {
+				limit = {
+					p:x68B5E8.state.owner = {
+						NOT = { country_definition = cd:WBL }
+					}
+				}
+				p:x68B5E8.state.owner = {
+					trigger_event = { id = sb_griqualand_west.027 days = 1 popup = yes }
+				}
+			}
+			else_if = {
+				limit = {
+					c:CAP ?= {
+						is_country_alive = yes
+					}
+					c:WBL ?= {
+						is_country_alive = yes
+						any_scope_state = { state_region = s:STATE_NORTHERN_CAPE }
+					}
+				}
+				c:CAP ?= {
+					trigger_event = { id = sb_griqualand_west.021 days = 1 popup = yes }
+				}
+			}
+			else = {
+				p:x68B5E8.state.owner = {
+					trigger_event = { id = sb_griqualand_west.021 days = 1 popup = yes }
+				}
+			}
+		}
+	}
+}
+
+sb_on_bechuanaland_corridor_yearly_pulse = {
+	effect = {
+		if = {
+			limit = { sb_bechuanaland_corridor_can_open = yes }
+			sb_bechuanaland_open_corridor_is = yes
+		}
+		if = {
+			limit = {
+				has_global_variable = sb_bechuanaland_corridor_watch_global_var
+				NOT = { has_global_variable = sb_bechuanaland_corridor_open_global_var }
+				NOT = { has_global_variable = sb_bechuanaland_corridor_resolved_global_var }
+				OR = {
+					exists = c:SAF
+					NOT = {
+						c:CAP ?= {
+							is_country_alive = yes
+							is_subject_of = c:GBR
+						}
+					}
+				}
+			}
+			sb_bechuanaland_skip_corridor_crisis = yes
+		}
+		if = {
+			limit = {
+				has_global_variable = sb_bechuanaland_corridor_open_global_var
+				has_global_variable = sb_bechuanaland_crisis_war_active_var
+			}
+			sb_bechuanaland_ai_crisis_support = yes
+		}
+	}
+}
+
+sb_on_griqualand_east_monthly_pulse_country = {
+	effect = {
+		if = {
+			limit = {
+				country_definition = cd:CAP
+				has_variable = sb_griqualand_east_pending_var
+				NOT = { has_variable = sb_griqualand_east_resolved_var }
+				NOT = { exists = c:GLE }
+				OR = {
+					exists = c:ABY
+					NOT = { sb_eastern_cape_frontier_is_unsettled = yes }
+				}
+			}
+			remove_variable = sb_griqualand_east_pending_var
+			set_variable = sb_griqualand_east_resolved_var
+		}
+		if = {
+			limit = {
+				country_definition = cd:CAP
+				sb_cap_can_form_gle = yes
+			}
+			set_variable = sb_griqualand_east_pending_var
+			trigger_event = { id = sb_griqualand_east.220 days = 14 popup = yes }
+		}
+	}
+}

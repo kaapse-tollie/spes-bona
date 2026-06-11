@@ -1,5 +1,61 @@
 ﻿# Generic colony-side constitutional autonomy actions for Spes Bona.
 
+sb_federate_boer_confederal_partner = {
+	groups = {
+		overlord
+	}
+	requires_approval = no
+	show_effect_in_tooltip = yes
+
+	texture = "gfx/interface/icons/diplomatic_action_icons/da_decrease_autonomy.dds"
+	confirmation_sound = "event:/SFX/UI/SubjectInteractions/subject_button_small_autonomy_decreased"
+
+	potential = {
+		country_has_primary_culture = cu:boer
+		scope:target_country = {
+			is_direct_subject_of = root
+			is_subject_type = subject_type_sb_boer_confederal_partner
+			country_has_primary_culture = cu:boer
+		}
+	}
+
+	possible = {
+		is_at_war = no
+		is_active_in_diplomatic_play = no
+		scope:target_country = {
+			is_at_war = no
+			is_active_in_diplomatic_play = no
+			liberty_desire <= 0
+		}
+	}
+
+	accept_effect = {
+		if = {
+			limit = {
+				scope:target_country = {
+					OR = {
+						has_variable = sb_ora_annexed_bst_var
+						has_journal_entry = je_sb_settle_drakensberg
+					}
+				}
+			}
+			set_variable = sb_ora_annexed_bst_var
+			if = {
+				limit = {
+					NOT = { has_variable = sb_settled_drakensberg_var }
+					NOT = { has_journal_entry = je_sb_settle_drakensberg }
+				}
+				add_journal_entry = { type = je_sb_settle_drakensberg }
+			}
+		}
+		annex = scope:target_country
+	}
+
+	ai = {
+		evaluation_chance = { value = 1000 }
+	}
+}
+
 sb_grant_responsible_government = {
 	groups = {
 		overlord
@@ -43,7 +99,7 @@ sb_grant_responsible_government = {
 		scope:target_country = {
 			# sb_grant_responsible_government_effect = yes # moved effects into here directly
 
-			add_liberty_desire = -30
+				add_liberty_desire = -50
 			change_relations = {
 				country = scope:actor
 				value = 20
@@ -53,14 +109,13 @@ sb_grant_responsible_government = {
 			hidden_effect = {
 				if = {
 					limit = {
-						country_definition = cd:CAP
-					}
-					trigger_event = { id = sb_cape.020 popup = yes }
-					sb_queue_cape_empire_trade_tie_if_needed = yes
+					country_definition = cd:CAP
 				}
-				create_diplomatic_catalyst = {
-					type = sb_catalyst_responsible_government_imposed
-					target = root
+				trigger_event = { id = sb_cape.020 popup = yes }
+			}
+			create_diplomatic_catalyst = {
+				type = sb_catalyst_responsible_government_imposed
+				target = root
 				}
 			}
 		}
@@ -158,7 +213,7 @@ sb_ask_responsible_government = {
 	accept_effect = {
 		# sb_grant_responsible_government_effect = yes # Moved directly here
 
-		add_liberty_desire = -30
+		add_liberty_desire = -50
 		change_relations = {
 			country = scope:actor
 			value = 20
@@ -171,7 +226,6 @@ sb_ask_responsible_government = {
 				country_definition = cd:CAP
 			}
 			trigger_event = { id = sb_cape.020 popup = yes }
-			sb_queue_cape_empire_trade_tie_if_needed = yes
 		}
 
 

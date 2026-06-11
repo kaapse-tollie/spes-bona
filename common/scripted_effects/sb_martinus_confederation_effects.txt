@@ -188,6 +188,56 @@ sb_martinus_break_boer_war_path_compacts = {
 	}
 }
 
+sb_martinus_force_pretorius_standoff = {
+	set_variable = sb_martinus_ambition_resolved_var
+	if = {
+		limit = { has_variable = sb_martinus_coercive_chain_active_var }
+		remove_variable = sb_martinus_coercive_chain_active_var
+	}
+	sb_martinus_break_boer_war_path_compacts = yes
+	create_diplomatic_play = {
+		type = dp_sb_martinus_humiliation
+		target_country = c:ORA
+		add_war_goal = {
+			holder = c:ORA
+			target_country = root
+			type = humiliation
+		}
+	}
+	if = {
+		limit = {
+			c:LYD ?= {
+				is_country_alive = yes
+				has_variable = sb_martinus_backed_ora_var
+			}
+		}
+		random_diplomatic_play = {
+			limit = {
+				initiator = root
+				target = c:ORA
+				is_diplomatic_play_type = dp_sb_martinus_humiliation
+			}
+			add_target_backers = { c:LYD }
+		}
+	}
+	if = {
+		limit = {
+			c:ZPB ?= {
+				is_country_alive = yes
+				has_variable = sb_martinus_backed_ora_var
+			}
+		}
+		random_diplomatic_play = {
+			limit = {
+				initiator = root
+				target = c:ORA
+				is_diplomatic_play_type = dp_sb_martinus_humiliation
+			}
+			add_target_backers = { c:ZPB }
+		}
+	}
+}
+
 sb_martinus_withdraw_trn_compact_with_ora = {
 	c:ORA ?= {
 		every_scope_treaty = {
@@ -324,6 +374,39 @@ sb_martinus_revert_confederation_to_presidential_union = {
 	set_variable = sb_martinus_presidential_union_active_var
 }
 
+sb_martinus_break_confederation_with_ora = {
+	if = {
+		limit = {
+			c:ORA ?= {
+				is_country_alive = yes
+				is_direct_subject_of = root
+				is_subject_type = subject_type_sb_boer_confederal_partner
+			}
+		}
+		c:ORA ?= {
+			make_independent = yes
+		}
+	}
+	if = {
+		limit = { has_variable = sb_martinus_confederation_active_var }
+		remove_variable = sb_martinus_confederation_active_var
+	}
+	if = {
+		limit = { has_variable = sb_martinus_presidential_union_active_var }
+		remove_variable = sb_martinus_presidential_union_active_var
+	}
+	c:ORA ?= {
+		if = {
+			limit = { has_variable = sb_martinus_confederal_partner_var }
+			remove_variable = sb_martinus_confederal_partner_var
+		}
+		if = {
+			limit = { has_variable = sb_martinus_presidential_union_junior_var }
+			remove_variable = sb_martinus_presidential_union_junior_var
+		}
+	}
+}
+
 sb_martinus_break_gbr_trn_trade_through = {
 	c:GBR ?= {
 		every_scope_treaty = {
@@ -407,8 +490,11 @@ sb_martinus_sync_ora_laws_to_trn = {
 			c:ORA ?= { activate_law = law_type:law_debt_slavery }
 		}
 		if = {
-			limit = { has_law = law_type:law_expanded_inboekstelsel }
-			c:ORA ?= { activate_law = law_type:law_expanded_inboekstelsel }
+			limit = { sb_has_expanded_inboekstelsel_amendment = yes }
+			c:ORA ?= {
+				activate_law = law_type:law_discrete_inboekstelsel
+				sb_add_expanded_inboekstelsel_amendment = yes
+			}
 		}
 		if = {
 			limit = { has_law = law_type:law_discrete_inboekstelsel }
@@ -416,7 +502,7 @@ sb_martinus_sync_ora_laws_to_trn = {
 		}
 		if = {
 			limit = { has_law = law_type:law_slave_trade }
-			c:ORA ?= { activate_law = law_type:law_expanded_inboekstelsel }
+			c:ORA ?= { activate_law = law_type:law_slave_trade }
 		}
 		if = {
 			limit = { has_law = law_type:law_legacy_slavery }

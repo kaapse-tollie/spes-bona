@@ -22,7 +22,7 @@ sb_bst_frontier.010 = {
 	duration = 3
 
 	trigger = {
-		country_definition = cd:ORA
+		sb_bst_oranje_frontier_actor = yes
 	}
 
 	option = {
@@ -123,40 +123,48 @@ sb_bst_frontier.020 = {
 		default_option = yes
 		custom_tooltip = sb_bst_frontier_020_sotho_retreat_tt
 		hidden_effect = {
-			c:ORA ?= {
-				s:STATE_VRYSTAAT = {
-					region_state:ORA ?= {
-						ordered_scope_pop = {
-							position = 0
-							order_by = total_size
-							limit = {
-								culture = cu:sotho
-								total_size >= 5000
-							}
-							save_scope_as = sb_bst_mountain_retreat_sotho_pop
-							move_partial_pop = {
-								state = c:BST.capital
-								population_ratio = {
-									add = 5000
-									divide = scope:sb_bst_mountain_retreat_sotho_pop.total_size
-								}
+			random_country = {
+				limit = { sb_bst_oranje_frontier_actor = yes }
+				random_scope_state = {
+					limit = {
+						state_region = s:STATE_VRYSTAAT
+						any_scope_pop = {
+							culture = cu:sotho
+							total_size >= 5000
+						}
+					}
+					ordered_scope_pop = {
+						position = 0
+						order_by = total_size
+						limit = {
+							culture = cu:sotho
+							total_size >= 5000
+						}
+						save_scope_as = sb_bst_mountain_retreat_sotho_pop
+						move_partial_pop = {
+							state = c:BST.capital
+							population_ratio = {
+								add = 5000
+								divide = scope:sb_bst_mountain_retreat_sotho_pop.total_size
 							}
 						}
 					}
 				}
 			}
 		}
-		c:ORA ?= {
-			if = {
-				limit = { is_country_alive = yes }
-				change_relations = {
-					country = root
-					value = -20
-				}
-				set_variable = sb_bst_frontier_claim_seeded_var
-				s:STATE_DRAKENSBERG = {
-					add_claim = c:ORA
-				}
+		random_country = {
+			limit = { sb_bst_oranje_frontier_actor = yes }
+			save_temporary_scope_as = sb_bst_current_oranje_actor
+			change_relations = {
+				country = root
+				value = -20
+			}
+			set_variable = sb_bst_frontier_claim_seeded_var
+		}
+		if = {
+			limit = { exists = scope:sb_bst_current_oranje_actor }
+			s:STATE_DRAKENSBERG = {
+				add_claim = scope:sb_bst_current_oranje_actor
 			}
 		}
 		add_modifier = {
@@ -261,11 +269,9 @@ sb_bst_frontier.100 = {
 				type = protectorate
 			}
 		}
-		c:ORA ?= {
-			if = {
-				limit = { is_country_alive = yes }
-				trigger_event = { id = sb_bst_frontier.110 days = 1 popup = yes }
-			}
+		random_country = {
+			limit = { sb_bst_oranje_frontier_actor = yes }
+			trigger_event = { id = sb_bst_frontier.110 days = 1 popup = yes }
 		}
 		ai_chance = {
 			base = 100
@@ -363,7 +369,7 @@ sb_bst_frontier.300 = {
 	duration = 3
 
 	trigger = {
-		country_definition = cd:ORA
+		sb_bst_oranje_frontier_actor = yes
 		has_variable = sb_ora_annexed_bst_var
 		NOT = { has_variable = sb_settled_drakensberg_var }
 		NOT = {
@@ -378,10 +384,9 @@ sb_bst_frontier.300 = {
 		default_option = yes
 		custom_tooltip = sb_bst_frontier_300_boer_settlers_tt
 		hidden_effect = {
-			s:STATE_DRAKENSBERG = {
-				region_state:ORA ?= {
-					save_scope_as = drakensberg_settler_target
-				}
+			random_scope_state = {
+				limit = { state_region = s:STATE_DRAKENSBERG }
+				save_scope_as = drakensberg_settler_target
 			}
 			if = {
 				limit = {
@@ -450,7 +455,7 @@ sb_bst_frontier.110 = {
 	duration = 3
 
 	trigger = {
-		country_definition = cd:ORA
+		sb_bst_oranje_frontier_actor = yes
 	}
 
 	option = {
@@ -461,7 +466,7 @@ sb_bst_frontier.110 = {
 			remove_variable = sb_bst_frontier_claim_seeded_var
 		}
 		s:STATE_DRAKENSBERG = {
-			remove_claim = c:ORA
+			remove_claim = root
 		}
 	}
 }

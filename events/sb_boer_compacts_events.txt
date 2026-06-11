@@ -1,0 +1,119 @@
+﻿namespace = sb_boer_compacts
+
+sb_boer_compacts.010 = {
+	type = country_event
+	placement = root
+
+	title = sb_boer_compacts.010.t
+	desc = sb_boer_compacts.010.d
+	flavor = sb_boer_compacts.010.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		sb_boer_compact_with_scope_proposer_incomplete = yes
+	}
+
+	option = {
+		name = sb_boer_compacts.010.a
+		default_option = yes
+		sb_accept_boer_compact_renewal_from_scope_proposer = yes
+		ai_chance = {
+			base = 50
+			modifier = {
+				trigger = {
+					scope:sb_boer_compact_proposer ?= {
+						relations:root >= relations_threshold:friendly
+					}
+				}
+				add = 40
+			}
+			modifier = {
+				trigger = {
+					scope:sb_boer_compact_proposer ?= {
+						relations:root >= relations_threshold:amicable
+						relations:root < relations_threshold:friendly
+					}
+				}
+				add = 25
+			}
+			modifier = {
+				trigger = {
+					scope:sb_boer_compact_proposer ?= {
+						relations:root >= relations_threshold:cordial
+						relations:root < relations_threshold:amicable
+					}
+				}
+				add = 10
+			}
+			modifier = {
+				trigger = {
+					scope:sb_boer_compact_proposer ?= {
+						relations:root <= relations_threshold:cold
+					}
+				}
+				add = -50
+			}
+			modifier = {
+				trigger = {
+					scope:sb_boer_compact_proposer ?= {
+						relations:root <= relations_threshold:poor
+						relations:root > relations_threshold:cold
+					}
+				}
+				add = -25
+			}
+			modifier = {
+				trigger = {
+					OR = {
+						country_definition = cd:ZPB
+						country_definition = cd:LYD
+					}
+					scope:sb_boer_compact_proposer ?= {
+						NOT = { country_definition = cd:ZPB }
+						NOT = { country_definition = cd:LYD }
+					}
+				}
+				add = 35
+			}
+			modifier = {
+				trigger = {
+					country_definition = cd:TRN
+					scope:sb_boer_compact_proposer ?= {
+						OR = {
+							country_definition = cd:ORA
+							country_definition = cd:NAL
+						}
+					}
+				}
+				add = 35
+			}
+			modifier = {
+				trigger = {
+					country_definition = cd:ORA
+					scope:sb_boer_compact_proposer ?= {
+						country_definition = cd:NAL
+					}
+				}
+				add = 35
+			}
+		}
+	}
+
+	option = {
+		name = sb_boer_compacts.010.b
+		change_relations = {
+			country = scope:sb_boer_compact_proposer
+			value = -5
+		}
+		ai_chance = {
+			base = 50
+		}
+	}
+}

@@ -227,6 +227,25 @@ sb_zulu_prepare_solomon_heir = {
 	sb_zulu_assign_new_heir_scope = yes
 }
 
+sb_zulu_prepare_random_good_heir = {
+	create_character = {
+		culture = cu:zulu
+		religion = rel:animist
+		age = 24
+		interest_group = ig_armed_forces
+		ideology = ideology_traditionalist
+		traits = {
+			ambitious
+			tactful
+			basic_political_operator
+		}
+		on_created = {
+			save_scope_as = new_heir_scope
+		}
+	}
+	sb_zulu_assign_new_heir_scope = yes
+}
+
 sb_zulu_install_summoned_claimant_as_ruler = {
 	scope:summoned_character_scope ?= {
 		if = {
@@ -399,8 +418,17 @@ sb_zulu_apply_generic_war_defeat = {
 }
 
 sb_zulu_apply_swazi_campaign_victory = {
+	if = { limit = { has_variable = sb_zulu_dynastic_collapse_pending_var } remove_variable = sb_zulu_dynastic_collapse_pending_var }
 	sb_zulu_add_dynastic_stability_20 = yes
 	sb_zulu_add_dynastic_stability_10 = yes
+	random_scope_character = {
+		limit = {
+			has_template = ZUL_dingane
+			is_character_alive = yes
+		}
+		if = { limit = { has_modifier = sb_dingane_humbled } remove_modifier = sb_dingane_humbled }
+		if = { limit = { has_modifier = sb_dingane_checked_by_swazi } remove_modifier = sb_dingane_checked_by_swazi }
+	}
 	s:STATE_EAST_TRANSVAAL = {
 		add_claim = root
 	}
@@ -413,7 +441,11 @@ sb_zulu_apply_dingane_swazi_popularity_loss = {
 			has_template = ZUL_dingane
 			is_character_alive = yes
 		}
-		add_modifier = { name = sb_dingane_checked_by_swazi }
+		add_modifier = {
+			name = sb_dingane_checked_by_swazi
+			months = 120
+			is_decaying = yes
+		}
 	}
 }
 
@@ -549,38 +581,11 @@ sb_resolve_zulu_dynastic_collapse = {
 				has_template = ZUL_dingane
 			}
 		}
-		ruler = {
-			save_scope_as = deposed_dingane_scope
-		}
-		# Mpande's first heir slot should reflect the early succession contest
-		# rather than jump straight to Cetshwayo.
-		sb_zulu_prepare_gqugqu_heir = yes
-		sb_zulu_prepare_mpande_claimant = yes
-		scope:deposed_dingane_scope ?= {
-			add_modifier = {
-				name = sb_dingane_humbled
-				months = 120
-			}
-			if = {
-				limit = {
-					NOT = { is_ruler_of_own_country = yes }
-				}
-				exile_character = yes
-			}
-		}
+		set_variable = sb_zulu_mpande_pretender_heir_pending_var
+		trigger_event = { id = sb_zulu_dynasty.095 days = 7 popup = yes }
 	}
-	else_if = {
-		limit = {
-			ruler = {
-				has_template = ZUL_mpande_zulu
-			}
-		}
-		sb_zulu_prepare_dinuzulu_heir = yes
-		sb_zulu_prepare_cetshwayo_claimant = yes
-	}
-	else = {
-		sb_zulu_prepare_solomon_heir = yes
-		sb_zulu_prepare_dinuzulu_claimant = yes
+	ruler = {
+		kill_character = { hidden = yes }
 	}
 }
 
@@ -614,6 +619,17 @@ sb_resolve_zulu_dynasty_secured = {
 				has_template = ZUL_dingane
 			}
 		}
+		if = {
+			limit = {
+				exists = heir
+				heir = {
+					NOT = { has_template = ZUL_uthumbu_claimed_son }
+				}
+			}
+			heir = {
+				kill_character = { hidden = yes }
+			}
+		}
 		sb_zulu_prepare_uthumbu_heir = yes
 	}
 	else_if = {
@@ -622,10 +638,22 @@ sb_resolve_zulu_dynasty_secured = {
 				has_template = ZUL_mpande_zulu
 			}
 		}
+		if = {
+			limit = {
+				exists = heir
+				heir = {
+					NOT = { has_template = ZUL_cetshwayo_heir }
+				}
+			}
+			heir = {
+				kill_character = { hidden = yes }
+			}
+		}
 		sb_zulu_prepare_cetshwayo_heir = yes
 	}
 	else = {
-		sb_zulu_prepare_cetshwayo_heir = yes
+		sb_zulu_kill_current_heir = yes
+		sb_zulu_prepare_random_good_heir = yes
 	}
 }
 
@@ -663,6 +691,17 @@ sb_resolve_zulu_dynasty_secured_mbuyazi = {
 				NOT = { has_modifier = sb_zulu_secured_the_throne }
 			}
 			add_modifier = { name = sb_zulu_secured_the_throne }
+		}
+	}
+	if = {
+		limit = {
+			exists = heir
+			heir = {
+				NOT = { has_template = ZUL_mbuyazi_heir }
+			}
+		}
+		heir = {
+			kill_character = { hidden = yes }
 		}
 	}
 	sb_zulu_prepare_mbuyazi_heir = yes

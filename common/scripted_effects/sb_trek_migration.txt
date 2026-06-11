@@ -351,6 +351,22 @@ sb_move_trn_v2_cape_trekkers_to_transvaal = {
 	}
 }
 
+sb_cleanup_trn_generated_commanders = {
+	if = {
+		limit = { country_definition = cd:TRN }
+		every_scope_character = {
+			limit = {
+				is_character_alive = yes
+				has_role_of_type = general
+				NOT = { has_template = TRN_andries_pretorius }
+				NOT = { has_template = TRN_marthinus_wessel_pretorius }
+				NOT = { has_template = TRN_stephanus_schoeman }
+			}
+			remove_character_role = general
+		}
+	}
+}
+
 sb_seed_trn_v2_start_package = {
 	# Minimal scripted replacement for the old day-1 TRN history package.
 	# This is applied only after the delayed split event creates the country.
@@ -399,23 +415,68 @@ sb_seed_trn_v2_start_package = {
 				activate_production_methods = { "pm_open_air_stockyards" "pm_simple_ranch" "pm_standard_fences" "pm_unrefrigerated" }
 			}
 		}
-		sb_move_trn_v2_cape_trekkers_to_transvaal = yes
-		if = {
-			limit = { army_size <= 0 }
-			create_military_formation = {
-				type = army
-				hq_region = sr:region_southern_africa
-				name = pretorius_commando
-
-				combat_unit = {
-					type = unit_type:combat_unit_type_dragoons
-					state_region = s:STATE_TRANSVAAL
-					count = 1
+			sb_move_trn_v2_cape_trekkers_to_transvaal = yes
+			if = {
+				limit = {
+					NOT = { has_variable = sb_trn_starting_commando_created_var }
 				}
+				set_variable = sb_trn_starting_commando_created_var
+				create_military_formation = {
+					type = army
+					hq_region = sr:region_southern_africa
+					name = pretorius_commando
+					save_scope_as = trn_pretorius_commando_scope
+
+					combat_unit = {
+						type = unit_type:combat_unit_type_dragoons
+						state_region = s:STATE_TRANSVAAL
+						count = 1
+					}
+					combat_unit = {
+						type = unit_type:combat_unit_type_irregular_infantry
+						state_region = s:STATE_TRANSVAAL
+						count = 1
+					}
+				}
+				random_scope_character = {
+					limit = {
+						has_template = TRN_andries_pretorius
+						is_character_alive = yes
+					}
+					if = {
+						limit = {
+							NOT = { has_role_of_type = general }
+						}
+						add_character_role = general
+					}
+					transfer_to_formation = scope:trn_pretorius_commando_scope
+				}
+				if = {
+					limit = {
+						NOT = {
+							any_scope_character = {
+								has_template = TRN_andries_pretorius
+								is_character_alive = yes
+								has_role_of_type = general
+							}
+						}
+					}
+					random_scope_character = {
+						limit = {
+							has_template = TRN_marthinus_wessel_pretorius
+							is_character_alive = yes
+						}
+						if = {
+							limit = { NOT = { has_role_of_type = general } }
+							add_character_role = general
+						}
+						transfer_to_formation = scope:trn_pretorius_commando_scope
+					}
+				}
+				sb_cleanup_trn_generated_commanders = yes
 			}
 		}
 	}
-}
 
 sb_spawn_transvaal_republic_v2 = {
 		# Potchefstroom / west-Transvaal split:
@@ -564,27 +625,18 @@ sb_spawn_transvaal_republic_v2 = {
 				template = TRN_louis_tregardt
 			}
 		}
-		if = {
-			limit = {
-				NOT = {
-					any_scope_character = {
-						has_template = TRN_stephanus_schoeman
-					}
+			if = {
+				limit = {
+					NOT = {
+						any_scope_character = {
+							has_template = TRN_stephanus_schoeman
+						}
 				}
 			}
 			create_character = {
 				template = TRN_stephanus_schoeman
 				ig_leader = yes
-				interest_group = ig_armed_forces
-			}
-		}
-		if = {
-			limit = {
-				c:NAL ?= {
-					is_country_alive = yes
-					ruler = {
-						has_template = TRN_andries_pretorius
-					}
+					interest_group = ig_armed_forces
 				}
 			}
 			if = {
@@ -597,13 +649,27 @@ sb_spawn_transvaal_republic_v2 = {
 				}
 				create_character = {
 					template = TRN_marthinus_wessel_pretorius
-					ruler = yes
-					ig_leader = yes
-					interest_group = ig_landowners
-					ideology = ideology_sb_volksraad_elitism_leader
 				}
 			}
-		}
+			if = {
+				limit = {
+					c:NAL ?= {
+						is_country_alive = yes
+					ruler = {
+						has_template = TRN_andries_pretorius
+					}
+					}
+				}
+				random_scope_character = {
+					limit = {
+						has_template = TRN_marthinus_wessel_pretorius
+						is_character_alive = yes
+					}
+					set_interest_group = c:TRN.ig:ig_landowners
+					set_as_interest_group_leader = yes
+					set_character_as_ruler = yes
+				}
+			}
 		else = {
 			if = {
 				limit = {
@@ -627,16 +693,10 @@ sb_spawn_transvaal_republic_v2 = {
 			limit = { NOT = { has_journal_entry = je_sb_great_trek } }
 			add_journal_entry = { type = je_sb_great_trek }
 		}
-		create_political_lobby = {
-			type = lobby_anti_country
-			target = c:GBR
-			add_interest_group = ig:ig_landowners
-			add_interest_group = ig:ig_rural_folk
-			add_interest_group = ig:ig_armed_forces
-		}
-		change_relations = {
-			country = root
-			value = 25
+			sb_ensure_boer_anti_british_lobby = yes
+			change_relations = {
+				country = root
+				value = 25
 		}
 		sb_seed_trn_v2_start_package = yes
 		if = {
@@ -647,13 +707,20 @@ sb_spawn_transvaal_republic_v2 = {
 			}
 			sb_join_trn_to_active_natal_war = yes
 		}
-	}
-	change_relations = {
-		country = c:TRN
-		value = 25
-	}
-	c:TRN ?= { sb_ensure_boer_republic_compacts_for_root = yes }
-	c:TRN ?= { trigger_event = { id = sb_boer_republics.121 days = 1 popup = no } }
+		}
+		change_relations = {
+			country = c:TRN
+			value = 25
+		}
+		c:TRN ?= {
+			sb_ensure_gbr_transit_rights_with_root = yes
+			create_bidirectional_truce = {
+				country = c:GBR
+				months = 240
+			}
+		}
+		c:TRN ?= { sb_ensure_boer_republic_compacts_for_root = yes }
+		c:TRN ?= { trigger_event = { id = sb_boer_republics.121 days = 1 popup = no } }
 		c:ORA ?= {
 		if = {
 			limit = { has_variable = sb_voortrekker_start_var }
@@ -738,7 +805,8 @@ sb_found_zoutpansberg_republic = {
 		set_country_type = unrecognized
 		set_variable = sb_early_republic_var
 			sb_apply_boer_republic_spawn_setup = yes
-			activate_law = law_type:law_expanded_inboekstelsel
+			activate_law = law_type:law_discrete_inboekstelsel
+			sb_add_expanded_inboekstelsel_amendment = yes
 			activate_law = law_type:law_frontier_colonization
 		add_modifier = {
 			name = sb_trek_frontier_drive_zpb
@@ -800,13 +868,8 @@ sb_found_zoutpansberg_republic = {
 			}
 			c:ZPB ?= {
 				sb_ensure_boer_republic_compacts_for_root = yes
+				trigger_event = { id = sb_boer_republics.121 days = 1 popup = no }
 			}
-		c:GBR ?= {
-			if = {
-				limit = { is_country_alive = yes }
-				trigger_event = { id = sb_boer_republics.008 days = 14 popup = yes }
-			}
-		}
 		change_relations = {
 			country = c:ZPB
 			value = -40
@@ -1005,8 +1068,9 @@ sb_found_zoutpansberg_republic = {
 				if = {
 					limit = { NOT = { has_journal_entry = je_sb_great_trek } }
 					add_journal_entry = { type = je_sb_great_trek }
-				}
-					sb_ensure_boer_republic_compacts_for_root = yes
+					}
+						sb_ensure_boer_republic_compacts_for_root = yes
+						trigger_event = { id = sb_boer_republics.121 days = 1 popup = no }
 				}
 		if = {
 			limit = {
@@ -1018,11 +1082,5 @@ sb_found_zoutpansberg_republic = {
 		change_relations = {
 			country = c:LYD
 			value = -25
-		}
-			c:GBR ?= {
-			if = {
-				limit = { is_country_alive = yes }
-				trigger_event = { id = sb_boer_republics.009 days = 14 popup = yes }
-			}
 		}
 	}

@@ -27,6 +27,8 @@ sb_martinus_ora_is_independent_candidate = {
 	is_country_alive = yes
 	is_subject = no
 	country_has_primary_culture = cu:boer
+	has_variable = sb_great_trek_completed_var
+	has_law_or_variant = law_type:law_presidential_republic
 	NOT = { has_variable = sb_martinus_blocked_by_cape_alignment_var }
 	NOT = { has_variable = sb_martinus_ora_separate_republic_path_var }
 	NOT = { has_variable = sb_martinus_presidential_union_junior_var }
@@ -39,6 +41,7 @@ sb_martinus_ora_can_receive_cape_alignment = {
 	is_country_alive = yes
 	is_subject = no
 	is_active_in_diplomatic_play = no
+	has_variable = sb_great_trek_completed_var
 	NOT = { has_variable = sb_martinus_cape_alignment_resolved_var }
 	NOT = { has_variable = sb_martinus_blocked_by_cape_alignment_var }
 	NOT = { has_variable = sb_martinus_ora_separate_republic_path_var }
@@ -54,6 +57,29 @@ sb_martinus_ora_can_receive_cape_alignment = {
 	is_in_same_power_bloc = c:GBR
 }
 
+sb_martinus_trn_can_receive_grey_confederation = {
+	country_definition = cd:TRN
+	is_country_alive = yes
+	is_subject = no
+	is_active_in_diplomatic_play = no
+	sb_bechuanaland_trn_is_sar_like = yes
+	NOT = { has_variable = sb_martinus_trn_grey_confederation_resolved_var }
+	NOT = { has_variable = sb_martinus_trn_grey_confederation_blocked_var }
+	c:CAP ?= {
+		is_country_alive = yes
+	}
+	c:GBR ?= {
+		is_country_alive = yes
+		is_power_bloc_leader = yes
+	}
+	is_in_same_power_bloc = c:GBR
+	c:ORA ?= {
+		is_country_alive = yes
+		is_direct_subject_of = c:CAP
+		sb_is_imperial_confederation_level_1_british_subject = yes
+	}
+}
+
 sb_martinus_trn_can_open_coercive_chain = {
 	country_definition = cd:TRN
 	is_country_alive = yes
@@ -66,7 +92,6 @@ sb_martinus_trn_can_open_coercive_chain = {
 	NOT = { has_variable = sb_martinus_coercive_chain_active_var }
 	NOT = { has_variable = sb_martinus_ambition_resolved_var }
 	game_date >= 1857.1.1
-	game_date < 1859.1.1
 	c:ORA ?= {
 		sb_martinus_ora_is_independent_candidate = yes
 	}

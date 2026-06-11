@@ -201,27 +201,44 @@ je_sb_imperial_confederation_scheme = {
 	group = je_group_global_international_situations
 
 	icon = "gfx/interface/icons/event_icons/waving_flag.dds"
+	scripted_progress_bar = sb_imperial_confederation_subject_control_bar
+	scripted_progress_bar = sb_imperial_confederation_sea_access_bar
+
+	widget = {
+		gui = "gui/com_journal_injects/injects.gui"
+		name = "com_journal_entry_progress_bars"
+		container = "com_custom_widget_container_scripted_progress_bars"
+	}
+
+	immediate = {
+		scope:journal_entry = {
+			save_scope_as = sb_imperial_confederation_scheme_scope
+		}
+		set_global_variable = {
+			name = sb_imperial_confederation_scheme_scope
+			value = scope:sb_imperial_confederation_scheme_scope
+		}
+		sb_imperial_confederation_validate_involvement = yes
+		sb_imperial_confederation_sync_subject_control_bar = yes
+	}
+
+	on_monthly_pulse = {
+		effect = {
+			sb_imperial_confederation_validate_involvement = yes
+			sb_imperial_confederation_sync_subject_control_bar = yes
+		}
+	}
 
 	should_be_involved = {
-		OR = {
-			sb_is_imperial_confederation_participant = yes
-			sb_is_imperial_confederation_owner = yes
-		}
+		sb_should_be_involved_in_imperial_confederation = yes
 	}
 
 	should_show_when_not_involved = {
-		OR = {
-			sb_is_imperial_confederation_participant = yes
-			sb_is_imperial_confederation_owner = yes
-		}
+		sb_should_be_involved_in_imperial_confederation = yes
 	}
 
 	is_shown_in_lobby = {
-		OR = {
-			c:CAP ?= this
-			c:ORA ?= this
-			c:GBR ?= this
-		}
+		always = no
 	}
 
 	is_shown_when_inactive = {
@@ -229,10 +246,12 @@ je_sb_imperial_confederation_scheme = {
 	}
 
 	possible = {
+		c:GBR ?= {
+			is_country_alive = yes
+		}
 		has_global_variable = sb_imperial_confederation_scheme_unlocked_var
 		NOT = { has_global_variable = sb_imperial_confederation_scheme_failed_var }
 		NOT = { exists = c:SAF }
-		sb_imperial_confederation_has_live_boer_participant = yes
 	}
 
 	scripted_button = je_sb_imperial_confederation_bind_trade_button
@@ -242,18 +261,98 @@ je_sb_imperial_confederation_scheme = {
 		desc = je_sb_imperial_confederation_scheme_status
 	}
 
+	custom_completion_header = je_sb_imperial_confederation_scheme_imperial_victory
+
 	complete = {
-		exists = c:SAF
+		custom_tooltip = {
+			text = je_sb_imperial_confederation_success_confederate_tt
+			exists = c:SAF
+		}
 	}
 
-	invalid = {
+	custom_failure_header = je_sb_imperial_confederation_scheme_failure
+
+	fail = {
 		OR = {
-			has_global_variable = sb_imperial_confederation_scheme_failed_var
-			NOT = { sb_imperial_confederation_has_live_boer_participant = yes }
+			custom_tooltip = {
+				text = je_sb_imperial_confederation_failure_sea_access_tt
+				sb_imperial_confederation_sea_access_failure_ready = yes
+			}
+			custom_tooltip = {
+				text = je_sb_imperial_confederation_failure_terminal_tt
+				has_global_variable = sb_imperial_confederation_scheme_failed_var
+			}
+			custom_tooltip = {
+				text = je_sb_imperial_confederation_failure_no_boers_tt
+				NOT = { sb_imperial_confederation_has_live_boer_participant = yes }
+			}
+			custom_tooltip = {
+				text = je_sb_imperial_confederation_failure_british_war_tt
+				sb_imperial_confederation_britain_at_war_with_participant = yes
+			}
+			custom_tooltip = {
+				text = je_sb_imperial_confederation_failure_subject_escape_tt
+				sb_imperial_confederation_bound_subject_escaped = yes
+			}
+		}
+	}
+
+	on_fail = {
+		if = {
+			limit = { NOT = { has_global_variable = sb_imperial_confederation_scheme_failed_var } }
+			sb_imperial_confederation_fail_scheme = yes
 		}
 	}
 
 	weight = 1000
 	should_be_pinned_by_default_involved = yes
+	should_be_pinned_by_default_uninvolved_or_context = yes
+}
+
+je_sb_confederate_southern_africa = {
+	group = je_group_historical_content
+
+	icon = "gfx/interface/icons/event_icons/waving_flag.dds"
+
+	is_shown_when_inactive = {
+		country_definition = cd:SAF
+		has_variable = sb_confederated_south_africa_var
+	}
+
+	possible = {
+		country_definition = cd:SAF
+		has_variable = sb_confederated_south_africa_var
+	}
+
+	scripted_button = je_sb_confederate_southern_africa_button
+
+	status_desc = {
+		desc = je_sb_confederate_southern_africa_status
+	}
+
+	complete = {
+		custom_tooltip = {
+			text = je_sb_confederate_southern_africa_complete_tt
+			sb_confederated_south_africa_controls_required_region = yes
+		}
+	}
+
+	on_complete = {
+		add_modifier = {
+			name = sb_confederated_south_africa_unified
+			days = normal_modifier_time
+		}
+		c:GBR ?= {
+			if = {
+				limit = { is_country_alive = yes }
+				add_modifier = {
+					name = sb_gbr_unified_southern_africa
+					days = normal_modifier_time
+				}
+			}
+		}
+	}
+
+	weight = 1000
 	should_be_pinned_by_default_uninvolved_or_context = yes
 }

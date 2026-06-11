@@ -11,13 +11,36 @@ sb_nam_controls_both_consolidation_ports = {
 	p:xB04050.state.owner = root
 }
 
+sb_nam_has_british_southern_african_subject_admin = {
+	OR = {
+		c:CAP ?= {
+			is_country_alive = yes
+			is_subject = yes
+			exists = top_overlord
+			top_overlord = c:GBR
+		}
+		c:SAF ?= {
+			is_country_alive = yes
+			is_subject = yes
+			exists = top_overlord
+			top_overlord = c:GBR
+		}
+	}
+}
+
 sb_nam_can_run_consolidation_je = {
 	sb_nam_controls_both_consolidation_ports = yes
 	NOT = { is_country_type = decentralized }
 	NOT = { country_definition = cd:SWA }
 	NOT = { has_variable = sb_nam_consolidation_resolved_var }
+	NOT = { capital = { region = sr:region_southern_africa } }
+	NOT = {
+		AND = {
+			country_definition = cd:GBR
+			sb_nam_has_british_southern_african_subject_admin = yes
+		}
+	}
 	OR = {
-		country_definition = cd:CAP
 		country_definition = cd:GBR
 		sb_nam_has_any_colonial_law = yes
 	}

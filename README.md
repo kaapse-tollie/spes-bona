@@ -5,7 +5,7 @@ Spes Bona is a Victoria 3 regional flavor mod for greater Southern Africa built 
 ## Current Scope
 
 - `CAP` replaces start-date `SAF`
-- `XHO` is split into `XHG`, `XHR`, and `XHT`
+- `XHO` remains unified; the 7th, 8th, and 9th Xhosa Wars model separate frontier phases
 - `ORA`, `TRN`, `NAL`, `ZUL`, `SWZ`, `GZA`, `BST`, `ORL`, `ABY`, and the frontier minors all have custom startup work
 - the live build covers the Cape constitutional struggle, the Great Trek, the Natal question, the MTB pressure lane, and the firearms-modernization lane for selected kingdoms
 

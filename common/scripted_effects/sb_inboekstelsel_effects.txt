@@ -1,10 +1,24 @@
 ﻿# Spes Bona - Inboekstelsel effects
 
+sb_add_expanded_inboekstelsel_amendment = {
+	active_law:lawgroup_slavery ?= {
+		if = {
+			limit = {
+				NOT = { has_amendment = amendment_type:amendment_sb_expanded_inboekstelsel }
+			}
+			add_amendment = {
+				type = amendment_sb_expanded_inboekstelsel
+				sponsor = PREV.ig:ig_landowners
+			}
+		}
+	}
+}
+
 sb_inboekstelsel_enforce = {
 	set_variable = { name = sb_inboekstelsel_action_cooldown_var days = 375 }
 
 	if = {
-		limit = { has_law = law_type:law_expanded_inboekstelsel }
+		limit = { sb_has_expanded_inboekstelsel_amendment = yes }
 		add_modifier = {
 			name = sb_inboekstelsel_enforced_slave_trade
 			months = 13
@@ -30,7 +44,7 @@ sb_inboekstelsel_enforce = {
 			}
 		}
 		if = {
-			limit = { root = { has_law = law_type:law_expanded_inboekstelsel } }
+			limit = { root = { sb_has_expanded_inboekstelsel_amendment = yes } }
 			add_loyalists_in_state = {
 				value = 0.05
 				culture = cu:boer
@@ -67,7 +81,7 @@ sb_inboekstelsel_enforce = {
 					culture = { save_scope_as = sb_inboekstelsel_source_culture }
 					scope:sb_inboekstelsel_source_state = {
 						if = {
-							limit = { root = { has_law = law_type:law_expanded_inboekstelsel } }
+							limit = { root = { sb_has_expanded_inboekstelsel_amendment = yes } }
 							add_radicals_in_state = {
 								value = 0.01
 								culture = scope:sb_inboekstelsel_source_culture
@@ -83,7 +97,7 @@ sb_inboekstelsel_enforce = {
 						}
 					}
 					if = {
-						limit = { root = { has_law = law_type:law_expanded_inboekstelsel } }
+						limit = { root = { sb_has_expanded_inboekstelsel_amendment = yes } }
 						move_partial_pop = {
 							state = scope:sb_inboekstelsel_staging_state
 							population_ratio = 0.025

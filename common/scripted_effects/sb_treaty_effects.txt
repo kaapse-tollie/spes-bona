@@ -704,7 +704,7 @@ sb_ensure_gbr_transit_rights_with_root = {
 				first_country = c:GBR
 				second_country = scope:convention_target
 				is_draft = no
-					binding_period = { years = 25 }
+					binding_period = { years = 20 }
 				articles_to_create = {
 					{
 						article = transit_rights
@@ -731,67 +731,8 @@ sb_ensure_gbr_transit_rights_with_root = {
 	}
 }
 
-sb_ensure_cap_transit_rights_with_root = {
-	save_scope_as = convention_target
-
-	if = {
-		limit = {
-			c:CAP ?= {
-				is_country_alive = yes
-				sb_cap_is_self_governing_colony = yes
-				NOT = {
-					any_scope_treaty = {
-						binds = scope:convention_target
-						any_scope_article = {
-							has_type = transit_rights
-							source_country = c:CAP
-							target_country = scope:convention_target
-						}
-					}
-				}
-			}
-		}
-		c:CAP ?= {
-			create_treaty = {
-				first_country = c:CAP
-				second_country = scope:convention_target
-				is_draft = no
-					binding_period = { years = 25 }
-				articles_to_create = {
-					{
-						article = transit_rights
-						source_country = c:CAP
-						target_country = scope:convention_target
-					}
-					{
-						article = goods_transfer
-						source_country = c:CAP
-						target_country = scope:convention_target
-						inputs = {
-							{ goods = g:merchant_marine }
-							{ quantity = 10 }
-						}
-					}
-				}
-			}
-		}
-	}
-}
-
 sb_ensure_convention_trade_through_with_root = {
-	if = {
-		limit = {
-			c:CAP ?= {
-				is_country_alive = yes
-				sb_cap_is_self_governing_colony = yes
-			}
-		}
-		sb_ensure_cap_transit_rights_with_root = yes
-		sb_ensure_gbr_power_bloc_embassy_with_root = yes
-	}
-	else = {
-		sb_ensure_gbr_transit_rights_with_root = yes
-	}
+	sb_ensure_gbr_transit_rights_with_root = yes
 }
 
 sb_ensure_gbr_power_bloc_embassy_with_root = {
@@ -820,7 +761,7 @@ sb_ensure_gbr_power_bloc_embassy_with_root = {
 				first_country = c:GBR
 				second_country = scope:embassy_target
 				is_draft = no
-					binding_period = { years = 25 }
+					binding_period = { years = 20 }
 				articles_to_create = {
 					{
 						article = host_power_bloc_embassy
@@ -829,158 +770,6 @@ sb_ensure_gbr_power_bloc_embassy_with_root = {
 					}
 				}
 			}
-		}
-	}
-}
-
-sb_ensure_cap_trade_through_for_boer_republics = {
-	c:ORA ?= {
-		if = {
-			limit = {
-				is_country_alive = yes
-				country_has_primary_culture = cu:boer
-			}
-			sb_remove_cap_boer_defensive_compact_with_root = yes
-			sb_ensure_cap_transit_rights_with_root = yes
-		}
-	}
-	c:TRN ?= {
-		if = {
-			limit = {
-				is_country_alive = yes
-				country_has_primary_culture = cu:boer
-			}
-			sb_remove_cap_boer_defensive_compact_with_root = yes
-			sb_ensure_cap_transit_rights_with_root = yes
-		}
-	}
-	c:ZPB ?= {
-		if = {
-			limit = {
-				is_country_alive = yes
-				country_has_primary_culture = cu:boer
-			}
-			sb_remove_cap_boer_defensive_compact_with_root = yes
-			sb_ensure_cap_transit_rights_with_root = yes
-		}
-	}
-	c:LYD ?= {
-		if = {
-			limit = {
-				is_country_alive = yes
-				country_has_primary_culture = cu:boer
-			}
-			sb_remove_cap_boer_defensive_compact_with_root = yes
-			sb_ensure_cap_transit_rights_with_root = yes
-		}
-	}
-	c:NAL ?= {
-		if = {
-			limit = {
-				is_country_alive = yes
-				country_has_primary_culture = cu:boer
-			}
-			sb_remove_cap_boer_defensive_compact_with_root = yes
-			sb_ensure_cap_transit_rights_with_root = yes
-		}
-	}
-}
-
-sb_remove_cap_boer_defensive_compact_with_root = {
-	save_scope_as = cap_boer_compact_target
-
-	c:CAP ?= {
-		every_scope_treaty = {
-			limit = {
-				binds = scope:cap_boer_compact_target
-				any_scope_article = {
-					OR = {
-						has_type = defensive_pact
-						has_type = alliance
-					}
-				}
-			}
-			withdraw = { country = c:CAP }
-		}
-	}
-}
-
-sb_ensure_cap_wbl_protection_treaty = {
-	if = {
-		limit = {
-			c:CAP ?= { is_country_alive = yes }
-			c:WBL ?= { is_country_alive = yes }
-			NOT = {
-				c:CAP ?= {
-					any_scope_treaty = {
-						binds = c:WBL
-						any_scope_article = {
-							has_type = transit_rights
-							source_country = c:CAP
-							target_country = c:WBL
-						}
-						any_scope_article = {
-							has_type = guarantee_independence
-							source_country = c:CAP
-							target_country = c:WBL
-						}
-					}
-				}
-			}
-		}
-		c:CAP ?= {
-			every_scope_treaty = {
-				limit = {
-					binds = c:WBL
-					any_scope_article = {
-						OR = {
-							has_type = transit_rights
-							has_type = guarantee_independence
-						}
-					}
-				}
-				withdraw = { country = c:CAP }
-			}
-			create_treaty = {
-				first_country = c:CAP
-				second_country = c:WBL
-				is_draft = no
-				binding_period = { years = 10 }
-				articles_to_create = {
-					{
-						article = transit_rights
-						source_country = c:CAP
-						target_country = c:WBL
-					}
-					{
-						article = goods_transfer
-						source_country = c:CAP
-						target_country = c:WBL
-						inputs = {
-							{ goods = g:merchant_marine }
-							{ quantity = 10 }
-						}
-					}
-					{
-						article = guarantee_independence
-						source_country = c:CAP
-						target_country = c:WBL
-					}
-				}
-			}
-		}
-	}
-}
-
-sb_ensure_cap_trade_through_for_cape_frontier_network = {
-	sb_ensure_cap_trade_through_for_boer_republics = yes
-	sb_ensure_cap_wbl_protection_treaty = yes
-	c:BST ?= {
-		if = {
-			limit = {
-				is_country_alive = yes
-			}
-			sb_ensure_cap_transit_rights_with_root = yes
 		}
 	}
 }
@@ -1065,6 +854,14 @@ sb_ensure_boer_republic_compacts_for_root = {
 		sb_ensure_boer_republic_compact_with_zpb = yes
 		sb_ensure_boer_republic_compact_with_lyd = yes
 		sb_ensure_boer_republic_compact_with_nal = yes
+		# Some compact pairs fail the full treaty package when transit-rights
+		# checks are not available during setup. Fall back to the defensive pact
+		# so the Boer compact network is always present.
+		sb_ensure_boer_republic_defensive_compact_fallback_with_ora = yes
+		sb_ensure_boer_republic_defensive_compact_fallback_with_trn = yes
+		sb_ensure_boer_republic_defensive_compact_fallback_with_zpb = yes
+		sb_ensure_boer_republic_defensive_compact_fallback_with_lyd = yes
+		sb_ensure_boer_republic_defensive_compact_fallback_with_nal = yes
 	}
 }
 
@@ -1135,6 +932,7 @@ sb_ensure_boer_republic_compact_with_ora = {
 			NOT = {
 				any_scope_treaty = {
 					binds = c:ORA
+					any_scope_article = { has_type = defensive_pact }
 				}
 			}
 			can_create_treaty = {
@@ -1195,6 +993,7 @@ sb_ensure_boer_republic_compact_with_trn = {
 			NOT = {
 				any_scope_treaty = {
 					binds = c:TRN
+					any_scope_article = { has_type = defensive_pact }
 				}
 			}
 			can_create_treaty = {
@@ -1255,6 +1054,7 @@ sb_ensure_boer_republic_compact_with_zpb = {
 			NOT = {
 				any_scope_treaty = {
 					binds = c:ZPB
+					any_scope_article = { has_type = defensive_pact }
 				}
 			}
 			can_create_treaty = {
@@ -1315,6 +1115,7 @@ sb_ensure_boer_republic_compact_with_lyd = {
 			NOT = {
 				any_scope_treaty = {
 					binds = c:LYD
+					any_scope_article = { has_type = defensive_pact }
 				}
 			}
 			can_create_treaty = {
@@ -1375,6 +1176,7 @@ sb_ensure_boer_republic_compact_with_nal = {
 			NOT = {
 				any_scope_treaty = {
 					binds = c:NAL
+					any_scope_article = { has_type = defensive_pact }
 				}
 			}
 			can_create_treaty = {
@@ -1419,6 +1221,406 @@ sb_ensure_boer_republic_compact_with_nal = {
 	}
 }
 
+sb_ensure_boer_republic_defensive_compact_fallback_with_ora = {
+	save_scope_as = boer_compact_source
+
+	if = {
+		limit = {
+			is_country_alive = yes
+			country_has_primary_culture = cu:boer
+			NOT = { country_has_primary_culture = cu:anglo_african }
+			NOT = { country_definition = cd:ORA }
+			c:ORA ?= {
+				is_country_alive = yes
+				country_has_primary_culture = cu:boer
+			}
+			NOT = {
+				any_scope_treaty = {
+					binds = c:ORA
+					any_scope_article = { has_type = defensive_pact }
+				}
+			}
+		}
+		create_treaty = {
+			first_country = scope:boer_compact_source
+			second_country = c:ORA
+			is_draft = no
+			binding_period = { years = 25 }
+			articles_to_create = {
+				{ article = defensive_pact }
+				{
+					article = transit_rights
+					source_country = scope:boer_compact_source
+					target_country = c:ORA
+				}
+				{
+					article = transit_rights
+					source_country = c:ORA
+					target_country = scope:boer_compact_source
+				}
+			}
+		}
+	}
+}
+
+sb_ensure_boer_republic_defensive_compact_fallback_with_trn = {
+	save_scope_as = boer_compact_source
+
+	if = {
+		limit = {
+			is_country_alive = yes
+			country_has_primary_culture = cu:boer
+			NOT = { country_has_primary_culture = cu:anglo_african }
+			NOT = { country_definition = cd:TRN }
+			c:TRN ?= {
+				is_country_alive = yes
+				country_has_primary_culture = cu:boer
+			}
+			NOT = {
+				any_scope_treaty = {
+					binds = c:TRN
+					any_scope_article = { has_type = defensive_pact }
+				}
+			}
+		}
+		create_treaty = {
+			first_country = scope:boer_compact_source
+			second_country = c:TRN
+			is_draft = no
+			binding_period = { years = 25 }
+			articles_to_create = {
+				{ article = defensive_pact }
+				{
+					article = transit_rights
+					source_country = scope:boer_compact_source
+					target_country = c:TRN
+				}
+				{
+					article = transit_rights
+					source_country = c:TRN
+					target_country = scope:boer_compact_source
+				}
+			}
+		}
+	}
+}
+
+sb_ensure_boer_republic_defensive_compact_fallback_with_zpb = {
+	save_scope_as = boer_compact_source
+
+	if = {
+		limit = {
+			is_country_alive = yes
+			country_has_primary_culture = cu:boer
+			NOT = { country_has_primary_culture = cu:anglo_african }
+			NOT = { country_definition = cd:ZPB }
+			c:ZPB ?= {
+				is_country_alive = yes
+				country_has_primary_culture = cu:boer
+			}
+			NOT = {
+				any_scope_treaty = {
+					binds = c:ZPB
+					any_scope_article = { has_type = defensive_pact }
+				}
+			}
+		}
+		create_treaty = {
+			first_country = scope:boer_compact_source
+			second_country = c:ZPB
+			is_draft = no
+			binding_period = { years = 25 }
+			articles_to_create = {
+				{ article = defensive_pact }
+				{
+					article = transit_rights
+					source_country = scope:boer_compact_source
+					target_country = c:ZPB
+				}
+				{
+					article = transit_rights
+					source_country = c:ZPB
+					target_country = scope:boer_compact_source
+				}
+			}
+		}
+	}
+}
+
+sb_ensure_boer_republic_defensive_compact_fallback_with_lyd = {
+	save_scope_as = boer_compact_source
+
+	if = {
+		limit = {
+			is_country_alive = yes
+			country_has_primary_culture = cu:boer
+			NOT = { country_has_primary_culture = cu:anglo_african }
+			NOT = { country_definition = cd:LYD }
+			c:LYD ?= {
+				is_country_alive = yes
+				country_has_primary_culture = cu:boer
+			}
+			NOT = {
+				any_scope_treaty = {
+					binds = c:LYD
+					any_scope_article = { has_type = defensive_pact }
+				}
+			}
+		}
+		create_treaty = {
+			first_country = scope:boer_compact_source
+			second_country = c:LYD
+			is_draft = no
+			binding_period = { years = 25 }
+			articles_to_create = {
+				{ article = defensive_pact }
+				{
+					article = transit_rights
+					source_country = scope:boer_compact_source
+					target_country = c:LYD
+				}
+				{
+					article = transit_rights
+					source_country = c:LYD
+					target_country = scope:boer_compact_source
+				}
+			}
+		}
+	}
+}
+
+sb_ensure_boer_republic_defensive_compact_fallback_with_nal = {
+	save_scope_as = boer_compact_source
+
+	if = {
+		limit = {
+			is_country_alive = yes
+			country_has_primary_culture = cu:boer
+			NOT = { country_has_primary_culture = cu:anglo_african }
+			NOT = { country_definition = cd:NAL }
+			c:NAL ?= {
+				is_country_alive = yes
+				country_has_primary_culture = cu:boer
+			}
+			NOT = {
+				any_scope_treaty = {
+					binds = c:NAL
+					any_scope_article = { has_type = defensive_pact }
+				}
+			}
+		}
+		create_treaty = {
+			first_country = scope:boer_compact_source
+			second_country = c:NAL
+			is_draft = no
+			binding_period = { years = 25 }
+			articles_to_create = {
+				{ article = defensive_pact }
+				{
+					article = transit_rights
+					source_country = scope:boer_compact_source
+					target_country = c:NAL
+				}
+				{
+					article = transit_rights
+					source_country = c:NAL
+					target_country = scope:boer_compact_source
+				}
+			}
+		}
+	}
+}
+
+sb_send_boer_compact_renewal_offers = {
+	save_scope_as = sb_boer_compact_proposer
+	if = {
+		limit = { sb_boer_compact_with_ora_incomplete = yes }
+		c:ORA ?= { trigger_event = { id = sb_boer_compacts.010 days = 1 popup = yes } }
+	}
+	if = {
+		limit = { sb_boer_compact_with_trn_incomplete = yes }
+		c:TRN ?= { trigger_event = { id = sb_boer_compacts.010 days = 1 popup = yes } }
+	}
+	if = {
+		limit = { sb_boer_compact_with_zpb_incomplete = yes }
+		c:ZPB ?= { trigger_event = { id = sb_boer_compacts.010 days = 1 popup = yes } }
+	}
+	if = {
+		limit = { sb_boer_compact_with_lyd_incomplete = yes }
+		c:LYD ?= { trigger_event = { id = sb_boer_compacts.010 days = 1 popup = yes } }
+	}
+	if = {
+		limit = { sb_boer_compact_with_nal_incomplete = yes }
+		c:NAL ?= { trigger_event = { id = sb_boer_compacts.010 days = 1 popup = yes } }
+	}
+}
+
+sb_accept_boer_compact_renewal_from_scope_proposer = {
+	if = {
+		limit = {
+			exists = scope:sb_boer_compact_proposer
+			NOT = {
+				any_scope_treaty = {
+					binds = scope:sb_boer_compact_proposer
+					any_scope_article = { has_type = defensive_pact }
+				}
+			}
+			can_create_treaty = {
+				first_country = scope:sb_boer_compact_proposer
+				second_country = root
+				is_draft = no
+				binding_period = { years = 10 }
+				articles_to_create = {
+					{ article = defensive_pact }
+					{
+						article = transit_rights
+						source_country = scope:sb_boer_compact_proposer
+						target_country = root
+					}
+					{
+						article = transit_rights
+						source_country = root
+						target_country = scope:sb_boer_compact_proposer
+					}
+				}
+			}
+		}
+		create_treaty = {
+			first_country = scope:sb_boer_compact_proposer
+			second_country = root
+			is_draft = no
+			binding_period = { years = 10 }
+			articles_to_create = {
+				{ article = defensive_pact }
+				{
+					article = transit_rights
+					source_country = scope:sb_boer_compact_proposer
+					target_country = root
+				}
+				{
+					article = transit_rights
+					source_country = root
+					target_country = scope:sb_boer_compact_proposer
+				}
+			}
+		}
+	}
+
+	if = {
+		limit = {
+			exists = scope:sb_boer_compact_proposer
+			NOT = {
+				any_scope_treaty = {
+					binds = scope:sb_boer_compact_proposer
+					any_scope_article = { has_type = defensive_pact }
+				}
+			}
+			can_create_treaty = {
+				first_country = scope:sb_boer_compact_proposer
+				second_country = root
+				is_draft = no
+				binding_period = { years = 10 }
+				articles_to_create = {
+					{ article = defensive_pact }
+				}
+			}
+		}
+		create_treaty = {
+			first_country = scope:sb_boer_compact_proposer
+			second_country = root
+			is_draft = no
+			binding_period = { years = 10 }
+			articles_to_create = {
+				{ article = defensive_pact }
+			}
+		}
+	}
+
+	if = {
+		limit = {
+			exists = scope:sb_boer_compact_proposer
+			NOT = {
+				any_scope_treaty = {
+					binds = scope:sb_boer_compact_proposer
+					any_scope_article = {
+						has_type = transit_rights
+						source_country = scope:sb_boer_compact_proposer
+						target_country = root
+					}
+				}
+			}
+			can_create_treaty = {
+				first_country = scope:sb_boer_compact_proposer
+				second_country = root
+				is_draft = no
+				binding_period = { years = 10 }
+				articles_to_create = {
+					{
+						article = transit_rights
+						source_country = scope:sb_boer_compact_proposer
+						target_country = root
+					}
+				}
+			}
+		}
+		create_treaty = {
+			first_country = scope:sb_boer_compact_proposer
+			second_country = root
+			is_draft = no
+			binding_period = { years = 10 }
+			articles_to_create = {
+				{
+					article = transit_rights
+					source_country = scope:sb_boer_compact_proposer
+					target_country = root
+				}
+			}
+		}
+	}
+
+	if = {
+		limit = {
+			exists = scope:sb_boer_compact_proposer
+			NOT = {
+				any_scope_treaty = {
+					binds = scope:sb_boer_compact_proposer
+					any_scope_article = {
+						has_type = transit_rights
+						source_country = root
+						target_country = scope:sb_boer_compact_proposer
+					}
+				}
+			}
+			can_create_treaty = {
+				first_country = scope:sb_boer_compact_proposer
+				second_country = root
+				is_draft = no
+				binding_period = { years = 10 }
+				articles_to_create = {
+					{
+						article = transit_rights
+						source_country = root
+						target_country = scope:sb_boer_compact_proposer
+					}
+				}
+			}
+		}
+		create_treaty = {
+			first_country = scope:sb_boer_compact_proposer
+			second_country = root
+			is_draft = no
+			binding_period = { years = 10 }
+			articles_to_create = {
+				{
+					article = transit_rights
+					source_country = root
+					target_country = scope:sb_boer_compact_proposer
+				}
+			}
+		}
+	}
+}
+
 sb_grant_gbr_investment_rights_in_root = {
 	save_scope_as = investment_target
 
@@ -1453,16 +1655,84 @@ sb_grant_gbr_investment_rights_in_root = {
 
 sb_apply_boer_convention_acceptance = {
 	set_country_type = recognized
-	activate_law = law_type:law_slavery_banned
+	sb_create_boer_abolition_law_commitment = yes
 	create_bidirectional_truce = {
 		country = c:GBR
-		months = 120
+		months = 60
 	}
 	sb_ensure_convention_trade_through_with_root = yes
 	sb_ensure_live_boer_republic_compacts = yes
 	change_relations = {
 		country = c:GBR
 		value = 20
+	}
+}
+
+sb_create_boer_abolition_law_commitment = {
+	if = {
+		limit = {
+			c:GBR ?= { is_country_alive = yes }
+			NOT = { has_law = law_type:law_slavery_banned }
+		}
+		set_variable = sb_boer_slavery_banned_commitment_active_var
+		set_variable = { name = sb_boer_slavery_banned_commitment_deadline_var days = 1825 }
+		if = {
+			limit = {
+				NOT = { has_law_commitment = law_type:law_slavery_banned }
+			}
+			create_treaty = {
+				name = treaty_name_sb_boer_abolition_commitment
+				first_country = root
+				second_country = c:GBR
+				is_draft = no
+				binding_period = { years = 5 }
+				articles_to_create = {
+					{
+						article = law_commitment
+						source_country = root
+						target_country = c:GBR
+						inputs = {
+							{ law_type = law_type:law_slavery_banned }
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+sb_check_boer_abolition_law_commitment = {
+	if = {
+		limit = {
+			has_variable = sb_boer_slavery_banned_commitment_active_var
+			has_law = law_type:law_slavery_banned
+		}
+		remove_variable = sb_boer_slavery_banned_commitment_active_var
+		if = {
+			limit = { has_variable = sb_boer_slavery_banned_commitment_deadline_var }
+			remove_variable = sb_boer_slavery_banned_commitment_deadline_var
+		}
+	}
+	else_if = {
+		limit = {
+			has_variable = sb_boer_slavery_banned_commitment_active_var
+			is_subject = yes
+		}
+		remove_variable = sb_boer_slavery_banned_commitment_active_var
+		if = {
+			limit = { has_variable = sb_boer_slavery_banned_commitment_deadline_var }
+			remove_variable = sb_boer_slavery_banned_commitment_deadline_var
+		}
+	}
+	else_if = {
+		limit = {
+			has_variable = sb_boer_slavery_banned_commitment_active_var
+			NOT = { has_variable = sb_boer_slavery_banned_commitment_deadline_var }
+			NOT = { has_law = law_type:law_slavery_banned }
+			sb_has_any_slavery_law = yes
+		}
+		remove_variable = sb_boer_slavery_banned_commitment_active_var
+		sb_queue_gbr_highveld_slavery_response = yes
 	}
 }
 
@@ -1473,14 +1743,14 @@ sb_queue_gbr_highveld_slavery_response = {
 			NOT = { has_variable = sb_gbr_highveld_slavery_response_consumed_var }
 		}
 		set_variable = sb_gbr_highveld_slavery_response_pending_var
-		c:GBR ?= {
-			random_list = {
-				1 = { trigger_event = { id = sb_boer_conventions.142 days = 90 popup = no } }
-				1 = { trigger_event = { id = sb_boer_conventions.142 days = 180 popup = no } }
-				1 = { trigger_event = { id = sb_boer_conventions.142 days = 270 popup = no } }
-				1 = { trigger_event = { id = sb_boer_conventions.142 days = 360 popup = no } }
+			c:GBR ?= {
+				random_list = {
+					1 = { trigger_event = { id = sb_boer_conventions.142 days = 90 popup = no } }
+					1 = { trigger_event = { id = sb_boer_conventions.142 days = 180 popup = no } }
+					1 = { trigger_event = { id = sb_boer_conventions.142 days = 270 popup = no } }
+					1 = { trigger_event = { id = sb_boer_conventions.142 days = 360 popup = no } }
+				}
 			}
-		}
 	}
 }
 
@@ -1493,17 +1763,18 @@ sb_queue_gbr_zpb_slavery_response = {
 		set_variable = sb_gbr_highveld_zpb_response_pending_var
 		c:GBR ?= {
 			random_list = {
-				1 = { trigger_event = { id = sb_boer_conventions.142 days = 30 popup = no } }
-				1 = { trigger_event = { id = sb_boer_conventions.142 days = 60 popup = no } }
-				1 = { trigger_event = { id = sb_boer_conventions.142 days = 90 popup = no } }
-				1 = { trigger_event = { id = sb_boer_conventions.142 days = 120 popup = no } }
+					1 = { trigger_event = { id = sb_boer_conventions.142 days = 90 popup = no } }
+					1 = { trigger_event = { id = sb_boer_conventions.142 days = 180 popup = no } }
+					1 = { trigger_event = { id = sb_boer_conventions.142 days = 270 popup = no } }
+					1 = { trigger_event = { id = sb_boer_conventions.142 days = 360 popup = no } }
 			}
 		}
 	}
 }
 
 sb_open_trn_zpb_frontier_unity_path = {
-	activate_law = law_type:law_expanded_inboekstelsel
+	activate_law = law_type:law_discrete_inboekstelsel
+	sb_add_expanded_inboekstelsel_amendment = yes
 	if = {
 		limit = { has_variable = sb_zpb_crackdown_active_var }
 		remove_variable = sb_zpb_crackdown_active_var
@@ -1617,6 +1888,10 @@ sb_apply_zpb_player_trn_civil_war_support = {
 		add_treasury = 10000
 		add_modifier = {
 			name = sb_zpb_civil_war_player_trn_support
+			months = 12
+		}
+		add_modifier = {
+			name = sb_laager_defence
 			months = 12
 		}
 		create_military_formation = {

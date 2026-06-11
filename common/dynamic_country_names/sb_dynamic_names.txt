@@ -356,9 +356,23 @@ SWZ = {
 # SAF — Override vanilla dynamic names for South Africa.
 # REPLACE: clears all vanilla SAF dynamic names (e.g., "Union of South Africa" from base game).
 # SAF is now exclusively a formable country in this mod, not a starting tag.
-# priority = 0 with always = yes: ensures this is the only name SAF ever uses.
+# priority = 0 with always = yes: ensures this is the fallback name SAF uses.
 # Cross-ref: common/country_formation/sb_formable_countries.txt for SAF formation requirements.
 REPLACE:SAF = {
+	dynamic_country_name = {
+		name = dyn_c_sb_confederated_states_of_southern_africa
+		adjective = dyn_c_sb_confederated_states_of_southern_africa_adj
+
+		is_main_tag_only = yes
+		priority = 10
+
+		trigger = {
+			scope:actor ?= {
+				has_variable = sb_confederated_south_africa_var
+			}
+		}
+	}
+
 	dynamic_country_name = {
 		name = dyn_c_sb_union_of_south_africa
 		adjective = dyn_c_sb_union_of_south_africa_adj

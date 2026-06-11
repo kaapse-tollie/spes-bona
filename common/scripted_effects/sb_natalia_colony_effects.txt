@@ -110,6 +110,7 @@ sb_apply_british_natal_colony_setup = {
 	activate_law = law_type:law_colonial_administration
 	activate_law = law_type:law_professional_army
 	activate_law = law_type:law_slavery_banned
+	activate_law = law_type:law_racial_segregation
 	if = {
 		limit = {
 			c:ZUL ?= { is_country_alive = yes }
@@ -152,6 +153,10 @@ sb_apply_british_natal_colony_setup = {
 		remove_primary_culture = cu:boer
 	}
 	sb_apply_generic_british_colony_interest_group_identity = yes
+	every_interest_group = {
+		remove_ruling_interest_group = yes
+	}
+	ig:ig_armed_forces ?= { add_ruling_interest_group = yes }
 	s:STATE_ZULULAND = {
 		set_owner_of_provinces = {
 			country = root
@@ -308,6 +313,12 @@ sb_install_british_natal_governor = {
 			}
 		}
 	}
+	c:NAL = {
+		every_interest_group = {
+			remove_ruling_interest_group = yes
+		}
+		ig:ig_armed_forces ?= { add_ruling_interest_group = yes }
+	}
 	scope:natal_colonial_governor ?= {
 		set_interest_group = c:NAL.ig:ig_armed_forces
 		if = {
@@ -318,6 +329,25 @@ sb_install_british_natal_governor = {
 		}
 		set_as_interest_group_leader = yes
 		set_character_as_ruler = yes
+	}
+}
+
+sb_ensure_british_natal_colony_governor = {
+	if = {
+		limit = {
+			country_definition = cd:NAL
+			has_variable = sb_natalia_british_colony_resolved_var
+			OR = {
+				NOT = { exists = ruler }
+				ruler = {
+					NOR = {
+						culture = cu:british
+						culture = cu:anglo_african
+					}
+				}
+			}
+		}
+		sb_install_british_natal_governor = yes
 	}
 }
 
@@ -403,12 +433,66 @@ sb_join_natalia_against_britain = {
 					country_definition = cd:ORA
 				}
 			}
-			add_war_goal = {
-				holder = scope:natalia_supporter
-				target_country = c:CAP
-				type = liberate_country
+			sb_add_natalia_liberate_cape_goal_if_oranje_supports = yes
+		}
+	}
+}
+
+sb_add_natalia_liberate_cape_goal_if_oranje_supports = {
+	if = {
+		limit = {
+			any_scope_play_involved = {
+				c:ORA ?= THIS
+				is_diplomatic_play_enemy_of = c:GBR
+			}
+			c:NAL ?= {
+				NOT = { has_variable = sb_natalia_liberate_cape_goal_added_var }
 			}
 		}
+		add_war_goal = {
+			holder = c:NAL
+			target_country = c:CAP
+			type = liberate_country
+		}
+		c:NAL ?= {
+			set_variable = {
+				name = sb_natalia_liberate_cape_goal_added_var
+				months = 24
+			}
+		}
+	}
+}
+
+sb_handle_natalia_player_support_join = {
+	if = {
+		limit = {
+			is_diplomatic_play_type = dp_make_protectorate
+			any_scope_play_involved = { c:GBR ?= THIS }
+			any_scope_play_involved = { c:NAL ?= THIS }
+			any_scope_play_involved = {
+				is_player = yes
+				is_diplomatic_play_enemy_of = c:GBR
+				OR = {
+					country_definition = cd:ORA
+					country_definition = cd:TRN
+					country_definition = cd:ZPB
+					country_definition = cd:LYD
+				}
+			}
+		}
+		c:ORA ?= {
+			if = { limit = { is_country_alive = yes is_ai = yes } sb_support_natalia_against_britain = yes }
+		}
+		c:TRN ?= {
+			if = { limit = { is_country_alive = yes is_ai = yes } sb_support_natalia_against_britain = yes }
+		}
+		c:ZPB ?= {
+			if = { limit = { is_country_alive = yes is_ai = yes } sb_support_natalia_against_britain = yes }
+		}
+		c:LYD ?= {
+			if = { limit = { is_country_alive = yes is_ai = yes } sb_support_natalia_against_britain = yes }
+		}
+		sb_add_natalia_liberate_cape_goal_if_oranje_supports = yes
 	}
 }
 
