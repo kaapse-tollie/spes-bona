@@ -483,6 +483,10 @@ types journal
 					}
 				}
 				
+				flowcontainer = {
+					name = "custom_widgets_container"
+				}
+
 				# scripted progress bars
 				flowcontainer = {
 					datamodel = "[JournalEntry.GetScriptedProgressBars]"
@@ -579,16 +583,16 @@ types journal
 										block "animate_negative_change" {
 											animate_negative_changes = yes
 										}
-											marker = {
+										marker = {
 
-												icon = {
-													size = { 22 22 }
-													parentanchor = vcenter
-													widgetanchor = center
-															texture = "gfx/interface/icons/principles_icons/creative_legislature.dds"
-													using = shimmer
-												}
+											icon = {
+												size = { 22 22 }
+												parentanchor = vcenter
+												widgetanchor = center
+												texture = "gfx/interface/icons/principles_icons/creative_legislature.dds"
+												using = shimmer
 											}
+										}
 									}
 								}
 							}
@@ -638,7 +642,60 @@ types journal
 												size = { 40 20 }
 												parentanchor = vcenter
 												widgetanchor = center
-															texture = "gfx/interface/icons/principles_icons/creative_legislature.dds"
+												texture = "gfx/interface/icons/principles_icons/creative_legislature.dds"
+												using = shimmer
+											}
+										}
+									}
+								}
+							}
+
+							# double sided ryukyu
+							bad_progressbar_horizontal = {
+								visible = "[ScriptedProgressBar.IsDoubleSidedRyukyu]"
+								block "progressbar_size" {
+									size = { 420 10 }
+								}
+								tooltip = "[ScriptedProgressBar.GetPeriodicProgressBreakdown]"
+
+								blockoverride "noprogresstexture" {
+									noprogresstexture = "gfx/interface/progressbar/progressbar_gold.dds"
+								}
+
+								blockoverride "values" {
+									value = "[JournalEntry.GetCurrentBarProgress(ScriptedProgressBar.Self)]"
+									min = 0
+									max = 1
+								}
+
+								#this is hack to get an extra marker on top of the frame (progressbar properties are copied)
+								blockoverride "on_top_of_the_progressbar" {
+									progressbar = {
+										noprogresstexture = "gfx/interface/icons/generic_icons/transparent.dds"
+										progresstexture = "gfx/interface/icons/generic_icons/transparent.dds"
+										size = { 100% 100% }
+										spriteType = Corneredtiled
+										spriteborder = { 4 4 }
+										texture_density = 2
+										skip_initial_animation = yes
+
+										block "values" {}
+										block "direction" {
+											direction = horizontal
+										}
+										block "progress_changed_animation" {
+											using = progressbar_changed_animation
+										}
+										block "animate_negative_change" {
+											animate_negative_changes = yes
+										}
+										marker = {
+
+											icon = {
+												size = { 40 20 }
+												parentanchor = vcenter
+												widgetanchor = center
+												texture = "gfx/interface/icons/principles_icons/creative_legislature.dds"
 												using = shimmer
 											}
 										}
@@ -691,7 +748,7 @@ types journal
 												size = { 40 20 }
 												parentanchor = vcenter
 												widgetanchor = center
-															texture = "gfx/interface/icons/principles_icons/creative_legislature.dds"
+												texture = "gfx/interface/icons/principles_icons/creative_legislature.dds"
 												using = shimmer
 											}
 										}

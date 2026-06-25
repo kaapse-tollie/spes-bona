@@ -1,6 +1,8 @@
 ﻿# Third-Party Compatibility Notes
 
-Target game version: `1.13.8`
+Target game version: `1.13.9`
+
+Validation note: Tiger is useful for parser validation on 1.13.9, but launch logs and fresh-start smoke tests remain authoritative for runtime compatibility.
 
 Spes Bona is a Southern Africa map, population, and flavor overhaul. It should not change Japan, Australia, North Africa, the Middle East, or other non-SB map scopes.
 
@@ -32,7 +34,7 @@ Spes Bona still uses:
 replace_path="common/history/treaties"
 ```
 
-This is intentional. The replacement file is rebased to vanilla `1.13.8` and only changes the South African startup treaty block. Additive SB treaties live in `common/history/treaties/sb_treaties.txt`.
+This is intentional. The replacement file is rebased to vanilla `1.13.9` and only changes the South African startup treaty block. Additive SB treaties live in `common/history/treaties/sb_treaties.txt`.
 
 ## File Naming Rule
 

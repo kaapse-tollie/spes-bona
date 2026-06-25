@@ -45,8 +45,16 @@ types journal_entry_panel_types
 				using = default_list_position
 				spacing = 10
 
+				flowcontainer = {
+					name = "custom_widget_container_je_icon"
+					visible = "[JournalEntry.HasCustomWidget('custom_widget_container_je_icon')]"
+					parentanchor = hcenter
+					direction = vertical
+				}
+
 				widget  = {
 					size = { @panel_width_plus_20 120 }
+					visible = "[Not(JournalEntry.HasCustomWidget('custom_widget_container_je_icon') )]"
 
 					parentanchor = hcenter
 
@@ -71,8 +79,6 @@ types journal_entry_panel_types
 							}
 						}
 
-
-
 						# completion in progress
 						icon = {
 							visible = "[JournalEntry.IsProgressing]"
@@ -89,6 +95,15 @@ types journal_entry_panel_types
 								alpha = 0.5
 							}
 						}
+					}
+
+					textbox = {
+						visible = "[InDebugMode]"
+						raw_text = "DEBUG_JOURNAL_ENTRY_ID"
+						autoresize = yes
+						align = nobaseline
+						using = fontsize_large
+						parentanchor = hcenter
 					}
 
 					### TIMED MODIFIERS
@@ -117,6 +132,40 @@ types journal_entry_panel_types
 					}
 				}
 
+				### TIMED MODIFIERS ALT
+				widget = {
+					size = { @panel_width_plus_20 60 }
+					parentanchor = hcenter
+					visible = "[And(JournalEntry.HasCustomWidget('custom_widget_container_je_icon'), Not(IsDataModelEmpty(JournalEntry.GetTimedModifiers)) )]"
+
+					flowcontainer = {
+						background = {
+							using = fade_left_simple
+							margin_right = 10
+						}
+						datamodel = "[JournalEntry.GetTimedModifiers]"
+						spacing = 5
+						parentanchor = vcenter|right
+						datamodel_wrap = 2
+						margin = { 10 10 }
+						margin_right = 10
+
+						item = {
+							icon = {
+								tooltip = "[TimedModifier.GetTooltip]"
+								texture = "[TimedModifier.GetIcon]"
+								size = { 35 35 }
+							}
+						}
+					}
+				}
+
+				flowcontainer = {
+					name = "custom_widget_container_1"
+					visible = "[JournalEntry.HasCustomWidget('custom_widget_container_1')]"
+					parentanchor = hcenter
+					direction = vertical
+				}
 
 				# time out info
 				flowcontainer = {
@@ -157,6 +206,13 @@ types journal_entry_panel_types
 					}
 				}
 
+				flowcontainer = {
+					name = "custom_widget_container_2"
+					visible = "[JournalEntry.HasCustomWidget('custom_widget_container_2')]"
+					parentanchor = hcenter
+					direction = vertical
+				}
+
 				dynamicgridbox = {
 					parentanchor = hcenter
 					visible = "[Not( IsDataModelEmpty( JournalEntry.GetScriptedButtons ) )]"
@@ -177,6 +233,13 @@ types journal_entry_panel_types
 							# This enables more use cases, such as using buttons as on-off toggles, but requires the scripter to disable buttons manually in the possible trigger as needed.
 						}
 					}
+				}
+
+				flowcontainer = {
+					name = "custom_widget_container_3"
+					visible = "[JournalEntry.HasCustomWidget('custom_widget_container_3')]"
+					parentanchor = hcenter
+					direction = vertical
 				}
 
 				flowcontainer = {
@@ -320,16 +383,16 @@ types journal_entry_panel_types
 											block "animate_negative_change" {
 												animate_negative_changes = yes
 											}
-												marker = {
+											marker = {
 
-													icon = {
-														size = { 33 33 }
-														parentanchor = vcenter
-														widgetanchor = center
-															texture = "gfx/interface/icons/principles_icons/creative_legislature.dds"
-														using = shimmer
-													}
+												icon = {
+													size = { 33 33 }
+													parentanchor = vcenter
+													widgetanchor = center
+													texture = "gfx/interface/icons/principles_icons/creative_legislature.dds"
+													using = shimmer
 												}
+											}
 										}
 									}
 								}
@@ -399,7 +462,7 @@ types journal_entry_panel_types
 													size = { 65 33 }
 													parentanchor = vcenter
 													widgetanchor = center
-																texture = "gfx/interface/icons/principles_icons/creative_legislature.dds"
+													texture = "gfx/interface/icons/principles_icons/creative_legislature.dds"
 													using = shimmer
 												}
 											}
@@ -420,6 +483,95 @@ types journal_entry_panel_types
 									parentanchor = right|vcenter
 									block "progressbar_right_icon" {
 										texture = "gfx/interface/progressbar/twospains_conservatism_marker.dds"
+									}
+								}
+							}
+
+							# double sided ryukyu
+							widget = {
+								size = { 520 45 }
+								parentanchor = center
+								visible = "[ScriptedProgressBar.IsDoubleSidedRyukyu]"
+
+								bad_progressbar_horizontal = {
+									parentanchor = center
+									block "progressbar_size" {
+										size = { 430 30 }
+									}
+
+									blockoverride "noprogresstexture" {
+										noprogresstexture = "gfx/interface/progressbar/progressbar_gold.dds"
+									}
+
+									tooltip = "[ScriptedProgressBar.GetPeriodicProgressBreakdown]"
+									blockoverride "values" {
+										value = "[JournalEntry.GetCurrentBarProgress(ScriptedProgressBar.Self)]"
+										min = 0
+										max = 1
+									}
+									textbox = {
+										text = "[ScriptedProgressBar.GetDesc]"
+										autoresize = yes
+										align = nobaseline
+										margin_left = 10
+										parentanchor = vcenter
+									}
+									textbox = {
+										text = "[ScriptedProgressBar.GetSecondDesc]"
+										autoresize = yes
+										align = right|nobaseline
+										margin_right = 10
+										parentanchor = right|vcenter
+									}
+
+									#this is hack to get an extra marker on top of the frame (progressbar properties are copied)
+									blockoverride "on_top_of_the_progressbar" {
+										progressbar = {
+											noprogresstexture = "gfx/interface/icons/generic_icons/transparent.dds"
+											progresstexture = "gfx/interface/icons/generic_icons/transparent.dds"
+											size = { 100% 100% }
+											spriteType = Corneredtiled
+											spriteborder = { 4 4 }
+											texture_density = 2
+											skip_initial_animation = yes
+
+											block "values" {}
+											block "direction" {
+												direction = horizontal
+											}
+											block "progress_changed_animation" {
+												using = progressbar_changed_animation
+											}
+											block "animate_negative_change" {
+												animate_negative_changes = yes
+											}
+											marker = {
+
+												icon = {
+													size = { 65 33 }
+													parentanchor = vcenter
+													widgetanchor = center
+													texture = "gfx/interface/icons/principles_icons/creative_legislature.dds"
+													using = shimmer
+												}
+											}
+										}
+									}
+								}
+
+								icon = {
+									size = { 32 32 }
+									parentanchor = vcenter
+									block "progressbar_left_icon" {
+										texture = "gfx/interface/progressbar/tokugawa_marker.dds"
+									}
+								}
+
+								icon = {
+									size = { 32 32 }
+									parentanchor = right|vcenter
+									block "progressbar_right_icon" {
+										texture = "gfx/interface/progressbar/qing_dynasty_marker.dds"
 									}
 								}
 							}
@@ -488,7 +640,7 @@ types journal_entry_panel_types
 													size = { 65 33 }
 													parentanchor = vcenter
 													widgetanchor = center
-																texture = "gfx/interface/icons/principles_icons/creative_legislature.dds"
+													texture = "gfx/interface/icons/principles_icons/creative_legislature.dds"
 													using = shimmer
 												}
 											}
@@ -576,6 +728,13 @@ types journal_entry_panel_types
 				}
 
 				flowcontainer = {
+					name = "custom_widget_container_4"
+					visible = "[JournalEntry.HasCustomWidget('custom_widget_container_4')]"
+					parentanchor = hcenter
+					direction = vertical
+				}
+
+				flowcontainer = {
 					direction = vertical
 					using = default_list_position
 
@@ -594,6 +753,13 @@ types journal_entry_panel_types
 						background = {
 							using = entry_bg
 						}
+					}
+
+					flowcontainer = {
+						name = "custom_widget_container_5"
+						visible = "[JournalEntry.HasCustomWidget('custom_widget_container_5')]"
+						parentanchor = hcenter
+						direction = vertical
 					}
 
 					flowcontainer = {
@@ -633,7 +799,15 @@ types journal_entry_panel_types
 					}
 
 					flowcontainer = {
+						name = "custom_widget_container_6"
+						visible = "[JournalEntry.HasCustomWidget('custom_widget_container_6')]"
+						parentanchor = hcenter
 						direction = vertical
+					}
+
+					flowcontainer = {
+						direction = vertical
+						max_update_rate = 8
 						using = default_list_position
 						name = "complete_text"
 
@@ -751,6 +925,13 @@ types journal_entry_panel_types
 							margin_right = 15
 						}
 					}
+				}
+
+				flowcontainer = {
+					name = "custom_widget_container_7"
+					visible = "[JournalEntry.HasCustomWidget('custom_widget_container_7')]"
+					parentanchor = hcenter
+					direction = vertical
 				}
 
 				### TUTORIAL

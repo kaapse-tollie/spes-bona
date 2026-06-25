@@ -1,6 +1,8 @@
 ﻿# Spes Bona Override Manifest
 
-Target game version: `1.13.8`
+Target game version: `1.13.9`
+
+Migration validation rule: Tiger is again useful for parser validation on 1.13.9, but launch logs and fresh-start smoke tests remain authoritative for runtime compatibility.
 
 This file tracks intentional compatibility risks. New broad vanilla-file copies should not be added without updating this manifest.
 
@@ -10,11 +12,11 @@ This file tracks intentional compatibility risks. New broad vanilla-file copies 
 
 Reason: vanilla starts several Southern African treaty relationships that Spes Bona suppresses or reshapes before gameplay begins. Treaty history has no keyed `REPLACE` equivalent that cleanly removes vanilla startup treaties without runtime notification spam.
 
-Current rule: `common/history/treaties/00_historical_treaties.txt` must stay rebased to vanilla `1.13.8`, with only the South African treaty block intentionally different. Additional SB-only treaties belong in `common/history/treaties/sb_treaties.txt`.
+Current rule: `common/history/treaties/00_historical_treaties.txt` must stay rebased to vanilla `1.13.9`, with only the South African treaty block intentionally different. Additional SB-only treaties belong in `common/history/treaties/sb_treaties.txt`.
 
 ## Same-Path Vanilla Files
 
-Same-path vanilla files are allowed only when the engine loads vanilla data alongside additive SB data and there is no safe keyed suppression path. These files must stay rebased to vanilla `1.13.8`, with only SB-scoped Southern Africa blocks changed.
+Same-path vanilla files are allowed only when the engine loads vanilla data alongside additive SB data and there is no safe keyed suppression path. These files must stay rebased to vanilla `1.13.9`, with only SB-scoped Southern Africa blocks changed.
 
 Approved same-path regional exceptions:
 
