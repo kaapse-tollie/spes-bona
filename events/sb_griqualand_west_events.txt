@@ -28,7 +28,7 @@ sb_griqualand_west.021 = {
 				country_definition = cd:CAP
 				c:WBL ?= {
 					is_country_alive = yes
-					any_scope_state = { state_region = s:STATE_NORTHERN_CAPE }
+					any_scope_state = { state_region = s:STATE_GRIQUALAND_WEST }
 				}
 			}
 		}
@@ -43,7 +43,16 @@ sb_griqualand_west.021 = {
 				limit = {
 					c:CAP ?= {
 						is_country_alive = yes
-						has_claim = s:STATE_NORTHERN_CAPE
+						NOT = { has_claim = s:STATE_GRIQUALAND_WEST }
+					}
+				}
+				s:STATE_GRIQUALAND_WEST = { add_claim = c:CAP }
+			}
+			if = {
+				limit = {
+					c:CAP ?= {
+						is_country_alive = yes
+						has_claim = s:STATE_GRIQUALAND_WEST
 					}
 					c:ORA ?= {
 						is_country_alive = yes
@@ -76,18 +85,24 @@ sb_griqualand_west.021 = {
 				limit = {
 					c:CAP ?= {
 						is_country_alive = yes
-						has_claim = s:STATE_NORTHERN_CAPE
+						has_claim = s:STATE_GRIQUALAND_WEST
 					}
 					c:WBL ?= {
 						is_country_alive = yes
-						any_scope_state = { state_region = s:STATE_NORTHERN_CAPE }
+						any_scope_state = { state_region = s:STATE_GRIQUALAND_WEST }
 					}
 					NOT = {
 						c:ORA ?= {
 							is_country_alive = yes
 							OR = {
 								is_subject = no
-								is_direct_subject_of = c:TRN
+								AND = {
+									is_direct_subject_of = c:TRN
+									OR = {
+										is_subject_type = subject_type_sb_boer_presidential_union
+										is_subject_type = subject_type_sb_boer_confederal_partner
+									}
+								}
 							}
 						}
 					}
@@ -181,9 +196,9 @@ sb_griqualand_west.022 = {
 		}
 		c:CAP ?= {
 			is_country_alive = yes
-			has_claim = s:STATE_NORTHERN_CAPE
+			has_claim = s:STATE_GRIQUALAND_WEST
 		}
-		NOT = { has_claim = s:STATE_NORTHERN_CAPE }
+		NOT = { has_claim = s:STATE_GRIQUALAND_WEST }
 	}
 
 	option = {
@@ -236,7 +251,7 @@ sb_griqualand_west.023 = {
 
 	trigger = {
 		country_definition = cd:CAP
-		has_claim = s:STATE_NORTHERN_CAPE
+		has_claim = s:STATE_GRIQUALAND_WEST
 		OR = {
 			c:ORA ?= {
 				is_country_alive = yes
@@ -298,16 +313,16 @@ sb_griqualand_west.023 = {
 		set_variable = sb_griqualand_west_arbitration_path_var
 		hidden_effect = {
 			if = {
-				limit = { c:CAP ?= { has_claim = s:STATE_NORTHERN_CAPE } }
-				s:STATE_NORTHERN_CAPE = { remove_claim = c:CAP }
+				limit = { c:CAP ?= { has_claim = s:STATE_GRIQUALAND_WEST } }
+				s:STATE_GRIQUALAND_WEST = { remove_claim = c:CAP }
 			}
 			if = {
-				limit = { c:TRN ?= { has_variable = sb_kimberley_ora_pressed_claim_var NOT = { has_claim = s:STATE_NORTHERN_CAPE } } }
-				s:STATE_NORTHERN_CAPE = { add_claim = c:TRN }
+				limit = { c:TRN ?= { has_variable = sb_kimberley_ora_pressed_claim_var NOT = { has_claim = s:STATE_GRIQUALAND_WEST } } }
+				s:STATE_GRIQUALAND_WEST = { add_claim = c:TRN }
 			}
 			else_if = {
-				limit = { c:ORA ?= { NOT = { has_claim = s:STATE_NORTHERN_CAPE } } }
-				s:STATE_NORTHERN_CAPE = { add_claim = c:ORA }
+				limit = { c:ORA ?= { NOT = { has_claim = s:STATE_GRIQUALAND_WEST } } }
+				s:STATE_GRIQUALAND_WEST = { add_claim = c:ORA }
 			}
 		}
 		change_relations = {
@@ -356,7 +371,7 @@ sb_griqualand_west.241 = {
 		}
 		c:CAP ?= {
 			is_country_alive = yes
-			has_claim = s:STATE_NORTHERN_CAPE
+			has_claim = s:STATE_GRIQUALAND_WEST
 		}
 	}
 
@@ -374,7 +389,7 @@ sb_griqualand_west.241 = {
 					holder = root
 					type = revoke_claim
 					target_country = c:CAP
-					target_state = s:STATE_NORTHERN_CAPE.region_state:CAP
+					target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
 				}
 			}
 		}
@@ -441,7 +456,7 @@ sb_griqualand_west.242 = {
 		}
 		c:CAP ?= {
 			is_country_alive = yes
-			has_claim = s:STATE_NORTHERN_CAPE
+			has_claim = s:STATE_GRIQUALAND_WEST
 		}
 	}
 
@@ -511,10 +526,10 @@ sb_griqualand_west.243 = {
 			country_definition = cd:ORA
 			country_definition = cd:TRN
 		}
-		has_claim = s:STATE_NORTHERN_CAPE
+		has_claim = s:STATE_GRIQUALAND_WEST
 		c:CAP ?= {
 			is_country_alive = yes
-			NOT = { has_claim = s:STATE_NORTHERN_CAPE }
+			NOT = { has_claim = s:STATE_GRIQUALAND_WEST }
 		}
 	}
 
@@ -551,7 +566,7 @@ sb_griqualand_west.244 = {
 		country_definition = cd:CAP
 		c:WBL ?= {
 			is_country_alive = yes
-			any_scope_state = { state_region = s:STATE_NORTHERN_CAPE }
+			any_scope_state = { state_region = s:STATE_GRIQUALAND_WEST }
 		}
 	}
 
@@ -592,7 +607,7 @@ sb_griqualand_west.245 = {
 		}
 		c:WBL ?= {
 			is_country_alive = yes
-			any_scope_state = { state_region = s:STATE_NORTHERN_CAPE }
+			any_scope_state = { state_region = s:STATE_GRIQUALAND_WEST }
 		}
 	}
 
@@ -646,7 +661,7 @@ sb_griqualand_west.025 = {
 
 	trigger = {
 		country_definition = cd:WBL
-		any_scope_state = { state_region = s:STATE_NORTHERN_CAPE }
+		any_scope_state = { state_region = s:STATE_GRIQUALAND_WEST }
 		OR = {
 			has_variable = sb_griqualand_west_cap_annexation_demand_var
 			has_variable = sb_griqualand_west_ora_submission_demand_var
@@ -670,12 +685,33 @@ sb_griqualand_west.025 = {
 			limit = { has_variable = sb_griqualand_west_trn_submission_demand_var }
 			sb_kimberley_finalize_trn_puppet_route = yes
 		}
-		ai_chance = {
-			base = 60
-			modifier = {
-				trigger = {
-					has_variable = sb_griqualand_west_cap_annexation_demand_var
-					is_in_same_power_bloc = c:CAP
+			ai_chance = {
+				base = 60
+				modifier = {
+					trigger = {
+						has_variable = sb_griqualand_west_cap_annexation_demand_var
+						c:CAP ?= { is_ai = yes }
+					}
+					add = 10000
+				}
+				modifier = {
+					trigger = {
+						has_variable = sb_griqualand_west_ora_submission_demand_var
+						c:ORA ?= { is_ai = yes }
+					}
+					add = 10000
+				}
+				modifier = {
+					trigger = {
+						has_variable = sb_griqualand_west_trn_submission_demand_var
+						c:TRN ?= { is_ai = yes }
+					}
+					add = 10000
+				}
+				modifier = {
+					trigger = {
+						has_variable = sb_griqualand_west_cap_annexation_demand_var
+						is_in_same_power_bloc = c:CAP
 				}
 				add = 30
 			}
@@ -812,12 +848,33 @@ sb_griqualand_west.025 = {
 				}
 			}
 		}
-		ai_chance = {
-			base = 40
-			modifier = {
-				trigger = {
-					has_variable = sb_griqualand_west_cap_annexation_demand_var
-					is_in_same_power_bloc = c:CAP
+			ai_chance = {
+				base = 40
+				modifier = {
+					trigger = {
+						has_variable = sb_griqualand_west_cap_annexation_demand_var
+						c:CAP ?= { is_ai = yes }
+					}
+					add = -10000
+				}
+				modifier = {
+					trigger = {
+						has_variable = sb_griqualand_west_ora_submission_demand_var
+						c:ORA ?= { is_ai = yes }
+					}
+					add = -10000
+				}
+				modifier = {
+					trigger = {
+						has_variable = sb_griqualand_west_trn_submission_demand_var
+						c:TRN ?= { is_ai = yes }
+					}
+					add = -10000
+				}
+				modifier = {
+					trigger = {
+						has_variable = sb_griqualand_west_cap_annexation_demand_var
+						is_in_same_power_bloc = c:CAP
 				}
 				add = -30
 			}
@@ -942,7 +999,7 @@ sb_griqualand_west.260 = {
 	trigger = {
 		has_global_variable = sb_kimberley_remaining_potential_seeded_var
 		any_scope_state = {
-			state_region = s:STATE_NORTHERN_CAPE
+			state_region = s:STATE_GRIQUALAND_WEST
 			NOT = { has_modifier = state_gold_rush }
 			NOT = { has_modifier = sb_diamond_rush_exploitation }
 		}
@@ -952,7 +1009,7 @@ sb_griqualand_west.260 = {
 		name = sb_griqualand_west.260.a
 		default_option = yes
 		random_scope_state = {
-			limit = { state_region = s:STATE_NORTHERN_CAPE }
+			limit = { state_region = s:STATE_GRIQUALAND_WEST }
 			add_modifier = {
 				name = state_gold_rush
 				days = long_modifier_time
@@ -963,7 +1020,7 @@ sb_griqualand_west.260 = {
 	option = {
 		name = sb_griqualand_west.260.b
 		random_scope_state = {
-			limit = { state_region = s:STATE_NORTHERN_CAPE }
+			limit = { state_region = s:STATE_GRIQUALAND_WEST }
 			add_modifier = {
 				name = state_gold_rush_less_migration
 				days = long_modifier_time

@@ -822,6 +822,145 @@ sb_ensure_gbr_power_bloc_embassies_for_boer_republics = {
 	}
 }
 
+sb_withdraw_ai_frontier_goods_exports_to_boers = {
+	c:ORA ?= {
+		sb_withdraw_ai_ora_frontier_goods_exports_to_boers = yes
+	}
+	c:TRN ?= {
+		sb_withdraw_ai_trn_frontier_goods_exports_to_boers = yes
+	}
+}
+
+sb_withdraw_ai_ora_frontier_goods_exports_to_boers = {
+	if = {
+		limit = {
+			is_country_alive = yes
+			is_ai = yes
+			is_active_in_diplomatic_play = yes
+			OR = {
+				has_journal_entry = je_sb_great_trek
+				has_journal_entry = je_sb_bst_ora_frontier
+			}
+		}
+		every_scope_treaty = {
+			limit = {
+				OR = {
+					AND = {
+						c:TRN ?= {
+							is_country_alive = yes
+							country_has_primary_culture = cu:boer
+						}
+						any_scope_article = {
+							has_type = goods_transfer
+							source_country = c:ORA
+							target_country = c:TRN
+						}
+					}
+					AND = {
+						c:ZPB ?= {
+							is_country_alive = yes
+							country_has_primary_culture = cu:boer
+						}
+						any_scope_article = {
+							has_type = goods_transfer
+							source_country = c:ORA
+							target_country = c:ZPB
+						}
+					}
+					AND = {
+						c:LYD ?= {
+							is_country_alive = yes
+							country_has_primary_culture = cu:boer
+						}
+						any_scope_article = {
+							has_type = goods_transfer
+							source_country = c:ORA
+							target_country = c:LYD
+						}
+					}
+					AND = {
+						c:NAL ?= {
+							is_country_alive = yes
+							country_has_primary_culture = cu:boer
+						}
+						any_scope_article = {
+							has_type = goods_transfer
+							source_country = c:ORA
+							target_country = c:NAL
+						}
+					}
+				}
+			}
+			withdraw = { country = c:ORA }
+		}
+	}
+}
+
+sb_withdraw_ai_trn_frontier_goods_exports_to_boers = {
+	if = {
+		limit = {
+			is_country_alive = yes
+			is_ai = yes
+			is_active_in_diplomatic_play = yes
+			OR = {
+				has_journal_entry = je_sb_great_trek
+				has_journal_entry = je_sb_bst_ora_frontier
+			}
+		}
+		every_scope_treaty = {
+			limit = {
+				OR = {
+					AND = {
+						c:ORA ?= {
+							is_country_alive = yes
+							country_has_primary_culture = cu:boer
+						}
+						any_scope_article = {
+							has_type = goods_transfer
+							source_country = c:TRN
+							target_country = c:ORA
+						}
+					}
+					AND = {
+						c:ZPB ?= {
+							is_country_alive = yes
+							country_has_primary_culture = cu:boer
+						}
+						any_scope_article = {
+							has_type = goods_transfer
+							source_country = c:TRN
+							target_country = c:ZPB
+						}
+					}
+					AND = {
+						c:LYD ?= {
+							is_country_alive = yes
+							country_has_primary_culture = cu:boer
+						}
+						any_scope_article = {
+							has_type = goods_transfer
+							source_country = c:TRN
+							target_country = c:LYD
+						}
+					}
+					AND = {
+						c:NAL ?= {
+							is_country_alive = yes
+							country_has_primary_culture = cu:boer
+						}
+						any_scope_article = {
+							has_type = goods_transfer
+							source_country = c:TRN
+							target_country = c:NAL
+						}
+					}
+				}
+			}
+			withdraw = { country = c:TRN }
+		}
+	}
+}
+
 sb_ensure_gbr_power_bloc_embassies_for_cape_frontier_network = {
 	sb_ensure_gbr_power_bloc_embassies_for_boer_republics = yes
 	c:WBL ?= {
@@ -1433,25 +1572,56 @@ sb_ensure_boer_republic_defensive_compact_fallback_with_nal = {
 
 sb_send_boer_compact_renewal_offers = {
 	save_scope_as = sb_boer_compact_proposer
+	set_variable = { name = sb_boer_compact_renewal_decision_cooldown_var days = 365 }
 	if = {
-		limit = { sb_boer_compact_with_ora_incomplete = yes }
-		c:ORA ?= { trigger_event = { id = sb_boer_compacts.010 days = 1 popup = yes } }
+		limit = {
+			sb_boer_compact_with_ora_incomplete = yes
+			c:ORA ?= { NOT = { has_variable = sb_boer_compact_renewal_offer_received_cooldown_var } }
+		}
+		c:ORA ?= {
+			set_variable = { name = sb_boer_compact_renewal_offer_received_cooldown_var days = 90 }
+			trigger_event = { id = sb_boer_compacts.010 days = 1 popup = yes }
+		}
 	}
 	if = {
-		limit = { sb_boer_compact_with_trn_incomplete = yes }
-		c:TRN ?= { trigger_event = { id = sb_boer_compacts.010 days = 1 popup = yes } }
+		limit = {
+			sb_boer_compact_with_trn_incomplete = yes
+			c:TRN ?= { NOT = { has_variable = sb_boer_compact_renewal_offer_received_cooldown_var } }
+		}
+		c:TRN ?= {
+			set_variable = { name = sb_boer_compact_renewal_offer_received_cooldown_var days = 90 }
+			trigger_event = { id = sb_boer_compacts.010 days = 1 popup = yes }
+		}
 	}
 	if = {
-		limit = { sb_boer_compact_with_zpb_incomplete = yes }
-		c:ZPB ?= { trigger_event = { id = sb_boer_compacts.010 days = 1 popup = yes } }
+		limit = {
+			sb_boer_compact_with_zpb_incomplete = yes
+			c:ZPB ?= { NOT = { has_variable = sb_boer_compact_renewal_offer_received_cooldown_var } }
+		}
+		c:ZPB ?= {
+			set_variable = { name = sb_boer_compact_renewal_offer_received_cooldown_var days = 90 }
+			trigger_event = { id = sb_boer_compacts.010 days = 1 popup = yes }
+		}
 	}
 	if = {
-		limit = { sb_boer_compact_with_lyd_incomplete = yes }
-		c:LYD ?= { trigger_event = { id = sb_boer_compacts.010 days = 1 popup = yes } }
+		limit = {
+			sb_boer_compact_with_lyd_incomplete = yes
+			c:LYD ?= { NOT = { has_variable = sb_boer_compact_renewal_offer_received_cooldown_var } }
+		}
+		c:LYD ?= {
+			set_variable = { name = sb_boer_compact_renewal_offer_received_cooldown_var days = 90 }
+			trigger_event = { id = sb_boer_compacts.010 days = 1 popup = yes }
+		}
 	}
 	if = {
-		limit = { sb_boer_compact_with_nal_incomplete = yes }
-		c:NAL ?= { trigger_event = { id = sb_boer_compacts.010 days = 1 popup = yes } }
+		limit = {
+			sb_boer_compact_with_nal_incomplete = yes
+			c:NAL ?= { NOT = { has_variable = sb_boer_compact_renewal_offer_received_cooldown_var } }
+		}
+		c:NAL ?= {
+			set_variable = { name = sb_boer_compact_renewal_offer_received_cooldown_var days = 90 }
+			trigger_event = { id = sb_boer_compacts.010 days = 1 popup = yes }
+		}
 	}
 }
 
@@ -1459,31 +1629,18 @@ sb_accept_boer_compact_renewal_from_scope_proposer = {
 	if = {
 		limit = {
 			exists = scope:sb_boer_compact_proposer
-			NOT = {
-				any_scope_treaty = {
-					binds = scope:sb_boer_compact_proposer
-					any_scope_article = { has_type = defensive_pact }
-				}
-			}
-			can_create_treaty = {
-				first_country = scope:sb_boer_compact_proposer
-				second_country = root
-				is_draft = no
-				binding_period = { years = 10 }
-				articles_to_create = {
-					{ article = defensive_pact }
-					{
-						article = transit_rights
-						source_country = scope:sb_boer_compact_proposer
-						target_country = root
-					}
-					{
-						article = transit_rights
-						source_country = root
-						target_country = scope:sb_boer_compact_proposer
+		}
+		every_scope_treaty = {
+			limit = {
+				binds = scope:sb_boer_compact_proposer
+				any_scope_article = {
+					OR = {
+						has_type = defensive_pact
+						has_type = transit_rights
 					}
 				}
 			}
+			withdraw = { country = root }
 		}
 		create_treaty = {
 			first_country = scope:sb_boer_compact_proposer
@@ -1497,120 +1654,6 @@ sb_accept_boer_compact_renewal_from_scope_proposer = {
 					source_country = scope:sb_boer_compact_proposer
 					target_country = root
 				}
-				{
-					article = transit_rights
-					source_country = root
-					target_country = scope:sb_boer_compact_proposer
-				}
-			}
-		}
-	}
-
-	if = {
-		limit = {
-			exists = scope:sb_boer_compact_proposer
-			NOT = {
-				any_scope_treaty = {
-					binds = scope:sb_boer_compact_proposer
-					any_scope_article = { has_type = defensive_pact }
-				}
-			}
-			can_create_treaty = {
-				first_country = scope:sb_boer_compact_proposer
-				second_country = root
-				is_draft = no
-				binding_period = { years = 10 }
-				articles_to_create = {
-					{ article = defensive_pact }
-				}
-			}
-		}
-		create_treaty = {
-			first_country = scope:sb_boer_compact_proposer
-			second_country = root
-			is_draft = no
-			binding_period = { years = 10 }
-			articles_to_create = {
-				{ article = defensive_pact }
-			}
-		}
-	}
-
-	if = {
-		limit = {
-			exists = scope:sb_boer_compact_proposer
-			NOT = {
-				any_scope_treaty = {
-					binds = scope:sb_boer_compact_proposer
-					any_scope_article = {
-						has_type = transit_rights
-						source_country = scope:sb_boer_compact_proposer
-						target_country = root
-					}
-				}
-			}
-			can_create_treaty = {
-				first_country = scope:sb_boer_compact_proposer
-				second_country = root
-				is_draft = no
-				binding_period = { years = 10 }
-				articles_to_create = {
-					{
-						article = transit_rights
-						source_country = scope:sb_boer_compact_proposer
-						target_country = root
-					}
-				}
-			}
-		}
-		create_treaty = {
-			first_country = scope:sb_boer_compact_proposer
-			second_country = root
-			is_draft = no
-			binding_period = { years = 10 }
-			articles_to_create = {
-				{
-					article = transit_rights
-					source_country = scope:sb_boer_compact_proposer
-					target_country = root
-				}
-			}
-		}
-	}
-
-	if = {
-		limit = {
-			exists = scope:sb_boer_compact_proposer
-			NOT = {
-				any_scope_treaty = {
-					binds = scope:sb_boer_compact_proposer
-					any_scope_article = {
-						has_type = transit_rights
-						source_country = root
-						target_country = scope:sb_boer_compact_proposer
-					}
-				}
-			}
-			can_create_treaty = {
-				first_country = scope:sb_boer_compact_proposer
-				second_country = root
-				is_draft = no
-				binding_period = { years = 10 }
-				articles_to_create = {
-					{
-						article = transit_rights
-						source_country = root
-						target_country = scope:sb_boer_compact_proposer
-					}
-				}
-			}
-		}
-		create_treaty = {
-			first_country = scope:sb_boer_compact_proposer
-			second_country = root
-			is_draft = no
-			binding_period = { years = 10 }
-			articles_to_create = {
 				{
 					article = transit_rights
 					source_country = root
@@ -1655,7 +1698,7 @@ sb_grant_gbr_investment_rights_in_root = {
 
 sb_apply_boer_convention_acceptance = {
 	set_country_type = recognized
-	sb_create_boer_abolition_law_commitment = yes
+	activate_law = law_type:law_slavery_banned
 	create_bidirectional_truce = {
 		country = c:GBR
 		months = 60
@@ -1665,74 +1708,6 @@ sb_apply_boer_convention_acceptance = {
 	change_relations = {
 		country = c:GBR
 		value = 20
-	}
-}
-
-sb_create_boer_abolition_law_commitment = {
-	if = {
-		limit = {
-			c:GBR ?= { is_country_alive = yes }
-			NOT = { has_law = law_type:law_slavery_banned }
-		}
-		set_variable = sb_boer_slavery_banned_commitment_active_var
-		set_variable = { name = sb_boer_slavery_banned_commitment_deadline_var days = 1825 }
-		if = {
-			limit = {
-				NOT = { has_law_commitment = law_type:law_slavery_banned }
-			}
-			create_treaty = {
-				name = treaty_name_sb_boer_abolition_commitment
-				first_country = root
-				second_country = c:GBR
-				is_draft = no
-				binding_period = { years = 5 }
-				articles_to_create = {
-					{
-						article = law_commitment
-						source_country = root
-						target_country = c:GBR
-						inputs = {
-							{ law_type = law_type:law_slavery_banned }
-						}
-					}
-				}
-			}
-		}
-	}
-}
-
-sb_check_boer_abolition_law_commitment = {
-	if = {
-		limit = {
-			has_variable = sb_boer_slavery_banned_commitment_active_var
-			has_law = law_type:law_slavery_banned
-		}
-		remove_variable = sb_boer_slavery_banned_commitment_active_var
-		if = {
-			limit = { has_variable = sb_boer_slavery_banned_commitment_deadline_var }
-			remove_variable = sb_boer_slavery_banned_commitment_deadline_var
-		}
-	}
-	else_if = {
-		limit = {
-			has_variable = sb_boer_slavery_banned_commitment_active_var
-			is_subject = yes
-		}
-		remove_variable = sb_boer_slavery_banned_commitment_active_var
-		if = {
-			limit = { has_variable = sb_boer_slavery_banned_commitment_deadline_var }
-			remove_variable = sb_boer_slavery_banned_commitment_deadline_var
-		}
-	}
-	else_if = {
-		limit = {
-			has_variable = sb_boer_slavery_banned_commitment_active_var
-			NOT = { has_variable = sb_boer_slavery_banned_commitment_deadline_var }
-			NOT = { has_law = law_type:law_slavery_banned }
-			sb_has_any_slavery_law = yes
-		}
-		remove_variable = sb_boer_slavery_banned_commitment_active_var
-		sb_queue_gbr_highveld_slavery_response = yes
 	}
 }
 

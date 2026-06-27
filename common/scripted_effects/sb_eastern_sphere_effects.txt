@@ -474,7 +474,7 @@ sb_delagoa_apply_partner_state_bonuses = {
 	s:STATE_TRANSVAAL = {
 		every_scope_state = {
 			limit = {
-				owner = c:TRN
+				owner = { sb_is_delagoa_route_actor = yes }
 				has_active_building = building_railway
 			}
 			add_modifier = {
@@ -486,7 +486,7 @@ sb_delagoa_apply_partner_state_bonuses = {
 	s:STATE_EAST_TRANSVAAL = {
 		every_scope_state = {
 			limit = {
-				owner = c:TRN
+				owner = { sb_is_delagoa_route_actor = yes }
 				has_active_building = building_railway
 			}
 			add_modifier = {
@@ -498,28 +498,200 @@ sb_delagoa_apply_partner_state_bonuses = {
 }
 
 sb_delagoa_create_trade_treaty_with_trn = {
-	create_treaty = {
-		first_country = root
-		second_country = c:TRN
-		is_draft = no
-		binding_period = { years = 25 }
-		articles_to_create = {
-			{
-				article = transit_rights
-				source_country = root
-				target_country = c:TRN
+	if = {
+		limit = {
+			c:TRN ?= {
+				is_country_alive = yes
+				has_journal_entry = je_sb_delagoa_route_to_sea
 			}
-			{
-				article = goods_transfer
-				source_country = root
-				target_country = c:TRN
-				inputs = {
-					{ goods = g:merchant_marine }
-					{ quantity = 10 }
+		}
+		create_treaty = {
+			first_country = root
+			second_country = c:TRN
+			is_draft = no
+			binding_period = { years = 25 }
+			articles_to_create = {
+				{
+					article = transit_rights
+					source_country = root
+					target_country = c:TRN
+				}
+				{
+					article = goods_transfer
+					source_country = root
+					target_country = c:TRN
+					inputs = {
+						{ goods = g:merchant_marine }
+						{ quantity = 10 }
+					}
 				}
 			}
 		}
 	}
+	else_if = {
+		limit = {
+			c:LYD ?= {
+				is_country_alive = yes
+				has_journal_entry = je_sb_delagoa_route_to_sea
+			}
+		}
+		create_treaty = {
+			first_country = root
+			second_country = c:LYD
+			is_draft = no
+			binding_period = { years = 25 }
+			articles_to_create = {
+				{
+					article = transit_rights
+					source_country = root
+					target_country = c:LYD
+				}
+				{
+					article = goods_transfer
+					source_country = root
+					target_country = c:LYD
+					inputs = {
+						{ goods = g:merchant_marine }
+						{ quantity = 10 }
+					}
+				}
+			}
+		}
+	}
+}
+
+sb_delagoa_ai_create_railway = {
+	create_building = {
+		building = building_railway
+		level = 1
+		reserves = 1
+	}
+}
+
+sb_delagoa_ai_build_railways_and_por_treaty = {
+	s:STATE_TRANSVAAL = {
+		if = {
+			limit = {
+				any_scope_state = {
+					owner = root
+					NOT = { has_active_building = building_railway }
+				}
+			}
+			random_scope_state = {
+				limit = {
+					owner = root
+					NOT = { has_active_building = building_railway }
+				}
+				sb_delagoa_ai_create_railway = yes
+			}
+		}
+	}
+	s:STATE_EAST_TRANSVAAL = {
+		if = {
+			limit = {
+				any_scope_state = {
+					owner = root
+					NOT = { has_active_building = building_railway }
+				}
+			}
+			random_scope_state = {
+				limit = {
+					owner = root
+					NOT = { has_active_building = building_railway }
+				}
+				sb_delagoa_ai_create_railway = yes
+			}
+		}
+	}
+	if = {
+		limit = {
+			c:MZQ ?= {
+				is_country_alive = yes
+				owns_entire_state_region = STATE_LOURENCO_MARQUES
+			}
+		}
+		s:STATE_LOURENCO_MARQUES = {
+			if = {
+				limit = {
+					any_scope_state = {
+						owner = c:MZQ
+						NOT = { has_active_building = building_railway }
+					}
+				}
+				random_scope_state = {
+					limit = {
+						owner = c:MZQ
+						NOT = { has_active_building = building_railway }
+					}
+					sb_delagoa_ai_create_railway = yes
+				}
+			}
+		}
+	}
+	else_if = {
+		limit = {
+			c:POR ?= {
+				is_country_alive = yes
+				owns_entire_state_region = STATE_LOURENCO_MARQUES
+			}
+		}
+		s:STATE_LOURENCO_MARQUES = {
+			if = {
+				limit = {
+					any_scope_state = {
+						owner = c:POR
+						NOT = { has_active_building = building_railway }
+					}
+				}
+				random_scope_state = {
+					limit = {
+						owner = c:POR
+						NOT = { has_active_building = building_railway }
+					}
+					sb_delagoa_ai_create_railway = yes
+				}
+			}
+		}
+	}
+	if = {
+		limit = {
+			c:POR ?= { is_country_alive = yes }
+			NOT = {
+				any_scope_treaty = {
+					binds = c:POR
+					any_scope_article = {
+						has_type = transit_rights
+						source_country = c:POR
+						target_country = root
+					}
+					any_scope_article = {
+						has_type = foreign_investment_rights
+						source_country = c:POR
+						target_country = root
+					}
+				}
+			}
+		}
+		create_treaty = {
+			first_country = c:POR
+			second_country = root
+			is_draft = no
+			binding_period = { years = 10 }
+			articles_to_create = {
+				{
+					article = transit_rights
+					source_country = c:POR
+					target_country = root
+				}
+				{
+					article = foreign_investment_rights
+					source_country = c:POR
+					target_country = root
+				}
+			}
+		}
+	}
+	set_variable = sb_delagoa_ai_railway_helper_applied_var
 }
 
 sb_create_or_refresh_imperial_bind_trade_treaty = {
@@ -969,6 +1141,50 @@ sb_imperial_confederation_sync_subject_control_bar = {
 	}
 }
 
+sb_imperial_confederation_sync_sea_access_bar = {
+	if = {
+		limit = { NOT = { has_global_variable = sb_imperial_confederation_sea_access_months_var } }
+		set_global_variable = { name = sb_imperial_confederation_sea_access_months_var value = 0 }
+	}
+	if = {
+		limit = { has_global_variable = sb_imperial_confederation_scheme_scope }
+		global_var:sb_imperial_confederation_scheme_scope = {
+			set_bar_progress = {
+				name = sb_imperial_confederation_sea_access_bar
+				value = global_var:sb_imperial_confederation_sea_access_months_var
+			}
+		}
+	}
+}
+
+sb_imperial_confederation_update_sea_access_counter = {
+	if = {
+		limit = {
+			has_global_variable = sb_imperial_confederation_scheme_unlocked_var
+			NOT = { has_global_variable = sb_imperial_confederation_scheme_failed_var }
+			NOT = { exists = c:SAF }
+			any_country = {
+				sb_is_imperial_confederation_participant = yes
+				country_has_primary_culture = cu:boer
+				is_country_alive = yes
+				sb_boer_has_non_british_sea_access = yes
+			}
+		}
+		if = {
+			limit = { NOT = { has_global_variable = sb_imperial_confederation_sea_access_months_var } }
+			set_global_variable = { name = sb_imperial_confederation_sea_access_months_var value = 0 }
+		}
+		if = {
+			limit = { global_var:sb_imperial_confederation_sea_access_months_var < 36 }
+			change_global_variable = { name = sb_imperial_confederation_sea_access_months_var add = 1 }
+		}
+	}
+	else = {
+		set_global_variable = { name = sb_imperial_confederation_sea_access_months_var value = 0 }
+	}
+	sb_imperial_confederation_sync_sea_access_bar = yes
+}
+
 sb_unlock_imperial_confederation_scheme = {
 	if = {
 		limit = {
@@ -1002,6 +1218,7 @@ sb_eastern_sphere_monthly_housekeeping = {
 			sb_imperial_confederation_ensure_active_owner_je = yes
 			sb_imperial_confederation_validate_involvement = yes
 			sb_imperial_confederation_sync_subject_control_bar = yes
+			sb_imperial_confederation_update_sea_access_counter = yes
 		}
 	if = {
 		limit = {
@@ -1054,8 +1271,9 @@ sb_eastern_sphere_monthly_housekeeping = {
 	}
 	if = {
 		limit = {
-			country_definition = cd:TRN
+			sb_is_delagoa_route_actor = yes
 			NOT = { has_journal_entry = je_sb_delagoa_route_to_sea }
+			NOT = { has_variable = sb_delagoa_route_complete_var }
 			exists = c:POR
 			sb_delagoa_owner_outside_gbr_bloc = yes
 			has_global_variable = sb_imperial_confederation_scheme_unlocked_var
@@ -1070,7 +1288,27 @@ sb_eastern_sphere_monthly_housekeeping = {
 	}
 	if = {
 		limit = {
-			country_definition = cd:TRN
+			sb_is_delagoa_route_actor = yes
+			is_ai = yes
+			has_journal_entry = je_sb_delagoa_route_to_sea
+			sb_ai_economy_helpers_enabled = yes
+			NOT = { has_variable = sb_delagoa_ai_railway_helper_applied_var }
+			c:POR ?= {
+				is_country_alive = yes
+				is_ai = yes
+			}
+			OR = {
+				NOT = { exists = c:MZQ }
+				c:MZQ ?= { NOT = { is_country_alive = yes } }
+				c:MZQ ?= { is_ai = yes }
+			}
+			sb_delagoa_owner_outside_gbr_bloc = yes
+		}
+		sb_delagoa_ai_build_railways_and_por_treaty = yes
+	}
+	if = {
+		limit = {
+			sb_is_delagoa_route_actor = yes
 			is_ai = yes
 			has_journal_entry = je_sb_delagoa_route_to_sea
 			is_subject = no
@@ -1084,7 +1322,7 @@ sb_eastern_sphere_monthly_housekeeping = {
 			limit = {
 				c:MZQ ?= {
 					is_country_alive = yes
-					any_scope_state = { state_region = s:STATE_LOURENCO_MARQUES owner = c:MZQ }
+					owns_entire_state_region = STATE_LOURENCO_MARQUES
 				}
 			}
 			c:MZQ ?= { trigger_event = { id = sb_delagoa.010 days = 1 popup = yes } }
@@ -1093,7 +1331,7 @@ sb_eastern_sphere_monthly_housekeeping = {
 			limit = {
 				c:POR ?= {
 					is_country_alive = yes
-					any_scope_state = { state_region = s:STATE_LOURENCO_MARQUES owner = c:POR }
+					owns_entire_state_region = STATE_LOURENCO_MARQUES
 				}
 			}
 			c:POR ?= { trigger_event = { id = sb_delagoa.010 days = 1 popup = yes } }

@@ -57,12 +57,20 @@ je_sb_great_trek = {
 			country_definition = cd:ZPB
 			country_definition = cd:LYD
 			country_definition = cd:NAL
+			country_definition = cd:SGO
 		}
 		country_has_primary_culture = cu:boer
-		is_subject = no
+		OR = {
+			is_subject = no
+			country_definition = cd:SGO
+		}
 	}
 
 	immediate = {
+		if = {
+			limit = { country_definition = cd:SGO }
+			set_variable = sb_trek_stage1_complete
+		}
 		# Grant migration pull modifier to ALL currently owned states.
 		# This attracts Boer pops from the Cape Colony, simulating the historical
 		# trekker influx. Uses is_decaying = no so it persists until JE completes.
@@ -196,6 +204,14 @@ je_sb_great_trek = {
 					set_variable = sb_trek_stage2_pending_var
 					trigger_event = { id = sb_great_trek.043 popup = yes }
 				}
+				else_if = {
+					limit = {
+						country_definition = cd:SGO
+						sb_controls_bechuanaland_core = yes
+					}
+					set_variable = sb_trek_stage2_pending_var
+					trigger_event = { id = sb_great_trek.045 popup = yes }
+				}
 			}
 
 		}
@@ -209,7 +225,10 @@ je_sb_great_trek = {
 	# Invalidates if the republic becomes a subject (e.g., annexed by Britain).
 	# A subjected Boer republic can't conduct an independent trek.
 	invalid = {
-		is_subject = yes
+		AND = {
+			is_subject = yes
+			NOT = { country_definition = cd:SGO }
+		}
 	}
 
 	# Cleanup on invalidation: remove migration pull so it doesn't linger

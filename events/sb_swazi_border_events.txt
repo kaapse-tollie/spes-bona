@@ -27,7 +27,10 @@ sb_swazi_border.1 = {
 		country_definition = cd:TRN
 		is_country_alive = yes
 		is_subject = no
-		has_variable = sb_transvaal_unity_resolved_var
+		OR = {
+			has_variable = sb_transvaal_unity_resolved_var
+			sb_trn_frontier_order_ready_for_swazi_border_pressure = yes
+		}
 		c:SWZ ?= {
 			is_country_alive = yes
 			is_subject = no
@@ -41,12 +44,16 @@ sb_swazi_border.1 = {
 		}
 	}
 
-		option = {
-			name = sb_swazi_border.1.a
-			default_option = yes
-			c:SWZ ?= {
-				trigger_event = { id = sb_swazi_border.2 days = 7 popup = yes }
-			}
+	option = {
+		name = sb_swazi_border.1.a
+		default_option = yes
+		if = {
+			limit = { has_variable = sb_swazi_border_pressure_pending_var }
+			remove_variable = sb_swazi_border_pressure_pending_var
+		}
+		c:SWZ ?= {
+			trigger_event = { id = sb_swazi_border.2 days = 7 popup = yes }
+		}
 		ai_chance = {
 			base = 80
 			modifier = {
@@ -62,6 +69,10 @@ sb_swazi_border.1 = {
 
 	option = {
 		name = sb_swazi_border.1.b
+		if = {
+			limit = { has_variable = sb_swazi_border_pressure_pending_var }
+			remove_variable = sb_swazi_border_pressure_pending_var
+		}
 		c:SWZ ?= {
 			set_variable = sb_swazi_boer_pressure_resolved_var
 			change_relations = {

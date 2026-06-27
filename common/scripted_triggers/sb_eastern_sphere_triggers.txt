@@ -36,6 +36,7 @@ sb_is_imperial_confederation_participant = {
 			state_region = s:STATE_CAPE_COLONY
 			state_region = s:STATE_EASTERN_CAPE
 			state_region = s:STATE_NORTHERN_CAPE
+			state_region = s:STATE_GRIQUALAND_WEST
 			state_region = s:STATE_ZULULAND
 			state_region = s:STATE_TRANSVAAL
 			state_region = s:STATE_EAST_TRANSVAAL
@@ -155,144 +156,50 @@ sb_is_outside_british_imperial_network = {
 }
 
 sb_is_non_british_port_owner = {
+	save_temporary_scope_as = sb_non_british_port_owner_scope
 	is_country_alive = yes
 	sb_is_outside_british_imperial_network = yes
 	any_scope_state = {
-		owner = root
+		owner = scope:sb_non_british_port_owner_scope
 		has_active_building = building_port
 	}
 }
 
+sb_is_delagoa_route_actor = {
+	is_country_alive = yes
+	country_has_primary_culture = cu:boer
+	OR = {
+		country_definition = cd:TRN
+		country_definition = cd:LYD
+	}
+}
+
+sb_has_non_british_transit_to_port = {
+	save_temporary_scope_as = sb_non_british_transit_receiver_scope
+	any_scope_treaty = {
+		binds = scope:sb_non_british_transit_receiver_scope
+		any_scope_article = {
+			has_type = transit_rights
+			target_country = scope:sb_non_british_transit_receiver_scope
+			source_country = {
+				sb_is_non_british_port_owner = yes
+			}
+		}
+	}
+}
+
 sb_boer_has_non_british_sea_access = {
+	save_temporary_scope_as = sb_boer_sea_access_scope
 	sb_is_imperial_confederation_participant = yes
 	country_has_primary_culture = cu:boer
 	is_country_alive = yes
 	sb_is_outside_british_imperial_network = yes
 	OR = {
 		any_scope_state = {
-			owner = root
+			owner = scope:sb_boer_sea_access_scope
 			has_active_building = building_port
 		}
-		AND = {
-			c:POR ?= { sb_is_non_british_port_owner = yes }
-			any_scope_treaty = {
-				binds = c:POR
-				any_scope_article = {
-					has_type = transit_rights
-					source_country = c:POR
-					target_country = root
-				}
-			}
-		}
-		AND = {
-			c:MZQ ?= { sb_is_non_british_port_owner = yes }
-			any_scope_treaty = {
-				binds = c:MZQ
-				any_scope_article = {
-					has_type = transit_rights
-					source_country = c:MZQ
-					target_country = root
-				}
-			}
-		}
-		AND = {
-			c:ZUL ?= { sb_is_non_british_port_owner = yes }
-			any_scope_treaty = {
-				binds = c:ZUL
-				any_scope_article = {
-					has_type = transit_rights
-					source_country = c:ZUL
-					target_country = root
-				}
-			}
-		}
-		AND = {
-			c:GZA ?= { sb_is_non_british_port_owner = yes }
-			any_scope_treaty = {
-				binds = c:GZA
-				any_scope_article = {
-					has_type = transit_rights
-					source_country = c:GZA
-					target_country = root
-				}
-			}
-		}
-		AND = {
-			c:NGN ?= { sb_is_non_british_port_owner = yes }
-			any_scope_treaty = {
-				binds = c:NGN
-				any_scope_article = {
-					has_type = transit_rights
-					source_country = c:NGN
-					target_country = root
-				}
-			}
-		}
-		AND = {
-			c:NAL ?= { sb_is_non_british_port_owner = yes }
-			any_scope_treaty = {
-				binds = c:NAL
-				any_scope_article = {
-					has_type = transit_rights
-					source_country = c:NAL
-					target_country = root
-				}
-			}
-		}
-		AND = {
-			c:CAP ?= { sb_is_non_british_port_owner = yes }
-			any_scope_treaty = {
-				binds = c:CAP
-				any_scope_article = {
-					has_type = transit_rights
-					source_country = c:CAP
-					target_country = root
-				}
-			}
-		}
-		AND = {
-			c:ALB ?= { sb_is_non_british_port_owner = yes }
-			any_scope_treaty = {
-				binds = c:ALB
-				any_scope_article = {
-					has_type = transit_rights
-					source_country = c:ALB
-					target_country = root
-				}
-			}
-		}
-		AND = {
-			c:BUG ?= { sb_is_non_british_port_owner = yes }
-			any_scope_treaty = {
-				binds = c:BUG
-				any_scope_article = {
-					has_type = transit_rights
-					source_country = c:BUG
-					target_country = root
-				}
-			}
-		}
-		AND = {
-			c:SWA ?= { sb_is_non_british_port_owner = yes }
-			any_scope_treaty = {
-				binds = c:SWA
-				any_scope_article = {
-					has_type = transit_rights
-					source_country = c:SWA
-					target_country = root
-				}
-			}
-		}
-			AND = {
-				c:XHO ?= { sb_is_non_british_port_owner = yes }
-				any_scope_treaty = {
-					binds = c:XHO
-					any_scope_article = {
-						has_type = transit_rights
-						target_country = root
-					}
-				}
-			}
+		sb_has_non_british_transit_to_port = yes
 	}
 }
 
@@ -312,6 +219,7 @@ sb_controls_any_complete_southern_africa_state = {
 		owns_entire_state_region = STATE_CAPE_COLONY
 		owns_entire_state_region = STATE_EASTERN_CAPE
 		owns_entire_state_region = STATE_NORTHERN_CAPE
+		owns_entire_state_region = STATE_GRIQUALAND_WEST
 		owns_entire_state_region = STATE_ZULULAND
 		owns_entire_state_region = STATE_TRANSVAAL
 		owns_entire_state_region = STATE_EAST_TRANSVAAL
@@ -467,6 +375,7 @@ sb_confederated_south_africa_controls_required_region = {
 	owns_entire_state_region = STATE_CAPE_COLONY
 	owns_entire_state_region = STATE_EASTERN_CAPE
 	owns_entire_state_region = STATE_NORTHERN_CAPE
+	owns_entire_state_region = STATE_GRIQUALAND_WEST
 	owns_entire_state_region = STATE_ZULULAND
 	owns_entire_state_region = STATE_TRANSVAAL
 	owns_entire_state_region = STATE_EAST_TRANSVAAL
@@ -485,18 +394,12 @@ sb_delagoa_owner_outside_gbr_bloc = {
 	OR = {
 		c:POR ?= {
 			is_country_alive = yes
-			OR = {
-				any_scope_state = { state_region = s:STATE_LOURENCO_MARQUES owner = c:POR }
-				owns_entire_state_region = STATE_LOURENCO_MARQUES
-			}
+			owns_entire_state_region = STATE_LOURENCO_MARQUES
 			NOT = { is_in_same_power_bloc = c:GBR }
 		}
 		c:MZQ ?= {
 			is_country_alive = yes
-			OR = {
-				any_scope_state = { state_region = s:STATE_LOURENCO_MARQUES owner = c:MZQ }
-				owns_entire_state_region = STATE_LOURENCO_MARQUES
-			}
+			owns_entire_state_region = STATE_LOURENCO_MARQUES
 			NOT = { is_in_same_power_bloc = c:GBR }
 		}
 	}
@@ -523,6 +426,7 @@ sb_has_railway_in_east_transvaal = {
 sb_trn_has_delagoa_trade_through = {
 	OR = {
 		any_scope_treaty = {
+			binds = root
 			binds = c:POR
 			any_scope_article = {
 				has_type = transit_rights
@@ -531,6 +435,7 @@ sb_trn_has_delagoa_trade_through = {
 			}
 		}
 		any_scope_treaty = {
+			binds = root
 			binds = c:MZQ
 			any_scope_article = {
 				has_type = transit_rights

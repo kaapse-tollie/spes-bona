@@ -1,7 +1,7 @@
 ﻿# Spes Bona - Kimberley and Griqualand West helpers
 
 # Kimberley starts as a direct WBL building. Resource potential is delayed
-# until the sovereignty chain resolves to avoid split Northern Cape leakage.
+# until the sovereignty chain resolves to avoid split Griqualand West leakage.
 
 sb_griqualand_west_save_country_loc_scopes = {
 	c:CAP ?= {
@@ -205,15 +205,6 @@ sb_griqualand_west_clear_crisis_vars = {
 }
 
 sb_griqualand_west_mark_resolved = {
-	every_country = {
-		every_scope_state = {
-			limit = {
-				state_region = s:STATE_NORTHERN_CAPE
-				NOT = { has_modifier = sb_arid_interior_corridor }
-			}
-			add_modifier = { name = sb_arid_interior_corridor }
-		}
-	}
 	c:CAP ?= {
 		if = {
 			limit = { is_country_alive = yes }
@@ -417,17 +408,18 @@ sb_griqualand_west_prepare_ora_submission_demand = {
 }
 
 sb_stellaland_goshen_create_from_boer_colony = {
+	save_scope_as = sb_stellaland_goshen_creator
 	if = {
 		limit = {
 			NOT = { exists = c:SGO }
-			s:STATE_NORTHERN_CAPE = {
-				any_scope_state = { owner = root }
+			s:STATE_BECHUANALAND = {
+				any_scope_state = { owner = scope:sb_stellaland_goshen_creator }
 			}
 		}
 		random_scope_state = {
 			limit = {
-				state_region = s:STATE_NORTHERN_CAPE
-				owner = root
+				state_region = s:STATE_BECHUANALAND
+				owner = scope:sb_stellaland_goshen_creator
 			}
 			save_scope_as = sb_stellaland_goshen_colony_state
 		}
@@ -435,15 +427,58 @@ sb_stellaland_goshen_create_from_boer_colony = {
 			limit = { exists = scope:sb_stellaland_goshen_colony_state }
 			create_country = {
 				tag = SGO
-				origin = root
+				origin = scope:sb_stellaland_goshen_creator
 				state = scope:sb_stellaland_goshen_colony_state
 				on_created = {
 					set_country_type = unrecognized
-					s:STATE_NORTHERN_CAPE = { add_claim = c:SGO }
+					s:STATE_BECHUANALAND = { add_claim = c:SGO }
 				}
 			}
-			sb_bechuanaland_ensure_sgo_protectorate_of_root = yes
+			sb_bechuanaland_setup_sgo_frontier_republic = yes
+			sb_bechuanaland_move_gauteng_boers_to_sgo = yes
+			scope:sb_stellaland_goshen_creator = { sb_bechuanaland_ensure_sgo_protectorate_of_root = yes }
 		}
+	}
+}
+
+sb_griqualand_east_apply_phl_captaincy_setup = {
+	effect_starting_technology_tier_6_tech = yes
+	effect_starting_politics_traditional = yes
+	add_technology_researched = international_trade
+	add_technology_researched = rationalism
+	add_technology_researched = tech_bureaucracy
+	activate_law = law_type:law_oligarchy
+	activate_law = law_type:law_national_supremacy
+	activate_law = law_type:law_slavery_banned
+	activate_law = law_type:law_homesteading
+	activate_law = law_type:law_state_religion
+	activate_law = law_type:law_local_police
+	activate_law = law_type:law_religious_schools
+	set_institution_investment_level = {
+		institution = institution_schools
+		level = 1
+	}
+	set_institution_investment_level = {
+		institution = institution_police
+		level = 1
+	}
+}
+
+sb_griqualand_east_install_adam_kok_iii = {
+	if = {
+		limit = {
+			NOT = { any_scope_character = { has_template = GLE_adam_kok_III } }
+		}
+		create_character = { template = GLE_adam_kok_III }
+	}
+	random_scope_character = {
+		limit = {
+			has_template = GLE_adam_kok_III
+			is_character_alive = yes
+		}
+		set_interest_group = c:GLE.ig:ig_landowners
+		set_as_interest_group_leader = yes
+		set_character_as_ruler = yes
 	}
 }
 
@@ -490,6 +525,8 @@ sb_griqualand_east_create_march_state = {
 
 	c:GLE ?= {
 		set_country_type = unrecognized
+		sb_griqualand_east_apply_phl_captaincy_setup = yes
+		sb_griqualand_east_install_adam_kok_iii = yes
 		if = {
 			limit = {
 				NOT = { is_subject_of = root }
@@ -589,16 +626,4 @@ sb_griqualand_east_create_march_state = {
 		}
 	}
 
-	if = {
-		limit = {
-			sb_cap_is_full_liberal_griqua_route = yes
-			c:GLE ?= {
-				is_country_alive = yes
-			}
-		}
-		c:GLE ?= {
-			set_variable = sb_gle_willing_annexation_pending_var
-			trigger_event = { id = sb_griqualand_east.221 days = 1825 popup = yes }
-		}
-	}
 }

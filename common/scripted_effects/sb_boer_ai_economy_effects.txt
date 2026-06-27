@@ -11,35 +11,43 @@ sb_cap_ai_economy_yearly_pulse = {
 			NOT = { has_variable = sb_cap_ai_economy_1840_var }
 		}
 		set_variable = sb_cap_ai_economy_1840_var
-		sb_cap_ai_economy_wc_whaling_station = yes
+		sb_cap_ai_economy_wc_wheat_farm = yes
+	}
+	else_if = {
+		limit = {
+			is_country_alive = yes
+			is_ai = yes
+			any_scope_state = { state_region = s:STATE_EASTERN_CAPE }
+			game_date >= 1845.1.1
+			game_date < 1846.1.1
+			NOT = { has_variable = sb_cap_ai_economy_1845_var }
+		}
+		set_variable = sb_cap_ai_economy_1845_var
+		sb_cap_ai_economy_ec_maize_farm = yes
+	}
+	else_if = {
+		limit = {
+			is_country_alive = yes
+			is_ai = yes
+			any_scope_state = { state_region = s:STATE_CAPE_COLONY }
+			game_date >= 1850.1.1
+			game_date < 1851.1.1
+			NOT = { has_variable = sb_cap_ai_economy_1850_var }
+		}
+		set_variable = sb_cap_ai_economy_1850_var
+		sb_cap_ai_economy_wc_wheat_farm = yes
 	}
 	else_if = {
 		limit = {
 			is_country_alive = yes
 			is_ai = yes
 			any_scope_state = { state_region = s:STATE_NORTHERN_CAPE }
-			game_date >= 1850.1.1
-			game_date < 1851.1.1
-			NOT = { has_variable = sb_cap_ai_economy_1850_var }
-		}
-		set_variable = sb_cap_ai_economy_1850_var
-		sb_cap_ai_economy_nc_cotton_plantation = yes
-	}
-	else_if = {
-		limit = {
-			is_country_alive = yes
-			is_ai = yes
-			OR = {
-				any_scope_state = { state_region = s:STATE_CAPE_COLONY }
-				any_scope_state = { state_region = s:STATE_EASTERN_CAPE }
-			}
 			game_date >= 1855.1.1
 			game_date < 1856.1.1
 			NOT = { has_variable = sb_cap_ai_economy_1855_var }
 		}
 		set_variable = sb_cap_ai_economy_1855_var
-		sb_cap_ai_economy_wc_tobacco_plantation = yes
-		sb_cap_ai_economy_ec_logging_camp = yes
+		sb_cap_ai_economy_nc_cotton_plantation = yes
 	}
 	else_if = {
 		limit = {
@@ -51,19 +59,19 @@ sb_cap_ai_economy_yearly_pulse = {
 			NOT = { has_variable = sb_cap_ai_economy_1860_var }
 		}
 		set_variable = sb_cap_ai_economy_1860_var
-		sb_cap_ai_economy_wc_logging_camp = yes
+		sb_cap_ai_economy_wc_livestock_ranch = yes
 	}
 	else_if = {
 		limit = {
 			is_country_alive = yes
 			is_ai = yes
-			any_scope_state = { state_region = s:STATE_NORTHERN_CAPE }
+			any_scope_state = { state_region = s:STATE_EASTERN_CAPE }
 			game_date >= 1865.1.1
 			game_date < 1866.1.1
 			NOT = { has_variable = sb_cap_ai_economy_1865_var }
 		}
 		set_variable = sb_cap_ai_economy_1865_var
-		sb_cap_ai_economy_nc_iron_mine = yes
+		sb_cap_ai_economy_ec_logging_camp = yes
 	}
 	else_if = {
 		limit = {
@@ -92,6 +100,7 @@ sb_boer_ai_economy_ora_yearly_pulse = {
 		set_variable = sb_boer_ai_economy_1840_var
 		sb_boer_ai_economy_ora_trade_center = yes
 		sb_boer_ai_economy_ora_maize_farm = yes
+		sb_boer_ai_economy_ora_tobacco_plantation = yes
 	}
 	else_if = {
 		limit = {
@@ -103,8 +112,10 @@ sb_boer_ai_economy_ora_yearly_pulse = {
 			NOT = { has_variable = sb_boer_ai_economy_1845_var }
 		}
 		set_variable = sb_boer_ai_economy_1845_var
+		#add_treasury = 10000
 		sb_boer_ai_economy_ora_trade_center = yes
 		sb_boer_ai_economy_ora_food_industry = yes
+		sb_boer_ai_economy_ora_maize_farm = yes
 	}
 	else_if = {
 		limit = {
@@ -524,6 +535,7 @@ sb_boer_ai_economy_ora_trade_center = {
 }
 
 sb_boer_ai_economy_ora_maize_farm = { random_scope_state = { limit = { state_region = s:STATE_VRYSTAAT } sb_boer_ai_economy_create_maize_farm = yes } }
+sb_boer_ai_economy_ora_tobacco_plantation = { random_scope_state = { limit = { state_region = s:STATE_VRYSTAAT } sb_boer_ai_economy_create_tobacco_plantation = yes } }
 sb_boer_ai_economy_ora_food_industry = { random_scope_state = { limit = { state_region = s:STATE_VRYSTAAT } sb_boer_ai_economy_create_food_industry = yes } }
 sb_boer_ai_economy_ora_logging_camp = { random_scope_state = { limit = { state_region = s:STATE_VRYSTAAT } sb_boer_ai_economy_create_logging_camp = yes } }
 sb_boer_ai_economy_ora_iron_mine = { random_scope_state = { limit = { state_region = s:STATE_VRYSTAAT } sb_boer_ai_economy_create_iron_mine = yes } }
@@ -531,7 +543,12 @@ sb_boer_ai_economy_ora_tooling_workshop = { random_scope_state = { limit = { sta
 sb_boer_ai_economy_ora_construction_sector = {
 	if = {
 		limit = {
-			NOT = { any_scope_building = { is_building_type = building_construction_sector } }
+			NOT = {
+				country_has_building_type_levels = {
+					target = bt:building_construction_sector
+					value > 0
+				}
+			}
 		}
 		random_scope_state = {
 			limit = { state_region = s:STATE_VRYSTAAT }
@@ -561,7 +578,12 @@ sb_boer_ai_economy_trn_tooling_workshop = { sb_boer_ai_economy_trn_in_priority_s
 sb_boer_ai_economy_trn_construction_sector = {
 	if = {
 		limit = {
-			NOT = { any_scope_building = { is_building_type = building_construction_sector } }
+			NOT = {
+				country_has_building_type_levels = {
+					target = bt:building_construction_sector
+					value > 0
+				}
+			}
 		}
 		sb_boer_ai_economy_trn_in_priority_state_construction_sector = yes
 	}
@@ -625,16 +647,16 @@ sb_boer_ai_economy_nal_cotton_plantation = { random_scope_state = { limit = { st
 sb_boer_ai_economy_nal_logging_camp = { random_scope_state = { limit = { state_region = s:STATE_ZULULAND } sb_boer_ai_economy_create_logging_camp = yes } }
 sb_boer_ai_economy_nal_fishing_wharf = { random_scope_state = { limit = { state_region = s:STATE_ZULULAND } sb_boer_ai_economy_create_fishing_wharf = yes } }
 
-sb_cap_ai_economy_wc_whaling_station = {
-	if = { limit = { any_scope_state = { state_region = s:STATE_CAPE_COLONY } } random_scope_state = { limit = { state_region = s:STATE_CAPE_COLONY } sb_ai_economy_create_whaling_station = yes } }
+sb_cap_ai_economy_wc_wheat_farm = {
+	if = { limit = { any_scope_state = { state_region = s:STATE_CAPE_COLONY } } random_scope_state = { limit = { state_region = s:STATE_CAPE_COLONY } sb_boer_ai_economy_create_wheat_farm = yes } }
 }
 
-sb_cap_ai_economy_wc_tobacco_plantation = {
-	if = { limit = { any_scope_state = { state_region = s:STATE_CAPE_COLONY } } random_scope_state = { limit = { state_region = s:STATE_CAPE_COLONY } sb_boer_ai_economy_create_tobacco_plantation = yes } }
+sb_cap_ai_economy_wc_livestock_ranch = {
+	if = { limit = { any_scope_state = { state_region = s:STATE_CAPE_COLONY } } random_scope_state = { limit = { state_region = s:STATE_CAPE_COLONY } sb_boer_ai_economy_create_livestock_ranch = yes } }
 }
 
-sb_cap_ai_economy_wc_logging_camp = {
-	if = { limit = { any_scope_state = { state_region = s:STATE_CAPE_COLONY } } random_scope_state = { limit = { state_region = s:STATE_CAPE_COLONY } sb_boer_ai_economy_create_logging_camp = yes } }
+sb_cap_ai_economy_ec_maize_farm = {
+	if = { limit = { any_scope_state = { state_region = s:STATE_EASTERN_CAPE } } random_scope_state = { limit = { state_region = s:STATE_EASTERN_CAPE } sb_boer_ai_economy_create_maize_farm = yes } }
 }
 
 sb_cap_ai_economy_ec_logging_camp = {
@@ -643,10 +665,6 @@ sb_cap_ai_economy_ec_logging_camp = {
 
 sb_cap_ai_economy_nc_cotton_plantation = {
 	if = { limit = { any_scope_state = { state_region = s:STATE_NORTHERN_CAPE } } random_scope_state = { limit = { state_region = s:STATE_NORTHERN_CAPE } sb_boer_ai_economy_create_cotton_plantation = yes } }
-}
-
-sb_cap_ai_economy_nc_iron_mine = {
-	if = { limit = { any_scope_state = { state_region = s:STATE_NORTHERN_CAPE } } random_scope_state = { limit = { state_region = s:STATE_NORTHERN_CAPE } sb_boer_ai_economy_create_iron_mine = yes } }
 }
 
 sb_cap_ai_economy_nc_lead_mine = {
@@ -716,6 +734,24 @@ sb_boer_ai_economy_create_maize_farm = {
 		level = 1
 		reserves = 1
 		activate_production_methods = { "pm_simple_farming" "pm_no_secondary" "pm_tools_disabled" }
+	}
+}
+
+sb_boer_ai_economy_create_wheat_farm = {
+	create_building = {
+		building = building_wheat_farm
+		level = 1
+		reserves = 1
+		activate_production_methods = { "pm_simple_farming" "pm_no_secondary" "pm_tools_disabled" }
+	}
+}
+
+sb_boer_ai_economy_create_livestock_ranch = {
+	create_building = {
+		building = building_livestock_ranch
+		level = 1
+		reserves = 1
+		activate_production_methods = { "pm_open_air_stockyards" "pm_simple_ranch" "pm_standard_fences" "pm_unrefrigerated" }
 	}
 }
 
@@ -824,15 +860,6 @@ sb_boer_ai_economy_create_fishing_wharf = {
 		level = 1
 		reserves = 1
 		activate_production_methods = { "pm_simple_fishing" "pm_unrefrigerated" }
-	}
-}
-
-sb_ai_economy_create_whaling_station = {
-	create_building = {
-		building = building_whaling_station
-		level = 1
-		reserves = 1
-		activate_production_methods = { "pm_simple_whaling" "pm_unrefrigerated" }
 	}
 }
 

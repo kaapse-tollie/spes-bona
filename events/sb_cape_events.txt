@@ -1135,7 +1135,7 @@ sb_cape.030 = {
 		country_definition = cd:CAP
 		has_variable = sb_cape_autonomy_pressure_pending_var
 		is_subject_of = c:GBR
-		has_technology_researched = nationalism
+		sb_anglo_african_national_awakening_occurred = yes
 		NOT = {
 			OR = {
 				is_subject_type = subject_type_dominion
@@ -1270,10 +1270,10 @@ sb_cape.200 = {
 			}
 		}
 
-		if = {
-			limit = {
-				exists = c:ABY
-			}
+			if = {
+				limit = {
+					exists = c:ABY
+				}
 			c:ABY ?= {
 				if = {
 					limit = {
@@ -1341,6 +1341,10 @@ sb_cape.200 = {
 				add_claim = c:ABY
 				region_state:ABY = {
 					set_state_type = incorporated
+					if = {
+						limit = { NOT = { has_modifier = sb_albany_eastern_cape_colonial_mandate } }
+						add_modifier = { name = sb_albany_eastern_cape_colonial_mandate }
+					}
 				}
 			}
 
@@ -1463,14 +1467,23 @@ sb_cape.201 = {
 				country = c:ABY
 				value = -40
 			}
-			c:ABY ?= {
-				trigger_event = { id = sb_cape.203 days = 14 popup = yes }
+				c:ABY ?= {
+					trigger_event = { id = sb_cape.203 days = 14 popup = yes }
+				}
+			}
+			if = {
+				limit = {
+					has_law = law_type:law_cultural_exclusion
+					active_law:lawgroup_citizenship ?= {
+						NOT = { has_amendment = amendment_type:amendment_sb_cape_qualified_franchise }
+					}
+				}
+				trigger_event = { id = sb_cape.205 days = 7 popup = yes }
 			}
 		}
-	}
 
-	option = {
-		name = sb_cape.201.b
+		option = {
+			name = sb_cape.201.b
 		trigger = {
 			exists = c:ABY
 		}
@@ -1484,14 +1497,74 @@ sb_cape.201 = {
 			country = c:ABY
 			value = -40
 		}
-		c:ABY ?= {
-			trigger_event = { id = sb_cape.203 days = 14 popup = yes }
+			c:ABY ?= {
+				trigger_event = { id = sb_cape.203 days = 14 popup = yes }
+			}
+			if = {
+				limit = {
+					has_law = law_type:law_cultural_exclusion
+					active_law:lawgroup_citizenship ?= {
+						NOT = { has_amendment = amendment_type:amendment_sb_cape_qualified_franchise }
+					}
+				}
+				trigger_event = { id = sb_cape.205 days = 7 popup = yes }
+			}
+			play_as = c:ABY
 		}
-		play_as = c:ABY
 	}
-}
 
-sb_cape.202 = {
+	sb_cape.205 = {
+		type = country_event
+		placement = root
+
+		title = sb_cape.205.t
+		desc = sb_cape.205.d
+		flavor = sb_cape.205.f
+
+		event_image = {
+			video = "gfx/event_pictures/europenorthamerica_sufferage.bk2"
+		}
+
+		on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+		icon = "gfx/interface/icons/principles_icons/creative_legislature.dds"
+		duration = 3
+
+		trigger = {
+			country_definition = cd:CAP
+			has_variable = sb_albany_sanctioned_var
+			has_law = law_type:law_cultural_exclusion
+			active_law:lawgroup_citizenship ?= {
+				NOT = { has_amendment = amendment_type:amendment_sb_cape_qualified_franchise }
+			}
+		}
+
+		option = {
+			name = sb_cape.205.a
+			default_option = yes
+			active_law:lawgroup_citizenship ?= {
+				add_amendment = {
+					type = amendment_sb_cape_qualified_franchise
+					sponsor = PREV.ig:ig_intelligentsia
+					cooldown = 120
+				}
+			}
+			every_political_movement = {
+				limit = {
+					is_political_movement_type = movement_sb_cape_liberal
+				}
+				add_modifier = {
+					name = sb_cape_liberal_cqf_satisfied
+					months = 60
+				}
+			}
+		}
+
+		option = {
+			name = sb_cape.205.b
+		}
+	}
+
+	sb_cape.202 = {
 	type = country_event
 	placement = root
 

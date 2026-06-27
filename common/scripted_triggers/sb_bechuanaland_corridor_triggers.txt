@@ -20,18 +20,31 @@ sb_bechuanaland_swa_overlord_candidate = {
 	NOT = { country_definition = cd:GBR }
 	c:SWA ?= {
 		is_country_alive = yes
-		is_direct_subject_of = root
+		is_direct_subject_of = prev
 	}
 	sb_bechuanaland_has_no_british_security_treaty = yes
+}
+
+sb_bechuanaland_trn_controls_transvaal_core = {
+	country_definition = cd:TRN
+	is_country_alive = yes
+	owns_entire_state_region = STATE_TRANSVAAL
+	owns_entire_state_region = STATE_EAST_TRANSVAAL
+	owns_entire_state_region = STATE_NORTHERN_TRANSVAAL
 }
 
 sb_bechuanaland_trn_is_sar_like = {
 	country_definition = cd:TRN
 	is_country_alive = yes
-	NOT = { has_variable = sb_early_republic_var }
 	OR = {
-		has_variable = sb_martinus_presidential_union_active_var
-		has_variable = sb_transvaal_unity_resolved_var
+		AND = {
+			NOT = { has_variable = sb_early_republic_var }
+			OR = {
+				has_variable = sb_martinus_presidential_union_active_var
+				has_variable = sb_transvaal_unity_resolved_var
+			}
+		}
+		sb_bechuanaland_trn_controls_transvaal_core = yes
 	}
 }
 
@@ -54,11 +67,8 @@ sb_bechuanaland_boer_actor = {
 }
 
 sb_bechuanaland_tsw_holds_beachhead_province = {
-	OR = {
-		p:xD76CB9.state.owner = c:TSW
-		p:x20CAA7.state.owner = c:TSW
-		p:xA494F8.state.owner = c:TSW
-		p:x4AFDFD.state.owner = c:TSW
+	s:STATE_BECHUANALAND = {
+		any_scope_state = { owner = c:TSW }
 	}
 }
 
@@ -67,24 +77,15 @@ sb_bechuanaland_tsw_owns_nw_corridor_nc_land = {
 }
 
 sb_bechuanaland_cap_controls_nw_corridor = {
-	NOT = { sb_bechuanaland_tsw_owns_nw_corridor_nc_land = yes }
 	OR = {
-		p:xD76CB9.state.owner = c:CAP
-		p:x20CAA7.state.owner = c:CAP
-		p:xA494F8.state.owner = c:CAP
-		p:x4AFDFD.state.owner = c:CAP
+		c:CAP ?= { owns_entire_state_region = STATE_BECHUANALAND }
+		c:GBR ?= { owns_entire_state_region = STATE_BECHUANALAND }
 	}
 }
 
 sb_bechuanaland_sgo_controls_nw_corridor = {
 	exists = c:SGO
-	NOT = { sb_bechuanaland_tsw_owns_nw_corridor_nc_land = yes }
-	OR = {
-		p:xD76CB9.state.owner = c:SGO
-		p:x20CAA7.state.owner = c:SGO
-		p:xA494F8.state.owner = c:SGO
-		p:x4AFDFD.state.owner = c:SGO
-	}
+	c:SGO ?= { owns_entire_state_region = STATE_BECHUANALAND }
 }
 
 sb_bechuanaland_caprivi_not_held_by_swa = {
@@ -94,6 +95,14 @@ sb_bechuanaland_caprivi_not_held_by_swa = {
 		NOT = { p:x3D4350.state.owner = c:SWA }
 		NOT = { p:x6001D0.state.owner = c:SWA }
 		NOT = { p:x0DDFB8.state.owner = c:SWA }
+	}
+}
+
+sb_bechuanaland_swa_controls_namibian_core = {
+	c:SWA ?= {
+		is_country_alive = yes
+		owns_entire_state_region = STATE_NAMAQUALAND
+		owns_entire_state_region = STATE_HEREROLAND
 	}
 }
 
@@ -135,8 +144,16 @@ sb_bechuanaland_sgo_or_wbl_in_boer_sphere = {
 	}
 }
 
+sb_bechuanaland_corridor_ready_after_kimberley = {
+	OR = {
+		has_global_variable = sb_bechuanaland_corridor_watch_global_var
+		has_global_variable = sb_kimberley_cap_victory_global_var
+		has_global_variable = sb_kimberley_boer_victory_global_var
+	}
+}
+
 sb_bechuanaland_corridor_can_open = {
-	has_global_variable = sb_bechuanaland_corridor_watch_global_var
+	sb_bechuanaland_corridor_ready_after_kimberley = yes
 	NOT = { has_global_variable = sb_bechuanaland_corridor_open_global_var }
 	NOT = { has_global_variable = sb_bechuanaland_corridor_resolved_global_var }
 	c:SWA ?= { is_country_alive = yes }
@@ -165,10 +182,6 @@ sb_bechuanaland_is_involved_actor = {
 
 sb_bechuanaland_can_sponsor_sgo = {
 	sb_bechuanaland_boer_actor = yes
-	c:CAP ?= {
-		is_country_alive = yes
-		has_claim = s:STATE_NORTHERN_CAPE
-	}
 	NOT = { exists = c:SGO }
 	c:TSW ?= { is_country_alive = yes }
 	sb_bechuanaland_tsw_holds_beachhead_province = yes

@@ -2,41 +2,105 @@
 	if = {
 		limit = { NOT = { has_variable = sb_nam_stage_100_done_var } }
 		random_list = {
+			20 = { trigger_event = { id = sb_nam.100 days = 90 popup = yes } }
 			20 = { trigger_event = { id = sb_nam.100 days = 120 popup = yes } }
 			20 = { trigger_event = { id = sb_nam.100 days = 150 popup = yes } }
 			20 = { trigger_event = { id = sb_nam.100 days = 180 popup = yes } }
 			20 = { trigger_event = { id = sb_nam.100 days = 210 popup = yes } }
-			20 = { trigger_event = { id = sb_nam.100 days = 240 popup = yes } }
 		}
 	}
 	else_if = {
 		limit = { NOT = { has_variable = sb_nam_stage_110_done_var } }
 		random_list = {
+			20 = { trigger_event = { id = sb_nam.110 days = 90 popup = yes } }
 			20 = { trigger_event = { id = sb_nam.110 days = 120 popup = yes } }
 			20 = { trigger_event = { id = sb_nam.110 days = 150 popup = yes } }
 			20 = { trigger_event = { id = sb_nam.110 days = 180 popup = yes } }
 			20 = { trigger_event = { id = sb_nam.110 days = 210 popup = yes } }
-			20 = { trigger_event = { id = sb_nam.110 days = 240 popup = yes } }
 		}
 	}
 	else_if = {
 		limit = { NOT = { has_variable = sb_nam_stage_120_done_var } }
 		random_list = {
+			20 = { trigger_event = { id = sb_nam.120 days = 90 popup = yes } }
 			20 = { trigger_event = { id = sb_nam.120 days = 120 popup = yes } }
 			20 = { trigger_event = { id = sb_nam.120 days = 150 popup = yes } }
 			20 = { trigger_event = { id = sb_nam.120 days = 180 popup = yes } }
 			20 = { trigger_event = { id = sb_nam.120 days = 210 popup = yes } }
-			20 = { trigger_event = { id = sb_nam.120 days = 240 popup = yes } }
 		}
 	}
 	else_if = {
 		limit = { NOT = { has_variable = sb_nam_stage_130_done_var } }
 		random_list = {
+			20 = { trigger_event = { id = sb_nam.130 days = 90 popup = yes } }
 			20 = { trigger_event = { id = sb_nam.130 days = 120 popup = yes } }
 			20 = { trigger_event = { id = sb_nam.130 days = 150 popup = yes } }
 			20 = { trigger_event = { id = sb_nam.130 days = 180 popup = yes } }
 			20 = { trigger_event = { id = sb_nam.130 days = 210 popup = yes } }
-			20 = { trigger_event = { id = sb_nam.130 days = 240 popup = yes } }
+		}
+	}
+}
+
+sb_nam_assign_german_swa_ruler = {
+	if = {
+		limit = {
+			country_definition = cd:GER
+			c:SWA ?= { is_country_alive = yes }
+		}
+		c:SWA ?= {
+			if = {
+				limit = { game_date < 1891.1.1 }
+				if = {
+					limit = {
+						NOT = { any_scope_character = { has_template = SWA_heinrich_ernst_goring } }
+					}
+					create_character = { template = SWA_heinrich_ernst_goring }
+				}
+				random_scope_character = {
+					limit = {
+						has_template = SWA_heinrich_ernst_goring
+						is_character_alive = yes
+					}
+					set_interest_group = c:SWA.ig:ig_landowners
+					set_as_interest_group_leader = yes
+					set_character_as_ruler = yes
+				}
+			}
+			else_if = {
+				limit = { game_date < 1894.1.1 }
+				if = {
+					limit = {
+						NOT = { any_scope_character = { has_template = SWA_curt_von_francois } }
+					}
+					create_character = { template = SWA_curt_von_francois }
+				}
+				random_scope_character = {
+					limit = {
+						has_template = SWA_curt_von_francois
+						is_character_alive = yes
+					}
+					set_interest_group = c:SWA.ig:ig_armed_forces
+					set_as_interest_group_leader = yes
+					set_character_as_ruler = yes
+				}
+			}
+			else = {
+				if = {
+					limit = {
+						NOT = { any_scope_character = { has_template = SWA_theodor_leutwein } }
+					}
+					create_character = { template = SWA_theodor_leutwein }
+				}
+				random_scope_character = {
+					limit = {
+						has_template = SWA_theodor_leutwein
+						is_character_alive = yes
+					}
+					set_interest_group = c:SWA.ig:ig_armed_forces
+					set_as_interest_group_leader = yes
+					set_character_as_ruler = yes
+				}
+			}
 		}
 	}
 }
@@ -44,7 +108,7 @@
 sb_nam_finalize_swa_administration = {
 	create_diplomatic_pact = {
 		country = c:SWA
-		type = chartered_company
+		type = colony
 	}
 	c:SWA ?= {
 		remove_primary_culture = cu:british
@@ -80,6 +144,12 @@ sb_nam_finalize_swa_administration = {
 		}
 	}
 	if = {
+		limit = { has_claim = s:STATE_HEREROLAND }
+		s:STATE_HEREROLAND = {
+			remove_claim = root
+		}
+	}
+	if = {
 		limit = {
 			c:SWA ?= {
 				NOT = { has_claim = s:STATE_NAMAQUALAND }
@@ -89,6 +159,17 @@ sb_nam_finalize_swa_administration = {
 			add_claim = c:SWA
 		}
 	}
+	if = {
+		limit = {
+			c:SWA ?= {
+				NOT = { has_claim = s:STATE_HEREROLAND }
+			}
+		}
+		s:STATE_HEREROLAND = {
+			add_claim = c:SWA
+		}
+	}
+	sb_nam_assign_german_swa_ruler = yes
 	c:SWA ?= {
 		sb_nam_copy_final_harshness_flags_from_root = yes
 		sb_nam_apply_swa_administration_package = yes

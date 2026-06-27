@@ -84,15 +84,7 @@ sb_bechuanaland_add_swa_influence = {
 }
 
 sb_bechuanaland_clear_arid_corridor_modifier = {
-	every_country = {
-		every_scope_state = {
-			limit = {
-				state_region = s:STATE_NORTHERN_CAPE
-				has_modifier = sb_arid_interior_corridor
-			}
-			remove_modifier = sb_arid_interior_corridor
-		}
-	}
+	# The corridor debuff is now a permanent state trait on Bechuanaland.
 }
 
 sb_bechuanaland_skip_corridor_crisis = {
@@ -105,7 +97,11 @@ sb_bechuanaland_skip_corridor_crisis = {
 sb_bechuanaland_open_corridor_is = {
 	remove_global_variable = sb_bechuanaland_corridor_watch_global_var
 	set_global_variable = sb_bechuanaland_corridor_open_global_var
+	set_global_variable = { name = sb_bechuanaland_resolution_grace_global_var months = 12 }
 	s:STATE_BOTSWANA = { add_claim = c:GBR }
+	s:STATE_BECHUANALAND = {
+		if = { limit = { exists = c:CAP } add_claim = c:CAP }
+	}
 
 	every_country = {
 		limit = {
@@ -113,6 +109,10 @@ sb_bechuanaland_open_corridor_is = {
 			NOT = { has_journal_entry = je_sb_bechuanaland_corridor }
 		}
 		add_contextless_journal_entry = je_sb_bechuanaland_corridor
+	}
+	every_country = {
+		limit = { sb_bechuanaland_swa_overlord_candidate = yes }
+		set_variable = { name = sb_bechuanaland_caprivi_ai_delay_var months = 12 }
 	}
 	sb_bechuanaland_sync_influence_bar = yes
 	every_country = {
@@ -125,6 +125,7 @@ sb_bechuanaland_open_corridor_is = {
 }
 
 sb_bechuanaland_ensure_sgo_protectorate_of_root = {
+	save_scope_as = sb_sgo_protector_scope
 	c:SGO ?= {
 		if = {
 			limit = {
@@ -137,9 +138,9 @@ sb_bechuanaland_ensure_sgo_protectorate_of_root = {
 		if = {
 			limit = {
 				is_country_alive = yes
-				NOT = { is_subject_of = root }
+				NOT = { is_subject_of = scope:sb_sgo_protector_scope }
 			}
-			root = {
+			scope:sb_sgo_protector_scope = {
 				create_diplomatic_pact = {
 					country = c:SGO
 					type = protectorate
@@ -157,6 +158,45 @@ sb_bechuanaland_ensure_sgo_protectorate_of_root = {
 	}
 }
 
+sb_bechuanaland_setup_sgo_frontier_republic = {
+	c:SGO ?= {
+		set_country_type = unrecognized
+		set_variable = sb_commandant_general_visible_var
+		set_variable = sb_early_republic_var
+		sb_apply_boer_republic_spawn_setup = yes
+		activate_law = law_type:law_discrete_inboekstelsel
+		activate_law = law_type:law_frontier_colonization
+		add_modifier = {
+			name = sb_trek_frontier_republic
+			months = 120
+		}
+		if = {
+			limit = { NOT = { has_journal_entry = je_sb_great_trek } }
+			add_journal_entry = { type = je_sb_great_trek }
+		}
+	}
+}
+
+sb_bechuanaland_move_gauteng_boers_to_sgo = {
+	if = {
+		limit = {
+			exists = c:SGO
+			exists = s:STATE_BECHUANALAND.region_state:SGO
+			exists = s:STATE_TRANSVAAL.region_state:TRN
+		}
+		s:STATE_BECHUANALAND.region_state:SGO = { save_scope_as = sb_sgo_migration_target }
+		s:STATE_TRANSVAAL.region_state:TRN = {
+			every_scope_pop = {
+				limit = { culture = cu:boer }
+				move_partial_pop = {
+					state = scope:sb_sgo_migration_target
+					population_ratio = 0.01
+				}
+			}
+		}
+	}
+}
+
 sb_bechuanaland_create_sgo_beachhead_for_root = {
 	if = {
 		limit = {
@@ -169,7 +209,7 @@ sb_bechuanaland_create_sgo_beachhead_for_root = {
 			province = p:xD76CB9
 			on_created = {
 				set_country_type = unrecognized
-				s:STATE_NORTHERN_CAPE = { add_claim = c:SGO }
+				s:STATE_BECHUANALAND = { add_claim = c:SGO }
 			}
 		}
 	}
@@ -184,22 +224,7 @@ sb_bechuanaland_create_sgo_beachhead_for_root = {
 			province = p:x20CAA7
 			on_created = {
 				set_country_type = unrecognized
-				s:STATE_NORTHERN_CAPE = { add_claim = c:SGO }
-			}
-		}
-	}
-	else_if = {
-		limit = {
-			NOT = { exists = c:SGO }
-			p:xA494F8.state.owner = c:TSW
-		}
-		create_country = {
-			tag = SGO
-			origin = root
-			province = p:xA494F8
-			on_created = {
-				set_country_type = unrecognized
-				s:STATE_NORTHERN_CAPE = { add_claim = c:SGO }
+				s:STATE_BECHUANALAND = { add_claim = c:SGO }
 			}
 		}
 	}
@@ -214,10 +239,27 @@ sb_bechuanaland_create_sgo_beachhead_for_root = {
 			province = p:x4AFDFD
 			on_created = {
 				set_country_type = unrecognized
-				s:STATE_NORTHERN_CAPE = { add_claim = c:SGO }
+				s:STATE_BECHUANALAND = { add_claim = c:SGO }
 			}
 		}
 	}
+	else_if = {
+		limit = {
+			NOT = { exists = c:SGO }
+			p:x8E325C.state.owner = c:TSW
+		}
+		create_country = {
+			tag = SGO
+			origin = root
+			province = p:x8E325C
+			on_created = {
+				set_country_type = unrecognized
+				s:STATE_BECHUANALAND = { add_claim = c:SGO }
+			}
+		}
+	}
+	sb_bechuanaland_setup_sgo_frontier_republic = yes
+	sb_bechuanaland_move_gauteng_boers_to_sgo = yes
 	sb_bechuanaland_ensure_sgo_protectorate_of_root = yes
 	sb_bechuanaland_add_boer_influence = yes
 }
@@ -250,7 +292,7 @@ sb_bechuanaland_annex_sgo_and_wbl_to_cap = {
 sb_bechuanaland_transfer_tsw_corridor_to_sgo = {
 	if = {
 		limit = { exists = c:SGO }
-		s:STATE_NORTHERN_CAPE = {
+		s:STATE_BECHUANALAND = {
 			if = {
 				limit = { p:xD76CB9.state.owner = c:TSW }
 				set_owner_of_provinces = { country = c:SGO provinces = { xD76CB9 } }
@@ -260,12 +302,20 @@ sb_bechuanaland_transfer_tsw_corridor_to_sgo = {
 				set_owner_of_provinces = { country = c:SGO provinces = { x20CAA7 } }
 			}
 			if = {
+				limit = { p:x8E325C.state.owner = c:TSW }
+				set_owner_of_provinces = { country = c:SGO provinces = { x8E325C } }
+			}
+			if = {
 				limit = { p:xA494F8.state.owner = c:TSW }
 				set_owner_of_provinces = { country = c:SGO provinces = { xA494F8 } }
 			}
 			if = {
 				limit = { p:x4AFDFD.state.owner = c:TSW }
 				set_owner_of_provinces = { country = c:SGO provinces = { x4AFDFD } }
+			}
+			set_owner_of_provinces = {
+				country = c:SGO
+				provinces = { x6CF2A2 xD65167 xD0AEA4 xC3D77A x4D517F x642DA4 xC4A7CE x8491F7 xCFE774 xE4925E x61DACA x967E57 x076518 x455C0B x6BE9A0 }
 			}
 		}
 	}
@@ -340,7 +390,7 @@ sb_bechuanaland_prepare_cap_warren_demand = {
 }
 
 sb_bechuanaland_prepare_gbr_warren_demand = {
-	s:STATE_NORTHERN_CAPE = { add_claim = c:CAP }
+	s:STATE_BECHUANALAND = { add_claim = c:CAP }
 	if = {
 		limit = {
 			c:SGO ?= {
@@ -470,19 +520,19 @@ sb_bechuanaland_add_cap_northern_cape_wargoals_to_gbr_play = {
 			is_diplomatic_play_type = dp_make_protectorate
 		}
 		if = {
-			limit = { exists = s:STATE_NORTHERN_CAPE.region_state:SGO }
+			limit = { exists = s:STATE_BECHUANALAND.region_state:SGO }
 			add_war_goal = {
 				holder = c:CAP
 				type = conquer_state
-				target_state = s:STATE_NORTHERN_CAPE.region_state:SGO
+				target_state = s:STATE_BECHUANALAND.region_state:SGO
 			}
 		}
 		if = {
-			limit = { exists = s:STATE_NORTHERN_CAPE.region_state:WBL }
+			limit = { exists = s:STATE_GRIQUALAND_WEST.region_state:WBL }
 			add_war_goal = {
 				holder = c:CAP
 				type = conquer_state
-				target_state = s:STATE_NORTHERN_CAPE.region_state:WBL
+				target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
 			}
 		}
 	}
@@ -511,7 +561,7 @@ sb_bechuanaland_start_gbr_direct_warren_war = {
 					holder = c:TRN
 					type = revoke_claim
 					target_country = c:CAP
-					target_state = s:STATE_NORTHERN_CAPE.region_state:CAP
+					target_state = s:STATE_BECHUANALAND.region_state:TSW
 				}
 			}
 			c:TRN ?= { sb_bechuanaland_mark_boer_swa_war_side = yes }
@@ -537,7 +587,7 @@ sb_bechuanaland_start_gbr_direct_warren_war = {
 					holder = c:TRN
 					type = revoke_claim
 					target_country = c:CAP
-					target_state = s:STATE_NORTHERN_CAPE.region_state:CAP
+					target_state = s:STATE_BECHUANALAND.region_state:TSW
 				}
 				add_war_goal = {
 					holder = c:GBR
@@ -568,7 +618,7 @@ sb_bechuanaland_start_gbr_direct_warren_war = {
 					holder = c:ORA
 					type = revoke_claim
 					target_country = c:CAP
-					target_state = s:STATE_NORTHERN_CAPE.region_state:CAP
+					target_state = s:STATE_BECHUANALAND.region_state:TSW
 				}
 				}
 				c:ORA ?= { sb_bechuanaland_mark_boer_swa_war_side = yes }
@@ -602,12 +652,12 @@ sb_bechuanaland_apply_british_settlement = {
 		else_if = {
 			limit = { c:CAP ?= { sb_bechuanaland_cap_liberal_botswana_route = yes } }
 			sb_bechuanaland_make_tsw_subject_of_cap = yes
-		}
-		else = {
-			if = { limit = { c:GBR ?= { has_claim = s:STATE_BOTSWANA } } s:STATE_BOTSWANA = { remove_claim = c:GBR } }
-			s:STATE_BOTSWANA = { add_claim = c:CAP }
-			c:CAP ?= {
-				if = {
+			}
+			else = {
+				if = { limit = { c:GBR ?= { has_claim = s:STATE_BOTSWANA } } s:STATE_BOTSWANA = { remove_claim = c:GBR } }
+				s:STATE_BECHUANALAND = { add_claim = c:CAP }
+				c:CAP ?= {
+					if = {
 					limit = {
 						NOT = { has_technology_researched = malaria_prevention }
 						can_research = malaria_prevention
@@ -627,6 +677,8 @@ sb_bechuanaland_apply_boer_swa_settlement = {
 		set_global_variable = sb_bechuanaland_corridor_resolved_global_var
 	}
 	if = { limit = { c:GBR ?= { has_claim = s:STATE_BOTSWANA } } s:STATE_BOTSWANA = { remove_claim = c:GBR } }
+	if = { limit = { c:CAP ?= { has_claim = s:STATE_BECHUANALAND } } s:STATE_BECHUANALAND = { remove_claim = c:CAP } }
+	if = { limit = { exists = c:SGO } s:STATE_BECHUANALAND = { add_claim = c:SGO } }
 	if = {
 		limit = { has_global_variable = sb_bechuanaland_caprivi_escalated_var }
 		s:STATE_BOTSWANA = { add_claim = c:SWA }
@@ -703,6 +755,7 @@ sb_bechuanaland_cleanup_corridor_crisis = {
 	sb_bechuanaland_clear_arid_corridor_modifier = yes
 	if = { limit = { has_global_variable = sb_bechuanaland_corridor_watch_global_var } remove_global_variable = sb_bechuanaland_corridor_watch_global_var }
 	if = { limit = { has_global_variable = sb_bechuanaland_corridor_open_global_var } remove_global_variable = sb_bechuanaland_corridor_open_global_var }
+	if = { limit = { has_global_variable = sb_bechuanaland_resolution_grace_global_var } remove_global_variable = sb_bechuanaland_resolution_grace_global_var }
 	if = { limit = { has_global_variable = sb_bechuanaland_crisis_war_active_var } remove_global_variable = sb_bechuanaland_crisis_war_active_var }
 	if = { limit = { has_global_variable = sb_bechuanaland_caprivi_escalated_var } remove_global_variable = sb_bechuanaland_caprivi_escalated_var }
 	c:GBR ?= { if = { limit = { has_variable = sb_bechuanaland_british_war_side_var } remove_variable = sb_bechuanaland_british_war_side_var } }
@@ -726,5 +779,9 @@ sb_bechuanaland_cleanup_corridor_crisis = {
 			has_journal_entry = je_sb_bechuanaland_corridor
 		}
 		if = { limit = { has_variable = sb_bechuanaland_support_cooldown_var } remove_variable = sb_bechuanaland_support_cooldown_var }
+	}
+	every_country = {
+		limit = { has_variable = sb_bechuanaland_caprivi_ai_delay_var }
+		remove_variable = sb_bechuanaland_caprivi_ai_delay_var
 	}
 }

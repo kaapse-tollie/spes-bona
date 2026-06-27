@@ -54,7 +54,12 @@ sb_cap_has_liberal_franchise_route = {
 }
 
 sb_cap_is_full_liberal_griqua_route = {
-	country_has_primary_culture = cu:griqua
+	OR = {
+		country_has_primary_culture = cu:griqua
+		active_law:lawgroup_citizenship ?= {
+			has_amendment = amendment_type:amendment_sb_cape_qualified_franchise
+		}
+	}
 }
 
 sb_cap_is_responsible_or_dominion = {
@@ -117,5 +122,25 @@ sb_cap_can_form_gle = {
 			has_amendment = amendment_type:amendment_sb_cape_qualified_franchise
 		}
 		country_has_primary_culture = cu:griqua
+	}
+}
+
+sb_cap_can_integrate_gle = {
+	country_definition = cd:CAP
+	is_country_alive = yes
+	sb_cap_is_full_liberal_griqua_route = yes
+	NOT = {
+		c:XHO ?= {
+			any_scope_state = {
+				state_region = s:STATE_EASTERN_CAPE
+				num_provinces >= 1
+			}
+		}
+	}
+	c:GLE ?= {
+		is_country_alive = yes
+		is_subject_of = root
+		liberty_desire <= 25
+		relations:root >= 25
 	}
 }

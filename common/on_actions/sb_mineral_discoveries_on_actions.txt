@@ -6,11 +6,14 @@ on_monthly_pulse_country = {
 	on_actions = { sb_on_griqualand_east_monthly_pulse_country }
 }
 
+on_monthly_pulse = {
+	on_actions = { sb_on_bechuanaland_corridor_monthly_pulse }
+}
+
 on_yearly_pulse = {
 	on_actions = {
 		sb_on_kimberley_yearly_pulse
 		sb_on_boer_ai_economy_yearly_pulse
-		sb_on_bechuanaland_corridor_yearly_pulse
 	}
 }
 
@@ -54,6 +57,48 @@ sb_on_mineral_discoveries_acquired_technology = {
 				}
 			}
 		}
+		if = {
+			limit = {
+				has_technology_researched = nitroglycerin
+				any_scope_state = { state_region = s:STATE_GRIQUALAND_WEST }
+				NOT = { has_global_variable = sb_griqualand_west_iron_nitroglycerin_seeded_var }
+			}
+			set_global_variable = sb_griqualand_west_iron_nitroglycerin_seeded_var
+			s:STATE_GRIQUALAND_WEST = {
+				change_resource_potential = {
+					type = building_iron_mine
+					amount = 4
+				}
+			}
+		}
+		if = {
+			limit = {
+				has_technology_researched = dynamite
+				any_scope_state = { state_region = s:STATE_GRIQUALAND_WEST }
+				NOT = { has_global_variable = sb_griqualand_west_iron_dynamite_seeded_var }
+			}
+			set_global_variable = sb_griqualand_west_iron_dynamite_seeded_var
+			s:STATE_GRIQUALAND_WEST = {
+				change_resource_potential = {
+					type = building_iron_mine
+					amount = 5
+				}
+			}
+		}
+		if = {
+			limit = {
+				has_technology_researched = pneumatic_tools
+				any_scope_state = { state_region = s:STATE_GRIQUALAND_WEST }
+				NOT = { has_global_variable = sb_griqualand_west_iron_pneumatic_tools_seeded_var }
+			}
+			set_global_variable = sb_griqualand_west_iron_pneumatic_tools_seeded_var
+			s:STATE_GRIQUALAND_WEST = {
+				change_resource_potential = {
+					type = building_iron_mine
+					amount = 10
+				}
+			}
+		}
 	}
 }
 
@@ -81,7 +126,7 @@ sb_on_kimberley_yearly_pulse = {
 					}
 					c:WBL ?= {
 						is_country_alive = yes
-						any_scope_state = { state_region = s:STATE_NORTHERN_CAPE }
+						any_scope_state = { state_region = s:STATE_GRIQUALAND_WEST }
 					}
 				}
 				c:CAP ?= {
@@ -97,7 +142,7 @@ sb_on_kimberley_yearly_pulse = {
 	}
 }
 
-sb_on_bechuanaland_corridor_yearly_pulse = {
+sb_on_bechuanaland_corridor_monthly_pulse = {
 	effect = {
 		if = {
 			limit = { sb_bechuanaland_corridor_can_open = yes }
@@ -105,7 +150,7 @@ sb_on_bechuanaland_corridor_yearly_pulse = {
 		}
 		if = {
 			limit = {
-				has_global_variable = sb_bechuanaland_corridor_watch_global_var
+				sb_bechuanaland_corridor_ready_after_kimberley = yes
 				NOT = { has_global_variable = sb_bechuanaland_corridor_open_global_var }
 				NOT = { has_global_variable = sb_bechuanaland_corridor_resolved_global_var }
 				OR = {
@@ -153,6 +198,23 @@ sb_on_griqualand_east_monthly_pulse_country = {
 			}
 			set_variable = sb_griqualand_east_pending_var
 			trigger_event = { id = sb_griqualand_east.220 days = 14 popup = yes }
+		}
+		if = {
+			limit = {
+				country_definition = cd:CAP
+				has_variable = sb_gle_willing_annexation_pending_var
+				NOT = { sb_cap_can_integrate_gle = yes }
+			}
+			remove_variable = sb_gle_willing_annexation_pending_var
+		}
+		if = {
+			limit = {
+				country_definition = cd:CAP
+				sb_cap_can_integrate_gle = yes
+				NOT = { has_variable = sb_gle_willing_annexation_pending_var }
+			}
+			set_variable = sb_gle_willing_annexation_pending_var
+			trigger_event = { id = sb_griqualand_east.221 days = 1 popup = yes }
 		}
 	}
 }

@@ -371,6 +371,7 @@ sb_seed_trn_v2_start_package = {
 	# Minimal scripted replacement for the old day-1 TRN history package.
 	# This is applied only after the delayed split event creates the country.
 	c:TRN ?= {
+		sb_martinus_ensure_trn_pretorius_cast = yes
 		random_scope_state = {
 			limit = {
 				state_region = s:STATE_TRANSVAAL
@@ -639,21 +640,10 @@ sb_spawn_transvaal_republic_v2 = {
 					interest_group = ig_armed_forces
 				}
 			}
-			if = {
-				limit = {
-					NOT = {
-						any_scope_character = {
-							has_template = TRN_marthinus_wessel_pretorius
-						}
-					}
-				}
-				create_character = {
-					template = TRN_marthinus_wessel_pretorius
-				}
-			}
-			if = {
-				limit = {
-					c:NAL ?= {
+				sb_martinus_ensure_trn_pretorius_cast = yes
+				if = {
+					limit = {
+						c:NAL ?= {
 						is_country_alive = yes
 					ruler = {
 						has_template = TRN_andries_pretorius
@@ -941,6 +931,7 @@ sb_found_zoutpansberg_republic = {
 				set_state_owner = c:LYD
 			}
 			region_state:LYD ?= {
+				evaluate_and_assign_state_hub_dynamic_names = yes
 				create_building = {
 					building = building_trade_center
 					add_ownership = {
@@ -1061,12 +1052,19 @@ sb_found_zoutpansberg_republic = {
 					interest_group = ig_armed_forces
 				}
 			}
-			change_relations = {
-				country = root
-			value = -25
-		}
-				if = {
-					limit = { NOT = { has_journal_entry = je_sb_great_trek } }
+				change_relations = {
+					country = root
+				value = -25
+			}
+			if = {
+				limit = { c:SWZ ?= { is_country_alive = yes } }
+				change_relations = {
+					country = c:SWZ
+					value = 25
+				}
+			}
+					if = {
+						limit = { NOT = { has_journal_entry = je_sb_great_trek } }
 					add_journal_entry = { type = je_sb_great_trek }
 					}
 						sb_ensure_boer_republic_compacts_for_root = yes
