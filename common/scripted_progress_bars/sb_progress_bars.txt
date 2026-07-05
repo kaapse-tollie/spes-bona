@@ -27,6 +27,8 @@
 #     +0.2  Wealth voting law active
 #     +0.1 Wealth voting being enacted
 #     +0.5 No colonial law active
+#     +0.1 Laissez-Faire law active
+#     +0.2 Command Economy law active
 #     +0.4  Intelligentsia in government
 #	  +0.2 Devout in government
 #     +0.1 Petty Bourgeoisie in government
@@ -44,7 +46,8 @@
 #     -0.3 national_supremacy being enacted
 #     -1.5  Any slavery law active
 #     -0.4 any slavery law being enacted
-#     -0.5 Agrarianism law active
+#     -0.2 Industry Banned law active
+#     -0.1 Agrarianism law active
 #     -0.2 Agrarianism being enacted
 #     -0.4  Rural Folk in government
 #     -0.2 Landowners in government
@@ -197,6 +200,26 @@ sb_cape_balance_bar = {
 				}
 				add = {
 					desc = "sb_cape_law_no_colonial_affairs_enacting"
+					value = 0.2
+				}
+			}
+
+			if = {
+				limit = {
+					has_law_or_variant = law_type:law_laissez_faire
+				}
+				add = {
+					desc = "sb_cape_laissez_faire_law"
+					value = 0.1
+				}
+			}
+
+			if = {
+				limit = {
+					has_law_or_variant = law_type:law_command_economy
+				}
+				add = {
+					desc = "sb_cape_command_economy_law"
 					value = 0.2
 				}
 			}
@@ -504,11 +527,21 @@ sb_cape_balance_bar = {
 
 			if = {
 				limit = {
-					has_law = law_type:law_agrarianism
+					has_law_or_variant = law_type:law_industry_banned
+				}
+				subtract = {
+					desc = "sb_cape_industry_banned_law"
+					value = 0.2
+				}
+			}
+
+			if = {
+				limit = {
+					has_law_or_variant = law_type:law_agrarianism
 				}
 				subtract = {
 					desc = "sb_cape_agrarianism_law"
-					value = 0.5
+					value = 0.1
 				}
 			}
 

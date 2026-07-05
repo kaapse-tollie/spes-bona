@@ -39,7 +39,6 @@ sb_nam.010 = {
 			custom_tooltip = sb_nam_010_a_tt
 			hidden_effect = {
 				set_variable = sb_nam_colonial_prestige_resolved_var
-				set_variable = sb_nam_colonial_programme_backed_var
 				random_law = {
 					limit = {
 						type = law_type:law_colonial_exploitation
@@ -156,7 +155,7 @@ sb_nam.011 = {
 
 		trigger = {
 			country_definition = cd:GER
-			has_technology_researched = malaria_prevention
+			has_technology_researched = floating_harbor
 			NOT = { has_variable = sb_nam_angra_pequena_purchased_var }
 			NOT = { has_variable = sb_nam_angra_pequena_purchase_declined_var }
 			OR = {
@@ -293,20 +292,32 @@ sb_nam.020 = {
 				province = p:xEC2F99
 			}
 		}
-		if = {
-			limit = { exists = c:RHB }
-			s:STATE_NAMAQUALAND = {
-				set_owner_of_provinces = {
-					country = c:RHB
-					provinces = { xEC2F99 x8D6395 x9C401C x21DD01 }
+			if = {
+				limit = { exists = c:RHB }
+				s:STATE_NAMAQUALAND = {
+					set_owner_of_provinces = {
+						country = c:RHB
+						provinces = { xEC2F99 x8D6395 x9C401C x21DD01 }
+					}
+					add_homeland = cu:san
+					add_homeland = cu:nama
+					add_homeland = cu:griqua
 				}
-			}
-			root.capital = {
-				every_scope_pop = {
-					limit = {
-					culture = cu:griqua
+				c:RHB = {
+					if = {
+						limit = { NOT = { has_modifier = sb_arid_frontier_pastoralism } }
+						add_modifier = {
+							name = sb_arid_frontier_pastoralism
+							months = -1
+						}
+					}
 				}
-				move_partial_pop = {
+				root.capital = {
+					every_scope_pop = {
+						limit = {
+						culture = cu:griqua
+					}
+					move_partial_pop = {
 					state = c:RHB.capital
 					population = 2000
 				}

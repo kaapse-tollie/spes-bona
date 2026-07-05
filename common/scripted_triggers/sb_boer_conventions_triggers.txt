@@ -89,6 +89,44 @@ sb_should_queue_post_recognition_slavery_response = {
 	NOT = { has_variable = sb_gbr_highveld_slavery_response_pending_var }
 }
 
+sb_boer_convention_nal_is_british_colony = {
+	c:NAL ?= {
+		is_country_alive = yes
+		is_subject_of = c:GBR
+		has_variable = sb_natalia_british_colony_resolved_var
+	}
+}
+
+sb_boer_convention_nal_border_pressure = {
+	c:NAL ?= {
+		is_country_alive = yes
+		is_subject = no
+		country_has_primary_culture = cu:boer
+		NOT = { country_has_primary_culture = cu:anglo_african }
+		NOT = { has_variable = sb_natalia_british_colony_resolved_var }
+	}
+}
+
+sb_boer_convention_kept_frontier_republic = {
+	OR = {
+		has_variable = sb_commandant_general_visible_var
+		has_law = law_type:law_sb_commandant_general_republic
+		has_modifier = sb_trek_frontier_republic
+	}
+}
+
+sb_boer_convention_army_stronger_than_cape = {
+	c:CAP ?= { is_country_alive = yes }
+	army_power_projection > c:CAP.army_power_projection
+}
+
+sb_boer_convention_gdp_stronger_than_cape = {
+	c:CAP ?= { is_country_alive = yes }
+	gdp > {
+		value = c:CAP.gdp
+	}
+}
+
 sb_is_live_independent_boer_compact_country = {
 	is_country_alive = yes
 	is_subject = no
@@ -137,6 +175,26 @@ sb_boer_compact_with_scope_proposer_incomplete = {
 				}
 			}
 		}
+		NOT = {
+			any_scope_treaty = {
+				binds = scope:sb_boer_compact_proposer
+				any_scope_article = {
+					has_type = trade_privilege
+					source_country = scope:sb_boer_compact_proposer
+					target_country = root
+				}
+			}
+		}
+		NOT = {
+			any_scope_treaty = {
+				binds = scope:sb_boer_compact_proposer
+				any_scope_article = {
+					has_type = trade_privilege
+					source_country = root
+					target_country = scope:sb_boer_compact_proposer
+				}
+			}
+		}
 	}
 }
 
@@ -165,6 +223,26 @@ sb_boer_compact_with_ora_incomplete = {
 				binds = c:ORA
 				any_scope_article = {
 					has_type = transit_rights
+					source_country = c:ORA
+					target_country = root
+				}
+			}
+		}
+		NOT = {
+			any_scope_treaty = {
+				binds = c:ORA
+				any_scope_article = {
+					has_type = trade_privilege
+					source_country = root
+					target_country = c:ORA
+				}
+			}
+		}
+		NOT = {
+			any_scope_treaty = {
+				binds = c:ORA
+				any_scope_article = {
+					has_type = trade_privilege
 					source_country = c:ORA
 					target_country = root
 				}
@@ -203,6 +281,26 @@ sb_boer_compact_with_trn_incomplete = {
 				}
 			}
 		}
+		NOT = {
+			any_scope_treaty = {
+				binds = c:TRN
+				any_scope_article = {
+					has_type = trade_privilege
+					source_country = root
+					target_country = c:TRN
+				}
+			}
+		}
+		NOT = {
+			any_scope_treaty = {
+				binds = c:TRN
+				any_scope_article = {
+					has_type = trade_privilege
+					source_country = c:TRN
+					target_country = root
+				}
+			}
+		}
 	}
 }
 
@@ -231,6 +329,26 @@ sb_boer_compact_with_zpb_incomplete = {
 				binds = c:ZPB
 				any_scope_article = {
 					has_type = transit_rights
+					source_country = c:ZPB
+					target_country = root
+				}
+			}
+		}
+		NOT = {
+			any_scope_treaty = {
+				binds = c:ZPB
+				any_scope_article = {
+					has_type = trade_privilege
+					source_country = root
+					target_country = c:ZPB
+				}
+			}
+		}
+		NOT = {
+			any_scope_treaty = {
+				binds = c:ZPB
+				any_scope_article = {
+					has_type = trade_privilege
 					source_country = c:ZPB
 					target_country = root
 				}
@@ -269,6 +387,26 @@ sb_boer_compact_with_lyd_incomplete = {
 				}
 			}
 		}
+		NOT = {
+			any_scope_treaty = {
+				binds = c:LYD
+				any_scope_article = {
+					has_type = trade_privilege
+					source_country = root
+					target_country = c:LYD
+				}
+			}
+		}
+		NOT = {
+			any_scope_treaty = {
+				binds = c:LYD
+				any_scope_article = {
+					has_type = trade_privilege
+					source_country = c:LYD
+					target_country = root
+				}
+			}
+		}
 	}
 }
 
@@ -297,6 +435,26 @@ sb_boer_compact_with_nal_incomplete = {
 				binds = c:NAL
 				any_scope_article = {
 					has_type = transit_rights
+					source_country = c:NAL
+					target_country = root
+				}
+			}
+		}
+		NOT = {
+			any_scope_treaty = {
+				binds = c:NAL
+				any_scope_article = {
+					has_type = trade_privilege
+					source_country = root
+					target_country = c:NAL
+				}
+			}
+		}
+		NOT = {
+			any_scope_treaty = {
+				binds = c:NAL
+				any_scope_article = {
+					has_type = trade_privilege
 					source_country = c:NAL
 					target_country = root
 				}

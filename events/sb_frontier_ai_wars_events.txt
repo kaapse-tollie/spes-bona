@@ -123,13 +123,7 @@ sb_frontier_ai_wars.020 = {
 	# }
 
 	immediate = {
-		if = {
-			limit = { is_ai = yes }
-			add_modifier = {
-				name = sb_ora_scripted_return_war_supplies
-				months = 12
-			}
-		}
+		c:BST ?= { sb_bst_kill_non_moshoeshoe_ai_generals = yes }
 		if = {
 			limit = {
 				sb_frontier_ai_behavior_dynamic_historical = yes
@@ -141,15 +135,29 @@ sb_frontier_ai_wars.020 = {
 							name = sb_bst_scripted_frontier_edge
 							months = 12
 						}
+						sb_boost_firearms_progress_50 = yes
+						capital = {
+							create_pop = {
+								pop_type = soldiers
+								culture = sotho
+								size = 15000
+							}
+							create_pop = {
+								pop_type = laborers
+								culture = sotho
+								size = 10000
+							}
+							create_pop = {
+								pop_type = officers
+								culture = sotho
+								size = 2500
+							}
+						}
 					}
 				}
 				80 = {
 					add_modifier = {
 						name = sb_laager_defence
-						months = 12
-					}
-					add_modifier = {
-						name = sb_ora_scripted_frontier_edge
 						months = 12
 					}
 				}
@@ -161,10 +169,6 @@ sb_frontier_ai_wars.020 = {
 			}
 			add_modifier = {
 				name = sb_laager_defence
-				months = 12
-			}
-			add_modifier = {
-				name = sb_ora_scripted_frontier_edge
 				months = 12
 			}
 		}
@@ -216,10 +220,28 @@ sb_frontier_ai_wars.025 = {
 	hidden = yes
 
 	immediate = {
+		if = {
+			limit = { sb_frontier_ai_behavior_dynamic_historical = yes }
+			random_list = {
+				80 = {
+					add_modifier = {
+						name = sb_bst_scripted_frontier_edge
+						months = 12
+					}
+				}
+				20 = {
+					c:TRN ?= {
+						add_modifier = {
+							name = sb_laager_defence
+							months = 12
+						}
+					}
+				}
+			}
+		}
 		create_diplomatic_play = {
-			type = dp_conquer_state
+			type = dp_annex_war
 			target_country = c:TRN
-			target_state = s:STATE_TRANSVAAL.region_state:TRN
 
 			add_war_goal = {
 				holder = c:TRN
@@ -231,31 +253,73 @@ sb_frontier_ai_wars.025 = {
 	}
 }
 
+sb_frontier_ai_wars.026 = {
+	type = country_event
+	hidden = yes
+
+	immediate = {
+		if = {
+			limit = { sb_frontier_ai_behavior_dynamic_historical = yes }
+			random_list = {
+				80 = {
+					add_modifier = {
+						name = sb_bst_scripted_frontier_edge
+						months = 12
+					}
+				}
+				20 = {
+					c:ZPB ?= {
+						add_modifier = {
+							name = sb_laager_defence
+							months = 12
+						}
+					}
+				}
+			}
+		}
+		create_diplomatic_play = {
+			type = dp_annex_war
+			target_country = c:ZPB
+
+			add_war_goal = {
+				holder = c:ZPB
+				target_country = root
+				type = annex_country
+			}
+		}
+		set_variable = sb_bst_zpb_scripted_war_1855_resolved_var
+	}
+}
+
 sb_frontier_ai_wars.030 = {
 	type = country_event
 	hidden = yes
 
-	# Not needed called externally
-	# trigger = {
-	# 	country_definition = cd:ORA
-	# 	is_ai = yes
-	# 	is_country_alive = yes
-	# 	is_subject = no
-	# 	is_at_war = no
-	# 	is_active_in_diplomatic_play = no
-	# 	aggressive_diplomatic_plays_permitted = yes
-	# 	sb_frontier_ai_scripting_enabled = yes
-	# 	c:BST ?= {
-	# 		is_country_alive = yes
-	# 		is_ai = yes
-	# 		is_subject = no
-	# 		is_at_war = no
-	# 		is_active_in_diplomatic_play = no
-	# 		aggressive_diplomatic_plays_permitted = yes
-	# 	}
-	# }
+	trigger = {
+		country_definition = cd:ORA
+		is_ai = yes
+		is_country_alive = yes
+		is_subject = no
+		is_at_war = no
+		is_active_in_diplomatic_play = no
+		aggressive_diplomatic_plays_permitted = yes
+		sb_frontier_ai_scripting_enabled = yes
+		NOT = { has_variable = sb_ora_bst_scripted_war_1856_resolved_var }
+		game_date >= 1856.8.4
+		c:PHL ?= {
+			is_country_alive = no
+		}
+		c:BST ?= {
+			is_country_alive = yes
+			is_ai = yes
+			is_subject = no
+			is_at_war = no
+			is_active_in_diplomatic_play = no
+		}
+	}
 
 	immediate = {
+		c:BST ?= { sb_bst_kill_non_moshoeshoe_ai_generals = yes }
 		if = {
 			limit = {
 				sb_frontier_ai_behavior_dynamic_historical = yes
@@ -344,12 +408,19 @@ sb_frontier_ai_wars.030 = {
 			add_war_goal = {
 				holder = c:BST
 				target_state = s:STATE_VRYSTAAT.region_state:ORA
-				type = return_state
+					type = return_state
+				}
+			}
+			random_diplomatic_play = {
+				limit = {
+					initiator = root
+					target = c:BST
+					is_diplomatic_play_type = dp_annex_war
+				}
+				c:ORA ?= { set_variable = sb_ora_bst_scripted_war_1856_resolved_var }
 			}
 		}
-		set_variable = sb_ora_bst_scripted_war_1856_resolved_var
 	}
-}
 
 sb_frontier_ai_wars.040 = {
 	type = country_event

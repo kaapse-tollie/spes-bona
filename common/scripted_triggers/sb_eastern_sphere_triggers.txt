@@ -166,11 +166,56 @@ sb_is_non_british_port_owner = {
 }
 
 sb_is_delagoa_route_actor = {
+	save_temporary_scope_as = sb_delagoa_actor_scope
 	is_country_alive = yes
 	country_has_primary_culture = cu:boer
+	market.owner = scope:sb_delagoa_actor_scope
+	sb_delagoa_actor_has_integrated_transvaal_states = yes
+}
+
+sb_should_be_involved_in_delagoa_route = {
+	NOT = { exists = c:SAF }
+	NOT = { has_global_variable = sb_delagoa_route_complete_global_var }
+	sb_delagoa_owner_outside_gbr_bloc = yes
 	OR = {
-		country_definition = cd:TRN
-		country_definition = cd:LYD
+		AND = {
+			sb_is_delagoa_route_actor = yes
+			NOT = { has_variable = sb_delagoa_route_complete_var }
+		}
+		AND = {
+			OR = {
+				country_definition = cd:POR
+				country_definition = cd:MZQ
+			}
+			owns_entire_state_region = STATE_LOURENCO_MARQUES
+			NOT = { is_in_same_power_bloc = c:GBR }
+			any_country = {
+				sb_is_delagoa_route_actor = yes
+				NOT = { has_variable = sb_delagoa_route_complete_var }
+			}
+		}
+	}
+}
+
+sb_delagoa_actor_has_integrated_transvaal_states = {
+	save_temporary_scope_as = sb_delagoa_actor_scope
+	s:STATE_TRANSVAAL = {
+		any_scope_state = {
+			owner = scope:sb_delagoa_actor_scope
+			is_incorporated = yes
+		}
+	}
+	s:STATE_EAST_TRANSVAAL = {
+		any_scope_state = {
+			owner = scope:sb_delagoa_actor_scope
+			is_incorporated = yes
+		}
+	}
+	s:STATE_NORTHERN_TRANSVAAL = {
+		any_scope_state = {
+			owner = scope:sb_delagoa_actor_scope
+			is_incorporated = yes
+		}
 	}
 }
 
@@ -406,42 +451,59 @@ sb_delagoa_owner_outside_gbr_bloc = {
 }
 
 sb_has_railway_in_transvaal = {
+	save_temporary_scope_as = sb_delagoa_actor_scope
 	s:STATE_TRANSVAAL = {
 		any_scope_state = {
-			owner = root
+			owner = scope:sb_delagoa_actor_scope
 			has_active_building = building_railway
 		}
 	}
 }
 
 sb_has_railway_in_east_transvaal = {
+	save_temporary_scope_as = sb_delagoa_actor_scope
 	s:STATE_EAST_TRANSVAAL = {
 		any_scope_state = {
-			owner = root
+			owner = scope:sb_delagoa_actor_scope
 			has_active_building = building_railway
 		}
 	}
 }
 
-sb_trn_has_delagoa_trade_through = {
+sb_has_railway_in_northern_transvaal = {
+	save_temporary_scope_as = sb_delagoa_actor_scope
+	s:STATE_NORTHERN_TRANSVAAL = {
+		any_scope_state = {
+			owner = scope:sb_delagoa_actor_scope
+			has_active_building = building_railway
+		}
+	}
+}
+
+sb_delagoa_actor_has_trade_through = {
+	save_temporary_scope_as = sb_delagoa_actor_scope
 	OR = {
 		any_scope_treaty = {
-			binds = root
+			binds = scope:sb_delagoa_actor_scope
 			binds = c:POR
 			any_scope_article = {
 				has_type = transit_rights
 				source_country = c:POR
-				target_country = root
+				target_country = scope:sb_delagoa_actor_scope
 			}
 		}
 		any_scope_treaty = {
-			binds = root
+			binds = scope:sb_delagoa_actor_scope
 			binds = c:MZQ
 			any_scope_article = {
 				has_type = transit_rights
 				source_country = c:MZQ
-				target_country = root
+				target_country = scope:sb_delagoa_actor_scope
 			}
 		}
 	}
+}
+
+sb_trn_has_delagoa_trade_through = {
+	sb_delagoa_actor_has_trade_through = yes
 }

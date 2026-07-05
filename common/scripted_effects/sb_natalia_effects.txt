@@ -206,6 +206,31 @@ sb_raise_ora_blood_river_relief_force = {
 		}
 		if = {
 			limit = {
+				NOT = { has_variable = sb_ora_blood_river_underbuilt_dragoon_var }
+				any_scope_state = {
+					state_region = s:STATE_VRYSTAAT
+					has_building = building_barrack
+					b:building_barrack.level == 1
+				}
+			}
+			set_variable = {
+				name = sb_ora_blood_river_underbuilt_dragoon_var
+				months = 24
+			}
+			create_military_formation = {
+				type = army
+				hq_region = sr:region_southern_africa
+				name = ora_blood_river_commando
+
+				combat_unit = {
+					type = unit_type:combat_unit_type_dragoons
+					state_region = s:STATE_VRYSTAAT
+					count = 1
+				}
+			}
+		}
+		if = {
+			limit = {
 				has_variable = sb_ora_blood_river_player_zul_extra_force_var
 				c:ZUL ?= {
 					is_player = yes

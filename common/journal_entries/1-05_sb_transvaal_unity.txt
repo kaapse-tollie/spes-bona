@@ -84,7 +84,22 @@ je_sb_transvaal_unity = {
 			s:STATE_EAST_TRANSVAAL = {
 				add_homeland = cu:boer
 			}
+			if = {
+				limit = {
+					is_ai = yes
+					c:LYD ?= { is_ai = yes }
+				}
+				set_variable = sb_trn_ai_lyd_unity_buildout_var
+			}
 			annex_with_incorporation = c:LYD
+			if = {
+				limit = { has_variable = sb_trn_ai_lyd_unity_buildout_var }
+				s:STATE_EAST_TRANSVAAL.region_state:TRN ?= {
+					sb_boer_ai_economy_create_maize_farm = yes
+					sb_boer_ai_economy_create_livestock_ranch = yes
+				}
+				remove_variable = sb_trn_ai_lyd_unity_buildout_var
+			}
 		}
 		if = {
 			limit = { has_modifier = sb_boer_principality_status }

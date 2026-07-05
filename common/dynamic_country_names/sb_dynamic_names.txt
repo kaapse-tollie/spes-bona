@@ -196,6 +196,216 @@ ABY = {
 	}
 }
 
+# BIC/BHT — vanilla's Dominion of India trigger catches any non-company subject.
+# SB responsible colonies are still autonomy-level 1, so they keep the colonial
+# name tier instead of being displayed as dominions.
+REPLACE:BIC = {
+	dynamic_country_name = {
+		name = dyn_c_british_raj
+		adjective = dyn_c_british_raj_adj
+		use_overlord_prefix = yes
+
+		is_main_tag_only = yes
+		priority = 60
+
+		trigger = {
+			scope:actor ?= {
+				any_overlord_or_above = {
+					c:GBR ?= this
+				}
+				OR = {
+					is_subject_type = subject_type_sb_responsible_colony
+					is_subject_type = subject_type_sb_responsible_colony_monarchy
+				}
+			}
+		}
+	}
+
+	dynamic_country_name = {
+		name = dyn_c_british_raj
+		adjective = dyn_c_british_raj_adj
+		use_overlord_prefix = yes
+
+		is_main_tag_only = yes
+		priority = 50
+
+		trigger = {
+			exists = c:GBR
+			c:GBR ?= {
+				has_diplomatic_pact = {
+					who = c:BIC
+					type = colony
+					is_initiator = yes
+				}
+			}
+		}
+	}
+
+	dynamic_country_name = {
+		name = dyn_c_east_india_company
+		adjective = dyn_c_east_india_company_adj
+		use_overlord_prefix = yes
+
+		is_main_tag_only = yes
+		priority = 10
+
+		trigger = {
+			scope:actor ?= {
+				is_subject = yes
+				has_government_type = gov_chartered_company
+			}
+		}
+	}
+
+	dynamic_country_name = {
+		name = dyn_c_dominion_of_india
+		adjective = BIC_ADJ
+
+		is_main_tag_only = yes
+		priority = 25
+
+		trigger = {
+			scope:actor ?= {
+				is_subject = yes
+				NOT = { has_government_type = gov_chartered_company }
+				NOT = { is_subject_type = subject_type_sb_responsible_colony }
+				NOT = { is_subject_type = subject_type_sb_responsible_colony_monarchy }
+			}
+		}
+	}
+
+	dynamic_country_name = {
+		name = dyn_c_madras_presidency
+		adjective = dyn_c_east_india_company_adj
+
+		is_main_tag_only = yes
+		priority = 25
+
+		trigger = {
+			scope:actor ?= {
+				is_subject = yes
+				capital ?= {
+					is_in_geographic_region = geographic_region_madras_old
+				}
+				NOR = {
+					any_scope_state = {
+						is_in_geographic_region = geographic_region_bengal_old
+					}
+					any_scope_state = {
+						is_in_geographic_region = geographic_region_bombay_old
+					}
+				}
+			}
+		}
+	}
+
+	dynamic_country_name = {
+		name = dyn_c_bombay_presidency
+		adjective = dyn_c_east_india_company_adj
+
+		is_main_tag_only = yes
+		priority = 25
+
+		trigger = {
+			scope:actor ?= {
+				is_subject = yes
+				capital ?= {
+					is_in_geographic_region = geographic_region_bombay_old
+				}
+				NOR = {
+					any_scope_state = {
+						is_in_geographic_region = geographic_region_madras_old
+					}
+					any_scope_state = {
+						is_in_geographic_region = geographic_region_bengal_old
+					}
+				}
+			}
+		}
+	}
+
+	dynamic_country_name = {
+		name = dyn_c_bengal_presidency
+		adjective = dyn_c_east_india_company_adj
+
+		is_main_tag_only = yes
+		priority = 25
+
+		trigger = {
+			scope:actor ?= {
+				is_subject = yes
+				capital ?= {
+					is_in_geographic_region = geographic_region_bengal_old
+				}
+				NOR = {
+					any_scope_state = {
+						is_in_geographic_region = geographic_region_madras_old
+					}
+					any_scope_state = {
+						is_in_geographic_region = geographic_region_bombay_old
+					}
+				}
+			}
+		}
+	}
+
+	dynamic_country_name = {
+		name = dyn_c_bengal_free_state
+		adjective = dyn_c_bengal_free_state_adj
+
+		is_main_tag_only = yes
+		priority = 25
+
+		trigger = {
+			scope:actor ?= {
+				has_variable = bengal_free_state
+				capital ?= {
+					is_in_geographic_region = geographic_region_bengal_old
+				}
+				any_primary_culture = {
+					cu:british = this
+				}
+			}
+		}
+	}
+
+	dynamic_country_name = {
+		name = dyn_c_confederacy_of_india
+		adjective = dyn_c_east_india_company_adj
+
+		is_main_tag_only = yes
+		priority = 25
+
+		trigger = {
+			scope:actor ?= {
+				has_variable = selected_federal_solution_var
+				any_subject_or_below = {
+					has_variable = indian_federation_member
+				}
+			}
+		}
+	}
+}
+
+REPLACE:BHT = {
+	dynamic_country_name = {
+		name = dyn_c_dominion_of_india
+		adjective = BHT_ADJ
+
+		is_main_tag_only = yes
+		priority = 1
+
+		trigger = {
+			scope:actor ?= {
+				is_subject = yes
+				NOT = { has_government_type = gov_chartered_company }
+				NOT = { is_subject_type = subject_type_sb_responsible_colony }
+				NOT = { is_subject_type = subject_type_sb_responsible_colony_monarchy }
+			}
+		}
+	}
+}
+
 # NAL — keep Natalia stable as an ORA-backed republic, but switch cleanly to
 # "Natal Colony" when Britain imposes direct colonial authority later.
 REPLACE:NAL = {

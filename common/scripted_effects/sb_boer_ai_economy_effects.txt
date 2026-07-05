@@ -1,5 +1,30 @@
 ﻿# Spes Bona - AI economy milestone helpers
 
+sb_boer_ai_economy_ora_law_yearly_pulse = {
+	if = {
+		limit = {
+			is_country_alive = yes
+			is_ai = yes
+			game_date >= 1837.1.1
+			game_date < 1838.1.1
+			NOT = { has_variable = sb_ora_ai_charity_hospitals_1837_var }
+		}
+		set_variable = sb_ora_ai_charity_hospitals_1837_var
+		activate_law = law_type:law_charitable_health_system
+	}
+	else_if = {
+		limit = {
+			is_country_alive = yes
+			is_ai = yes
+			game_date >= 1838.1.1
+			game_date < 1839.1.1
+			NOT = { has_variable = sb_ora_ai_national_guard_1838_var }
+		}
+		set_variable = sb_ora_ai_national_guard_1838_var
+		activate_law = law_type:law_national_guard
+	}
+}
+
 sb_cap_ai_economy_yearly_pulse = {
 	if = {
 		limit = {
@@ -89,6 +114,18 @@ sb_cap_ai_economy_yearly_pulse = {
 
 sb_boer_ai_economy_ora_yearly_pulse = {
 	if = {
+		limit = {
+			is_country_alive = yes
+			is_ai = yes
+			any_scope_state = { state_region = s:STATE_VRYSTAAT }
+			game_date >= 1838.1.1
+			game_date < 1839.1.1
+			NOT = { has_variable = sb_boer_ai_economy_1838_var }
+		}
+		set_variable = sb_boer_ai_economy_1838_var
+		sb_boer_ai_economy_ora_tobacco_plantation = yes
+	}
+	else_if = {
 		limit = {
 			is_country_alive = yes
 			is_ai = yes
@@ -236,6 +273,7 @@ sb_boer_ai_economy_trn_yearly_pulse = {
 		set_variable = sb_boer_ai_economy_1855_var
 		sb_boer_ai_economy_trn_trade_center = yes
 		sb_boer_ai_economy_trn_iron_mine = yes
+		sb_boer_ai_economy_trn_tobacco_plantation = yes
 	}
 	else_if = {
 		limit = {
@@ -574,6 +612,7 @@ sb_boer_ai_economy_trn_maize_farm = { sb_boer_ai_economy_trn_in_priority_state_m
 sb_boer_ai_economy_trn_food_industry = { sb_boer_ai_economy_trn_in_priority_state_food_industry = yes }
 sb_boer_ai_economy_trn_logging_camp = { sb_boer_ai_economy_trn_in_priority_state_logging_camp = yes }
 sb_boer_ai_economy_trn_iron_mine = { sb_boer_ai_economy_trn_in_priority_state_iron_mine = yes }
+sb_boer_ai_economy_trn_tobacco_plantation = { sb_boer_ai_economy_trn_in_priority_state_tobacco_plantation = yes }
 sb_boer_ai_economy_trn_tooling_workshop = { sb_boer_ai_economy_trn_in_priority_state_tooling_workshop = yes }
 sb_boer_ai_economy_trn_construction_sector = {
 	if = {
@@ -699,6 +738,12 @@ sb_boer_ai_economy_trn_in_priority_state_iron_mine = {
 	if = { limit = { any_scope_state = { state_region = s:STATE_TRANSVAAL } } random_scope_state = { limit = { state_region = s:STATE_TRANSVAAL } sb_boer_ai_economy_create_iron_mine = yes } }
 	else_if = { limit = { any_scope_state = { state_region = s:STATE_EAST_TRANSVAAL } } random_scope_state = { limit = { state_region = s:STATE_EAST_TRANSVAAL } sb_boer_ai_economy_create_iron_mine = yes } }
 	else_if = { limit = { any_scope_state = { state_region = s:STATE_NORTHERN_TRANSVAAL } } random_scope_state = { limit = { state_region = s:STATE_NORTHERN_TRANSVAAL } sb_boer_ai_economy_create_iron_mine = yes } }
+}
+
+sb_boer_ai_economy_trn_in_priority_state_tobacco_plantation = {
+	if = { limit = { any_scope_state = { state_region = s:STATE_TRANSVAAL } } random_scope_state = { limit = { state_region = s:STATE_TRANSVAAL } sb_boer_ai_economy_create_tobacco_plantation = yes } }
+	else_if = { limit = { any_scope_state = { state_region = s:STATE_EAST_TRANSVAAL } } random_scope_state = { limit = { state_region = s:STATE_EAST_TRANSVAAL } sb_boer_ai_economy_create_tobacco_plantation = yes } }
+	else_if = { limit = { any_scope_state = { state_region = s:STATE_NORTHERN_TRANSVAAL } } random_scope_state = { limit = { state_region = s:STATE_NORTHERN_TRANSVAAL } sb_boer_ai_economy_create_tobacco_plantation = yes } }
 }
 
 sb_boer_ai_economy_trn_in_priority_state_tooling_workshop = {

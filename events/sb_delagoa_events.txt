@@ -14,34 +14,22 @@ sb_delagoa.010 = {
 	duration = 3
 
 	trigger = {
+		NOT = { exists = c:SAF }
 		OR = {
 			country_definition = cd:POR
 			country_definition = cd:MZQ
 		}
 		NOT = { is_in_same_power_bloc = c:GBR }
-		OR = {
-			c:TRN ?= {
-				is_country_alive = yes
-				is_ai = yes
-				is_subject = no
-				has_journal_entry = je_sb_delagoa_route_to_sea
-				NOT = { has_global_variable = sb_imperial_confederation_scheme_failed_var }
-				NOT = { has_variable = sb_delagoa_treaty_refused_var }
-				sb_has_railway_in_transvaal = yes
-				sb_has_railway_in_east_transvaal = yes
-				NOT = { sb_trn_has_delagoa_trade_through = yes }
-			}
-			c:LYD ?= {
-				is_country_alive = yes
-				is_ai = yes
-				is_subject = no
-				has_journal_entry = je_sb_delagoa_route_to_sea
-				NOT = { has_global_variable = sb_imperial_confederation_scheme_failed_var }
-				NOT = { has_variable = sb_delagoa_treaty_refused_var }
-				sb_has_railway_in_transvaal = yes
-				sb_has_railway_in_east_transvaal = yes
-				NOT = { sb_trn_has_delagoa_trade_through = yes }
-			}
+		any_country = {
+			sb_is_delagoa_route_actor = yes
+			is_ai = yes
+			is_subject = no
+			has_journal_entry = je_sb_delagoa_route_to_sea
+			NOT = { has_variable = sb_delagoa_treaty_refused_var }
+			sb_has_railway_in_transvaal = yes
+			sb_has_railway_in_east_transvaal = yes
+			sb_has_railway_in_northern_transvaal = yes
+			NOT = { sb_delagoa_actor_has_trade_through = yes }
 		}
 		owns_entire_state_region = STATE_LOURENCO_MARQUES
 	}
@@ -51,28 +39,13 @@ sb_delagoa.010 = {
 		default_option = yes
 		custom_tooltip = sb_delagoa_010_accept_tt
 		hidden_effect = {
-			sb_delagoa_create_trade_treaty_with_trn = yes
-			if = {
+			sb_delagoa_create_trade_treaty_with_actor = yes
+			every_country = {
 				limit = {
-					c:TRN ?= {
-						is_country_alive = yes
-						has_journal_entry = je_sb_delagoa_route_to_sea
-					}
+					sb_is_delagoa_route_actor = yes
+					has_journal_entry = je_sb_delagoa_route_to_sea
 				}
-				c:TRN ?= {
-					trigger_event = { id = sb_delagoa.020 days = 1 popup = yes }
-				}
-			}
-			else_if = {
-				limit = {
-					c:LYD ?= {
-						is_country_alive = yes
-						has_journal_entry = je_sb_delagoa_route_to_sea
-					}
-				}
-				c:LYD ?= {
-					trigger_event = { id = sb_delagoa.020 days = 1 popup = yes }
-				}
+				trigger_event = { id = sb_delagoa.020 days = 1 popup = yes }
 			}
 			trigger_event = { id = sb_delagoa.021 days = 1 popup = yes }
 		}
@@ -83,19 +56,13 @@ sb_delagoa.010 = {
 		name = sb_delagoa.010.b
 		custom_tooltip = sb_delagoa_010_reject_tt
 		hidden_effect = {
-			if = {
-				limit = { c:TRN ?= { has_journal_entry = je_sb_delagoa_route_to_sea } }
-				change_relations = { country = c:TRN value = -25 }
-				c:TRN ?= {
-					set_variable = sb_delagoa_treaty_refused_var
+			every_country = {
+				limit = {
+					sb_is_delagoa_route_actor = yes
+					has_journal_entry = je_sb_delagoa_route_to_sea
 				}
-			}
-			else_if = {
-				limit = { c:LYD ?= { has_journal_entry = je_sb_delagoa_route_to_sea } }
-				change_relations = { country = c:LYD value = -25 }
-				c:LYD ?= {
-					set_variable = sb_delagoa_treaty_refused_var
-				}
+				change_relations = { country = root value = -25 }
+				set_variable = sb_delagoa_treaty_refused_var
 			}
 		}
 		ai_chance = { base = 0 }
@@ -124,9 +91,10 @@ sb_delagoa.020 = {
 		name = sb_delagoa.020.a
 		default_option = yes
 		set_variable = sb_delagoa_route_notified_var
+		set_global_variable = sb_delagoa_route_complete_global_var
 		set_variable = sb_delagoa_route_complete_var
 		sb_imperial_confederation_start_sea_access_warning_if_needed = yes
-		add_modifier = { name = sb_delagoa_route_opened months = 120 }
+		sb_delagoa_apply_actor_state_bonuses = yes
 		if = { limit = { exists = c:MZQ } change_relations = { country = c:MZQ value = 25 } }
 		if = { limit = { exists = c:POR } change_relations = { country = c:POR value = 25 } }
 	}
@@ -157,27 +125,16 @@ sb_delagoa.021 = {
 		name = sb_delagoa.021.a
 		default_option = yes
 		set_variable = sb_delagoa_partner_notified_var
-		if = {
+		every_country = {
 			limit = {
-				c:TRN ?= {
-					OR = {
-						has_variable = sb_delagoa_route_complete_var
-						has_journal_entry = je_sb_delagoa_route_to_sea
-					}
+				sb_is_delagoa_route_actor = yes
+				is_country_alive = yes
+				OR = {
+					has_variable = sb_delagoa_route_complete_var
+					has_journal_entry = je_sb_delagoa_route_to_sea
 				}
 			}
-			change_relations = { country = c:TRN value = 25 }
-		}
-		if = {
-			limit = {
-				c:LYD ?= {
-					OR = {
-						has_variable = sb_delagoa_route_complete_var
-						has_journal_entry = je_sb_delagoa_route_to_sea
-					}
-				}
-			}
-			change_relations = { country = c:LYD value = 25 }
+			change_relations = { country = root value = 25 }
 		}
 		sb_delagoa_apply_partner_state_bonuses = yes
 	}

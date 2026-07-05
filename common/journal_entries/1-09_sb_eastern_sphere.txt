@@ -134,15 +134,10 @@ je_sb_delagoa_route_to_sea = {
 
 	possible = {
 		sb_is_delagoa_route_actor = yes
-		has_global_variable = sb_imperial_confederation_scheme_unlocked_var
-		NOT = { has_global_variable = sb_imperial_confederation_scheme_failed_var }
-		any_scope_state = {
-			state_region = s:STATE_EAST_TRANSVAAL
-			owner = root
-			is_incorporated = yes
-		}
 		sb_delagoa_owner_outside_gbr_bloc = yes
 		NOT = { has_variable = sb_delagoa_route_complete_var }
+		NOT = { has_global_variable = sb_delagoa_route_complete_global_var }
+		NOT = { exists = c:SAF }
 	}
 
 	status_desc = {
@@ -152,27 +147,25 @@ je_sb_delagoa_route_to_sea = {
 	complete = {
 		is_subject = no
 		NOT = { has_variable = sb_delagoa_route_complete_var }
-		sb_trn_has_delagoa_trade_through = yes
+		NOT = { has_global_variable = sb_delagoa_route_complete_global_var }
+		sb_delagoa_actor_has_trade_through = yes
 		sb_has_railway_in_transvaal = yes
 		sb_has_railway_in_east_transvaal = yes
+		sb_has_railway_in_northern_transvaal = yes
 	}
 
 	invalid = {
 		OR = {
-			has_global_variable = sb_imperial_confederation_scheme_failed_var
+			exists = c:SAF
 			has_variable = sb_delagoa_route_complete_var
+			has_global_variable = sb_delagoa_route_complete_global_var
 			NOT = { sb_delagoa_owner_outside_gbr_bloc = yes }
-			NOT = {
-				any_scope_state = {
-					state_region = s:STATE_EAST_TRANSVAAL
-					owner = root
-					is_incorporated = yes
-				}
-			}
+			NOT = { sb_is_delagoa_route_actor = yes }
 		}
 	}
 
 	on_complete = {
+		set_global_variable = sb_delagoa_route_complete_global_var
 		set_variable = sb_delagoa_route_complete_var
 		sb_imperial_confederation_start_sea_access_warning_if_needed = yes
 		trigger_event = { id = sb_delagoa.020 days = 1 popup = yes }

@@ -541,6 +541,9 @@ sb_cape.111 = {
 	option = {
 		name = sb_cape.111.b
 		default_option = yes
+		cu:anglo_african ?= {
+			add_fervor = 5
+		}
 		add_modifier = {
 			name = sb_anti_convict_victory
 			months = 60
@@ -1312,28 +1315,34 @@ sb_cape.200 = {
 					}
 					if = {
 						limit = {
+							NOT = { country_has_primary_culture = cu:anglo_african }
+						}
+						add_primary_culture = cu:anglo_african
+					}
+					if = {
+						limit = {
 							NOT = { country_has_primary_culture = cu:boer }
 						}
 						add_primary_culture = cu:boer
 					}
 					if = {
-						limit = { has_law = law_type:law_legacy_slavery }
-						activate_law = law_type:law_discrete_inboekstelsel
+						limit = { country_has_primary_culture = cu:british }
+						remove_primary_culture = cu:british
 					}
+					activate_law = law_type:law_discrete_inboekstelsel
 					if = {
 						limit = { NOT = { has_journal_entry = je_sb_inboekstelsel_system } }
 						add_journal_entry = { type = je_sb_inboekstelsel_system }
 					}
-				
 					change_relations = {
 						country = c:CAP
 						value = -40
 					}
-						change_tension = {
-							country = c:XHO
-							value = 100
-						}
+					change_tension = {
+						country = c:XHO
+						value = 100
 					}
+				}
 			}
 
 			s:STATE_EASTERN_CAPE = {

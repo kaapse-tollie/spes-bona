@@ -460,96 +460,62 @@ sb_delagoa_apply_partner_state_bonuses = {
 			limit = { owner = root }
 			add_modifier = {
 				name = sb_delagoa_port_gateway
-				months = 120
-			}
-			if = {
-				limit = { has_active_building = building_railway }
-				add_modifier = {
-					name = sb_delagoa_railway_link
-					months = 120
-				}
-			}
-		}
-	}
-	s:STATE_TRANSVAAL = {
-		every_scope_state = {
-			limit = {
-				owner = { sb_is_delagoa_route_actor = yes }
-				has_active_building = building_railway
-			}
-			add_modifier = {
-				name = sb_delagoa_railway_link
-				months = 120
-			}
-		}
-	}
-	s:STATE_EAST_TRANSVAAL = {
-		every_scope_state = {
-			limit = {
-				owner = { sb_is_delagoa_route_actor = yes }
-				has_active_building = building_railway
-			}
-			add_modifier = {
-				name = sb_delagoa_railway_link
-				months = 120
 			}
 		}
 	}
 }
 
-sb_delagoa_create_trade_treaty_with_trn = {
-	if = {
-		limit = {
-			c:TRN ?= {
-				is_country_alive = yes
-				has_journal_entry = je_sb_delagoa_route_to_sea
-			}
-		}
-		create_treaty = {
-			first_country = root
-			second_country = c:TRN
-			is_draft = no
-			binding_period = { years = 25 }
-			articles_to_create = {
-				{
-					article = transit_rights
-					source_country = root
-					target_country = c:TRN
-				}
-				{
-					article = goods_transfer
-					source_country = root
-					target_country = c:TRN
-					inputs = {
-						{ goods = g:merchant_marine }
-						{ quantity = 10 }
-					}
-				}
+sb_delagoa_apply_actor_state_bonuses = {
+	s:STATE_TRANSVAAL = {
+		every_scope_state = {
+			limit = { owner = root }
+			add_modifier = {
+				name = sb_delagoa_import_advantage
 			}
 		}
 	}
-	else_if = {
-		limit = {
-			c:LYD ?= {
-				is_country_alive = yes
-				has_journal_entry = je_sb_delagoa_route_to_sea
+	s:STATE_EAST_TRANSVAAL = {
+		every_scope_state = {
+			limit = { owner = root }
+			add_modifier = {
+				name = sb_delagoa_import_advantage
 			}
 		}
+	}
+	s:STATE_NORTHERN_TRANSVAAL = {
+		every_scope_state = {
+			limit = { owner = root }
+			add_modifier = {
+				name = sb_delagoa_import_advantage
+			}
+		}
+	}
+}
+
+sb_delagoa_create_trade_treaty_with_actor = {
+	save_scope_as = sb_delagoa_partner_scope
+	every_country = {
+		limit = {
+			sb_is_delagoa_route_actor = yes
+			is_country_alive = yes
+			has_journal_entry = je_sb_delagoa_route_to_sea
+		}
+		save_temporary_scope_as = sb_delagoa_actor_scope
 		create_treaty = {
-			first_country = root
-			second_country = c:LYD
+			first_country = scope:sb_delagoa_partner_scope
+			second_country = scope:sb_delagoa_actor_scope
 			is_draft = no
 			binding_period = { years = 25 }
 			articles_to_create = {
 				{
 					article = transit_rights
-					source_country = root
-					target_country = c:LYD
+					source_country = scope:sb_delagoa_partner_scope
+					target_country = scope:sb_delagoa_actor_scope
 				}
 				{
 					article = goods_transfer
-					source_country = root
-					target_country = c:LYD
+					source_country = scope:sb_delagoa_partner_scope
+					target_country = scope:sb_delagoa_actor_scope
 					inputs = {
 						{ goods = g:merchant_marine }
 						{ quantity = 10 }
@@ -587,6 +553,23 @@ sb_delagoa_ai_build_railways_and_por_treaty = {
 		}
 	}
 	s:STATE_EAST_TRANSVAAL = {
+		if = {
+			limit = {
+				any_scope_state = {
+					owner = root
+					NOT = { has_active_building = building_railway }
+				}
+			}
+			random_scope_state = {
+				limit = {
+					owner = root
+					NOT = { has_active_building = building_railway }
+				}
+				sb_delagoa_ai_create_railway = yes
+			}
+		}
+	}
+	s:STATE_NORTHERN_TRANSVAAL = {
 		if = {
 			limit = {
 				any_scope_state = {
@@ -665,9 +648,14 @@ sb_delagoa_ai_build_railways_and_por_treaty = {
 						target_country = root
 					}
 					any_scope_article = {
-						has_type = foreign_investment_rights
+						has_type = trade_privilege
 						source_country = c:POR
 						target_country = root
+					}
+					any_scope_article = {
+						has_type = trade_privilege
+						source_country = root
+						target_country = c:POR
 					}
 				}
 			}
@@ -684,14 +672,52 @@ sb_delagoa_ai_build_railways_and_por_treaty = {
 					target_country = root
 				}
 				{
-					article = foreign_investment_rights
+					article = trade_privilege
 					source_country = c:POR
 					target_country = root
+				}
+				{
+					article = trade_privilege
+					source_country = root
+					target_country = c:POR
 				}
 			}
 		}
 	}
 	set_variable = sb_delagoa_ai_railway_helper_applied_var
+}
+
+sb_delagoa_route_monthly_open_check = {
+	if = {
+		limit = {
+			has_global_variable = sb_delagoa_route_complete_global_var
+			NOT = {
+				any_country = {
+					has_variable = sb_delagoa_route_complete_var
+				}
+			}
+		}
+		remove_global_variable = sb_delagoa_route_complete_global_var
+	}
+	if = {
+		limit = {
+			NOT = { has_global_variable = sb_delagoa_route_complete_global_var }
+			sb_delagoa_owner_outside_gbr_bloc = yes
+			NOT = { exists = c:SAF }
+			any_country = {
+				sb_is_delagoa_route_actor = yes
+				NOT = { has_variable = sb_delagoa_route_complete_var }
+			}
+		}
+		every_country = {
+			limit = {
+				sb_is_delagoa_route_actor = yes
+				NOT = { has_variable = sb_delagoa_route_complete_var }
+				NOT = { has_journal_entry = je_sb_delagoa_route_to_sea }
+			}
+			add_journal_entry = { type = je_sb_delagoa_route_to_sea }
+		}
+	}
 }
 
 sb_create_or_refresh_imperial_bind_trade_treaty = {
@@ -1271,20 +1297,44 @@ sb_eastern_sphere_monthly_housekeeping = {
 	}
 	if = {
 		limit = {
+			has_global_variable = sb_delagoa_route_complete_global_var
+			NOT = {
+				any_country = {
+					has_variable = sb_delagoa_route_complete_var
+				}
+			}
+		}
+		remove_global_variable = sb_delagoa_route_complete_global_var
+	}
+	if = {
+		limit = {
 			sb_is_delagoa_route_actor = yes
 			NOT = { has_journal_entry = je_sb_delagoa_route_to_sea }
 			NOT = { has_variable = sb_delagoa_route_complete_var }
-			exists = c:POR
+			NOT = { has_global_variable = sb_delagoa_route_complete_global_var }
 			sb_delagoa_owner_outside_gbr_bloc = yes
-			has_global_variable = sb_imperial_confederation_scheme_unlocked_var
-			NOT = { has_global_variable = sb_imperial_confederation_scheme_failed_var }
-			any_scope_state = {
-				state_region = s:STATE_EAST_TRANSVAAL
-				owner = root
-				is_incorporated = yes
-			}
+			NOT = { exists = c:SAF }
 		}
 		add_journal_entry = { type = je_sb_delagoa_route_to_sea }
+	}
+	if = {
+		limit = {
+			NOT = { has_global_variable = sb_delagoa_route_complete_global_var }
+			sb_delagoa_owner_outside_gbr_bloc = yes
+			NOT = { exists = c:SAF }
+			any_country = {
+				sb_is_delagoa_route_actor = yes
+				NOT = { has_variable = sb_delagoa_route_complete_var }
+			}
+		}
+		every_country = {
+			limit = {
+				sb_is_delagoa_route_actor = yes
+				NOT = { has_variable = sb_delagoa_route_complete_var }
+				NOT = { has_journal_entry = je_sb_delagoa_route_to_sea }
+			}
+			add_journal_entry = { type = je_sb_delagoa_route_to_sea }
+		}
 	}
 	if = {
 		limit = {
@@ -1312,11 +1362,11 @@ sb_eastern_sphere_monthly_housekeeping = {
 			is_ai = yes
 			has_journal_entry = je_sb_delagoa_route_to_sea
 			is_subject = no
-			NOT = { has_global_variable = sb_imperial_confederation_scheme_failed_var }
 			NOT = { has_variable = sb_delagoa_treaty_refused_var }
 			sb_has_railway_in_transvaal = yes
 			sb_has_railway_in_east_transvaal = yes
-			NOT = { sb_trn_has_delagoa_trade_through = yes }
+			sb_has_railway_in_northern_transvaal = yes
+			NOT = { sb_delagoa_actor_has_trade_through = yes }
 		}
 		if = {
 			limit = {
