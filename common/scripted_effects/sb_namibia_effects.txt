@@ -105,37 +105,48 @@ sb_nam_assign_german_swa_ruler = {
 	}
 }
 
-sb_nam_ai_pair_consolidation_ports = {
+sb_nam_grant_coastal_access_if_eligible = {
 	if = {
 		limit = {
-			is_ai = yes
 			NOT = { is_country_type = decentralized }
-			p:xDEAA3C.state.owner = root
-			NOT = { p:xB04050.state.owner = root }
-			p:xB04050.state.owner = {
-				is_country_type = decentralized
-			}
+			NOT = { has_technology_researched = sb_namibian_coastal_access }
+			sb_nam_has_coastal_engineering_technologies = yes
+			sb_nam_has_physical_coastal_access = yes
 		}
-		s:STATE_HEREROLAND = {
-			set_owner_of_provinces = {
-				country = root
-				provinces = { xB04050 }
-			}
-			add_claim = root
+		add_technology_researched = sb_namibian_coastal_access
+	}
+}
+
+sb_nam_close_coastal_race_if_fully_occupied = {
+	if = {
+		limit = {
+			NOT = { has_global_variable = sb_namibian_coast_race_closed_var }
+			NOT = { sb_nam_has_free_coastal_beachhead = yes }
 		}
-		s:STATE_NAMAQUALAND = {
-			add_claim = root
-		}
+		set_global_variable = sb_namibian_coast_race_closed_var
+	}
+}
+
+sb_nam_cleanup_coastal_expedition = {
+	random_scope_character = {
+		limit = { has_variable = expedition_leader_var }
+		set_character_busy_and_immortal = no
+		remove_variable = expedition_leader_var
 	}
 	if = {
+		limit = { has_modifier = modifier_large_expedition_cost }
+		remove_modifier = modifier_large_expedition_cost
+	}
+	remove_variable = expedition_leader_storage_var
+	remove_variable = on_expedition
+	remove_variable = sb_namibian_coast_expedition_active_var
+	remove_variable = sb_nam_german_missionary_support_offered_var
+}
+
+sb_nam_finalize_coastal_expedition_success = {
+	if = {
 		limit = {
-			is_ai = yes
-			NOT = { is_country_type = decentralized }
-			p:xB04050.state.owner = root
-			NOT = { p:xDEAA3C.state.owner = root }
-			p:xDEAA3C.state.owner = {
-				is_country_type = decentralized
-			}
+			p:xDEAA3C.state.owner = { is_country_type = decentralized }
 		}
 		s:STATE_NAMAQUALAND = {
 			set_owner_of_provinces = {
@@ -144,10 +155,80 @@ sb_nam_ai_pair_consolidation_ports = {
 			}
 			add_claim = root
 		}
-		s:STATE_HEREROLAND = {
-			add_claim = root
+		set_variable = sb_nam_coast_secured_luderitz_var
+		random_scope_state = {
+			limit = { state_region = s:STATE_NAMAQUALAND }
+			if = {
+				limit = { NOT = { has_building = building_port } }
+				create_building = {
+					building = building_port
+					level = 1
+					reserves = 1
+				}
+			}
+			if = {
+				limit = { NOT = { has_building = building_trade_center } }
+				create_building = {
+					building = building_trade_center
+					level = 1
+					reserves = 1
+					activate_production_methods = { "pm_trade_center_trade_quantity_normal" }
+				}
+			}
 		}
 	}
+	if = {
+		limit = {
+			p:xB04050.state.owner = { is_country_type = decentralized }
+		}
+		s:STATE_HEREROLAND = {
+			set_owner_of_provinces = {
+				country = root
+				provinces = { xB04050 }
+			}
+			add_claim = root
+		}
+		set_variable = sb_nam_coast_secured_swakopmund_var
+		random_scope_state = {
+			limit = { state_region = s:STATE_HEREROLAND }
+			if = {
+				limit = { NOT = { has_building = building_port } }
+				create_building = {
+					building = building_port
+					level = 1
+					reserves = 1
+				}
+			}
+			if = {
+				limit = { NOT = { has_building = building_trade_center } }
+				create_building = {
+					building = building_trade_center
+					level = 1
+					reserves = 1
+					activate_production_methods = { "pm_trade_center_trade_quantity_normal" }
+				}
+			}
+		}
+	}
+	if = {
+		limit = {
+			OR = {
+				has_variable = sb_nam_coast_secured_luderitz_var
+				has_variable = sb_nam_coast_secured_swakopmund_var
+			}
+		}
+		if = {
+			limit = { NOT = { has_technology_researched = sb_namibian_coastal_access } }
+			add_technology_researched = sb_namibian_coastal_access
+		}
+		add_involvement = {
+			strategic_region = sr:region_southern_africa
+			value = 2500
+		}
+		set_global_variable = sb_namibian_coast_race_closed_var
+	}
+	remove_variable = sb_nam_coast_secured_luderitz_var
+	remove_variable = sb_nam_coast_secured_swakopmund_var
 }
 
 sb_nam_transfer_british_namibia_to_southern_african_subject = {

@@ -1,18 +1,23 @@
 ﻿sb_on_namibia_monthly_pulse_country = {
 	effect = {
-		sb_nam_ai_pair_consolidation_ports = yes
+		sb_nam_grant_coastal_access_if_eligible = yes
+		sb_nam_close_coastal_race_if_fully_occupied = yes
 
 		if = {
 			limit = {
 				country_definition = cd:GER
 				game_date >= 1870.1.1
 				NOT = { has_variable = sb_nam_colonial_prestige_resolved_var }
-				NOT = { has_law = law_type:law_frontier_colonization }
-				NOT = { has_law = law_type:law_colonial_resettlement }
-				NOT = { has_law = law_type:law_colonial_exploitation }
 				OR = {
 					ig:ig_landowners ?= { is_in_government = yes }
 					ig:ig_armed_forces ?= { is_in_government = yes }
+				}
+				OR = {
+					sb_nam_has_qualifying_overseas_colonial_law = yes
+					AND = {
+						NOT = { has_journal_entry = je_government_petition_negotiation_version }
+						NOT = { has_journal_entry = je_government_petition_negotiation_version_b }
+					}
 				}
 			}
 			trigger_event = { id = sb_nam.010 popup = yes }
@@ -21,39 +26,12 @@
 		if = {
 			limit = {
 				country_definition = cd:GER
-				has_technology_researched = floating_harbor
-				NOT = { has_variable = sb_nam_angra_pequena_purchase_pending_var }
-				NOT = { has_variable = sb_nam_angra_pequena_purchased_var }
-				NOT = { has_variable = sb_nam_angra_pequena_purchase_declined_var }
-				OR = {
-					has_law = law_type:law_colonial_resettlement
-					has_law = law_type:law_colonial_exploitation
-				}
-				NOT = {
-					any_scope_state = {
-						state_region = s:STATE_NAMAQUALAND
-						owner = root
-						num_provinces >= 1
-					}
-				}
-				p:xDEAA3C.state.owner = {
-					is_country_type = decentralized
-				}
-				p:xB04050.state.owner = {
-					is_country_type = decentralized
-				}
-				c:CAP ?= {
-					NOT = {
-						any_scope_state = {
-							state_region = s:STATE_NAMAQUALAND
-							owner = prev
-							num_provinces >= 2
-						}
-					}
-				}
+				has_journal_entry = je_sb_map_namibian_coast
+				has_variable = sb_nam_colonial_programme_backed_var
+				NOT = { has_variable = sb_nam_german_missionary_support_offered_var }
 			}
-			set_variable = sb_nam_angra_pequena_purchase_pending_var
-			trigger_event = { id = sb_nam.011 popup = yes }
+			set_variable = sb_nam_german_missionary_support_offered_var
+			trigger_event = { id = sb_nam.011 days = 30 popup = yes }
 		}
 
 		if = {

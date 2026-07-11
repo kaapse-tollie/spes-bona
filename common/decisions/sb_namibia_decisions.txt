@@ -1,5 +1,76 @@
 ﻿# Spes Bona - Namibia Decisions
 
+decision_sb_map_namibian_coast = {
+	is_shown = {
+		is_country_type = recognized
+		is_subject = no
+		sb_nam_has_coastal_engineering_technologies = yes
+		sb_nam_has_qualifying_overseas_colonial_law = yes
+		has_strategic_region_interest_tier = {
+			strategic_region = sr:region_southern_africa
+			value >= 2
+		}
+		NOT = { sb_nam_has_physical_coastal_access = yes }
+		NOT = { has_technology_researched = sb_namibian_coastal_access }
+		NOT = { has_global_variable = sb_namibian_coast_race_closed_var }
+		sb_nam_has_free_coastal_beachhead = yes
+	}
+
+	possible = {
+		sb_nam_has_coastal_engineering_technologies = yes
+		sb_nam_has_qualifying_overseas_colonial_law = yes
+		has_strategic_region_interest_tier = {
+			strategic_region = sr:region_southern_africa
+			value >= 2
+		}
+		is_at_war = no
+		is_diplomatic_play_committed_participant = no
+		in_default = no
+		sb_nam_has_available_expedition_commander = yes
+		NOT = { has_variable = on_expedition }
+		NOT = { has_variable = sb_namibian_coast_expedition_cooldown_var }
+		NOT = { sb_nam_has_physical_coastal_access = yes }
+		sb_nam_has_free_coastal_beachhead = yes
+	}
+
+	when_taken = {
+		set_variable = on_expedition
+		set_variable = sb_namibian_coast_expedition_active_var
+		trigger_event = { id = sb_nam.012 popup = yes }
+	}
+
+	ai_chance = {
+		value = 10
+		if = {
+			limit = {
+				net_fixed_income > 0
+				gold_reserves > 0
+			}
+			add = 25
+		}
+		if = {
+			limit = { has_strategy = ai_strategy_colonial_expansion }
+			add = 100
+		}
+		if = {
+			limit = {
+				country_definition = cd:GER
+				has_variable = sb_nam_colonial_programme_backed_var
+			}
+			add = 500
+		}
+		if = {
+			limit = {
+				OR = {
+					net_fixed_income < 0
+					gold_reserves <= 0
+				}
+			}
+			multiply = 0
+		}
+	}
+}
+
 decision_sb_delegate_british_south_west_africa = {
 	is_shown = {
 		country_definition = cd:GBR

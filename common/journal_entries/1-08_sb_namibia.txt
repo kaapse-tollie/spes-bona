@@ -181,3 +181,100 @@
 	weight = 1000
 	should_be_pinned_by_default_uninvolved_or_context = yes
 }
+
+je_sb_map_namibian_coast = {
+	group = je_group_expeditions
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+
+	scripted_progress_bar = sb_namibian_coast_survey_progress_bar
+	scripted_progress_bar = sb_namibian_coast_expedition_peril_bar
+
+	status_desc = {
+		first_valid = {
+			triggered_desc = {
+				desc = je_sb_map_namibian_coast_status_dangerous
+				trigger = {
+					scope:journal_entry = {
+						"scripted_bar_progress(sb_namibian_coast_expedition_peril_bar)" >= 6
+					}
+				}
+			}
+			desc = je_sb_map_namibian_coast_status_active
+		}
+	}
+
+	on_monthly_pulse = {
+		random_events = {
+			100 = 0
+			10 = sb_nam.030
+			10 = sb_nam.031
+			10 = sb_nam.032
+			10 = sb_nam.033
+			10 = sb_nam.034
+			10 = sb_nam.035
+			10 = sb_nam.036
+			10 = sb_nam.037
+		}
+	}
+
+	complete = {
+		custom_tooltip = {
+			text = je_sb_map_namibian_coast_complete_tt
+			scope:journal_entry = {
+				"scripted_bar_progress(sb_namibian_coast_survey_progress_bar)" >= 36
+			}
+		}
+	}
+
+	on_complete = {
+		trigger_event = { id = sb_nam.014 popup = yes }
+	}
+
+	fail = {
+		custom_tooltip = {
+			text = je_sb_map_namibian_coast_fail_tt
+			scope:journal_entry = {
+				"scripted_bar_progress(sb_namibian_coast_expedition_peril_bar)" >= 8
+			}
+		}
+	}
+
+	on_fail = {
+		trigger_event = { id = sb_nam.015 popup = yes }
+	}
+
+	invalid = {
+		OR = {
+			in_default = yes
+			is_subject = yes
+			NOT = { is_country_type = recognized }
+			NOT = { sb_nam_has_qualifying_overseas_colonial_law = yes }
+			NOT = {
+				has_strategic_region_interest_tier = {
+					strategic_region = sr:region_southern_africa
+					value >= 2
+				}
+			}
+			NOT = {
+				any_scope_character = {
+					has_variable = expedition_leader_var
+				}
+			}
+			has_global_variable = sb_namibian_coast_race_closed_var
+		}
+	}
+
+	on_invalid = {
+		if = {
+			limit = { has_global_variable = sb_namibian_coast_race_closed_var }
+			trigger_event = { id = sb_nam.016 popup = yes }
+		}
+		else = {
+			trigger_event = { id = sb_nam.015 popup = yes }
+		}
+	}
+
+	weight = 200
+	transferable = no
+	should_be_pinned_by_default_uninvolved_or_context = yes
+}
