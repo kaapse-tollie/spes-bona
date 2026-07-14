@@ -4249,15 +4249,16 @@ def load_adjustment_inputs() -> dict[tuple[str, str], dict[str, Any]]:
                     "and flagship_scale_year when chronology moderation is used."
                 )
         if resource == "Arable Land":
+            has_subsistence_floor = parsed["exception_status"] == "1836_subsistence_floor"
             parsed.update(
                 {
-                    "problem_type": "",
+                    "problem_type": parsed["problem_type"] if has_subsistence_floor else "",
                     "output_addition_y": 0.0,
                     "plausibility_haircut_z": 0.0,
                     "minimum_operating_floor_cap": None,
                     "documented_working_floor_eligible": False,
-                    "exception_status": "",
-                    "exception_final_cap": None,
+                    "exception_status": parsed["exception_status"] if has_subsistence_floor else "",
+                    "exception_final_cap": parsed["exception_final_cap"] if has_subsistence_floor else None,
                     "earliest_commercial_activity_year": None,
                     "flagship_scale_year": None,
                     "y_basis": "",
@@ -4265,9 +4266,9 @@ def load_adjustment_inputs() -> dict[tuple[str, str], dict[str, Any]]:
                     "y_counterevidence_trigger": "No counterevidence-triggered addition.",
                     "y_quantification_method": "No upward addition.",
                     "z_reason": "No downward plausibility haircut.",
-                    "audit_class": "direct",
-                    "adjustment_reason": "Land-capacity model uses direct effective commercial hectares; legacy output-gap uplift is retired.",
-                    "calculation_note": "Arable now uses direct land-capacity x with no legacy output-gap Y or GDP/output smoothing.",
+                    "audit_class": "exception" if has_subsistence_floor else "direct",
+                    "adjustment_reason": parsed["adjustment_reason"] if has_subsistence_floor else "Land-capacity model uses direct effective commercial hectares; legacy output-gap uplift is retired.",
+                    "calculation_note": parsed["calculation_note"] if has_subsistence_floor else "Arable now uses direct land-capacity x with no legacy output-gap Y or GDP/output smoothing.",
                 }
             )
         elif resource == "Wood":
@@ -4587,10 +4588,17 @@ def apply_adjustments(
             if not proxy_kind and (state, resource) in PROXY_NOTES:
                 proxy_kind, proxy_native_unit, proxy_to_slot_note = PROXY_NOTES[(state, resource)]
             adjustment_key = ""
-            has_adjustment_terms = any(abs(value) > 0 for value in [y_addition, z]) or bool(minimum_floor)
+            has_subsistence_floor = exception_status == "1836_subsistence_floor"
+            has_adjustment_terms = any(abs(value) > 0 for value in [y_addition, z]) or bool(minimum_floor) or has_subsistence_floor
             if denominator in (None, 0.0) and not exception_status:
                 exception_status = "denominator_unavailable"
-            if exception_status:
+            if has_subsistence_floor:
+                adjusted_output = observed + y_addition - z
+                adjusted_cap = adjusted_output / denominator
+                floor_cap = input_row.get("exception_final_cap") or 0
+                final_cap = max(max(math.ceil(adjusted_cap), 0), floor_cap)
+                status = "explicit exception"
+            elif exception_status:
                 final_cap = input_row.get("exception_final_cap")
                 if final_cap is None:
                     final_cap = int(base["current_live_cap"])

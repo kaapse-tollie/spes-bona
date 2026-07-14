@@ -11,7 +11,7 @@ from typing import Any
 
 ROOT = Path("/Users/depro/Documents/Paradox Interactive/Victoria 3/mod")
 REPO = ROOT / "Spes Bona - A Southern Africa Flavour Pack"
-PUBLIC_ROOT = REPO / "Docs/resources"
+PUBLIC_ROOT = REPO / "resource-rework/resources"
 AUDIT_DIR = PUBLIC_ROOT / "audit"
 DERIVED_DIR = PUBLIC_ROOT / "data/derived"
 BUILDER = PUBLIC_ROOT / "scripts/_internal/build_resources_workbook.py"
@@ -446,6 +446,19 @@ def run_tests() -> str:
         if abs(float(row["output_addition_y"] or 0)) > 0 or abs(float(row["plausibility_haircut_z"] or 0)) > 0:
             arable_contract_failures.append(f"{row['state']} / YZ should be zero")
     results.append(CheckResult("arable rows use direct land-capacity X with no GDP fields or legacy Y/Z", "PASS" if not arable_contract_failures else "FAIL", "; ".join(arable_contract_failures[:10])))
+
+    subsistence_floors = {
+        "Hereroland": 16,
+        "Lourenço Marques": 48,
+        "Zambezi": 48,
+    }
+    subsistence_floor_failures = []
+    arable_rows = {row["state"]: row for row in final_caps if row["resource"] == "Arable Land"}
+    for state, floor in subsistence_floors.items():
+        row = arable_rows[state]
+        if row["exception_status"] != "1836_subsistence_floor" or int(float(row["final_audited_cap"])) != floor:
+            subsistence_floor_failures.append(state)
+    results.append(CheckResult("1836 subsistence floors remain explicit arable exceptions", "PASS" if not subsistence_floor_failures else "FAIL", "Mismatches: " + ", ".join(subsistence_floor_failures)))
 
     land_z_failures = []
     for row in final_caps:

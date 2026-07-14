@@ -45,12 +45,16 @@ on_diplo_play_back_down = {
 	on_actions = { sb_on_spes_bona_diplo_play_back_down }
 }
 
+on_diplo_play_abandon_side = {
+	on_actions = { sb_on_spes_bona_diplo_play_abandon_side }
+}
+
 on_become_subject = {
 	on_actions = { sb_on_natalia_become_british_subject }
 }
 
 on_monthly_pulse_country = {
-	on_actions = { sb_on_cape_monthly_pulse_country sb_on_trek_monthly_pulse_country sb_on_zpb_monthly_pulse_country sb_on_gbr_colonial_offices_monthly_pulse_country sb_on_namibia_monthly_pulse_country sb_on_eastern_sphere_monthly_pulse_country sb_on_natal_colony_monthly_pulse_country }
+	on_actions = { sb_on_cape_monthly_pulse_country sb_on_trek_monthly_pulse_country sb_on_zpb_monthly_pulse_country sb_on_gbr_colonial_offices_monthly_pulse_country sb_on_namibia_monthly_pulse_country sb_on_eastern_sphere_monthly_pulse_country sb_on_natal_colony_monthly_pulse_country sb_on_frontier_force_monthly_pulse_country }
 }
 
 on_yearly_pulse_country = {
@@ -191,24 +195,58 @@ sb_on_game_started = {
 					}
 				}
 			}
-			c:ORL ?= {
-				if = {
-					limit = { NOT = { has_modifier = sb_arid_frontier_pastoralism } }
-					add_modifier = {
-						name = sb_arid_frontier_pastoralism
-						months = -1
-					}
-				}
-			}
-			c:RHB ?= {
-				if = {
-					limit = { NOT = { has_modifier = sb_arid_frontier_pastoralism } }
-					add_modifier = {
-						name = sb_arid_frontier_pastoralism
-						months = -1
-					}
-				}
-			}
+			# c:ORL ?= {
+			# 	if = {
+			# 		limit = { NOT = { has_modifier = sb_arid_frontier_pastoralism } }
+			# 		add_modifier = {
+			# 			name = sb_arid_frontier_pastoralism
+			# 			months = -1
+			# 		}
+			# 	}
+			# }
+			# c:RHB ?= {
+			# 	if = {
+			# 		limit = { NOT = { has_modifier = sb_arid_frontier_pastoralism } }
+			# 		add_modifier = {
+			# 			name = sb_arid_frontier_pastoralism
+			# 			months = -1
+			# 		}
+			# 	}
+			# }
+			# c:HRO ?= {
+			# 	if = {
+			# 		limit = { NOT = { has_modifier = sb_arid_frontier_pastoralism } }
+			# 		add_modifier = {
+			# 			name = sb_arid_frontier_pastoralism
+			# 			months = -1
+			# 		}
+			# 	}
+			# 	if = {
+			# 		limit = { NOT = { has_modifier = sb_herero_pastoral_subsistence } }
+			# 		add_modifier = {
+			# 			name = sb_herero_pastoral_subsistence
+			# 			months = -1
+			# 		}
+			# 	}
+			# }
+			# c:OVB ?= {
+			# 	if = {
+			# 		limit = { NOT = { has_modifier = sb_arid_frontier_pastoralism } }
+			# 		add_modifier = {
+			# 			name = sb_arid_frontier_pastoralism
+			# 			months = -1
+			# 		}
+			# 	}
+			# }
+			# c:BST ?= {
+			# 	if = {
+			# 		limit = { NOT = { has_modifier = sb_basotho_highland_agriculture } }
+			# 		add_modifier = {
+			# 			name = sb_basotho_highland_agriculture
+			# 			months = -1
+			# 		}
+			# 	}
+			# }
 
 			# Southern African English/Boer agrarians should use the settler-colonialist
 			# rural ideology rather than vanilla isolationism. This is no longer tied to
@@ -2100,6 +2138,7 @@ sb_on_spes_bona_acquired_technology = {
 sb_on_spes_bona_diplomatic_play_started = {
 	effect = {
 		sb_withdraw_ai_frontier_goods_exports_to_boers = yes
+		sb_restore_ai_frontier_force_floors_for_play = yes
 		if = {
 			limit = {
 				is_diplomatic_play_type = dp_sb_natal_crisis
@@ -2140,23 +2179,6 @@ sb_on_spes_bona_diplomatic_play_started = {
 			sb_join_trn_to_active_natal_war = yes
 		}
 		sb_handle_natalia_player_support_join = yes
-		if = {
-			limit = {
-				any_scope_play_involved = { c:GZA ?= THIS }
-				any_scope_play_involved = {
-					is_player = yes
-					is_diplomatic_play_enemy_of = c:GZA
-				}
-				c:GZA ?= {
-					is_ai = yes
-					has_journal_entry = je_sb_adopt_firearms
-					NOT = { has_variable = sb_gza_emergency_barracks_var }
-				}
-			}
-			c:GZA ?= {
-				sb_raise_gza_firearms_emergency_barracks = yes
-			}
-		}
 			if = {
 				limit = {
 					OR = {
@@ -2199,6 +2221,7 @@ sb_on_spes_bona_diplomatic_play_started = {
 
 sb_on_spes_bona_diplo_play_war_start = {
 	effect = {
+		sb_restore_ai_frontier_force_floors_for_play = yes
 		sb_schedule_trn_frontier_deployment_for_play = yes
 		c:TRN ?= {
 			if = {
@@ -2251,6 +2274,7 @@ sb_on_natalia_become_british_subject = {
 
 sb_on_spes_bona_diplo_play_back_down = {
 	effect = {
+		sb_cleanup_ai_frontier_force_support_for_play = yes
 		# If Oranje backs down from Pretorius's coercive claim, treat it as a
 		# Transvaal victory rather than waiting for a war-goal enforcement hook.
 		if = {
@@ -2300,6 +2324,7 @@ sb_on_spes_bona_diplo_play_back_down = {
 		# Cape proceeds against Waterboersland or Oranje takes over the claim.
 		if = {
 			limit = {
+				root = { is_diplomatic_play_type = dp_sb_griqualand_revoke_claim }
 				scope:actor ?= {
 					country_definition = cd:ORA
 					has_variable = sb_kimberley_cap_ora_dispute_war_var
@@ -2312,11 +2337,12 @@ sb_on_spes_bona_diplo_play_back_down = {
 			scope:actor = { remove_variable = sb_kimberley_cap_ora_dispute_war_var }
 			scope:target = {
 				remove_variable = sb_kimberley_cap_ora_dispute_war_var
-				trigger_event = { id = sb_griqualand_west.244 days = 3 popup = yes }
+				trigger_event = { id = sb_griqualand_west.249 days = 3 popup = yes }
 			}
 		}
 		if = {
 			limit = {
+				root = { is_diplomatic_play_type = dp_humiliation }
 				scope:actor ?= {
 					country_definition = cd:CAP
 					has_variable = sb_kimberley_cap_ora_dispute_war_var
@@ -2342,6 +2368,19 @@ sb_on_spes_bona_diplo_play_back_down = {
 				remove_variable = sb_kimberley_cap_ora_dispute_war_var
 				trigger_event = { id = sb_griqualand_west.245 days = 3 popup = yes }
 			}
+		}
+
+		if = {
+			limit = {
+				root = {
+					OR = {
+						is_diplomatic_play_type = dp_sb_griqualand_cap_revoke_claim_locked
+						is_diplomatic_play_type = dp_sb_griqualand_cap_return_wbl_locked
+						is_diplomatic_play_type = dp_sb_griqualand_oranje_return_wbl_locked
+					}
+				}
+			}
+			sb_griqualand_west_try_finalize_refusal_contest = yes
 		}
 
 		# Waterboersland crisis wars only seed the remaining fields after the
@@ -2430,8 +2469,28 @@ sb_on_spes_bona_diplo_play_back_down = {
 	}
 }
 
+sb_on_spes_bona_diplo_play_abandon_side = {
+	effect = {
+		sb_cleanup_ai_frontier_force_support_for_play = yes
+	}
+}
+
 sb_on_spes_bona_war_end = {
 	effect = {
+		sb_cleanup_ai_frontier_force_support_for_play = yes
+		if = {
+			limit = {
+				root = {
+					OR = {
+						is_diplomatic_play_type = dp_sb_griqualand_cap_revoke_claim_locked
+						is_diplomatic_play_type = dp_sb_griqualand_cap_return_wbl_locked
+						is_diplomatic_play_type = dp_sb_griqualand_oranje_return_wbl_locked
+					}
+				}
+			}
+			sb_griqualand_west_try_finalize_refusal_contest = yes
+		}
+
 		if = {
 			limit = {
 				scope:actor ?= {
@@ -2616,6 +2675,25 @@ sb_on_spes_bona_war_end = {
 	}
 }
 
+sb_on_frontier_force_monthly_pulse_country = {
+	effect = {
+		if = {
+			limit = { sb_frontier_ai_force_floor_eligible = yes }
+			sb_restore_ai_frontier_force_floor = yes
+		}
+		else = {
+			if = {
+				limit = { has_modifier = sb_frontier_levy_reconstitution }
+				remove_modifier = sb_frontier_levy_reconstitution
+			}
+			if = {
+				limit = { has_modifier = sb_amabutho_levy_reconstitution }
+				remove_modifier = sb_amabutho_levy_reconstitution
+			}
+		}
+	}
+}
+
 # War-goal hooks for the Phase 1 frontier wars.
 sb_on_spes_bona_wargoal_enforced = {
 	effect = {
@@ -2637,7 +2715,10 @@ sb_on_spes_bona_wargoal_enforced = {
 			if = {
 				limit = {
 					country_definition = cd:CAP
-				has_variable = sb_kimberley_cap_ora_dispute_war_var
+					has_variable = sb_kimberley_cap_ora_dispute_war_var
+					scope:diplomatic_play ?= {
+						is_diplomatic_play_type = dp_humiliation
+					}
 				scope:target ?= {
 					OR = {
 						country_definition = cd:ORA
@@ -2648,7 +2729,7 @@ sb_on_spes_bona_wargoal_enforced = {
 			}
 			remove_variable = sb_kimberley_cap_ora_dispute_war_var
 			scope:target = { remove_variable = sb_kimberley_cap_ora_dispute_war_var }
-			trigger_event = { id = sb_griqualand_west.244 days = 3 popup = yes }
+			trigger_event = { id = sb_griqualand_west.250 days = 3 popup = yes }
 		}
 
 		if = {
@@ -2686,6 +2767,9 @@ sb_on_spes_bona_wargoal_enforced = {
 					country_definition = cd:TRN
 				}
 				has_variable = sb_kimberley_cap_ora_dispute_war_var
+				scope:diplomatic_play ?= {
+					is_diplomatic_play_type = dp_sb_griqualand_revoke_claim
+				}
 				scope:target ?= {
 					country_definition = cd:CAP
 					has_variable = sb_kimberley_cap_ora_dispute_war_var

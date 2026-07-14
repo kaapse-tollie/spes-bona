@@ -49,7 +49,7 @@ sb_zulu_assign_new_heir_scope = {
 	set_heir = scope:new_heir_scope
 	scope:new_heir_scope ?= {
 		replace_character_roles = { add = { heir } remove_all = yes }
-		set_interest_group = c:ZUL.ig:ig_armed_forces
+		set_interest_group = c:ZUL.ig:ig_landowners
 	}
 }
 
@@ -232,7 +232,7 @@ sb_zulu_prepare_random_good_heir = {
 		culture = cu:zulu
 		religion = rel:animist
 		age = 24
-		interest_group = ig_armed_forces
+		interest_group = ig_landowners
 		ideology = ideology_traditionalist
 		traits = {
 			ambitious
@@ -276,7 +276,7 @@ sb_zulu_install_summoned_claimant_as_ruler = {
 			}
 			add_character_role = politician
 		}
-		set_interest_group = c:ZUL.ig:ig_armed_forces
+		set_interest_group = c:ZUL.ig:ig_landowners
 		hidden_effect = {
 			cleanup_ruler_character_roles = yes
 		}
@@ -572,15 +572,6 @@ sb_resolve_zulu_dynastic_collapse = {
 	}
 	if = {
 		limit = {
-			NOT = { has_modifier = sb_zulu_dynastic_crisis }
-		}
-		add_modifier = {
-			name = sb_zulu_dynastic_crisis
-			months = 120
-		}
-	}
-	if = {
-		limit = {
 			ruler = {
 				has_template = ZUL_dingane
 			}
@@ -588,17 +579,26 @@ sb_resolve_zulu_dynastic_collapse = {
 		set_variable = sb_zulu_mpande_pretender_heir_pending_var
 		trigger_event = { id = sb_zulu_dynasty.095 days = 7 popup = yes }
 	}
+	heir ?= {
+		add_modifier = {
+			name = sb_zulu_dynastic_crisis
+			months = 120
+			is_decaying = yes
+		}
+	}
 	ruler = {
 		kill_character = { hidden = yes }
 	}
 }
 
 sb_resolve_zulu_dynasty_secured = {
-	if = {
-		limit = {
-			has_modifier = sb_zulu_dynastic_crisis
+	ruler = {
+		if = {
+			limit = {
+				has_modifier = sb_zulu_dynastic_crisis
+			}
+			remove_modifier = sb_zulu_dynastic_crisis
 		}
-		remove_modifier = sb_zulu_dynastic_crisis
 	}
 	if = {
 		limit = {
@@ -662,11 +662,13 @@ sb_resolve_zulu_dynasty_secured = {
 }
 
 sb_resolve_zulu_dynasty_secured_mbuyazi = {
-	if = {
-		limit = {
-			has_modifier = sb_zulu_dynastic_crisis
+	ruler = {
+		if = {
+			limit = {
+				has_modifier = sb_zulu_dynastic_crisis
+			}
+			remove_modifier = sb_zulu_dynastic_crisis
 		}
-		remove_modifier = sb_zulu_dynastic_crisis
 	}
 	if = {
 		limit = {

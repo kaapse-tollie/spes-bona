@@ -1,0 +1,131 @@
+﻿sb_frontier_regular_force_floor = {
+	value = 0
+	if = {
+		limit = { country_definition = cd:ZUL }
+		add = 4
+	}
+	else_if = {
+		limit = { country_definition = cd:GZA }
+		add = 4
+	}
+	else_if = {
+		limit = {
+			OR = {
+				country_definition = cd:SWZ
+				country_definition = cd:BST
+			}
+		}
+		add = 1
+	}
+}
+
+sb_frontier_conscript_force_floor = {
+	value = 0
+	if = {
+		limit = { country_definition = cd:ZUL }
+		add = 20
+	}
+	else_if = {
+		limit = {
+			OR = {
+				country_definition = cd:GZA
+				country_definition = cd:BST
+			}
+		}
+		add = 14
+	}
+	else_if = {
+		limit = { country_definition = cd:SWZ }
+		add = 4
+	}
+}
+
+sb_frontier_current_barracks_levels = {
+	value = 0
+	every_scope_building = {
+		limit = { is_building_type = building_barrack }
+		add = this.level
+	}
+}
+
+sb_frontier_current_conscription_levels = {
+	value = 0
+	every_scope_building = {
+		limit = { is_building_type = building_conscription_center }
+		add = this.level
+	}
+}
+
+sb_frontier_regular_force_shortfall = {
+	value = sb_frontier_regular_force_floor
+	subtract = sb_frontier_current_barracks_levels
+	min = 0
+	round = yes
+}
+
+sb_frontier_conscript_force_shortfall = {
+	value = sb_frontier_conscript_force_floor
+	subtract = sb_frontier_current_conscription_levels
+	min = 0
+	round = yes
+}
+
+# AI strategy values stack with vanilla's default strategy, so mirror the
+# 1.13.9 baseline before calculating the additional ratio needed for the floor.
+sb_frontier_vanilla_conscript_ratio = {
+	value = 0.5
+	if = {
+		limit = { has_law_or_variant = law_type:law_national_militia }
+		add = 2.5
+	}
+	else_if = {
+		limit = { has_law_or_variant = law_type:law_peasant_levies }
+		add = 0.5
+	}
+	else_if = {
+		limit = { has_law_or_variant = law_type:law_mass_conscription }
+		add = 0.5
+	}
+
+	if = {
+		limit = { has_technology_researched = mandatory_service }
+		multiply = 1.15
+	}
+	if = {
+		limit = { has_technology_researched = army_reserves }
+		multiply = 1.15
+	}
+	if = {
+		limit = { has_technology_researched = logistics }
+		multiply = 1.2
+	}
+	if = {
+		limit = { has_technology_researched = enlistment_offices }
+		multiply = 1.2
+	}
+	if = {
+		limit = { has_technology_researched = war_propaganda }
+		multiply = 1.25
+	}
+}
+
+sb_frontier_target_conscript_ratio = {
+	value = sb_frontier_conscript_force_floor
+	divide = {
+		value = sb_frontier_current_barracks_levels
+		min = 1
+	}
+}
+
+sb_frontier_conscript_ratio_add = {
+	value = sb_frontier_target_conscript_ratio
+	subtract = sb_frontier_vanilla_conscript_ratio
+	min = 0
+}
+
+sb_frontier_wanted_army_size_add = {
+	value = sb_frontier_regular_force_floor
+	subtract = wanted_army_size_script_value
+	add = wanted_marines_size_script_value
+	min = 0
+}

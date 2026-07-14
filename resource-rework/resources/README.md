@@ -290,6 +290,20 @@ For each state:
 X_state = sum( effective_area_ha )
 ```
 
+#### 1836 subsistence floors
+
+The commercial-hectare result remains the long-run arable baseline. A scripted
+split state may use `exception_status = 1836_subsistence_floor` when its 1836
+population would otherwise receive too little subsistence capacity to survive.
+
+```text
+final_arable_cap = max( commercial_hectare_cap, 1836_subsistence_floor )
+```
+
+This is a start-date gameplay exception, not evidence of wider commercial
+agricultural potential. Within split states, `prime_land` uses vanilla's `5.0`
+weight to direct that capacity toward historically cultivated owner regions.
+
 #### Arable comparators
 
 Arable does not use one global comparator pool. We use state-local analogue sets.

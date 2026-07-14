@@ -176,6 +176,10 @@ sb_griqualand_west_clear_crisis_vars = {
 		limit = { has_global_variable = sb_kimberley_discovery_pending_var }
 		remove_global_variable = sb_kimberley_discovery_pending_var
 	}
+	if = {
+		limit = { has_global_variable = sb_griqualand_west_refusal_contest_active_var }
+		remove_global_variable = sb_griqualand_west_refusal_contest_active_var
+	}
 	c:CAP ?= {
 		if = { limit = { has_variable = sb_griqualand_west_question_active_var } remove_variable = sb_griqualand_west_question_active_var }
 		if = { limit = { has_variable = sb_kimberley_cap_ora_dispute_war_var } remove_variable = sb_kimberley_cap_ora_dispute_war_var }
@@ -201,6 +205,11 @@ sb_griqualand_west_clear_crisis_vars = {
 		if = { limit = { has_variable = sb_griqualand_west_trn_submission_demand_var } remove_variable = sb_griqualand_west_trn_submission_demand_var }
 		if = { limit = { has_variable = sb_griqualand_west_cap_annexation_war_var } remove_variable = sb_griqualand_west_cap_annexation_war_var }
 		if = { limit = { has_variable = sb_griqualand_west_ora_submission_war_var } remove_variable = sb_griqualand_west_ora_submission_war_var }
+		if = { limit = { has_variable = sb_griqualand_west_refusal_after_rejection_var } remove_variable = sb_griqualand_west_refusal_after_rejection_var }
+		if = { limit = { has_variable = sb_griqualand_west_refusal_after_compensation_var } remove_variable = sb_griqualand_west_refusal_after_compensation_var }
+		if = { limit = { has_variable = sb_griqualand_west_wbl_sided_cap_var } remove_variable = sb_griqualand_west_wbl_sided_cap_var }
+		if = { limit = { has_variable = sb_griqualand_west_wbl_sided_oranje_var } remove_variable = sb_griqualand_west_wbl_sided_oranje_var }
+		if = { limit = { has_variable = sb_griqualand_west_wbl_independent_var } remove_variable = sb_griqualand_west_wbl_independent_var }
 	}
 }
 
@@ -351,6 +360,131 @@ sb_kimberley_finalize_wbl_diamond_mines_route = {
 			limit = { is_country_alive = yes }
 			trigger_event = { id = sb_griqualand_west.260 days = 14 popup = yes }
 		}
+	}
+}
+
+sb_kimberley_finalize_cap_protectorate_route = {
+	set_global_variable = sb_kimberley_cap_victory_global_var
+	set_global_variable = sb_bechuanaland_corridor_watch_global_var
+	sb_kimberley_seed_remaining_potential = yes
+	sb_griqualand_west_mark_resolved = yes
+	sb_griqualand_west_clear_crisis_vars = yes
+	c:WBL ?= {
+		if = {
+			limit = { is_country_alive = yes }
+			trigger_event = { id = sb_griqualand_west.260 days = 14 popup = yes }
+		}
+	}
+}
+
+sb_kimberley_finalize_oranje_protectorate_route = {
+	set_global_variable = sb_kimberley_boer_victory_global_var
+	set_global_variable = sb_bechuanaland_corridor_watch_global_var
+	c:WBL ?= {
+		if = {
+			limit = { is_subject_of = c:TRN }
+			c:TRN ?= { set_variable = sb_kimberley_trn_claimant_var }
+		}
+		else_if = {
+			limit = { is_subject_of = c:ORA }
+			c:ORA ?= { set_variable = sb_kimberley_ora_claimant_var }
+		}
+	}
+	sb_kimberley_discover_remaining_diamond_mines_in_kimberley_state = yes
+	sb_griqualand_west_mark_resolved = yes
+	sb_griqualand_west_clear_crisis_vars = yes
+	c:WBL ?= {
+		if = {
+			limit = { is_country_alive = yes }
+			trigger_event = { id = sb_griqualand_west.260 days = 14 popup = yes }
+		}
+	}
+}
+
+sb_kimberley_finalize_direct_boer_route = {
+	set_global_variable = sb_kimberley_boer_victory_global_var
+	set_global_variable = sb_bechuanaland_corridor_watch_global_var
+	if = {
+		limit = { p:x68B5E8.state.owner = c:TRN }
+		c:TRN ?= { set_variable = sb_kimberley_trn_claimant_var }
+	}
+	else_if = {
+		limit = { p:x68B5E8.state.owner = c:ORA }
+		c:ORA ?= { set_variable = sb_kimberley_ora_claimant_var }
+	}
+	sb_kimberley_discover_remaining_diamond_mines_in_kimberley_state = yes
+	sb_griqualand_west_mark_resolved = yes
+	sb_griqualand_west_clear_crisis_vars = yes
+	p:x68B5E8.state.owner = {
+		trigger_event = { id = sb_griqualand_west.260 days = 14 popup = yes }
+	}
+}
+
+sb_griqualand_west_finalize_refusal_contest = {
+	if = {
+		limit = { p:x68B5E8.state.owner = c:CAP }
+		sb_kimberley_finalize_cap_annexation_route = yes
+	}
+	else_if = {
+		limit = {
+			p:x68B5E8.state.owner = c:WBL
+			c:WBL ?= { is_subject_of = c:CAP }
+		}
+		sb_kimberley_finalize_cap_protectorate_route = yes
+	}
+	else_if = {
+		limit = {
+			p:x68B5E8.state.owner = c:WBL
+			c:WBL ?= {
+				OR = {
+					is_subject_of = c:ORA
+					is_subject_of = c:TRN
+				}
+			}
+		}
+		sb_kimberley_finalize_oranje_protectorate_route = yes
+	}
+	else_if = {
+		limit = {
+			OR = {
+				p:x68B5E8.state.owner = c:ORA
+				p:x68B5E8.state.owner = c:TRN
+			}
+		}
+		sb_kimberley_finalize_direct_boer_route = yes
+	}
+	else_if = {
+		limit = { p:x68B5E8.state.owner = c:WBL }
+		sb_kimberley_finalize_wbl_diamond_mines_route = yes
+	}
+	else = {
+		# A third-party intervention should not leave Kimberley permanently pending.
+		sb_kimberley_seed_remaining_potential = yes
+		sb_griqualand_west_mark_resolved = yes
+		sb_griqualand_west_clear_crisis_vars = yes
+		p:x68B5E8.state.owner = {
+			trigger_event = { id = sb_griqualand_west.260 days = 14 popup = yes }
+		}
+	}
+}
+
+sb_griqualand_west_try_finalize_refusal_contest = {
+	if = {
+		limit = {
+			has_global_variable = sb_griqualand_west_refusal_contest_active_var
+			NOT = {
+				any_country = {
+					any_diplomatic_play = {
+						OR = {
+							is_diplomatic_play_type = dp_sb_griqualand_cap_revoke_claim_locked
+							is_diplomatic_play_type = dp_sb_griqualand_cap_return_wbl_locked
+							is_diplomatic_play_type = dp_sb_griqualand_oranje_return_wbl_locked
+						}
+					}
+				}
+			}
+		}
+		sb_griqualand_west_finalize_refusal_contest = yes
 	}
 }
 

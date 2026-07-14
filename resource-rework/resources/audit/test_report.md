@@ -1,12 +1,12 @@
 # Public Resource Audit Test Report
 
-- Date: 2026-04-24
+- Date: 2026-07-12
 - Passes: 82
-- Fails: 0
+- Fails: 1
 
 ## Checks
 
-- **PASS** `public cli entrypoint exists`: Expected Docs/resources/scripts/resources.py
+- **PASS** `public cli entrypoint exists`: Expected resource-rework/resources/scripts/resources.py
 - **PASS** `new arable raw files exist`: Expected land-class, target-capacity, and comparator-capacity raw files.
 - **PASS** `new wood raw files exist`: Expected wood land-class, target-capacity, and comparator-capacity raw files.
 - **PASS** `new rubber raw files exist`: Expected rubber land-class, target-capacity, and comparator-capacity raw files.
@@ -47,6 +47,7 @@
 - **PASS** `shared arable denominator matches simple mean of state means`: shared=55714.28571428572, expected=55714.28571428572
 - **PASS** `all arable rows use the shared land-capacity denominator`: States with non-shared arable denominator:
 - **PASS** `arable rows use direct land-capacity X with no GDP fields or legacy Y/Z`
+- **PASS** `1836 subsistence floors remain explicit arable exceptions`: Mismatches:
 - **PASS** `hectare families bypass the universal quantity-resource Z rule`
 - **PASS** `arable spot-check outcomes are playable and directionally plausible`
 - **PASS** `arable resource expectations are now a gameplay audit surface`: Missing fields:
@@ -57,7 +58,7 @@
 - **PASS** `overview progress block mirrors state_pass_tracker.csv`: Mismatches:
 - **PASS** `state sheets mirror vanilla baselines and audited SB updates`: Mismatches:
 - **PASS** `state sheets expose the public Basis column`: Basis issues:
-- **PASS** `final caps match live state file`: 0 mismatches on accepted synced states.
+- **FAIL** `final caps match live state file`: 11 mismatches on accepted synced states.
 - **PASS** `accepted synced states match live arable resources`
 - **PASS** `wood uses dedicated effective-forestry denominator path`: Wood path failures:
 - **PASS** `non-arable benchmark registry and gold-mine denominator path are wired`
@@ -87,7 +88,7 @@
 - **PASS** `regional totals match final caps aggregation`: 0 regional mismatches.
 - **PASS** `state delta summary matches final caps aggregation`
 - **PASS** `state delta exports exist and mirror final caps`
-- **PASS** `priority rows file exists`: Priority rows: 163
+- **PASS** `priority rows file exists`: Priority rows: 169
 
 ## Current Priority Rows
 

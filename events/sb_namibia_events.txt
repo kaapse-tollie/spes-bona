@@ -175,12 +175,12 @@ sb_nam.011 = {
 		default_option = yes
 		trigger = { gold_reserves >= 100000 }
 		custom_tooltip = sb_nam_011_a_tt
-		hidden_effect = {
-			add_treasury = -100000
-			je:je_sb_map_namibian_coast ?= {
-				add_progress = {
-					name = sb_namibian_coast_survey_progress_bar
-					value = 12
+			hidden_effect = {
+				add_treasury = -100000
+				je:je_sb_map_namibian_coast ?= {
+					add_progress = {
+						name = sb_namibian_coast_survey_progress_bar
+						value = 18
 				}
 				add_progress = {
 					name = sb_namibian_coast_expedition_peril_bar
@@ -749,6 +749,56 @@ sb_nam.037 = {
 			}
 		}
 		ai_chance = { base = 20 }
+	}
+}
+
+sb_nam.038 = {
+	type = country_event
+	placement = root
+	title = sb_nam.038.t
+	desc = sb_nam.038.d
+	flavor = sb_nam.038.f
+	event_image = { video = "gfx/event_pictures/africa_desert_expedition.bk2" }
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+
+	trigger = {
+		NOT = { has_variable = sb_nam_south_west_africa_supply_crisis_fired_var }
+	}
+
+	cancellation_trigger = {
+		NOT = { has_journal_entry = je_sb_map_namibian_coast }
+	}
+
+	immediate = {
+		set_variable = sb_nam_south_west_africa_supply_crisis_fired_var
+	}
+
+	option = {
+		name = sb_nam.038.a
+		default_option = yes
+		je:je_sb_map_namibian_coast ?= {
+			add_progress = {
+				name = sb_namibian_coast_expedition_peril_bar
+				value = 4
+			}
+		}
+		ai_chance = { base = 50 }
+	}
+
+	option = {
+		name = sb_nam.038.b
+		je:je_sb_map_namibian_coast ?= {
+			add_progress = {
+				name = sb_namibian_coast_survey_progress_bar
+				value = -18
+			}
+			add_progress = {
+				name = sb_namibian_coast_expedition_peril_bar
+				value = 2
+			}
+		}
+		ai_chance = { base = 50 }
 	}
 }
 

@@ -42,11 +42,27 @@ decision_sb_map_namibian_coast = {
 	ai_chance = {
 		value = 10
 		if = {
+			limit = { net_fixed_income > 0 }
+			add = 50
+		}
+		if = {
+			limit = { gold_reserves > 0 }
+			add = 100
+		}
+		if = {
 			limit = {
 				net_fixed_income > 0
 				gold_reserves > 0
 			}
-			add = 25
+			add = 100
+		}
+		if = {
+			limit = { country_rank = rank_value:great_power }
+			add = 100
+		}
+		if = {
+			limit = { country_rank = rank_value:major_power }
+			add = 50
 		}
 		if = {
 			limit = { has_strategy = ai_strategy_colonial_expansion }
@@ -57,16 +73,30 @@ decision_sb_map_namibian_coast = {
 				country_definition = cd:GER
 				has_variable = sb_nam_colonial_programme_backed_var
 			}
-			add = 500
+			add = 250
 		}
 		if = {
 			limit = {
-				OR = {
-					net_fixed_income < 0
-					gold_reserves <= 0
+				any_subject_or_below = {
+					capital.region = sr:region_southern_africa
 				}
 			}
-			multiply = 0
+			add = 100
+		}
+		if = {
+			limit = { net_fixed_income < 0 }
+			add = -50
+		}
+		if = {
+			limit = { gold_reserves < 0 }
+			add = -100
+		}
+		if = {
+			limit = {
+				net_fixed_income < 0
+				gold_reserves < 0
+			}
+			add = -100
 		}
 	}
 }

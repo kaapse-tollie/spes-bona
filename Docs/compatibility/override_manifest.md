@@ -16,14 +16,15 @@ Current rule: `common/history/treaties/00_historical_treaties.txt` must stay reb
 
 ## Same-Path Vanilla Files
 
-Same-path vanilla files are allowed only when the engine loads vanilla data alongside additive SB data and there is no safe keyed suppression path. These files must stay rebased to vanilla `1.13.9`, with only SB-scoped Southern Africa blocks changed.
+Same-path vanilla files are allowed only when the engine loads vanilla data alongside additive SB data and there is no safe keyed suppression path. These files must stay rebased to vanilla `1.13.9`, with only the documented country or Southern Africa blocks changed.
 
-Approved same-path regional exceptions:
+Approved same-path exceptions:
 
 - `map_data/state_regions/04_subsaharan_africa.txt`: required because state-region keys/provinces are not safe as additive definitions; additive SB state regions duplicate vanilla province cache entries.
 - `common/history/pops/04_subsaharan_africa.txt`: required to replace vanilla starter pop rows in SB-touched state scopes without double-loading vanilla rows.
 - `common/history/buildings/04_subsaharan_africa.txt`: required to suppress vanilla TRN/SAF regional startup buildings and replace SB-touched state scopes.
 - `common/history/military_formations/07_military_formations_subsaharan_africa.txt`: required to suppress vanilla SAF startup formations while preserving unaffected regional formations.
+- `common/history/military_formations/00_military_formations_europe.txt`: required to redistribute Portugal's fixed starting battalions into Angola and Zambezia; military-formation history has no keyed country replacement or scriptable unit-removal effect. The file is vanilla `1.13.9` except for the `POR` block.
 - `common/history/states/00_states.txt`: required because vanilla state history creates old province ownership against SB split state regions, producing cross-region `create_state` errors.
 - `common/history/characters/saf - south africa.txt`: required to keep SAF as a formable-only tag and prevent vanilla SAF characters from spawning at game start.
 

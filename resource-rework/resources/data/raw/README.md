@@ -28,7 +28,7 @@ The rule is append-only for the maintained evidence tables that drive or constra
 - `wood_comparator_capacity_rows.csv`
   - comparator-side effective commercial forestry hectares per cap
 - `adjustment_inputs.csv`
-  - explicit `Y`, `Z`, floor, constrained-zero, and exception policy
+  - explicit `Y`, `Z`, documented-working floors, `1836_subsistence_floor`, constrained-zero, and exception policy
 - `non_arable_benchmark_cases.csv`
   - authoritative comparator registry for non-land families
 - `gdp_reference_anchor.csv`

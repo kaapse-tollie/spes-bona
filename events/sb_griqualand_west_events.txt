@@ -18,6 +18,15 @@ sb_griqualand_west.021 = {
 
 	immediate = {
 		sb_griqualand_west_save_country_loc_scopes = yes
+		c:CAP ?= {
+			if = {
+				limit = {
+					is_country_alive = yes
+					NOT = { has_claim = s:STATE_GRIQUALAND_WEST }
+				}
+				s:STATE_GRIQUALAND_WEST = { add_claim = c:CAP }
+			}
+		}
 	}
 
 	trigger = {
@@ -108,7 +117,7 @@ sb_griqualand_west.021 = {
 					}
 				}
 				c:CAP ?= {
-					trigger_event = { id = sb_griqualand_west.244 days = 3 popup = yes }
+					trigger_event = { id = sb_griqualand_west.246 days = 3 popup = yes }
 				}
 			}
 		}
@@ -184,6 +193,10 @@ sb_griqualand_west.022 = {
 
 	immediate = {
 		sb_griqualand_west_save_country_loc_scopes = yes
+		if = {
+			limit = { NOT = { has_claim = s:STATE_GRIQUALAND_WEST } }
+			s:STATE_GRIQUALAND_WEST = { add_claim = root }
+		}
 	}
 
 	trigger = {
@@ -198,7 +211,6 @@ sb_griqualand_west.022 = {
 			is_country_alive = yes
 			has_claim = s:STATE_GRIQUALAND_WEST
 		}
-		NOT = { has_claim = s:STATE_GRIQUALAND_WEST }
 	}
 
 	option = {
@@ -215,6 +227,13 @@ sb_griqualand_west.022 = {
 
 	option = {
 		name = sb_griqualand_west.022.b
+		custom_tooltip = sb_griqualand_west_022_cede_tt
+		hidden_effect = {
+			if = {
+				limit = { has_claim = s:STATE_GRIQUALAND_WEST }
+				s:STATE_GRIQUALAND_WEST = { remove_claim = root }
+			}
+		}
 		c:CAP ?= {
 			set_variable = sb_griqualand_west_arbitration_path_var
 			change_relations = {
@@ -369,6 +388,7 @@ sb_griqualand_west.241 = {
 			country_definition = cd:ORA
 			country_definition = cd:TRN
 		}
+		has_claim = s:STATE_GRIQUALAND_WEST
 		c:CAP ?= {
 			is_country_alive = yes
 			has_claim = s:STATE_GRIQUALAND_WEST
@@ -378,20 +398,10 @@ sb_griqualand_west.241 = {
 	option = {
 		name = sb_griqualand_west.241.a
 		default_option = yes
-		#custom_tooltip = sb_griqualand_west_241_war_tt
-		set_variable = sb_kimberley_cap_ora_dispute_war_var
-		c:CAP ?= {
-			set_variable = sb_kimberley_cap_ora_dispute_war_var
-			create_diplomatic_play = {
-				type = dp_humiliation
-				target_country = root
-				add_war_goal = {
-					holder = root
-					type = revoke_claim
-					target_country = c:CAP
-					target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
-				}
-			}
+		custom_tooltip = sb_griqualand_west_241_war_tt
+		c:WBL ?= {
+			set_variable = sb_griqualand_west_refusal_after_rejection_var
+			trigger_event = { id = sb_griqualand_west.251 days = 3 popup = yes }
 		}
 		ai_chance = {
 			base = 20
@@ -410,8 +420,12 @@ sb_griqualand_west.241 = {
 		name = sb_griqualand_west.241.b
 		custom_tooltip = sb_griqualand_west_241_backdown_tt
 		hidden_effect = {
+			if = {
+				limit = { has_claim = s:STATE_GRIQUALAND_WEST }
+				s:STATE_GRIQUALAND_WEST = { remove_claim = root }
+			}
 			c:CAP ?= {
-				trigger_event = { id = sb_griqualand_west.244 days = 3 popup = yes }
+				trigger_event = { id = sb_griqualand_west.247 days = 3 popup = yes }
 			}
 		}
 
@@ -454,6 +468,7 @@ sb_griqualand_west.242 = {
 			country_definition = cd:ORA
 			country_definition = cd:TRN
 		}
+		has_claim = s:STATE_GRIQUALAND_WEST
 		c:CAP ?= {
 			is_country_alive = yes
 			has_claim = s:STATE_GRIQUALAND_WEST
@@ -464,6 +479,12 @@ sb_griqualand_west.242 = {
 		name = sb_griqualand_west.242.a
 		default_option = yes
 		custom_tooltip = sb_griqualand_west_242_accept_tt
+		hidden_effect = {
+			if = {
+				limit = { has_claim = s:STATE_GRIQUALAND_WEST }
+				s:STATE_GRIQUALAND_WEST = { remove_claim = root }
+			}
+		}
 		add_modifier = {
 			name = sb_kimberley_compensation
 			months = 120
@@ -477,7 +498,7 @@ sb_griqualand_west.242 = {
 				name = sb_kimberley_compensation_burden
 				months = 120
 			}
-			trigger_event = { id = sb_griqualand_west.244 days = 3 popup = yes }
+			trigger_event = { id = sb_griqualand_west.248 days = 3 popup = yes }
 		}
 		ai_chance = {
 			base = 90
@@ -487,13 +508,9 @@ sb_griqualand_west.242 = {
 	option = {
 		name = sb_griqualand_west.242.b
 		custom_tooltip = sb_griqualand_west_242_war_tt
-		set_variable = sb_kimberley_cap_ora_dispute_war_var
-		c:CAP ?= {
-			set_variable = sb_kimberley_cap_ora_dispute_war_var
-		}
-		create_diplomatic_play = {
-			type = dp_sb_griqualand_revoke_claim
-			target_country = c:CAP
+		c:WBL ?= {
+			set_variable = sb_griqualand_west_refusal_after_compensation_var
+			trigger_event = { id = sb_griqualand_west.251 days = 3 popup = yes }
 		}
 		ai_chance = {
 			base = 10
@@ -616,6 +633,787 @@ sb_griqualand_west.245 = {
 		default_option = yes
 		custom_tooltip = sb_griqualand_west_245_tt
 		sb_griqualand_west_prepare_ora_submission_demand = yes
+		ai_chance = { base = 100 }
+	}
+}
+
+sb_griqualand_west.246 = {
+	type = country_event
+	placement = root
+
+	title = sb_griqualand_west.246.t
+	desc = sb_griqualand_west.246.d
+	flavor = sb_griqualand_west.246.f
+
+	event_image = {
+		video = "africa_diplomats_negotiating"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_newspaper.dds"
+	duration = 3
+
+	immediate = {
+		sb_griqualand_west_save_country_loc_scopes = yes
+	}
+
+	trigger = {
+		country_definition = cd:CAP
+		c:WBL ?= {
+			is_country_alive = yes
+			any_scope_state = { state_region = s:STATE_GRIQUALAND_WEST }
+		}
+	}
+
+	option = {
+		name = sb_griqualand_west.246.a
+		default_option = yes
+		custom_tooltip = sb_griqualand_west_244_tt
+		hidden_effect = {
+			sb_griqualand_west_prepare_cap_annexation_demand = yes
+		}
+	}
+}
+
+sb_griqualand_west.247 = {
+	type = country_event
+	placement = root
+
+	title = sb_griqualand_west.247.t
+	desc = sb_griqualand_west.247.d
+	flavor = sb_griqualand_west.247.f
+
+	event_image = {
+		video = "africa_diplomats_negotiating"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_newspaper.dds"
+	duration = 3
+
+	immediate = {
+		sb_griqualand_west_save_country_loc_scopes = yes
+	}
+
+	trigger = {
+		country_definition = cd:CAP
+		c:WBL ?= {
+			is_country_alive = yes
+			any_scope_state = { state_region = s:STATE_GRIQUALAND_WEST }
+		}
+	}
+
+	option = {
+		name = sb_griqualand_west.247.a
+		default_option = yes
+		custom_tooltip = sb_griqualand_west_244_tt
+		hidden_effect = {
+			sb_griqualand_west_prepare_cap_annexation_demand = yes
+		}
+	}
+}
+
+sb_griqualand_west.248 = {
+	type = country_event
+	placement = root
+
+	title = sb_griqualand_west.248.t
+	desc = sb_griqualand_west.248.d
+	flavor = sb_griqualand_west.248.f
+
+	event_image = {
+		video = "africa_diplomats_negotiating"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_newspaper.dds"
+	duration = 3
+
+	immediate = {
+		sb_griqualand_west_save_country_loc_scopes = yes
+	}
+
+	trigger = {
+		country_definition = cd:CAP
+		c:WBL ?= {
+			is_country_alive = yes
+			any_scope_state = { state_region = s:STATE_GRIQUALAND_WEST }
+		}
+	}
+
+	option = {
+		name = sb_griqualand_west.248.a
+		default_option = yes
+		custom_tooltip = sb_griqualand_west_244_tt
+		hidden_effect = {
+			sb_griqualand_west_prepare_cap_annexation_demand = yes
+		}
+	}
+}
+
+sb_griqualand_west.249 = {
+	type = country_event
+	placement = root
+
+	title = sb_griqualand_west.249.t
+	desc = sb_griqualand_west.249.d
+	flavor = sb_griqualand_west.249.f
+
+	event_image = {
+		video = "africa_diplomats_negotiating"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_newspaper.dds"
+	duration = 3
+
+	immediate = {
+		sb_griqualand_west_save_country_loc_scopes = yes
+	}
+
+	trigger = {
+		country_definition = cd:CAP
+		c:WBL ?= {
+			is_country_alive = yes
+			any_scope_state = { state_region = s:STATE_GRIQUALAND_WEST }
+		}
+	}
+
+	option = {
+		name = sb_griqualand_west.249.a
+		default_option = yes
+		custom_tooltip = sb_griqualand_west_244_tt
+		hidden_effect = {
+			sb_griqualand_west_prepare_cap_annexation_demand = yes
+		}
+	}
+}
+
+sb_griqualand_west.250 = {
+	type = country_event
+	placement = root
+
+	title = sb_griqualand_west.250.t
+	desc = sb_griqualand_west.250.d
+	flavor = sb_griqualand_west.250.f
+
+	event_image = {
+		video = "africa_diplomats_negotiating"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_newspaper.dds"
+	duration = 3
+
+	immediate = {
+		sb_griqualand_west_save_country_loc_scopes = yes
+	}
+
+	trigger = {
+		country_definition = cd:CAP
+		c:WBL ?= {
+			is_country_alive = yes
+			any_scope_state = { state_region = s:STATE_GRIQUALAND_WEST }
+		}
+	}
+
+	option = {
+		name = sb_griqualand_west.250.a
+		default_option = yes
+		custom_tooltip = sb_griqualand_west_244_tt
+		hidden_effect = {
+			sb_griqualand_west_prepare_cap_annexation_demand = yes
+		}
+	}
+}
+
+sb_griqualand_west.251 = {
+	type = country_event
+	placement = root
+
+	title = sb_griqualand_west.251.t
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				desc = sb_griqualand_west.251.rejection_d
+				trigger = { has_variable = sb_griqualand_west_refusal_after_rejection_var }
+			}
+			triggered_desc = {
+				desc = sb_griqualand_west.251.compensation_d
+				trigger = { has_variable = sb_griqualand_west_refusal_after_compensation_var }
+			}
+			triggered_desc = {
+				desc = sb_griqualand_west.251.d
+				trigger = { always = yes }
+			}
+		}
+	}
+	flavor = sb_griqualand_west.251.f
+
+	event_image = {
+		video = "africa_diplomats_negotiating"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_newspaper.dds"
+	duration = 3
+
+	immediate = {
+		sb_griqualand_west_save_country_loc_scopes = yes
+	}
+
+	trigger = {
+		country_definition = cd:WBL
+		any_scope_state = { state_region = s:STATE_GRIQUALAND_WEST }
+		OR = {
+			has_variable = sb_griqualand_west_refusal_after_rejection_var
+			has_variable = sb_griqualand_west_refusal_after_compensation_var
+		}
+		c:CAP ?= {
+			is_country_alive = yes
+			has_claim = s:STATE_GRIQUALAND_WEST
+		}
+		OR = {
+			c:ORA ?= {
+				is_country_alive = yes
+				has_variable = sb_kimberley_ora_pressed_claim_var
+				has_claim = s:STATE_GRIQUALAND_WEST
+			}
+			c:TRN ?= {
+				is_country_alive = yes
+				has_variable = sb_kimberley_ora_pressed_claim_var
+				has_claim = s:STATE_GRIQUALAND_WEST
+			}
+		}
+	}
+
+	option = {
+		name = sb_griqualand_west.251.a
+		default_option = yes
+		custom_tooltip = sb_griqualand_west_251_cap_tt
+		hidden_effect = {
+			sb_griqualand_west_annul_wbl_guarantee = yes
+			if = {
+				limit = { is_subject = yes }
+				make_independent = yes
+			}
+			c:CAP ?= {
+				create_diplomatic_pact = {
+					country = root
+					type = protectorate
+				}
+			}
+			if = {
+				limit = {
+					is_subject_of = c:CAP
+					NOT = { is_subject_type = subject_type_protectorate }
+				}
+				change_subject_type = subject_type_protectorate
+			}
+			set_variable = sb_griqualand_west_wbl_sided_cap_var
+			if = { limit = { has_variable = sb_griqualand_west_refusal_after_rejection_var } remove_variable = sb_griqualand_west_refusal_after_rejection_var }
+			if = { limit = { has_variable = sb_griqualand_west_refusal_after_compensation_var } remove_variable = sb_griqualand_west_refusal_after_compensation_var }
+			c:CAP ?= { trigger_event = { id = sb_griqualand_west.252 days = 3 popup = yes } }
+		}
+		ai_chance = {
+			base = 30
+			modifier = {
+				trigger = { c:CAP ?= { relations:root >= relations_threshold:cordial } }
+				add = 10
+			}
+			modifier = {
+				trigger = { c:CAP ?= { relations:root >= relations_threshold:amicable } }
+				add = 15
+			}
+			modifier = {
+				trigger = { c:CAP ?= { relations:root >= relations_threshold:friendly } }
+				add = 20
+			}
+			modifier = {
+				trigger = { c:CAP ?= { relations:root <= relations_threshold:poor } }
+				add = -10
+			}
+			modifier = {
+				trigger = { c:CAP ?= { relations:root <= relations_threshold:cold } }
+				add = -15
+			}
+			modifier = {
+				trigger = { c:CAP ?= { relations:root <= relations_threshold:hostile } }
+				add = -20
+			}
+			modifier = {
+				trigger = { c:GBR ?= { is_country_alive = yes } is_in_same_power_bloc = c:GBR }
+				add = 40
+			}
+			modifier = {
+				trigger = { c:CAP ?= { has_law = law_type:law_ethnostate } }
+				add = -30
+			}
+			modifier = {
+				trigger = { c:CAP ?= { has_law = law_type:law_national_supremacy } }
+				add = -20
+			}
+			modifier = {
+				trigger = { c:CAP ?= { has_law = law_type:law_racial_segregation } }
+				add = -10
+			}
+			modifier = {
+				trigger = { c:CAP ?= { has_law = law_type:law_cultural_exclusion } }
+				add = 15
+			}
+			modifier = {
+				trigger = {
+					c:CAP ?= {
+						OR = {
+							has_law_or_variant = law_type:law_multicultural
+							has_law = law_type:law_sb_non_racialism
+						}
+					}
+				}
+				add = 30
+			}
+			modifier = {
+				trigger = {
+					c:CAP ?= {
+						active_law:lawgroup_citizenship ?= {
+							has_amendment = amendment_type:amendment_sb_cape_qualified_franchise
+						}
+					}
+				}
+				add = 20
+			}
+			modifier = {
+				trigger = {
+					c:CAP ?= {
+						active_law:lawgroup_citizenship ?= {
+							NOT = { has_amendment = amendment_type:amendment_sb_cape_qualified_franchise }
+						}
+					}
+				}
+				add = -10
+			}
+			modifier = {
+				trigger = { c:CAP ?= { var:sb_cape_balance_current >= 30 var:sb_cape_balance_current < 60 } }
+				add = 10
+			}
+			modifier = {
+				trigger = { c:CAP ?= { var:sb_cape_balance_current >= 60 } }
+				add = 20
+			}
+			modifier = {
+				trigger = { c:CAP ?= { has_modifier = sb_cape_liberal_victory } }
+				add = 30
+			}
+			modifier = {
+				trigger = { c:CAP ?= { var:sb_cape_balance_current <= -30 var:sb_cape_balance_current > -60 } }
+				add = -10
+			}
+			modifier = {
+				trigger = { c:CAP ?= { var:sb_cape_balance_current <= -60 } }
+				add = -20
+			}
+			modifier = {
+				trigger = { c:CAP ?= { has_modifier = sb_settler_victory } }
+				add = -30
+			}
+		}
+	}
+
+	option = {
+		name = sb_griqualand_west.251.b
+		custom_tooltip = sb_griqualand_west_251_oranje_tt
+		hidden_effect = {
+			sb_griqualand_west_annul_wbl_guarantee = yes
+			if = {
+				limit = { is_subject = yes }
+				make_independent = yes
+			}
+			scope:sb_oranje_claimant_scope ?= {
+				create_diplomatic_pact = {
+					country = root
+					type = protectorate
+				}
+			}
+			if = {
+				limit = {
+					is_subject_of = scope:sb_oranje_claimant_scope
+					NOT = { is_subject_type = subject_type_protectorate }
+				}
+				change_subject_type = subject_type_protectorate
+			}
+			set_variable = sb_griqualand_west_wbl_sided_oranje_var
+			if = { limit = { has_variable = sb_griqualand_west_refusal_after_rejection_var } remove_variable = sb_griqualand_west_refusal_after_rejection_var }
+			if = { limit = { has_variable = sb_griqualand_west_refusal_after_compensation_var } remove_variable = sb_griqualand_west_refusal_after_compensation_var }
+			c:CAP ?= { trigger_event = { id = sb_griqualand_west.253 days = 3 popup = yes } }
+		}
+		ai_chance = {
+			base = 30
+			modifier = {
+				trigger = { scope:sb_oranje_claimant_scope ?= { relations:root >= relations_threshold:cordial } }
+				add = 10
+			}
+			modifier = {
+				trigger = { scope:sb_oranje_claimant_scope ?= { relations:root >= relations_threshold:amicable } }
+				add = 15
+			}
+			modifier = {
+				trigger = { scope:sb_oranje_claimant_scope ?= { relations:root >= relations_threshold:friendly } }
+				add = 20
+			}
+			modifier = {
+				trigger = { scope:sb_oranje_claimant_scope ?= { relations:root <= relations_threshold:poor } }
+				add = -10
+			}
+			modifier = {
+				trigger = { scope:sb_oranje_claimant_scope ?= { relations:root <= relations_threshold:cold } }
+				add = -15
+			}
+			modifier = {
+				trigger = { scope:sb_oranje_claimant_scope ?= { relations:root <= relations_threshold:hostile } }
+				add = -20
+			}
+			modifier = {
+				trigger = { c:GBR ?= { is_country_alive = yes } is_in_same_power_bloc = c:GBR }
+				add = -40
+			}
+			modifier = {
+				trigger = { c:CAP ?= { has_law = law_type:law_ethnostate } }
+				add = 30
+			}
+			modifier = {
+				trigger = { c:CAP ?= { has_law = law_type:law_national_supremacy } }
+				add = 20
+			}
+			modifier = {
+				trigger = { c:CAP ?= { has_law = law_type:law_racial_segregation } }
+				add = 10
+			}
+			modifier = {
+				trigger = { c:CAP ?= { has_law = law_type:law_cultural_exclusion } }
+				add = -15
+			}
+			modifier = {
+				trigger = {
+					c:CAP ?= {
+						OR = {
+							has_law_or_variant = law_type:law_multicultural
+							has_law = law_type:law_sb_non_racialism
+						}
+					}
+				}
+				add = -30
+			}
+			modifier = {
+				trigger = {
+					c:CAP ?= {
+						active_law:lawgroup_citizenship ?= {
+							has_amendment = amendment_type:amendment_sb_cape_qualified_franchise
+						}
+					}
+				}
+				add = -20
+			}
+			modifier = {
+				trigger = {
+					c:CAP ?= {
+						active_law:lawgroup_citizenship ?= {
+							NOT = { has_amendment = amendment_type:amendment_sb_cape_qualified_franchise }
+						}
+					}
+				}
+				add = 10
+			}
+			modifier = {
+				trigger = { c:CAP ?= { var:sb_cape_balance_current >= 30 var:sb_cape_balance_current < 60 } }
+				add = -10
+			}
+			modifier = {
+				trigger = { c:CAP ?= { var:sb_cape_balance_current >= 60 } }
+				add = -20
+			}
+			modifier = {
+				trigger = { c:CAP ?= { has_modifier = sb_cape_liberal_victory } }
+				add = -30
+			}
+			modifier = {
+				trigger = { c:CAP ?= { var:sb_cape_balance_current <= -30 var:sb_cape_balance_current > -60 } }
+				add = 10
+			}
+			modifier = {
+				trigger = { c:CAP ?= { var:sb_cape_balance_current <= -60 } }
+				add = 20
+			}
+			modifier = {
+				trigger = { c:CAP ?= { has_modifier = sb_settler_victory } }
+				add = 30
+			}
+			modifier = {
+				trigger = { c:ORA ?= { has_law = law_type:law_discrete_inboekstelsel } }
+				add = -30
+			}
+		}
+	}
+
+	option = {
+		name = sb_griqualand_west.251.c
+		custom_tooltip = sb_griqualand_west_251_independent_tt
+		hidden_effect = {
+			sb_griqualand_west_annul_wbl_guarantee = yes
+			if = {
+				limit = { is_subject = yes }
+				make_independent = yes
+			}
+			set_variable = sb_griqualand_west_wbl_independent_var
+			if = { limit = { has_variable = sb_griqualand_west_refusal_after_rejection_var } remove_variable = sb_griqualand_west_refusal_after_rejection_var }
+			if = { limit = { has_variable = sb_griqualand_west_refusal_after_compensation_var } remove_variable = sb_griqualand_west_refusal_after_compensation_var }
+			c:CAP ?= { trigger_event = { id = sb_griqualand_west.254 days = 3 popup = yes } }
+		}
+		ai_chance = {
+			base = 30
+			modifier = {
+				trigger = { c:CAP ?= { relations:root >= relations_threshold:amicable } }
+				add = -20
+			}
+			modifier = {
+				trigger = { scope:sb_oranje_claimant_scope ?= { relations:root >= relations_threshold:amicable } }
+				add = -20
+			}
+			modifier = {
+				trigger = { c:CAP ?= { relations:root <= relations_threshold:poor } }
+				add = 10
+			}
+			modifier = {
+				trigger = { scope:sb_oranje_claimant_scope ?= { relations:root <= relations_threshold:poor } }
+				add = 10
+			}
+			modifier = {
+				trigger = { c:GBR ?= { is_country_alive = yes } is_in_same_power_bloc = c:GBR }
+				add = -30
+			}
+			modifier = {
+				trigger = {
+					c:CAP ?= {
+						OR = {
+							has_law = law_type:law_ethnostate
+							has_law = law_type:law_national_supremacy
+							has_law = law_type:law_racial_segregation
+						}
+					}
+				}
+				add = 15
+			}
+			modifier = {
+				trigger = {
+					c:CAP ?= {
+						OR = {
+							has_law = law_type:law_cultural_exclusion
+							has_law_or_variant = law_type:law_multicultural
+							has_law = law_type:law_sb_non_racialism
+						}
+					}
+				}
+				add = -10
+			}
+			modifier = {
+				trigger = {
+					c:CAP ?= {
+						active_law:lawgroup_citizenship ?= {
+							NOT = { has_amendment = amendment_type:amendment_sb_cape_qualified_franchise }
+						}
+					}
+				}
+				add = 5
+			}
+			modifier = {
+				trigger = { c:ORA ?= { has_law = law_type:law_discrete_inboekstelsel } }
+				add = 15
+			}
+		}
+	}
+}
+
+sb_griqualand_west.252 = {
+	type = country_event
+	placement = root
+
+	title = sb_griqualand_west.252.t
+	desc = sb_griqualand_west.252.d
+	flavor = sb_griqualand_west.252.f
+
+	event_image = { video = "africa_diplomats_negotiating" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_newspaper.dds"
+	duration = 3
+
+	immediate = { sb_griqualand_west_save_country_loc_scopes = yes }
+
+	trigger = {
+		country_definition = cd:CAP
+		c:WBL ?= {
+			is_country_alive = yes
+			has_variable = sb_griqualand_west_wbl_sided_cap_var
+			is_subject_of = root
+		}
+		OR = {
+			c:ORA ?= { has_variable = sb_kimberley_ora_pressed_claim_var has_claim = s:STATE_GRIQUALAND_WEST }
+			c:TRN ?= { has_variable = sb_kimberley_ora_pressed_claim_var has_claim = s:STATE_GRIQUALAND_WEST }
+		}
+	}
+
+	option = {
+		name = sb_griqualand_west.252.a
+		default_option = yes
+		custom_tooltip = sb_griqualand_west_252_tt
+		hidden_effect = {
+			set_global_variable = sb_griqualand_west_refusal_contest_active_var
+			set_variable = sb_kimberley_cap_ora_dispute_war_var
+			scope:sb_oranje_claimant_scope = { set_variable = sb_kimberley_cap_ora_dispute_war_var }
+			create_diplomatic_play = {
+				type = dp_sb_griqualand_cap_revoke_claim_locked
+				target_country = scope:sb_oranje_claimant_scope
+				target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
+				add_war_goal = {
+					holder = scope:sb_oranje_claimant_scope
+					type = return_state
+					target_country = c:WBL
+					target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
+				}
+			}
+		}
+		ai_chance = { base = 100 }
+	}
+}
+
+sb_griqualand_west.253 = {
+	type = country_event
+	placement = root
+
+	title = sb_griqualand_west.253.t
+	desc = sb_griqualand_west.253.d
+	flavor = sb_griqualand_west.253.f
+
+	event_image = { video = "africa_diplomats_negotiating" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_newspaper.dds"
+	duration = 3
+
+	immediate = { sb_griqualand_west_save_country_loc_scopes = yes }
+
+	trigger = {
+		country_definition = cd:CAP
+		c:WBL ?= {
+			is_country_alive = yes
+			has_variable = sb_griqualand_west_wbl_sided_oranje_var
+			OR = {
+				is_subject_of = c:ORA
+				is_subject_of = c:TRN
+			}
+		}
+		has_claim = s:STATE_GRIQUALAND_WEST
+		OR = {
+			c:ORA ?= { has_variable = sb_kimberley_ora_pressed_claim_var has_claim = s:STATE_GRIQUALAND_WEST }
+			c:TRN ?= { has_variable = sb_kimberley_ora_pressed_claim_var has_claim = s:STATE_GRIQUALAND_WEST }
+		}
+	}
+
+	option = {
+		name = sb_griqualand_west.253.a
+		default_option = yes
+		custom_tooltip = sb_griqualand_west_253_tt
+		hidden_effect = {
+			set_global_variable = sb_griqualand_west_refusal_contest_active_var
+			set_variable = sb_kimberley_cap_ora_dispute_war_var
+			scope:sb_oranje_claimant_scope = { set_variable = sb_kimberley_cap_ora_dispute_war_var }
+			create_diplomatic_play = {
+				type = dp_sb_griqualand_cap_return_wbl_locked
+				target_country = c:WBL
+				target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
+				add_war_goal = {
+					holder = scope:sb_oranje_claimant_scope
+					type = revoke_claim
+					target_country = root
+					target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
+				}
+			}
+		}
+		ai_chance = { base = 100 }
+	}
+}
+
+sb_griqualand_west.254 = {
+	type = country_event
+	placement = root
+
+	title = sb_griqualand_west.254.t
+	desc = sb_griqualand_west.254.d
+	flavor = sb_griqualand_west.254.f
+
+	event_image = { video = "africa_diplomats_negotiating" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_newspaper.dds"
+	duration = 3
+
+	immediate = { sb_griqualand_west_save_country_loc_scopes = yes }
+
+	trigger = {
+		country_definition = cd:CAP
+		c:WBL ?= {
+			is_country_alive = yes
+			has_variable = sb_griqualand_west_wbl_independent_var
+			is_subject = no
+		}
+		has_claim = s:STATE_GRIQUALAND_WEST
+		OR = {
+			c:ORA ?= { has_variable = sb_kimberley_ora_pressed_claim_var has_claim = s:STATE_GRIQUALAND_WEST }
+			c:TRN ?= { has_variable = sb_kimberley_ora_pressed_claim_var has_claim = s:STATE_GRIQUALAND_WEST }
+		}
+	}
+
+	option = {
+		name = sb_griqualand_west.254.a
+		default_option = yes
+		custom_tooltip = sb_griqualand_west_254_tt
+		hidden_effect = {
+			set_global_variable = sb_griqualand_west_refusal_contest_active_var
+			set_variable = sb_kimberley_cap_ora_dispute_war_var
+			c:WBL = { set_variable = sb_kimberley_cap_ora_dispute_war_var }
+			scope:sb_oranje_claimant_scope = { set_variable = sb_kimberley_cap_ora_dispute_war_var }
+			create_diplomatic_play = {
+				type = dp_sb_griqualand_cap_return_wbl_locked
+				target_country = c:WBL
+				target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
+				add_war_goal = {
+					holder = c:WBL
+					type = revoke_claim
+					target_country = root
+					target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
+				}
+			}
+			create_diplomatic_play = {
+				type = dp_sb_griqualand_cap_revoke_claim_locked
+				target_country = scope:sb_oranje_claimant_scope
+				target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
+				add_war_goal = {
+					holder = scope:sb_oranje_claimant_scope
+					type = revoke_claim
+					target_country = root
+					target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
+				}
+			}
+			scope:sb_oranje_claimant_scope = {
+				create_diplomatic_play = {
+					type = dp_sb_griqualand_oranje_return_wbl_locked
+					target_country = c:WBL
+					target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
+					add_war_goal = {
+						holder = c:WBL
+						type = revoke_claim
+						target_country = scope:sb_oranje_claimant_scope
+						target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
+					}
+				}
+			}
+		}
 		ai_chance = { base = 100 }
 	}
 }
