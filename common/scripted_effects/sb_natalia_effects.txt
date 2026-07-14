@@ -188,8 +188,8 @@ sb_ensure_ora_ai_natal_front_commitment = {
 }
 
 sb_raise_ora_blood_river_relief_force = {
-	# Standard ORA relief package for Blood River. The normal AI path is
-	# modifier-only; the player-ZUL branch below remains a separate balance gate.
+	# The positive AI Zulu roll withholds ORA's laager edge; force repairs remain
+	# the responsibility of the shared frontier levy system.
 	if = {
 		limit = {
 			country_definition = cd:ORA
@@ -200,9 +200,16 @@ sb_raise_ora_blood_river_relief_force = {
 			name = sb_ora_blood_river_relief_force_var
 			months = 24
 		}
-		add_modifier = {
-			name = sb_laager_defence
-			months = 15
+		if = {
+			limit = {
+				c:ZUL ?= {
+					NOT = { has_variable = sb_zul_blood_river_positive_roll_var }
+				}
+			}
+			add_modifier = {
+				name = sb_laager_defence
+				months = 15
+			}
 		}
 		if = {
 			limit = {

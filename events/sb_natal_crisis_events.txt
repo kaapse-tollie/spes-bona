@@ -112,7 +112,7 @@ sb_natal_crisis.019 = {
 						}
 					}
 				}
-				sb_spawn_zul_blood_river_player_relief_force = yes
+				sb_apply_zul_blood_river_readiness = yes
 			}
 			else_if = {
 				limit = {
@@ -152,7 +152,16 @@ sb_natal_crisis.019 = {
 				}	# dynamic script for bloedrivier 
 					random_list = {
 						30 = { # support zul
-							sb_raise_zul_blood_river_relief_force = yes
+							set_variable = {
+								name = sb_zul_blood_river_positive_roll_var
+								months = 24
+							}
+							c:ORA ?= {
+								if = {
+									limit = { has_modifier = sb_laager_defence }
+									remove_modifier = sb_laager_defence
+								}
+							}
 							sb_zulu_add_dynastic_stability_20 = yes
 							sb_boost_firearms_progress_10 = yes
 						}
