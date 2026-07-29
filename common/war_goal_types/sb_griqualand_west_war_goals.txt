@@ -1,0 +1,107 @@
+﻿sb_revoke_oranje_griqualand_claim = {
+	icon = "gfx/interface/icons/war_goals/revoke_claim.dds"
+
+	kind = custom
+
+	settings = {
+		require_target_be_part_of_war
+		skip_build_list
+	}
+
+	execution_priority = 49
+	contestion_type = control_own_state
+	target_type = country
+
+	possible = { always = no }
+	valid = { always = yes }
+
+	maneuvers = {
+		value = 5
+	}
+
+	infamy = {
+		value = 0
+	}
+
+	on_enforced = {
+		if = {
+			limit = { c:ORA ?= { is_country_alive = yes } }
+			c:ORA ?= {
+				if = {
+					limit = { has_claim = s:STATE_GRIQUALAND_WEST }
+					s:STATE_GRIQUALAND_WEST = { remove_claim = c:ORA }
+				}
+			}
+		}
+		else_if = {
+			limit = {
+				c:TRN ?= {
+					is_country_alive = yes
+					has_variable = sb_oranje_federated_into_trn_var
+				}
+			}
+			c:TRN ?= {
+				if = {
+					limit = { has_claim = s:STATE_GRIQUALAND_WEST }
+					s:STATE_GRIQUALAND_WEST = { remove_claim = c:TRN }
+				}
+			}
+		}
+	}
+
+	ai = {
+		is_significant_demand = no
+	}
+}
+
+# TRN leads the play while enforcing its subject Oranje's legal claim.
+sb_return_oranje_griqualand = {
+	icon = "gfx/interface/icons/war_goals/return_state.dds"
+
+	kind = custom
+
+	settings = {
+		require_target_be_part_of_war
+		annexes_entire_state
+		skip_build_list
+
+		validate_conflicts_conquer_state
+		validate_target_not_treaty_port
+		conflicts_with_country_creation
+		conflicts_with_annex_state
+	}
+
+	execution_priority = 70
+	contestion_type = control_target_state
+	target_type = state
+
+	possible = { always = no }
+	valid = {
+		ROOT = {
+			country_definition = cd:TRN
+			c:ORA ?= {
+				is_country_alive = yes
+				is_direct_subject_of = ROOT
+				has_claim = s:STATE_GRIQUALAND_WEST
+			}
+		}
+		scope:target_country ?= { country_definition = cd:WBL }
+		scope:target_state ?= {
+			owner = scope:target_country
+			state_region = s:STATE_GRIQUALAND_WEST
+		}
+	}
+
+	maneuvers = { value = 0 }
+	infamy = { value = 0 }
+
+	on_enforced = {
+		scope:target_state ?= {
+			set_state_owner = c:ORA
+		}
+	}
+
+	ai = {
+		is_significant_demand = yes
+	}
+}

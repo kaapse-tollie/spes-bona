@@ -18,6 +18,36 @@ sb_bst_kill_non_moshoeshoe_ai_generals = {
 	}
 }
 
+sb_bst_apply_gun_war_ai_defence = {
+	if = {
+		limit = {
+			is_ai = yes
+			sb_frontier_ai_scripting_enabled = yes
+			c:CAP ?= { is_player = yes }
+		}
+		add_modifier = {
+			name = sb_bst_gun_war_defensive_muster_vs_player
+			months = 24
+		}
+	}
+	else_if = {
+		limit = {
+			is_ai = yes
+			sb_frontier_ai_scripting_enabled = yes
+			c:CAP ?= { is_ai = yes }
+		}
+		random_list = {
+			66 = {
+				add_modifier = {
+					name = sb_bst_gun_war_defensive_muster
+					months = 24
+				}
+			}
+			33 = {}
+		}
+	}
+}
+
 sb_bst_execute_oranje_raid = {
 	hidden_effect = {
 		set_variable = {
@@ -80,7 +110,7 @@ sb_bst_restore_gbr_protectorate = {
 			is_subject_of = c:CAP
 		}
 		c:GBR ?= {
-			transfer_subject = root
+			transfer_subject = c:BST
 		}
 	}
 
@@ -101,6 +131,36 @@ sb_bst_restore_gbr_protectorate = {
 			NOT = { is_subject_type = subject_type_protectorate }
 		}
 		change_subject_type = subject_type_protectorate
+	}
+}
+
+# A white peace defeats Cape disarmament without enforcing BST's autonomy demand.
+sb_bst_return_to_gbr_as_puppet = {
+	if = {
+		limit = { has_variable = sb_bst_cap_annexation_crisis_var }
+		remove_variable = sb_bst_cap_annexation_crisis_var
+	}
+
+	c:CAP ?= {
+		if = {
+			limit = { has_variable = sb_bst_cap_annexation_crisis_var }
+			remove_variable = sb_bst_cap_annexation_crisis_var
+		}
+	}
+
+	if = {
+		limit = { is_subject_of = c:CAP }
+		c:GBR ?= {
+			transfer_subject = c:BST
+		}
+	}
+
+	if = {
+		limit = {
+			is_subject_of = c:GBR
+			NOT = { is_subject_type = subject_type_puppet }
+		}
+		change_subject_type = subject_type_puppet
 	}
 }
 

@@ -60,7 +60,9 @@ sb_bechuanaland_corridor.010 = {
 		if = {
 			limit = { has_variable = sb_bechuanaland_gbr_warren_demand_var }
 			s:STATE_BECHUANALAND = { add_claim = c:CAP }
+			s:STATE_GRIQUALAND_WEST = { add_claim = c:CAP }
 			sb_bechuanaland_annex_sgo_and_wbl_to_cap = yes
+			sb_bechuanaland_transfer_dual_corridor_to_cap = yes
 		}
 		else = {
 			c:CAP ?= {
@@ -113,10 +115,7 @@ sb_bechuanaland_corridor.020 = {
 
 	trigger = {
 		sb_bechuanaland_swa_overlord_candidate = yes
-		OR = {
-			has_variable = sb_bechuanaland_cap_warren_refusal_var
-			has_variable = sb_bechuanaland_gbr_warren_refusal_var
-		}
+		has_variable = sb_bechuanaland_cap_warren_refusal_var
 	}
 
 	option = {
@@ -153,10 +152,70 @@ sb_bechuanaland_corridor.020 = {
 			limit = { has_variable = sb_bechuanaland_cap_warren_refusal_var }
 			sb_bechuanaland_start_cap_sgo_annex_war = yes
 		}
-		else_if = {
-			limit = { has_variable = sb_bechuanaland_gbr_warren_refusal_var }
-			sb_bechuanaland_start_gbr_direct_warren_war = yes
+		ai_chance = {
+			base = 50
+			modifier = {
+				trigger = { has_variable = sb_bechuanaland_caprivi_conceded_var }
+				add = 25
+			}
 		}
+	}
+}
+
+sb_bechuanaland_corridor.021 = {
+	type = country_event
+	placement = root
+
+	title = sb_bechuanaland_corridor.020.t
+	desc = sb_bechuanaland_corridor.020.d
+	flavor = sb_bechuanaland_corridor.020.f
+
+	event_image = {
+		video = "africa_diplomats_negotiating"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_newspaper.dds"
+	duration = 3
+
+	immediate = { sb_bechuanaland_save_loc_scopes = yes }
+
+	trigger = {
+		sb_bechuanaland_swa_overlord_candidate = yes
+		has_variable = sb_bechuanaland_gbr_warren_refusal_var
+	}
+
+	option = {
+		name = sb_bechuanaland_corridor.020.a
+		custom_tooltip = sb_bechuanaland_corridor_021_direct_tt
+		sb_bechuanaland_start_cap_dual_return_war_with_direct_intervention = yes
+		ai_chance = {
+			base = 15
+			modifier = {
+				trigger = { has_variable = sb_bechuanaland_caprivi_conceded_var }
+				add = -10
+			}
+		}
+	}
+
+	option = {
+		name = sb_bechuanaland_corridor.020.b
+		custom_tooltip = sb_bechuanaland_corridor_021_proxy_tt
+		sb_bechuanaland_start_cap_dual_return_war_with_proxy_intervention = yes
+		ai_chance = {
+			base = 35
+			modifier = {
+				trigger = { has_variable = sb_bechuanaland_caprivi_conceded_var }
+				add = -15
+			}
+		}
+	}
+
+	option = {
+		name = sb_bechuanaland_corridor.020.c
+		default_option = yes
+		custom_tooltip = sb_bechuanaland_corridor_021_no_intervention_tt
+		sb_bechuanaland_start_cap_dual_return_war = yes
 		ai_chance = {
 			base = 50
 			modifier = {
@@ -258,5 +317,35 @@ sb_bechuanaland_corridor.031 = {
 		default_option = yes
 		custom_tooltip = sb_bechuanaland_corridor_031_backdown_tt
 		ai_chance = { base = 35 }
+	}
+}
+
+sb_bechuanaland_corridor.040 = {
+	type = country_event
+	placement = root
+
+	title = sb_bechuanaland_corridor.040.t
+	desc = sb_bechuanaland_corridor.040.d
+	flavor = sb_bechuanaland_corridor.040.f
+
+	event_image = {
+		video = "africa_diplomats_negotiating"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/waving_flag.dds"
+	duration = 3
+
+	immediate = { sb_bechuanaland_save_loc_scopes = yes }
+
+	trigger = {
+		country_definition = cd:GBR
+	}
+
+	option = {
+		name = sb_bechuanaland_corridor.040.a
+		default_option = yes
+		sb_bechuanaland_apply_british_settlement = yes
+		ai_chance = { base = 100 }
 	}
 }

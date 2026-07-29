@@ -1,0 +1,74 @@
+﻿# Spes Bona - Boer union decisions
+
+decision_sb_federate_boer_confederal_partners = {
+	is_shown = {
+		country_has_primary_culture = cu:boer
+		any_direct_subject = {
+			is_subject_type = subject_type_sb_boer_confederal_partner
+			country_has_primary_culture = cu:boer
+		}
+	}
+
+	possible = {
+		is_at_war = no
+		is_active_in_diplomatic_play = no
+		custom_tooltip = {
+			text = decision_sb_federate_boer_confederal_partners_possible_tt
+			any_direct_subject = {
+				is_subject_type = subject_type_sb_boer_confederal_partner
+				country_has_primary_culture = cu:boer
+				is_at_war = no
+				is_active_in_diplomatic_play = no
+				liberty_desire <= 0
+			}
+		}
+	}
+
+	when_taken = {
+		custom_tooltip = decision_sb_federate_boer_confederal_partners_effect_tt
+		hidden_effect = {
+			every_direct_subject = {
+				limit = {
+					is_subject_type = subject_type_sb_boer_confederal_partner
+					country_has_primary_culture = cu:boer
+					is_at_war = no
+					is_active_in_diplomatic_play = no
+					liberty_desire <= 0
+				}
+				save_temporary_scope_as = sb_boer_confederal_partner_to_federate
+				if = {
+					limit = {
+						country_definition = cd:ORA
+						root = { country_definition = cd:TRN }
+					}
+					root = { sb_griqualand_west_inherit_oranje_federation = yes }
+				}
+				if = {
+					limit = {
+						OR = {
+							has_variable = sb_ora_annexed_bst_var
+							has_journal_entry = je_sb_settle_drakensberg
+						}
+					}
+					root = {
+						set_variable = sb_ora_annexed_bst_var
+						if = {
+							limit = {
+								NOT = { has_variable = sb_settled_drakensberg_var }
+								NOT = { has_journal_entry = je_sb_settle_drakensberg }
+							}
+							add_journal_entry = { type = je_sb_settle_drakensberg }
+						}
+					}
+				}
+				root = {
+					annex = scope:sb_boer_confederal_partner_to_federate
+				}
+			}
+		}
+	}
+
+	ai_chance = {
+		value = 1000
+	}
+}

@@ -49,12 +49,17 @@ sb_bechuanaland_trn_is_sar_like = {
 }
 
 sb_bechuanaland_boer_actor = {
+	NOT = { is_in_same_power_bloc = c:GBR }
 	OR = {
 		AND = {
 			country_definition = cd:TRN
 			is_country_alive = yes
 			OR = {
 				has_variable = sb_kimberley_trn_claimant_var
+				AND = {
+					has_variable = sb_oranje_federated_into_trn_var
+					has_global_variable = sb_kimberley_boer_victory_global_var
+				}
 				sb_bechuanaland_trn_is_sar_like = yes
 			}
 		}
@@ -62,6 +67,22 @@ sb_bechuanaland_boer_actor = {
 			country_definition = cd:ORA
 			is_country_alive = yes
 			has_variable = sb_kimberley_ora_claimant_var
+		}
+	}
+}
+
+sb_bechuanaland_primary_boer_actor_at_peace = {
+	OR = {
+		c:TRN ?= {
+			sb_bechuanaland_boer_actor = yes
+			is_at_war = no
+		}
+		AND = {
+			NOT = { c:TRN ?= { sb_bechuanaland_boer_actor = yes } }
+			c:ORA ?= {
+				sb_bechuanaland_boer_actor = yes
+				is_at_war = no
+			}
 		}
 	}
 }
@@ -76,10 +97,35 @@ sb_bechuanaland_tsw_owns_nw_corridor_nc_land = {
 	sb_bechuanaland_tsw_holds_beachhead_province = yes
 }
 
+sb_bechuanaland_cap_has_corridor_foothold = {
+	c:CAP ?= {
+		is_country_alive = yes
+		any_scope_state = {
+			state_region = s:STATE_BECHUANALAND
+			num_provinces >= 1
+		}
+	}
+}
+
 sb_bechuanaland_cap_controls_nw_corridor = {
 	OR = {
 		c:CAP ?= { owns_entire_state_region = STATE_BECHUANALAND }
 		c:GBR ?= { owns_entire_state_region = STATE_BECHUANALAND }
+	}
+}
+
+sb_bechuanaland_cap_controls_griqualand_west = {
+	OR = {
+		c:CAP ?= { owns_entire_state_region = STATE_GRIQUALAND_WEST }
+		any_country = {
+			is_country_alive = yes
+			is_direct_subject_of = c:CAP
+			OR = {
+				is_subject_type = subject_type_puppet
+				is_subject_type = subject_type_vassal
+			}
+			owns_entire_state_region = STATE_GRIQUALAND_WEST
+		}
 	}
 }
 
@@ -125,20 +171,47 @@ sb_bechuanaland_cap_liberal_botswana_route = {
 	sb_cap_has_liberal_franchise_route = yes
 }
 
-sb_bechuanaland_sgo_or_wbl_in_boer_sphere = {
+sb_bechuanaland_boer_sphere_controls_dual_corridor = {
 	OR = {
-		c:SGO ?= {
-			is_country_alive = yes
+		AND = {
+			c:TRN ?= { is_country_alive = yes }
 			OR = {
-				is_subject_of = c:ORA
-				is_subject_of = c:TRN
+				c:TRN ?= { owns_entire_state_region = STATE_GRIQUALAND_WEST }
+				c:WBL ?= {
+					is_country_alive = yes
+					is_subject_of = c:TRN
+					owns_entire_state_region = STATE_GRIQUALAND_WEST
+				}
+			}
+			OR = {
+				c:TRN ?= { owns_entire_state_region = STATE_BECHUANALAND }
+				c:SGO ?= {
+					is_country_alive = yes
+					is_subject_of = c:TRN
+					owns_entire_state_region = STATE_BECHUANALAND
+				}
 			}
 		}
-		c:WBL ?= {
-			is_country_alive = yes
+		AND = {
+			c:ORA ?= {
+				is_country_alive = yes
+				is_subject = no
+			}
 			OR = {
-				is_subject_of = c:ORA
-				is_subject_of = c:TRN
+				c:ORA ?= { owns_entire_state_region = STATE_GRIQUALAND_WEST }
+				c:WBL ?= {
+					is_country_alive = yes
+					is_subject_of = c:ORA
+					owns_entire_state_region = STATE_GRIQUALAND_WEST
+				}
+			}
+			OR = {
+				c:ORA ?= { owns_entire_state_region = STATE_BECHUANALAND }
+				c:SGO ?= {
+					is_country_alive = yes
+					is_subject_of = c:ORA
+					owns_entire_state_region = STATE_BECHUANALAND
+				}
 			}
 		}
 	}
@@ -158,10 +231,12 @@ sb_bechuanaland_corridor_can_open = {
 	NOT = { has_global_variable = sb_bechuanaland_corridor_resolved_global_var }
 	c:SWA ?= { is_country_alive = yes }
 	any_country = { sb_bechuanaland_swa_overlord_candidate = yes }
+	sb_cap_has_northern_cape_foothold = yes
 	c:CAP ?= {
 		is_country_alive = yes
 		is_subject_of = c:GBR
 	}
+	any_country = { sb_bechuanaland_boer_actor = yes }
 	OR = {
 		has_global_variable = sb_kimberley_boer_victory_global_var
 		c:TRN ?= { sb_bechuanaland_trn_is_sar_like = yes }

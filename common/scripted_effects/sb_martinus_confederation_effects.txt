@@ -12,11 +12,31 @@
 			template = TRN_marthinus_wessel_pretorius
 		}
 	}
+	random_scope_character = {
+		limit = {
+			has_template = TRN_marthinus_wessel_pretorius
+			is_character_alive = yes
+		}
+		set_interest_group = c:TRN.ig:ig_landowners
+	}
+}
+
+# A Presidential Union lasts only for the incumbent who held office when that
+# autonomy level began.
+sb_martinus_record_presidential_union_president = {
+	if = {
+		limit = { exists = ruler }
+		set_variable = {
+			name = sb_martinus_presidential_union_president_var
+			value = ruler
+		}
+	}
 }
 
 sb_martinus_create_presidential_union_with_ora = {
 	set_variable = sb_martinus_ambition_resolved_var
 	set_variable = sb_martinus_presidential_union_active_var
+	sb_martinus_record_presidential_union_president = yes
 	if = {
 		limit = { has_variable = sb_martinus_coercive_chain_active_var }
 		remove_variable = sb_martinus_coercive_chain_active_var
@@ -46,6 +66,51 @@ sb_martinus_create_presidential_union_with_ora = {
 		change_relations = {
 			country = c:TRN
 			value = 30
+		}
+	}
+}
+
+sb_martinus_record_natalia_presidential_union_president = {
+	if = {
+		limit = { exists = ruler }
+		set_variable = {
+			name = sb_martinus_natalia_presidential_union_president_var
+			value = ruler
+		}
+	}
+}
+
+sb_martinus_create_presidential_union_with_natalia = {
+	if = {
+		limit = {
+			c:NAL ?= {
+				is_country_alive = yes
+				is_subject = no
+				country_has_primary_culture = cu:boer
+				has_variable = sb_martinus_natalia_union_pending_var
+			}
+		}
+		create_diplomatic_pact = {
+			country = c:NAL
+			type = sb_boer_presidential_union
+		}
+	}
+	if = {
+		limit = {
+			c:NAL ?= {
+				is_country_alive = yes
+				is_direct_subject_of = root
+				is_subject_type = subject_type_sb_boer_presidential_union
+			}
+		}
+		set_variable = sb_martinus_natalia_presidential_union_active_var
+		sb_martinus_record_natalia_presidential_union_president = yes
+		c:NAL ?= {
+			set_variable = sb_martinus_natalia_presidential_union_junior_var
+			if = {
+				limit = { has_variable = sb_martinus_natalia_union_pending_var }
+				remove_variable = sb_martinus_natalia_union_pending_var
+			}
 		}
 	}
 }
@@ -202,6 +267,15 @@ sb_martinus_break_boer_war_path_compacts = {
 		}
 		sb_martinus_withdraw_trn_compact_with_zpb = yes
 	}
+	if = {
+		limit = {
+			c:NAL ?= {
+				is_country_alive = yes
+				has_variable = sb_martinus_backed_ora_var
+			}
+		}
+		sb_martinus_withdraw_trn_compact_with_nal = yes
+	}
 }
 
 sb_martinus_force_pretorius_standoff = {
@@ -250,6 +324,22 @@ sb_martinus_force_pretorius_standoff = {
 				is_diplomatic_play_type = dp_sb_martinus_humiliation
 			}
 			add_target_backers = { c:ZPB }
+		}
+	}
+	if = {
+		limit = {
+			c:NAL ?= {
+				is_country_alive = yes
+				has_variable = sb_martinus_backed_ora_var
+			}
+		}
+		random_diplomatic_play = {
+			limit = {
+				initiator = root
+				target = c:ORA
+				is_diplomatic_play_type = dp_sb_martinus_humiliation
+			}
+			add_target_backers = { c:NAL }
 		}
 	}
 }
@@ -311,6 +401,25 @@ sb_martinus_withdraw_trn_compact_with_zpb = {
 	}
 }
 
+sb_martinus_withdraw_trn_compact_with_nal = {
+	c:NAL ?= {
+		every_scope_treaty = {
+			limit = {
+				binds = c:TRN
+				any_scope_article = {
+					OR = {
+						has_type = defensive_pact
+						has_type = alliance
+						has_type = transit_rights
+						has_type = trade_privilege
+					}
+				}
+			}
+			withdraw = { country = c:NAL }
+		}
+	}
+}
+
 sb_martinus_break_presidential_union_with_ora = {
 	if = {
 		limit = {
@@ -328,10 +437,43 @@ sb_martinus_break_presidential_union_with_ora = {
 		limit = { has_variable = sb_martinus_presidential_union_active_var }
 		remove_variable = sb_martinus_presidential_union_active_var
 	}
+	if = {
+		limit = { has_variable = sb_martinus_presidential_union_president_var }
+		remove_variable = sb_martinus_presidential_union_president_var
+	}
 	c:ORA ?= {
 		if = {
 			limit = { has_variable = sb_martinus_presidential_union_junior_var }
 			remove_variable = sb_martinus_presidential_union_junior_var
+		}
+	}
+}
+
+sb_martinus_break_presidential_union_with_natalia = {
+	if = {
+		limit = {
+			c:NAL ?= {
+				is_country_alive = yes
+				is_direct_subject_of = root
+				is_subject_type = subject_type_sb_boer_presidential_union
+			}
+		}
+		c:NAL ?= {
+			make_independent = yes
+		}
+	}
+	if = {
+		limit = { has_variable = sb_martinus_natalia_presidential_union_active_var }
+		remove_variable = sb_martinus_natalia_presidential_union_active_var
+	}
+	if = {
+		limit = { has_variable = sb_martinus_natalia_presidential_union_president_var }
+		remove_variable = sb_martinus_natalia_presidential_union_president_var
+	}
+	c:NAL ?= {
+		if = {
+			limit = { has_variable = sb_martinus_natalia_presidential_union_junior_var }
+			remove_variable = sb_martinus_natalia_presidential_union_junior_var
 		}
 	}
 }
@@ -341,6 +483,10 @@ sb_martinus_create_confederation_with_ora = {
 	if = {
 		limit = { has_variable = sb_martinus_presidential_union_active_var }
 		remove_variable = sb_martinus_presidential_union_active_var
+	}
+	if = {
+		limit = { has_variable = sb_martinus_presidential_union_president_var }
+		remove_variable = sb_martinus_presidential_union_president_var
 	}
 	c:ORA ?= {
 		if = {
@@ -357,13 +503,13 @@ sb_martinus_create_confederation_with_ora = {
 			remove_variable = sb_martinus_presidential_union_junior_var
 		}
 	}
-	sb_martinus_sync_ora_laws_to_trn = yes
+	sb_martinus_restore_confederal_relationship = yes
 	c:GBR ?= {
 		if = {
 			limit = {
 				sb_martinus_gbr_can_respond_to_confederation = yes
 			}
-			trigger_event = { id = sb_martinus_confederation.110 days = 14 popup = yes }
+			trigger_event = { id = sb_martinus_confederation.110 days = sb_travel_london_southern_africa_message_days popup = yes }
 		}
 	}
 }
@@ -380,6 +526,10 @@ sb_martinus_revert_confederation_to_presidential_union = {
 		c:ORA ?= {
 			change_subject_type = subject_type_sb_boer_presidential_union
 			if = {
+				limit = { has_variable = sb_martinus_confederal_relationship_v3_var }
+				remove_variable = sb_martinus_confederal_relationship_v3_var
+			}
+			if = {
 				limit = { has_variable = sb_martinus_confederal_partner_var }
 				remove_variable = sb_martinus_confederal_partner_var
 			}
@@ -391,6 +541,7 @@ sb_martinus_revert_confederation_to_presidential_union = {
 		remove_variable = sb_martinus_confederation_active_var
 	}
 	set_variable = sb_martinus_presidential_union_active_var
+	sb_martinus_record_presidential_union_president = yes
 }
 
 sb_martinus_break_confederation_with_ora = {
@@ -414,7 +565,15 @@ sb_martinus_break_confederation_with_ora = {
 		limit = { has_variable = sb_martinus_presidential_union_active_var }
 		remove_variable = sb_martinus_presidential_union_active_var
 	}
+	if = {
+		limit = { has_variable = sb_martinus_presidential_union_president_var }
+		remove_variable = sb_martinus_presidential_union_president_var
+	}
 	c:ORA ?= {
+		if = {
+			limit = { has_variable = sb_martinus_confederal_relationship_v3_var }
+			remove_variable = sb_martinus_confederal_relationship_v3_var
+		}
 		if = {
 			limit = { has_variable = sb_martinus_confederal_partner_var }
 			remove_variable = sb_martinus_confederal_partner_var
@@ -422,6 +581,186 @@ sb_martinus_break_confederation_with_ora = {
 		if = {
 			limit = { has_variable = sb_martinus_presidential_union_junior_var }
 			remove_variable = sb_martinus_presidential_union_junior_var
+		}
+	}
+}
+
+# Shared-ruler subject pacts are retired by the engine when the senior ruler
+# changes. Recreate only the marked confederal relationship after that election.
+sb_martinus_restore_confederal_relationship = {
+	if = {
+		limit = {
+			country_definition = cd:TRN
+			has_variable = sb_martinus_confederation_active_var
+			has_law_or_variant = law_type:law_presidential_republic
+			c:ORA ?= {
+				is_country_alive = yes
+				has_variable = sb_martinus_confederal_partner_var
+				OR = {
+					is_subject = no
+					AND = {
+						is_direct_subject_of = c:TRN
+						is_subject_type = subject_type_sb_boer_confederal_partner
+					}
+				}
+			}
+		}
+		if = {
+			limit = { c:ORA ?= { is_subject = no } }
+			end_truce = c:ORA
+			create_diplomatic_pact = {
+				country = c:ORA
+				type = sb_boer_confederal_partner
+			}
+		}
+		if = {
+			limit = {
+				c:ORA ?= {
+					is_direct_subject_of = root
+					is_subject_type = subject_type_sb_boer_confederal_partner
+				}
+			}
+			c:ORA ?= { set_variable = sb_martinus_confederal_relationship_v3_var }
+			sb_martinus_sync_ora_laws_to_trn = yes
+		}
+	}
+}
+
+# Generic autonomy actions change subject type without running the Martinus
+# effects, so keep the union lifecycle variables aligned with the actual pact.
+sb_martinus_reconcile_ora_union_status = {
+	# One-time compatibility repair for saves made after the engine retired the
+	# pact at a TRN election but before the joint-election handoff was added.
+	if = {
+		limit = {
+			country_definition = cd:TRN
+			has_variable = sb_martinus_confederation_active_var
+			has_law_or_variant = law_type:law_presidential_republic
+			c:ORA ?= {
+				is_country_alive = yes
+				has_variable = sb_martinus_confederal_partner_var
+				NOT = { has_variable = sb_martinus_confederal_relationship_v3_var }
+			}
+		}
+		sb_martinus_restore_confederal_relationship = yes
+	}
+
+	if = {
+		limit = {
+			country_definition = cd:TRN
+			c:ORA ?= {
+				is_country_alive = yes
+				is_direct_subject_of = root
+				is_subject_type = subject_type_sb_boer_confederal_partner
+			}
+		}
+		if = {
+			limit = { NOT = { has_variable = sb_martinus_confederation_active_var } }
+			set_variable = sb_martinus_confederation_active_var
+		}
+		if = {
+			limit = { has_variable = sb_martinus_presidential_union_active_var }
+			remove_variable = sb_martinus_presidential_union_active_var
+		}
+		if = {
+			limit = { has_variable = sb_martinus_presidential_union_president_var }
+			remove_variable = sb_martinus_presidential_union_president_var
+		}
+		c:ORA ?= {
+			if = {
+				limit = { NOT = { has_variable = sb_martinus_confederal_partner_var } }
+				set_variable = sb_martinus_confederal_partner_var
+			}
+			if = {
+				limit = { has_variable = sb_martinus_presidential_union_junior_var }
+				remove_variable = sb_martinus_presidential_union_junior_var
+			}
+			if = {
+				limit = { NOT = { has_variable = sb_martinus_confederal_relationship_v3_var } }
+				set_variable = sb_martinus_confederal_relationship_v3_var
+			}
+		}
+	}
+	else_if = {
+		limit = {
+			country_definition = cd:TRN
+			c:ORA ?= {
+				is_country_alive = yes
+				is_direct_subject_of = root
+				is_subject_type = subject_type_sb_boer_presidential_union
+			}
+		}
+		if = {
+			limit = { NOT = { has_variable = sb_martinus_presidential_union_active_var } }
+			set_variable = sb_martinus_presidential_union_active_var
+		}
+		if = {
+			limit = { has_variable = sb_martinus_confederation_active_var }
+			remove_variable = sb_martinus_confederation_active_var
+		}
+		c:ORA ?= {
+			if = {
+				limit = { has_variable = sb_martinus_confederal_relationship_v3_var }
+				remove_variable = sb_martinus_confederal_relationship_v3_var
+			}
+			if = {
+				limit = { NOT = { has_variable = sb_martinus_presidential_union_junior_var } }
+				set_variable = sb_martinus_presidential_union_junior_var
+			}
+			if = {
+				limit = { has_variable = sb_martinus_confederal_partner_var }
+				remove_variable = sb_martinus_confederal_partner_var
+			}
+		}
+		if = {
+			limit = { NOT = { has_variable = sb_martinus_presidential_union_president_var } }
+			sb_martinus_record_presidential_union_president = yes
+		}
+	}
+}
+
+# Natalia can enter the same presidential arrangement without sharing ORA's
+# autonomy path. Track it separately so an ORA confederal upgrade neither
+# strands Natalia nor makes a durable confederal partner election-dependent.
+sb_martinus_reconcile_natalia_union_status = {
+	if = {
+		limit = {
+			country_definition = cd:TRN
+			c:NAL ?= {
+				is_country_alive = yes
+				is_direct_subject_of = root
+				is_subject_type = subject_type_sb_boer_presidential_union
+			}
+		}
+		if = {
+			limit = { NOT = { has_variable = sb_martinus_natalia_presidential_union_active_var } }
+			set_variable = sb_martinus_natalia_presidential_union_active_var
+		}
+		c:NAL ?= {
+			if = {
+				limit = { NOT = { has_variable = sb_martinus_natalia_presidential_union_junior_var } }
+				set_variable = sb_martinus_natalia_presidential_union_junior_var
+			}
+		}
+		if = {
+			limit = { NOT = { has_variable = sb_martinus_natalia_presidential_union_president_var } }
+			sb_martinus_record_natalia_presidential_union_president = yes
+		}
+	}
+	else = {
+		if = {
+			limit = { has_variable = sb_martinus_natalia_presidential_union_active_var }
+			remove_variable = sb_martinus_natalia_presidential_union_active_var
+		}
+		if = {
+			limit = { has_variable = sb_martinus_natalia_presidential_union_president_var }
+			remove_variable = sb_martinus_natalia_presidential_union_president_var
+		}
+		c:NAL ?= {
+			if = {
+				limit = { has_variable = sb_martinus_natalia_presidential_union_junior_var }
+				remove_variable = sb_martinus_natalia_presidential_union_junior_var
+			}
 		}
 	}
 }

@@ -24,11 +24,13 @@
 #   - Settler balance <= -90 + frontier pacified --> Settler victory
 #   - Balance remains centered + Cultural Exclusion + frontier pacified
 #       --> Pragmatic compromise
+#   - Cape Liberal Movement begins a revolution --> Settler victory
 # OUTCOME EVENTS:
-#   - sb_cape.100 Liberal victory: Griqua accepted + migration reward
+#   - sb_cape.100 Liberal victory: Cape Creole accepted + migration reward
 #   - sb_cape.101 Settler victory: Boer accepted + colony growth reward
 #   - sb_cape.102 Balanced compromise: citizenship amendment + modest frontier boost
 #   - sb_cape.103 Eastern Cape Secession: CAP's constitutional crisis breaks open
+#   - sb_cape.125 Liberal revolution: constitutional liberalism collapses
 #   - sb_cape.200 Britain answers the Albany petition immediately
 #   - sb_cape.201/.202 CAP receives London's answer
 #   - sb_cape.100 Liberal aftermath: the JE only closes once London's answer has landed
@@ -122,6 +124,10 @@ je_sb_cape_politics = {
 
 	complete = {
 		OR = {
+			custom_tooltip = {
+				text = je_sb_cape_politics_complete_liberal_revolution
+				has_variable = sb_cape_liberal_revolution_settler_outcome_var
+			}
 			AND = {
 				custom_tooltip = {
 					text = je_sb_cape_politics_complete_liberal
@@ -188,17 +194,20 @@ je_sb_cape_politics = {
 				s:STATE_EASTERN_CAPE = {
 					add_homeland = cu:anglo_african
 				}
-					s:STATE_CAPE_COLONY = {
-						add_homeland = cu:anglo_african
-					}
-					s:STATE_NORTHERN_CAPE = {
-						add_homeland = cu:anglo_african
-					}
-					s:STATE_GRIQUALAND_WEST = {
-						add_homeland = cu:anglo_african
-					}
-					}
-				if = {
+				s:STATE_CAPE_COLONY = {
+					add_homeland = cu:anglo_african
+				}
+				s:STATE_NORTHERN_CAPE = {
+					add_homeland = cu:anglo_african
+				}
+			}
+			if = {
+				limit = {
+					has_variable = sb_cape_liberal_revolution_settler_outcome_var
+				}
+				trigger_event = { id = sb_cape.125 popup = yes }
+			}
+			else_if = {
 				limit = {
 					OR = {
 						has_variable = sb_albany_sanctioned_var

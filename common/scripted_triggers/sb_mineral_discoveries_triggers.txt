@@ -19,6 +19,16 @@ sb_is_griqualand_west_public_host_country = {
 	}
 }
 
+sb_cap_has_northern_cape_foothold = {
+	c:CAP ?= {
+		is_country_alive = yes
+		any_scope_state = {
+			state_region = s:STATE_NORTHERN_CAPE
+			num_provinces >= 1
+		}
+	}
+}
+
 sb_can_discover_kimberley_diamonds = {
 	NOT = { has_global_variable = sb_kimberley_discovered_global_var }
 	NOT = { has_global_variable = sb_kimberley_discovery_pending_var }
@@ -32,6 +42,11 @@ sb_can_discover_kimberley_diamonds = {
 		}
 		c:ORA ?= {
 			is_country_alive = yes
+			has_technology_researched = dynamite
+		}
+		c:TRN ?= {
+			is_country_alive = yes
+			has_variable = sb_oranje_federated_into_trn_var
 			has_technology_researched = dynamite
 		}
 	}
@@ -53,9 +68,9 @@ sb_cap_has_liberal_franchise_route = {
 	}
 }
 
-sb_cap_is_full_liberal_griqua_route = {
+sb_cap_is_full_liberal_cape_creole_route = {
 	OR = {
-		country_has_primary_culture = cu:griqua
+		country_has_primary_culture = cu:cape_creole
 		active_law:lawgroup_citizenship ?= {
 			has_amendment = amendment_type:amendment_sb_cape_qualified_franchise
 		}
@@ -121,14 +136,14 @@ sb_cap_can_form_gle = {
 		active_law:lawgroup_citizenship ?= {
 			has_amendment = amendment_type:amendment_sb_cape_qualified_franchise
 		}
-		country_has_primary_culture = cu:griqua
+		country_has_primary_culture = cu:cape_creole
 	}
 }
 
 sb_cap_can_integrate_gle = {
 	country_definition = cd:CAP
 	is_country_alive = yes
-	sb_cap_is_full_liberal_griqua_route = yes
+	sb_cap_is_full_liberal_cape_creole_route = yes
 	NOT = {
 		c:XHO ?= {
 			any_scope_state = {

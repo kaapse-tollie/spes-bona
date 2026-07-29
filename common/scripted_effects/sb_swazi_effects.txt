@@ -27,6 +27,22 @@ sb_swazi_raise_defensive_muster = {
 	}
 }
 
+sb_zulu_face_swazi_defensive_muster = {
+	if = {
+		limit = {
+			c:SWZ ?= {
+				is_country_alive = yes
+				NOT = { has_variable = sb_swazi_defensive_muster_var }
+			}
+		}
+		add_modifier = {
+			name = sb_zulu_swazi_frontier_disarray
+			months = 12
+		}
+		c:SWZ ?= { sb_swazi_raise_defensive_muster = yes }
+	}
+}
+
 sb_swazi_raise_defensive_muster_vs_player = {
 	if = {
 		limit = {
@@ -148,9 +164,11 @@ sb_trn_apply_swazi_reject_posture = {
 		limit = {
 			c:SWZ ?= { is_country_alive = yes }
 		}
-		change_relations = {
-			country = c:SWZ
-			value = -100
+		hidden_effect = {
+			change_relations = {
+				country = c:SWZ
+				value = -100
+			}
 		}
 	}
 	if = {

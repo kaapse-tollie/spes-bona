@@ -31,13 +31,6 @@ sb_frontier_ai_wars.010 = {
 	# }
 
 	immediate = {
-		if = {
-			limit = { is_ai = yes }
-			add_modifier = {
-				name = sb_ora_scripted_return_war_supplies
-				months = 12
-			}
-		}
 		add_modifier = {
 			name = sb_laager_defence
 			months = 12
@@ -525,6 +518,8 @@ sb_frontier_ai_wars.100 = {
 							state_region = s:STATE_EASTERN_CAPE
 							num_provinces >= 1
 						}
+					NOT = { has_truce_with = c:CAP }
+					NOT = { has_truce_with = c:GBR }
 					NOT = { sb_xho_owns_all_thembu_frontier_provinces = yes }
 					OR = {
 						c:ABY ?= {
@@ -607,6 +602,8 @@ sb_frontier_ai_wars.110 = {
 							state_region = s:STATE_EASTERN_CAPE
 							num_provinces >= 1
 						}
+					NOT = { has_truce_with = c:CAP }
+					NOT = { has_truce_with = c:GBR }
 					NOT = { sb_xho_owns_all_rharhabe_frontier_provinces = yes }
 					OR = {
 						c:ABY ?= {
@@ -691,6 +688,8 @@ sb_frontier_ai_wars.120 = {
 							state_region = s:STATE_EASTERN_CAPE
 							num_provinces >= 1
 						}
+					NOT = { has_truce_with = c:CAP }
+					NOT = { has_truce_with = c:GBR }
 					NOT = { sb_xho_owns_all_gcaleka_frontier_provinces = yes }
 					OR = {
 						c:ABY ?= {
@@ -807,6 +806,50 @@ sb_frontier_ai_wars.130 = {
 			name = sb_cape_cattle_killing_colonial_opening
 			months = 18
 			is_decaying = yes
+		}
+		je:je_sb_cape_politics ?= {
+			add_progress = {
+				value = -10
+				name = sb_cape_balance_bar
+			}
+		}
+	}
+
+	option = {
+		name = sb_frontier_ai_wars.130.b
+
+		change_tension = {
+			country = c:XHO
+			value = -20
+		}
+		c:XHO ?= {
+			every_scope_state = {
+				limit = {
+					state_region = s:STATE_EASTERN_CAPE
+					num_provinces >= 1
+				}
+				add_modifier = {
+					name = sb_xhosa_cattle_killing_relief
+					months = 18
+					is_decaying = yes
+				}
+			}
+		}
+		add_modifier = {
+			name = sb_cape_xhosa_relief_aid
+			months = 18
+		}
+		ig:ig_devout ?= {
+			add_modifier = {
+				name = sb_cape_missionary_relief_approval
+				months = 60
+			}
+		}
+		je:je_sb_cape_politics ?= {
+			add_progress = {
+				value = 10
+				name = sb_cape_balance_bar
+			}
 		}
 	}
 }

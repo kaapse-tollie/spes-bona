@@ -215,6 +215,22 @@ sb_boer_confederal_partner = {
 		}
 
 		manual_break_effect = {
+			if = {
+				limit = {
+					has_variable = sb_martinus_confederation_active_var
+					scope:target_country ?= {
+						has_variable = sb_martinus_confederal_partner_var
+					}
+				}
+				remove_variable = sb_martinus_confederation_active_var
+				scope:target_country ?= {
+					remove_variable = sb_martinus_confederal_partner_var
+					if = {
+						limit = { has_variable = sb_martinus_confederal_relationship_v3_var }
+						remove_variable = sb_martinus_confederal_relationship_v3_var
+					}
+				}
+			}
 			create_bidirectional_truce = { country = scope:target_country months = 60 }
 		}
 

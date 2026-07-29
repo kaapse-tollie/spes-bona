@@ -41,3 +41,87 @@ je_sb_griqualand_west_question = {
 	should_be_pinned_by_default_uninvolved_or_context = yes
 	transferable = no
 }
+
+je_sb_griqualand_west_migrant_labour = {
+	group = je_group_historical_content
+
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+
+	possible = {
+		has_global_variable = sb_kimberley_remaining_potential_seeded_var
+		p:x68B5E8.state.owner = root
+		s:STATE_GRIQUALAND_WEST = {
+			OR = {
+				NOT = { is_homeland = cu:anglo_african }
+				NOT = { is_homeland = cu:boer }
+			}
+		}
+	}
+
+	status_desc = {
+		desc = je_sb_griqualand_west_migrant_labour_status
+	}
+
+	on_monthly_pulse = {
+		effect = {
+			if = {
+				limit = {
+					s:STATE_GRIQUALAND_WEST = {
+						NOT = { is_homeland = cu:anglo_african }
+					}
+					p:x68B5E8.state = {
+						culture_percent_state = {
+							target = cu:anglo_african
+							value >= 0.10
+						}
+					}
+				}
+				s:STATE_GRIQUALAND_WEST = {
+					add_homeland = cu:anglo_african
+				}
+			}
+			if = {
+				limit = {
+					s:STATE_GRIQUALAND_WEST = {
+						NOT = { is_homeland = cu:boer }
+					}
+					p:x68B5E8.state = {
+						culture_percent_state = {
+							target = cu:boer
+							value >= 0.10
+						}
+					}
+				}
+				s:STATE_GRIQUALAND_WEST = {
+					add_homeland = cu:boer
+				}
+			}
+		}
+	}
+
+	complete = {
+		OR = {
+			custom_tooltip = {
+				text = je_sb_griqualand_west_migrant_labour_anglo_african_complete_tt
+				s:STATE_GRIQUALAND_WEST = {
+					is_homeland = cu:anglo_african
+				}
+			}
+			custom_tooltip = {
+				text = je_sb_griqualand_west_migrant_labour_boer_complete_tt
+				s:STATE_GRIQUALAND_WEST = {
+					is_homeland = cu:boer
+				}
+			}
+		}
+	}
+
+	invalid = {
+		NOT = { p:x68B5E8.state.owner = root }
+	}
+
+	weight = 900
+	should_be_pinned_by_default_uninvolved_or_context = yes
+	transferable = no
+	can_revolution_inherit = no
+}

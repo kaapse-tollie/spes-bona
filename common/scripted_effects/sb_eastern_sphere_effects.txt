@@ -370,16 +370,52 @@ sb_mozambique_create_and_transfer_to_mzq = {
 }
 
 sb_mozambique_apply_company_package = {
+	if = {
+		limit = {
+			NOT = { has_company = company_type:company_mozambique_company }
+		}
+		set_variable = sb_mozambique_company_scripted_establishment_var
+		add_company = company_type:company_mozambique_company
+		company:company_mozambique_company ?= {
+			set_company_state_region = s:STATE_ESTREMADURA
+		}
+		remove_variable = sb_mozambique_company_scripted_establishment_var
+	}
 	create_diplomatic_pact = {
 		country = c:MZQ
 		type = chartered_company
 	}
 	c:MZQ ?= {
+		set_country_type = company
 		sb_nam_apply_swa_charter_laws = yes
 		add_modifier = {
 			name = resource_extraction_charter_modifier
 			days = very_long_modifier_time
 		}
+	}
+	company:company_mozambique_company ?= {
+		add_owned_country = c:MZQ
+	}
+	sb_mozambique_update_company_slot = yes
+}
+
+sb_mozambique_update_company_slot = {
+	if = {
+		limit = {
+			sb_has_mozambique_company_subject = yes
+			NOT = { has_modifier = sb_mozambique_company_charter_slot }
+		}
+		add_modifier = {
+			name = sb_mozambique_company_charter_slot
+			months = -1
+		}
+	}
+	else_if = {
+		limit = {
+			has_modifier = sb_mozambique_company_charter_slot
+			NOT = { sb_has_mozambique_company_subject = yes }
+		}
+		remove_modifier = sb_mozambique_company_charter_slot
 	}
 }
 
@@ -535,6 +571,10 @@ sb_delagoa_ai_create_railway = {
 }
 
 sb_delagoa_ai_build_railways_and_por_treaty = {
+	if = {
+		limit = { NOT = { has_technology_researched = railways } }
+		add_technology_researched = railways
+	}
 	s:STATE_TRANSVAAL = {
 		if = {
 			limit = {
@@ -1237,6 +1277,7 @@ sb_unlock_imperial_confederation_scheme = {
 }
 
 sb_eastern_sphere_monthly_housekeeping = {
+	sb_mozambique_update_company_slot = yes
 	if = {
 		limit = { country_definition = cd:GBR }
 			sb_unlock_imperial_confederation_scheme = yes
@@ -1284,6 +1325,7 @@ sb_eastern_sphere_monthly_housekeeping = {
 			is_subject = no
 			sb_portuguese_controls_mozambique_admin_area = yes
 			NOT = { exists = c:MZQ }
+			NOT = { has_variable = sb_mozambique_direct_administration_var }
 		}
 		trigger_event = { id = sb_mozambique_company.010 days = 1 popup = yes }
 	}

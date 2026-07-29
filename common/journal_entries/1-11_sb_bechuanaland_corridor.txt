@@ -38,11 +38,14 @@ je_sb_bechuanaland_corridor = {
 	complete = {
 		custom_tooltip = {
 			text = je_sb_bechuanaland_corridor_british_victory_tt
-			OR = {
-				has_global_variable = sb_bechuanaland_british_victory_global_var
-				AND = {
-					NOT = { has_global_variable = sb_bechuanaland_resolution_grace_global_var }
-					sb_bechuanaland_cap_controls_nw_corridor = yes
+			AND = {
+				sb_bechuanaland_cap_controls_griqualand_west = yes
+				OR = {
+					has_global_variable = sb_bechuanaland_british_victory_global_var
+					AND = {
+						NOT = { has_global_variable = sb_bechuanaland_resolution_grace_global_var }
+						sb_bechuanaland_cap_controls_nw_corridor = yes
+					}
 				}
 			}
 		}
@@ -51,7 +54,9 @@ je_sb_bechuanaland_corridor = {
 	custom_on_completion_header = je_sb_bechuanaland_corridor_british_victory_effects_header
 
 	on_complete = {
-		sb_bechuanaland_apply_british_settlement = yes
+		c:GBR ?= {
+			trigger_event = { id = sb_bechuanaland_corridor.040 popup = yes }
+		}
 	}
 
 	custom_failure_header = je_sb_bechuanaland_corridor_boer_swa_victory_header

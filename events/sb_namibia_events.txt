@@ -839,40 +839,50 @@ sb_nam.020 = {
 			create_country = {
 				tag = RHB
 				origin = root
-				province = p:xEC2F99
+				province = p:xAD1C61
 			}
 		}
-			if = {
-				limit = { exists = c:RHB }
-				s:STATE_NAMAQUALAND = {
-					set_owner_of_provinces = {
-						country = c:RHB
-						provinces = { xEC2F99 x8D6395 x9C401C x21DD01 }
-					}
-					add_homeland = cu:san
-					add_homeland = cu:nama
-					add_homeland = cu:griqua
+		if = {
+			limit = { exists = c:RHB }
+			s:STATE_NAMAQUALAND = {
+				set_owner_of_provinces = {
+					country = c:RHB
+					provinces = { xAD1C61 xEC2F99 x8D6395 x9C401C x21DD01 }
 				}
-				c:RHB = {
-					if = {
-						limit = { NOT = { has_modifier = sb_arid_frontier_pastoralism } }
-						add_modifier = {
-							name = sb_arid_frontier_pastoralism
-							months = -1
-						}
+				add_homeland = cu:san
+				add_homeland = cu:nama
+				add_homeland = cu:baster
+			}
+			c:RHB = {
+				if = {
+					limit = { NOT = { has_modifier = sb_arid_frontier_pastoralism } }
+					add_modifier = {
+						name = sb_arid_frontier_pastoralism
+						months = -1
 					}
 				}
-				root.capital = {
-					every_scope_pop = {
-						limit = {
-						culture = cu:griqua
-					}
+			}
+			root.capital = {
+				ordered_scope_pop = {
+					limit = { culture = cu:cape_creole }
+					order_by = total_size
+					position = 0
+					check_range_bounds = no
 					move_partial_pop = {
-					state = c:RHB.capital
-					population = 2000
+						state = c:RHB.capital
+						population = 2000
+					}
 				}
 			}
-		}
+			c:RHB.capital = {
+				every_scope_pop = {
+					limit = { culture = cu:cape_creole }
+					change_pop_culture = {
+						target = cu:baster
+						value = 1
+					}
+				}
+			}
 		}
 	}
 
@@ -1371,11 +1381,11 @@ sb_nam.151 = {
 	trigger = {
 		is_player = yes
 		NOT = { country_definition = cd:SWA }
-		has_interest_marker_in_region = sr:region_southern_africa
 		NOT = { has_variable = sb_nam_swa_player_switch_offer_var }
 		NOT = { has_global_variable = sb_nam_swa_player_switch_taken_var }
 		c:SWA ?= {
 			is_ai = yes
+			is_subject_of = root
 		}
 	}
 
@@ -1398,6 +1408,7 @@ sb_nam.151 = {
 			NOT = { has_global_variable = sb_nam_swa_player_switch_taken_var }
 			c:SWA ?= {
 				is_ai = yes
+				is_subject_of = root
 			}
 		}
 		custom_tooltip = sb_nam_151_b_tt

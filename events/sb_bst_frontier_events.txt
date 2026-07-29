@@ -260,7 +260,7 @@ sb_bst_frontier.100 = {
 		}
 		random_country = {
 			limit = { sb_bst_oranje_frontier_actor = yes }
-			trigger_event = { id = sb_bst_frontier.110 days = 1 popup = yes }
+			trigger_event = { id = sb_bst_frontier.110 days = sb_travel_london_southern_africa_message_days popup = yes }
 		}
 		ai_chance = {
 			base = 100
@@ -324,6 +324,36 @@ sb_bst_frontier.220 = {
 		create_diplomatic_play = {
 			type = dp_sb_basotho_gun_war
 			target_country = c:BST
+			add_war_goal = {
+				holder = c:BST
+				target_country = root
+				type = increase_autonomy
+				primary_demand = yes
+			}
+		}
+		random_diplomatic_play = {
+			limit = {
+				initiator = root
+				target = c:BST
+				is_diplomatic_play_type = dp_sb_basotho_gun_war
+			}
+			c:BST ?= {
+				sb_bst_apply_gun_war_ai_defence = yes
+			}
+			if = {
+				limit = {
+					c:BST ?= {
+						play_participant_has_war_goal_of_type_against = {
+							type = independence
+							target = c:CAP
+						}
+					}
+				}
+				remove_war_goal = {
+					who = target
+					type = independence
+				}
+			}
 		}
 		ai_chance = {
 			base = 75
@@ -497,29 +527,11 @@ sb_bst_frontier.200 = {
 		}
 	}
 
-	immediate = {
-		c:BST ?= {
-			remove_variable = sb_bst_cap_transfer_pending_var
-		}
-	}
-
 	option = {
 		name = sb_bst_frontier.200.a
 		default_option = yes
-		c:BST ?= {
-			set_variable = sb_bst_cap_transfer_resolved_var
-		}
 		c:CAP ?= {
-			transfer_subject = c:BST
-		}
-		c:BST ?= {
-			if = {
-				limit = {
-					is_subject_of = c:CAP
-					NOT = { is_subject_type = subject_type_puppet }
-				}
-				change_subject_type = subject_type_puppet
-			}
+			trigger_event = { id = sb_bst_frontier.205 days = sb_travel_london_southern_africa_message_days popup = yes }
 		}
 		ai_chance = {
 			base = 100
@@ -532,10 +544,71 @@ sb_bst_frontier.200 = {
 			is_player = yes
 		}
 		c:BST ?= {
+			remove_variable = sb_bst_cap_transfer_pending_var
 			set_variable = sb_bst_cap_transfer_resolved_var
 		}
 		ai_chance = {
 			base = 0
+		}
+	}
+}
+
+sb_bst_frontier.205 = {
+	type = country_event
+	placement = root
+
+	title = sb_bst_frontier.205.t
+	desc = sb_bst_frontier.205.d
+	flavor = sb_bst_frontier.205.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:CAP
+		is_country_alive = yes
+		is_subject_of = c:GBR
+		OR = {
+			is_subject_type = subject_type_dominion
+			is_subject_type = subject_type_sb_dominion
+			is_subject_type = subject_type_sb_responsible_colony
+			is_subject_type = subject_type_sb_responsible_colony_monarchy
+		}
+		sb_cap_controls_bst_frontier = yes
+		c:BST ?= {
+			has_variable = sb_bst_cap_transfer_pending_var
+			is_country_alive = yes
+			is_subject_of = c:GBR
+			is_subject_type = subject_type_protectorate
+		}
+	}
+
+	option = {
+		name = sb_bst_frontier.205.a
+		default_option = yes
+
+		c:BST ?= {
+			remove_variable = sb_bst_cap_transfer_pending_var
+			set_variable = sb_bst_cap_transfer_resolved_var
+		}
+		transfer_subject = c:BST
+		c:BST ?= {
+			if = {
+				limit = {
+					is_subject_of = root
+					NOT = { is_subject_type = subject_type_puppet }
+				}
+				change_subject_type = subject_type_puppet
+			}
+		}
+
+		ai_chance = {
+			base = 100
 		}
 	}
 }

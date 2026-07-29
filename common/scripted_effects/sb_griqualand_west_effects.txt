@@ -10,12 +10,27 @@ sb_griqualand_west_save_country_loc_scopes = {
 			save_scope_as = sb_cap_scope
 		}
 	}
+	c:ORA ?= {
+		if = {
+			limit = {
+				OR = {
+					is_country_alive = yes
+					c:TRN ?= {
+						is_country_alive = yes
+						has_variable = sb_oranje_federated_into_trn_var
+					}
+				}
+			}
+			save_scope_as = sb_oranje_country_scope
+		}
+	}
 
 	if = {
 		limit = {
 			c:TRN ?= {
 				is_country_alive = yes
 				OR = {
+					has_variable = sb_oranje_federated_into_trn_var
 					has_variable = sb_kimberley_oranje_proxy_var
 					has_variable = sb_kimberley_ora_pressed_claim_var
 					c:ORA ?= {
@@ -62,6 +77,139 @@ sb_griqualand_west_save_country_loc_scopes = {
 	}
 }
 
+# Oranje remains the legal claimant when TRN arbitrates the dispute as its
+# senior confederal partner. The TRN cleanup also repairs active old-save arcs.
+sb_griqualand_west_grant_oranje_claim = {
+	if = {
+		limit = { c:ORA ?= { is_country_alive = yes } }
+		c:ORA ?= {
+			if = {
+				limit = { NOT = { has_claim = s:STATE_GRIQUALAND_WEST } }
+				s:STATE_GRIQUALAND_WEST = { add_claim = c:ORA }
+			}
+		}
+		c:TRN ?= {
+			if = {
+				limit = { has_claim = s:STATE_GRIQUALAND_WEST }
+				s:STATE_GRIQUALAND_WEST = { remove_claim = c:TRN }
+			}
+		}
+	}
+	else_if = {
+		limit = {
+			c:TRN ?= {
+				is_country_alive = yes
+				has_variable = sb_oranje_federated_into_trn_var
+			}
+		}
+		c:TRN ?= {
+			if = {
+				limit = { NOT = { has_claim = s:STATE_GRIQUALAND_WEST } }
+				s:STATE_GRIQUALAND_WEST = { add_claim = c:TRN }
+			}
+		}
+	}
+}
+
+# Federation transfers Oranje's unresolved Kimberley standing and any subjects
+# created by its diamond/corridor routes to the surviving Transvaal republic.
+sb_griqualand_west_inherit_oranje_federation = {
+	if = {
+		limit = {
+			country_definition = cd:TRN
+			c:ORA ?= {
+				is_country_alive = yes
+				is_direct_subject_of = root
+				is_subject_type = subject_type_sb_boer_confederal_partner
+			}
+		}
+		set_variable = sb_oranje_federated_into_trn_var
+
+		if = {
+			limit = { c:ORA ?= { has_variable = sb_kimberley_ora_pressed_claim_var } }
+			set_variable = sb_kimberley_ora_pressed_claim_var
+		}
+		if = {
+			limit = {
+				OR = {
+					c:ORA ?= { has_variable = sb_kimberley_ora_claimant_var }
+					AND = {
+						has_global_variable = sb_kimberley_boer_victory_global_var
+						OR = {
+							c:ORA ?= { owns_entire_state_region = STATE_GRIQUALAND_WEST }
+							c:WBL ?= {
+								is_country_alive = yes
+								OR = {
+									is_direct_subject_of = c:ORA
+									is_direct_subject_of = root
+								}
+							}
+						}
+					}
+				}
+			}
+			set_variable = sb_kimberley_trn_claimant_var
+		}
+		if = {
+			limit = { c:ORA ?= { has_claim = s:STATE_GRIQUALAND_WEST } }
+			s:STATE_GRIQUALAND_WEST = { remove_claim = c:ORA }
+			if = {
+				limit = { NOT = { has_claim = s:STATE_GRIQUALAND_WEST } }
+				s:STATE_GRIQUALAND_WEST = { add_claim = c:TRN }
+			}
+		}
+		if = {
+			limit = {
+				has_global_variable = sb_kimberley_discovered_global_var
+				NOT = { has_global_variable = sb_kimberley_remaining_potential_seeded_var }
+			}
+			set_variable = sb_kimberley_oranje_proxy_var
+		}
+
+		if = {
+			limit = {
+				c:WBL ?= {
+					is_country_alive = yes
+					is_direct_subject_of = c:ORA
+				}
+			}
+			transfer_subject = c:WBL
+		}
+		if = {
+			limit = {
+				c:SGO ?= {
+					is_country_alive = yes
+					is_direct_subject_of = c:ORA
+				}
+			}
+			transfer_subject = c:SGO
+		}
+		if = {
+			limit = {
+				has_global_variable = sb_bechuanaland_corridor_open_global_var
+				NOT = { has_journal_entry = je_sb_bechuanaland_corridor }
+			}
+			add_contextless_journal_entry = je_sb_bechuanaland_corridor
+			sb_bechuanaland_sync_influence_bar = yes
+		}
+	}
+}
+
+sb_griqualand_west_remove_oranje_claim = {
+	c:ORA ?= {
+		if = {
+			limit = { has_claim = s:STATE_GRIQUALAND_WEST }
+			s:STATE_GRIQUALAND_WEST = { remove_claim = c:ORA }
+		}
+	}
+	c:TRN ?= {
+		if = {
+			limit = { has_claim = s:STATE_GRIQUALAND_WEST }
+			s:STATE_GRIQUALAND_WEST = { remove_claim = c:TRN }
+		}
+	}
+}
+
 sb_kimberley_create_initial_diamond_mine = {
 	if = {
 		limit = {
@@ -81,26 +229,6 @@ sb_kimberley_create_initial_diamond_mine = {
 	}
 }
 
-sb_kimberley_add_remaining_diamond_mine_levels = {
-	if = {
-		limit = {
-			has_building = building_diamond_mine
-		}
-		remove_building = building_diamond_mine
-	}
-	create_building = {
-		building = building_diamond_mine
-		level = 20
-		reserves = 1
-		activate_production_methods = {
-			"pm_picks_and_shovels_building_gold_mine"
-			"pm_no_explosives"
-			"pm_no_steam_automation"
-			"pm_road_carts"
-		}
-	}
-}
-
 sb_kimberley_discover_diamonds = {
 	if = {
 		limit = { has_global_variable = sb_kimberley_discovery_pending_var }
@@ -110,7 +238,7 @@ sb_kimberley_discover_diamonds = {
 	sb_kimberley_discover_initial_diamond_mines_in_kimberley_state = yes
 	c:CAP ?= {
 		if = {
-			limit = { is_country_alive = yes }
+			limit = { sb_cap_has_northern_cape_foothold = yes }
 			set_variable = sb_griqualand_west_question_active_var
 		}
 	}
@@ -159,18 +287,6 @@ sb_kimberley_seed_remaining_potential = {
 	}
 }
 
-sb_kimberley_discover_remaining_diamond_mines_in_kimberley_state = {
-	if = {
-		limit = {
-			NOT = { has_global_variable = sb_kimberley_remaining_potential_seeded_var }
-		}
-		set_global_variable = sb_kimberley_remaining_potential_seeded_var
-		p:x68B5E8.state = {
-			sb_kimberley_add_remaining_diamond_mine_levels = yes
-		}
-	}
-}
-
 sb_griqualand_west_clear_crisis_vars = {
 	if = {
 		limit = { has_global_variable = sb_kimberley_discovery_pending_var }
@@ -203,6 +319,7 @@ sb_griqualand_west_clear_crisis_vars = {
 		if = { limit = { has_variable = sb_griqualand_west_cap_annexation_demand_var } remove_variable = sb_griqualand_west_cap_annexation_demand_var }
 		if = { limit = { has_variable = sb_griqualand_west_ora_submission_demand_var } remove_variable = sb_griqualand_west_ora_submission_demand_var }
 		if = { limit = { has_variable = sb_griqualand_west_trn_submission_demand_var } remove_variable = sb_griqualand_west_trn_submission_demand_var }
+		if = { limit = { has_variable = sb_griqualand_west_oranje_annexation_demand_var } remove_variable = sb_griqualand_west_oranje_annexation_demand_var }
 		if = { limit = { has_variable = sb_griqualand_west_cap_annexation_war_var } remove_variable = sb_griqualand_west_cap_annexation_war_var }
 		if = { limit = { has_variable = sb_griqualand_west_ora_submission_war_var } remove_variable = sb_griqualand_west_ora_submission_war_var }
 		if = { limit = { has_variable = sb_griqualand_west_refusal_after_rejection_var } remove_variable = sb_griqualand_west_refusal_after_rejection_var }
@@ -219,6 +336,50 @@ sb_griqualand_west_mark_resolved = {
 			limit = { is_country_alive = yes }
 			set_variable = sb_griqualand_west_question_resolved_var
 			if = { limit = { has_variable = sb_griqualand_west_question_active_var } remove_variable = sb_griqualand_west_question_active_var }
+		}
+	}
+	sb_griqualand_west_ensure_migrant_labour_je = yes
+}
+
+sb_griqualand_west_ensure_migrant_labour_je = {
+	if = {
+		limit = {
+			has_global_variable = sb_kimberley_remaining_potential_seeded_var
+			s:STATE_GRIQUALAND_WEST = {
+				OR = {
+					NOT = { is_homeland = cu:anglo_african }
+					NOT = { is_homeland = cu:boer }
+				}
+			}
+		}
+		p:x68B5E8.state.owner = {
+			if = {
+				limit = {
+					is_country_alive = yes
+					NOT = { has_journal_entry = je_sb_griqualand_west_migrant_labour }
+				}
+				add_journal_entry = { type = je_sb_griqualand_west_migrant_labour }
+			}
+		}
+	}
+}
+
+sb_cap_ai_incorporate_griqualand_west = {
+	c:CAP ?= {
+		if = {
+			limit = {
+				is_country_alive = yes
+				is_ai = yes
+				owns_entire_state_region = STATE_GRIQUALAND_WEST
+			}
+			s:STATE_GRIQUALAND_WEST = {
+				region_state:CAP ?= {
+					if = {
+						limit = { is_incorporated = no }
+						set_state_type = incorporated
+					}
+				}
+			}
 		}
 	}
 }
@@ -238,12 +399,16 @@ sb_kimberley_finalize_cap_annexation_route = {
 						}
 						annex = c:WBL
 					}
-				}
 			}
+		}
 	}
-	sb_kimberley_seed_remaining_potential = yes
-	sb_griqualand_west_mark_resolved = yes
-	sb_griqualand_west_clear_crisis_vars = yes
+	hidden_effect = {
+		sb_cap_ai_incorporate_griqualand_west = yes
+		sb_kimberley_seed_remaining_potential = yes
+		sb_griqualand_west_mark_resolved = yes
+		sb_griqualand_west_clear_crisis_vars = yes
+	}
+
 	c:CAP ?= {
 		if = {
 			limit = { is_country_alive = yes }
@@ -290,7 +455,7 @@ sb_kimberley_finalize_ora_puppet_route = {
 			change_subject_type = subject_type_puppet
 		}
 	}
-	sb_kimberley_discover_remaining_diamond_mines_in_kimberley_state = yes
+	sb_kimberley_seed_remaining_potential = yes
 	sb_griqualand_west_mark_resolved = yes
 	sb_griqualand_west_clear_crisis_vars = yes
 	c:WBL ?= {
@@ -339,7 +504,7 @@ sb_kimberley_finalize_trn_puppet_route = {
 			change_subject_type = subject_type_puppet
 		}
 	}
-	sb_kimberley_discover_remaining_diamond_mines_in_kimberley_state = yes
+	sb_kimberley_seed_remaining_potential = yes
 	sb_griqualand_west_mark_resolved = yes
 	sb_griqualand_west_clear_crisis_vars = yes
 	c:WBL ?= {
@@ -352,7 +517,7 @@ sb_kimberley_finalize_trn_puppet_route = {
 
 sb_kimberley_finalize_wbl_diamond_mines_route = {
 	set_global_variable = sb_bechuanaland_corridor_watch_global_var
-	sb_kimberley_discover_remaining_diamond_mines_in_kimberley_state = yes
+	sb_kimberley_seed_remaining_potential = yes
 	sb_griqualand_west_mark_resolved = yes
 	sb_griqualand_west_clear_crisis_vars = yes
 	c:WBL ?= {
@@ -390,7 +555,7 @@ sb_kimberley_finalize_oranje_protectorate_route = {
 			c:ORA ?= { set_variable = sb_kimberley_ora_claimant_var }
 		}
 	}
-	sb_kimberley_discover_remaining_diamond_mines_in_kimberley_state = yes
+	sb_kimberley_seed_remaining_potential = yes
 	sb_griqualand_west_mark_resolved = yes
 	sb_griqualand_west_clear_crisis_vars = yes
 	c:WBL ?= {
@@ -412,7 +577,7 @@ sb_kimberley_finalize_direct_boer_route = {
 		limit = { p:x68B5E8.state.owner = c:ORA }
 		c:ORA ?= { set_variable = sb_kimberley_ora_claimant_var }
 	}
-	sb_kimberley_discover_remaining_diamond_mines_in_kimberley_state = yes
+	sb_kimberley_seed_remaining_potential = yes
 	sb_griqualand_west_mark_resolved = yes
 	sb_griqualand_west_clear_crisis_vars = yes
 	p:x68B5E8.state.owner = {
@@ -477,8 +642,10 @@ sb_griqualand_west_try_finalize_refusal_contest = {
 					any_diplomatic_play = {
 						OR = {
 							is_diplomatic_play_type = dp_sb_griqualand_cap_revoke_claim_locked
+							is_diplomatic_play_type = dp_sb_griqualand_cap_revoke_oranje_proxy_locked
 							is_diplomatic_play_type = dp_sb_griqualand_cap_return_wbl_locked
 							is_diplomatic_play_type = dp_sb_griqualand_oranje_return_wbl_locked
+							is_diplomatic_play_type = dp_sb_griqualand_oranje_return_wbl_proxy_locked
 						}
 					}
 				}
@@ -521,6 +688,7 @@ sb_griqualand_west_prepare_cap_annexation_demand = {
 	sb_griqualand_west_annul_wbl_guarantee = yes
 	c:WBL ?= {
 		if = { limit = { has_variable = sb_griqualand_west_ora_submission_demand_var } remove_variable = sb_griqualand_west_ora_submission_demand_var }
+		if = { limit = { has_variable = sb_griqualand_west_oranje_annexation_demand_var } remove_variable = sb_griqualand_west_oranje_annexation_demand_var }
 		set_variable = sb_griqualand_west_cap_annexation_demand_var
 		trigger_event = { id = sb_griqualand_west.025 days = 7 popup = yes }
 	}
@@ -530,6 +698,7 @@ sb_griqualand_west_prepare_ora_submission_demand = {
 	sb_griqualand_west_annul_wbl_guarantee = yes
 	c:WBL ?= {
 		if = { limit = { has_variable = sb_griqualand_west_cap_annexation_demand_var } remove_variable = sb_griqualand_west_cap_annexation_demand_var }
+		if = { limit = { has_variable = sb_griqualand_west_oranje_annexation_demand_var } remove_variable = sb_griqualand_west_oranje_annexation_demand_var }
 		if = {
 			limit = { root = { country_definition = cd:TRN } }
 			set_variable = sb_griqualand_west_trn_submission_demand_var
@@ -538,6 +707,23 @@ sb_griqualand_west_prepare_ora_submission_demand = {
 			set_variable = sb_griqualand_west_ora_submission_demand_var
 		}
 		trigger_event = { id = sb_griqualand_west.025 days = 7 popup = yes }
+	}
+}
+
+sb_griqualand_west_prepare_oranje_annexation_demand = {
+	sb_griqualand_west_annul_wbl_guarantee = yes
+	c:WBL ?= {
+		if = { limit = { has_variable = sb_griqualand_west_cap_annexation_demand_var } remove_variable = sb_griqualand_west_cap_annexation_demand_var }
+		set_variable = sb_griqualand_west_oranje_annexation_demand_var
+		if = {
+			limit = { root = { country_definition = cd:TRN } }
+			set_variable = sb_griqualand_west_trn_submission_demand_var
+			trigger_event = { id = sb_griqualand_west.025 days = 5 popup = yes }
+		}
+		else = {
+			set_variable = sb_griqualand_west_ora_submission_demand_var
+			trigger_event = { id = sb_griqualand_west.025 days = 2 popup = yes }
+		}
 	}
 }
 
@@ -569,13 +755,61 @@ sb_stellaland_goshen_create_from_boer_colony = {
 				}
 			}
 			sb_bechuanaland_setup_sgo_frontier_republic = yes
-			sb_bechuanaland_move_gauteng_boers_to_sgo = yes
+			sb_bechuanaland_move_cape_boers_to_sgo = yes
 			scope:sb_stellaland_goshen_creator = { sb_bechuanaland_ensure_sgo_protectorate_of_root = yes }
 		}
 	}
 }
 
 sb_griqualand_east_apply_phl_captaincy_setup = {
+	# GLE is created from CAP, so clear Cape laws that PHL does not possess in 1836.
+	every_active_law = {
+		every_scope_amendment = {
+			remove_amendment = yes
+		}
+	}
+	active_law:lawgroup_navy_model ?= {
+		save_temporary_scope_as = sb_gle_inherited_navy_law
+	}
+	active_law:lawgroup_internal_security ?= {
+		save_temporary_scope_as = sb_gle_inherited_internal_security_law
+	}
+	active_law:lawgroup_colonization ?= {
+		save_temporary_scope_as = sb_gle_inherited_colonization_law
+	}
+	active_law:lawgroup_health_system ?= {
+		save_temporary_scope_as = sb_gle_inherited_health_law
+	}
+	active_law:lawgroup_welfare ?= {
+		save_temporary_scope_as = sb_gle_inherited_welfare_law
+	}
+	active_law:lawgroup_labour_associations ?= {
+		save_temporary_scope_as = sb_gle_inherited_labour_associations_law
+	}
+	if = {
+		limit = { exists = scope:sb_gle_inherited_navy_law }
+		deactivate_law = scope:sb_gle_inherited_navy_law.type
+	}
+	if = {
+		limit = { exists = scope:sb_gle_inherited_internal_security_law }
+		deactivate_law = scope:sb_gle_inherited_internal_security_law.type
+	}
+	if = {
+		limit = { exists = scope:sb_gle_inherited_colonization_law }
+		deactivate_law = scope:sb_gle_inherited_colonization_law.type
+	}
+	if = {
+		limit = { exists = scope:sb_gle_inherited_health_law }
+		deactivate_law = scope:sb_gle_inherited_health_law.type
+	}
+	if = {
+		limit = { exists = scope:sb_gle_inherited_welfare_law }
+		deactivate_law = scope:sb_gle_inherited_welfare_law.type
+	}
+	if = {
+		limit = { exists = scope:sb_gle_inherited_labour_associations_law }
+		deactivate_law = scope:sb_gle_inherited_labour_associations_law.type
+	}
 	effect_starting_technology_tier_6_tech = yes
 	effect_starting_politics_traditional = yes
 	add_technology_researched = international_trade
@@ -588,6 +822,8 @@ sb_griqualand_east_apply_phl_captaincy_setup = {
 	activate_law = law_type:law_state_religion
 	activate_law = law_type:law_local_police
 	activate_law = law_type:law_religious_schools
+	activate_law = law_type:law_child_labor_allowed
+	activate_law = law_type:law_no_womens_rights
 	set_institution_investment_level = {
 		institution = institution_schools
 		level = 1
@@ -659,6 +895,7 @@ sb_griqualand_east_create_march_state = {
 
 	c:GLE ?= {
 		set_country_type = unrecognized
+		s:STATE_EASTERN_CAPE = { add_homeland = cu:griqua }
 		sb_griqualand_east_apply_phl_captaincy_setup = yes
 		sb_griqualand_east_install_adam_kok_iii = yes
 		if = {

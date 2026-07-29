@@ -258,6 +258,49 @@ sb_annul_natalia_boer_treaties = {
 	}
 }
 
+sb_mark_natalia_boer_leadership_for_deferred_exile = {
+	random_scope_character = {
+		limit = {
+			has_template = TRN_andries_pretorius
+		}
+		set_variable = sb_klip_river_deferred_exile_var
+	}
+	if = {
+		limit = {
+			NOT = {
+				any_scope_character = {
+					has_variable = sb_klip_river_deferred_exile_var
+				}
+			}
+			exists = ruler
+			ruler = { culture = cu:boer }
+		}
+		ruler = {
+			set_variable = sb_klip_river_deferred_exile_var
+		}
+	}
+	if = {
+		limit = {
+			NOT = {
+				any_scope_character = {
+					has_variable = sb_klip_river_deferred_exile_var
+				}
+			}
+			any_scope_character = {
+				culture = cu:boer
+				is_character_alive = yes
+			}
+		}
+		random_scope_character = {
+			limit = {
+				culture = cu:boer
+				is_character_alive = yes
+			}
+			set_variable = sb_klip_river_deferred_exile_var
+		}
+	}
+}
+
 sb_exile_natalia_boer_leadership = {
 	if = {
 		limit = {
@@ -267,9 +310,23 @@ sb_exile_natalia_boer_leadership = {
 	}
 	random_scope_character = {
 		limit = {
-			has_template = TRN_andries_pretorius
+			has_variable = sb_klip_river_deferred_exile_var
 		}
 		save_scope_as = natal_exiled_leader
+	}
+	if = {
+		limit = {
+			NOT = { exists = scope:natal_exiled_leader }
+			any_scope_character = {
+				has_template = TRN_andries_pretorius
+			}
+		}
+		random_scope_character = {
+			limit = {
+				has_template = TRN_andries_pretorius
+			}
+			save_scope_as = natal_exiled_leader
+		}
 	}
 	if = {
 		limit = {
@@ -292,6 +349,10 @@ sb_exile_natalia_boer_leadership = {
 		}
 		transfer_character = scope:natal_refugee_receiver
 		set_interest_group = scope:natal_refugee_receiver.ig:ig_landowners
+		if = {
+			limit = { has_variable = sb_klip_river_deferred_exile_var }
+			remove_variable = sb_klip_river_deferred_exile_var
+		}
 	}
 }
 
@@ -352,11 +413,16 @@ sb_ensure_british_natal_colony_governor = {
 }
 
 sb_finalize_british_natal_colony = {
-	sb_select_natalia_refugee_receiver = yes
-	sb_exile_natalia_boer_leadership = yes
+	sb_mark_natalia_boer_leadership_for_deferred_exile = yes
 	sb_apply_british_natal_colony_setup = yes
 	sb_annul_natalia_boer_treaties = yes
-	sb_trigger_selected_natal_refugee_receiver_followup = yes
+	if = {
+		limit = { sb_klip_river_county_setup_valid = yes }
+		sb_schedule_klip_river_county_question = yes
+	}
+	else = {
+		sb_klip_river_prepare_standard_boer_flight = yes
+	}
 }
 
 sb_found_natal_colony_after_british_annexation = {
@@ -365,6 +431,9 @@ sb_found_natal_colony_after_british_annexation = {
 	c:NAL ?= {
 		sb_seed_british_natal_colony_shell = yes
 		sb_apply_british_natal_colony_setup = yes
+		# This colony was carved out only after ZUL ceased to exist; it never
+		# inherited the Boer Natalia boundary dispute.
+		set_variable = sb_klip_river_direct_colony_excluded_var
 	}
 }
 
@@ -413,8 +482,8 @@ sb_join_natalia_against_britain = {
 	random_diplomatic_play = {
 		limit = {
 			is_diplomatic_play_type = dp_make_protectorate
-			any_scope_play_involved = { c:GBR ?= THIS }
-			any_scope_play_involved = { c:NAL ?= THIS }
+			initiator = c:GBR
+			target = c:NAL
 			NOT = {
 				any_scope_play_involved = {
 					scope:natalia_supporter ?= THIS
@@ -452,7 +521,7 @@ sb_add_natalia_liberate_cape_goal_if_oranje_supports = {
 		add_war_goal = {
 			holder = c:NAL
 			target_country = c:CAP
-			type = liberate_country
+			type = liberate_subject
 		}
 		c:NAL ?= {
 			set_variable = {
@@ -499,6 +568,15 @@ sb_handle_natalia_player_support_join = {
 # Support Natalia against Britain through the standard Boer compact helper; do
 # not create separate short defensive-pact-only treaties here.
 sb_support_natalia_against_britain = {
+	if = {
+		limit = {
+			country_definition = cd:TRN
+			c:NAL ?= { has_variable = sb_british_natal_ultimatum_var }
+		}
+		c:NAL ?= {
+			set_variable = sb_natalia_trn_backed_ultimatum_var
+		}
+	}
 	sb_ensure_boer_republic_compacts_for_root = yes
 	sb_join_natalia_against_britain = yes
 }

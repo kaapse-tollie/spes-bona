@@ -27,10 +27,8 @@ sb_swazi_border.1 = {
 		country_definition = cd:TRN
 		is_country_alive = yes
 		is_subject = no
-		OR = {
-			has_variable = sb_transvaal_unity_resolved_var
-			sb_trn_frontier_order_ready_for_swazi_border_pressure = yes
-		}
+		has_variable = sb_transvaal_unity_resolved_var
+		NOT = { has_claim = s:STATE_EAST_TRANSVAAL }
 		c:SWZ ?= {
 			is_country_alive = yes
 			is_subject = no
@@ -47,12 +45,8 @@ sb_swazi_border.1 = {
 	option = {
 		name = sb_swazi_border.1.a
 		default_option = yes
-		if = {
-			limit = { has_variable = sb_swazi_border_pressure_pending_var }
-			remove_variable = sb_swazi_border_pressure_pending_var
-		}
 		c:SWZ ?= {
-			trigger_event = { id = sb_swazi_border.2 days = 7 popup = yes }
+			trigger_event = { id = sb_swazi_border.2 days = 5 popup = yes }
 		}
 		ai_chance = {
 			base = 80
@@ -69,10 +63,6 @@ sb_swazi_border.1 = {
 
 	option = {
 		name = sb_swazi_border.1.b
-		if = {
-			limit = { has_variable = sb_swazi_border_pressure_pending_var }
-			remove_variable = sb_swazi_border_pressure_pending_var
-		}
 		c:SWZ ?= {
 			set_variable = sb_swazi_boer_pressure_resolved_var
 			change_relations = {
@@ -118,6 +108,7 @@ sb_swazi_border.2 = {
 		c:TRN ?= {
 			is_country_alive = yes
 			has_variable = sb_transvaal_unity_resolved_var
+			NOT = { has_claim = s:STATE_EAST_TRANSVAAL }
 		}
 		OR = {
 			p:x73CDE8.state.owner = root
@@ -131,7 +122,7 @@ sb_swazi_border.2 = {
 			name = sb_swazi_border.2.a
 			default_option = yes
 			c:TRN ?= {
-				trigger_event = { id = sb_swazi_border.3 days = 7 popup = yes }
+				trigger_event = { id = sb_swazi_border.3 days = 5 popup = yes }
 			}
 		ai_chance = {
 			base = 45
@@ -155,7 +146,7 @@ sb_swazi_border.2 = {
 		option = {
 			name = sb_swazi_border.2.b
 			c:TRN ?= {
-				trigger_event = { id = sb_swazi_border.4 days = 7 popup = yes }
+				trigger_event = { id = sb_swazi_border.4 days = 5 popup = yes }
 			}
 		ai_chance = {
 			base = 55
@@ -197,6 +188,7 @@ sb_swazi_border.3 = {
 		country_definition = cd:TRN
 		is_country_alive = yes
 		has_variable = sb_transvaal_unity_resolved_var
+		NOT = { has_claim = s:STATE_EAST_TRANSVAAL }
 		c:SWZ ?= {
 			is_country_alive = yes
 			is_subject = no
@@ -283,6 +275,7 @@ sb_swazi_border.4 = {
 		country_definition = cd:TRN
 		is_country_alive = yes
 		has_variable = sb_transvaal_unity_resolved_var
+		NOT = { has_claim = s:STATE_EAST_TRANSVAAL }
 		c:SWZ ?= {
 			is_country_alive = yes
 			is_subject = no

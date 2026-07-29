@@ -68,7 +68,10 @@ dp_sb_griqualand_revoke_claim = {
 			country_definition = cd:ORA
 			AND = {
 				country_definition = cd:TRN
-				has_variable = sb_kimberley_oranje_proxy_var
+				OR = {
+					has_variable = sb_kimberley_oranje_proxy_var
+					has_variable = sb_oranje_federated_into_trn_var
+				}
 			}
 		}
 		NOT = { is_country_type = decentralized }
@@ -107,9 +110,92 @@ dp_sb_griqualand_cap_revoke_claim_locked = {
 		has_claim = s:STATE_GRIQUALAND_WEST
 		scope:target_country = {
 			OR = {
-				country_definition = cd:ORA
-				country_definition = cd:TRN
+				AND = {
+					country_definition = cd:ORA
+					has_claim = s:STATE_GRIQUALAND_WEST
+				}
+				AND = {
+					country_definition = cd:TRN
+					has_variable = sb_oranje_federated_into_trn_var
+					has_claim = s:STATE_GRIQUALAND_WEST
+				}
 			}
+		}
+	}
+
+	on_weekly_pulse = {}
+	on_war_begins = {}
+	on_war_end = {}
+}
+
+# ORA's overlord must lead the opposing side, so the primary demand targets
+# TRN while enforcing the revocation of ORA's underlying claim.
+dp_sb_griqualand_cap_revoke_oranje_proxy_locked = {
+	war_goal = sb_revoke_oranje_griqualand_claim
+
+	requires_interest_marker = no
+	blocked_by_diplomatic_status = no
+	add_infamy_for_starting_initiator_wargoals = no
+	initiator_can_add_war_goals = no
+	target_can_add_war_goals = no
+
+	texture = "gfx/interface/icons/war_goals/revoke_claim.dds"
+
+	selectable_in_lens = { always = no }
+
+	possible = {
+		country_definition = cd:CAP
+		has_claim = s:STATE_GRIQUALAND_WEST
+		scope:target_country = { country_definition = cd:TRN }
+		c:ORA ?= {
+			is_country_alive = yes
+			is_direct_subject_of = scope:target_country
+			has_claim = s:STATE_GRIQUALAND_WEST
+		}
+	}
+
+	on_weekly_pulse = {}
+	on_war_begins = {}
+	on_war_end = {}
+}
+
+# The Boer claimant rejected a negotiated Cape settlement and therefore leads
+# the ensuing claim contest. Britain may be added explicitly on Cape's side.
+dp_sb_griqualand_oranje_revoke_cap_claim_locked = {
+	war_goal = revoke_claim
+
+	requires_interest_marker = no
+	blocked_by_diplomatic_status = no
+	add_infamy_for_starting_initiator_wargoals = no
+	initiator_can_add_war_goals = no
+	target_can_add_war_goals = no
+
+	texture = "gfx/interface/icons/war_goals/revoke_claim.dds"
+
+	selectable_in_lens = { always = no }
+
+	possible = {
+		OR = {
+			AND = {
+				country_definition = cd:ORA
+				has_claim = s:STATE_GRIQUALAND_WEST
+			}
+			AND = {
+				country_definition = cd:TRN
+				has_variable = sb_oranje_federated_into_trn_var
+				has_claim = s:STATE_GRIQUALAND_WEST
+			}
+			AND = {
+				country_definition = cd:TRN
+				c:ORA ?= {
+					is_country_alive = yes
+					is_direct_subject_of = ROOT
+					has_claim = s:STATE_GRIQUALAND_WEST
+				}
+			}
+		}
+		scope:target_country = {
+			country_definition = cd:CAP
 			has_claim = s:STATE_GRIQUALAND_WEST
 		}
 	}
@@ -161,15 +247,97 @@ dp_sb_griqualand_oranje_return_wbl_locked = {
 
 	possible = {
 		OR = {
-			country_definition = cd:ORA
+			AND = {
+				country_definition = cd:ORA
+				has_claim = s:STATE_GRIQUALAND_WEST
+			}
 			AND = {
 				country_definition = cd:TRN
-				has_variable = sb_kimberley_oranje_proxy_var
+				OR = {
+					AND = {
+						has_variable = sb_kimberley_oranje_proxy_var
+						c:ORA ?= {
+							is_country_alive = yes
+							is_direct_subject_of = c:TRN
+							has_claim = s:STATE_GRIQUALAND_WEST
+						}
+					}
+					AND = {
+						has_variable = sb_oranje_federated_into_trn_var
+						has_claim = s:STATE_GRIQUALAND_WEST
+					}
+				}
 			}
 		}
-		has_claim = s:STATE_GRIQUALAND_WEST
 		scope:target_country = {
 			country_definition = cd:WBL
+			any_scope_state = { state_region = s:STATE_GRIQUALAND_WEST }
+		}
+	}
+
+	on_weekly_pulse = {}
+	on_war_begins = {}
+	on_war_end = {}
+}
+
+# TRN leads on behalf of a surviving subject Oranje, which retains the claim.
+dp_sb_griqualand_oranje_return_wbl_proxy_locked = {
+	war_goal = sb_return_oranje_griqualand
+
+	requires_interest_marker = no
+	blocked_by_diplomatic_status = no
+	add_infamy_for_starting_initiator_wargoals = no
+	initiator_can_add_war_goals = no
+	target_can_add_war_goals = no
+
+	texture = "gfx/interface/icons/war_goals/return_state.dds"
+
+	selectable_in_lens = { always = no }
+
+	possible = {
+		country_definition = cd:TRN
+		c:ORA ?= {
+			is_country_alive = yes
+			is_direct_subject_of = ROOT
+			has_claim = s:STATE_GRIQUALAND_WEST
+		}
+		scope:target_country = {
+			country_definition = cd:WBL
+			is_subject_of = c:CAP
+			any_scope_state = { state_region = s:STATE_GRIQUALAND_WEST }
+		}
+	}
+
+	on_weekly_pulse = {}
+	on_war_begins = {}
+	on_war_end = {}
+}
+
+# The British hardline corridor route is a closed Cape recovery package.
+# Both Griqualand West and Bechuanaland are settled in the same play.
+dp_sb_bechuanaland_cap_dual_return_locked = {
+	war_goal = return_state
+
+	requires_interest_marker = no
+	blocked_by_diplomatic_status = no
+	add_infamy_for_starting_initiator_wargoals = no
+	initiator_can_add_war_goals = no
+	target_can_add_war_goals = no
+
+	texture = "gfx/interface/icons/war_goals/return_state.dds"
+
+	selectable_in_lens = { always = no }
+
+	possible = {
+		country_definition = cd:CAP
+		has_claim = s:STATE_GRIQUALAND_WEST
+		has_claim = s:STATE_BECHUANALAND
+		scope:target_country = {
+			OR = {
+				country_definition = cd:WBL
+				country_definition = cd:ORA
+				country_definition = cd:TRN
+			}
 			any_scope_state = { state_region = s:STATE_GRIQUALAND_WEST }
 		}
 	}
@@ -252,6 +420,7 @@ dp_sb_anglo_zulu_return_state_locked = {
 
 dp_sb_basotho_gun_war = {
 	requires_interest_marker = no
+	target_can_add_war_goals = no
 
 	war_goal = annex_country
 
@@ -350,5 +519,61 @@ dp_sb_xhosa_war_9 = {
 
 	on_war_begins = {}
 
+	on_war_end = {}
+}
+
+# Event-opened Klip River annexation dispute. ZUL leads the rebellion with an
+# annexation demand; the settlement effect subsequently establishes reduced NAL.
+dp_sb_klip_river_secession = {
+	war_goal = annex_country
+
+	requires_interest_marker = no
+	blocked_by_diplomatic_status = no
+	add_infamy_for_starting_initiator_wargoals = no
+	initiator_can_add_war_goals = yes
+	target_can_add_war_goals = yes
+
+	texture = "gfx/interface/icons/war_goals/annex_country.dds"
+
+	selectable_in_lens = { always = no }
+
+	possible = {
+		country_definition = cd:ZUL
+		has_variable = sb_klip_river_secession_active_var
+		scope:target_country = {
+			country_definition = cd:NAL
+			has_variable = sb_klip_river_secession_active_var
+		}
+	}
+
+	on_weekly_pulse = {}
+	on_war_begins = {}
+	on_war_end = {}
+}
+
+dp_sb_klip_river_punitive_expedition = {
+	war_goal = annex_country
+
+	requires_interest_marker = no
+	blocked_by_diplomatic_status = no
+	add_infamy_for_starting_initiator_wargoals = no
+	initiator_can_add_war_goals = yes
+	target_can_add_war_goals = yes
+
+	texture = "gfx/interface/icons/war_goals/annex_country.dds"
+
+	selectable_in_lens = { always = no }
+
+	possible = {
+		country_definition = cd:NAL
+		has_variable = sb_klip_river_punitive_active_var
+		scope:target_country = {
+			country_definition = cd:ZUL
+			has_variable = sb_klip_river_punitive_active_var
+		}
+	}
+
+	on_weekly_pulse = {}
+	on_war_begins = {}
 	on_war_end = {}
 }

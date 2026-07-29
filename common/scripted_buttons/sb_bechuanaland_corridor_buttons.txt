@@ -17,16 +17,7 @@ je_sb_bechuanaland_sponsor_boer_settlers_button = {
 	}
 
 	ai_chance = {
-		value = 0
-
-		if = {
-			limit = {
-				is_ai = yes
-				country_definition = cd:TRN
-				sb_bechuanaland_can_sponsor_sgo = yes
-			}
-			add = 1000
-		}
+		value = 1000
 	}
 
 	effect = {
@@ -48,13 +39,20 @@ je_sb_bechuanaland_send_warren_expedition_button = {
 			text = je_sb_bechuanaland_send_warren_expedition_possible_tt
 			hidden_trigger = {
 				is_subject_of = c:GBR
+				sb_bechuanaland_cap_has_corridor_foothold = yes
 				exists = c:SGO
 				NOT = { sb_bechuanaland_tsw_owns_nw_corridor_nc_land = yes }
+				NOT = { has_variable = sb_bechuanaland_cap_warren_sent_var }
 			}
 		}
 	}
 
+	ai_chance = {
+		value = 1000
+	}
+
 	effect = {
+		set_variable = sb_bechuanaland_cap_warren_sent_var
 		sb_bechuanaland_prepare_cap_warren_demand = yes
 	}
 }
@@ -66,6 +64,7 @@ je_sb_bechuanaland_gbr_direct_warren_button = {
 	visible = {
 		has_journal_entry = je_sb_bechuanaland_corridor
 		country_definition = cd:GBR
+		has_global_variable = sb_kimberley_boer_victory_global_var
 	}
 
 	possible = {
@@ -73,10 +72,14 @@ je_sb_bechuanaland_gbr_direct_warren_button = {
 			text = je_sb_bechuanaland_gbr_direct_warren_possible_tt
 			hidden_trigger = {
 				has_global_variable = sb_kimberley_boer_victory_global_var
-				sb_bechuanaland_sgo_or_wbl_in_boer_sphere = yes
+				sb_bechuanaland_boer_sphere_controls_dual_corridor = yes
 				c:CAP ?= { is_country_alive = yes }
 			}
 		}
+	}
+
+	ai_chance = {
+		value = 1000
 	}
 
 	effect = {
@@ -97,32 +100,28 @@ je_sb_bechuanaland_demand_caprivi_button = {
 		custom_tooltip = {
 			text = je_sb_bechuanaland_demand_caprivi_possible_tt
 			hidden_trigger = {
+				c:SWA ?= { owns_entire_state_region = STATE_HEREROLAND }
 				sb_bechuanaland_caprivi_not_held_by_swa = yes
 				NOT = { has_variable = sb_bechuanaland_caprivi_demanded_var }
+				OR = {
+					is_player = yes
+					AND = {
+						is_ai = yes
+						sb_frontier_ai_scripting_enabled = yes
+						NOT = { has_variable = sb_bechuanaland_caprivi_ai_delay_var }
+						is_at_war = no
+						in_default = no
+						c:SWA ?= { is_at_war = no }
+						sb_bechuanaland_swa_controls_namibian_core = yes
+						sb_bechuanaland_primary_boer_actor_at_peace = yes
+					}
+				}
 			}
 		}
 	}
 
 	ai_chance = {
-		value = 0
-
-		if = {
-			limit = {
-				is_ai = yes
-				sb_frontier_ai_scripting_enabled = yes
-				sb_bechuanaland_swa_overlord_candidate = yes
-				NOT = { has_variable = sb_bechuanaland_caprivi_ai_delay_var }
-				is_at_war = no
-				in_default = no
-				c:SWA ?= { is_at_war = no }
-				sb_bechuanaland_swa_controls_namibian_core = yes
-				c:TRN ?= {
-					is_country_alive = yes
-					is_at_war = no
-				}
-			}
-			add = 1000
-		}
+		value = 1000
 	}
 
 	effect = {
@@ -151,6 +150,10 @@ je_sb_bechuanaland_send_crisis_support_button = {
 				NOT = { has_variable = sb_bechuanaland_support_cooldown_var }
 			}
 		}
+	}
+
+	ai_chance = {
+		value = 1000
 	}
 
 	effect = {

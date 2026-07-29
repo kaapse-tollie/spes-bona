@@ -93,7 +93,7 @@ sb_on_bst_monthly_pulse_country = {
 			}
 			set_variable = sb_bst_gbr_protection_request_resolved_var
 			c:GBR ?= {
-				trigger_event = { id = sb_bst_frontier.100 popup = yes }
+				trigger_event = { id = sb_bst_frontier.100 days = sb_travel_london_southern_africa_message_days popup = yes }
 			}
 		}
 
@@ -282,6 +282,9 @@ sb_on_bst_war_end = {
 	effect = {
 		if = {
 			limit = {
+				root = {
+					is_diplomatic_play_type = dp_sb_basotho_gun_war
+				}
 				scope:actor ?= {
 					country_definition = cd:CAP
 					has_variable = sb_bst_cap_annexation_crisis_var
@@ -293,11 +296,20 @@ sb_on_bst_war_end = {
 				}
 			}
 			scope:target = {
-				sb_bst_restore_gbr_protectorate = yes
+				if = {
+					limit = { is_subject_type = subject_type_puppet }
+					sb_bst_return_to_gbr_as_puppet = yes
+				}
+				else = {
+					sb_bst_restore_gbr_protectorate = yes
+				}
 			}
 		}
 		if = {
 			limit = {
+				root = {
+					is_diplomatic_play_type = dp_sb_basotho_gun_war
+				}
 				scope:actor ?= {
 					country_definition = cd:BST
 					has_variable = sb_bst_cap_annexation_crisis_var
@@ -309,7 +321,13 @@ sb_on_bst_war_end = {
 				}
 			}
 			scope:actor = {
-				sb_bst_restore_gbr_protectorate = yes
+				if = {
+					limit = { is_subject_type = subject_type_puppet }
+					sb_bst_return_to_gbr_as_puppet = yes
+				}
+				else = {
+					sb_bst_restore_gbr_protectorate = yes
+				}
 			}
 		}
 	}

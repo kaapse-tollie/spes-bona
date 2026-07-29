@@ -4,7 +4,7 @@
 # Spes Bona - Boer Convention Events
 # =============================================================================
 # Ownership: Bloemfontein and Sand River conventions, British anti-slavery response, and TRN-ZPB frontier compact crisis.
-# TOC: 140-141 conventions, 142 British slavery response, 143 crackdown/frontier compact, 145-146 ZPB compact fallout.
+# TOC: 140/161 Sand River, 141 Bloemfontein, 142 British slavery response, 143 crackdown/frontier compact, 145-146 ZPB compact fallout.
 # Cross-ref: common/scripted_effects/sb_treaty_effects.txt, common/journal_entries/1-05_sb_transvaal_unity.txt
 # =============================================================================
 
@@ -27,6 +27,10 @@ sb_boer_conventions.140 = {
 	trigger = {
 		country_definition = cd:TRN
 		has_variable = sb_sand_river_convention_pending_var
+		c:ZPB ?= {
+			is_country_alive = yes
+			is_subject = no
+		}
 		OR = {
 			has_variable = sb_transvaal_unity_resolved_var
 			has_variable = sb_eastern_transvaal_frontier_resolved_var
@@ -42,56 +46,50 @@ sb_boer_conventions.140 = {
 		remove_variable = sb_sand_river_convention_pending_var
 		set_variable = sb_sand_river_convention_resolved_var
 		set_variable = sb_sand_river_convention_accepted_var
-			sb_apply_boer_convention_acceptance = yes
-			ai_chance = {
-				base = 80
-				modifier = {
-					trigger = { sb_boer_convention_nal_is_british_colony = yes }
-					add = 10
-				}
-				modifier = {
-					trigger = { sb_boer_convention_nal_border_pressure = yes }
-					add = -20
-				}
-				modifier = {
-					trigger = { c:GBR ?= { relations:root >= relations_threshold:amicable } }
-					add = 10
-				}
-				modifier = {
-					trigger = { c:GBR ?= { relations:root <= relations_threshold:poor } }
-					add = -10
-				}
-				modifier = {
-					trigger = { c:GBR ?= { relations:root <= relations_threshold:hostile } }
-					add = -10
-				}
-				modifier = {
-					trigger = { sb_boer_convention_kept_frontier_republic = yes }
-					add = -40
-				}
-				modifier = {
-					trigger = { sb_boer_convention_army_stronger_than_cape = yes }
-					add = -10
-				}
-				modifier = {
-					trigger = { sb_boer_convention_gdp_stronger_than_cape = yes }
-					add = -10
-				}
-				modifier = {
-					trigger = { sb_boer_has_non_british_sea_access = yes }
-					add = -20
-				}
+		sb_apply_boer_convention_acceptance = yes
+		ai_chance = {
+			base = 80
+			modifier = {
+				trigger = { sb_boer_convention_nal_is_british_colony = yes }
+				add = 10
+			}
+			modifier = {
+				trigger = { sb_boer_convention_nal_border_pressure = yes }
+				add = -20
+			}
+			modifier = {
+				trigger = { c:GBR ?= { relations:root >= relations_threshold:amicable } }
+				add = 10
+			}
+			modifier = {
+				trigger = { c:GBR ?= { relations:root <= relations_threshold:poor } }
+				add = -10
+			}
+			modifier = {
+				trigger = { c:GBR ?= { relations:root <= relations_threshold:hostile } }
+				add = -10
+			}
+			modifier = {
+				trigger = { sb_boer_convention_kept_frontier_republic = yes }
+				add = -40
+			}
+			modifier = {
+				trigger = { sb_boer_convention_army_stronger_than_cape = yes }
+				add = -10
+			}
+			modifier = {
+				trigger = { sb_boer_convention_gdp_stronger_than_cape = yes }
+				add = -10
+			}
+			modifier = {
+				trigger = { sb_boer_has_non_british_sea_access = yes }
+				add = -20
 			}
 		}
+	}
 
 	option = {
-		name = sb_boer_conventions.140.c
-		trigger = {
-			c:ZPB ?= {
-				is_country_alive = yes
-				is_subject = no
-			}
-		}
+		name = sb_boer_conventions.140.b
 		custom_tooltip = sb_boer_conventions_zpb_frontier_spirit_warning_tt
 		remove_variable = sb_sand_river_convention_pending_var
 		set_variable = sb_sand_river_convention_resolved_var
@@ -99,48 +97,186 @@ sb_boer_conventions.140 = {
 		change_relations = {
 			country = c:GBR
 			value = -15
+		}
+		ai_chance = {
+			base = 20
+			modifier = {
+				trigger = { sb_boer_convention_nal_is_british_colony = yes }
+				add = -10
 			}
-				ai_chance = {
-					base = 20
-					modifier = {
-						trigger = { sb_boer_convention_nal_is_british_colony = yes }
-						add = -10
-					}
-					modifier = {
-						trigger = { sb_boer_convention_nal_border_pressure = yes }
-						add = 20
-					}
-					modifier = {
-						trigger = { c:GBR ?= { relations:root >= relations_threshold:amicable } }
-						add = -10
-					}
-					modifier = {
-						trigger = { c:GBR ?= { relations:root <= relations_threshold:poor } }
-						add = 10
-					}
-					modifier = {
-						trigger = { c:GBR ?= { relations:root <= relations_threshold:hostile } }
-						add = 10
-					}
-					modifier = {
-						trigger = { sb_boer_convention_kept_frontier_republic = yes }
-						add = 40
-					}
-					modifier = {
-						trigger = { sb_boer_convention_army_stronger_than_cape = yes }
-						add = 10
-					}
-					modifier = {
-						trigger = { sb_boer_convention_gdp_stronger_than_cape = yes }
-						add = 10
-					}
-					modifier = {
-						trigger = { sb_boer_has_non_british_sea_access = yes }
-						add = 20
-					}
-				}
+			modifier = {
+				trigger = { sb_boer_convention_nal_border_pressure = yes }
+				add = 20
 			}
+			modifier = {
+				trigger = { c:GBR ?= { relations:root >= relations_threshold:amicable } }
+				add = -10
+			}
+			modifier = {
+				trigger = { c:GBR ?= { relations:root <= relations_threshold:poor } }
+				add = 10
+			}
+			modifier = {
+				trigger = { c:GBR ?= { relations:root <= relations_threshold:hostile } }
+				add = 10
+			}
+			modifier = {
+				trigger = { sb_boer_convention_kept_frontier_republic = yes }
+				add = 40
+			}
+			modifier = {
+				trigger = { sb_boer_convention_army_stronger_than_cape = yes }
+				add = 10
+			}
+			modifier = {
+				trigger = { sb_boer_convention_gdp_stronger_than_cape = yes }
+				add = 10
+			}
+			modifier = {
+				trigger = { sb_boer_has_non_british_sea_access = yes }
+				add = 20
+			}
+		}
 	}
+}
+
+sb_boer_conventions.161 = {
+	type = country_event
+	placement = root
+
+	title = sb_boer_conventions.161.t
+	desc = sb_boer_conventions.161.d
+	flavor = sb_boer_conventions.161.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:TRN
+		has_variable = sb_sand_river_convention_pending_var
+		NOT = {
+			c:ZPB ?= {
+				is_country_alive = yes
+				is_subject = no
+			}
+		}
+		OR = {
+			has_variable = sb_transvaal_unity_resolved_var
+			has_variable = sb_eastern_transvaal_frontier_resolved_var
+			s:STATE_EAST_TRANSVAAL = {
+				is_homeland = cu:boer
+			}
+		}
+	}
+
+	option = {
+		name = sb_boer_conventions.161.a
+		default_option = yes
+		remove_variable = sb_sand_river_convention_pending_var
+		set_variable = sb_sand_river_convention_resolved_var
+		set_variable = sb_sand_river_convention_accepted_var
+		sb_apply_boer_convention_acceptance = yes
+		ai_chance = {
+			base = 80
+			modifier = {
+				trigger = { sb_boer_convention_nal_is_british_colony = yes }
+				add = 10
+			}
+			modifier = {
+				trigger = { sb_boer_convention_nal_border_pressure = yes }
+				add = -20
+			}
+			modifier = {
+				trigger = { c:GBR ?= { relations:root >= relations_threshold:amicable } }
+				add = 10
+			}
+			modifier = {
+				trigger = { c:GBR ?= { relations:root <= relations_threshold:poor } }
+				add = -10
+			}
+			modifier = {
+				trigger = { c:GBR ?= { relations:root <= relations_threshold:hostile } }
+				add = -10
+			}
+			modifier = {
+				trigger = { sb_boer_convention_kept_frontier_republic = yes }
+				add = -40
+			}
+			modifier = {
+				trigger = { sb_boer_convention_army_stronger_than_cape = yes }
+				add = -10
+			}
+			modifier = {
+				trigger = { sb_boer_convention_gdp_stronger_than_cape = yes }
+				add = -10
+			}
+			modifier = {
+				trigger = { sb_boer_has_non_british_sea_access = yes }
+				add = -20
+			}
+		}
+	}
+
+	option = {
+		name = sb_boer_conventions.161.b
+		custom_tooltip = sb_boer_conventions_frontier_order_warning_tt
+		remove_variable = sb_sand_river_convention_pending_var
+		set_variable = sb_sand_river_convention_resolved_var
+		activate_law = law_type:law_discrete_inboekstelsel
+		sb_add_expanded_inboekstelsel_amendment = yes
+		change_relations = {
+			country = c:GBR
+			value = -15
+		}
+		hidden_effect = {
+			sb_queue_gbr_highveld_slavery_response = yes
+		}
+		ai_chance = {
+			base = 20
+			modifier = {
+				trigger = { sb_boer_convention_nal_is_british_colony = yes }
+				add = -10
+			}
+			modifier = {
+				trigger = { sb_boer_convention_nal_border_pressure = yes }
+				add = 20
+			}
+			modifier = {
+				trigger = { c:GBR ?= { relations:root >= relations_threshold:amicable } }
+				add = -10
+			}
+			modifier = {
+				trigger = { c:GBR ?= { relations:root <= relations_threshold:poor } }
+				add = 10
+			}
+			modifier = {
+				trigger = { c:GBR ?= { relations:root <= relations_threshold:hostile } }
+				add = 10
+			}
+			modifier = {
+				trigger = { sb_boer_convention_kept_frontier_republic = yes }
+				add = 40
+			}
+			modifier = {
+				trigger = { sb_boer_convention_army_stronger_than_cape = yes }
+				add = 10
+			}
+			modifier = {
+				trigger = { sb_boer_convention_gdp_stronger_than_cape = yes }
+				add = 10
+			}
+			modifier = {
+				trigger = { sb_boer_has_non_british_sea_access = yes }
+				add = 20
+			}
+		}
+	}
+}
 
 sb_boer_conventions.141 = {
 	type = country_event
@@ -478,7 +614,7 @@ sb_boer_conventions.143 = {
 			add_journal_entry = { type = je_sb_zpb_crackdown }
 		}
 		c:ZPB ?= {
-			trigger_event = { id = sb_boer_conventions.147 days = 3 popup = yes }
+			trigger_event = { id = sb_boer_conventions.147 days = 5 popup = yes }
 		}
 		ai_chance = {
 			base = 80
@@ -592,18 +728,20 @@ sb_boer_conventions.146 = {
 		}
 	}
 
-		option = {
-			name = sb_boer_conventions.146.a
-			default_option = yes
-			sb_ensure_live_boer_republic_compacts = yes
-			change_relations = {
-				country = c:TRN
-				value = 20
+	option = {
+		name = sb_boer_conventions.146.a
+		default_option = yes
+		sb_ensure_live_boer_republic_compacts = yes
+		change_relations = {
+			country = c:TRN
+			value = 20
 		}
-		c:TRN ?= {
-			change_relations = {
-				country = root
-				value = 20
+		hidden_effect = {
+			c:TRN ?= {
+				change_relations = {
+					country = root
+					value = 20
+				}
 			}
 		}
 	}
@@ -691,39 +829,54 @@ sb_boer_conventions.147 = {
 	option = {
 		name = sb_boer_conventions.147.b
 		default_option = yes
-		set_variable = sb_zpb_crackdown_appealed_var
-		if = {
-			limit = {
-				c:ORA ?= {
-					is_country_alive = yes
-					is_subject = no
-					country_has_primary_culture = cu:boer
-					NOT = { country_has_primary_culture = cu:anglo_african }
-					is_at_war = no
-					is_active_in_diplomatic_play = no
-					NOT = { has_law = law_type:law_slavery_banned }
-					NOT = { has_variable = sb_zpb_crackdown_backer_resolved_var }
+		custom_tooltip = sb_boer_conventions_147_compact_appeal_tt
+		hidden_effect = {
+			set_variable = sb_zpb_crackdown_appealed_var
+			if = {
+				limit = {
+					c:ORA ?= {
+						is_country_alive = yes
+						is_subject = no
+						country_has_primary_culture = cu:boer
+						NOT = { country_has_primary_culture = cu:anglo_african }
+						is_at_war = no
+						is_active_in_diplomatic_play = no
+						NOT = { has_variable = sb_zpb_crackdown_backer_resolved_var }
+					}
 				}
+				c:ORA ?= { trigger_event = { id = sb_boer_conventions.148 days = 8 popup = yes } }
 			}
-			c:ORA ?= { trigger_event = { id = sb_boer_conventions.148 days = 3 popup = yes } }
-		}
-		else_if = {
-			limit = {
-				c:NAL ?= {
-					is_country_alive = yes
-					is_subject = no
-					country_has_primary_culture = cu:boer
-					NOT = { country_has_primary_culture = cu:anglo_african }
-					is_at_war = no
-					is_active_in_diplomatic_play = no
-					NOT = { has_law = law_type:law_slavery_banned }
-					NOT = { has_variable = sb_zpb_crackdown_backer_resolved_var }
+			else_if = {
+				limit = {
+					c:LYD ?= {
+						is_country_alive = yes
+						is_subject = no
+						country_has_primary_culture = cu:boer
+						NOT = { country_has_primary_culture = cu:anglo_african }
+						is_at_war = no
+						is_active_in_diplomatic_play = no
+						NOT = { has_variable = sb_zpb_crackdown_backer_resolved_var }
+					}
 				}
+				c:LYD ?= { trigger_event = { id = sb_boer_conventions.151 days = 3 popup = yes } }
 			}
-			c:NAL ?= { trigger_event = { id = sb_boer_conventions.149 days = 3 popup = yes } }
-		}
-		else = {
-			c:TRN ?= { trigger_event = { id = sb_boer_conventions.150 days = 3 popup = yes } }
+			else_if = {
+				limit = {
+					c:NAL ?= {
+						is_country_alive = yes
+						is_subject = no
+						country_has_primary_culture = cu:boer
+						NOT = { country_has_primary_culture = cu:anglo_african }
+						is_at_war = no
+						is_active_in_diplomatic_play = no
+						NOT = { has_variable = sb_zpb_crackdown_backer_resolved_var }
+					}
+				}
+				c:NAL ?= { trigger_event = { id = sb_boer_conventions.149 days = 8 popup = yes } }
+			}
+			else = {
+				c:TRN ?= { trigger_event = { id = sb_boer_conventions.150 days = 5 popup = yes } }
+			}
 		}
 		ai_chance = {
 			base = 65
@@ -759,7 +912,6 @@ sb_boer_conventions.148 = {
 		NOT = { country_has_primary_culture = cu:anglo_african }
 		is_at_war = no
 		is_active_in_diplomatic_play = no
-		NOT = { has_law = law_type:law_slavery_banned }
 		NOT = { has_variable = sb_zpb_crackdown_backer_resolved_var }
 		c:TRN ?= {
 			is_country_alive = yes
@@ -783,6 +935,20 @@ sb_boer_conventions.148 = {
 		set_variable = sb_zpb_crackdown_backer_resolved_var
 		if = {
 			limit = {
+				c:LYD ?= {
+					is_country_alive = yes
+					is_subject = no
+					country_has_primary_culture = cu:boer
+					NOT = { country_has_primary_culture = cu:anglo_african }
+					is_at_war = no
+					is_active_in_diplomatic_play = no
+					NOT = { has_variable = sb_zpb_crackdown_backer_resolved_var }
+				}
+			}
+			c:LYD ?= { trigger_event = { id = sb_boer_conventions.151 days = 3 popup = yes } }
+		}
+		else_if = {
+			limit = {
 				c:NAL ?= {
 					is_country_alive = yes
 					is_subject = no
@@ -790,14 +956,13 @@ sb_boer_conventions.148 = {
 					NOT = { country_has_primary_culture = cu:anglo_african }
 					is_at_war = no
 					is_active_in_diplomatic_play = no
-					NOT = { has_law = law_type:law_slavery_banned }
 					NOT = { has_variable = sb_zpb_crackdown_backer_resolved_var }
 				}
 			}
-			c:NAL ?= { trigger_event = { id = sb_boer_conventions.149 days = 3 popup = yes } }
+			c:NAL ?= { trigger_event = { id = sb_boer_conventions.149 days = 8 popup = yes } }
 		}
 		else = {
-			c:TRN ?= { trigger_event = { id = sb_boer_conventions.150 days = 3 popup = yes } }
+			c:TRN ?= { trigger_event = { id = sb_boer_conventions.150 days = 5 popup = yes } }
 		}
 		ai_chance = {
 			base = 45
@@ -807,7 +972,24 @@ sb_boer_conventions.148 = {
 			}
 			modifier = {
 				trigger = { sb_has_expanded_inboekstelsel_or_slave_trade = yes }
-				add = 1000
+				add = 50
+			}
+			modifier = {
+				trigger = { has_law_or_variant = law_type:law_slavery_banned }
+				add = -50
+			}
+			modifier = {
+				trigger = { ig:ig_intelligentsia ?= { is_in_government = yes } }
+				add = -15
+			}
+			modifier = {
+				trigger = {
+					OR = {
+						in_default = yes
+						any_insurrection_ongoing = yes
+					}
+				}
+				add = -1000
 			}
 			modifier = {
 				trigger = {
@@ -818,19 +1000,27 @@ sb_boer_conventions.148 = {
 			}
 			modifier = {
 				trigger = { c:ZPB ?= { relations:root >= relations_threshold:cordial } }
-				add = 25
+				add = 15
 			}
 			modifier = {
 				trigger = { c:ZPB ?= { relations:root >= relations_threshold:amicable } }
-				add = 20
+				add = 15
+			}
+			modifier = {
+				trigger = { c:ZPB ?= { relations:root >= relations_threshold:friendly } }
+				add = 15
 			}
 			modifier = {
 				trigger = { c:TRN ?= { relations:root >= relations_threshold:cordial } }
-				add = -25
+				add = -15
 			}
 			modifier = {
 				trigger = { c:TRN ?= { relations:root >= relations_threshold:amicable } }
-				add = -20
+				add = -15
+			}
+			modifier = {
+				trigger = { c:TRN ?= { relations:root >= relations_threshold:friendly } }
+				add = -15
 			}
 			modifier = {
 				trigger = {
@@ -861,6 +1051,20 @@ sb_boer_conventions.148 = {
 		set_variable = sb_zpb_crackdown_backer_resolved_var
 		if = {
 			limit = {
+				c:LYD ?= {
+					is_country_alive = yes
+					is_subject = no
+					country_has_primary_culture = cu:boer
+					NOT = { country_has_primary_culture = cu:anglo_african }
+					is_at_war = no
+					is_active_in_diplomatic_play = no
+					NOT = { has_variable = sb_zpb_crackdown_backer_resolved_var }
+				}
+			}
+			c:LYD ?= { trigger_event = { id = sb_boer_conventions.151 days = 3 popup = yes } }
+		}
+		else_if = {
+			limit = {
 				c:NAL ?= {
 					is_country_alive = yes
 					is_subject = no
@@ -868,14 +1072,13 @@ sb_boer_conventions.148 = {
 					NOT = { country_has_primary_culture = cu:anglo_african }
 					is_at_war = no
 					is_active_in_diplomatic_play = no
-					NOT = { has_law = law_type:law_slavery_banned }
 					NOT = { has_variable = sb_zpb_crackdown_backer_resolved_var }
 				}
 			}
-			c:NAL ?= { trigger_event = { id = sb_boer_conventions.149 days = 3 popup = yes } }
+			c:NAL ?= { trigger_event = { id = sb_boer_conventions.149 days = 8 popup = yes } }
 		}
 		else = {
-			c:TRN ?= { trigger_event = { id = sb_boer_conventions.150 days = 3 popup = yes } }
+			c:TRN ?= { trigger_event = { id = sb_boer_conventions.150 days = 5 popup = yes } }
 		}
 		ai_chance = {
 			base = 55
@@ -885,7 +1088,24 @@ sb_boer_conventions.148 = {
 			}
 			modifier = {
 				trigger = { sb_has_expanded_inboekstelsel_or_slave_trade = yes }
-				add = -1000
+				add = -50
+			}
+			modifier = {
+				trigger = { has_law_or_variant = law_type:law_slavery_banned }
+				add = 50
+			}
+			modifier = {
+				trigger = { ig:ig_intelligentsia ?= { is_in_government = yes } }
+				add = 15
+			}
+			modifier = {
+				trigger = {
+					OR = {
+						in_default = yes
+						any_insurrection_ongoing = yes
+					}
+				}
+				add = 1000
 			}
 			modifier = {
 				trigger = {
@@ -896,19 +1116,274 @@ sb_boer_conventions.148 = {
 			}
 			modifier = {
 				trigger = { c:ZPB ?= { relations:root >= relations_threshold:cordial } }
-				add = -25
+				add = -15
 			}
 			modifier = {
 				trigger = { c:ZPB ?= { relations:root >= relations_threshold:amicable } }
-				add = -20
+				add = -15
+			}
+			modifier = {
+				trigger = { c:ZPB ?= { relations:root >= relations_threshold:friendly } }
+				add = -15
 			}
 			modifier = {
 				trigger = { c:TRN ?= { relations:root >= relations_threshold:cordial } }
-				add = 25
+				add = 15
 			}
 			modifier = {
 				trigger = { c:TRN ?= { relations:root >= relations_threshold:amicable } }
-				add = 20
+				add = 15
+			}
+			modifier = {
+				trigger = { c:TRN ?= { relations:root >= relations_threshold:friendly } }
+				add = 15
+			}
+			modifier = {
+				trigger = {
+					c:TRN ?= {
+						OR = {
+							gdp > {
+								value = c:ZPB.gdp
+								multiply = 1.5
+							}
+							AND = {
+								army_size >= 10
+								c:ZPB ?= { army_size <= 5 }
+							}
+						}
+					}
+				}
+				add = 15
+			}
+			modifier = {
+				trigger = { c:GBR ?= { relations:root < relations_threshold:cordial } }
+				add = -15
+			}
+		}
+	}
+}
+
+sb_boer_conventions.151 = {
+	type = country_event
+	placement = root
+
+	title = sb_boer_conventions.151.t
+	desc = sb_boer_conventions.151.d
+	flavor = sb_boer_conventions.151.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:LYD
+		is_country_alive = yes
+		is_subject = no
+		country_has_primary_culture = cu:boer
+		NOT = { country_has_primary_culture = cu:anglo_african }
+		is_at_war = no
+		is_active_in_diplomatic_play = no
+		NOT = { has_variable = sb_zpb_crackdown_backer_resolved_var }
+		c:TRN ?= {
+			is_country_alive = yes
+			has_variable = sb_zpb_crackdown_active_var
+		}
+		c:ZPB ?= {
+			is_country_alive = yes
+			is_subject = no
+			has_variable = sb_zpb_crackdown_appealed_var
+			OR = {
+				sb_has_expanded_inboekstelsel_or_slave_trade = yes
+				sb_has_discrete_inboekstelsel_or_legacy_slavery = yes
+			}
+		}
+	}
+
+	option = {
+		name = sb_boer_conventions.151.a
+		default_option = yes
+		set_variable = sb_zpb_crackdown_backed_zpb_var
+		set_variable = sb_zpb_crackdown_backer_resolved_var
+		if = {
+			limit = {
+				c:NAL ?= {
+					is_country_alive = yes
+					is_subject = no
+					country_has_primary_culture = cu:boer
+					NOT = { country_has_primary_culture = cu:anglo_african }
+					is_at_war = no
+					is_active_in_diplomatic_play = no
+					NOT = { has_variable = sb_zpb_crackdown_backer_resolved_var }
+				}
+			}
+			c:NAL ?= { trigger_event = { id = sb_boer_conventions.149 days = 8 popup = yes } }
+		}
+		else = {
+			c:TRN ?= { trigger_event = { id = sb_boer_conventions.150 days = 4 popup = yes } }
+		}
+		ai_chance = {
+			base = 45
+			modifier = {
+				trigger = { sb_frontier_ai_behavior_off = yes }
+				add = -1000
+			}
+			modifier = {
+				trigger = { sb_has_expanded_inboekstelsel_or_slave_trade = yes }
+				add = 50
+			}
+			modifier = {
+				trigger = { has_law_or_variant = law_type:law_slavery_banned }
+				add = -50
+			}
+			modifier = {
+				trigger = { ig:ig_intelligentsia ?= { is_in_government = yes } }
+				add = -15
+			}
+			modifier = {
+				trigger = {
+					OR = {
+						in_default = yes
+						any_insurrection_ongoing = yes
+					}
+				}
+				add = -1000
+			}
+			modifier = {
+				trigger = {
+					sb_frontier_ai_behavior_strict_historical = yes
+					sb_has_discrete_inboekstelsel_or_legacy_slavery = yes
+				}
+				add = 15
+			}
+			modifier = {
+				trigger = { c:ZPB ?= { relations:root >= relations_threshold:cordial } }
+				add = 15
+			}
+			modifier = {
+				trigger = { c:ZPB ?= { relations:root >= relations_threshold:amicable } }
+				add = 15
+			}
+			modifier = {
+				trigger = { c:ZPB ?= { relations:root >= relations_threshold:friendly } }
+				add = 15
+			}
+			modifier = {
+				trigger = { c:TRN ?= { relations:root >= relations_threshold:cordial } }
+				add = -15
+			}
+			modifier = {
+				trigger = { c:TRN ?= { relations:root >= relations_threshold:amicable } }
+				add = -15
+			}
+			modifier = {
+				trigger = { c:TRN ?= { relations:root >= relations_threshold:friendly } }
+				add = -15
+			}
+			modifier = {
+				trigger = {
+					c:TRN ?= {
+						OR = {
+							gdp > {
+								value = c:ZPB.gdp
+								multiply = 1.5
+							}
+							AND = {
+								army_size >= 10
+								c:ZPB ?= { army_size <= 5 }
+							}
+						}
+					}
+				}
+				add = -15
+			}
+			modifier = {
+				trigger = { c:GBR ?= { relations:root < relations_threshold:cordial } }
+				add = 15
+			}
+		}
+	}
+
+	option = {
+		name = sb_boer_conventions.151.b
+		set_variable = sb_zpb_crackdown_backer_resolved_var
+		if = {
+			limit = {
+				c:NAL ?= {
+					is_country_alive = yes
+					is_subject = no
+					country_has_primary_culture = cu:boer
+					NOT = { country_has_primary_culture = cu:anglo_african }
+					is_at_war = no
+					is_active_in_diplomatic_play = no
+					NOT = { has_variable = sb_zpb_crackdown_backer_resolved_var }
+				}
+			}
+			c:NAL ?= { trigger_event = { id = sb_boer_conventions.149 days = 8 popup = yes } }
+		}
+		else = {
+			c:TRN ?= { trigger_event = { id = sb_boer_conventions.150 days = 4 popup = yes } }
+		}
+		ai_chance = {
+			base = 55
+			modifier = {
+				trigger = { sb_frontier_ai_behavior_off = yes }
+				add = 1000
+			}
+			modifier = {
+				trigger = { sb_has_expanded_inboekstelsel_or_slave_trade = yes }
+				add = -50
+			}
+			modifier = {
+				trigger = { has_law_or_variant = law_type:law_slavery_banned }
+				add = 50
+			}
+			modifier = {
+				trigger = { ig:ig_intelligentsia ?= { is_in_government = yes } }
+				add = 15
+			}
+			modifier = {
+				trigger = {
+					OR = {
+						in_default = yes
+						any_insurrection_ongoing = yes
+					}
+				}
+				add = 1000
+			}
+			modifier = {
+				trigger = {
+					sb_frontier_ai_behavior_strict_historical = yes
+					sb_has_discrete_inboekstelsel_or_legacy_slavery = yes
+				}
+				add = -15
+			}
+			modifier = {
+				trigger = { c:ZPB ?= { relations:root >= relations_threshold:cordial } }
+				add = -15
+			}
+			modifier = {
+				trigger = { c:ZPB ?= { relations:root >= relations_threshold:amicable } }
+				add = -15
+			}
+			modifier = {
+				trigger = { c:ZPB ?= { relations:root >= relations_threshold:friendly } }
+				add = -15
+			}
+			modifier = {
+				trigger = { c:TRN ?= { relations:root >= relations_threshold:cordial } }
+				add = 15
+			}
+			modifier = {
+				trigger = { c:TRN ?= { relations:root >= relations_threshold:amicable } }
+				add = 15
+			}
+			modifier = {
+				trigger = { c:TRN ?= { relations:root >= relations_threshold:friendly } }
+				add = 15
 			}
 			modifier = {
 				trigger = {
@@ -959,7 +1434,6 @@ sb_boer_conventions.149 = {
 		NOT = { country_has_primary_culture = cu:anglo_african }
 		is_at_war = no
 		is_active_in_diplomatic_play = no
-		NOT = { has_law = law_type:law_slavery_banned }
 		NOT = { has_variable = sb_zpb_crackdown_backer_resolved_var }
 		c:TRN ?= {
 			is_country_alive = yes
@@ -981,7 +1455,7 @@ sb_boer_conventions.149 = {
 		default_option = yes
 		set_variable = sb_zpb_crackdown_backed_zpb_var
 		set_variable = sb_zpb_crackdown_backer_resolved_var
-		c:TRN ?= { trigger_event = { id = sb_boer_conventions.150 days = 3 popup = yes } }
+		c:TRN ?= { trigger_event = { id = sb_boer_conventions.150 days = 5 popup = yes } }
 		ai_chance = {
 			base = 45
 			modifier = {
@@ -990,7 +1464,24 @@ sb_boer_conventions.149 = {
 			}
 			modifier = {
 				trigger = { sb_has_expanded_inboekstelsel_or_slave_trade = yes }
-				add = 1000
+				add = 50
+			}
+			modifier = {
+				trigger = { has_law_or_variant = law_type:law_slavery_banned }
+				add = -50
+			}
+			modifier = {
+				trigger = { ig:ig_intelligentsia ?= { is_in_government = yes } }
+				add = -15
+			}
+			modifier = {
+				trigger = {
+					OR = {
+						in_default = yes
+						any_insurrection_ongoing = yes
+					}
+				}
+				add = -1000
 			}
 			modifier = {
 				trigger = {
@@ -1001,19 +1492,27 @@ sb_boer_conventions.149 = {
 			}
 			modifier = {
 				trigger = { c:ZPB ?= { relations:root >= relations_threshold:cordial } }
-				add = 25
+				add = 15
 			}
 			modifier = {
 				trigger = { c:ZPB ?= { relations:root >= relations_threshold:amicable } }
-				add = 20
+				add = 15
+			}
+			modifier = {
+				trigger = { c:ZPB ?= { relations:root >= relations_threshold:friendly } }
+				add = 15
 			}
 			modifier = {
 				trigger = { c:TRN ?= { relations:root >= relations_threshold:cordial } }
-				add = -25
+				add = -15
 			}
 			modifier = {
 				trigger = { c:TRN ?= { relations:root >= relations_threshold:amicable } }
-				add = -20
+				add = -15
+			}
+			modifier = {
+				trigger = { c:TRN ?= { relations:root >= relations_threshold:friendly } }
+				add = -15
 			}
 			modifier = {
 				trigger = {
@@ -1042,7 +1541,7 @@ sb_boer_conventions.149 = {
 	option = {
 		name = sb_boer_conventions.149.b
 		set_variable = sb_zpb_crackdown_backer_resolved_var
-		c:TRN ?= { trigger_event = { id = sb_boer_conventions.150 days = 3 popup = yes } }
+		c:TRN ?= { trigger_event = { id = sb_boer_conventions.150 days = 5 popup = yes } }
 		ai_chance = {
 			base = 55
 			modifier = {
@@ -1051,7 +1550,24 @@ sb_boer_conventions.149 = {
 			}
 			modifier = {
 				trigger = { sb_has_expanded_inboekstelsel_or_slave_trade = yes }
-				add = -1000
+				add = -50
+			}
+			modifier = {
+				trigger = { has_law_or_variant = law_type:law_slavery_banned }
+				add = 50
+			}
+			modifier = {
+				trigger = { ig:ig_intelligentsia ?= { is_in_government = yes } }
+				add = 15
+			}
+			modifier = {
+				trigger = {
+					OR = {
+						in_default = yes
+						any_insurrection_ongoing = yes
+					}
+				}
+				add = 1000
 			}
 			modifier = {
 				trigger = {
@@ -1062,19 +1578,27 @@ sb_boer_conventions.149 = {
 			}
 			modifier = {
 				trigger = { c:ZPB ?= { relations:root >= relations_threshold:cordial } }
-				add = -25
+				add = -15
 			}
 			modifier = {
 				trigger = { c:ZPB ?= { relations:root >= relations_threshold:amicable } }
-				add = -20
+				add = -15
+			}
+			modifier = {
+				trigger = { c:ZPB ?= { relations:root >= relations_threshold:friendly } }
+				add = -15
 			}
 			modifier = {
 				trigger = { c:TRN ?= { relations:root >= relations_threshold:cordial } }
-				add = 25
+				add = 15
 			}
 			modifier = {
 				trigger = { c:TRN ?= { relations:root >= relations_threshold:amicable } }
-				add = 20
+				add = 15
+			}
+			modifier = {
+				trigger = { c:TRN ?= { relations:root >= relations_threshold:friendly } }
+				add = 15
 			}
 			modifier = {
 				trigger = {

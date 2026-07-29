@@ -1,0 +1,876 @@
+﻿# Klip River County boundary dispute, refugee, and war-resolution effects.
+
+sb_schedule_klip_river_county_question = {
+	if = {
+		limit = {
+			country_definition = cd:NAL
+			NOT = { has_variable = sb_klip_river_county_pending_var }
+			NOT = { has_variable = sb_klip_river_county_scheduled_var }
+			NOT = { has_variable = sb_klip_river_county_resolved_var }
+			NOT = { has_variable = sb_klip_river_boer_flight_started_var }
+		}
+		set_variable = sb_klip_river_county_pending_var
+		set_variable = sb_klip_river_county_scheduled_var
+		random_list = {
+			1 = { trigger_event = { id = sb_klip_river_county.001 days = 90 popup = no } }
+			1 = { trigger_event = { id = sb_klip_river_county.001 days = 180 popup = no } }
+			1 = { trigger_event = { id = sb_klip_river_county.001 days = 270 popup = no } }
+			1 = { trigger_event = { id = sb_klip_river_county.001 days = 360 popup = no } }
+		}
+	}
+}
+
+sb_klip_river_clear_country_markers = {
+	if = { limit = { has_variable = sb_klip_river_county_pending_var } remove_variable = sb_klip_river_county_pending_var }
+	if = { limit = { has_variable = sb_klip_river_county_scheduled_var } remove_variable = sb_klip_river_county_scheduled_var }
+	if = { limit = { has_variable = sb_klip_river_county_ready_var } remove_variable = sb_klip_river_county_ready_var }
+	if = { limit = { has_variable = sb_klip_river_boer_departure_pending_var } remove_variable = sb_klip_river_boer_departure_pending_var }
+	if = { limit = { has_variable = sb_klip_river_secession_active_var } remove_variable = sb_klip_river_secession_active_var }
+	if = { limit = { has_variable = sb_klip_river_county_annexed_var } remove_variable = sb_klip_river_county_annexed_var }
+	if = { limit = { has_variable = sb_klip_river_punitive_active_var } remove_variable = sb_klip_river_punitive_active_var }
+	if = { limit = { has_variable = sb_klip_river_ora_backed_var } remove_variable = sb_klip_river_ora_backed_var }
+	if = { limit = { has_variable = sb_klip_river_refugee_receiver_ora_var } remove_variable = sb_klip_river_refugee_receiver_ora_var }
+	if = { limit = { has_variable = sb_klip_river_refugee_receiver_trn_var } remove_variable = sb_klip_river_refugee_receiver_trn_var }
+	if = { limit = { has_variable = sb_klip_river_refugee_receiver_zpb_var } remove_variable = sb_klip_river_refugee_receiver_zpb_var }
+	if = { limit = { has_variable = sb_klip_river_refugee_receiver_lyd_var } remove_variable = sb_klip_river_refugee_receiver_lyd_var }
+}
+
+sb_klip_river_clear_shared_markers = {
+	c:NAL ?= { sb_klip_river_clear_country_markers = yes }
+	c:KLR ?= { sb_klip_river_clear_country_markers = yes }
+	c:ZUL ?= { sb_klip_river_clear_country_markers = yes }
+	c:ORA ?= { sb_klip_river_clear_country_markers = yes }
+}
+
+sb_klip_river_prepare_standard_boer_flight = {
+	if = {
+		limit = {
+			country_definition = cd:NAL
+			is_country_alive = yes
+			NOT = { has_variable = sb_klip_river_boer_departure_pending_var }
+			NOT = { has_variable = sb_klip_river_boer_flight_started_var }
+		}
+		set_variable = sb_klip_river_boer_departure_pending_var
+		trigger_event = { id = sb_klip_river_county.075 days = 3 popup = yes }
+	}
+}
+
+sb_klip_river_prepare_ratified_border_boer_flight = {
+	if = {
+		limit = {
+			country_definition = cd:NAL
+			is_country_alive = yes
+			NOT = { has_variable = sb_klip_river_boer_departure_pending_var }
+			NOT = { has_variable = sb_klip_river_boer_flight_started_var }
+		}
+		set_variable = sb_klip_river_boer_departure_pending_var
+		trigger_event = { id = sb_klip_river_county.070 days = 3 popup = yes }
+	}
+}
+
+sb_klip_river_execute_standard_boer_flight = {
+	if = {
+		limit = {
+			country_definition = cd:NAL
+			NOT = { has_variable = sb_klip_river_boer_flight_started_var }
+		}
+		set_variable = sb_klip_river_boer_flight_started_var
+		set_variable = sb_klip_river_county_resolved_var
+		sb_select_natalia_refugee_receiver = yes
+		sb_exile_natalia_boer_leadership = yes
+		every_scope_character = {
+			limit = { has_variable = sb_klip_river_deferred_exile_var }
+			remove_variable = sb_klip_river_deferred_exile_var
+		}
+		sb_annul_natalia_boer_treaties = yes
+		sb_trigger_selected_natal_refugee_receiver_followup = yes
+		sb_klip_river_clear_shared_markers = yes
+	}
+}
+
+sb_klip_river_create_county = {
+	if = {
+		limit = { NOT = { exists = c:KLR } }
+		# Stage the rebel muster before partitioning Natal so the requested share
+		# is calculated from the colony's complete Boer population.
+		s:STATE_ZULULAND.region_state:NAL ?= {
+			save_temporary_scope_as = sb_klip_river_boer_muster_source
+		}
+		if = {
+			limit = { exists = c:BUG }
+			c:BUG.capital = { save_temporary_scope_as = sb_klip_river_servicemen_staging }
+		}
+		else = {
+			c:ZUL.capital = { save_temporary_scope_as = sb_klip_river_servicemen_staging }
+		}
+		c:GBR.capital = { save_temporary_scope_as = sb_klip_river_officers_staging }
+		if = {
+			limit = {
+				exists = scope:sb_klip_river_boer_muster_source
+				exists = scope:sb_klip_river_servicemen_staging
+				exists = scope:sb_klip_river_officers_staging
+			}
+			scope:sb_klip_river_boer_muster_source = {
+				every_scope_pop = {
+					limit = { culture = cu:boer }
+					move_partial_pop = {
+						state = scope:sb_klip_river_servicemen_staging
+						population_ratio = 0.75
+					}
+				}
+			}
+			scope:sb_klip_river_servicemen_staging = {
+				every_scope_pop = {
+					limit = { culture = cu:boer }
+					move_partial_pop = {
+						state = scope:sb_klip_river_officers_staging
+						population_ratio = 0.10
+					}
+				}
+				every_scope_pop = {
+					limit = { culture = cu:boer }
+					change_poptype = pop_type:soldiers
+				}
+			}
+			scope:sb_klip_river_officers_staging = {
+				every_scope_pop = {
+					limit = { culture = cu:boer }
+					change_poptype = pop_type:officers
+				}
+			}
+		}
+		create_country = {
+			tag = KLR
+			origin = root
+			province = p:xDE0EDE
+		}
+	}
+	s:STATE_ZULULAND = {
+		set_owner_of_provinces = {
+			country = c:KLR
+			provinces = { xBBCA32 xDE0EDE x552449 }
+		}
+	}
+	c:KLR ?= {
+		effect_starting_technology_tier_3_tech = yes
+		effect_starting_politics_conservative = yes
+		set_country_type = unrecognized
+		activate_law = law_type:law_presidential_republic
+		activate_law = law_type:law_oligarchy
+		activate_law = law_type:law_national_supremacy
+		activate_law = law_type:law_homesteading
+		activate_law = law_type:law_national_militia
+		activate_law = law_type:law_discrete_inboekstelsel
+		every_interest_group = { remove_ruling_interest_group = yes }
+		ig:ig_landowners ?= { add_ruling_interest_group = yes }
+		s:STATE_ZULULAND.region_state:KLR = {
+			create_building = {
+				building = building_maize_farm
+				add_ownership = {
+					building = {
+						type = building_manor_house
+						country = c:KLR
+						levels = 1
+						region = "STATE_ZULULAND"
+					}
+				}
+				reserves = 1
+				activate_production_methods = { "pm_simple_farming" "pm_no_secondary" "pm_tools_disabled" }
+			}
+		}
+		if = {
+			limit = { NOT = { has_claim = s:STATE_ZULULAND } }
+			s:STATE_ZULULAND = { add_claim = c:KLR }
+		}
+		if = {
+			limit = {
+				NOT = { any_scope_character = { has_template = KLR_andries_theodorus_spies } }
+			}
+			create_character = { template = KLR_andries_theodorus_spies }
+		}
+		random_scope_character = {
+			limit = {
+				has_template = KLR_andries_theodorus_spies
+				is_character_alive = yes
+			}
+			set_interest_group = c:KLR.ig:ig_landowners
+			set_as_interest_group_leader = yes
+			set_character_as_ruler = yes
+		}
+		if = {
+			limit = {
+				exists = scope:sb_klip_river_servicemen_staging
+				exists = scope:sb_klip_river_officers_staging
+				exists = s:STATE_ZULULAND.region_state:KLR
+			}
+			s:STATE_ZULULAND.region_state:KLR = {
+				save_temporary_scope_as = sb_klip_river_muster_target
+			}
+			scope:sb_klip_river_servicemen_staging = {
+				every_scope_pop = {
+					limit = {
+						culture = cu:boer
+						is_pop_type = soldiers
+					}
+					move_partial_pop = {
+						state = scope:sb_klip_river_muster_target
+						population_ratio = 1
+					}
+				}
+			}
+			scope:sb_klip_river_officers_staging = {
+				every_scope_pop = {
+					limit = {
+						culture = cu:boer
+						is_pop_type = officers
+					}
+					move_partial_pop = {
+						state = scope:sb_klip_river_muster_target
+						population_ratio = 1
+					}
+				}
+			}
+		}
+		if = {
+			limit = { NOT = { has_variable = sb_klip_river_county_muster_created_var } }
+			set_variable = sb_klip_river_county_muster_created_var
+			create_military_formation = {
+				type = army
+				hq_region = sr:region_southern_africa
+				name = klip_river_commando
+				combat_unit = {
+					type = unit_type:combat_unit_type_dragoons
+					state_region = s:STATE_ZULULAND
+					count = 1
+				}
+				combat_unit = {
+					type = unit_type:combat_unit_type_irregular_infantry
+					state_region = s:STATE_ZULULAND
+					count = 1
+				}
+			}
+		}
+		set_variable = sb_klip_river_secession_active_var
+	}
+	set_variable = sb_klip_river_secession_active_var
+	c:ZUL ?= { set_variable = sb_klip_river_secession_active_var }
+}
+
+sb_klip_river_roll_coalition_boost = {
+	c:KLR ?= {
+		if = {
+			limit = { NOT = { has_variable = sb_klip_river_coalition_boost_rolled_var } }
+			set_variable = sb_klip_river_coalition_boost_rolled_var
+			if = {
+				limit = { c:ZUL ?= { sb_klip_river_zulu_war_advantage = yes } }
+				random_list = {
+					70 = {
+						add_modifier = { name = sb_laager_defence months = 12 }
+						c:ZUL ?= { add_modifier = { name = sb_klip_river_zulu_muster months = 12 } }
+					}
+					30 = { }
+				}
+			}
+			else = {
+				random_list = {
+					30 = {
+						add_modifier = { name = sb_laager_defence months = 12 }
+						c:ZUL ?= { add_modifier = { name = sb_klip_river_zulu_muster months = 12 } }
+					}
+					70 = { }
+				}
+			}
+		}
+	}
+}
+
+sb_klip_river_roll_punitive_zulu_boost = {
+	c:ZUL ?= {
+		if = {
+			limit = { NOT = { has_variable = sb_klip_river_punitive_boost_rolled_var } }
+			set_variable = sb_klip_river_punitive_boost_rolled_var
+			if = {
+				limit = { sb_klip_river_zulu_war_advantage = yes }
+				random_list = {
+					60 = { add_modifier = { name = sb_klip_river_zulu_muster months = 12 } }
+					40 = { }
+				}
+			}
+		}
+	}
+}
+
+sb_klip_river_record_ora_backing = {
+	set_variable = sb_klip_river_ora_backed_var
+	c:NAL ?= { set_variable = sb_klip_river_ora_backed_var }
+	c:KLR ?= { set_variable = sb_klip_river_ora_backed_var }
+}
+
+sb_klip_river_select_punitive_refugee_receiver = {
+	c:ZUL ?= {
+		if = { limit = { has_variable = sb_klip_river_refugee_receiver_ora_var } remove_variable = sb_klip_river_refugee_receiver_ora_var }
+		if = { limit = { has_variable = sb_klip_river_refugee_receiver_trn_var } remove_variable = sb_klip_river_refugee_receiver_trn_var }
+		if = { limit = { has_variable = sb_klip_river_refugee_receiver_zpb_var } remove_variable = sb_klip_river_refugee_receiver_zpb_var }
+		if = { limit = { has_variable = sb_klip_river_refugee_receiver_lyd_var } remove_variable = sb_klip_river_refugee_receiver_lyd_var }
+	}
+	sb_select_natalia_refugee_receiver = yes
+	if = {
+		limit = { scope:natal_refugee_receiver ?= { country_definition = cd:ORA } }
+		c:ZUL ?= { set_variable = sb_klip_river_refugee_receiver_ora_var }
+	}
+	else_if = {
+		limit = { scope:natal_refugee_receiver ?= { country_definition = cd:TRN } }
+		c:ZUL ?= { set_variable = sb_klip_river_refugee_receiver_trn_var }
+	}
+	else_if = {
+		limit = { scope:natal_refugee_receiver ?= { country_definition = cd:ZPB } }
+		c:ZUL ?= { set_variable = sb_klip_river_refugee_receiver_zpb_var }
+	}
+	else_if = {
+		limit = { scope:natal_refugee_receiver ?= { country_definition = cd:LYD } }
+		c:ZUL ?= { set_variable = sb_klip_river_refugee_receiver_lyd_var }
+	}
+}
+
+sb_klip_river_start_secession_play = {
+	sb_klip_river_roll_coalition_boost = yes
+	if = {
+		limit = { has_truce_with = c:ZUL }
+		end_truce = c:ZUL
+	}
+	set_variable = sb_klip_river_secession_active_var
+	c:KLR ?= { set_variable = sb_klip_river_secession_active_var }
+	c:ZUL ?= { set_variable = sb_klip_river_secession_active_var }
+	if = {
+		limit = {
+			c:ORA ?= {
+				is_country_alive = yes
+				is_subject = no
+				has_variable = sb_klip_river_ora_backed_var
+			}
+		}
+		c:ORA = {
+			create_diplomatic_pact = {
+				country = c:KLR
+				type = protectorate
+			}
+		}
+		c:ZUL = {
+			create_diplomatic_play = {
+				type = dp_sb_klip_river_secession
+				target_country = c:NAL
+				add_initiator_backers = { c:KLR c:ORA }
+				add_target_backers = { c:GBR }
+				add_war_goal = {
+					holder = c:NAL
+					target_country = c:KLR
+					type = annex_country
+				}
+				add_war_goal = {
+					holder = c:NAL
+					target_country = c:ZUL
+					type = annex_country
+				}
+			}
+		}
+	}
+	else = {
+		c:ZUL = {
+			create_diplomatic_play = {
+				type = dp_sb_klip_river_secession
+				target_country = c:NAL
+				add_initiator_backers = { c:KLR }
+				add_target_backers = { c:GBR }
+				add_war_goal = {
+					holder = c:NAL
+					target_country = c:KLR
+					type = annex_country
+				}
+				add_war_goal = {
+					holder = c:NAL
+					target_country = c:ZUL
+					type = annex_country
+				}
+			}
+		}
+	}
+	c:ZUL ?= {
+		if = {
+			limit = { is_ai = yes }
+			set_strategy = ai_strategy_sb_klip_river_secession_resistance
+		}
+	}
+}
+
+sb_klip_river_start_punitive_play = {
+	sb_klip_river_select_punitive_refugee_receiver = yes
+	sb_klip_river_roll_punitive_zulu_boost = yes
+	if = {
+		limit = { has_truce_with = c:ZUL }
+		end_truce = c:ZUL
+	}
+	set_variable = sb_klip_river_punitive_active_var
+	c:ZUL ?= {
+		set_variable = sb_klip_river_punitive_active_var
+		if = {
+			limit = { NOT = { has_claim = s:STATE_ZULULAND } }
+			s:STATE_ZULULAND = { add_claim = c:ZUL }
+		}
+	}
+	create_diplomatic_play = {
+		type = dp_sb_klip_river_punitive_expedition
+		target_country = c:ZUL
+		add_initiator_backers = { c:GBR }
+	}
+	random_diplomatic_play = {
+		limit = {
+			initiator = root
+			target = c:ZUL
+			is_diplomatic_play_type = dp_sb_klip_river_punitive_expedition
+		}
+		add_war_goal = {
+			holder = c:ZUL
+			target_country = root
+			type = return_state
+			target_state = s:STATE_ZULULAND.region_state:NAL
+		}
+	}
+}
+
+sb_klip_river_accept_zulu_cession = {
+	s:STATE_ZULULAND = {
+		set_owner_of_provinces = {
+			country = root
+			provinces = { xBBCA32 }
+		}
+	}
+	if = { limit = { has_truce_with = c:ZUL } end_truce = c:ZUL }
+	create_bidirectional_truce = { country = c:ZUL months = 300 }
+	c:ZUL ?= {
+		if = { limit = { has_truce_with = c:GBR } end_truce = c:GBR }
+		create_bidirectional_truce = { country = c:GBR months = 300 }
+	}
+	sb_klip_river_prepare_standard_boer_flight = yes
+}
+
+sb_klip_river_finalize_reduced_natalia = {
+	if = {
+		limit = { c:NAL ?= { is_country_alive = yes } }
+		annex = c:NAL
+	}
+	s:STATE_ZULULAND = {
+		set_owner_of_provinces = {
+			country = c:ZUL
+			provinces = {
+				x279045 xBE6FEE x1A084B xBFA16B x9E9742 x88FAD4 x904EBE x41C070 xE882CE
+				x5B124F xFF0EF1 xE0EB02 x85695F x7ACC38 xB1F868 x3CED3D x11A090 xCD31DB
+			}
+		}
+		set_owner_of_provinces = {
+			country = c:KLR
+			provinces = { xBBCA32 xDE0EDE x552449 xE1E455 }
+		}
+	}
+	random_scope_character = {
+		limit = { has_variable = sb_martin_west_var }
+		transfer_character = c:GBR
+	}
+	change_tag = NAL
+	sb_apply_natalia_boer_republic_setup = yes
+	if = {
+		limit = { has_truce_with = c:ZUL }
+		end_truce = c:ZUL
+	}
+	create_bidirectional_truce = {
+		country = c:ZUL
+		months = 120
+	}
+	set_variable = sb_british_natal_ultimatum_var
+	set_variable = sb_natal_path_resolved_var
+	set_variable = sb_klip_river_county_resolved_var
+	c:GBR ?= { set_variable = sb_british_natal_ultimatum_var }
+	s:STATE_ZULULAND.region_state:ZUL ?= {
+		every_scope_pop = {
+			limit = { culture = cu:boer }
+			move_partial_pop = {
+				state = c:NAL.capital
+				population_ratio = 1
+			}
+		}
+	}
+	s:STATE_ZULULAND.region_state:NAL ?= {
+		every_scope_pop = {
+			limit = { culture = cu:tsonga }
+			move_partial_pop = {
+				state = s:STATE_ZULULAND.region_state:ZUL
+				population_ratio = 1
+			}
+		}
+		every_scope_pop = {
+			limit = { culture = cu:zulu }
+			move_partial_pop = {
+				state = s:STATE_ZULULAND.region_state:ZUL
+				population_ratio = 0.4
+			}
+		}
+	}
+	every_scope_character = {
+		limit = { has_variable = sb_klip_river_deferred_exile_var }
+		remove_variable = sb_klip_river_deferred_exile_var
+	}
+	if = {
+		limit = {
+			has_variable = sb_klip_river_ora_backed_var
+			c:ORA ?= {
+				is_country_alive = yes
+				is_subject = no
+			}
+			c:NAL ?= { NOT = { is_subject_of = c:ORA } }
+		}
+		c:ORA = {
+			create_diplomatic_pact = {
+				country = c:NAL
+				type = protectorate
+			}
+		}
+	}
+	sb_klip_river_clear_shared_markers = yes
+}
+
+sb_klip_river_restore_colonial_status_quo = {
+	if = {
+		limit = { NOT = { has_variable = sb_klip_river_county_resolved_var } }
+		if = {
+			limit = { c:KLR ?= { is_country_alive = yes } }
+			annex = c:KLR
+		}
+		set_variable = sb_klip_river_county_resolved_var
+		trigger_event = { id = sb_klip_river_county.090 days = 1 popup = yes }
+	}
+}
+
+sb_klip_river_record_county_annexation = {
+	if = {
+		limit = { NOT = { has_variable = sb_klip_river_county_resolved_var } }
+		if = {
+			limit = { c:KLR ?= { is_country_alive = yes } }
+			annex = c:KLR
+		}
+		set_variable = sb_klip_river_county_annexed_var
+	}
+}
+
+sb_klip_river_finalize_secession_white_peace = {
+	if = {
+		limit = { NOT = { has_variable = sb_klip_river_county_resolved_var } }
+		set_variable = sb_klip_river_county_resolved_var
+		# Only an enforced annexation of KLR displaces its Boer population.
+		if = {
+			limit = { has_variable = sb_klip_river_county_annexed_var }
+			set_variable = sb_klip_river_boer_departure_pending_var
+			trigger_event = { id = sb_klip_river_county.091 days = 1 popup = yes }
+		}
+		else = {
+			c:KLR ?= {
+				set_variable = sb_klip_river_county_resolved_var
+				every_scope_character = {
+					limit = { has_variable = sb_klip_river_deferred_exile_var }
+					remove_variable = sb_klip_river_deferred_exile_var
+				}
+			}
+			every_scope_character = {
+				limit = { has_variable = sb_klip_river_deferred_exile_var }
+				remove_variable = sb_klip_river_deferred_exile_var
+			}
+			sb_klip_river_clear_shared_markers = yes
+		}
+	}
+}
+
+sb_klip_river_finalize_punitive_natal_victory = {
+	if = {
+		limit = { NOT = { has_variable = sb_klip_river_county_resolved_var } }
+		set_variable = sb_klip_river_county_resolved_var
+		trigger_event = { id = sb_klip_river_county.080 days = 1 popup = yes }
+	}
+}
+
+sb_klip_river_finalize_punitive_white_peace = {
+	if = {
+		limit = { NOT = { has_variable = sb_klip_river_county_resolved_var } }
+		set_variable = sb_klip_river_county_resolved_var
+		trigger_event = { id = sb_klip_river_county.081 days = 1 popup = yes }
+	}
+}
+
+sb_klip_river_save_persisted_refugee_receiver = {
+	if = {
+		limit = {
+			has_variable = sb_klip_river_refugee_receiver_ora_var
+			c:ORA ?= { is_country_alive = yes }
+		}
+		c:ORA = { save_scope_as = klip_refugee_receiver }
+	}
+	else_if = {
+		limit = {
+			has_variable = sb_klip_river_refugee_receiver_trn_var
+			c:TRN ?= { is_country_alive = yes }
+		}
+		c:TRN = { save_scope_as = klip_refugee_receiver }
+	}
+	else_if = {
+		limit = {
+			has_variable = sb_klip_river_refugee_receiver_zpb_var
+			c:ZPB ?= { is_country_alive = yes }
+		}
+		c:ZPB = { save_scope_as = klip_refugee_receiver }
+	}
+	else_if = {
+		limit = {
+			has_variable = sb_klip_river_refugee_receiver_lyd_var
+			c:LYD ?= { is_country_alive = yes }
+		}
+		c:LYD = { save_scope_as = klip_refugee_receiver }
+	}
+}
+
+sb_klip_river_move_punitive_refugees = {
+	sb_klip_river_save_persisted_refugee_receiver = yes
+	if = {
+		limit = { exists = scope:klip_refugee_receiver }
+		if = {
+			limit = {
+				c:NAL ?= {
+					is_country_alive = yes
+					any_scope_character = { has_variable = sb_klip_river_deferred_exile_var }
+				}
+			}
+			c:NAL = {
+				random_scope_character = {
+					limit = { has_variable = sb_klip_river_deferred_exile_var }
+					transfer_character = scope:klip_refugee_receiver
+					set_interest_group = scope:klip_refugee_receiver.ig:ig_landowners
+					remove_variable = sb_klip_river_deferred_exile_var
+				}
+			}
+		}
+		else_if = {
+			limit = { any_scope_character = { has_variable = sb_klip_river_deferred_exile_var } }
+			random_scope_character = {
+				limit = { has_variable = sb_klip_river_deferred_exile_var }
+				transfer_character = scope:klip_refugee_receiver
+				set_interest_group = scope:klip_refugee_receiver.ig:ig_landowners
+				remove_variable = sb_klip_river_deferred_exile_var
+			}
+		}
+		if = {
+			limit = { c:NAL ?= { is_country_alive = yes } }
+			c:NAL = {
+				every_scope_state = {
+					every_scope_pop = {
+						limit = { culture = cu:boer }
+						move_partial_pop = {
+							state = scope:klip_refugee_receiver.capital
+							population_ratio = 0.95
+						}
+					}
+				}
+			}
+		}
+		every_scope_state = {
+			every_scope_pop = {
+				limit = { culture = cu:boer }
+				move_partial_pop = {
+					state = scope:klip_refugee_receiver.capital
+					population_ratio = 0.95
+				}
+			}
+		}
+		scope:klip_refugee_receiver = {
+			trigger_event = { id = sb_klip_river_county.082 days = 1 popup = yes }
+		}
+	}
+}
+
+sb_klip_river_finalize_punitive_zulu_victory = {
+	sb_klip_river_move_punitive_refugees = yes
+	every_scope_character = {
+		limit = { has_variable = sb_klip_river_deferred_exile_var }
+		remove_variable = sb_klip_river_deferred_exile_var
+	}
+	c:NAL ?= {
+		every_scope_character = {
+			limit = { has_variable = sb_klip_river_deferred_exile_var }
+			remove_variable = sb_klip_river_deferred_exile_var
+		}
+	}
+	set_variable = sb_klip_river_county_resolved_var
+	c:NAL ?= {
+		if = {
+			limit = { is_country_alive = yes }
+			set_variable = sb_klip_river_county_resolved_var
+		}
+	}
+	sb_klip_river_clear_shared_markers = yes
+}
+
+sb_klip_river_handle_wargoal_enforced = {
+	if = {
+		limit = {
+			country_definition = cd:ZUL
+			has_variable = sb_klip_river_secession_active_var
+			scope:target ?= { country_definition = cd:NAL }
+			scope:diplomatic_play ?= { is_diplomatic_play_type = dp_sb_klip_river_secession }
+		}
+		c:KLR ?= { sb_klip_river_finalize_reduced_natalia = yes }
+	}
+	else_if = {
+		limit = {
+			country_definition = cd:NAL
+			has_variable = sb_klip_river_secession_active_var
+			scope:target ?= { country_definition = cd:ZUL }
+			scope:diplomatic_play ?= { is_diplomatic_play_type = dp_sb_klip_river_secession }
+		}
+		sb_klip_river_restore_colonial_status_quo = yes
+	}
+	else_if = {
+		limit = {
+			country_definition = cd:NAL
+			has_variable = sb_klip_river_secession_active_var
+			scope:target ?= { country_definition = cd:KLR }
+			scope:diplomatic_play ?= { is_diplomatic_play_type = dp_sb_klip_river_secession }
+		}
+		sb_klip_river_record_county_annexation = yes
+	}
+	else_if = {
+		limit = {
+			country_definition = cd:NAL
+			has_variable = sb_klip_river_punitive_active_var
+			scope:diplomatic_play ?= { is_diplomatic_play_type = dp_sb_klip_river_punitive_expedition }
+		}
+		sb_klip_river_finalize_punitive_natal_victory = yes
+	}
+	else_if = {
+		limit = {
+			country_definition = cd:ZUL
+			has_variable = sb_klip_river_punitive_active_var
+			scope:diplomatic_play ?= { is_diplomatic_play_type = dp_sb_klip_river_punitive_expedition }
+		}
+		sb_klip_river_finalize_punitive_zulu_victory = yes
+	}
+}
+
+sb_klip_river_handle_backdown = {
+	if = {
+		limit = {
+			is_diplomatic_play_type = dp_sb_klip_river_secession
+			scope:actor ?= { country_definition = cd:NAL }
+			scope:target ?= {
+				country_definition = cd:ZUL
+				has_variable = sb_klip_river_secession_active_var
+			}
+		}
+		c:KLR ?= { sb_klip_river_finalize_reduced_natalia = yes }
+	}
+	else_if = {
+		limit = {
+			is_diplomatic_play_type = dp_sb_klip_river_secession
+			scope:actor ?= { country_definition = cd:ZUL }
+			scope:target ?= {
+				country_definition = cd:NAL
+				has_variable = sb_klip_river_secession_active_var
+			}
+		}
+		scope:target = { sb_klip_river_restore_colonial_status_quo = yes }
+	}
+	else_if = {
+		limit = {
+			is_diplomatic_play_type = dp_sb_klip_river_punitive_expedition
+			scope:actor ?= { country_definition = cd:NAL }
+			scope:target ?= {
+				country_definition = cd:ZUL
+				has_variable = sb_klip_river_punitive_active_var
+			}
+		}
+		scope:target = { sb_klip_river_finalize_punitive_zulu_victory = yes }
+	}
+	else_if = {
+		limit = {
+			is_diplomatic_play_type = dp_sb_klip_river_punitive_expedition
+			scope:actor ?= { country_definition = cd:ZUL }
+			scope:target ?= {
+				country_definition = cd:NAL
+				has_variable = sb_klip_river_punitive_active_var
+			}
+		}
+		scope:target = { sb_klip_river_finalize_punitive_natal_victory = yes }
+	}
+}
+
+sb_klip_river_handle_war_end = {
+	if = {
+		limit = {
+			is_diplomatic_play_type = dp_sb_klip_river_secession
+			c:NAL ?= {
+				is_country_alive = yes
+				has_variable = sb_klip_river_secession_active_var
+			}
+		}
+		c:NAL = { sb_klip_river_finalize_secession_white_peace = yes }
+	}
+	else_if = {
+		limit = {
+			is_diplomatic_play_type = dp_sb_klip_river_punitive_expedition
+			c:NAL ?= {
+				is_country_alive = yes
+				has_variable = sb_klip_river_punitive_active_var
+			}
+		}
+		c:NAL = { sb_klip_river_finalize_punitive_white_peace = yes }
+	}
+}
+
+sb_klip_river_county_monthly_housekeeping = {
+	# Recover a partial settlement if the KLR annexation goal was enforced but
+	# the terminating war callback no longer exposed its original actors.
+	if = {
+		limit = {
+			country_definition = cd:NAL
+			has_variable = sb_klip_river_secession_active_var
+			has_variable = sb_klip_river_county_annexed_var
+			NOT = { has_variable = sb_klip_river_county_resolved_var }
+			is_at_war = no
+			is_active_in_diplomatic_play = no
+			c:ZUL ?= { is_country_alive = yes }
+		}
+		sb_klip_river_finalize_secession_white_peace = yes
+	}
+	if = {
+		limit = {
+			country_definition = cd:NAL
+			has_variable = sb_natalia_british_colony_resolved_var
+			sb_klip_river_county_setup_valid = yes
+			NOT = { has_variable = sb_klip_river_county_pending_var }
+			NOT = { has_variable = sb_klip_river_county_scheduled_var }
+			NOT = { has_variable = sb_klip_river_county_resolved_var }
+			NOT = { has_variable = sb_klip_river_boer_flight_started_var }
+		}
+		sb_mark_natalia_boer_leadership_for_deferred_exile = yes
+		sb_schedule_klip_river_county_question = yes
+	}
+	if = {
+		limit = {
+			country_definition = cd:NAL
+			has_variable = sb_klip_river_county_pending_var
+			has_variable = sb_klip_river_county_ready_var
+		}
+			if = {
+				limit = { sb_klip_river_county_ready_for_commission = yes }
+				trigger_event = { id = sb_klip_river_county.010 days = 1 popup = yes }
+		}
+		else_if = {
+			limit = { NOT = { sb_klip_river_county_setup_valid = yes } }
+			sb_klip_river_prepare_standard_boer_flight = yes
+		}
+	}
+}

@@ -38,6 +38,19 @@ sb_cape.001 = {
 	option = {
 		name = sb_cape.001.a
 		default_option = yes
+		create_bidirectional_truce = {
+			country = c:XHO
+			months = 108
+		}
+		if = {
+			limit = { is_player = yes }
+			c:XHO ?= {
+				add_modifier = {
+					name = sb_xhosa_native_warbands
+					months = -1
+				}
+			}
+		}
 		set_variable = sb_cape_tensions_initialized_var
 		remove_variable = sb_cape_tensions_event_pending_var
 		je:je_sb_cape_politics ?= {
@@ -128,11 +141,11 @@ sb_cape.100 = {
 		}
 		if = {
 			limit = {
-				NOT = { country_has_primary_culture = cu:griqua }
+				NOT = { country_has_primary_culture = cu:cape_creole }
 			}
-			add_primary_culture = cu:griqua
+			add_primary_culture = cu:cape_creole
 		}
-		set_variable = sb_cape_griqua_accepted_var
+		set_variable = sb_cape_creole_accepted_var
 		set_variable = sb_cape_liberal_resolved_var
 		add_modifier = {
 			name = sb_cape_liberal_victory
@@ -397,7 +410,7 @@ sb_cape.103 = {
 				is_subject_of = c:GBR
 			}
 			c:GBR ?= {
-				trigger_event = { id = sb_cape.200 popup = yes }
+				trigger_event = { id = sb_cape.200 days = sb_travel_london_southern_africa_message_days popup = yes }
 			}
 		}
 		else = {
@@ -916,7 +929,9 @@ sb_cape.122 = {
 		}
 }
 
-	sb_cape.125 = {
+# A Cape Liberal revolution discredits constitutional liberalism and resolves
+# the Spirit of the Cape in favor of the settler interest.
+sb_cape.125 = {
 	type = country_event
 	placement = root
 
@@ -925,7 +940,7 @@ sb_cape.122 = {
 	flavor = sb_cape.125.f
 
 	event_image = {
-		video = "gfx/event_pictures/europenorthamerica_sufferage.bk2"
+		video = "gfx/event_pictures/europenorthamerica_political_extremism.bk2"
 	}
 
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
@@ -933,49 +948,43 @@ sb_cape.122 = {
 	duration = 3
 
 	trigger = {
-		country_definition = cd:CAP
-		is_ai = yes
-		has_journal_entry = je_sb_cape_politics
-		NOT = {
-			OR = {
-				has_law = law_type:law_cultural_exclusion
-				has_law_or_variant = law_type:law_multicultural
-			}
-		}
-		NOT = { is_enacting_law = law_type:law_cultural_exclusion }
-		NOT = { is_enacting_law = law_type:law_multicultural }
-		NOT = { is_enacting_law = law_type:law_sb_non_racialism }
-		any_civil_war = {
-			OR = {
-				is_civil_war_type = secession
-				is_civil_war_type = revolution
-			}
-			political_movement = {
-				is_political_movement_type = movement_sb_cape_liberal
-			}
-		}
+		# Triggered by the Cape JE's forced settler-resolution path.
 	}
 
 	option = {
 		name = sb_cape.125.a
 		default_option = yes
-		add_modifier = {
-			name = sb_cape_liberal_commitment
-			months = 24
-		}
-		set_variable = sb_cape_liberal_law_obligation_active_var
-		set_variable = {
-			name = sb_cape_liberal_law_obligation_due_var
-			days = 730
+		if = {
+			limit = { has_modifier = sb_boerehaat }
+			remove_modifier = sb_boerehaat
 		}
 		if = {
-			limit = { enacting_any_law = yes }
-			cancel_enactment = yes
+			limit = {
+				NOT = { country_has_primary_culture = cu:boer }
+				OR = {
+					has_law = law_type:law_racial_segregation
+					has_law = law_type:law_national_supremacy
+				}
+			}
+			add_primary_culture = cu:boer
 		}
-		start_enactment = law_type:law_cultural_exclusion
-		ai_chance = {
-			base = 100
+		add_modifier = {
+			name = sb_settler_victory
+			months = -1
 		}
+		set_variable = sb_ecsl_resolved_var
+		every_political_movement = {
+			limit = {
+				is_political_movement_type = movement_sb_cape_liberal
+			}
+			add_modifier = {
+				name = sb_cape_liberals_checked
+				months = 120
+			}
+		}
+		remove_variable = sb_cape_liberal_revolution_settler_outcome_var
+		remove_variable = sb_albany_sanctioned_var
+		remove_variable = sb_albany_refused_var
 	}
 }
 
@@ -1415,7 +1424,7 @@ sb_cape.200 = {
 		}
 
 		c:CAP ?= {
-			trigger_event = { id = sb_cape.201 days = 7 popup = yes }
+			trigger_event = { id = sb_cape.201 days = sb_travel_london_southern_africa_message_days popup = yes }
 		}
 
 		ai_chance = {
@@ -1427,7 +1436,7 @@ sb_cape.200 = {
 		name = sb_cape.200.b
 
 		c:CAP ?= {
-			trigger_event = { id = sb_cape.202 days = 21 popup = yes }
+			trigger_event = { id = sb_cape.202 days = sb_travel_london_southern_africa_message_days popup = yes }
 		}
 
 		ai_chance = {
@@ -1477,7 +1486,7 @@ sb_cape.201 = {
 				value = -40
 			}
 				c:ABY ?= {
-					trigger_event = { id = sb_cape.203 days = 14 popup = yes }
+					trigger_event = { id = sb_cape.203 days = sb_travel_cape_eastern_message_days popup = yes }
 				}
 			}
 			if = {
@@ -1507,7 +1516,7 @@ sb_cape.201 = {
 			value = -40
 		}
 			c:ABY ?= {
-				trigger_event = { id = sb_cape.203 days = 14 popup = yes }
+				trigger_event = { id = sb_cape.203 days = sb_travel_cape_eastern_message_days popup = yes }
 			}
 			if = {
 				limit = {

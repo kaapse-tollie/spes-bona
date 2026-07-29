@@ -1,0 +1,597 @@
+﻿namespace = sb_klip_river_county
+
+# Hidden delay endpoint. Invalid borders fall back to the normal Boer flight;
+# wars merely leave the question ready for the next peaceful monthly pulse.
+sb_klip_river_county.001 = {
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		country_definition = cd:NAL
+		has_variable = sb_klip_river_county_pending_var
+		NOT = { has_variable = sb_klip_river_county_resolved_var }
+	}
+
+	immediate = {
+		if = {
+			limit = { has_variable = sb_klip_river_county_scheduled_var }
+			remove_variable = sb_klip_river_county_scheduled_var
+		}
+		if = {
+			limit = { NOT = { sb_klip_river_county_setup_valid = yes } }
+			sb_klip_river_prepare_standard_boer_flight = yes
+		}
+		else_if = {
+			limit = { sb_klip_river_county_ready_for_commission = yes }
+			set_variable = sb_klip_river_county_ready_var
+			trigger_event = { id = sb_klip_river_county.010 days = 1 popup = yes }
+		}
+		else = {
+			set_variable = sb_klip_river_county_ready_var
+		}
+	}
+}
+
+# ### TO REVIEW ###
+sb_klip_river_county.010 = {
+	type = country_event
+	placement = root
+
+	title = sb_klip_river_county.010.t
+	desc = sb_klip_river_county.010.d
+	flavor = sb_klip_river_county.010.f
+
+	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:NAL
+		has_variable = sb_klip_river_county_pending_var
+		sb_klip_river_county_ready_for_commission = yes
+	}
+
+	immediate = {
+		if = {
+			limit = { has_variable = sb_klip_river_county_ready_var }
+			remove_variable = sb_klip_river_county_ready_var
+		}
+		c:ZUL ?= { save_scope_as = sb_klip_zulu_scope }
+		c:GBR ?= { save_scope_as = sb_klip_britain_scope }
+	}
+
+	option = {
+		name = sb_klip_river_county.010.a
+		default_option = yes
+		custom_tooltip = sb_klip_river_county_010_tt
+		hidden_effect = {
+			c:ZUL ?= { trigger_event = { id = sb_klip_river_county.020 days = 2 popup = yes } }
+		}
+		ai_chance = {
+			base = 70
+			modifier = { trigger = { c:ZUL ?= { relations:root >= relations_threshold:cordial } } add = -10 }
+			modifier = { trigger = { c:ZUL ?= { relations:root >= relations_threshold:amicable } } add = -10 }
+			modifier = { trigger = { c:ZUL ?= { relations:root >= relations_threshold:friendly } } add = -10 }
+			modifier = { trigger = { c:ZUL ?= { relations:root <= relations_threshold:poor } } add = 10 }
+			modifier = { trigger = { c:ZUL ?= { relations:root <= relations_threshold:cold } } add = 10 }
+			modifier = { trigger = { c:ZUL ?= { relations:root <= relations_threshold:hostile } } add = 10 }
+		}
+	}
+
+	option = {
+		name = sb_klip_river_county.010.b
+		custom_tooltip = sb_klip_river_county_010_b_tt
+		change_relations = {
+			country = c:ZUL
+			value = 25
+		}
+		hidden_effect = {
+			sb_klip_river_prepare_ratified_border_boer_flight = yes
+		}
+		ai_chance = {
+			base = 30
+			modifier = { trigger = { c:ZUL ?= { relations:root >= relations_threshold:cordial } } add = 10 }
+			modifier = { trigger = { c:ZUL ?= { relations:root >= relations_threshold:amicable } } add = 10 }
+			modifier = { trigger = { c:ZUL ?= { relations:root >= relations_threshold:friendly } } add = 10 }
+			modifier = { trigger = { c:ZUL ?= { relations:root <= relations_threshold:poor } } add = -10 }
+			modifier = { trigger = { c:ZUL ?= { relations:root <= relations_threshold:cold } } add = -10 }
+			modifier = { trigger = { c:ZUL ?= { relations:root <= relations_threshold:hostile } } add = -10 }
+			modifier = { trigger = { sb_frontier_ai_behavior_strict_historical = yes } add = -1000 }
+		}
+	}
+}
+
+# ### TO REVIEW ###
+sb_klip_river_county.020 = {
+	type = country_event
+	placement = root
+
+	title = sb_klip_river_county.020.t
+	desc = sb_klip_river_county.020.d
+	flavor = sb_klip_river_county.020.f
+
+	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:ZUL
+		is_country_alive = yes
+		c:NAL ?= {
+			is_country_alive = yes
+			has_variable = sb_klip_river_county_pending_var
+		}
+	}
+
+	immediate = {
+		save_scope_as = sb_klip_zulu_scope
+		c:NAL ?= { save_scope_as = sb_klip_natal_scope }
+		c:GBR ?= { save_scope_as = sb_klip_britain_scope }
+		c:ORA ?= {
+			if = { limit = { is_country_alive = yes } save_scope_as = sb_klip_oranje_scope }
+		}
+	}
+
+	option = {
+		name = sb_klip_river_county.020.a
+		default_option = yes
+		custom_tooltip = sb_klip_river_county_020_a_tt
+		custom_tooltip = sb_klip_river_county_020_a_dynasty_tt
+		hidden_effect = {
+			sb_zulu_remove_dynastic_stability_5 = yes
+			ruler ?= {
+				if = {
+					limit = { NOT = { has_trait = cautious } }
+					add_trait = cautious
+				}
+			}
+				c:NAL ?= { trigger_event = { id = sb_klip_river_county.030 days = 2 popup = yes } }
+		}
+		ai_chance = {
+			base = 60
+			modifier = { trigger = { sb_frontier_ai_behavior_strict_historical = yes } add = 1000 }
+			modifier = { trigger = { has_journal_entry = je_sb_zulu_kingdom } add = 15 }
+			modifier = { trigger = { NOT = { has_journal_entry = je_sb_zulu_kingdom } } add = -15 }
+			modifier = { trigger = { has_variable = sb_firearms_modernized_var } add = -30 }
+			modifier = {
+				trigger = {
+					NOT = { has_variable = sb_firearms_modernized_var }
+					has_journal_entry = je_sb_adopt_firearms
+					je:je_sb_adopt_firearms ?= { "scripted_bar_progress(sb_firearms_adoption_bar)" < 50 }
+				}
+				add = 15
+			}
+			modifier = {
+				trigger = {
+					NOT = { has_variable = sb_firearms_modernized_var }
+					has_journal_entry = je_sb_adopt_firearms
+					je:je_sb_adopt_firearms ?= { "scripted_bar_progress(sb_firearms_adoption_bar)" > 50 }
+				}
+				add = -15
+			}
+			modifier = { trigger = { ruler ?= { has_template = ZUL_dingane } } add = -15 }
+			modifier = { trigger = { sb_zulu_controls_initial_swaziland = yes } add = -15 }
+		}
+	}
+
+	option = {
+		name = sb_klip_river_county.020.b
+		custom_tooltip = sb_klip_river_county_020_b_tt
+		custom_tooltip = sb_klip_river_county_020_b_dynasty_tt
+		hidden_effect = {
+			sb_zulu_add_dynastic_stability_5 = yes
+			ruler ?= {
+				if = {
+					limit = { NOT = { has_trait = tactful } }
+					add_trait = tactful
+				}
+			}
+			c:NAL ?= {
+				sb_klip_river_create_county = yes
+				if = {
+					limit = { sb_klip_river_ora_can_receive_appeal = yes }
+					c:ORA ?= { trigger_event = { id = sb_klip_river_county.004 days = 6 popup = yes } }
+				}
+				else = {
+					trigger_event = { id = sb_klip_river_county.050 days = 1 popup = yes }
+				}
+			}
+		}
+		ai_chance = {
+			base = 30
+			modifier = { trigger = { sb_frontier_ai_behavior_strict_historical = yes } add = -1000 }
+			modifier = { trigger = { has_journal_entry = je_sb_zulu_kingdom } add = -10 }
+			modifier = { trigger = { NOT = { has_journal_entry = je_sb_zulu_kingdom } } add = 10 }
+			modifier = { trigger = { has_variable = sb_firearms_modernized_var } add = 20 }
+			modifier = {
+				trigger = {
+					NOT = { has_variable = sb_firearms_modernized_var }
+					has_journal_entry = je_sb_adopt_firearms
+					je:je_sb_adopt_firearms ?= { "scripted_bar_progress(sb_firearms_adoption_bar)" < 50 }
+				}
+				add = -10
+			}
+			modifier = {
+				trigger = {
+					NOT = { has_variable = sb_firearms_modernized_var }
+					has_journal_entry = je_sb_adopt_firearms
+					je:je_sb_adopt_firearms ?= { "scripted_bar_progress(sb_firearms_adoption_bar)" > 50 }
+				}
+				add = 10
+			}
+			modifier = { trigger = { ruler ?= { has_template = ZUL_dingane } } add = 10 }
+			modifier = { trigger = { sb_zulu_controls_initial_swaziland = yes } add = 10 }
+		}
+	}
+
+	option = {
+		name = sb_klip_river_county.020.c
+		custom_tooltip = sb_klip_river_county_020_c_tt
+		custom_tooltip = sb_klip_river_county_020_c_dynasty_tt
+		hidden_effect = {
+			sb_zulu_add_dynastic_stability_10 = yes
+			sb_zulu_add_dynastic_stability_5 = yes
+			ruler ?= {
+				if = {
+					limit = { NOT = { has_trait = ambitious } }
+					add_trait = ambitious
+				}
+			}
+				c:NAL ?= { trigger_event = { id = sb_klip_river_county.060 days = 2 popup = yes } }
+		}
+		ai_chance = {
+			base = 10
+			modifier = { trigger = { sb_frontier_ai_behavior_strict_historical = yes } add = -1000 }
+			modifier = { trigger = { has_journal_entry = je_sb_zulu_kingdom } add = -5 }
+			modifier = { trigger = { NOT = { has_journal_entry = je_sb_zulu_kingdom } } add = 5 }
+			modifier = { trigger = { has_variable = sb_firearms_modernized_var } add = 10 }
+			modifier = {
+				trigger = {
+					NOT = { has_variable = sb_firearms_modernized_var }
+					has_journal_entry = je_sb_adopt_firearms
+					je:je_sb_adopt_firearms ?= { "scripted_bar_progress(sb_firearms_adoption_bar)" < 50 }
+				}
+				add = -5
+			}
+			modifier = {
+				trigger = {
+					NOT = { has_variable = sb_firearms_modernized_var }
+					has_journal_entry = je_sb_adopt_firearms
+					je:je_sb_adopt_firearms ?= { "scripted_bar_progress(sb_firearms_adoption_bar)" > 50 }
+				}
+				add = 5
+			}
+			modifier = { trigger = { ruler ?= { has_template = ZUL_dingane } } add = 5 }
+			modifier = { trigger = { sb_zulu_controls_initial_swaziland = yes } add = 5 }
+		}
+	}
+}
+
+# ### TO REVIEW ###
+sb_klip_river_county.004 = {
+	type = country_event
+	placement = root
+
+	title = sb_klip_river_county.004.t
+	desc = sb_klip_river_county.004.d
+	flavor = sb_klip_river_county.004.f
+
+	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:ORA
+		is_country_alive = yes
+		is_subject = no
+		c:KLR ?= { is_country_alive = yes }
+		c:NAL ?= { has_variable = sb_klip_river_secession_active_var }
+	}
+
+	immediate = {
+		c:NAL ?= { save_scope_as = sb_klip_natal_scope }
+		c:KLR ?= { save_scope_as = sb_klip_county_scope }
+		c:ZUL ?= { save_scope_as = sb_klip_zulu_scope }
+	}
+
+	option = {
+		name = sb_klip_river_county.004.a
+		custom_tooltip = sb_klip_river_county_004_a_tt
+		hidden_effect = {
+			sb_klip_river_record_ora_backing = yes
+				c:NAL ?= { trigger_event = { id = sb_klip_river_county.050 days = 4 popup = yes } }
+		}
+		ai_chance = {
+			base = 60
+			modifier = { trigger = { has_variable = sb_great_trek_completed_var } add = 15 }
+			modifier = { trigger = { NOT = { has_variable = sb_great_trek_completed_var } } add = -35 }
+			modifier = { trigger = { owns_entire_state_region = STATE_DRAKENSBERG } add = 15 }
+			modifier = { trigger = { NOT = { owns_entire_state_region = STATE_DRAKENSBERG } } add = -15 }
+		}
+	}
+
+	option = {
+		name = sb_klip_river_county.004.b
+		default_option = yes
+		hidden_effect = {
+				c:NAL ?= { trigger_event = { id = sb_klip_river_county.050 days = 4 popup = yes } }
+		}
+		ai_chance = {
+			base = 40
+			modifier = { trigger = { has_variable = sb_great_trek_completed_var } add = -15 }
+			modifier = { trigger = { NOT = { has_variable = sb_great_trek_completed_var } } add = 35 }
+			modifier = { trigger = { owns_entire_state_region = STATE_DRAKENSBERG } add = -15 }
+			modifier = { trigger = { NOT = { owns_entire_state_region = STATE_DRAKENSBERG } } add = 15 }
+		}
+	}
+}
+
+# ### TO REVIEW ###
+sb_klip_river_county.030 = {
+	type = country_event
+	placement = root
+
+	title = sb_klip_river_county.030.t
+	desc = sb_klip_river_county.030.d
+	flavor = sb_klip_river_county.030.f
+	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:NAL
+		has_variable = sb_klip_river_county_pending_var
+		c:ZUL ?= { is_country_alive = yes }
+	}
+
+	immediate = { c:ZUL ?= { save_scope_as = sb_klip_zulu_scope } }
+
+	option = {
+		name = sb_klip_river_county.030.a
+		default_option = yes
+		custom_tooltip = sb_klip_river_county_030_tt
+		hidden_effect = { sb_klip_river_accept_zulu_cession = yes }
+		ai_chance = { base = 100 }
+	}
+}
+
+# ### TO REVIEW ###
+sb_klip_river_county.050 = {
+	type = country_event
+	placement = root
+
+	title = sb_klip_river_county.050.t
+	desc = sb_klip_river_county.050.d
+	flavor = sb_klip_river_county.050.f
+	event_image = { video = "gfx/event_pictures/africa_soldiers_breaking_protest.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_military.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:NAL
+		has_variable = sb_klip_river_secession_active_var
+		c:KLR ?= { is_country_alive = yes }
+	}
+
+	immediate = {
+		c:KLR ?= { save_scope_as = sb_klip_county_scope }
+		c:ZUL ?= { save_scope_as = sb_klip_zulu_scope }
+		c:GBR ?= { save_scope_as = sb_klip_britain_scope }
+		c:ORA ?= {
+			if = {
+				limit = { has_variable = sb_klip_river_ora_backed_var }
+				save_scope_as = sb_klip_oranje_scope
+			}
+		}
+	}
+
+	option = {
+		name = sb_klip_river_county.050.a
+		default_option = yes
+		custom_tooltip = sb_klip_river_county_050_tt
+		hidden_effect = { sb_klip_river_start_secession_play = yes }
+		ai_chance = { base = 100 }
+	}
+}
+
+# ### TO REVIEW ###
+sb_klip_river_county.060 = {
+	type = country_event
+	placement = root
+
+	title = sb_klip_river_county.060.t
+	desc = sb_klip_river_county.060.d
+	flavor = sb_klip_river_county.060.f
+	event_image = { video = "gfx/event_pictures/africa_soldiers_breaking_protest.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_military.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:NAL
+		has_variable = sb_klip_river_county_pending_var
+		c:ZUL ?= { is_country_alive = yes }
+	}
+
+	immediate = {
+		c:ZUL ?= { save_scope_as = sb_klip_zulu_scope }
+		c:GBR ?= { save_scope_as = sb_klip_britain_scope }
+	}
+
+	option = {
+		name = sb_klip_river_county.060.a
+		default_option = yes
+		custom_tooltip = sb_klip_river_county_060_tt
+		hidden_effect = { sb_klip_river_start_punitive_play = yes }
+		ai_chance = { base = 100 }
+	}
+}
+
+# ### REVIEWED ###
+sb_klip_river_county.070 = {
+	type = country_event
+	placement = root
+	title = sb_klip_river_county.070.t
+	desc = sb_klip_river_county.070.d
+	flavor = sb_klip_river_county.070.f
+	event_image = { video = "gfx/event_pictures/africa_construction_colony.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+	trigger = {
+		country_definition = cd:NAL
+		is_country_alive = yes
+		has_variable = sb_klip_river_boer_departure_pending_var
+		NOT = { has_variable = sb_klip_river_boer_flight_started_var }
+	}
+	option = {
+		name = sb_klip_river_county.070.a
+		default_option = yes
+		custom_tooltip = sb_natal_refugee_boer_pop_move_tt
+		hidden_effect = { sb_klip_river_execute_standard_boer_flight = yes }
+		ai_chance = { base = 100 }
+	}
+}
+
+# ### REVIEWED ###
+sb_klip_river_county.075 = {
+	type = country_event
+	placement = root
+	title = sb_klip_river_county.075.t
+	desc = sb_klip_river_county.075.d
+	flavor = sb_klip_river_county.075.f
+	event_image = { video = "gfx/event_pictures/africa_construction_colony.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+	trigger = {
+		country_definition = cd:NAL
+		is_country_alive = yes
+		has_variable = sb_klip_river_boer_departure_pending_var
+		NOT = { has_variable = sb_klip_river_boer_flight_started_var }
+	}
+	option = {
+		name = sb_klip_river_county.075.a
+		default_option = yes
+		custom_tooltip = sb_natal_refugee_boer_pop_move_tt
+		hidden_effect = { sb_klip_river_execute_standard_boer_flight = yes }
+		ai_chance = { base = 100 }
+	}
+}
+
+# ### TO REVIEW ###
+sb_klip_river_county.080 = {
+	type = country_event
+	placement = root
+	title = sb_klip_river_county.080.t
+	desc = sb_klip_river_county.080.d
+	flavor = sb_klip_river_county.080.f
+	event_image = { video = "gfx/event_pictures/africa_construction_colony.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_military.dds"
+	duration = 3
+	trigger = { country_definition = cd:NAL has_variable = sb_klip_river_county_resolved_var }
+	option = {
+		name = sb_klip_river_county.080.a
+		default_option = yes
+		custom_tooltip = sb_natal_refugee_boer_pop_move_tt
+		hidden_effect = { sb_klip_river_execute_standard_boer_flight = yes }
+		ai_chance = { base = 100 }
+	}
+}
+
+# ### TO REVIEW ###
+sb_klip_river_county.081 = {
+	type = country_event
+	placement = root
+	title = sb_klip_river_county.081.t
+	desc = sb_klip_river_county.081.d
+	flavor = sb_klip_river_county.081.f
+	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+	trigger = { country_definition = cd:NAL has_variable = sb_klip_river_county_resolved_var }
+	option = {
+		name = sb_klip_river_county.081.a
+		default_option = yes
+		custom_tooltip = sb_natal_refugee_boer_pop_move_tt
+		hidden_effect = { sb_klip_river_execute_standard_boer_flight = yes }
+		ai_chance = { base = 100 }
+	}
+}
+
+# ### TO REVIEW ###
+sb_klip_river_county.082 = {
+	type = country_event
+	placement = root
+	title = sb_klip_river_county.082.t
+	desc = sb_klip_river_county.082.d
+	flavor = sb_klip_river_county.082.f
+	event_image = { video = "gfx/event_pictures/africa_construction_colony.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+	trigger = {
+		OR = {
+			country_definition = cd:ORA
+			country_definition = cd:TRN
+			country_definition = cd:ZPB
+			country_definition = cd:LYD
+		}
+	}
+	option = { name = sb_klip_river_county.082.a default_option = yes ai_chance = { base = 100 } }
+}
+
+# ### REVIEWED ###
+sb_klip_river_county.090 = {
+	type = country_event
+	placement = root
+	title = sb_klip_river_county.090.t
+	desc = sb_klip_river_county.090.d
+	flavor = sb_klip_river_county.090.f
+	event_image = { video = "gfx/event_pictures/africa_construction_colony.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+	trigger = { country_definition = cd:NAL has_variable = sb_klip_river_county_resolved_var }
+	option = {
+		name = sb_klip_river_county.090.a
+		default_option = yes
+		custom_tooltip = sb_natal_refugee_boer_pop_move_tt
+		hidden_effect = { sb_klip_river_execute_standard_boer_flight = yes }
+		ai_chance = { base = 100 }
+	}
+}
+
+# ### TO REVIEW ###
+sb_klip_river_county.091 = {
+	type = country_event
+	placement = root
+	title = sb_klip_river_county.091.t
+	desc = sb_klip_river_county.091.d
+	flavor = sb_klip_river_county.091.f
+	event_image = { video = "gfx/event_pictures/africa_construction_colony.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+	trigger = {
+		country_definition = cd:NAL
+		is_country_alive = yes
+		has_variable = sb_klip_river_county_resolved_var
+		has_variable = sb_klip_river_county_annexed_var
+		NOT = { has_variable = sb_klip_river_boer_flight_started_var }
+	}
+	option = {
+		name = sb_klip_river_county.091.a
+		default_option = yes
+		custom_tooltip = sb_natal_refugee_boer_pop_move_tt
+		hidden_effect = { sb_klip_river_execute_standard_boer_flight = yes }
+		ai_chance = { base = 100 }
+	}
+}

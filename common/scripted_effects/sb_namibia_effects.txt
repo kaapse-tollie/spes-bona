@@ -368,7 +368,7 @@ sb_nam_finalize_swa_administration = {
 		sb_nam_apply_swa_administration_package = yes
 		trigger_event = { id = sb_nam.150 days = 1 popup = yes }
 	}
-	sb_nam_offer_swa_play_as_to_interested_players = yes
+	sb_nam_offer_swa_play_as_to_player_overlord = yes
 	sb_nam_clear_final_harshness_flags = yes
 	sb_nam_clear_administration_package_flags = yes
 }
@@ -541,14 +541,13 @@ sb_nam_apply_swa_administration_package = {
 	}
 }
 
-sb_nam_offer_swa_play_as_to_interested_players = {
-	every_country = {
+sb_nam_offer_swa_play_as_to_player_overlord = {
+	if = {
 		limit = {
 			is_player = yes
-			NOT = { country_definition = cd:SWA }
-			has_interest_marker_in_region = sr:region_southern_africa
 			c:SWA ?= {
 				is_ai = yes
+				is_subject_of = root
 			}
 			NOT = { has_global_variable = sb_nam_swa_player_switch_taken_var }
 		}

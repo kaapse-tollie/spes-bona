@@ -55,6 +55,31 @@ The following broad files remain retired:
 
 Compatibility impact: mods that also redefine these state regions need a manual compatibility patch. Other 1.13 map regions should remain vanilla-owned.
 
+## Additive State Trait Assignments
+
+`common/history/global/sb_state_traits.txt` replaces mild malaria with severe malaria at initialization for the following state regions:
+
+- `STATE_EASTERN_MALI`
+- `STATE_WESTERN_MALI`
+- `STATE_VOLTA`
+- `STATE_HAUSALAND`
+- `STATE_OUTER_HAUSALAND`
+- `STATE_EAST_HAUSALAND`
+- `STATE_BORNU`
+- `STATE_NIGERIA`
+- `STATE_NORTH_CAMEROON`
+- `STATE_WADDAI`
+- `STATE_NORTH_ANGOLA`
+- `STATE_LINDI` (Rufiji)
+- `STATE_TANGANYIKA`
+- `STATE_KAZEMBE`
+- `STATE_RIFT_VALLEY`
+- `STATE_UGANDA`
+
+`STATE_GABON` is adjusted in the opposite direction, replacing severe malaria with normal malaria.
+
+This uses state-region-scoped `remove_state_trait` and `add_state_trait` effects instead of map-data overrides. It does not redefine provinces, hubs, arable land, resources, or either vanilla regional file, so third-party map mods remain compatible unless they deliberately alter the same malaria traits during history initialization.
+
 ## History Baselines Intentionally Replaced
 
 State ownership/history is limited to the same Southern African scope in `common/history/states/00_states.txt`.
@@ -87,6 +112,8 @@ The remaining hard `REPLACE`/`REPLACE_OR_CREATE` usage is intentionally limited 
 - Vanilla Highveld JE/scripted-button disablement.
 - Southern Africa dynamic state-name dispatcher.
 - Southern Africa strategic/geographic region overrides.
+- De Beers company replacement so it operates SB diamond mines instead of vanilla gold fields.
+- Companhia de Mocambique replacement so it can only be chartered through the Portuguese Mozambique administration event.
 - Character template and interaction overrides for SB ruler/general handling.
 - Political movement overlap overrides where CMF has no narrower hook yet.
 - `state_trait_severe_malaria` adjustment used by the SB map/resource pass.
@@ -96,6 +123,8 @@ Any new hard replacement should include a local comment explaining why additive 
 Current feature-specific override files include:
 
 - `common/character_interactions/zz_sb_commander_retirement_override.txt`
+- `common/company_types/zz_sb_de_beers_override.txt`
+- `common/company_types/zz_sb_mozambique_company_override.txt`
 - `common/country_definitions/zz_sb_southern_africa_country_definition_overrides.txt`
 - `common/ideologies/zz_sb_reformer_ideology_override.txt`
 - `common/journal_entries/zz_sb_highveld_vanilla_overrides.txt`

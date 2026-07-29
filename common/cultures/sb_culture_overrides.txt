@@ -1,19 +1,9 @@
 ﻿# Spes Bona - Culture Overrides
-# REPLACE: directive overwrites the vanilla griqua culture definition entirely.
+# REPLACE: overwrites the vanilla Griqua definition because vanilla assigns it
+# Bantu heritage. Griqua history instead reflects Khoisan, enslaved, and Dutch
+# frontier ancestry, Dutch/Afrikaans speech, and strong Protestant influence.
 #
-# BUG FIX: Vanilla V3 incorrectly assigns griqua heritage as heritage_bantu.
-# The Griqua were a mixed-race community of primarily Khoisan and European (Dutch) descent,
-# not Bantu. They descended from Cape Khoikhoi, escaped slaves, and Dutch settlers/soldiers.
-# heritage_khoisan is the correct classification.
-#
-# The Griqua spoke Dutch/Afrikaans (language_dutch) and were predominantly Protestant
-# (converted by missionaries, particularly the London Missionary Society).
-# religion = protestant and language = dutch are both historically accurate.
-#
-# graphics = european and ethnicities weighted toward african_diaspora (2:1 vs african)
-# reflect their mixed heritage and European-influenced material culture (clothing, firearms, wagons).
-#
-# Cross-ref: common/country_definitions/sb_countries.txt — ORL (Oorlam) uses griqua as primary culture.
+# All cultures created by SB are defined in sb_southern_african_cultures.txt.
 
 REPLACE:griqua = {
 	color = rgb{ 92 123 131 }
@@ -23,8 +13,8 @@ REPLACE:griqua = {
 	seal_and_signature_texture = "gfx/interface/diplomatic_treaties/seal_and_signature_cultures/diplomatic_treaties_seal_and_signature_african.dds"
 	traditions = { }
 
-	# First names reflect the strong Dutch/Afrikaans and Biblical naming traditions of the Griqua.
-	# Names like Adam, Moses, and Reuben show the influence of missionary Christianity.
+	# Dutch/Afrikaans and Biblical names reflect missionary Christianity and the
+	# naming practices visible among the nineteenth-century captaincies.
 	male_common_first_names = {
 		Adam Andries Alfred Abraham Albert
 		Barend
@@ -58,20 +48,16 @@ REPLACE:griqua = {
 		Susanna Saartje
 	}
 
-	# Surnames sourced from historical rolls of soldiers from Griqualand West and East
-	# during the Cape Frontier Wars and the Second Boer War, plus Oorlam captaincy names.
-	# Mix of Dutch/Afrikaans, German, English, and Khoisan-origin surnames reflects the
-	# Griqua's diverse ancestry. Notable names:
-	#   Kok — the Griqua paramount captaincy dynasty (Adam Kok I, II, III)
-	#   Waterboer — another major Griqua captain family (omitted if not in rolls)
-	#   Bloem, Barends — early Griqua captains from the Orange River region
-	#   Afrikaner, Witbooi — Oorlam captaincy names (included for ORL tag)
-	#   Taaibosch — Khoisan-origin surname
+	# The principal captain families are weighted separately from the broader
+	# soldier-roll surname pool inherited from vanilla.
+	noble_last_names = {
+		Barends Bloem Hendricks Kok Taaibosch Waterboer
+	}
 	common_last_names = {
 		Adamson Allard Angman Anderson Aling Arnot Adrian Aylward
 		Brophy Bees Beukes Bezeudenhout Boag Britz Burmeister Beggs Booysen Botha Boucher de_Brayn Busse de_Bouin Bloem Barends
 		Cusins Cairnthers Cloete Colyn Crube Cowie Cathcart Coetzer
-		Doonan Delbies Dorning Diesel Dewet Domings Donngo Diergaardt Dreyer Durandt Daines Demmer Dippenaar Dolke Dyason
+		Doonan Delbies Dorning Diesel Dewet Domings Donngo Dreyer Durandt Daines Demmer Dippenaar Dolke Dyason
 		Ehlert Ede Erasmus Earley Ekron Epelboum Etchills
 		Framjee Ferrar Fischer
 		Goch Gordall Goss Gringle Gast Glofse Goosen Goliath Groblaar Grossman Gust Gardner Gerber Gilson Grouse
@@ -86,9 +72,9 @@ REPLACE:griqua = {
 		Parkin du_Prez Palvie Petersen Phillips Pretorius Pfeiffer Pitout Posthinzen Pringle Putter Pyke
 		Roper Runchman Roets Roux Routledge Raw Ray Rheeder Roodt van_Rensburg Rutters Reid
 		Slatter Seitz Sims Smit Suckermeyer Scard Seelig Sparkling Studd Schutte Semell Seyman Siegruhm Snyman Stadd Salter Schroeter Strachen
-		Tonkin Tyndell Tarr Thompson Thirk Trollip Tibot Taaibosch Afrikaner Witbooi
+		Tonkin Tyndell Tarr Thompson Thirk Trollip Tibot Taaibosch
 		Vanaardt van_Vuuren de_Vries Vanheerden Vinnicombe Vosloo Vlermuis
-		Whelan van_der_Walt Wentzel Wollfer Winter Wollenschlager Witvoet
+		Waterboer Whelan van_der_Walt Wentzel Wollfer Winter Wollenschlager Witvoet
 		Zennenberg Zeitoman
 	}
 
@@ -97,197 +83,4 @@ REPLACE:griqua = {
 		2 = african_diaspora
 		1 = african
 	}
-}
-
-# Anglo-African — Southern African English settler offshoot.
-# Modeled conservatively after vanilla settler cultures such as australian and
-# anglo_canadian: anglophone, protestant, and still culturally British, but
-# locally rooted in the Cape/Natal colonial world rather than the metropole.
-anglo_african = {
-	color = hsv{ 0.17 0.35 0.62 }
-	religion = protestant
-	heritage = heritage_british
-	language = language_anglophone
-	seal_and_signature_texture = "gfx/interface/diplomatic_treaties/seal_and_signature_cultures/diplomatic_treaties_seal_and_signature_default.dds"
-
-	obsessions = {
-		tea
-	}
-
-	traditions = { }
-	male_common_first_names = {
-		Albert Alfred Arthur Charles Edward Frederick George Henry James John Thomas William
-	}
-	female_common_first_names = {
-		Alice Anne Caroline Charlotte Elizabeth Ellen Emma Jane Louisa Mary Sarah Victoria
-	}
-	common_last_names = {
-		Atherstone Brown Campbell Currie Fairbairn Jarvis Merriman Murray Porter Pringle Robinson Smith Southey Stewart Thompson Wodehouse Wright
-	}
-
-	graphics = european
-	ethnicities = {
-		1 = caucasian
-	}
-}
-
-# v0.12 population rework cultures. These split vanilla umbrella cultures
-# without changing the broader discrimination logic: Nguni remains a language
-# family/formable identity, while Khoisan remains the shared heritage/language.
-
-venda = {
-	color = hsv{ 0.04 0.56 0.74 }
-	religion = animist
-	heritage = heritage_southern_bantu
-	language = language_venda
-	seal_and_signature_texture = "gfx/interface/diplomatic_treaties/seal_and_signature_cultures/diplomatic_treaties_seal_and_signature_african.dds"
-	traditions = { }
-	male_common_first_names = { Makhado Ramabulana Tshivhase Mpefu Pafuri Makwarela }
-	female_common_first_names = { Fulu Tshilidzi Takalani Muvhango }
-	common_last_names = { Ramabulana Tshivhase Mphaphuli Makwarela Pafuri Makhado }
-	ethnicities = { 1 = african }
-	graphics = african
-}
-
-pedi = {
-	color = hsv{ 0.57 0.42 0.73 }
-	religion = animist
-	heritage = heritage_southern_bantu
-	language = language_sotho_tswana
-	seal_and_signature_texture = "gfx/interface/diplomatic_treaties/seal_and_signature_cultures/diplomatic_treaties_seal_and_signature_african.dds"
-	traditions = { }
-	male_common_first_names = { Sekwati Sekhukhune Thulare Morwamoche Mampuru Kgoloko }
-	female_common_first_names = { Mmanthatisi Mmamongwato Nthabiseng Masechaba }
-	common_last_names = { Maroteng Pedi Batau Bakoni Baphuti Mapulana }
-	ethnicities = { 1 = african }
-	graphics = african
-}
-
-swazi = {
-	color = hsv{ 0.15 0.61 0.84 }
-	religion = animist
-	heritage = heritage_southern_bantu
-	language = language_nguni
-	seal_and_signature_texture = "gfx/interface/diplomatic_treaties/seal_and_signature_cultures/diplomatic_treaties_seal_and_signature_african.dds"
-	traditions = { }
-	male_common_first_names = { Sobhuza Mswati Dlamini Somhlolo Ndvungunye Mbandzeni }
-	female_common_first_names = { Labotsibeni Tsandzile Tibati Nkhosikati }
-	common_last_names = { Dlamini Mamba Nkosi Shongwe Simelane }
-	ethnicities = { 1 = african }
-	graphics = african
-}
-
-ndebele = {
-	color = hsv{ 0.01 0.52 0.55 }
-	religion = animist
-	heritage = heritage_southern_bantu
-	language = language_nguni
-	seal_and_signature_texture = "gfx/interface/diplomatic_treaties/seal_and_signature_cultures/diplomatic_treaties_seal_and_signature_african.dds"
-	traditions = { }
-	male_common_first_names = { Mzilikazi Lobengula Nkulumane Khumalo Gundwane Lotshe }
-	female_common_first_names = { Lozikeyi Mncengence Mwaka Nompumelelo }
-	common_last_names = { Khumalo Mabhena Ndlovu Mkwananzi Mlotshwa }
-	ethnicities = { 1 = african }
-	graphics = african
-}
-
-shangaan = {
-	color = hsv{ 0.08 0.48 0.63 }
-	religion = animist
-	heritage = heritage_southern_bantu
-	language = language_nguni
-	seal_and_signature_texture = "gfx/interface/diplomatic_treaties/seal_and_signature_cultures/diplomatic_treaties_seal_and_signature_african.dds"
-	traditions = { }
-	male_common_first_names = { Soshangane Manukosi Muzila Nxaba Nghunghunyane }
-	female_common_first_names = { Nandi Mpisane Nomsa Tsakane }
-	common_last_names = { Nxumalo Zikode Manukosi Gaza Ndwandwe }
-	ethnicities = { 1 = african }
-	graphics = african
-}
-
-tsonga = {
-	color = hsv{ 0.28 0.49 0.70 }
-	religion = animist
-	heritage = heritage_southern_bantu
-	language = language_tsonga
-	seal_and_signature_texture = "gfx/interface/diplomatic_treaties/seal_and_signature_cultures/diplomatic_treaties_seal_and_signature_african.dds"
-	traditions = { }
-	male_common_first_names = { Xilungwa Gija Makwakwa Nkuna Mhinga }
-	female_common_first_names = { Tsakane Tintswalo Rhulani Khensani }
-	common_last_names = { Nkuna Mhinga Mabasa Chabalala Hlungwani }
-	ethnicities = { 1 = african }
-	graphics = african
-}
-
-nama = {
-	color = hsv{ 0.14 0.34 0.78 }
-	religion = animist
-	heritage = heritage_khoisan
-	language = language_khoisan
-	seal_and_signature_texture = "gfx/interface/diplomatic_treaties/seal_and_signature_cultures/diplomatic_treaties_seal_and_signature_african.dds"
-	traditions = { }
-	male_common_first_names = { Hendrik Jan Jonker Kido Witbooi Oasib }
-	female_common_first_names = { Krotoa Inaviposa Kamboi Kanuni }
-	common_last_names = { Witbooi Afrikaner Boois Goliath Swartbooi Oasib }
-	ethnicities = { 1 = african }
-	graphics = african
-}
-
-damara = {
-	color = hsv{ 0.11 0.30 0.66 }
-	religion = animist
-	heritage = heritage_khoisan
-	language = language_khoisan
-	seal_and_signature_texture = "gfx/interface/diplomatic_treaties/seal_and_signature_cultures/diplomatic_treaties_seal_and_signature_african.dds"
-	traditions = { }
-	male_common_first_names = { Gamab Khaub Nanseb Oasib Tsawub }
-	female_common_first_names = { Inaviposa Kamboi Kanuni Penehupifo }
-	common_last_names = { Gamab Hanamab Khaumab Oasmab Nakhomab }
-	ethnicities = { 1 = african }
-	graphics = african
-}
-
-san = {
-	color = hsv{ 0.18 0.28 0.72 }
-	religion = animist
-	heritage = heritage_khoisan
-	language = language_khoisan
-	seal_and_signature_texture = "gfx/interface/diplomatic_treaties/seal_and_signature_cultures/diplomatic_treaties_seal_and_signature_african.dds"
-	traditions = { }
-	male_common_first_names = { Xamseb Khaub Khomab Tsawub Naib }
-	female_common_first_names = { Kamboi Kanuni Krotoa Penehupifo }
-	common_last_names = { Xam Naro Juhoan Khwe Gwi Gana }
-	ethnicities = { 1 = african }
-	graphics = african
-}
-
-ovambo = {
-	color = hsv{ 0.88 0.58 0.78 }
-	religion = animist
-	heritage = heritage_southwest_bantu
-	language = language_ovambo
-	seal_and_signature_texture = "gfx/interface/diplomatic_treaties/seal_and_signature_cultures/diplomatic_treaties_seal_and_signature_african.dds"
-	traditions = { }
-	male_common_first_names = { Nangolo Mandume Iipumbu Nehale Tuhadeleni }
-	female_common_first_names = { Ndapewa Ndeshi Popya Tulimeke }
-	common_last_names = { Ondonga Uukwanyama Uukwambi Ongandjera Ombalantu }
-	ethnicities = { 1 = african }
-	graphics = african
-}
-
-cape_malay = {
-	color = hsv{ 0.78 0.22 0.54 }
-	religion = sunni
-	heritage = heritage_african_diaspora
-	language = language_dutch
-	seal_and_signature_texture = "gfx/interface/diplomatic_treaties/seal_and_signature_cultures/diplomatic_treaties_seal_and_signature_african.dds"
-	traditions = { }
-	male_common_first_names = { Abdullah Abdul Ali Ismail Jaafar Muhammad Yusuf }
-	female_common_first_names = { Amina Fatima Mariam Zainab Saartjie }
-	common_last_names = { September Davids Jacobs Petersen Hendricks Abrahams }
-	ethnicities = {
-		2 = african_diaspora
-		1 = caucasian
-	}
-	graphics = african
 }

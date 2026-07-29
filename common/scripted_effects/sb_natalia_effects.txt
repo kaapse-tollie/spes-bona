@@ -42,6 +42,35 @@ sb_assign_natalia_republic_territory = {
 	sb_transfer_ora_boer_founders_to_natalia = yes
 }
 
+# Province transfer divides existing state pops evenly. Restore the 1836
+# north/south Zulu ratio after a Boer victory: 268,000 ZUL to 84,945 QWA.
+sb_restore_zululand_population_split_after_zulu_defeat = {
+	if = {
+		limit = {
+			c:NAL ?= { is_country_alive = yes }
+			c:ZUL ?= { is_country_alive = yes }
+			exists = s:STATE_ZULULAND.region_state:NAL
+			exists = s:STATE_ZULULAND.region_state:ZUL
+		}
+		s:STATE_ZULULAND.region_state:NAL = {
+			every_scope_pop = {
+				limit = { culture = cu:zulu }
+				move_partial_pop = {
+					state = s:STATE_ZULULAND.region_state:ZUL
+					population_ratio = 0.6
+				}
+			}
+			every_scope_pop = {
+				limit = { culture = cu:tsonga }
+				move_partial_pop = {
+					state = s:STATE_ZULULAND.region_state:ZUL
+					population_ratio = 1
+				}
+			}
+		}
+	}
+}
+
 sb_transfer_ora_boer_founders_to_natalia = {
 	if = {
 		limit = {
@@ -488,6 +517,7 @@ sb_found_natalia_peacefully = {
 sb_found_natalia_after_blood_river = {
 	sb_create_natalia_republic_if_missing = yes
 	sb_assign_natalia_republic_territory = yes
+	sb_restore_zululand_population_split_after_zulu_defeat = yes
 	# If TRN already exists when Natalia is founded, Natalia should inherit
 	# Andries while Marthinus takes over the inland republic. This now covers
 	# both older compatibility saves and the live V2 "TRN formed before NAL"
@@ -605,6 +635,7 @@ sb_found_natalia_after_blood_river = {
 # and Pretorius remains in Transvaal.
 sb_found_natalia_after_guns_bargain_rejection = {
 	sb_found_natalia_peacefully = yes
+	sb_restore_zululand_population_split_after_zulu_defeat = yes
 	if = {
 		limit = { has_variable = sb_natal_guns_bargain_war_var }
 		remove_variable = sb_natal_guns_bargain_war_var

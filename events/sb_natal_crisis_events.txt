@@ -905,10 +905,14 @@ sb_natal_crisis.100 = {
 		default_option = yes
 		scope:natalia ?= {
 			set_variable = sb_british_natal_ultimatum_var
-			trigger_event = { id = sb_natal_crisis.110 days = 21 }
+			trigger_event = { id = sb_natal_crisis.109 days = sb_travel_london_southern_africa_message_days popup = no }
 		}
 		ai_chance = {
-			base = 100
+			base = 90
+			modifier = {
+				trigger = { sb_frontier_ai_behavior_strict_historical = yes }
+				add = 10
+			}
 		}
 	}
 
@@ -919,7 +923,110 @@ sb_natal_crisis.100 = {
 			months = 120
 		}
 		ai_chance = {
-			base = 0
+			base = 10
+			modifier = {
+				trigger = { sb_frontier_ai_behavior_strict_historical = yes }
+				add = -10
+			}
+		}
+	}
+}
+
+sb_natal_crisis.108 = {
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		country_definition = cd:GBR
+		has_variable = sb_british_natal_ultimatum_var
+	}
+
+	immediate = {
+		if = {
+			limit = {
+				c:NAL ?= {
+					is_country_alive = yes
+					is_subject = no
+					is_at_war = no
+					is_active_in_diplomatic_play = no
+					has_variable = sb_british_natal_ultimatum_var
+					NOT = { has_diplomatic_pact = { who = c:GBR type = colony } }
+					NOT = { has_variable = sb_natalia_british_colony_resolved_var }
+				}
+			}
+			c:NAL ?= { trigger_event = { id = sb_natal_crisis.110 popup = yes } }
+		}
+		else = {
+			c:NAL ?= {
+				if = {
+					limit = { has_variable = sb_british_natal_ultimatum_var }
+					remove_variable = sb_british_natal_ultimatum_var
+				}
+				if = {
+					limit = { has_variable = sb_natalia_player_boer_support_pledged_var }
+					remove_variable = sb_natalia_player_boer_support_pledged_var
+				}
+				if = {
+					limit = { has_variable = sb_natalia_trn_backed_ultimatum_var }
+					remove_variable = sb_natalia_trn_backed_ultimatum_var
+				}
+			}
+			every_country = {
+				limit = { has_variable = sb_natalia_player_support_pledged_var }
+				remove_variable = sb_natalia_player_support_pledged_var
+			}
+			remove_variable = sb_british_natal_ultimatum_var
+		}
+	}
+}
+
+sb_natal_crisis.109 = {
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		country_definition = cd:NAL
+		has_variable = sb_british_natal_ultimatum_var
+	}
+
+	immediate = {
+		if = {
+			limit = {
+				is_country_alive = yes
+				is_subject = no
+				is_at_war = no
+				is_active_in_diplomatic_play = no
+				NOT = { has_diplomatic_pact = { who = c:GBR type = colony } }
+				NOT = { has_variable = sb_natalia_british_colony_resolved_var }
+				c:GBR ?= { is_country_alive = yes }
+			}
+			every_country = {
+				limit = {
+					is_country_alive = yes
+					is_player = yes
+					country_has_primary_culture = cu:boer
+					NOT = { country_definition = cd:NAL }
+				}
+				trigger_event = { id = sb_natal_crisis.119 days = sb_natalia_boer_appeal_message_days popup = yes }
+			}
+			c:GBR ?= { trigger_event = { id = sb_natal_crisis.108 days = 9 popup = no } }
+		}
+		else = {
+			remove_variable = sb_british_natal_ultimatum_var
+			if = {
+				limit = { has_variable = sb_natalia_player_boer_support_pledged_var }
+				remove_variable = sb_natalia_player_boer_support_pledged_var
+			}
+			every_country = {
+				limit = { has_variable = sb_natalia_player_support_pledged_var }
+				remove_variable = sb_natalia_player_support_pledged_var
+			}
+			c:GBR ?= {
+				if = {
+					limit = { has_variable = sb_british_natal_ultimatum_var }
+					remove_variable = sb_british_natal_ultimatum_var
+				}
+			}
 		}
 	}
 }
@@ -942,6 +1049,7 @@ sb_natal_crisis.110 = {
 
 	trigger = {
 		country_definition = cd:NAL
+		is_subject = no
 		c:GBR ?= {
 			is_country_alive = yes
 		}
@@ -979,6 +1087,10 @@ sb_natal_crisis.110 = {
 		sb_finalize_british_natal_colony = yes
 		ai_chance = {
 			base = 80
+			modifier = {
+				trigger = { has_variable = sb_natalia_player_boer_support_pledged_var }
+				add = -1000
+			}
 		}
 	}
 
@@ -990,47 +1102,56 @@ sb_natal_crisis.110 = {
 				provinces = { x279045 }
 			}
 		}
-		c:ORA ?= {
-			if = {
-				limit = {
-					is_country_alive = yes
-					is_ai = yes
+		if = {
+			limit = {
+				NOT = { has_variable = sb_natalia_player_boer_support_pledged_var }
+			}
+			c:ORA ?= {
+				if = {
+					limit = {
+						is_country_alive = yes
+						is_ai = yes
+					}
+					trigger_event = { id = sb_natal_crisis.111 days = 5 }
 				}
-				trigger_event = { id = sb_natal_crisis.111 days = 7 }
+			}
+			c:TRN ?= {
+				if = {
+					limit = {
+						is_country_alive = yes
+						is_ai = yes
+					}
+					trigger_event = { id = sb_natal_crisis.112 days = 5 }
+				}
+			}
+			c:ZPB ?= {
+				if = {
+					limit = {
+						is_country_alive = yes
+						is_ai = yes
+					}
+					trigger_event = { id = sb_natal_crisis.113 days = 8 }
+				}
+			}
+			c:LYD ?= {
+				if = {
+					limit = {
+						is_country_alive = yes
+						is_ai = yes
+					}
+					trigger_event = { id = sb_natal_crisis.118 days = 5 }
+				}
 			}
 		}
-		c:TRN ?= {
-			if = {
-				limit = {
-					is_country_alive = yes
-					is_ai = yes
-				}
-				trigger_event = { id = sb_natal_crisis.112 days = 10 }
+			scope:britain = {
+				trigger_event = { id = sb_natal_crisis.114 days = sb_travel_london_southern_africa_message_days }
 			}
-		}
-		c:ZPB ?= {
-			if = {
-				limit = {
-					is_country_alive = yes
-					is_ai = yes
-				}
-				trigger_event = { id = sb_natal_crisis.113 days = 12 }
-			}
-		}
-		c:LYD ?= {
-			if = {
-				limit = {
-					is_country_alive = yes
-					is_ai = yes
-				}
-				trigger_event = { id = sb_natal_crisis.118 days = 14 }
-			}
-		}
-		scope:britain = {
-			trigger_event = { id = sb_natal_crisis.114 days = 1 }
-		}
 		ai_chance = {
 			base = 20
+			modifier = {
+				trigger = { has_variable = sb_natalia_player_boer_support_pledged_var }
+				add = 1000
+			}
 		}
 	}
 }
@@ -1276,13 +1397,136 @@ sb_natal_crisis.114 = {
 	option = {
 		name = sb_natal_crisis.114.a
 		default_option = yes
-		create_diplomatic_play = {
-			type = dp_make_protectorate
-			target_country = scope:natalia
-			add_war_goal = {
-				holder = scope:natalia
-				type = humiliation
-				target_country = root
+		if = {
+			limit = {
+				scope:natalia ?= {
+					is_country_alive = yes
+					is_subject = no
+					is_at_war = no
+					is_active_in_diplomatic_play = no
+					NOT = { has_diplomatic_pact = { who = c:GBR type = colony } }
+					NOT = { has_variable = sb_natalia_british_colony_resolved_var }
+				}
+			}
+		if = {
+			limit = {
+				scope:natalia ?= {
+					has_variable = sb_natalia_player_boer_support_pledged_var
+				}
+				c:CAP ?= {
+					is_country_alive = yes
+					is_subject_of = root
+				}
+			}
+			create_diplomatic_play = {
+				type = dp_make_protectorate
+				target_country = scope:natalia
+				add_war_goal = {
+					holder = scope:natalia
+					type = liberate_subject
+					target_country = c:CAP
+				}
+			}
+			scope:natalia = {
+				set_variable = {
+					name = sb_natalia_liberate_cape_goal_added_var
+					months = 24
+				}
+			}
+		}
+		else = {
+			create_diplomatic_play = {
+				type = dp_make_protectorate
+				target_country = scope:natalia
+				add_war_goal = {
+					holder = scope:natalia
+					type = humiliation
+					target_country = root
+				}
+			}
+		}
+		if = {
+			limit = {
+				scope:natalia ?= {
+					is_ai = yes
+					has_variable = sb_natalia_player_boer_support_pledged_var
+				}
+			}
+			scope:natalia = {
+				set_variable = {
+					name = sb_natalia_resistance_no_backdown_var
+					months = 12
+				}
+				set_strategy = ai_strategy_sb_natalia_resistance
+			}
+		}
+		random_diplomatic_play = {
+			limit = {
+				is_diplomatic_play_type = dp_make_protectorate
+				initiator = root
+				target = scope:natalia
+			}
+			save_scope_as = natalia_british_play
+		}
+		if = {
+			limit = {
+				exists = scope:natalia_british_play
+				scope:natalia ?= {
+					has_variable = sb_natalia_player_boer_support_pledged_var
+				}
+			}
+			every_country = {
+				limit = {
+					is_country_alive = yes
+					country_has_primary_culture = cu:boer
+					NOT = { country_definition = cd:NAL }
+					OR = {
+						is_ai = yes
+						has_variable = sb_natalia_player_support_pledged_var
+					}
+				}
+				save_scope_as = natalia_supporter
+				sb_ensure_boer_republic_compacts_for_root = yes
+				scope:natalia_british_play = {
+					add_target_backers = { scope:natalia_supporter }
+					add_war_goal = {
+						holder = c:GBR
+						target_country = scope:natalia_supporter
+						type = make_protectorate
+					}
+				}
+				if = {
+					limit = { has_variable = sb_natalia_player_support_pledged_var }
+					remove_variable = sb_natalia_player_support_pledged_var
+				}
+			}
+			scope:natalia = {
+				remove_variable = sb_natalia_player_boer_support_pledged_var
+			}
+		}
+		}
+		else = {
+			scope:natalia ?= {
+				if = {
+					limit = { has_variable = sb_british_natal_ultimatum_var }
+					remove_variable = sb_british_natal_ultimatum_var
+				}
+				if = {
+					limit = { has_variable = sb_natalia_player_boer_support_pledged_var }
+					remove_variable = sb_natalia_player_boer_support_pledged_var
+				}
+				if = {
+					limit = { has_variable = sb_natalia_trn_backed_ultimatum_var }
+					remove_variable = sb_natalia_trn_backed_ultimatum_var
+				}
+			}
+			every_country = {
+				limit = { has_variable = sb_natalia_player_support_pledged_var }
+				remove_variable = sb_natalia_player_support_pledged_var
+			}
+			if = {
+				limit = { has_variable = sb_british_natal_ultimatum_var }
+				remove_variable = sb_british_natal_ultimatum_var
 			}
 		}
 		ai_chance = {
@@ -1448,6 +1692,78 @@ sb_natal_crisis.118 = {
 		}
 		ai_chance = {
 			base = 45
+		}
+	}
+}
+
+sb_natal_crisis.119 = {
+	type = country_event
+	placement = root
+
+	title = sb_natal_crisis.119.t
+	desc = sb_natal_crisis.119.d
+	flavor = sb_natal_crisis.119.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		is_player = yes
+		country_has_primary_culture = cu:boer
+		NOT = { country_definition = cd:NAL }
+		c:NAL ?= {
+			is_country_alive = yes
+			has_variable = sb_british_natal_ultimatum_var
+			NOT = { has_variable = sb_natalia_british_colony_resolved_var }
+		}
+	}
+
+	immediate = {
+		c:NAL ?= { save_scope_as = natalia }
+		c:GBR ?= { save_scope_as = britain }
+	}
+
+	option = {
+		name = sb_natal_crisis.119.a
+		default_option = yes
+		set_variable = {
+			name = sb_natalia_player_support_pledged_var
+			months = 3
+		}
+		scope:natalia ?= {
+			set_variable = {
+				name = sb_natalia_player_boer_support_pledged_var
+				months = 3
+			}
+		}
+		if = {
+			limit = { country_definition = cd:TRN }
+			scope:natalia ?= {
+				set_variable = sb_natalia_trn_backed_ultimatum_var
+			}
+		}
+		custom_tooltip = sb_natalia_player_warn_tt
+		change_relations = {
+			country = scope:natalia
+			value = 20
+		}
+		custom_tooltip = sb_natalia_player_support_pledge_tt
+	}
+
+	option = {
+		name = sb_natal_crisis.119.b
+		add_modifier = {
+			name = sb_prestige_loss_small
+			months = 108
+		}
+		change_relations = {
+			country = scope:britain
+			value = 10
 		}
 	}
 }
