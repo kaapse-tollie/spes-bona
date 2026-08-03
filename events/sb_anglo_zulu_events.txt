@@ -134,11 +134,90 @@ sb_anglo_zulu.030 = {
 	option = {
 		name = sb_anglo_zulu.030.a
 		default_option = yes
+		s:STATE_ZULULAND = {
+			if = {
+				limit = {
+					NOT = { is_homeland = cu:anglo_african }
+				}
+				add_homeland = cu:anglo_african
+			}
+		}
 		set_variable = sb_anglo_zulu_pressure_resolved_var
 		if = { limit = { has_variable = sb_anglo_zulu_pressure_active_var } remove_variable = sb_anglo_zulu_pressure_active_var }
 		c:ZUL ?= {
 			if = { limit = { has_variable = sb_anglo_zulu_pressure_active_var } remove_variable = sb_anglo_zulu_pressure_active_var }
 			set_variable = sb_anglo_zulu_pressure_resolved_var
+		}
+	}
+}
+
+sb_anglo_zulu.040 = {
+	type = country_event
+	placement = root
+
+	title = sb_anglo_zulu.040.t
+	desc = sb_anglo_zulu.040.d
+	flavor = sb_anglo_zulu.040.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:GBR
+		c:NAL ?= {
+			is_country_alive = yes
+			is_subject_of = root
+			has_variable = sb_natalia_british_colony_resolved_var
+		}
+		any_scope_state = {
+			state_region = s:STATE_ZULULAND
+		}
+	}
+
+	immediate = {
+		c:NAL ?= {
+			save_scope_as = sb_natal_colony_scope
+		}
+	}
+
+	option = {
+		name = sb_anglo_zulu.040.a
+		default_option = yes
+		custom_tooltip = sb_anglo_zulu_040_handoff_tt
+		hidden_effect = {
+			every_scope_state = {
+				limit = {
+					state_region = s:STATE_ZULULAND
+				}
+				set_state_owner = c:NAL
+			}
+			s:STATE_ZULULAND = {
+				if = {
+					limit = {
+						NOT = { is_homeland = cu:anglo_african }
+					}
+					add_homeland = cu:anglo_african
+				}
+			}
+			c:NAL ?= {
+				set_variable = sb_anglo_zulu_pressure_resolved_var
+				if = {
+					limit = { has_variable = sb_anglo_zulu_pressure_active_var }
+					remove_variable = sb_anglo_zulu_pressure_active_var
+				}
+			}
+			c:ZUL ?= {
+				set_variable = sb_anglo_zulu_pressure_resolved_var
+				if = {
+					limit = { has_variable = sb_anglo_zulu_pressure_active_var }
+					remove_variable = sb_anglo_zulu_pressure_active_var
+				}
+			}
 		}
 	}
 }

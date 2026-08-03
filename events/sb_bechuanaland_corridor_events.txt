@@ -121,6 +121,7 @@ sb_bechuanaland_corridor.020 = {
 	option = {
 		name = sb_bechuanaland_corridor.020.a
 		custom_tooltip = sb_bechuanaland_corridor_020_direct_tt
+		custom_tooltip = sb_bechuanaland_influence_swa_gain_50_tt
 		sb_bechuanaland_start_direct_gp_war = yes
 		ai_chance = {
 			base = 15
@@ -134,6 +135,7 @@ sb_bechuanaland_corridor.020 = {
 	option = {
 		name = sb_bechuanaland_corridor.020.b
 		custom_tooltip = sb_bechuanaland_corridor_020_proxy_tt
+		custom_tooltip = sb_bechuanaland_influence_swa_gain_25_tt
 		sb_bechuanaland_start_proxy_war = yes
 		ai_chance = {
 			base = 35
@@ -152,6 +154,8 @@ sb_bechuanaland_corridor.020 = {
 			limit = { has_variable = sb_bechuanaland_cap_warren_refusal_var }
 			sb_bechuanaland_start_cap_sgo_annex_war = yes
 		}
+		sb_bechuanaland_shift_boer_influence_5 = yes
+		custom_tooltip = sb_bechuanaland_influence_boer_gain_5_tt
 		ai_chance = {
 			base = 50
 			modifier = {
@@ -188,6 +192,7 @@ sb_bechuanaland_corridor.021 = {
 	option = {
 		name = sb_bechuanaland_corridor.020.a
 		custom_tooltip = sb_bechuanaland_corridor_021_direct_tt
+		custom_tooltip = sb_bechuanaland_influence_swa_gain_50_tt
 		sb_bechuanaland_start_cap_dual_return_war_with_direct_intervention = yes
 		ai_chance = {
 			base = 15
@@ -201,6 +206,7 @@ sb_bechuanaland_corridor.021 = {
 	option = {
 		name = sb_bechuanaland_corridor.020.b
 		custom_tooltip = sb_bechuanaland_corridor_021_proxy_tt
+		custom_tooltip = sb_bechuanaland_influence_swa_gain_25_tt
 		sb_bechuanaland_start_cap_dual_return_war_with_proxy_intervention = yes
 		ai_chance = {
 			base = 35
@@ -216,6 +222,8 @@ sb_bechuanaland_corridor.021 = {
 		default_option = yes
 		custom_tooltip = sb_bechuanaland_corridor_021_no_intervention_tt
 		sb_bechuanaland_start_cap_dual_return_war = yes
+		sb_bechuanaland_shift_boer_influence_5 = yes
+		custom_tooltip = sb_bechuanaland_influence_boer_gain_5_tt
 		ai_chance = {
 			base = 50
 			modifier = {
@@ -254,6 +262,8 @@ sb_bechuanaland_corridor.030 = {
 		default_option = yes
 		custom_tooltip = sb_bechuanaland_corridor_030_accept_tt
 		sb_bechuanaland_transfer_caprivi_to_swa = yes
+		sb_bechuanaland_shift_swa_influence_10 = yes
+		custom_tooltip = sb_bechuanaland_influence_swa_gain_10_tt
 		every_country = {
 			limit = { sb_bechuanaland_swa_overlord_candidate = yes }
 			set_variable = sb_bechuanaland_caprivi_conceded_var
@@ -301,6 +311,7 @@ sb_bechuanaland_corridor.031 = {
 	option = {
 		name = sb_bechuanaland_corridor.031.a
 		custom_tooltip = sb_bechuanaland_corridor_031_gp_tt
+		custom_tooltip = sb_bechuanaland_influence_swa_gain_50_tt
 		sb_bechuanaland_start_direct_gp_war = yes
 		ai_chance = { base = 20 }
 	}
@@ -308,6 +319,7 @@ sb_bechuanaland_corridor.031 = {
 	option = {
 		name = sb_bechuanaland_corridor.031.b
 		custom_tooltip = sb_bechuanaland_corridor_031_proxy_tt
+		custom_tooltip = sb_bechuanaland_influence_swa_gain_25_tt
 		sb_bechuanaland_start_proxy_war = yes
 		ai_chance = { base = 45 }
 	}
@@ -316,6 +328,8 @@ sb_bechuanaland_corridor.031 = {
 		name = sb_bechuanaland_corridor.031.c
 		default_option = yes
 		custom_tooltip = sb_bechuanaland_corridor_031_backdown_tt
+		sb_bechuanaland_shift_boer_influence_5 = yes
+		custom_tooltip = sb_bechuanaland_influence_boer_gain_5_tt
 		ai_chance = { base = 35 }
 	}
 }
@@ -346,6 +360,50 @@ sb_bechuanaland_corridor.040 = {
 		name = sb_bechuanaland_corridor.040.a
 		default_option = yes
 		sb_bechuanaland_apply_british_settlement = yes
+		ai_chance = { base = 100 }
+	}
+}
+
+# ### TO REVIEW ###
+sb_bechuanaland_corridor.041 = {
+	type = country_event
+	placement = root
+
+	title = sb_bechuanaland_corridor.041.t
+	desc = sb_bechuanaland_corridor.041.d
+	flavor = sb_bechuanaland_corridor.041.f
+
+	event_image = {
+		video = "africa_diplomats_negotiating"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/waving_flag.dds"
+	duration = 3
+
+	immediate = { sb_bechuanaland_save_settlement_loc_scopes = yes }
+
+	trigger = {
+		has_global_variable = sb_bechuanaland_boer_swa_settlement_pending_global_var
+		has_global_variable = sb_bechuanaland_boer_swa_victory_global_var
+		NOT = { has_global_variable = sb_bechuanaland_corridor_resolved_global_var }
+	}
+
+	option = {
+		name = sb_bechuanaland_corridor.041.a
+		default_option = yes
+		if = {
+			limit = { global_var:sb_bechuanaland_influence_score_global_var >= 10 }
+			custom_tooltip = sb_bechuanaland_corridor_041_boer_settlement_tt
+		}
+		else_if = {
+			limit = { global_var:sb_bechuanaland_influence_score_global_var <= -10 }
+			custom_tooltip = sb_bechuanaland_corridor_041_swa_settlement_tt
+		}
+		else = {
+			custom_tooltip = sb_bechuanaland_corridor_041_balanced_settlement_tt
+		}
+		hidden_effect = { sb_bechuanaland_apply_boer_swa_settlement = yes }
 		ai_chance = { base = 100 }
 	}
 }

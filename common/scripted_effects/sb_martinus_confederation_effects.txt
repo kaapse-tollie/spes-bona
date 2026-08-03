@@ -585,8 +585,8 @@ sb_martinus_break_confederation_with_ora = {
 	}
 }
 
-# Shared-ruler subject pacts are retired by the engine when the senior ruler
-# changes. Recreate only the marked confederal relationship after that election.
+# Shared-ruler subject pacts can be retired automatically by the engine. Durable
+# confederal markers remain authoritative, so repair any marked relationship.
 sb_martinus_restore_confederal_relationship = {
 	if = {
 		limit = {
@@ -629,8 +629,7 @@ sb_martinus_restore_confederal_relationship = {
 # Generic autonomy actions change subject type without running the Martinus
 # effects, so keep the union lifecycle variables aligned with the actual pact.
 sb_martinus_reconcile_ora_union_status = {
-	# One-time compatibility repair for saves made after the engine retired the
-	# pact at a TRN election but before the joint-election handoff was added.
+	# Recreate a marked confederal pact whenever the engine has retired it.
 	if = {
 		limit = {
 			country_definition = cd:TRN
@@ -639,7 +638,6 @@ sb_martinus_reconcile_ora_union_status = {
 			c:ORA ?= {
 				is_country_alive = yes
 				has_variable = sb_martinus_confederal_partner_var
-				NOT = { has_variable = sb_martinus_confederal_relationship_v3_var }
 			}
 		}
 		sb_martinus_restore_confederal_relationship = yes

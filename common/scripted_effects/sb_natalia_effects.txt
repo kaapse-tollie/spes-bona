@@ -113,6 +113,23 @@ sb_apply_natalia_boer_republic_setup = {
 		limit = { has_variable = sb_natalia_british_colony_resolved_var }
 		remove_variable = sb_natalia_british_colony_resolved_var
 	}
+	if = {
+		limit = { has_variable = sb_natalia_ultimatum_truce_consumed_var }
+		remove_variable = sb_natalia_ultimatum_truce_consumed_var
+	}
+	if = {
+		limit = {
+			c:GBR ?= {
+				is_country_alive = yes
+			}
+			NOT = { has_truce_with = c:GBR }
+		}
+		create_bidirectional_truce = {
+			country = c:GBR
+			months = 240
+		}
+		set_variable = sb_natalia_ultimatum_truce_var
+	}
 	effect_starting_technology_tier_3_tech = yes
 	effect_starting_politics_conservative = yes
 	add_technology_researched = napoleonic_warfare

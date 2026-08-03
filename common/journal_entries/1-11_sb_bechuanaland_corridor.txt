@@ -24,13 +24,25 @@ je_sb_bechuanaland_corridor = {
 	}
 
 	scripted_button = je_sb_bechuanaland_sponsor_boer_settlers_button
+	scripted_button = je_sb_bechuanaland_support_settler_government_button
+	scripted_button = je_sb_bechuanaland_finance_interior_trade_missions_button
 	scripted_button = je_sb_bechuanaland_send_warren_expedition_button
 	scripted_button = je_sb_bechuanaland_gbr_direct_warren_button
 	scripted_button = je_sb_bechuanaland_demand_caprivi_button
 	scripted_button = je_sb_bechuanaland_send_crisis_support_button
 
 	status_desc = {
-		desc = je_sb_bechuanaland_corridor_status
+		first_valid = {
+			triggered_desc = {
+				trigger = { global_var:sb_bechuanaland_influence_score_global_var <= -10 }
+				desc = je_sb_bechuanaland_corridor_status_swa_advantage
+			}
+			triggered_desc = {
+				trigger = { global_var:sb_bechuanaland_influence_score_global_var >= 10 }
+				desc = je_sb_bechuanaland_corridor_status_boer_advantage
+			}
+			desc = je_sb_bechuanaland_corridor_status_balanced
+		}
 	}
 
 	custom_completion_header = je_sb_bechuanaland_corridor_british_victory_header
@@ -77,7 +89,7 @@ je_sb_bechuanaland_corridor = {
 	custom_on_failure_header = je_sb_bechuanaland_corridor_boer_swa_victory_effects_header
 
 	on_fail = {
-		sb_bechuanaland_apply_boer_swa_settlement = yes
+		sb_bechuanaland_queue_boer_swa_settlement_event = yes
 	}
 
 	invalid = {

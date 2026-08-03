@@ -1,0 +1,77 @@
+﻿# Keep vanilla's broad South African consolidation desire from pre-empting
+# Spes Bona's scripted British-Boer confrontations. This is intentionally a
+# soft, one-way diplomatic goal rather than a truce.
+sb_gbr_refresh_boer_restraint = {
+	if = {
+		limit = {
+			country_definition = cd:GBR
+			is_country_alive = yes
+		}
+
+		save_temporary_scope_as = sb_boer_restraint_gbr_scope
+
+		every_country = {
+			limit = {
+				sb_is_british_boer_restraint_tag = yes
+			}
+
+			save_temporary_scope_as = sb_boer_restraint_target_scope
+
+			if = {
+				limit = {
+					scope:sb_boer_restraint_gbr_scope = {
+						is_ai = yes
+						sb_frontier_ai_scripting_enabled = yes
+					}
+					sb_is_british_boer_restraint_target = yes
+					NOT = {
+						has_war_with = scope:sb_boer_restraint_gbr_scope
+					}
+					NOT = {
+						is_diplomatic_play_enemy_of = scope:sb_boer_restraint_gbr_scope
+					}
+				}
+
+				scope:sb_boer_restraint_gbr_scope = {
+					if = {
+						limit = {
+							NOT = {
+								has_secret_goal = {
+									who = scope:sb_boer_restraint_target_scope
+									secret_goal = befriend
+								}
+							}
+						}
+						set_secret_goal = {
+							country = scope:sb_boer_restraint_target_scope
+							secret_goal = befriend
+						}
+						scope:sb_boer_restraint_target_scope = {
+							set_variable = sb_british_boer_restraint_goal_var
+						}
+					}
+				}
+			}
+			else_if = {
+				limit = { has_variable = sb_british_boer_restraint_goal_var }
+
+				scope:sb_boer_restraint_gbr_scope = {
+					if = {
+						limit = {
+							has_secret_goal = {
+								who = scope:sb_boer_restraint_target_scope
+								secret_goal = befriend
+							}
+						}
+						set_secret_goal = {
+							country = scope:sb_boer_restraint_target_scope
+							secret_goal = none
+						}
+					}
+				}
+
+				remove_variable = sb_british_boer_restraint_goal_var
+			}
+		}
+	}
+}

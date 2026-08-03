@@ -167,6 +167,40 @@ ai_strategy_sb_frontier_levy_preservation = {
 	}
 }
 
+# Vanilla 1.13.9 applies its +500 "Britain consolidating South Africa"
+# conquer score twice. Offset only the duplicated copy for SB's Boer states;
+# the intended vanilla score and the broader Scramble logic remain active.
+ai_strategy_sb_british_boer_restraint = {
+	icon = "gfx/interface/icons/ai_strategy_icons/protect_region.dds"
+
+	type = diplomatic
+
+	secret_goal_scores = {
+		conquer = {
+			score = {
+				if = {
+					limit = {
+						scope:target_country = {
+							sb_is_british_boer_restraint_target = yes
+						}
+					}
+					add = -500
+				}
+			}
+		}
+	}
+
+	possible = {
+		country_definition = cd:GBR
+		is_ai = yes
+		sb_frontier_ai_scripting_enabled = yes
+	}
+
+	weight = {
+		value = 10000
+	}
+}
+
 # A player-backed Natalia has already chosen resistance. Force the temporary
 # diplomatic stance immediately so the AI cannot reconsider before war begins.
 ai_strategy_sb_natalia_resistance = {

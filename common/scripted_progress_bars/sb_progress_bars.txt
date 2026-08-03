@@ -950,10 +950,254 @@ sb_bechuanaland_boer_swa_influence_bar = {
 	name = "sb_bechuanaland_boer_swa_influence_bar"
 	desc = "sb_bechuanaland_boer_swa_influence_bar_swa"
 	second_desc = "sb_bechuanaland_boer_swa_influence_bar_boer"
+	double_sided_bad = yes
 	start_value = 0
-	min_value = -100
-	max_value = 100
-	default = yes
+	min_value = -40
+	max_value = 40
+
+	monthly_progress = {
+		# Contextless IS copies need a country scope to render breakdown entries.
+		c:GBR ?= {
+		if = {
+			limit = {
+				has_global_variable = sb_bechuanaland_boer_actor_global_scope
+				c:SGO ?= {
+					is_country_alive = yes
+					is_direct_subject_of = global_var:sb_bechuanaland_boer_actor_global_scope
+					OR = {
+						is_subject_type = subject_type_protectorate
+						is_subject_type = subject_type_tributary
+					}
+				}
+			}
+			add = { desc = "sb_bechuanaland_influence_sgo_boer_subject" value = 0.25 }
+		}
+		if = {
+			limit = {
+				OR = {
+					c:SGO ?= {
+						is_country_alive = yes
+						sb_bechuanaland_owns_corridor_land = yes
+					}
+					AND = {
+						NOT = { c:SGO ?= { is_country_alive = yes } }
+						has_global_variable = sb_bechuanaland_boer_actor_global_scope
+						global_var:sb_bechuanaland_boer_actor_global_scope = { sb_bechuanaland_owns_corridor_land = yes }
+					}
+				}
+			}
+			add = { desc = "sb_bechuanaland_influence_boer_corridor_land" value = 0.25 }
+		}
+		if = {
+			limit = { sb_bechuanaland_swa_controls_namibian_core = yes }
+			add = { desc = "sb_bechuanaland_influence_swa_namibian_core" value = -0.25 }
+		}
+		if = {
+			limit = { sb_bechuanaland_swa_controls_caprivi = yes }
+			add = { desc = "sb_bechuanaland_influence_swa_caprivi" value = -0.25 }
+		}
+		if = {
+			limit = {
+				has_global_variable = sb_bechuanaland_boer_actor_global_scope
+				has_global_variable = sb_bechuanaland_swa_overlord_global_scope
+				global_var:sb_bechuanaland_boer_actor_global_scope = {
+					is_in_same_power_bloc = global_var:sb_bechuanaland_swa_overlord_global_scope
+				}
+			}
+			add = { desc = "sb_bechuanaland_influence_boer_in_swa_bloc" value = -0.25 }
+		}
+		if = {
+			limit = {
+				has_global_variable = sb_bechuanaland_boer_actor_global_scope
+				global_var:sb_bechuanaland_boer_actor_global_scope = {
+					any_scope_treaty = {
+						binds = c:SGO
+						any_scope_article = {
+							has_type = trade_privilege
+							source_country = global_var:sb_bechuanaland_boer_actor_global_scope
+							target_country = c:SGO
+						}
+						any_scope_article = {
+							has_type = trade_privilege
+							source_country = c:SGO
+							target_country = global_var:sb_bechuanaland_boer_actor_global_scope
+						}
+					}
+				}
+			}
+			add = { desc = "sb_bechuanaland_influence_boer_trade_privileges" value = 0.125 }
+		}
+		if = {
+			limit = {
+				has_global_variable = sb_bechuanaland_swa_overlord_global_scope
+				global_var:sb_bechuanaland_swa_overlord_global_scope = {
+					any_scope_treaty = {
+						binds = c:SGO
+						any_scope_article = {
+							has_type = trade_privilege
+							source_country = global_var:sb_bechuanaland_swa_overlord_global_scope
+							target_country = c:SGO
+						}
+						any_scope_article = {
+							has_type = trade_privilege
+							source_country = c:SGO
+							target_country = global_var:sb_bechuanaland_swa_overlord_global_scope
+						}
+					}
+				}
+			}
+			add = { desc = "sb_bechuanaland_influence_swa_trade_privileges" value = -0.125 }
+		}
+		if = {
+			limit = {
+				has_global_variable = sb_bechuanaland_boer_actor_global_scope
+				global_var:sb_bechuanaland_boer_actor_global_scope = {
+					any_scope_treaty = {
+						binds = c:SGO
+						any_scope_article = {
+							has_type = transit_rights
+							source_country = c:SGO
+							target_country = global_var:sb_bechuanaland_boer_actor_global_scope
+						}
+					}
+				}
+			}
+			add = { desc = "sb_bechuanaland_influence_boer_trade_through" value = 0.125 }
+		}
+		if = {
+			limit = {
+				has_global_variable = sb_bechuanaland_swa_overlord_global_scope
+				global_var:sb_bechuanaland_swa_overlord_global_scope = {
+					any_scope_treaty = {
+						binds = c:SGO
+						any_scope_article = {
+							has_type = transit_rights
+							source_country = c:SGO
+							target_country = global_var:sb_bechuanaland_swa_overlord_global_scope
+						}
+					}
+				}
+			}
+			add = { desc = "sb_bechuanaland_influence_swa_trade_through" value = -0.125 }
+		}
+		if = {
+			limit = {
+				has_global_variable = sb_bechuanaland_boer_actor_global_scope
+				global_var:sb_bechuanaland_boer_actor_global_scope = { has_variable = sb_bechuanaland_boer_subsidy_active_var }
+			}
+			add = { desc = "sb_bechuanaland_influence_boer_subsidy" value = 0.25 }
+		}
+		if = {
+			limit = {
+				has_global_variable = sb_bechuanaland_swa_overlord_global_scope
+				global_var:sb_bechuanaland_swa_overlord_global_scope = { has_variable = sb_bechuanaland_swa_subsidy_active_var }
+			}
+			add = { desc = "sb_bechuanaland_influence_swa_subsidy" value = -0.25 }
+		}
+		if = {
+			limit = { c:SWA ?= { has_modifier = sb_bechuanaland_crisis_support } }
+			add = { desc = "sb_bechuanaland_influence_swa_crisis_support" value = -0.125 }
+		}
+
+		if = {
+			limit = {
+				has_global_variable = sb_bechuanaland_boer_actor_global_scope
+				c:SGO ?= { "relations(global_var:sb_bechuanaland_boer_actor_global_scope)" >= relations_threshold:friendly }
+			}
+			add = { desc = "sb_bechuanaland_influence_boer_relations_friendly" value = 0.5 }
+		}
+		else_if = {
+			limit = {
+				has_global_variable = sb_bechuanaland_boer_actor_global_scope
+				c:SGO ?= { "relations(global_var:sb_bechuanaland_boer_actor_global_scope)" >= relations_threshold:amicable }
+			}
+			add = { desc = "sb_bechuanaland_influence_boer_relations_amicable" value = 0.25 }
+		}
+		else_if = {
+			limit = {
+				has_global_variable = sb_bechuanaland_boer_actor_global_scope
+				c:SGO ?= { "relations(global_var:sb_bechuanaland_boer_actor_global_scope)" >= relations_threshold:cordial }
+			}
+			add = { desc = "sb_bechuanaland_influence_boer_relations_cordial" value = 0.125 }
+		}
+		else_if = {
+			limit = {
+				has_global_variable = sb_bechuanaland_boer_actor_global_scope
+				c:SGO ?= {
+					"relations(global_var:sb_bechuanaland_boer_actor_global_scope)" <= relations_threshold:poor
+					"relations(global_var:sb_bechuanaland_boer_actor_global_scope)" > relations_threshold:cold
+				}
+			}
+			add = { desc = "sb_bechuanaland_influence_boer_relations_poor" value = -0.125 }
+		}
+		else_if = {
+			limit = {
+				has_global_variable = sb_bechuanaland_boer_actor_global_scope
+				c:SGO ?= {
+					"relations(global_var:sb_bechuanaland_boer_actor_global_scope)" <= relations_threshold:cold
+					"relations(global_var:sb_bechuanaland_boer_actor_global_scope)" > relations_threshold:hostile
+				}
+			}
+			add = { desc = "sb_bechuanaland_influence_boer_relations_cold" value = -0.25 }
+		}
+		else_if = {
+			limit = {
+				has_global_variable = sb_bechuanaland_boer_actor_global_scope
+				c:SGO ?= { "relations(global_var:sb_bechuanaland_boer_actor_global_scope)" <= relations_threshold:hostile }
+			}
+			add = { desc = "sb_bechuanaland_influence_boer_relations_hostile" value = -0.5 }
+		}
+
+		if = {
+			limit = {
+				has_global_variable = sb_bechuanaland_swa_overlord_global_scope
+				c:SGO ?= { "relations(global_var:sb_bechuanaland_swa_overlord_global_scope)" >= relations_threshold:friendly }
+			}
+			add = { desc = "sb_bechuanaland_influence_swa_relations_friendly" value = -0.5 }
+		}
+		else_if = {
+			limit = {
+				has_global_variable = sb_bechuanaland_swa_overlord_global_scope
+				c:SGO ?= { "relations(global_var:sb_bechuanaland_swa_overlord_global_scope)" >= relations_threshold:amicable }
+			}
+			add = { desc = "sb_bechuanaland_influence_swa_relations_amicable" value = -0.25 }
+		}
+		else_if = {
+			limit = {
+				has_global_variable = sb_bechuanaland_swa_overlord_global_scope
+				c:SGO ?= { "relations(global_var:sb_bechuanaland_swa_overlord_global_scope)" >= relations_threshold:cordial }
+			}
+			add = { desc = "sb_bechuanaland_influence_swa_relations_cordial" value = -0.125 }
+		}
+		else_if = {
+			limit = {
+				has_global_variable = sb_bechuanaland_swa_overlord_global_scope
+				c:SGO ?= {
+					"relations(global_var:sb_bechuanaland_swa_overlord_global_scope)" <= relations_threshold:poor
+					"relations(global_var:sb_bechuanaland_swa_overlord_global_scope)" > relations_threshold:cold
+				}
+			}
+			add = { desc = "sb_bechuanaland_influence_swa_relations_poor" value = 0.125 }
+		}
+		else_if = {
+			limit = {
+				has_global_variable = sb_bechuanaland_swa_overlord_global_scope
+				c:SGO ?= {
+					"relations(global_var:sb_bechuanaland_swa_overlord_global_scope)" <= relations_threshold:cold
+					"relations(global_var:sb_bechuanaland_swa_overlord_global_scope)" > relations_threshold:hostile
+				}
+			}
+			add = { desc = "sb_bechuanaland_influence_swa_relations_cold" value = 0.25 }
+		}
+		else_if = {
+			limit = {
+				has_global_variable = sb_bechuanaland_swa_overlord_global_scope
+				c:SGO ?= { "relations(global_var:sb_bechuanaland_swa_overlord_global_scope)" <= relations_threshold:hostile }
+			}
+			add = { desc = "sb_bechuanaland_influence_swa_relations_hostile" value = 0.5 }
+		}
+		}
+	}
 }
 
 

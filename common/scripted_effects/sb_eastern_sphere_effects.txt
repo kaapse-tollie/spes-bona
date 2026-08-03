@@ -203,62 +203,98 @@ sb_gaza_failure_effect = {
 	trigger_event = { id = sb_gaza.095 days = 1 popup = yes }
 }
 
-sb_mozambique_transfer_lourenco_to_mzq = {
+sb_mozambique_recover_alem_mar_marker = {
 	if = {
-		limit = { owns_entire_state_region = STATE_LOURENCO_MARQUES }
-		transfer_state = {
-			STATE = s:STATE_LOURENCO_MARQUES
-			GIVER = root
-			TAKER = c:MZQ
+		limit = {
+			country_definition = cd:POR
+			NOT = { has_variable = sb_portuguese_alem_mar_africano_opened_var }
+			OR = {
+				has_journal_entry = je_portuguese_colonialism
+				AND = {
+					OR = {
+						has_claim = s:STATE_LOURENCO_MARQUES
+						owns_entire_state_region = STATE_LOURENCO_MARQUES
+					}
+					OR = {
+						has_claim = s:STATE_ZAMBEZIA
+						owns_entire_state_region = STATE_ZAMBEZIA
+					}
+					OR = {
+						has_claim = s:STATE_MOCAMBIQUE
+						owns_entire_state_region = STATE_MOCAMBIQUE
+					}
+				}
+			}
 		}
+		set_variable = sb_portuguese_alem_mar_africano_opened_var
+	}
+}
+
+sb_mozambique_try_open_administration_event = {
+	sb_mozambique_recover_alem_mar_marker = yes
+	if = {
+		limit = {
+			sb_portuguese_controls_mozambique_admin_area = yes
+			is_subject = no
+			NOT = { exists = c:MZQ }
+			NOT = { has_variable = sb_mozambique_direct_administration_var }
+			NOT = { has_variable = sb_mozambique_administration_event_pending_var }
+		}
+		set_variable = {
+			name = sb_mozambique_administration_event_pending_var
+			days = 30
+		}
+		trigger_event = { id = sb_mozambique_company.010 popup = yes }
+	}
+}
+
+sb_mozambique_transfer_lourenco_to_mzq = {
+	every_scope_state = {
+		limit = {
+			state_region = s:STATE_LOURENCO_MARQUES
+		}
+		set_state_owner = c:MZQ
 	}
 	every_subject_or_below = {
-		limit = { owns_entire_state_region = STATE_LOURENCO_MARQUES }
-		save_temporary_scope_as = sb_mozambique_state_giver
-		transfer_state = {
-			STATE = s:STATE_LOURENCO_MARQUES
-			GIVER = scope:sb_mozambique_state_giver
-			TAKER = c:MZQ
+		every_scope_state = {
+			limit = {
+				state_region = s:STATE_LOURENCO_MARQUES
+			}
+			set_state_owner = c:MZQ
 		}
 	}
 }
 
 sb_mozambique_transfer_zambezia_to_mzq = {
-	if = {
-		limit = { owns_entire_state_region = STATE_ZAMBEZIA }
-		transfer_state = {
-			STATE = s:STATE_ZAMBEZIA
-			GIVER = root
-			TAKER = c:MZQ
+	every_scope_state = {
+		limit = {
+			state_region = s:STATE_ZAMBEZIA
 		}
+		set_state_owner = c:MZQ
 	}
 	every_subject_or_below = {
-		limit = { owns_entire_state_region = STATE_ZAMBEZIA }
-		save_temporary_scope_as = sb_mozambique_state_giver
-		transfer_state = {
-			STATE = s:STATE_ZAMBEZIA
-			GIVER = scope:sb_mozambique_state_giver
-			TAKER = c:MZQ
+		every_scope_state = {
+			limit = {
+				state_region = s:STATE_ZAMBEZIA
+			}
+			set_state_owner = c:MZQ
 		}
 	}
 }
 
 sb_mozambique_transfer_mocambique_to_mzq = {
-	if = {
-		limit = { owns_entire_state_region = STATE_MOCAMBIQUE }
-		transfer_state = {
-			STATE = s:STATE_MOCAMBIQUE
-			GIVER = root
-			TAKER = c:MZQ
+	every_scope_state = {
+		limit = {
+			state_region = s:STATE_MOCAMBIQUE
 		}
+		set_state_owner = c:MZQ
 	}
 	every_subject_or_below = {
-		limit = { owns_entire_state_region = STATE_MOCAMBIQUE }
-		save_temporary_scope_as = sb_mozambique_state_giver
-		transfer_state = {
-			STATE = s:STATE_MOCAMBIQUE
-			GIVER = scope:sb_mozambique_state_giver
-			TAKER = c:MZQ
+		every_scope_state = {
+			limit = {
+				state_region = s:STATE_MOCAMBIQUE
+			}
+			set_state_owner = c:MZQ
 		}
 	}
 }
@@ -336,14 +372,33 @@ sb_mozambique_move_namaqualand_claim_to_mzq = {
 sb_mozambique_create_and_transfer_to_mzq = {
 	if = {
 		limit = { NOT = { exists = c:MZQ } }
-		create_country = {
-			tag = MZQ
-			origin = root
-			province = p:x54CDC5
+		if = {
+			limit = { owns_entire_state_region = STATE_LOURENCO_MARQUES }
+			create_country = {
+				tag = MZQ
+				origin = root
+				province = p:x54CDC5
+			}
+		}
+		else_if = {
+			limit = { owns_entire_state_region = STATE_ZAMBEZIA }
+			create_country = {
+				tag = MZQ
+				origin = root
+				province = p:xF0ABE1
+			}
+		}
+		else = {
+			create_country = {
+				tag = MZQ
+				origin = root
+				province = p:x005594
+			}
 		}
 	}
 	c:MZQ ?= {
 		set_strategy = ai_strategy_colonial_extraction
+		set_variable = zanj_subject_var
 		remove_primary_culture = cu:british
 		add_primary_culture = cu:portuguese
 	}
@@ -483,6 +538,7 @@ sb_portugal_redirect_southern_africa_claims_to_mzq = {
 		}
 			sb_mozambique_move_lourenco_claim_to_mzq = yes
 			sb_mozambique_move_zambezia_claim_to_mzq = yes
+			sb_mozambique_move_mocambique_claim_to_mzq = yes
 			sb_mozambique_move_zambezi_claim_to_mzq = yes
 			sb_mozambique_move_botswana_claim_to_mzq = yes
 			sb_mozambique_move_hereroland_claim_to_mzq = yes
@@ -1319,16 +1375,7 @@ sb_eastern_sphere_monthly_housekeeping = {
 		}
 		sb_gaza_ai_incorporate_zambezia = yes
 	}
-	if = {
-		limit = {
-			country_has_primary_culture = cu:portuguese
-			is_subject = no
-			sb_portuguese_controls_mozambique_admin_area = yes
-			NOT = { exists = c:MZQ }
-			NOT = { has_variable = sb_mozambique_direct_administration_var }
-		}
-		trigger_event = { id = sb_mozambique_company.010 days = 1 popup = yes }
-	}
+	sb_mozambique_try_open_administration_event = yes
 	if = {
 		limit = {
 			country_has_primary_culture = cu:portuguese

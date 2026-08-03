@@ -6,7 +6,7 @@ je_sb_bechuanaland_sponsor_boer_settlers_button = {
 
 	visible = {
 		has_journal_entry = je_sb_bechuanaland_corridor
-		sb_bechuanaland_boer_actor = yes
+		sb_bechuanaland_is_primary_boer_actor = yes
 	}
 
 	possible = {
@@ -22,6 +22,113 @@ je_sb_bechuanaland_sponsor_boer_settlers_button = {
 
 	effect = {
 		sb_bechuanaland_create_sgo_beachhead_for_root = yes
+		custom_tooltip = sb_bechuanaland_influence_boer_gain_10_tt
+	}
+}
+
+je_sb_bechuanaland_support_settler_government_button = {
+	name = "je_sb_bechuanaland_support_settler_government_button"
+	desc = "je_sb_bechuanaland_support_settler_government_button_desc"
+
+	visible = {
+		has_journal_entry = je_sb_bechuanaland_corridor
+		sb_bechuanaland_is_primary_boer_actor = yes
+		c:SGO ?= { is_country_alive = yes }
+	}
+
+	possible = {
+		custom_tooltip = {
+			text = je_sb_bechuanaland_support_settler_government_possible_tt
+			hidden_trigger = {
+				gold_reserves >= 2500
+				in_default = no
+				NOT = { has_variable = sb_bechuanaland_boer_subsidy_cooldown_var }
+				c:SGO ?= { is_country_alive = yes }
+			}
+		}
+	}
+
+	ai_chance = {
+		value = 25
+		if = {
+			limit = { global_var:sb_bechuanaland_influence_score_global_var < 0 }
+			add = 75
+		}
+		if = {
+			limit = {
+				global_var:sb_bechuanaland_influence_score_global_var > -10
+				global_var:sb_bechuanaland_influence_score_global_var < 10
+			}
+			add = 35
+		}
+		if = { limit = { has_strategy = ai_strategy_colonial_expansion } add = 50 }
+		if = { limit = { gold_reserves >= 10000 } add = 25 }
+		if = { limit = { net_fixed_income < 0 } add = -50 }
+		if = { limit = { global_var:sb_bechuanaland_influence_score_global_var >= 20 } add = -75 }
+	}
+
+	effect = {
+		add_treasury = -2500
+		set_variable = { name = sb_bechuanaland_boer_subsidy_active_var months = 12 }
+		set_variable = { name = sb_bechuanaland_boer_subsidy_cooldown_var months = 24 }
+		c:SGO ?= {
+			add_treasury = 2500
+			change_relations = { country = root value = 10 }
+		}
+		custom_tooltip = sb_bechuanaland_boer_subsidy_effect_tt
+	}
+}
+
+je_sb_bechuanaland_finance_interior_trade_missions_button = {
+	name = "je_sb_bechuanaland_finance_interior_trade_missions_button"
+	desc = "je_sb_bechuanaland_finance_interior_trade_missions_button_desc"
+
+	visible = {
+		has_journal_entry = je_sb_bechuanaland_corridor
+		sb_bechuanaland_swa_overlord_candidate = yes
+		c:SGO ?= { is_country_alive = yes }
+	}
+
+	possible = {
+		custom_tooltip = {
+			text = je_sb_bechuanaland_finance_interior_trade_missions_possible_tt
+			hidden_trigger = {
+				gold_reserves >= 25000
+				in_default = no
+				NOT = { has_variable = sb_bechuanaland_swa_subsidy_cooldown_var }
+				c:SGO ?= { is_country_alive = yes }
+			}
+		}
+	}
+
+	ai_chance = {
+		value = 25
+		if = {
+			limit = { global_var:sb_bechuanaland_influence_score_global_var > 0 }
+			add = 75
+		}
+		if = {
+			limit = {
+				global_var:sb_bechuanaland_influence_score_global_var > -10
+				global_var:sb_bechuanaland_influence_score_global_var < 10
+			}
+			add = 35
+		}
+		if = { limit = { has_strategy = ai_strategy_colonial_expansion } add = 50 }
+		if = { limit = { gold_reserves >= 100000 } add = 25 }
+		if = { limit = { net_fixed_income < 0 } add = -50 }
+		if = { limit = { global_var:sb_bechuanaland_influence_score_global_var <= -20 } add = -75 }
+	}
+
+	effect = {
+		add_treasury = -25000
+		set_variable = { name = sb_bechuanaland_swa_subsidy_active_var months = 12 }
+		set_variable = { name = sb_bechuanaland_swa_subsidy_cooldown_var months = 24 }
+		c:SGO ?= {
+			add_treasury = 25000
+			change_relations = { country = root value = 10 }
+		}
+		custom_tooltip = sb_bechuanaland_swa_subsidy_effect_tt
 	}
 }
 
@@ -52,7 +159,6 @@ je_sb_bechuanaland_send_warren_expedition_button = {
 	}
 
 	effect = {
-		set_variable = sb_bechuanaland_cap_warren_sent_var
 		sb_bechuanaland_prepare_cap_warren_demand = yes
 	}
 }
