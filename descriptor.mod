@@ -7,4 +7,3 @@ tags={
 }
 name="Spes Bona - A Southern Africa Flavour Pack"
 supported_version="1.13.9"
-replace_path="common/history/treaties"

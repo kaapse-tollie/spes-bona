@@ -1,47 +1,49 @@
 ﻿# Spes Bona Override Manifest
 
-Target game version: `1.13.9`
+Target game version: `1.13.9` (Steam build `23897342`)
 
-Migration validation rule: Tiger is again useful for parser validation on 1.13.9, but launch logs and fresh-start smoke tests remain authoritative for runtime compatibility.
+This document explains the policy. The canonical machine-readable inventory is `Docs/compatibility/override_inventory.json`; it records every exact-path collision and keyed override with owner, scope, intended delta, load-order semantics, rebase date, and pinned upstream/mod hashes.
 
-This file tracks intentional compatibility risks. New broad vanilla-file copies should not be added without updating this manifest.
+Run the mandatory gate with the declared Community Mod Framework dependency installed:
 
-## Approved Replace Path
+```sh
+python3 tools/check_override_inventory.py \
+  --game-root '/path/to/Victoria 3/game' \
+  --cmf-root '/path/to/3385002128'
+python3 -m unittest discover -s tests
+```
 
-`replace_path="common/history/treaties"`
+The gate fails on an unmanifested or stale collision/replacement, upstream drift, mod/object drift, changed state-region membership, dependency-baseline drift, or descriptor version/`replace_path` drift. Hash updates are review actions, not an automatic acceptance workflow.
 
-Reason: vanilla starts several Southern African treaty relationships that Spes Bona suppresses or reshapes before gameplay begins. Treaty history has no keyed `REPLACE` equivalent that cleanly removes vanilla startup treaties without runtime notification spam.
+## Directory replacement policy
 
-Current rule: `common/history/treaties/00_historical_treaties.txt` must stay rebased to vanilla `1.13.9`, with only the South African treaty block intentionally different. Additional SB-only treaties belong in `common/history/treaties/sb_treaties.txt`.
+No `replace_path` directive is approved. In particular, treaty history must not replace its directory: that would delete uniquely named treaty files from lower-priority mods.
 
-## Same-Path Vanilla Files
+`common/history/treaties/00_historical_treaties.txt` remains an exact-path Vanilla shadow because startup treaties cannot be removed with a keyed `REPLACE`. It is pinned to Vanilla `1.13.9` and changes the Southern African startup block. `common/history/treaties/sb_treaties.txt` is additive. Another mod that owns the exact `00_historical_treaties.txt` path remains a last-writer conflict and requires a compatibility patch if both deltas are wanted.
 
-Same-path vanilla files are allowed only when the engine loads vanilla data alongside additive SB data and there is no safe keyed suppression path. These files must stay rebased to vanilla `1.13.9`, with only the documented country or Southern Africa blocks changed.
+## Exact-path Vanilla files
 
-Approved same-path exceptions:
+The inventory currently locks **37** exact-path files. It includes all of the following compatibility surfaces rather than only the narrow regional exceptions:
 
-- `map_data/state_regions/04_subsaharan_africa.txt`: required because state-region keys/provinces are not safe as additive definitions; additive SB state regions duplicate vanilla province cache entries.
-- `common/history/pops/04_subsaharan_africa.txt`: required to replace vanilla starter pop rows in SB-touched state scopes without double-loading vanilla rows.
-- `common/history/buildings/04_subsaharan_africa.txt`: required to suppress vanilla TRN/SAF regional startup buildings and replace SB-touched state scopes.
-- `common/history/military_formations/07_military_formations_subsaharan_africa.txt`: required to suppress vanilla SAF startup formations while preserving unaffected regional formations.
-- `common/history/military_formations/00_military_formations_europe.txt`: required to redistribute Portugal's fixed starting battalions into Angola and Zambezia; military-formation history has no keyed country replacement or scriptable unit-removal effect. The file is vanilla `1.13.9` except for the `POR` block.
-- `common/history/states/00_states.txt`: required because vanilla state history creates old province ownership against SB split state regions, producing cross-region `create_state` errors.
-- `common/history/characters/saf - south africa.txt`: required to keep SAF as a formable-only tag and prevent vanilla SAF characters from spawning at game start.
+- Southern African building, population, state, country, character, military-formation, and treaty histories.
+- The Vanilla Highveld event baseline.
+- `map_data/state_regions/04_subsaharan_africa.txt`, `map_data/province_terrains.txt`, and the full `map_data/provinces.png` raster.
+- All five generated map-object locator files and the full spline-network baseline.
+- Both global journal GUI files.
 
-The following broad files remain retired:
+The raster, terrain, locator, spline, and GUI copies are global file-level collisions even where the authored delta is Southern African. Mods changing the same files require explicit compatibility work. The JSON hash pair is the parity lock for binary/generated copies; textual files are also reviewable with an ordinary pinned-upstream diff.
 
-- `map_data/state_regions/03_north_africa.txt` -> removed
-- `map_data/state_regions/08_middle_east.txt` -> removed
+## State regions intentionally changed or added
 
-## State Regions Intentionally Replaced
+The inventory mechanically enforces these **17** blocks in `map_data/state_regions/04_subsaharan_africa.txt`:
 
-`map_data/state_regions/04_subsaharan_africa.txt` replaces only these SB state-region blocks:
-
+- `STATE_BECHUANALAND`
 - `STATE_BOTSWANA`
 - `STATE_CAPE_COLONY`
 - `STATE_DRAKENSBERG`
 - `STATE_EASTERN_CAPE`
 - `STATE_EAST_TRANSVAAL`
+- `STATE_GRIQUALAND_WEST`
 - `STATE_HEREROLAND`
 - `STATE_LOURENCO_MARQUES`
 - `STATE_NAMAQUALAND`
@@ -53,83 +55,36 @@ The following broad files remain retired:
 - `STATE_ZAMBEZIA`
 - `STATE_ZULULAND`
 
-Compatibility impact: mods that also redefine these state regions need a manual compatibility patch. Other 1.13 map regions should remain vanilla-owned.
+The retired North Africa and Middle East state-region copies remain absent.
 
-## Additive State Trait Assignments
+## Additive state-trait assignments
 
-`common/history/global/sb_state_traits.txt` replaces mild malaria with severe malaria at initialization for the following state regions:
+`common/history/global/sb_state_traits.txt` changes malaria by scoped history effects rather than additional map-file overrides. Severe malaria is assigned to Eastern/Western Mali, Volta, Hausaland/Outer/East Hausaland, Bornu, Nigeria, North Cameroon, Waddai, North Angola, Lindi, Tanganyika, Kazembe, Rift Valley, and Uganda; Gabon is adjusted in the opposite direction.
 
-- `STATE_EASTERN_MALI`
-- `STATE_WESTERN_MALI`
-- `STATE_VOLTA`
-- `STATE_HAUSALAND`
-- `STATE_OUTER_HAUSALAND`
-- `STATE_EAST_HAUSALAND`
-- `STATE_BORNU`
-- `STATE_NIGERIA`
-- `STATE_NORTH_CAMEROON`
-- `STATE_WADDAI`
-- `STATE_NORTH_ANGOLA`
-- `STATE_LINDI` (Rufiji)
-- `STATE_TANGANYIKA`
-- `STATE_KAZEMBE`
-- `STATE_RIFT_VALLEY`
-- `STATE_UGANDA`
+## Keyed overrides
 
-`STATE_GABON` is adjusted in the opposite direction, replacing severe malaria with normal malaria.
+The JSON currently locks **101** `REPLACE`, `TRY_REPLACE`, and `REPLACE_OR_CREATE` objects individually, including their source paths and object hashes. The surface includes:
 
-This uses state-region-scoped `remove_state_trait` and `add_state_trait` effects instead of map-data overrides. It does not redefine provinces, hubs, arable land, resources, or either vanilla regional file, so third-party map mods remain compatible unless they deliberately alter the same malaria traits during history initialization.
+- Southern African character templates, country definitions, names, flags, CoAs, regions, state names, companies, and Highveld replacements.
+- Global dominion action/type, stake-colonial-claim, abolish-monarchy, commander-retirement, law, ideology, technology, state-trait, and movement objects whose compatibility risk cannot be described as regional file ownership.
+- Three `REPLACE_OR_CREATE` CMF detection triggers.
 
-## History Baselines Intentionally Replaced
+The five retained political-movement replacements are additionally pinned to Community Mod Framework `1.58.2` baselines; their only SB deltas are the documented CAP creation/disband exclusions and Anglo-African utilitarian eligibility. Religious-majority is no longer replaced because it had no authored SB delta.
 
-State ownership/history is limited to the same Southern African scope in `common/history/states/00_states.txt`.
+A manifest entry means “reviewed and mechanically contained,” not that every broad override is ideal. Open compatibility findings continue to track objects that should be rebased, narrowed, or upstreamed to CMF.
 
-Population baseline replacements are in `common/history/pops/04_subsaharan_africa.txt`. Each touched `region_state` clears vanilla starter pops before recreating SB rows. `STATE_KAZEMBE` is included only to remove a vanilla umbrella `nguni` starter row and replace it with a concrete local culture.
+## History baseline rules
 
-Building baseline replacements are in `common/history/buildings/04_subsaharan_africa.txt`. Each touched `region_state` calls `sb_purge_starting_buildings_effect` before recreating SB rows.
+Touched state scopes purge/recreate their startup populations and buildings so Vanilla rows do not double-load. Portugal and Southern African military-formation histories remain exact-path baselines where the engine offers no keyed row-removal mechanism. New Vanilla-name history/map files are prohibited until added to the inventory with an explicit intent and parity review.
 
-## CMF Detection Triggers
+## Naming and interoperability
 
-Spes Bona exposes these `REPLACE_OR_CREATE` triggers for Community Mod Framework interoperability:
+Additive definitions use `sb_<feature>_*`. Intentional late keyed replacements use `zz_sb_*` or `zzz_sb_*` and carry a local reason. Internal milestone names are not active API. Event IDs remain stable.
+
+CMF detection is provided by:
 
 - `spes_bona_is_active`
 - `spes_bona_southern_africa_map_rework_active`
 - `spes_bona_population_rework_active`
 
-## Naming Conventions
-
-Additive files should use `sb_<feature>_*` names that identify the system they implement. Intentional load-order overrides should use `zz_sb_<feature>_override(s)` or `zzz_sb_<feature>_override(s)` and carry a short header explaining why keyed replacement or late load order is required.
-
-Do not use internal milestone names such as `phase2`, `phase3`, `wave`, or `misc` in active script filenames, scripted effects, variables, or comments. Event IDs are stable public API and should not be renamed in cleanup passes.
-
-## Hard `REPLACE` Categories
-
-The remaining hard `REPLACE`/`REPLACE_OR_CREATE` usage is intentionally limited to keyed script objects where vanilla behavior must be altered:
-
-- Boer/Natal/SAF dynamic country names and flags.
-- Southern African country-definition tier/culture overrides.
-- Boer slavery-law replacements and frontier colonization-law replacement.
-- Vanilla Highveld JE/scripted-button disablement.
-- Southern Africa dynamic state-name dispatcher.
-- Southern Africa strategic/geographic region overrides.
-- De Beers company replacement so it operates SB diamond mines instead of vanilla gold fields.
-- Companhia de Mocambique replacement so it can only be chartered through the Portuguese Mozambique administration event.
-- Character template and interaction overrides for SB ruler/general handling.
-- Political movement overlap overrides where CMF has no narrower hook yet.
-- `state_trait_severe_malaria` adjustment used by the SB map/resource pass.
-
-Any new hard replacement should include a local comment explaining why additive script or a CMF hook was insufficient.
-
-Current feature-specific override files include:
-
-- `common/character_interactions/zz_sb_commander_retirement_override.txt`
-- `common/company_types/zz_sb_de_beers_override.txt`
-- `common/company_types/zz_sb_mozambique_company_override.txt`
-- `common/country_definitions/zz_sb_southern_africa_country_definition_overrides.txt`
-- `common/ideologies/zz_sb_reformer_ideology_override.txt`
-- `common/journal_entries/zz_sb_highveld_vanilla_overrides.txt`
-- `common/scripted_buttons/zz_sb_highveld_vanilla_overrides.txt`
-- `common/political_movements/zz_sb_cultural_majority_movement_override.txt`
-- `common/political_movements/zz_sb_minority_rights_movement_override.txt`
-- `common/political_movements/zz_sb_religious_majority_movement_override.txt`
-- `common/political_movements/zzz_sb_cape_political_movement_overrides.txt`
+Tiger remains useful for parser validation, but fresh-start logs and focused engine tests remain authoritative for runtime and load-order behavior.

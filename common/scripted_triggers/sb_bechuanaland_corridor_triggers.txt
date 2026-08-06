@@ -54,35 +54,51 @@ sb_bechuanaland_trn_is_sar_like = {
 }
 
 sb_bechuanaland_boer_actor = {
-	NOT = { is_in_same_power_bloc = c:GBR }
 	OR = {
 		AND = {
-			country_definition = cd:TRN
+			country_definition = cd:SGO
 			is_country_alive = yes
-			OR = {
-				has_variable = sb_kimberley_trn_claimant_var
-				AND = {
-					has_variable = sb_oranje_federated_into_trn_var
-					has_global_variable = sb_kimberley_boer_victory_global_var
-				}
-				sb_bechuanaland_trn_is_sar_like = yes
-			}
+			is_subject = no
 		}
 		AND = {
-			country_definition = cd:ORA
-			is_country_alive = yes
-			has_variable = sb_kimberley_ora_claimant_var
+			NOT = { is_in_same_power_bloc = c:GBR }
+			OR = {
+				AND = {
+					country_definition = cd:TRN
+					is_country_alive = yes
+					OR = {
+						has_variable = sb_kimberley_trn_claimant_var
+						AND = {
+							has_variable = sb_oranje_federated_into_trn_var
+							has_global_variable = sb_kimberley_boer_victory_global_var
+						}
+						sb_bechuanaland_trn_is_sar_like = yes
+					}
+				}
+				AND = {
+					country_definition = cd:ORA
+					is_country_alive = yes
+					has_variable = sb_kimberley_ora_claimant_var
+				}
+			}
 		}
 	}
 }
-
 sb_bechuanaland_primary_boer_actor_at_peace = {
 	OR = {
-		c:TRN ?= {
+		c:SGO ?= {
 			sb_bechuanaland_boer_actor = yes
 			is_at_war = no
 		}
 		AND = {
+			NOT = { c:SGO ?= { sb_bechuanaland_boer_actor = yes } }
+			c:TRN ?= {
+				sb_bechuanaland_boer_actor = yes
+				is_at_war = no
+			}
+		}
+		AND = {
+			NOT = { c:SGO ?= { sb_bechuanaland_boer_actor = yes } }
 			NOT = { c:TRN ?= { sb_bechuanaland_boer_actor = yes } }
 			c:ORA ?= {
 				sb_bechuanaland_boer_actor = yes
@@ -91,18 +107,21 @@ sb_bechuanaland_primary_boer_actor_at_peace = {
 		}
 	}
 }
-
 sb_bechuanaland_is_primary_boer_actor = {
 	sb_bechuanaland_boer_actor = yes
 	OR = {
-		country_definition = cd:TRN
+		country_definition = cd:SGO
+		AND = {
+			country_definition = cd:TRN
+			NOT = { c:SGO ?= { sb_bechuanaland_boer_actor = yes } }
+		}
 		AND = {
 			country_definition = cd:ORA
+			NOT = { c:SGO ?= { sb_bechuanaland_boer_actor = yes } }
 			NOT = { c:TRN ?= { sb_bechuanaland_boer_actor = yes } }
 		}
 	}
 }
-
 # Global terminal guard shared by decisions, queues, and delayed launch retries.
 sb_bechuanaland_corridor_crisis_is_live = {
 	has_global_variable = sb_bechuanaland_corridor_open_global_var
@@ -144,6 +163,7 @@ sb_bechuanaland_caprivi_decision_window_is_valid = {
 	has_global_variable = sb_bechuanaland_caprivi_decision_pending_global_var
 	NOT = { has_global_variable = sb_bechuanaland_warren_decision_pending_global_var }
 	any_country = { sb_bechuanaland_swa_overlord_candidate = yes }
+	sb_bechuanaland_caprivi_not_held_by_swa = yes
 }
 
 # Diplomatic-play scope. The final branch supports saves already running the
@@ -303,6 +323,11 @@ sb_bechuanaland_sgo_controls_nw_corridor = {
 
 sb_bechuanaland_caprivi_not_held_by_swa = {
 	NOT = { sb_bechuanaland_swa_controls_caprivi = yes }
+	OR = { p:x773A13.state.owner = c:LZO p:x773A13.state.owner = c:SWA }
+	OR = { p:x4401C5.state.owner = c:LZO p:x4401C5.state.owner = c:SWA }
+	OR = { p:x3D4350.state.owner = c:LZO p:x3D4350.state.owner = c:SWA }
+	OR = { p:x6001D0.state.owner = c:LZO p:x6001D0.state.owner = c:SWA }
+	OR = { p:x0DDFB8.state.owner = c:LZO p:x0DDFB8.state.owner = c:SWA }
 }
 
 sb_bechuanaland_swa_controls_caprivi = {

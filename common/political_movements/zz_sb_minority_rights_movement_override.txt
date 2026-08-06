@@ -1,6 +1,6 @@
 ﻿# Spes Bona - minority-rights movement override
-# REPLACE prevents the generic minority-rights movement from overlapping the
-# Cape liberal settlement while leaving the vanilla structure intact elsewhere.
+# Community Mod Framework 1.58.2 / Vanilla 1.13.9 baseline plus only the CAP
+# creation/disband exclusion, leaving CMF integrations intact elsewhere.
 
 REPLACE:movement_minority_rights = {
 	category = movement_category_ideological
@@ -8,6 +8,7 @@ REPLACE:movement_minority_rights = {
 	ideology = ideology_pluralist_movement_3
 	character_ideologies = {
 		ideology_reformer
+		ideology_gbbf_ottomanist_leader #GOTB
 	}
 
 	creation_trigger = {
@@ -36,7 +37,7 @@ REPLACE:movement_minority_rights = {
 				exists = owner
 			}
 			culture = {
-				NOT = { is_primary_culture_of = owner }
+				NOT = { is_primary_culture_of = root.owner } # BugFix from PLP (root.owner, not owner)
 			}
 		}
 		OR = {
@@ -44,6 +45,7 @@ REPLACE:movement_minority_rights = {
 			has_ideology = ideology:ideology_humanitarian_royalist
 			has_ideology = ideology:ideology_sovereignist_leader
 			has_ideology = ideology:ideology_reformer
+			has_ideology = ideology:ideology_gbbf_ottomanist_leader #GOTB
 		}
 	}
 	character_support_weight = {
@@ -61,6 +63,7 @@ REPLACE:movement_minority_rights = {
 				OR = {
 					has_ideology = ideology:ideology_humanitarian
 					has_ideology = ideology:ideology_reformer
+					has_ideology = ideology:ideology_gbbf_ottomanist_leader #GOTB
 				}
 			}
 			multiply = {
@@ -71,7 +74,7 @@ REPLACE:movement_minority_rights = {
 
 	pop_support_trigger = {
 		culture = {
-			NOT = { is_primary_culture_of = owner }
+			NOT = { is_primary_culture_of = root.owner } # BugFix from PLP (root.owner, not owner)
 		}
 		owner = {
 			cultural_acceptance_base = { target = root.culture value < acceptance_status_5 }
@@ -208,6 +211,12 @@ REPLACE:movement_minority_rights = {
 				subtract = standard_of_living
 				max = 10
 			}
+		}
+
+		# Grey_PLP
+		multiply = {
+			value = mog_plp_movement_minority_rights_pop_support_weight_mult
+			desc = "STANDARD_OF_LIVING_FOR_CULTURE"                                # Desc only shows when value =/= 1
 		}
 
 		if = {
@@ -382,6 +391,19 @@ REPLACE:movement_minority_rights = {
 				desc = "law_racial_segregation"
 			}
 		}
+		if = {
+			limit = {
+				this.days_since_movement_defeated <= very_long_modifier_time
+			}
+			add = { # (x-y)/y - ([1, 7300]-7300)/7300
+				desc = "movement_suppressed_after_civil_war"
+				value = this.days_since_movement_defeated
+				subtract = very_long_modifier_time
+				divide = {
+					value = very_long_modifier_time
+				}
+			}
+		}
 	}
 
 	revolution = {
@@ -395,6 +417,11 @@ REPLACE:movement_minority_rights = {
 
 		state_weight = {
 			value = 1
+
+			# Grey_PLP - always put last
+			multiply = {
+				value = mog_plp_movement_all_general_state_weight_mult
+			}
 		}
 	}
 }

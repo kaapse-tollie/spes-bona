@@ -51,7 +51,16 @@ The live repo docs are now the source of truth:
 
 ## Validation
 
-Current standard validation command:
+Before parser or map validation, enforce the reviewed Vanilla/CMF override surface and run its mutation tests:
+
+```sh
+python3 tools/check_override_inventory.py \
+  --game-root '/Users/depro/Library/Application Support/Steam/steamapps/common/Victoria 3/game' \
+  --cmf-root '/Users/depro/Library/Application Support/Steam/steamapps/workshop/content/529340/3385002128'
+python3 -m unittest discover -s tests
+```
+
+Current standard parser validation command:
 
 ```sh
 vic3-tiger -c --unused --no-color \

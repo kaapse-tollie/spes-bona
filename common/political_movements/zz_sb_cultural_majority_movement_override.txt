@@ -1,6 +1,7 @@
 ﻿# Spes Bona - cultural-majority movement override
-# REPLACE excludes Cape-specific politics from the generic vanilla movement so
-# the Cape JE owns that conflict instead of double-spawning movements.
+# Community Mod Framework 1.58.2 / Vanilla 1.13.9 baseline plus only the CAP
+# creation/disband exclusion, so the Cape JE owns this conflict without erasing
+# CMF integrations elsewhere.
 
 REPLACE:movement_cultural_majority = {
 	category = movement_category_cultural_majority
@@ -8,13 +9,15 @@ REPLACE:movement_cultural_majority = {
 	ideology = ideology_ethno_nationalist_movement
 	character_ideologies = {
 		ideology_ethno_nationalist
+		ideology_usfp_social_darwinist_leader
+		ideology_gbbf_islamist_leader # GOTB
 	}
 
 	can_cause_obstinance = yes
 
 	creation_trigger = {
 		NOT = { country_definition = cd:CAP }
-		NOR = {
+		NOR = { # Will not spawn if you're an un-unified German or Italian state
 			AND = {
 				OR = {
 					country_has_primary_culture = cu:north_german
@@ -51,11 +54,7 @@ REPLACE:movement_cultural_majority = {
 		culture = {
 			is_primary_culture_of = root.owner
 		}
-		OR = {
-			has_ideology = ideology:ideology_fascist
-			has_ideology = ideology:ideology_jingoist_leader
-			has_ideology = ideology:ideology_ethno_nationalist
-		}
+		character_is_pro_cultural_majority = yes #Compatibility Trigger
 		NOT = {
 			has_variable = anti_nationalist_var
 		}
@@ -65,6 +64,8 @@ REPLACE:movement_cultural_majority = {
 		if = {
 			limit = {
 				has_ideology = ideology:ideology_ethno_nationalist
+				has_ideology = ideology:ideology_usfp_social_darwinist_leader #USFP
+				has_ideology = ideology:ideology_gbbf_islamist_leader # GOTB
 			}
 			multiply = {
 				value = 5
@@ -93,8 +94,24 @@ REPLACE:movement_cultural_majority = {
 	}
 
 	pop_support_trigger = {
-		culture = {
-			is_primary_culture_of = root.owner
+		OR = {
+			culture = {
+				is_primary_culture_of = root.owner
+			}
+			trigger_if = {
+				#anzfp
+				limit = {
+					anzfp_is_active = yes
+					pop_acceptance > acceptance_status_4
+					owner = {
+						or = {
+							country_has_primary_culture = cu:australian
+							anz_country_is_pakeha = yes
+						}
+					}
+				}
+				has_pop_culture = british
+			}
 		}
 	}
 
@@ -271,7 +288,7 @@ REPLACE:movement_cultural_majority = {
 			}
 		}
 
-		multiply = {
+		multiply = { # Range from x0.775 to 2.275
 			desc = "POP_CULTURE_FERVOR"
 			value = culture.culture_current_fervor
 			subtract = 15
@@ -291,7 +308,7 @@ REPLACE:movement_cultural_majority = {
 			}
 		}
 
-		if = {
+		if = { # If a more radical movement exists, it'll poach radicals from this one.
 			limit = {
 				owner ?= {
 					any_political_movement = {
@@ -306,6 +323,18 @@ REPLACE:movement_cultural_majority = {
 				desc = "POP_RADICAL_MOVEMENT_LOSSES"
 				value = 1
 				subtract = pop_radical_fraction
+			}
+		}
+
+		if = {
+			limit = {
+				anzfp_is_active = yes
+				has_pop_culture = british
+				pop_acceptance < acceptance_status_5
+			}
+			multiply = {
+				value = 0.1
+				desc = "anz_POP_NOT_T5"
 			}
 		}
 	}
@@ -355,6 +384,10 @@ REPLACE:movement_cultural_majority = {
 					add = 50
 				}
 			}
+			# Grey_PLP - always put last
+			multiply = {
+				value = mog_plp_movement_all_general_state_weight_mult
+			}
 		}
 	}
 
@@ -377,7 +410,7 @@ REPLACE:movement_cultural_majority = {
 					is_homeland_of_country_cultures = owner
 					primary_cultures_percent_state >= 0.05
 				}
-				add = {
+				add = { # These three values must add up to more than 1 - 5 x Obstinance, 1/2 Turmoil, percent of pops of primary cultures
 					value = -1
 					add = "this.primary_cultures_percent_state"
 					add = {
@@ -390,6 +423,10 @@ REPLACE:movement_cultural_majority = {
 					}
 					multiply = 100
 				}
+			}
+			# Grey_PLP - always put last
+			multiply = {
+				value = mog_plp_movement_all_general_state_weight_mult
 			}
 		}
 	}
@@ -419,6 +456,37 @@ REPLACE:movement_cultural_majority = {
 
 		if = {
 			limit = {
+				owner ?= {
+					has_technology_researched = nationalism
+					any_scope_homeland_state = {
+						NOT = {
+							owner = {
+								country_has_primary_culture = root.culture
+							}
+						}
+					}
+				}
+			}
+			add = {
+				owner ?= {
+					every_scope_homeland_state = {
+						limit = {
+							NOT = {
+								owner = {
+									country_has_primary_culture = root.culture
+								}
+							}
+						}
+						add = 0.025
+					}
+				}
+				max = 0.25
+				desc = "MOVEMENT_RADICALISM_UNOWNED_HOMELAND_STATES_FACTOR"
+			}
+		}
+
+		if = {
+			limit = {
 				owner = {
 					any_neighbouring_state = {
 						owner = {
@@ -434,6 +502,20 @@ REPLACE:movement_cultural_majority = {
 			add = {
 				desc = "NEIGHBOURING_COUNTRY_WITH_CULTURE_REVOLUTION"
 				value = 0.15
+			}
+		}
+
+		if = {
+			limit = {
+				this.days_since_movement_defeated <= very_long_modifier_time
+			}
+			add = { # (x-y)/y - ([1, 7300]-7300)/7300
+				desc = "movement_suppressed_after_civil_war"
+				value = this.days_since_movement_defeated
+				subtract = very_long_modifier_time
+				divide = {
+					value = very_long_modifier_time
+				}
 			}
 		}
 	}

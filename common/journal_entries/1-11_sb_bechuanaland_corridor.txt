@@ -53,6 +53,12 @@ je_sb_bechuanaland_corridor = {
 			OR = {
 				has_global_variable = sb_bechuanaland_british_victory_global_var
 				AND = {
+					NOT = { c:SAF ?= { is_country_alive = yes } }
+					c:CAP ?= { is_country_alive = yes is_subject_of = c:GBR }
+					c:SWA ?= { is_country_alive = yes is_subject = no }
+					NOT = { has_global_variable = sb_bechuanaland_boer_swa_victory_global_var }
+				}
+				AND = {
 					NOT = {
 						OR = {
 							has_global_variable = sb_bechuanaland_crisis_decision_pending_global_var
@@ -72,6 +78,7 @@ je_sb_bechuanaland_corridor = {
 	custom_on_completion_header = je_sb_bechuanaland_corridor_british_victory_effects_header
 
 	on_complete = {
+		sb_bechuanaland_set_british_crisis_victory = yes
 		c:GBR ?= {
 			trigger_event = { id = sb_bechuanaland_corridor.040 popup = yes }
 		}
@@ -110,7 +117,13 @@ je_sb_bechuanaland_corridor = {
 		OR = {
 			has_global_variable = sb_bechuanaland_corridor_resolved_global_var
 			NOT = { has_global_variable = sb_bechuanaland_corridor_open_global_var }
+			c:SAF ?= { is_country_alive = yes }
+			NOT = { c:CAP ?= { is_country_alive = yes is_subject_of = c:GBR } }
 		}
+	}
+
+	on_invalid = {
+		sb_bechuanaland_handle_post_open_lifecycle = yes
 	}
 
 	weight = 1000

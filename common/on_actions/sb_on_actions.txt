@@ -34,7 +34,7 @@ on_diplomatic_play_started = {
 }
 
 on_diplo_play_join_side = {
-	on_actions = { sb_on_spes_bona_diplomatic_play_started }
+	on_actions = { sb_on_spes_bona_diplo_play_join_side }
 }
 
 on_diplo_play_war_start = {
@@ -2230,7 +2230,51 @@ sb_on_spes_bona_diplomatic_play_started = {
 					}
 				}
 			}
-		sb_schedule_trn_frontier_deployment_for_play = yes
+	}
+}
+
+sb_on_spes_bona_diplo_play_join_side = {
+	effect = {
+		# Re-run only membership-sensitive support, restraint, and muster routing.
+		sb_withdraw_ai_frontier_goods_exports_to_boers = yes
+		sb_restore_ai_frontier_force_floors_for_play = yes
+		c:GBR ?= { sb_gbr_refresh_boer_restraint = yes }
+		sb_handle_natalia_player_support_join = yes
+		if = {
+			limit = {
+				OR = {
+					scope:target ?= { country_definition = cd:SWZ }
+					root = {
+						any_scope_play_involved = {
+							c:SWZ ?= THIS
+							is_diplomatic_play_target = yes
+						}
+					}
+				}
+				c:SWZ ?= {
+					is_country_alive = yes
+				}
+			}
+			c:SWZ ?= {
+				if = {
+					limit = {
+						root = {
+							any_scope_play_involved = {
+								is_player = yes
+								is_diplomatic_play_enemy_of = c:SWZ
+							}
+						}
+					}
+					sb_swazi_raise_defensive_muster_vs_player = yes
+				}
+				else_if = {
+					limit = {
+						NOT = { has_variable = sb_zulu_swazi_war_active_var }
+					}
+					sb_swazi_raise_defensive_muster = yes
+				}
+			}
+		}
 	}
 }
 
@@ -2238,17 +2282,6 @@ sb_on_spes_bona_diplo_play_war_start = {
 	effect = {
 		sb_restore_ai_frontier_force_floors_for_play = yes
 		sb_schedule_trn_frontier_deployment_for_play = yes
-		c:TRN ?= {
-			if = {
-				limit = {
-					is_country_alive = yes
-					is_ai = yes
-				}
-				trigger_event = { id = sb_frontier_ai_wars.900 days = 1 }
-				trigger_event = { id = sb_frontier_ai_wars.900 days = 7 }
-				trigger_event = { id = sb_frontier_ai_wars.900 days = 21 }
-			}
-		}
 		if = {
 			limit = {
 				is_diplomatic_play_type = dp_sb_natal_crisis
@@ -2289,6 +2322,7 @@ sb_on_natalia_become_british_subject = {
 
 sb_on_spes_bona_diplo_play_back_down = {
 	effect = {
+		sb_cleanup_trn_frontier_deployment_train_for_play = yes
 		sb_cleanup_ai_frontier_force_support_for_play = yes
 		sb_klip_river_handle_backdown = yes
 		sb_bechuanaland_handle_crisis_backdown = yes
@@ -2509,6 +2543,7 @@ sb_on_spes_bona_diplo_play_abandon_side = {
 
 sb_on_spes_bona_war_end = {
 	effect = {
+		sb_cleanup_trn_frontier_deployment_train_for_play = yes
 		sb_cleanup_ai_frontier_force_support_for_play = yes
 		sb_klip_river_handle_war_end = yes
 		sb_bechuanaland_resolve_crisis_war_at_end = yes
