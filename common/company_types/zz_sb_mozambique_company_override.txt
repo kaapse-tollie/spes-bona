@@ -1,5 +1,4 @@
-﻿# The Companhia de Mocambique may only be established through SB's Portuguese
-# Mozambique administration event, which also links it to the MZQ company country.
+﻿# Mirrors vanilla 1.13.9; only POR/IBE AI selection weight is increased.
 REPLACE:company_mozambique_company = {
 	icon = "gfx/interface/icons/company_icons/historical_company_icons/mozambique_companhia_de_mocambique.dds"
 	background = "gfx/interface/icons/company_icons/company_backgrounds/comp_illu_plantation.dds"
@@ -36,9 +35,20 @@ REPLACE:company_mozambique_company = {
 	}
 
 	possible = {
-		custom_tooltip = {
-			text = sb_mozambique_company_scripted_establishment_only_tt
-			has_variable = sb_mozambique_company_scripted_establishment_var
+		has_technology_researched = mutual_funds
+		any_scope_state = {
+			OR = {
+				state_region = s:STATE_MOCAMBIQUE
+				state_region = s:STATE_ZAMBEZIA
+				state_region = s:STATE_LOURENCO_MARQUES
+			}
+			any_scope_building = {
+				OR = {
+					is_building_type = building_cotton_plantation
+					is_building_type = building_tea_plantation
+				}
+				level >= 5
+			}
 		}
 	}
 
@@ -48,7 +58,14 @@ REPLACE:company_mozambique_company = {
 	}
 
 	ai_will_do = {
-		always = no
+		has_technology_researched = mutual_funds
+		any_scope_state = {
+			OR = {
+				state_region = s:STATE_MOCAMBIQUE
+				state_region = s:STATE_ZAMBEZIA
+				state_region = s:STATE_LOURENCO_MARQUES
+			}
+		}
 	}
 
 	ai_construction_targets = {
@@ -60,7 +77,6 @@ REPLACE:company_mozambique_company = {
 					state_region = s:STATE_ZAMBEZIA
 					state_region = s:STATE_LOURENCO_MARQUES
 				}
-				is_incorporated = yes
 			}
 		}
 		building_tea_plantation = {
@@ -71,12 +87,20 @@ REPLACE:company_mozambique_company = {
 					state_region = s:STATE_ZAMBEZIA
 					state_region = s:STATE_LOURENCO_MARQUES
 				}
-				is_incorporated = yes
 			}
 		}
 	}
 
 	ai_weight = {
-		value = 3
+		value = 3 # Vanilla base weight for flavored companies
+		if = {
+			limit = {
+				OR = {
+					country_definition = cd:POR
+					country_definition = cd:IBE
+				}
+			}
+			add = 97
+		}
 	}
 }

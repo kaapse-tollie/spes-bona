@@ -1,0 +1,39 @@
+﻿# Spes Bona - Mozambique Decisions
+
+decision_sb_transfer_mozambique_to_company_rule = {
+	is_shown = {
+		OR = {
+			country_definition = cd:POR
+			country_definition = cd:IBE
+		}
+		NOT = { exists = c:MZQ }
+	}
+
+	possible = {
+		OR = {
+			country_definition = cd:POR
+			country_definition = cd:IBE
+		}
+		is_subject = no
+		is_at_war = no
+		is_diplomatic_play_committed_participant = no
+		has_company = company_type:company_mozambique_company
+		NOT = { exists = c:MZQ }
+		OR = {
+			owns_entire_state_region = STATE_MOCAMBIQUE
+			owns_entire_state_region = STATE_ZAMBEZIA
+			owns_entire_state_region = STATE_LOURENCO_MARQUES
+		}
+	}
+
+	when_taken = {
+		custom_tooltip = decision_sb_transfer_mozambique_to_company_rule_effect_tt
+		hidden_effect = {
+			sb_mozambique_transfer_to_company_rule = yes
+		}
+	}
+
+	ai_chance = {
+		value = 1000
+	}
+}

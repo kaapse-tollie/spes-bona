@@ -647,16 +647,16 @@ sb_bechuanaland_make_tsw_subject_of_gbr = {
 			c:GBR ?= {
 				create_diplomatic_pact = {
 					country = c:TSW
-					type = vassal
+					type = puppet
 				}
 			}
 		}
 		else_if = {
 			limit = {
 				is_subject_of = c:GBR
-				NOT = { is_subject_type = subject_type_vassal }
+				NOT = { is_subject_type = subject_type_puppet }
 			}
-			change_subject_type = subject_type_vassal
+			change_subject_type = subject_type_puppet
 		}
 	}
 }
@@ -673,16 +673,16 @@ sb_bechuanaland_make_tsw_subject_of_cap = {
 			c:CAP ?= {
 				create_diplomatic_pact = {
 					country = c:TSW
-					type = vassal
+					type = puppet
 				}
 			}
 		}
 		else_if = {
 			limit = {
 				is_subject_of = c:CAP
-				NOT = { is_subject_type = subject_type_vassal }
+				NOT = { is_subject_type = subject_type_puppet }
 			}
-			change_subject_type = subject_type_vassal
+			change_subject_type = subject_type_puppet
 		}
 	}
 }
@@ -1158,7 +1158,7 @@ sb_bechuanaland_apply_british_settlement = {
 	}
 	if = {
 		limit = { c:GBR ?= { is_country_alive = yes } }
-		s:STATE_ZAMBEZIA = { add_claim = c:GBR }
+		s:STATE_ZAMBIA = { add_claim = c:GBR }
 		s:STATE_ZAMBEZI = { add_claim = c:GBR }
 		s:STATE_KAZEMBE = { add_claim = c:GBR }
 	}
@@ -1189,7 +1189,7 @@ sb_bechuanaland_apply_boer_swa_settlement = {
 		if = {
 			limit = { exists = scope:sb_bechuanaland_swa_settlement_claimant_scope }
 			s:STATE_BOTSWANA = { add_claim = scope:sb_bechuanaland_swa_settlement_claimant_scope }
-			s:STATE_ZAMBEZIA = { add_claim = scope:sb_bechuanaland_swa_settlement_claimant_scope }
+			s:STATE_ZAMBIA = { add_claim = scope:sb_bechuanaland_swa_settlement_claimant_scope }
 			s:STATE_ZAMBEZI = { add_claim = scope:sb_bechuanaland_swa_settlement_claimant_scope }
 			s:STATE_KAZEMBE = { add_claim = scope:sb_bechuanaland_swa_settlement_claimant_scope }
 		}
@@ -1251,7 +1251,10 @@ sb_bechuanaland_cleanup_corridor_crisis = {
 	if = { limit = { has_global_variable = sb_bechuanaland_boer_swa_settlement_pending_global_var } remove_global_variable = sb_bechuanaland_boer_swa_settlement_pending_global_var }
 	if = { limit = { has_global_variable = sb_bechuanaland_boer_influence_positive_var } remove_global_variable = sb_bechuanaland_boer_influence_positive_var }
 	if = { limit = { has_global_variable = sb_bechuanaland_swa_influence_positive_var } remove_global_variable = sb_bechuanaland_swa_influence_positive_var }
-	c:GBR ?= { if = { limit = { has_variable = sb_bechuanaland_british_war_side_var } remove_variable = sb_bechuanaland_british_war_side_var } }
+	c:GBR ?= {
+		if = { limit = { has_variable = sb_bechuanaland_british_war_side_var } remove_variable = sb_bechuanaland_british_war_side_var }
+		if = { limit = { has_variable = sb_bechuanaland_gbr_warren_sent_var } remove_variable = sb_bechuanaland_gbr_warren_sent_var }
+	}
 	c:CAP ?= {
 		if = { limit = { has_variable = sb_bechuanaland_british_war_side_var } remove_variable = sb_bechuanaland_british_war_side_var }
 		if = { limit = { has_variable = sb_bechuanaland_cap_warren_sent_var } remove_variable = sb_bechuanaland_cap_warren_sent_var }

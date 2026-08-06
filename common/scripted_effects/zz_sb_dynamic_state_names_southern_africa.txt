@@ -55,6 +55,14 @@ REPLACE:assign_state_name_region_southern_africa = {
     if = {
         limit = {
             state_region = {
+                s:STATE_BECHUANALAND ?= this
+            }
+        }
+        STATE_BECHUANALAND_state_name_assign = yes
+    }
+    if = {
+        limit = {
+            state_region = {
                 s:STATE_VRYSTAAT ?= this
             }
         }
@@ -415,6 +423,24 @@ REPLACE:STATE_VRYSTAAT_state_name_assign = {
         }
         set_state_name = STATE_VRYSTAAT_anglophone
         reset_hub_names = yes
+    }
+    else = {
+        reset_state_name = yes
+        reset_hub_names = yes
+    }
+}
+
+STATE_BECHUANALAND_state_name_assign = {
+    if = {
+        limit = {
+            owner = {
+                any_primary_culture = {
+                    has_discrimination_trait_group = heritage_group_european
+                }
+            }
+        }
+        reset_state_name = yes
+        set_hub_names = european
     }
     else = {
         reset_state_name = yes

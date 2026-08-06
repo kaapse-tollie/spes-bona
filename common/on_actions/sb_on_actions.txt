@@ -101,12 +101,8 @@ on_law_activated = {
 	on_actions = { sb_on_boer_convention_law_activated }
 }
 
-on_journal_entry_activated = {
-	on_actions = { sb_on_portuguese_colonialism_activated }
-}
-
-on_state_owner_change = {
-	on_actions = { sb_on_mozambique_state_owner_change }
+on_company_disbanded = {
+	on_actions = { sb_on_mozambique_company_disbanded }
 }
 
 sb_on_game_started = {
@@ -461,35 +457,19 @@ sb_on_eastern_sphere_monthly_pulse_country = {
 	}
 }
 
-sb_on_portuguese_colonialism_activated = {
-	trigger = {
-		root.owner ?= {
-			country_definition = cd:POR
-			has_journal_entry = je_portuguese_colonialism
-		}
-	}
+sb_on_mozambique_company_disbanded = {
 	effect = {
-		root.owner = {
-			set_variable = sb_portuguese_alem_mar_africano_opened_var
-			sb_mozambique_try_open_administration_event = yes
-		}
-	}
-}
-
-sb_on_mozambique_state_owner_change = {
-	trigger = {
-		OR = {
-			state_region = s:STATE_LOURENCO_MARQUES
-			state_region = s:STATE_ZAMBEZIA
-			state_region = s:STATE_MOCAMBIQUE
-		}
-		owner ?= {
-			country_definition = cd:POR
-		}
-	}
-	effect = {
-		owner = {
-			sb_mozambique_try_open_administration_event = yes
+		if = {
+			limit = {
+				OR = {
+					country_definition = cd:POR
+					country_definition = cd:IBE
+				}
+				scope:company = {
+					is_company_type = company_type:company_mozambique_company
+				}
+			}
+			sb_mozambique_disband_company_country = yes
 		}
 	}
 }

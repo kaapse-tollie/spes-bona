@@ -134,7 +134,7 @@ je_sb_delagoa_route_to_sea = {
 
 	possible = {
 		sb_is_delagoa_route_actor = yes
-		sb_delagoa_owner_outside_gbr_bloc = yes
+		sb_delagoa_has_valid_gateway = yes
 		NOT = { has_variable = sb_delagoa_route_complete_var }
 		NOT = { has_global_variable = sb_delagoa_route_complete_global_var }
 		NOT = { exists = c:SAF }
@@ -145,13 +145,22 @@ je_sb_delagoa_route_to_sea = {
 	}
 
 	complete = {
-		is_subject = no
-		NOT = { has_variable = sb_delagoa_route_complete_var }
-		NOT = { has_global_variable = sb_delagoa_route_complete_global_var }
-		sb_delagoa_actor_has_trade_through = yes
-		sb_has_railway_in_transvaal = yes
-		sb_has_railway_in_east_transvaal = yes
-		sb_has_railway_in_northern_transvaal = yes
+		custom_tooltip = {
+			text = sb_delagoa_transvaal_railway_complete_tt
+			sb_has_railway_in_transvaal = yes
+		}
+		custom_tooltip = {
+			text = sb_delagoa_east_transvaal_railway_complete_tt
+			sb_has_railway_in_east_transvaal = yes
+		}
+		custom_tooltip = {
+			text = sb_delagoa_northern_transvaal_railway_complete_tt
+			sb_has_railway_in_northern_transvaal = yes
+		}
+		custom_tooltip = {
+			text = sb_delagoa_market_leader_transit_complete_tt
+			sb_delagoa_actor_has_trade_through = yes
+		}
 	}
 
 	invalid = {
@@ -159,7 +168,7 @@ je_sb_delagoa_route_to_sea = {
 			exists = c:SAF
 			has_variable = sb_delagoa_route_complete_var
 			has_global_variable = sb_delagoa_route_complete_global_var
-			NOT = { sb_delagoa_owner_outside_gbr_bloc = yes }
+			NOT = { sb_delagoa_has_valid_gateway = yes }
 			NOT = { sb_is_delagoa_route_actor = yes }
 		}
 	}
@@ -169,21 +178,15 @@ je_sb_delagoa_route_to_sea = {
 		set_variable = sb_delagoa_route_complete_var
 		sb_imperial_confederation_start_sea_access_warning_if_needed = yes
 		trigger_event = { id = sb_delagoa.020 days = 1 popup = yes }
-		if = {
-			limit = {
-				c:MZQ ?= {
-					owns_entire_state_region = STATE_LOURENCO_MARQUES
+		s:STATE_LOURENCO_MARQUES = {
+			random_scope_state = {
+				limit = {
+					owner = {
+						owns_entire_state_region = STATE_LOURENCO_MARQUES
+					}
 				}
+				owner = { trigger_event = { id = sb_delagoa.021 days = 1 popup = yes } }
 			}
-			c:MZQ ?= { trigger_event = { id = sb_delagoa.021 days = 1 popup = yes } }
-		}
-		else_if = {
-			limit = {
-				c:POR ?= {
-					owns_entire_state_region = STATE_LOURENCO_MARQUES
-				}
-			}
-			c:POR ?= { trigger_event = { id = sb_delagoa.021 days = 1 popup = yes } }
 		}
 	}
 
@@ -205,13 +208,6 @@ je_sb_imperial_confederation_scheme = {
 	}
 
 	immediate = {
-		scope:journal_entry = {
-			save_scope_as = sb_imperial_confederation_scheme_scope
-		}
-		set_global_variable = {
-			name = sb_imperial_confederation_scheme_scope
-			value = scope:sb_imperial_confederation_scheme_scope
-		}
 		sb_imperial_confederation_validate_involvement = yes
 		sb_imperial_confederation_sync_subject_control_bar = yes
 		sb_imperial_confederation_sync_sea_access_bar = yes

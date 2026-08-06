@@ -203,65 +203,12 @@ sb_gaza_failure_effect = {
 	trigger_event = { id = sb_gaza.095 days = 1 popup = yes }
 }
 
-sb_mozambique_recover_alem_mar_marker = {
-	if = {
-		limit = {
-			country_definition = cd:POR
-			NOT = { has_variable = sb_portuguese_alem_mar_africano_opened_var }
-			OR = {
-				has_journal_entry = je_portuguese_colonialism
-				AND = {
-					OR = {
-						has_claim = s:STATE_LOURENCO_MARQUES
-						owns_entire_state_region = STATE_LOURENCO_MARQUES
-					}
-					OR = {
-						has_claim = s:STATE_ZAMBEZIA
-						owns_entire_state_region = STATE_ZAMBEZIA
-					}
-					OR = {
-						has_claim = s:STATE_MOCAMBIQUE
-						owns_entire_state_region = STATE_MOCAMBIQUE
-					}
-				}
-			}
-		}
-		set_variable = sb_portuguese_alem_mar_africano_opened_var
-	}
-}
-
-sb_mozambique_try_open_administration_event = {
-	sb_mozambique_recover_alem_mar_marker = yes
-	if = {
-		limit = {
-			sb_portuguese_controls_mozambique_admin_area = yes
-			is_subject = no
-			NOT = { exists = c:MZQ }
-			NOT = { has_variable = sb_mozambique_direct_administration_var }
-			NOT = { has_variable = sb_mozambique_administration_event_pending_var }
-		}
-		set_variable = {
-			name = sb_mozambique_administration_event_pending_var
-			days = 30
-		}
-		trigger_event = { id = sb_mozambique_company.010 popup = yes }
-	}
-}
-
 sb_mozambique_transfer_lourenco_to_mzq = {
 	every_scope_state = {
 		limit = {
 			state_region = s:STATE_LOURENCO_MARQUES
 		}
 		set_state_owner = c:MZQ
-	}
-	every_subject_or_below = {
-		every_scope_state = {
-			limit = {
-				state_region = s:STATE_LOURENCO_MARQUES
-			}
-			set_state_owner = c:MZQ
-		}
 	}
 }
 
@@ -272,14 +219,6 @@ sb_mozambique_transfer_zambezia_to_mzq = {
 		}
 		set_state_owner = c:MZQ
 	}
-	every_subject_or_below = {
-		every_scope_state = {
-			limit = {
-				state_region = s:STATE_ZAMBEZIA
-			}
-			set_state_owner = c:MZQ
-		}
-	}
 }
 
 sb_mozambique_transfer_mocambique_to_mzq = {
@@ -288,14 +227,6 @@ sb_mozambique_transfer_mocambique_to_mzq = {
 			state_region = s:STATE_MOCAMBIQUE
 		}
 		set_state_owner = c:MZQ
-	}
-	every_subject_or_below = {
-		every_scope_state = {
-			limit = {
-				state_region = s:STATE_MOCAMBIQUE
-			}
-			set_state_owner = c:MZQ
-		}
 	}
 }
 
@@ -369,95 +300,138 @@ sb_mozambique_move_namaqualand_claim_to_mzq = {
 	}
 }
 
-sb_mozambique_create_and_transfer_to_mzq = {
-	if = {
-		limit = { NOT = { exists = c:MZQ } }
-		if = {
-			limit = { owns_entire_state_region = STATE_LOURENCO_MARQUES }
-			create_country = {
-				tag = MZQ
-				origin = root
-				province = p:x54CDC5
-			}
-		}
-		else_if = {
-			limit = { owns_entire_state_region = STATE_ZAMBEZIA }
-			create_country = {
-				tag = MZQ
-				origin = root
-				province = p:xF0ABE1
-			}
-		}
-		else = {
-			create_country = {
-				tag = MZQ
-				origin = root
-				province = p:x005594
-			}
-		}
+sb_mozambique_transfer_to_company_rule = {
+	save_scope_as = sb_mozambique_charter_overlord_scope
+	company:company_mozambique_company = {
+		save_scope_as = sb_mozambique_company_scope
 	}
-	c:MZQ ?= {
-		set_strategy = ai_strategy_colonial_extraction
-		set_variable = zanj_subject_var
-		remove_primary_culture = cu:british
-		add_primary_culture = cu:portuguese
-	}
-	every_primary_culture = {
-		limit = {
-			has_discrimination_trait_group = heritage_group_european
-			NOT = { is_primary_culture_of = c:MZQ }
-		}
-		c:MZQ ?= {
-			add_primary_culture = prev
-		}
-	}
-	sb_mozambique_transfer_lourenco_to_mzq = yes
-	sb_mozambique_transfer_zambezia_to_mzq = yes
-	sb_mozambique_transfer_mocambique_to_mzq = yes
-	sb_mozambique_move_lourenco_claim_to_mzq = yes
-	sb_mozambique_move_zambezia_claim_to_mzq = yes
-	sb_mozambique_move_mocambique_claim_to_mzq = yes
-	s:STATE_LOURENCO_MARQUES = {
-		region_state:MZQ ?= {
-			set_state_type = incorporated
-		}
-	}
-}
 
-sb_mozambique_apply_company_package = {
 	if = {
 		limit = {
-			NOT = { has_company = company_type:company_mozambique_company }
+			owns_entire_state_region = STATE_MOCAMBIQUE
+			any_scope_state = {
+				state_region = s:STATE_MOCAMBIQUE
+				has_building = building_company_headquarter
+			}
 		}
-		set_variable = sb_mozambique_company_scripted_establishment_var
-		add_company = company_type:company_mozambique_company
-		company:company_mozambique_company ?= {
-			set_company_state_region = s:STATE_ESTREMADURA
+		random_scope_state = {
+			limit = { state_region = s:STATE_MOCAMBIQUE }
+			save_scope_as = sb_mozambique_company_country_seed_scope
 		}
-		remove_variable = sb_mozambique_company_scripted_establishment_var
+	}
+	else_if = {
+		limit = {
+			owns_entire_state_region = STATE_ZAMBEZIA
+			any_scope_state = {
+				state_region = s:STATE_ZAMBEZIA
+				has_building = building_company_headquarter
+			}
+		}
+		random_scope_state = {
+			limit = { state_region = s:STATE_ZAMBEZIA }
+			save_scope_as = sb_mozambique_company_country_seed_scope
+		}
+	}
+	else_if = {
+		limit = {
+			owns_entire_state_region = STATE_LOURENCO_MARQUES
+			any_scope_state = {
+				state_region = s:STATE_LOURENCO_MARQUES
+				has_building = building_company_headquarter
+			}
+		}
+		random_scope_state = {
+			limit = { state_region = s:STATE_LOURENCO_MARQUES }
+			save_scope_as = sb_mozambique_company_country_seed_scope
+		}
+	}
+	else_if = {
+		limit = { owns_entire_state_region = STATE_MOCAMBIQUE }
+		random_scope_state = {
+			limit = { state_region = s:STATE_MOCAMBIQUE }
+			save_scope_as = sb_mozambique_company_country_seed_scope
+		}
+	}
+	else_if = {
+		limit = { owns_entire_state_region = STATE_ZAMBEZIA }
+		random_scope_state = {
+			limit = { state_region = s:STATE_ZAMBEZIA }
+			save_scope_as = sb_mozambique_company_country_seed_scope
+		}
+	}
+	else = {
+		random_scope_state = {
+			limit = { state_region = s:STATE_LOURENCO_MARQUES }
+			save_scope_as = sb_mozambique_company_country_seed_scope
+		}
+	}
+
+	create_country = {
+		tag = MZQ
+		origin = root
+		state = scope:sb_mozambique_company_country_seed_scope
+	}
+	scope:sb_mozambique_company_scope = {
+		add_owned_country = c:MZQ
 	}
 	create_diplomatic_pact = {
 		country = c:MZQ
 		type = chartered_company
 	}
-	c:MZQ ?= {
+
+	c:MZQ = {
 		set_country_type = company
-		sb_nam_apply_swa_charter_laws = yes
-		add_modifier = {
-			name = resource_extraction_charter_modifier
-			days = very_long_modifier_time
+		set_strategy = ai_strategy_colonial_extraction
+		set_variable = zanj_subject_var
+		if = {
+			limit = {
+				scope:sb_mozambique_company_country_seed_scope = {
+					state_region = s:STATE_MOCAMBIQUE
+				}
+			}
+			set_capital = STATE_MOCAMBIQUE
 		}
+		else_if = {
+			limit = {
+				scope:sb_mozambique_company_country_seed_scope = {
+					state_region = s:STATE_ZAMBEZIA
+				}
+			}
+			set_capital = STATE_ZAMBEZIA
+		}
+		else = {
+			set_capital = STATE_LOURENCO_MARQUES
+		}
+		activate_law = law_type:law_colonial_administration
+		activate_law = law_type:law_oligarchy
+		activate_law = law_type:law_subjecthood
+		activate_law = law_type:law_extraction_economy
+		activate_law = law_type:law_colonial_exploitation
+		activate_law = law_type:law_no_schools
+		activate_law = law_type:law_no_health_system
+		activate_law = law_type:law_censorship
+		activate_law = law_type:law_no_workers_rights
+		activate_law = law_type:law_child_labor_allowed
+		activate_law = law_type:law_no_social_security
+		activate_law = law_type:law_migration_controls
+		add_modifier = { name = colonial_administration }
 	}
-	company:company_mozambique_company ?= {
-		add_owned_country = c:MZQ
+
+	scope:sb_mozambique_charter_overlord_scope = {
+		sb_mozambique_transfer_lourenco_to_mzq = yes
+		sb_mozambique_transfer_zambezia_to_mzq = yes
+		sb_mozambique_transfer_mocambique_to_mzq = yes
+		sb_mozambique_move_lourenco_claim_to_mzq = yes
+		sb_mozambique_move_zambezia_claim_to_mzq = yes
+		sb_mozambique_move_mocambique_claim_to_mzq = yes
+		sb_mozambique_update_company_slot = yes
 	}
-	sb_mozambique_update_company_slot = yes
 }
 
 sb_mozambique_update_company_slot = {
 	if = {
 		limit = {
-			sb_has_mozambique_company_subject = yes
+			sb_mozambique_company_is_linked_to_subject = yes
 			NOT = { has_modifier = sb_mozambique_company_charter_slot }
 		}
 		add_modifier = {
@@ -468,61 +442,48 @@ sb_mozambique_update_company_slot = {
 	else_if = {
 		limit = {
 			has_modifier = sb_mozambique_company_charter_slot
-			NOT = { sb_has_mozambique_company_subject = yes }
+			NOT = { sb_mozambique_company_is_linked_to_subject = yes }
 		}
 		remove_modifier = sb_mozambique_company_charter_slot
 	}
 }
 
-sb_mozambique_apply_mission_package = {
-	create_diplomatic_pact = {
-		country = c:MZQ
-		type = colony
+sb_mozambique_disband_company_country = {
+	if = {
+		limit = { has_modifier = sb_mozambique_company_charter_slot }
+		remove_modifier = sb_mozambique_company_charter_slot
 	}
-	c:MZQ ?= {
-		sb_nam_apply_swa_mission_laws = yes
-		add_modifier = {
-			name = religious_missions_colonial_modifier
-			days = very_long_modifier_time
+	if = {
+		limit = {
+			exists = c:MZQ
+			c:MZQ = {
+				is_country_alive = yes
+				is_subject_of = root
+				is_subject_type = subject_type_chartered_company
+			}
 		}
-	}
-}
-
-sb_mozambique_apply_settler_package = {
-	create_diplomatic_pact = {
-		country = c:MZQ
-		type = colony
-	}
-	c:MZQ ?= {
-		activate_law = law_type:law_colonial_administration
-		activate_law = law_type:law_oligarchy
-		activate_law = law_type:law_subjecthood
-		activate_law = law_type:law_agrarianism
-		activate_law = law_type:law_colonial_resettlement
-		activate_law = law_type:law_no_schools
-		activate_law = law_type:law_no_health_system
-		activate_law = law_type:law_censorship
-		activate_law = law_type:law_no_workers_rights
-		activate_law = law_type:law_child_labor_allowed
-		activate_law = law_type:law_no_social_security
-		activate_law = law_type:law_migration_controls
-		add_modifier = {
-			name = settlement_campaigns_modifier
-			days = very_long_modifier_time
+		c:MZQ = {
+			if = {
+				limit = {
+					exists = owning_company
+					owning_company = {
+						is_company_type = company_type:company_mozambique_company
+						owner = ROOT
+					}
+				}
+				owning_company = {
+					remove_owned_country = c:MZQ
+				}
+			}
+			set_country_type = colonial
 		}
-	}
-}
-
-sb_mozambique_apply_extraction_package = {
-	create_diplomatic_pact = {
-		country = c:MZQ
-		type = colony
-	}
-	c:MZQ ?= {
-		sb_nam_apply_swa_exterminatory_laws = yes
-		add_modifier = {
-			name = resource_extraction_colony_modifier
-			days = very_long_modifier_time
+		remove_diplomatic_pact = {
+			country = c:MZQ
+			type = chartered_company
+		}
+		create_diplomatic_pact = {
+			country = c:MZQ
+			type = colony
 		}
 	}
 }
@@ -627,6 +588,7 @@ sb_delagoa_ai_create_railway = {
 }
 
 sb_delagoa_ai_build_railways_and_por_treaty = {
+	save_temporary_scope_as = sb_delagoa_actor_scope
 	if = {
 		limit = { NOT = { has_technology_researched = railways } }
 		add_technology_researched = railways
@@ -682,100 +644,65 @@ sb_delagoa_ai_build_railways_and_por_treaty = {
 			}
 		}
 	}
-	if = {
-		limit = {
-			c:MZQ ?= {
-				is_country_alive = yes
-				owns_entire_state_region = STATE_LOURENCO_MARQUES
+	s:STATE_LOURENCO_MARQUES = {
+		random_scope_state = {
+			limit = {
+				owner = { owns_entire_state_region = STATE_LOURENCO_MARQUES }
 			}
-		}
-		s:STATE_LOURENCO_MARQUES = {
 			if = {
-				limit = {
-					any_scope_state = {
-						owner = c:MZQ
-						NOT = { has_active_building = building_railway }
-					}
-				}
-				random_scope_state = {
-					limit = {
-						owner = c:MZQ
-						NOT = { has_active_building = building_railway }
-					}
-					sb_delagoa_ai_create_railway = yes
-				}
+				limit = { NOT = { has_active_building = building_railway } }
+				sb_delagoa_ai_create_railway = yes
 			}
-		}
-	}
-	else_if = {
-		limit = {
-			c:POR ?= {
-				is_country_alive = yes
-				owns_entire_state_region = STATE_LOURENCO_MARQUES
-			}
-		}
-		s:STATE_LOURENCO_MARQUES = {
-			if = {
-				limit = {
-					any_scope_state = {
-						owner = c:POR
-						NOT = { has_active_building = building_railway }
+			owner = {
+				market.owner = {
+					save_temporary_scope_as = sb_delagoa_market_leader_scope
+					if = {
+						limit = {
+							NOT = {
+								any_scope_treaty = {
+									binds = scope:sb_delagoa_actor_scope
+									any_scope_article = {
+										has_type = transit_rights
+										source_country = scope:sb_delagoa_market_leader_scope
+										target_country = scope:sb_delagoa_actor_scope
+									}
+									any_scope_article = {
+										has_type = trade_privilege
+										source_country = scope:sb_delagoa_market_leader_scope
+										target_country = scope:sb_delagoa_actor_scope
+									}
+									any_scope_article = {
+										has_type = trade_privilege
+										source_country = scope:sb_delagoa_actor_scope
+										target_country = scope:sb_delagoa_market_leader_scope
+									}
+								}
+							}
+						}
+						create_treaty = {
+							first_country = scope:sb_delagoa_market_leader_scope
+							second_country = scope:sb_delagoa_actor_scope
+							is_draft = no
+							binding_period = { years = 10 }
+							articles_to_create = {
+								{
+									article = transit_rights
+									source_country = scope:sb_delagoa_market_leader_scope
+									target_country = scope:sb_delagoa_actor_scope
+								}
+								{
+									article = trade_privilege
+									source_country = scope:sb_delagoa_market_leader_scope
+									target_country = scope:sb_delagoa_actor_scope
+								}
+								{
+									article = trade_privilege
+									source_country = scope:sb_delagoa_actor_scope
+									target_country = scope:sb_delagoa_market_leader_scope
+								}
+							}
+						}
 					}
-				}
-				random_scope_state = {
-					limit = {
-						owner = c:POR
-						NOT = { has_active_building = building_railway }
-					}
-					sb_delagoa_ai_create_railway = yes
-				}
-			}
-		}
-	}
-	if = {
-		limit = {
-			c:POR ?= { is_country_alive = yes }
-			NOT = {
-				any_scope_treaty = {
-					binds = c:POR
-					any_scope_article = {
-						has_type = transit_rights
-						source_country = c:POR
-						target_country = root
-					}
-					any_scope_article = {
-						has_type = trade_privilege
-						source_country = c:POR
-						target_country = root
-					}
-					any_scope_article = {
-						has_type = trade_privilege
-						source_country = root
-						target_country = c:POR
-					}
-				}
-			}
-		}
-		create_treaty = {
-			first_country = c:POR
-			second_country = root
-			is_draft = no
-			binding_period = { years = 10 }
-			articles_to_create = {
-				{
-					article = transit_rights
-					source_country = c:POR
-					target_country = root
-				}
-				{
-					article = trade_privilege
-					source_country = c:POR
-					target_country = root
-				}
-				{
-					article = trade_privilege
-					source_country = root
-					target_country = c:POR
 				}
 			}
 		}
@@ -798,7 +725,7 @@ sb_delagoa_route_monthly_open_check = {
 	if = {
 		limit = {
 			NOT = { has_global_variable = sb_delagoa_route_complete_global_var }
-			sb_delagoa_owner_outside_gbr_bloc = yes
+			sb_delagoa_has_valid_gateway = yes
 			NOT = { exists = c:SAF }
 			any_country = {
 				sb_is_delagoa_route_actor = yes
@@ -1165,55 +1092,44 @@ sb_imperial_confederation_ensure_active_owner_je = {
 			}
 			add_contextless_journal_entry = je_sb_imperial_confederation_scheme
 		}
-		c:GBR ?= {
-			je:je_sb_imperial_confederation_scheme ?= {
-				save_scope_as = sb_imperial_confederation_scheme_scope
-				set_global_variable = {
-					name = sb_imperial_confederation_scheme_scope
-					value = scope:sb_imperial_confederation_scheme_scope
-				}
-			}
-		}
 		sb_imperial_confederation_validate_involvement = yes
 		sb_imperial_confederation_sync_subject_control_bar = yes
 	}
 }
 
 sb_imperial_confederation_validate_involvement = {
-	c:GBR ?= {
-		je:je_sb_imperial_confederation_scheme ?= {
-			save_scope_as = sb_imperial_confederation_scheme_scope
-			set_global_variable = {
-				name = sb_imperial_confederation_scheme_scope
-				value = scope:sb_imperial_confederation_scheme_scope
-			}
-		}
-	}
 	if = {
 		limit = { has_global_variable = sb_imperial_confederation_scheme_scope }
-		every_country = {
+		remove_global_variable = sb_imperial_confederation_scheme_scope
+	}
+	every_country = {
+		limit = {
+			OR = {
+				is_involved_in_journal_entry = je_sb_imperial_confederation_scheme
+				sb_should_be_involved_in_imperial_confederation = yes
+			}
+		}
+		if = {
 			limit = {
-				OR = {
-					is_involved_in_journal_entry = je_sb_imperial_confederation_scheme
-					sb_should_be_involved_in_imperial_confederation = yes
+				is_involved_in_journal_entry = je_sb_imperial_confederation_scheme
+				NOT = { sb_should_be_involved_in_imperial_confederation = yes }
+			}
+			save_temporary_scope_as = sb_imperial_confederation_involvement_candidate
+			c:GBR ?= {
+				je:je_sb_imperial_confederation_scheme ?= {
+					remove_involved_country = scope:sb_imperial_confederation_involvement_candidate
 				}
 			}
-			if = {
-				limit = {
-					is_involved_in_journal_entry = je_sb_imperial_confederation_scheme
-					NOT = { sb_should_be_involved_in_imperial_confederation = yes }
-				}
-				global_var:sb_imperial_confederation_scheme_scope = {
-					remove_involved_country = prev
-				}
+		}
+		if = {
+			limit = {
+				NOT = { is_involved_in_journal_entry = je_sb_imperial_confederation_scheme }
+				sb_should_be_involved_in_imperial_confederation = yes
 			}
-			if = {
-				limit = {
-					NOT = { is_involved_in_journal_entry = je_sb_imperial_confederation_scheme }
-					sb_should_be_involved_in_imperial_confederation = yes
-				}
-				global_var:sb_imperial_confederation_scheme_scope = {
-					add_involved_country = prev
+			save_temporary_scope_as = sb_imperial_confederation_involvement_candidate
+			c:GBR ?= {
+				je:je_sb_imperial_confederation_scheme ?= {
+					add_involved_country = scope:sb_imperial_confederation_involvement_candidate
 				}
 			}
 		}
@@ -1252,9 +1168,8 @@ sb_imperial_confederation_sync_subject_control_counts = {
 
 sb_imperial_confederation_sync_subject_control_bar = {
 	sb_imperial_confederation_sync_subject_control_counts = yes
-	if = {
-		limit = { has_global_variable = sb_imperial_confederation_scheme_scope }
-		global_var:sb_imperial_confederation_scheme_scope = {
+	c:GBR ?= {
+		je:je_sb_imperial_confederation_scheme ?= {
 			set_bar_progress = {
 				name = sb_imperial_confederation_subject_control_bar
 				value = global_var:sb_imperial_confederation_subject_control_progress_var
@@ -1268,9 +1183,8 @@ sb_imperial_confederation_sync_sea_access_bar = {
 		limit = { NOT = { has_global_variable = sb_imperial_confederation_sea_access_months_var } }
 		set_global_variable = { name = sb_imperial_confederation_sea_access_months_var value = 0 }
 	}
-	if = {
-		limit = { has_global_variable = sb_imperial_confederation_scheme_scope }
-		global_var:sb_imperial_confederation_scheme_scope = {
+	c:GBR ?= {
+		je:je_sb_imperial_confederation_scheme ?= {
 			set_bar_progress = {
 				name = sb_imperial_confederation_sea_access_bar
 				value = global_var:sb_imperial_confederation_sea_access_months_var
@@ -1375,7 +1289,6 @@ sb_eastern_sphere_monthly_housekeeping = {
 		}
 		sb_gaza_ai_incorporate_zambezia = yes
 	}
-	sb_mozambique_try_open_administration_event = yes
 	if = {
 		limit = {
 			country_has_primary_culture = cu:portuguese
@@ -1401,7 +1314,7 @@ sb_eastern_sphere_monthly_housekeeping = {
 			NOT = { has_journal_entry = je_sb_delagoa_route_to_sea }
 			NOT = { has_variable = sb_delagoa_route_complete_var }
 			NOT = { has_global_variable = sb_delagoa_route_complete_global_var }
-			sb_delagoa_owner_outside_gbr_bloc = yes
+			sb_delagoa_has_valid_gateway = yes
 			NOT = { exists = c:SAF }
 		}
 		add_journal_entry = { type = je_sb_delagoa_route_to_sea }
@@ -1409,7 +1322,7 @@ sb_eastern_sphere_monthly_housekeeping = {
 	if = {
 		limit = {
 			NOT = { has_global_variable = sb_delagoa_route_complete_global_var }
-			sb_delagoa_owner_outside_gbr_bloc = yes
+			sb_delagoa_has_valid_gateway = yes
 			NOT = { exists = c:SAF }
 			any_country = {
 				sb_is_delagoa_route_actor = yes
@@ -1432,16 +1345,8 @@ sb_eastern_sphere_monthly_housekeeping = {
 			has_journal_entry = je_sb_delagoa_route_to_sea
 			sb_ai_economy_helpers_enabled = yes
 			NOT = { has_variable = sb_delagoa_ai_railway_helper_applied_var }
-			c:POR ?= {
-				is_country_alive = yes
-				is_ai = yes
-			}
-			OR = {
-				NOT = { exists = c:MZQ }
-				c:MZQ ?= { NOT = { is_country_alive = yes } }
-				c:MZQ ?= { is_ai = yes }
-			}
-			sb_delagoa_owner_outside_gbr_bloc = yes
+			sb_delagoa_has_valid_gateway = yes
+			sb_delagoa_gateway_partners_are_ai = yes
 		}
 		sb_delagoa_ai_build_railways_and_por_treaty = yes
 	}
@@ -1457,23 +1362,17 @@ sb_eastern_sphere_monthly_housekeeping = {
 			sb_has_railway_in_northern_transvaal = yes
 			NOT = { sb_delagoa_actor_has_trade_through = yes }
 		}
-		if = {
-			limit = {
-				c:MZQ ?= {
-					is_country_alive = yes
-					owns_entire_state_region = STATE_LOURENCO_MARQUES
+		s:STATE_LOURENCO_MARQUES = {
+			random_scope_state = {
+				limit = {
+					owner = { owns_entire_state_region = STATE_LOURENCO_MARQUES }
+				}
+				owner = {
+					market.owner = {
+						trigger_event = { id = sb_delagoa.010 days = 1 popup = yes }
+					}
 				}
 			}
-			c:MZQ ?= { trigger_event = { id = sb_delagoa.010 days = 1 popup = yes } }
-		}
-		else_if = {
-			limit = {
-				c:POR ?= {
-					is_country_alive = yes
-					owns_entire_state_region = STATE_LOURENCO_MARQUES
-				}
-			}
-			c:POR ?= { trigger_event = { id = sb_delagoa.010 days = 1 popup = yes } }
 		}
 	}
 	if = {

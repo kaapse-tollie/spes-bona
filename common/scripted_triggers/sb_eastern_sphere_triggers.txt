@@ -11,22 +11,19 @@
 	}
 }
 
-sb_portuguese_controls_mozambique_admin_area = {
-	country_definition = cd:POR
-	has_variable = sb_portuguese_alem_mar_africano_opened_var
-	OR = {
-		owns_entire_state_region = STATE_LOURENCO_MARQUES
-		owns_entire_state_region = STATE_ZAMBEZIA
-		owns_entire_state_region = STATE_MOCAMBIQUE
-	}
-}
-
 sb_has_mozambique_company_subject = {
-	has_company = company_type:company_mozambique_company
 	exists = c:MZQ
 	c:MZQ = {
 		is_country_alive = yes
 		is_subject_of = root
+		is_subject_type = subject_type_chartered_company
+	}
+}
+
+sb_mozambique_company_is_linked_to_subject = {
+	has_company = company_type:company_mozambique_company
+	sb_has_mozambique_company_subject = yes
+	c:MZQ = {
 		exists = owning_company
 		owning_company = {
 			is_company_type = company_type:company_mozambique_company
@@ -175,17 +172,15 @@ sb_is_non_british_port_owner = {
 }
 
 sb_is_delagoa_route_actor = {
-	save_temporary_scope_as = sb_delagoa_actor_scope
 	is_country_alive = yes
 	country_has_primary_culture = cu:boer
-	market.owner = scope:sb_delagoa_actor_scope
-	sb_delagoa_actor_has_integrated_transvaal_states = yes
+	sb_delagoa_actor_has_transvaal_presence = yes
 }
 
 sb_should_be_involved_in_delagoa_route = {
 	NOT = { exists = c:SAF }
 	NOT = { has_global_variable = sb_delagoa_route_complete_global_var }
-	sb_delagoa_owner_outside_gbr_bloc = yes
+	sb_delagoa_has_valid_gateway = yes
 	OR = {
 		AND = {
 			sb_is_delagoa_route_actor = yes
@@ -193,11 +188,9 @@ sb_should_be_involved_in_delagoa_route = {
 		}
 		AND = {
 			OR = {
-				country_definition = cd:POR
-				country_definition = cd:MZQ
+				sb_is_delagoa_gateway_owner = yes
+				sb_is_delagoa_market_leader = yes
 			}
-			owns_entire_state_region = STATE_LOURENCO_MARQUES
-			NOT = { is_in_same_power_bloc = c:GBR }
 			any_country = {
 				sb_is_delagoa_route_actor = yes
 				NOT = { has_variable = sb_delagoa_route_complete_var }
@@ -206,24 +199,58 @@ sb_should_be_involved_in_delagoa_route = {
 	}
 }
 
-sb_delagoa_actor_has_integrated_transvaal_states = {
+sb_delagoa_actor_has_transvaal_presence = {
 	save_temporary_scope_as = sb_delagoa_actor_scope
 	s:STATE_TRANSVAAL = {
 		any_scope_state = {
 			owner = scope:sb_delagoa_actor_scope
-			is_incorporated = yes
 		}
 	}
 	s:STATE_EAST_TRANSVAAL = {
 		any_scope_state = {
 			owner = scope:sb_delagoa_actor_scope
-			is_incorporated = yes
 		}
 	}
 	s:STATE_NORTHERN_TRANSVAAL = {
 		any_scope_state = {
 			owner = scope:sb_delagoa_actor_scope
-			is_incorporated = yes
+		}
+	}
+}
+
+sb_is_delagoa_gateway_owner = {
+	save_temporary_scope_as = sb_delagoa_gateway_country_scope
+	s:STATE_LOURENCO_MARQUES = {
+		any_scope_state = {
+			has_building = building_port
+			owner = {
+				this = scope:sb_delagoa_gateway_country_scope
+				owns_entire_state_region = STATE_LOURENCO_MARQUES
+			}
+		}
+	}
+}
+
+sb_is_delagoa_market_leader = {
+	save_temporary_scope_as = sb_delagoa_market_leader_scope
+	s:STATE_LOURENCO_MARQUES = {
+		any_scope_state = {
+			owner = {
+				owns_entire_state_region = STATE_LOURENCO_MARQUES
+				market.owner = scope:sb_delagoa_market_leader_scope
+			}
+		}
+	}
+}
+
+sb_delagoa_gateway_partners_are_ai = {
+	s:STATE_LOURENCO_MARQUES = {
+		any_scope_state = {
+			owner = {
+				owns_entire_state_region = STATE_LOURENCO_MARQUES
+				is_ai = yes
+				market.owner = { is_ai = yes }
+			}
 		}
 	}
 }
@@ -444,17 +471,22 @@ sb_confederated_south_africa_controls_required_region = {
 	owns_entire_state_region = STATE_HEREROLAND
 }
 
-sb_delagoa_owner_outside_gbr_bloc = {
-	OR = {
-		c:POR ?= {
-			is_country_alive = yes
-			owns_entire_state_region = STATE_LOURENCO_MARQUES
-			NOT = { is_in_same_power_bloc = c:GBR }
-		}
-		c:MZQ ?= {
-			is_country_alive = yes
-			owns_entire_state_region = STATE_LOURENCO_MARQUES
-			NOT = { is_in_same_power_bloc = c:GBR }
+sb_delagoa_has_valid_gateway = {
+	s:STATE_LOURENCO_MARQUES = {
+		any_scope_state = {
+			has_building = building_port
+			owner = {
+				is_country_alive = yes
+				owns_entire_state_region = STATE_LOURENCO_MARQUES
+				OR = {
+					is_country_type = recognized
+					is_country_type = colonial
+					is_country_type = company
+				}
+				market.owner = {
+					NOT = { country_definition = cd:GBR }
+				}
+			}
 		}
 	}
 }
@@ -491,23 +523,22 @@ sb_has_railway_in_northern_transvaal = {
 
 sb_delagoa_actor_has_trade_through = {
 	save_temporary_scope_as = sb_delagoa_actor_scope
-	OR = {
-		any_scope_treaty = {
-			binds = scope:sb_delagoa_actor_scope
-			binds = c:POR
-			any_scope_article = {
-				has_type = transit_rights
-				source_country = c:POR
-				target_country = scope:sb_delagoa_actor_scope
-			}
-		}
-		any_scope_treaty = {
-			binds = scope:sb_delagoa_actor_scope
-			binds = c:MZQ
-			any_scope_article = {
-				has_type = transit_rights
-				source_country = c:MZQ
-				target_country = scope:sb_delagoa_actor_scope
+	s:STATE_LOURENCO_MARQUES = {
+		any_scope_state = {
+			owner = {
+				owns_entire_state_region = STATE_LOURENCO_MARQUES
+				market.owner = {
+					save_temporary_scope_as = sb_delagoa_market_leader_scope
+					any_scope_treaty = {
+						binds = scope:sb_delagoa_actor_scope
+						binds = scope:sb_delagoa_market_leader_scope
+						any_scope_article = {
+							has_type = transit_rights
+							source_country = scope:sb_delagoa_market_leader_scope
+							target_country = scope:sb_delagoa_actor_scope
+						}
+					}
+				}
 			}
 		}
 	}

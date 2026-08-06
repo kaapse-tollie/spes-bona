@@ -15,11 +15,8 @@ sb_delagoa.010 = {
 
 	trigger = {
 		NOT = { exists = c:SAF }
-		OR = {
-			country_definition = cd:POR
-			country_definition = cd:MZQ
-		}
-		NOT = { is_in_same_power_bloc = c:GBR }
+		sb_delagoa_has_valid_gateway = yes
+		sb_is_delagoa_market_leader = yes
 		any_country = {
 			sb_is_delagoa_route_actor = yes
 			is_ai = yes
@@ -31,7 +28,6 @@ sb_delagoa.010 = {
 			sb_has_railway_in_northern_transvaal = yes
 			NOT = { sb_delagoa_actor_has_trade_through = yes }
 		}
-		owns_entire_state_region = STATE_LOURENCO_MARQUES
 	}
 
 	option = {
@@ -47,7 +43,14 @@ sb_delagoa.010 = {
 				}
 				trigger_event = { id = sb_delagoa.020 days = 1 popup = yes }
 			}
-			trigger_event = { id = sb_delagoa.021 days = 1 popup = yes }
+			s:STATE_LOURENCO_MARQUES = {
+				random_scope_state = {
+					limit = {
+						owner = { owns_entire_state_region = STATE_LOURENCO_MARQUES }
+					}
+					owner = { trigger_event = { id = sb_delagoa.021 days = 1 popup = yes } }
+				}
+			}
 		}
 		ai_chance = { base = 100 }
 	}
@@ -114,10 +117,7 @@ sb_delagoa.021 = {
 	duration = 3
 
 	trigger = {
-		OR = {
-			country_definition = cd:POR
-			country_definition = cd:MZQ
-		}
+		sb_is_delagoa_gateway_owner = yes
 		NOT = { has_variable = sb_delagoa_partner_notified_var }
 	}
 
