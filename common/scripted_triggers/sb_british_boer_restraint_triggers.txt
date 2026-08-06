@@ -14,7 +14,18 @@
 sb_is_british_boer_restraint_target = {
 	sb_is_british_boer_restraint_tag = yes
 	is_country_alive = yes
-	is_subject = no
+	# SGO can be a scripted subject of either supported Boer sponsor; keep
+	# Vanilla's transfer-subject logic from pre-empting the crisis resolution.
+	OR = {
+		is_subject = no
+		AND = {
+			country_definition = cd:SGO
+			OR = {
+				is_direct_subject_of = c:TRN
+				is_direct_subject_of = c:ORA
+			}
+		}
+	}
 	is_insurrectionary = no
 	capital.region = sr:region_southern_africa
 	country_has_primary_culture = cu:boer

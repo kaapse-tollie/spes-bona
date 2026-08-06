@@ -2307,6 +2307,7 @@ sb_on_spes_bona_diplo_play_back_down = {
 	effect = {
 		sb_cleanup_ai_frontier_force_support_for_play = yes
 		sb_klip_river_handle_backdown = yes
+		sb_bechuanaland_handle_crisis_backdown = yes
 		# If Oranje backs down from Pretorius's coercive claim, treat it as a
 		# Transvaal victory rather than waiting for a war-goal enforcement hook.
 		if = {
@@ -2516,6 +2517,14 @@ sb_on_spes_bona_diplo_play_back_down = {
 		# settlement before the wider South African War module exists.
 		if = {
 			limit = {
+				root = {
+					NOT = {
+						OR = {
+							is_diplomatic_play_type = dp_sb_bechuanaland_direct_intervention_locked
+							is_diplomatic_play_type = dp_sb_bechuanaland_proxy_intervention_locked
+						}
+					}
+				}
 				scope:actor ?= { has_variable = sb_bechuanaland_british_war_side_var }
 				scope:target ?= { has_variable = sb_bechuanaland_boer_swa_war_side_var }
 			}
@@ -2523,6 +2532,14 @@ sb_on_spes_bona_diplo_play_back_down = {
 		}
 		if = {
 			limit = {
+				root = {
+					NOT = {
+						OR = {
+							is_diplomatic_play_type = dp_sb_bechuanaland_direct_intervention_locked
+							is_diplomatic_play_type = dp_sb_bechuanaland_proxy_intervention_locked
+						}
+					}
+				}
 				scope:actor ?= { has_variable = sb_bechuanaland_boer_swa_war_side_var }
 				scope:target ?= { has_variable = sb_bechuanaland_british_war_side_var }
 			}
@@ -2541,6 +2558,7 @@ sb_on_spes_bona_war_end = {
 	effect = {
 		sb_cleanup_ai_frontier_force_support_for_play = yes
 		sb_klip_river_handle_war_end = yes
+		sb_bechuanaland_resolve_crisis_war_at_end = yes
 		if = {
 			limit = {
 				root = {
@@ -2765,6 +2783,7 @@ sb_on_frontier_force_monthly_pulse_country = {
 sb_on_spes_bona_wargoal_enforced = {
 	effect = {
 			sb_klip_river_handle_wargoal_enforced = yes
+			sb_bechuanaland_track_crisis_wargoal_enforcement = yes
 			if = {
 				limit = {
 					country_definition = cd:TRN
@@ -2943,6 +2962,14 @@ sb_on_spes_bona_wargoal_enforced = {
 		# International Situation according to the side that won.
 		if = {
 			limit = {
+				scope:diplomatic_play ?= {
+					NOT = {
+						OR = {
+							is_diplomatic_play_type = dp_sb_bechuanaland_direct_intervention_locked
+							is_diplomatic_play_type = dp_sb_bechuanaland_proxy_intervention_locked
+						}
+					}
+				}
 				has_variable = sb_bechuanaland_british_war_side_var
 				scope:target ?= { has_variable = sb_bechuanaland_boer_swa_war_side_var }
 			}
@@ -2950,6 +2977,14 @@ sb_on_spes_bona_wargoal_enforced = {
 		}
 		if = {
 			limit = {
+				scope:diplomatic_play ?= {
+					NOT = {
+						OR = {
+							is_diplomatic_play_type = dp_sb_bechuanaland_direct_intervention_locked
+							is_diplomatic_play_type = dp_sb_bechuanaland_proxy_intervention_locked
+						}
+					}
+				}
 				has_variable = sb_bechuanaland_boer_swa_war_side_var
 				scope:target ?= { has_variable = sb_bechuanaland_british_war_side_var }
 			}

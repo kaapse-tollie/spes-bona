@@ -98,6 +98,87 @@ sb_bechuanaland_is_primary_boer_actor = {
 	}
 }
 
+sb_bechuanaland_crisis_escalation_available = {
+	NOT = {
+		OR = {
+			has_global_variable = sb_bechuanaland_crisis_escalation_pending_global_var
+			has_global_variable = sb_bechuanaland_crisis_war_active_var
+		}
+	}
+}
+
+sb_bechuanaland_crisis_core_is_valid = {
+	has_global_variable = sb_bechuanaland_crisis_swa_overlord_global_scope
+	c:GBR ?= {
+		is_country_alive = yes
+	}
+	c:CAP ?= {
+		is_country_alive = yes
+		is_subject_of = c:GBR
+	}
+	c:SWA ?= {
+		is_country_alive = yes
+	}
+	global_var:sb_bechuanaland_crisis_swa_overlord_global_scope = {
+		is_country_alive = yes
+		c:SWA ?= { is_direct_subject_of = PREV }
+	}
+	OR = {
+		NOT = { has_global_variable = sb_bechuanaland_crisis_boer_support_global_var }
+		AND = {
+			has_global_variable = sb_bechuanaland_boer_actor_global_scope
+			global_var:sb_bechuanaland_boer_actor_global_scope = {
+				is_country_alive = yes
+				sb_bechuanaland_is_primary_boer_actor = yes
+			}
+		}
+	}
+}
+
+sb_bechuanaland_crisis_launch_participants_ready = {
+	sb_bechuanaland_crisis_core_is_valid = yes
+	c:GBR ?= {
+		is_at_war = no
+		is_active_in_diplomatic_play = no
+	}
+	c:CAP ?= {
+		is_at_war = no
+		is_active_in_diplomatic_play = no
+	}
+	c:SWA ?= {
+		is_at_war = no
+		is_active_in_diplomatic_play = no
+	}
+	global_var:sb_bechuanaland_crisis_swa_overlord_global_scope = {
+		is_at_war = no
+		is_active_in_diplomatic_play = no
+	}
+	OR = {
+		NOT = { has_global_variable = sb_bechuanaland_crisis_boer_support_global_var }
+		NOT = {
+			any_country = {
+				has_variable = sb_bechuanaland_crisis_boer_network_var
+				OR = {
+					is_at_war = yes
+					is_active_in_diplomatic_play = yes
+				}
+			}
+		}
+	}
+	OR = {
+		NOT = { has_global_variable = sb_bechuanaland_crisis_direct_route_global_var }
+		NOT = {
+			any_country = {
+				has_variable = sb_bechuanaland_crisis_british_subject_target_var
+				OR = {
+					is_at_war = yes
+					is_active_in_diplomatic_play = yes
+				}
+			}
+		}
+	}
+}
+
 sb_bechuanaland_owns_corridor_land = {
 	any_scope_state = {
 		state_region = s:STATE_BECHUANALAND

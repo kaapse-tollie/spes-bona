@@ -224,10 +224,6 @@ sb_bechuanaland_open_corridor_is = {
 		}
 		add_contextless_journal_entry = je_sb_bechuanaland_corridor
 	}
-	every_country = {
-		limit = { sb_bechuanaland_swa_overlord_candidate = yes }
-		set_variable = { name = sb_bechuanaland_caprivi_ai_delay_var months = 12 }
-	}
 	sb_bechuanaland_sync_influence_bar = yes
 	every_country = {
 		limit = {
@@ -830,58 +826,495 @@ sb_bechuanaland_mark_boer_swa_war_side = {
 	set_global_variable = sb_bechuanaland_crisis_war_active_var
 }
 
-sb_bechuanaland_start_direct_gp_war = {
-	sb_bechuanaland_shift_swa_influence_50 = yes
-	sb_bechuanaland_mark_boer_swa_war_side = yes
-	c:SWA ?= { sb_bechuanaland_mark_boer_swa_war_side = yes }
-	c:CAP ?= { sb_bechuanaland_mark_british_war_side = yes }
-	c:GBR ?= {
-		sb_bechuanaland_mark_british_war_side = yes
-	}
-	create_diplomatic_play = {
-		type = dp_transfer_subject
-		target_country = c:CAP
+sb_bechuanaland_clear_pending_crisis_flags = {
+	if = { limit = { has_global_variable = sb_bechuanaland_crisis_escalation_pending_global_var } remove_global_variable = sb_bechuanaland_crisis_escalation_pending_global_var }
+	if = { limit = { has_global_variable = sb_bechuanaland_crisis_direct_route_global_var } remove_global_variable = sb_bechuanaland_crisis_direct_route_global_var }
+	if = { limit = { has_global_variable = sb_bechuanaland_crisis_proxy_route_global_var } remove_global_variable = sb_bechuanaland_crisis_proxy_route_global_var }
+	if = { limit = { has_global_variable = sb_bechuanaland_crisis_caprivi_route_global_var } remove_global_variable = sb_bechuanaland_crisis_caprivi_route_global_var }
+	if = { limit = { has_global_variable = sb_bechuanaland_crisis_boer_choice_pending_global_var } remove_global_variable = sb_bechuanaland_crisis_boer_choice_pending_global_var }
+	if = { limit = { has_global_variable = sb_bechuanaland_crisis_boer_choice_dispatched_global_var } remove_global_variable = sb_bechuanaland_crisis_boer_choice_dispatched_global_var }
+	if = { limit = { has_global_variable = sb_bechuanaland_crisis_boer_support_global_var } remove_global_variable = sb_bechuanaland_crisis_boer_support_global_var }
+}
+
+sb_bechuanaland_clear_crisis_participant_markers = {
+	every_country = {
+		limit = {
+			OR = {
+				has_variable = sb_bechuanaland_crisis_boer_network_var
+				has_variable = sb_bechuanaland_crisis_british_subject_target_var
+				has_variable = sb_bechuanaland_british_boer_goal_target_var
+			}
+		}
+		if = { limit = { has_variable = sb_bechuanaland_crisis_boer_network_var } remove_variable = sb_bechuanaland_crisis_boer_network_var }
+		if = { limit = { has_variable = sb_bechuanaland_crisis_british_subject_target_var } remove_variable = sb_bechuanaland_crisis_british_subject_target_var }
+		if = { limit = { has_variable = sb_bechuanaland_british_boer_goal_target_var } remove_variable = sb_bechuanaland_british_boer_goal_target_var }
 	}
 }
 
-sb_bechuanaland_add_cap_proxy_countergoals = {
+sb_bechuanaland_cancel_pending_crisis = {
+	sb_bechuanaland_clear_pending_crisis_flags = yes
+	if = {
+		limit = { has_global_variable = sb_bechuanaland_crisis_swa_overlord_global_scope }
+		remove_global_variable = sb_bechuanaland_crisis_swa_overlord_global_scope
+	}
+	sb_bechuanaland_clear_crisis_participant_markers = yes
+}
+
+sb_bechuanaland_remember_crisis_swa_overlord = {
+	save_temporary_scope_as = sb_bechuanaland_crisis_swa_overlord
+	if = {
+		limit = { has_global_variable = sb_bechuanaland_crisis_swa_overlord_global_scope }
+		remove_global_variable = sb_bechuanaland_crisis_swa_overlord_global_scope
+	}
+	set_global_variable = {
+		name = sb_bechuanaland_crisis_swa_overlord_global_scope
+		value = scope:sb_bechuanaland_crisis_swa_overlord
+	}
+}
+
+sb_bechuanaland_mark_current_boer_network = {
+	every_country = {
+		limit = { has_variable = sb_bechuanaland_crisis_boer_network_var }
+		remove_variable = sb_bechuanaland_crisis_boer_network_var
+	}
+	if = {
+		limit = {
+			has_global_variable = sb_bechuanaland_boer_actor_global_scope
+			global_var:sb_bechuanaland_boer_actor_global_scope = { is_country_alive = yes }
+		}
+		global_var:sb_bechuanaland_boer_actor_global_scope = {
+			save_temporary_scope_as = sb_bechuanaland_current_boer_actor
+			set_variable = sb_bechuanaland_crisis_boer_network_var
+		}
+		every_country = {
+			limit = {
+				is_country_alive = yes
+				country_has_primary_culture = cu:boer
+				is_subject_of = scope:sb_bechuanaland_current_boer_actor
+			}
+			set_variable = sb_bechuanaland_crisis_boer_network_var
+		}
+	}
+	c:SGO ?= {
+		if = {
+			limit = { is_country_alive = yes }
+			set_variable = sb_bechuanaland_crisis_boer_network_var
+		}
+	}
+}
+
+sb_bechuanaland_mark_current_british_subject_package = {
+	every_country = {
+		limit = { has_variable = sb_bechuanaland_crisis_british_subject_target_var }
+		remove_variable = sb_bechuanaland_crisis_british_subject_target_var
+	}
+	every_country = {
+		limit = {
+			is_country_alive = yes
+			is_subject_of = c:GBR
+			is_insurrectionary = no
+			NOT = { is_country_type = decentralized }
+			capital.region = sr:region_southern_africa
+			NOT = {
+				OR = {
+					country_definition = cd:CAP
+					country_definition = cd:SWA
+					country_definition = cd:SGO
+				}
+			}
+		}
+		set_variable = sb_bechuanaland_crisis_british_subject_target_var
+	}
+}
+
+sb_bechuanaland_refresh_crisis_launch_participants = {
+	sb_bechuanaland_mark_current_boer_network = yes
+	if = {
+		limit = { has_global_variable = sb_bechuanaland_crisis_direct_route_global_var }
+		sb_bechuanaland_mark_current_british_subject_package = yes
+	}
+}
+
+sb_bechuanaland_queue_warren_direct_crisis = {
+	sb_bechuanaland_clear_pending_crisis_flags = yes
+	sb_bechuanaland_clear_crisis_participant_markers = yes
+	sb_bechuanaland_remember_crisis_swa_overlord = yes
+	sb_bechuanaland_shift_swa_influence_50 = yes
+	set_global_variable = sb_bechuanaland_crisis_escalation_pending_global_var
+	set_global_variable = sb_bechuanaland_crisis_direct_route_global_var
+	set_global_variable = sb_bechuanaland_crisis_boer_support_global_var
+	sb_bechuanaland_try_launch_pending_crisis = yes
+}
+
+sb_bechuanaland_queue_warren_proxy_crisis = {
+	sb_bechuanaland_clear_pending_crisis_flags = yes
+	sb_bechuanaland_clear_crisis_participant_markers = yes
+	sb_bechuanaland_remember_crisis_swa_overlord = yes
+	sb_bechuanaland_shift_swa_influence_25 = yes
+	set_global_variable = sb_bechuanaland_crisis_escalation_pending_global_var
+	set_global_variable = sb_bechuanaland_crisis_proxy_route_global_var
+	set_global_variable = sb_bechuanaland_crisis_boer_support_global_var
+	sb_bechuanaland_try_launch_pending_crisis = yes
+}
+
+sb_bechuanaland_queue_caprivi_direct_crisis = {
+	sb_bechuanaland_clear_pending_crisis_flags = yes
+	sb_bechuanaland_clear_crisis_participant_markers = yes
+	sb_bechuanaland_remember_crisis_swa_overlord = yes
+	sb_bechuanaland_shift_swa_influence_50 = yes
+	set_global_variable = sb_bechuanaland_crisis_escalation_pending_global_var
+	set_global_variable = sb_bechuanaland_crisis_direct_route_global_var
+	set_global_variable = sb_bechuanaland_crisis_caprivi_route_global_var
+	set_global_variable = sb_bechuanaland_crisis_boer_choice_pending_global_var
+	sb_bechuanaland_try_launch_pending_crisis = yes
+}
+
+sb_bechuanaland_queue_caprivi_proxy_crisis = {
+	sb_bechuanaland_clear_pending_crisis_flags = yes
+	sb_bechuanaland_clear_crisis_participant_markers = yes
+	sb_bechuanaland_remember_crisis_swa_overlord = yes
+	sb_bechuanaland_shift_swa_influence_25 = yes
+	set_global_variable = sb_bechuanaland_crisis_escalation_pending_global_var
+	set_global_variable = sb_bechuanaland_crisis_proxy_route_global_var
+	set_global_variable = sb_bechuanaland_crisis_caprivi_route_global_var
+	set_global_variable = sb_bechuanaland_crisis_boer_choice_pending_global_var
+	sb_bechuanaland_try_launch_pending_crisis = yes
+}
+
+sb_bechuanaland_choose_boer_crisis_support = {
+	if = { limit = { has_global_variable = sb_bechuanaland_crisis_boer_choice_pending_global_var } remove_global_variable = sb_bechuanaland_crisis_boer_choice_pending_global_var }
+	if = { limit = { has_global_variable = sb_bechuanaland_crisis_boer_choice_dispatched_global_var } remove_global_variable = sb_bechuanaland_crisis_boer_choice_dispatched_global_var }
+	set_global_variable = sb_bechuanaland_crisis_boer_support_global_var
+	sb_bechuanaland_try_launch_pending_crisis = yes
+}
+
+sb_bechuanaland_choose_boer_crisis_neutrality = {
+	if = { limit = { has_global_variable = sb_bechuanaland_crisis_boer_choice_pending_global_var } remove_global_variable = sb_bechuanaland_crisis_boer_choice_pending_global_var }
+	if = { limit = { has_global_variable = sb_bechuanaland_crisis_boer_choice_dispatched_global_var } remove_global_variable = sb_bechuanaland_crisis_boer_choice_dispatched_global_var }
+	if = { limit = { has_global_variable = sb_bechuanaland_crisis_boer_support_global_var } remove_global_variable = sb_bechuanaland_crisis_boer_support_global_var }
+	sb_bechuanaland_try_launch_pending_crisis = yes
+}
+
+sb_bechuanaland_finish_crisis_launch = {
+	set_global_variable = sb_bechuanaland_crisis_war_active_var
+	sb_bechuanaland_clear_pending_crisis_flags = yes
+}
+
+sb_bechuanaland_add_reciprocal_corridor_goals = {
+	if = {
+		limit = {
+			c:CAP ?= {
+				is_country_alive = yes
+				any_scope_state = {
+					state_region = s:STATE_BECHUANALAND
+					num_provinces >= 1
+				}
+			}
+			c:SGO ?= {
+				is_country_alive = yes
+				any_scope_state = {
+					state_region = s:STATE_BECHUANALAND
+					num_provinces >= 1
+				}
+			}
+		}
+		s:STATE_BECHUANALAND.region_state:CAP ?= { save_temporary_scope_as = sb_bechuanaland_cap_corridor_state }
+		s:STATE_BECHUANALAND.region_state:SGO ?= { save_temporary_scope_as = sb_bechuanaland_sgo_corridor_state }
+		scope:sb_bechuanaland_crisis_play = {
+			add_war_goal = {
+				holder = c:CAP
+				type = return_state
+				target_country = c:SGO
+				target_state = scope:sb_bechuanaland_sgo_corridor_state
+			}
+			add_war_goal = {
+				holder = c:SGO
+				type = return_state
+				target_country = c:CAP
+				target_state = scope:sb_bechuanaland_cap_corridor_state
+			}
+		}
+	}
+}
+
+sb_bechuanaland_launch_direct_crisis = {
+	global_var:sb_bechuanaland_crisis_swa_overlord_global_scope = {
+		save_temporary_scope_as = sb_bechuanaland_direct_initiator
+		create_diplomatic_play = {
+			type = dp_sb_bechuanaland_direct_intervention_locked
+			target_country = c:CAP
+			add_initiator_backers = { c:SWA }
+			add_target_backers = { c:GBR }
+			add_war_goal = {
+				holder = c:GBR
+				type = transfer_subject
+				target_country = c:SWA
+				primary_demand = yes
+			}
+		}
+	}
+	random_diplomatic_play = {
+		limit = {
+			initiator = scope:sb_bechuanaland_direct_initiator
+			target = c:CAP
+			is_diplomatic_play_type = dp_sb_bechuanaland_direct_intervention_locked
+		}
+		save_temporary_scope_as = sb_bechuanaland_crisis_play
+	}
+	if = {
+		limit = { exists = scope:sb_bechuanaland_crisis_play }
+		scope:sb_bechuanaland_direct_initiator = { set_variable = sb_bechuanaland_boer_swa_war_side_var }
+		c:SWA ?= { set_variable = sb_bechuanaland_boer_swa_war_side_var }
+		c:CAP ?= { set_variable = sb_bechuanaland_british_war_side_var }
+		c:GBR ?= { set_variable = sb_bechuanaland_british_war_side_var }
+		every_country = {
+			limit = { has_variable = sb_bechuanaland_crisis_british_subject_target_var }
+			save_temporary_scope_as = sb_bechuanaland_british_subject_target
+			set_variable = sb_bechuanaland_british_war_side_var
+			scope:sb_bechuanaland_crisis_play = {
+				add_target_backers = { scope:sb_bechuanaland_british_subject_target }
+				add_war_goal = {
+					holder = scope:sb_bechuanaland_direct_initiator
+					type = transfer_subject
+					target_country = scope:sb_bechuanaland_british_subject_target
+				}
+			}
+		}
+		if = {
+			limit = { has_global_variable = sb_bechuanaland_crisis_boer_support_global_var }
+			every_country = {
+				limit = { has_variable = sb_bechuanaland_crisis_boer_network_var }
+				save_temporary_scope_as = sb_bechuanaland_boer_participant
+				set_variable = sb_bechuanaland_boer_swa_war_side_var
+				scope:sb_bechuanaland_crisis_play = {
+					add_initiator_backers = { scope:sb_bechuanaland_boer_participant }
+				}
+				if = {
+					limit = { NOT = { country_definition = cd:SGO } }
+					set_variable = sb_bechuanaland_british_boer_goal_target_var
+					if = {
+						limit = { is_subject = yes }
+						scope:sb_bechuanaland_crisis_play = {
+							add_war_goal = {
+								holder = c:GBR
+								type = transfer_subject
+								target_country = scope:sb_bechuanaland_boer_participant
+							}
+						}
+					}
+					else = {
+						scope:sb_bechuanaland_crisis_play = {
+							add_war_goal = {
+								holder = c:GBR
+								type = make_protectorate
+								target_country = scope:sb_bechuanaland_boer_participant
+							}
+						}
+					}
+				}
+			}
+			sb_bechuanaland_add_reciprocal_corridor_goals = yes
+		}
+		sb_bechuanaland_finish_crisis_launch = yes
+	}
+}
+
+sb_bechuanaland_launch_proxy_crisis = {
+	c:SWA ?= {
+		create_diplomatic_play = {
+			type = dp_sb_bechuanaland_proxy_intervention_locked
+			target_country = c:CAP
+			add_target_backers = { c:GBR }
+			add_war_goal = {
+				holder = c:CAP
+				type = humiliation
+				target_country = c:SWA
+				primary_demand = yes
+			}
+		}
+	}
 	random_diplomatic_play = {
 		limit = {
 			initiator = c:SWA
 			target = c:CAP
-			is_diplomatic_play_type = dp_humiliation
+			is_diplomatic_play_type = dp_sb_bechuanaland_proxy_intervention_locked
 		}
+		save_temporary_scope_as = sb_bechuanaland_crisis_play
+	}
+	if = {
+		limit = { exists = scope:sb_bechuanaland_crisis_play }
+		c:SWA ?= { set_variable = sb_bechuanaland_boer_swa_war_side_var }
+		c:CAP ?= { set_variable = sb_bechuanaland_british_war_side_var }
+		c:GBR ?= { set_variable = sb_bechuanaland_british_war_side_var }
 		if = {
-			limit = { c:SWA ?= { is_subject = yes } }
-			add_war_goal = {
-				holder = c:CAP
-				type = transfer_subject
-				target_country = c:SWA
+			limit = { has_global_variable = sb_bechuanaland_crisis_boer_support_global_var }
+			every_country = {
+				limit = { has_variable = sb_bechuanaland_crisis_boer_network_var }
+				save_temporary_scope_as = sb_bechuanaland_boer_participant
+				set_variable = sb_bechuanaland_boer_swa_war_side_var
+				scope:sb_bechuanaland_crisis_play = {
+					add_initiator_backers = { scope:sb_bechuanaland_boer_participant }
+				}
 			}
+			sb_bechuanaland_add_reciprocal_corridor_goals = yes
+		}
+		sb_bechuanaland_finish_crisis_launch = yes
+	}
+}
+
+sb_bechuanaland_try_launch_pending_crisis = {
+	if = {
+		limit = {
+			has_global_variable = sb_bechuanaland_crisis_escalation_pending_global_var
+			NOT = { has_global_variable = sb_bechuanaland_crisis_war_active_var }
+		}
+		sb_bechuanaland_refresh_influence_scopes = yes
+		if = {
+			limit = { NOT = { sb_bechuanaland_crisis_core_is_valid = yes } }
+			sb_bechuanaland_cancel_pending_crisis = yes
 		}
 		else = {
-			add_war_goal = {
-				holder = c:CAP
-				type = make_protectorate
-				target_country = c:SWA
+			if = {
+				limit = { has_global_variable = sb_bechuanaland_crisis_boer_choice_pending_global_var }
+				if = {
+					limit = {
+						has_global_variable = sb_bechuanaland_boer_actor_global_scope
+						NOT = { has_global_variable = sb_bechuanaland_crisis_boer_choice_dispatched_global_var }
+					}
+					set_global_variable = { name = sb_bechuanaland_crisis_boer_choice_dispatched_global_var days = 15 }
+					global_var:sb_bechuanaland_boer_actor_global_scope = {
+						trigger_event = { id = sb_bechuanaland_corridor.032 days = 3 popup = yes }
+					}
+				}
+				else_if = {
+					limit = { NOT = { has_global_variable = sb_bechuanaland_boer_actor_global_scope } }
+					sb_bechuanaland_choose_boer_crisis_neutrality = yes
+				}
+			}
+			if = {
+				limit = {
+					has_global_variable = sb_bechuanaland_crisis_escalation_pending_global_var
+					NOT = { has_global_variable = sb_bechuanaland_crisis_boer_choice_pending_global_var }
+				}
+				sb_bechuanaland_refresh_crisis_launch_participants = yes
+				if = {
+					limit = { sb_bechuanaland_crisis_launch_participants_ready = yes }
+					if = {
+						limit = { has_global_variable = sb_bechuanaland_crisis_direct_route_global_var }
+						sb_bechuanaland_launch_direct_crisis = yes
+					}
+					else_if = {
+						limit = { has_global_variable = sb_bechuanaland_crisis_proxy_route_global_var }
+						sb_bechuanaland_launch_proxy_crisis = yes
+					}
+				}
 			}
 		}
 	}
 }
 
-sb_bechuanaland_start_proxy_war = {
-	sb_bechuanaland_shift_swa_influence_25 = yes
-	sb_bechuanaland_mark_boer_swa_war_side = yes
-	c:SWA ?= {
-		sb_bechuanaland_mark_boer_swa_war_side = yes
-		create_diplomatic_play = {
-			type = dp_humiliation
-			target_country = c:CAP
+sb_bechuanaland_set_british_crisis_victory = {
+	if = {
+		limit = {
+			has_global_variable = sb_bechuanaland_corridor_open_global_var
+			NOT = { has_global_variable = sb_bechuanaland_corridor_resolved_global_var }
+			NOT = { has_global_variable = sb_bechuanaland_british_victory_global_var }
+			NOT = { has_global_variable = sb_bechuanaland_boer_swa_victory_global_var }
+		}
+		set_global_variable = sb_bechuanaland_british_victory_global_var
+		if = { limit = { has_global_variable = sb_bechuanaland_crisis_war_active_var } remove_global_variable = sb_bechuanaland_crisis_war_active_var }
+		sb_bechuanaland_clear_pending_crisis_flags = yes
+	}
+}
+
+sb_bechuanaland_set_boer_swa_crisis_victory = {
+	if = {
+		limit = {
+			has_global_variable = sb_bechuanaland_corridor_open_global_var
+			NOT = { has_global_variable = sb_bechuanaland_corridor_resolved_global_var }
+			NOT = { has_global_variable = sb_bechuanaland_british_victory_global_var }
+			NOT = { has_global_variable = sb_bechuanaland_boer_swa_victory_global_var }
+		}
+		set_global_variable = sb_bechuanaland_boer_swa_victory_global_var
+		if = { limit = { has_global_variable = sb_bechuanaland_crisis_war_active_var } remove_global_variable = sb_bechuanaland_crisis_war_active_var }
+		sb_bechuanaland_clear_pending_crisis_flags = yes
+	}
+}
+
+sb_bechuanaland_handle_crisis_backdown = {
+	if = {
+		limit = {
+			OR = {
+				is_diplomatic_play_type = dp_sb_bechuanaland_direct_intervention_locked
+				is_diplomatic_play_type = dp_sb_bechuanaland_proxy_intervention_locked
+			}
+		}
+		if = {
+			limit = { scope:actor ?= { has_variable = sb_bechuanaland_british_war_side_var } }
+			sb_bechuanaland_set_boer_swa_crisis_victory = yes
+		}
+		else_if = {
+			limit = { scope:actor ?= { has_variable = sb_bechuanaland_boer_swa_war_side_var } }
+			sb_bechuanaland_set_british_crisis_victory = yes
 		}
 	}
-	sb_bechuanaland_add_cap_proxy_countergoals = yes
-	c:CAP ?= { sb_bechuanaland_mark_british_war_side = yes }
-	c:GBR ?= { sb_bechuanaland_mark_british_war_side = yes }
+}
+
+sb_bechuanaland_track_crisis_wargoal_enforcement = {
+	if = {
+		limit = {
+			scope:diplomatic_play ?= {
+				OR = {
+					is_diplomatic_play_type = dp_sb_bechuanaland_direct_intervention_locked
+					is_diplomatic_play_type = dp_sb_bechuanaland_proxy_intervention_locked
+				}
+			}
+			NOT = { has_global_variable = sb_bechuanaland_corridor_resolved_global_var }
+		}
+		if = {
+			limit = { has_variable = sb_bechuanaland_british_war_side_var }
+			set_global_variable = sb_bechuanaland_british_goal_enforced_global_var
+		}
+		else_if = {
+			limit = { has_variable = sb_bechuanaland_boer_swa_war_side_var }
+			set_global_variable = sb_bechuanaland_boer_swa_goal_enforced_global_var
+		}
+	}
+}
+
+sb_bechuanaland_resolve_crisis_war_at_end = {
+	if = {
+		limit = {
+			OR = {
+				is_diplomatic_play_type = dp_sb_bechuanaland_direct_intervention_locked
+				is_diplomatic_play_type = dp_sb_bechuanaland_proxy_intervention_locked
+			}
+			NOT = { has_global_variable = sb_bechuanaland_corridor_resolved_global_var }
+			NOT = { has_global_variable = sb_bechuanaland_british_victory_global_var }
+			NOT = { has_global_variable = sb_bechuanaland_boer_swa_victory_global_var }
+		}
+		if = {
+			limit = {
+				has_global_variable = sb_bechuanaland_british_goal_enforced_global_var
+				NOT = { has_global_variable = sb_bechuanaland_boer_swa_goal_enforced_global_var }
+			}
+			sb_bechuanaland_set_british_crisis_victory = yes
+		}
+		else_if = {
+			limit = {
+				has_global_variable = sb_bechuanaland_boer_swa_goal_enforced_global_var
+				NOT = { has_global_variable = sb_bechuanaland_british_goal_enforced_global_var }
+			}
+			sb_bechuanaland_set_boer_swa_crisis_victory = yes
+		}
+		else_if = {
+			limit = { is_diplomatic_play_type = dp_sb_bechuanaland_direct_intervention_locked }
+			sb_bechuanaland_set_british_crisis_victory = yes
+		}
+		else = {
+			sb_bechuanaland_set_boer_swa_crisis_victory = yes
+		}
+	}
 }
 
 sb_bechuanaland_start_cap_sgo_annex_war = {
@@ -994,32 +1427,6 @@ sb_bechuanaland_start_cap_dual_return_war = {
 	}
 }
 
-sb_bechuanaland_start_cap_dual_return_war_with_direct_intervention = {
-	save_temporary_scope_as = sb_bechuanaland_direct_intervener
-	sb_bechuanaland_shift_swa_influence_50 = yes
-	sb_bechuanaland_start_cap_dual_return_war = yes
-	random_diplomatic_play = {
-		limit = {
-			initiator = c:CAP
-			is_diplomatic_play_type = dp_sb_bechuanaland_cap_dual_return_locked
-		}
-		add_target_backers = { scope:sb_bechuanaland_direct_intervener }
-	}
-}
-
-sb_bechuanaland_start_cap_dual_return_war_with_proxy_intervention = {
-	sb_bechuanaland_shift_swa_influence_25 = yes
-	sb_bechuanaland_start_cap_dual_return_war = yes
-	random_diplomatic_play = {
-		limit = {
-			initiator = c:CAP
-			is_diplomatic_play_type = dp_sb_bechuanaland_cap_dual_return_locked
-		}
-		add_target_backers = { c:SWA }
-	}
-	c:SWA ?= { sb_bechuanaland_mark_boer_swa_war_side = yes }
-}
-
 sb_bechuanaland_transfer_dual_corridor_to_cap = {
 	every_country = {
 		limit = {
@@ -1119,11 +1526,50 @@ sb_bechuanaland_queue_boer_swa_settlement_event = {
 	}
 }
 
+sb_bechuanaland_grant_swa_settlement_leverage = {
+	if = {
+		limit = {
+			has_global_variable = sb_bechuanaland_crisis_swa_overlord_global_scope
+			global_var:sb_bechuanaland_crisis_swa_overlord_global_scope = { is_country_alive = yes }
+		}
+		global_var:sb_bechuanaland_crisis_swa_overlord_global_scope = {
+			save_temporary_scope_as = sb_bechuanaland_leverage_overlord
+		}
+	}
+	else_if = {
+		limit = {
+			has_global_variable = sb_bechuanaland_swa_overlord_global_scope
+			global_var:sb_bechuanaland_swa_overlord_global_scope = { is_country_alive = yes }
+		}
+		global_var:sb_bechuanaland_swa_overlord_global_scope = {
+			save_temporary_scope_as = sb_bechuanaland_leverage_overlord
+		}
+	}
+	if = {
+		limit = { exists = scope:sb_bechuanaland_leverage_overlord }
+		sb_bechuanaland_mark_current_boer_network = yes
+		every_country = {
+			limit = { has_variable = sb_bechuanaland_crisis_boer_network_var }
+			scope:sb_bechuanaland_leverage_overlord.power_bloc ?= {
+				add_leverage = { target = PREV value = 200 }
+			}
+		}
+	}
+}
+
 sb_bechuanaland_apply_british_settlement = {
 	if = {
 		limit = { NOT = { has_global_variable = sb_bechuanaland_corridor_resolved_global_var } }
 		set_global_variable = sb_bechuanaland_british_victory_global_var
 		set_global_variable = sb_bechuanaland_corridor_resolved_global_var
+	}
+	every_country = {
+		limit = {
+			has_variable = sb_bechuanaland_british_boer_goal_target_var
+			is_direct_subject_of = c:GBR
+			NOT = { is_subject_type = subject_type_protectorate }
+		}
+		change_subject_type = subject_type_protectorate
 	}
 	if = {
 		limit = { c:CAP ?= { is_country_alive = yes } }
@@ -1186,6 +1632,7 @@ sb_bechuanaland_apply_boer_swa_settlement = {
 	}
 	else_if = {
 		limit = { global_var:sb_bechuanaland_influence_score_global_var <= -10 }
+		sb_bechuanaland_grant_swa_settlement_leverage = yes
 		if = {
 			limit = { exists = scope:sb_bechuanaland_swa_settlement_claimant_scope }
 			s:STATE_BOTSWANA = { add_claim = scope:sb_bechuanaland_swa_settlement_claimant_scope }
@@ -1238,6 +1685,7 @@ sb_bechuanaland_apply_support_to_boer_swa_side = {
 }
 
 sb_bechuanaland_cleanup_corridor_crisis = {
+	sb_bechuanaland_clear_pending_crisis_flags = yes
 	if = { limit = { has_global_variable = sb_bechuanaland_corridor_watch_global_var } remove_global_variable = sb_bechuanaland_corridor_watch_global_var }
 	if = { limit = { has_global_variable = sb_bechuanaland_corridor_open_global_var } remove_global_variable = sb_bechuanaland_corridor_open_global_var }
 	if = { limit = { has_global_variable = sb_bechuanaland_resolution_grace_global_var } remove_global_variable = sb_bechuanaland_resolution_grace_global_var }
@@ -1248,6 +1696,9 @@ sb_bechuanaland_cleanup_corridor_crisis = {
 	if = { limit = { has_global_variable = sb_bechuanaland_boer_actor_global_scope } remove_global_variable = sb_bechuanaland_boer_actor_global_scope }
 	if = { limit = { has_global_variable = sb_bechuanaland_swa_overlord_global_scope } remove_global_variable = sb_bechuanaland_swa_overlord_global_scope }
 	if = { limit = { has_global_variable = sb_bechuanaland_swa_claimant_global_scope } remove_global_variable = sb_bechuanaland_swa_claimant_global_scope }
+	if = { limit = { has_global_variable = sb_bechuanaland_crisis_swa_overlord_global_scope } remove_global_variable = sb_bechuanaland_crisis_swa_overlord_global_scope }
+	if = { limit = { has_global_variable = sb_bechuanaland_british_goal_enforced_global_var } remove_global_variable = sb_bechuanaland_british_goal_enforced_global_var }
+	if = { limit = { has_global_variable = sb_bechuanaland_boer_swa_goal_enforced_global_var } remove_global_variable = sb_bechuanaland_boer_swa_goal_enforced_global_var }
 	if = { limit = { has_global_variable = sb_bechuanaland_boer_swa_settlement_pending_global_var } remove_global_variable = sb_bechuanaland_boer_swa_settlement_pending_global_var }
 	if = { limit = { has_global_variable = sb_bechuanaland_boer_influence_positive_var } remove_global_variable = sb_bechuanaland_boer_influence_positive_var }
 	if = { limit = { has_global_variable = sb_bechuanaland_swa_influence_positive_var } remove_global_variable = sb_bechuanaland_swa_influence_positive_var }
@@ -1275,6 +1726,11 @@ sb_bechuanaland_cleanup_corridor_crisis = {
 		limit = {
 			OR = {
 				has_journal_entry = je_sb_bechuanaland_corridor
+				has_variable = sb_bechuanaland_british_war_side_var
+				has_variable = sb_bechuanaland_boer_swa_war_side_var
+				has_variable = sb_bechuanaland_crisis_boer_network_var
+				has_variable = sb_bechuanaland_crisis_british_subject_target_var
+				has_variable = sb_bechuanaland_british_boer_goal_target_var
 				has_variable = sb_bechuanaland_boer_subsidy_active_var
 				has_variable = sb_bechuanaland_boer_subsidy_cooldown_var
 				has_variable = sb_bechuanaland_swa_subsidy_active_var
@@ -1282,14 +1738,15 @@ sb_bechuanaland_cleanup_corridor_crisis = {
 				has_variable = sb_bechuanaland_support_cooldown_var
 			}
 		}
+		if = { limit = { has_variable = sb_bechuanaland_british_war_side_var } remove_variable = sb_bechuanaland_british_war_side_var }
+		if = { limit = { has_variable = sb_bechuanaland_boer_swa_war_side_var } remove_variable = sb_bechuanaland_boer_swa_war_side_var }
+		if = { limit = { has_variable = sb_bechuanaland_crisis_boer_network_var } remove_variable = sb_bechuanaland_crisis_boer_network_var }
+		if = { limit = { has_variable = sb_bechuanaland_crisis_british_subject_target_var } remove_variable = sb_bechuanaland_crisis_british_subject_target_var }
+		if = { limit = { has_variable = sb_bechuanaland_british_boer_goal_target_var } remove_variable = sb_bechuanaland_british_boer_goal_target_var }
 		if = { limit = { has_variable = sb_bechuanaland_support_cooldown_var } remove_variable = sb_bechuanaland_support_cooldown_var }
 		if = { limit = { has_variable = sb_bechuanaland_boer_subsidy_active_var } remove_variable = sb_bechuanaland_boer_subsidy_active_var }
 		if = { limit = { has_variable = sb_bechuanaland_boer_subsidy_cooldown_var } remove_variable = sb_bechuanaland_boer_subsidy_cooldown_var }
 		if = { limit = { has_variable = sb_bechuanaland_swa_subsidy_active_var } remove_variable = sb_bechuanaland_swa_subsidy_active_var }
 		if = { limit = { has_variable = sb_bechuanaland_swa_subsidy_cooldown_var } remove_variable = sb_bechuanaland_swa_subsidy_cooldown_var }
-	}
-	every_country = {
-		limit = { has_variable = sb_bechuanaland_caprivi_ai_delay_var }
-		remove_variable = sb_bechuanaland_caprivi_ai_delay_var
 	}
 }
