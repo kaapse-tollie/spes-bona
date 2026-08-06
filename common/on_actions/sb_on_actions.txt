@@ -50,7 +50,10 @@ on_diplo_play_abandon_side = {
 }
 
 on_become_subject = {
-	on_actions = { sb_on_natalia_become_british_subject }
+	on_actions = {
+		sb_on_natalia_become_british_subject
+		sb_on_bechuanaland_subject_status_changed
+	}
 }
 
 on_monthly_pulse_country = {
@@ -2316,6 +2319,22 @@ sb_on_natalia_become_british_subject = {
 			else = {
 				sb_finalize_british_natal_colony = yes
 			}
+		}
+	}
+}
+
+sb_on_bechuanaland_subject_status_changed = {
+	effect = {
+		if = {
+			limit = {
+				has_global_variable = sb_bechuanaland_corridor_open_global_var
+				NOT = { has_global_variable = sb_bechuanaland_corridor_resolved_global_var }
+				OR = {
+					country_definition = cd:SGO
+					country_definition = cd:SWA
+				}
+			}
+			sb_bechuanaland_handle_post_open_lifecycle = yes
 		}
 	}
 }

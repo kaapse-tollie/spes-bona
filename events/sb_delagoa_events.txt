@@ -17,7 +17,7 @@ sb_delagoa.010 = {
 		NOT = { exists = c:SAF }
 		sb_delagoa_has_valid_gateway = yes
 		sb_is_delagoa_market_leader = yes
-		any_country = {
+		scope:sb_delagoa_actor_scope ?= {
 			sb_is_delagoa_route_actor = yes
 			is_ai = yes
 			is_subject = no
@@ -36,11 +36,7 @@ sb_delagoa.010 = {
 		custom_tooltip = sb_delagoa_010_accept_tt
 		hidden_effect = {
 			sb_delagoa_create_trade_treaty_with_actor = yes
-			every_country = {
-				limit = {
-					sb_is_delagoa_route_actor = yes
-					has_journal_entry = je_sb_delagoa_route_to_sea
-				}
+			scope:sb_delagoa_actor_scope ?= {
 				trigger_event = { id = sb_delagoa.020 days = 1 popup = yes }
 			}
 			s:STATE_LOURENCO_MARQUES = {
@@ -59,11 +55,7 @@ sb_delagoa.010 = {
 		name = sb_delagoa.010.b
 		custom_tooltip = sb_delagoa_010_reject_tt
 		hidden_effect = {
-			every_country = {
-				limit = {
-					sb_is_delagoa_route_actor = yes
-					has_journal_entry = je_sb_delagoa_route_to_sea
-				}
+			scope:sb_delagoa_actor_scope ?= {
 				change_relations = { country = root value = -25 }
 				set_variable = sb_delagoa_treaty_refused_var
 			}

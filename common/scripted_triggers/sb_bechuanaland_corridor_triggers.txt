@@ -19,15 +19,57 @@ sb_bechuanaland_has_no_british_security_treaty = {
 	}
 }
 
-sb_bechuanaland_swa_overlord_candidate = {
+sb_bechuanaland_swa_direct_overlord = {
 	is_country_alive = yes
-	country_rank = rank_value:great_power
 	NOT = { country_definition = cd:GBR }
 	c:SWA ?= {
 		is_country_alive = yes
 		is_direct_subject_of = prev
 	}
+}
+
+# A new sponsor must be a GP. A saved incumbent may retain sponsorship after
+# rank loss while it still directly owns SWA and remains outside Britain's
+# alliance/defensive-pact network.
+sb_bechuanaland_swa_overlord_candidate = {
+	sb_bechuanaland_swa_direct_overlord = yes
+	country_rank = rank_value:great_power
 	sb_bechuanaland_has_no_british_security_treaty = yes
+}
+
+sb_bechuanaland_swa_active_sponsor = {
+	sb_bechuanaland_swa_direct_overlord = yes
+	sb_bechuanaland_has_no_british_security_treaty = yes
+	OR = {
+		country_rank = rank_value:great_power
+		AND = {
+			has_global_variable = sb_bechuanaland_swa_overlord_global_scope
+			global_var:sb_bechuanaland_swa_overlord_global_scope = { this = PREV }
+		}
+	}
+}
+
+# Root-agnostic: either GBR directly owns SWA or its current direct overlord
+# has an alliance/defensive-pact treaty with GBR.
+sb_bechuanaland_swa_overlord_is_british_aligned = {
+	OR = {
+		c:SWA ?= { is_country_alive = yes is_direct_subject_of = c:GBR }
+		any_country = {
+			sb_bechuanaland_swa_direct_overlord = yes
+			NOT = { sb_bechuanaland_has_no_british_security_treaty = yes }
+		}
+	}
+}
+
+# The listed subject types explicitly disallow transfer war goals. They remain
+# play backers, but scripted construction must not add an invalid goal for them.
+sb_bechuanaland_subject_can_be_transferred = {
+	is_subject = yes
+	NOR = {
+		is_subject_type = subject_type_personal_union
+		is_subject_type = subject_type_sb_boer_presidential_union
+		is_subject_type = subject_type_sb_boer_confederal_partner
+	}
 }
 
 sb_bechuanaland_trn_controls_transvaal_core = {
@@ -139,6 +181,9 @@ sb_bechuanaland_crisis_escalation_available = {
 			has_global_variable = sb_bechuanaland_unresolved_settlement_pending_global_var
 			has_global_variable = sb_bechuanaland_crisis_escalation_pending_global_var
 			has_global_variable = sb_bechuanaland_crisis_war_active_var
+			has_global_variable = sb_bechuanaland_british_alignment_warren_pending_global_var
+			has_global_variable = sb_bechuanaland_sgo_annexation_offer_pending_global_var
+			has_global_variable = sb_bechuanaland_british_settlement_pending_global_var
 		}
 	}
 }
@@ -162,7 +207,7 @@ sb_bechuanaland_caprivi_decision_window_is_valid = {
 	sb_bechuanaland_crisis_decision_window_is_valid = yes
 	has_global_variable = sb_bechuanaland_caprivi_decision_pending_global_var
 	NOT = { has_global_variable = sb_bechuanaland_warren_decision_pending_global_var }
-	any_country = { sb_bechuanaland_swa_overlord_candidate = yes }
+	any_country = { sb_bechuanaland_swa_active_sponsor = yes }
 	sb_bechuanaland_caprivi_not_held_by_swa = yes
 }
 
@@ -205,8 +250,7 @@ sb_bechuanaland_crisis_core_is_valid = {
 		is_country_alive = yes
 	}
 	global_var:sb_bechuanaland_crisis_swa_overlord_global_scope = {
-		is_country_alive = yes
-		c:SWA ?= { is_direct_subject_of = PREV }
+		sb_bechuanaland_swa_active_sponsor = yes
 	}
 	OR = {
 		NOT = { has_global_variable = sb_bechuanaland_crisis_boer_support_global_var }
@@ -316,9 +360,27 @@ sb_bechuanaland_cap_controls_griqualand_west = {
 	}
 }
 
+sb_bechuanaland_sgo_is_british_subject = {
+	c:SGO ?= {
+		is_country_alive = yes
+		is_subject = yes
+		is_subject_of = c:GBR
+	}
+}
+
+sb_bechuanaland_sgo_is_third_party_subject = {
+	c:SGO ?= {
+		is_country_alive = yes
+		is_subject = yes
+		NOT = { is_subject_of = c:GBR }
+	}
+}
+
 sb_bechuanaland_sgo_controls_nw_corridor = {
-	exists = c:SGO
-	c:SGO ?= { owns_entire_state_region = STATE_BECHUANALAND }
+	c:SGO ?= {
+		sb_bechuanaland_boer_actor = yes
+		owns_entire_state_region = STATE_BECHUANALAND
+	}
 }
 
 sb_bechuanaland_caprivi_not_held_by_swa = {
@@ -448,7 +510,7 @@ sb_bechuanaland_is_involved_actor = {
 		country_definition = cd:SGO
 		country_definition = cd:WBL
 		sb_bechuanaland_boer_actor = yes
-		sb_bechuanaland_swa_overlord_candidate = yes
+		sb_bechuanaland_swa_active_sponsor = yes
 	}
 }
 

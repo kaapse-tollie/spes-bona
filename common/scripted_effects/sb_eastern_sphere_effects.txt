@@ -547,13 +547,7 @@ sb_delagoa_apply_actor_state_bonuses = {
 
 sb_delagoa_create_trade_treaty_with_actor = {
 	save_scope_as = sb_delagoa_partner_scope
-	every_country = {
-		limit = {
-			sb_is_delagoa_route_actor = yes
-			is_country_alive = yes
-			has_journal_entry = je_sb_delagoa_route_to_sea
-		}
-		save_temporary_scope_as = sb_delagoa_actor_scope
+	scope:sb_delagoa_actor_scope ?= {
 		create_treaty = {
 			first_country = scope:sb_delagoa_partner_scope
 			second_country = scope:sb_delagoa_actor_scope
@@ -1333,6 +1327,7 @@ sb_eastern_sphere_monthly_housekeeping = {
 			sb_has_railway_in_northern_transvaal = yes
 			NOT = { sb_delagoa_actor_has_trade_through = yes }
 		}
+		save_scope_as = sb_delagoa_actor_scope
 		s:STATE_LOURENCO_MARQUES = {
 			random_scope_state = {
 				limit = {

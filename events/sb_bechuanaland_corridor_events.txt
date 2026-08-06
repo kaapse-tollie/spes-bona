@@ -134,7 +134,7 @@ sb_bechuanaland_corridor.020 = {
 
 	trigger = {
 		sb_bechuanaland_warren_decision_window_is_valid = yes
-		sb_bechuanaland_swa_overlord_candidate = yes
+		sb_bechuanaland_swa_active_sponsor = yes
 		has_variable = sb_bechuanaland_cap_warren_refusal_var
 	}
 
@@ -177,7 +177,7 @@ sb_bechuanaland_corridor.020 = {
 		if = {
 			limit = {
 				sb_bechuanaland_warren_decision_window_is_valid = yes
-				sb_bechuanaland_swa_overlord_candidate = yes
+				sb_bechuanaland_swa_active_sponsor = yes
 			}
 			sb_bechuanaland_shift_boer_influence_5 = yes
 			sb_bechuanaland_finish_warren_attempt = yes
@@ -218,7 +218,7 @@ sb_bechuanaland_corridor.021 = {
 
 	trigger = {
 		sb_bechuanaland_warren_decision_window_is_valid = yes
-		sb_bechuanaland_swa_overlord_candidate = yes
+		sb_bechuanaland_swa_active_sponsor = yes
 		has_variable = sb_bechuanaland_gbr_warren_refusal_var
 	}
 
@@ -261,7 +261,7 @@ sb_bechuanaland_corridor.021 = {
 		if = {
 			limit = {
 				sb_bechuanaland_warren_decision_window_is_valid = yes
-				sb_bechuanaland_swa_overlord_candidate = yes
+				sb_bechuanaland_swa_active_sponsor = yes
 			}
 			sb_bechuanaland_shift_boer_influence_5 = yes
 			sb_bechuanaland_finish_warren_attempt = yes
@@ -315,7 +315,7 @@ sb_bechuanaland_corridor.030 = {
 			sb_bechuanaland_transfer_caprivi_to_swa = yes
 			sb_bechuanaland_shift_swa_influence_10 = yes
 			every_country = {
-				limit = { sb_bechuanaland_swa_overlord_candidate = yes }
+				limit = { sb_bechuanaland_swa_active_sponsor = yes }
 				set_variable = sb_bechuanaland_caprivi_conceded_var
 			}
 			sb_bechuanaland_finish_caprivi_attempt = yes
@@ -333,9 +333,9 @@ sb_bechuanaland_corridor.030 = {
 		if = {
 			limit = { sb_bechuanaland_caprivi_decision_window_is_valid = yes }
 			if = {
-				limit = { any_country = { sb_bechuanaland_swa_overlord_candidate = yes } }
+				limit = { any_country = { sb_bechuanaland_swa_active_sponsor = yes } }
 				every_country = {
-					limit = { sb_bechuanaland_swa_overlord_candidate = yes }
+					limit = { sb_bechuanaland_swa_active_sponsor = yes }
 					trigger_event = { id = sb_bechuanaland_corridor.031 days = 3 popup = yes }
 				}
 			}
@@ -369,7 +369,7 @@ sb_bechuanaland_corridor.031 = {
 
 	trigger = {
 		sb_bechuanaland_caprivi_decision_window_is_valid = yes
-		sb_bechuanaland_swa_overlord_candidate = yes
+		sb_bechuanaland_swa_active_sponsor = yes
 	}
 
 	cancellation_trigger = {
@@ -477,6 +477,212 @@ sb_bechuanaland_corridor.033 = {
 		ai_chance = { base = 100 }
 	}
 }
+
+# The SWA sponsor has entered Britain's security network. Warren still offers
+# the corridor holder a local choice, but refusal goes straight to the British
+# return-state play rather than asking that sponsor to intervene.
+sb_bechuanaland_corridor.034 = {
+	type = country_event
+	placement = root
+
+	title = sb_bechuanaland_corridor.034.t
+	desc = sb_bechuanaland_corridor.034.d
+	flavor = sb_bechuanaland_corridor.034.f
+
+	event_image = { video = "africa_diplomats_negotiating" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_newspaper.dds"
+	duration = 3
+
+	immediate = { sb_bechuanaland_save_loc_scopes = yes }
+
+	trigger = {
+		sb_bechuanaland_warren_decision_window_is_valid = yes
+		has_global_variable = sb_bechuanaland_british_alignment_warren_pending_global_var
+		sb_bechuanaland_swa_overlord_is_british_aligned = yes
+		has_variable = sb_bechuanaland_gbr_warren_demand_var
+	}
+
+	cancellation_trigger = {
+		OR = {
+			NOT = { sb_bechuanaland_warren_decision_window_is_valid = yes }
+			NOT = { has_global_variable = sb_bechuanaland_british_alignment_warren_pending_global_var }
+			NOT = { sb_bechuanaland_swa_overlord_is_british_aligned = yes }
+		}
+	}
+
+	option = {
+		name = sb_bechuanaland_corridor.034.a
+		default_option = yes
+		if = {
+			limit = {
+				sb_bechuanaland_warren_decision_window_is_valid = yes
+				has_global_variable = sb_bechuanaland_british_alignment_warren_pending_global_var
+				sb_bechuanaland_swa_overlord_is_british_aligned = yes
+			}
+			s:STATE_BECHUANALAND = { add_claim = c:CAP }
+			s:STATE_GRIQUALAND_WEST = { add_claim = c:CAP }
+			sb_bechuanaland_annex_sgo_and_wbl_to_cap = yes
+			sb_bechuanaland_transfer_dual_corridor_to_cap = yes
+			sb_bechuanaland_finish_warren_attempt = yes
+			sb_bechuanaland_reset_warren_attempt_country_flags = yes
+			sb_bechuanaland_clear_escalation_decision = yes
+			if = { limit = { has_global_variable = sb_bechuanaland_british_alignment_warren_pending_global_var } remove_global_variable = sb_bechuanaland_british_alignment_warren_pending_global_var }
+			sb_bechuanaland_set_british_crisis_victory = yes
+		}
+		ai_chance = { base = 35 }
+	}
+
+	option = {
+		name = sb_bechuanaland_corridor.034.b
+		if = {
+			limit = {
+				sb_bechuanaland_warren_decision_window_is_valid = yes
+				has_global_variable = sb_bechuanaland_british_alignment_warren_pending_global_var
+				sb_bechuanaland_swa_overlord_is_british_aligned = yes
+			}
+			sb_bechuanaland_resolve_warren_without_swa_appeal = yes
+		}
+		ai_chance = {
+			base = 65
+			modifier = {
+				trigger = { c:CAP.army_power_projection > army_power_projection }
+				add = -20
+			}
+		}
+	}
+}
+
+# SGO has entered the British hierarchy. This is a British victory either way;
+# SGO alone decides whether Cape annexation is part of the settlement.
+sb_bechuanaland_corridor.035 = {
+	type = country_event
+	placement = root
+
+	title = sb_bechuanaland_corridor.035.t
+	desc = sb_bechuanaland_corridor.035.d
+	flavor = sb_bechuanaland_corridor.035.f
+
+	event_image = { video = "africa_diplomats_negotiating" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/waving_flag.dds"
+	duration = 3
+
+	immediate = { sb_bechuanaland_save_loc_scopes = yes }
+
+	trigger = {
+		country_definition = cd:SGO
+		has_global_variable = sb_bechuanaland_sgo_annexation_offer_pending_global_var
+		sb_bechuanaland_sgo_is_british_subject = yes
+		c:CAP ?= { is_country_alive = yes is_subject_of = c:GBR }
+		has_global_variable = sb_bechuanaland_corridor_open_global_var
+		NOT = { has_global_variable = sb_bechuanaland_corridor_resolved_global_var }
+	}
+
+	cancellation_trigger = {
+		OR = {
+			NOT = { has_global_variable = sb_bechuanaland_sgo_annexation_offer_pending_global_var }
+			NOT = { sb_bechuanaland_sgo_is_british_subject = yes }
+			NOT = { c:CAP ?= { is_country_alive = yes is_subject_of = c:GBR } }
+			NOT = { has_global_variable = sb_bechuanaland_corridor_open_global_var }
+			has_global_variable = sb_bechuanaland_corridor_resolved_global_var
+		}
+	}
+
+	option = {
+		name = sb_bechuanaland_corridor.035.a
+		default_option = yes
+		if = {
+			limit = {
+				country_definition = cd:SGO
+				has_global_variable = sb_bechuanaland_sgo_annexation_offer_pending_global_var
+				sb_bechuanaland_sgo_is_british_subject = yes
+				c:CAP ?= { is_country_alive = yes is_subject_of = c:GBR }
+				has_global_variable = sb_bechuanaland_corridor_open_global_var
+				NOT = { has_global_variable = sb_bechuanaland_corridor_resolved_global_var }
+			}
+			sb_bechuanaland_set_british_crisis_victory = yes
+			c:CAP ?= {
+				if = {
+					limit = { c:SGO ?= { is_subject = yes NOT = { is_direct_subject_of = c:CAP } } }
+					transfer_subject = c:SGO
+				}
+				annex = c:SGO
+			}
+		}
+		ai_chance = {
+			base = 70
+			modifier = { trigger = { "relations(c:CAP)" >= relations_threshold:friendly } add = 30 }
+			modifier = { trigger = { "relations(c:CAP)" >= relations_threshold:amicable "relations(c:CAP)" < relations_threshold:friendly } add = 20 }
+			modifier = { trigger = { "relations(c:CAP)" >= relations_threshold:cordial "relations(c:CAP)" < relations_threshold:amicable } add = 10 }
+			modifier = { trigger = { "relations(c:CAP)" <= relations_threshold:poor "relations(c:CAP)" > relations_threshold:cold } add = -10 }
+			modifier = { trigger = { "relations(c:CAP)" <= relations_threshold:cold "relations(c:CAP)" > relations_threshold:hostile } add = -20 }
+			modifier = { trigger = { "relations(c:CAP)" <= relations_threshold:hostile } add = -30 }
+			modifier = {
+				trigger = { c:CAP ?= { gdp < { value = root.gdp multiply = 0.9 } } }
+				add = -20
+			}
+			modifier = {
+				trigger = {
+					c:CAP ?= {
+						gdp >= { value = root.gdp multiply = 0.9 }
+						NOT = { gdp > { value = root.gdp multiply = 1.5 } }
+					}
+				}
+				add = -10
+			}
+			modifier = {
+				trigger = { c:CAP ?= { gdp >= { value = root.gdp multiply = 2 } } }
+				add = 10
+			}
+			modifier = {
+				trigger = {
+					army_power_projection > { value = c:CAP.army_power_projection multiply = 1.5 }
+				}
+				add = -20
+			}
+			modifier = {
+				trigger = {
+					army_power_projection > { value = c:CAP.army_power_projection multiply = 0.8 }
+					NOT = { army_power_projection > { value = c:CAP.army_power_projection multiply = 1.5 } }
+				}
+				add = -10
+			}
+			modifier = {
+				trigger = {
+					c:CAP ?= {
+						army_power_projection > { value = root.army_power_projection multiply = 1.5 }
+						NOT = { army_power_projection > { value = root.army_power_projection multiply = 2 } }
+					}
+				}
+				add = 10
+			}
+			modifier = {
+				trigger = {
+					c:CAP ?= { army_power_projection > { value = root.army_power_projection multiply = 2 } }
+				}
+				add = 20
+			}
+		}
+	}
+
+	option = {
+		name = sb_bechuanaland_corridor.035.b
+		if = {
+			limit = {
+				country_definition = cd:SGO
+				has_global_variable = sb_bechuanaland_sgo_annexation_offer_pending_global_var
+				sb_bechuanaland_sgo_is_british_subject = yes
+				c:CAP ?= { is_country_alive = yes is_subject_of = c:GBR }
+				has_global_variable = sb_bechuanaland_corridor_open_global_var
+				NOT = { has_global_variable = sb_bechuanaland_corridor_resolved_global_var }
+			}
+			sb_bechuanaland_set_british_crisis_victory = yes
+		}
+		ai_chance = { base = 30 }
+	}
+}
+
 sb_bechuanaland_corridor.040 = {
 	type = country_event
 	placement = root
@@ -499,6 +705,7 @@ sb_bechuanaland_corridor.040 = {
 		has_global_variable = sb_bechuanaland_corridor_open_global_var
 		NOT = { has_global_variable = sb_bechuanaland_corridor_resolved_global_var }
 		has_global_variable = sb_bechuanaland_british_victory_global_var
+		has_global_variable = sb_bechuanaland_british_settlement_pending_global_var
 	}
 
 	cancellation_trigger = {
@@ -506,6 +713,7 @@ sb_bechuanaland_corridor.040 = {
 			NOT = { has_global_variable = sb_bechuanaland_corridor_open_global_var }
 			has_global_variable = sb_bechuanaland_corridor_resolved_global_var
 			NOT = { has_global_variable = sb_bechuanaland_british_victory_global_var }
+			NOT = { has_global_variable = sb_bechuanaland_british_settlement_pending_global_var }
 		}
 	}
 
@@ -517,6 +725,7 @@ sb_bechuanaland_corridor.040 = {
 				has_global_variable = sb_bechuanaland_corridor_open_global_var
 				NOT = { has_global_variable = sb_bechuanaland_corridor_resolved_global_var }
 				has_global_variable = sb_bechuanaland_british_victory_global_var
+				has_global_variable = sb_bechuanaland_british_settlement_pending_global_var
 			}
 			sb_bechuanaland_apply_british_settlement = yes
 		}
