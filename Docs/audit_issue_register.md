@@ -1,58 +1,62 @@
-# Current Known Issues
+﻿# Repository Audit Issue Register
 
 **Audit date:** 2026-08-06  
-**Baseline:** `main` at `e5706779e0d9fed7f93d930301c5e8162ea09f05`, plus the ten then-uncommitted Bechuanaland files  
+**Original audit baseline:** `e5706779e0d9fed7f93d930301c5e8162ea09f05` plus ten Bechuanaland files, committed as `45d804a069721db82bfa38d36f6e076ecee9a076`
+**Remediation pass:** uncommitted changes against `45d804a069721db82bfa38d36f6e076ecee9a076`
 **Target:** Victoria 3 `1.13.9`; Community Mod Framework `1.58.2`
 
-This is a fresh, repository-wide static audit with additional scrutiny on the Bechuanaland Corridor/Crisis rewrite. It is a best-effort issue inventory, not a guarantee that every runtime defect has been found. The audit was read-only; this document is the only file created by it.
+This maintained register records open, resolved, runtime-check, performance, and code-quality findings from a repository-wide static audit, with additional scrutiny on the Bechuanaland Corridor/Crisis rewrite. It is a best-effort inventory, not a guarantee that every runtime defect has been found. The original audit was read-only; later remediation status is recorded explicitly below.
 
 ## Labels
 
+- **Resolved**: corrected in code and statically validated; any outstanding engine playtest is stated.
 - **Confirmed**: directly demonstrated by control flow, data comparison, validator output, or current 1.13.9 logs.
 - **Runtime check**: static evidence is strong, but the exact engine response still needs an isolated playtest.
+- **Very High**: confirmed release blocker below Critical because its reach is narrower.
 - **Design/UX**: script behavior and player-facing text or apparent intent disagree; the engine may still execute the script as written.
 - **Tooling/noise**: affects validation or maintenance rather than live gameplay.
 
-## Highest-priority items
+Severity order: **Critical → Very High → High → Medium → Low**.
 
-1. Bechuanaland escalation event windows can overwrite one another or launch a war after the situation has resolved (`BC-01`).
-2. The Zoutpansberg crackdown JE auto-activates before the event that is meant to choose it (`GP-01`).
-3. Bechuanaland white peace and mixed treaties are converted into arbitrary full settlements (`BC-03`).
-4. Legacy Bechuanaland war routes can permanently lock the JE (`BC-05`).
-5. Several other JEs auto-activate before their intended introductory choice/events (`GP-02`, `GP-03`).
-6. Responsible-government requests use the requesting subject where the overlord is required (`GP-06`).
-7. Xhosa frontier pressure and Namibia punishment effects are applied with incorrect country/owner scoping (`GP-04`, `GP-05`).
-8. Several hard global overrides have drifted from Vanilla 1.13.9 outside Southern Africa (`CP-01` through `CP-06`).
-9. STA has no defined CoA, one reachable event description is missing, and the requester-side responsible-government lens icon is absent (`SUP-01`, `SUP-02`, `SUP-04`).
-10. The current map/spline package produces adjacency and route-strip errors on an otherwise isolated 1.13.9 load (`SUP-05`).
+**No open Critical findings remain after this pass.**
+
+## Highest-priority open items
+
+1. Bechuanaland white peace and mixed treaties are converted into arbitrary full settlements (`BC-03`).
+2. Legacy Bechuanaland war routes can permanently lock the JE (`BC-05`).
+3. East Transvaal and Gaza JEs auto-activate before their intended introductory choices/events (`GP-02`, `GP-03`).
+4. Responsible-government requests use the requesting subject where the overlord is required (`GP-06`).
+5. Xhosa frontier pressure and Namibia punishment effects are applied with incorrect country/owner scoping (`GP-04`, `GP-05`).
+6. Several hard global overrides have drifted from Vanilla 1.13.9 outside Southern Africa (`CP-01` through `CP-06`).
+7. STA has no defined CoA, one reachable event description is missing, and the requester-side responsible-government lens icon is absent (`SUP-01`, `SUP-02`, `SUP-04`).
+8. The current map/spline package produces adjacency and route-strip errors on an otherwise isolated 1.13.9 load (`SUP-05`).
 
 ---
 
 ## A. Bechuanaland Corridor/Crisis
 
-### BC-01 — Critical — stale escalation windows can overwrite or revive a resolved crisis
+### BC-01 — Resolved (formerly Critical) — escalation windows can no longer overwrite or revive a resolved crisis
 
-**Confirmed.** The escalation lock in `common/scripted_triggers/sb_bechuanaland_corridor_triggers.txt:101-108` is set only after an event option queues a route. Warren and Caprivi events are three-day popups, and their triggers/options do not recheck that the corridor is open, unresolved, and escalation-free (`events/sb_bechuanaland_corridor_events.txt:31-335`).
+**Fixed in this pass; targeted engine playtest remains.** Each Warren or Caprivi escalation is now reserved atomically at button-effect time with an exclusive, route-specific 30-day decision lease. Delayed-event triggers, cancellation guards, option effects, and queue transitions revalidate the matching lease and the live corridor state before changing land, influence, war, or route state. Queueing consumes the lease before establishing the sole pending route; terminal choices and crisis cleanup clear it. Natural JE resolution is deferred during the lease, and queued launch validation now rejects a resolved or victory-marked corridor.
 
-Consequences:
-
-- Warren and Caprivi chains can be open together.
-- A later choice starts by clearing and replacing the earlier pending route (`common/scripted_effects/sb_bechuanaland_corridor_effects.txt:938-982`).
-- A popup left open until after natural settlement can queue a new crisis; neither queue/core validation requires the corridor to remain open and unresolved (`effects:938-982,1165-1214`; `triggers:110-136`).
+Static control-flow validation confirms that a stale/cancelled window cannot clear or replace another queued route or relaunch a terminal corridor. Runtime tests should still cover simultaneous button attempts, held-open popups, lease expiry, participant death/overlord change, and save/load at each transition.
 
 ### BC-02 — High — Boer choice event can be dispatched repeatedly
 
 **Confirmed.** The `.032` dispatch flag lasts 15 days (`effects:1180-1187`), but `.032` is a duration-three event (`events:337-377`) and the monthly retry calls the launch effect again. An unanswered player popup can therefore be redispatched, leaving competing support/neutrality choices.
 
-### BC-03 — High — white peace and mixed treaty outcomes become arbitrary full settlements
+### BC-03 — Very High — white peace and mixed treaty outcomes become arbitrary full settlements
 
 **Confirmed.** Both new diplomatic plays allow negotiated peace (`common/diplomatic_plays/sb_diplomatic_plays.txt:351-406`). Enforcement records only whether any holder on either marked side enforced any goal (`effects:1263-1282`). At war end, neither side flagged or both sides flagged falls through by route: direct becomes a British victory and proxy becomes a Boer/SWA victory (`effects:1285-1317`). The chosen full subject/claim settlement then runs even if no relevant goal, or mutually contradictory goals, were enforced. Comparable Vanilla locked packages disable negotiated peace.
+
+**Depro's comments:** So I think the flow should be like (for both proxy or direct):
+White peace (caprivi ± boers, warren + SWA/O involvement) -> fire event "unresolved settlement" -> all claims on botswana are dropped and JE is closed
 
 ### BC-04 — High — international-JE AI weights run in `none` scope
 
 **Confirmed by current logs.** The JE is global/international (`common/journal_entries/1-11_sb_bechuanaland_corridor.txt:3-4,26-30`), but button AI weights call country triggers without an explicit country scope (`common/scripted_buttons/sb_bechuanaland_corridor_buttons.txt:64-66,117-119`). Current `error.1.log` reports `has_strategy`, `gold_reserves`, and `net_fixed_income` in `none` scope. The intended subsidy/trade-mission AI weighting is not functioning.
 
-### BC-05 — High — legacy no-intervention war routes can permanently freeze the JE
+### BC-05 — Very High — legacy no-intervention war routes can permanently freeze the JE
 
 **Confirmed control-flow defect; one launch subcase needs runtime confirmation.** `.020.c` starts CAP-versus-SGO annexation and `.021.c` starts the CAP dual-return route (`events:149-166,220-234`). Their helpers can set the global active flag before or without verifying that a play was created (`effects:819-827,1320-1329,1383-1428`).
 
@@ -60,6 +64,8 @@ Consequences:
 - White peace also leaves it indefinitely because the new war-end resolver handles only direct/proxy routes, while the legacy hooks handle only backdown or enforced goals.
 - The JE now blocks both territorial resolutions while that flag exists (`journal:55-65,85-94`).
 - CAP begins as a colony whose subject type normally cannot start its own play, so `.020.c` is a required playtest case.
+
+**Depro's comments:** "CAP begins as a colony whose subject type normally cannot start its own play, so `.020.c` is a required playtest case." -> I have tested this previously it works if via scripts / events, e.g. in the diamond arc. Also the dp's in this case for both CAP-versus-SGO should be 'return state' (reciprocally). White peace should fire event "unresolved settlement" -> all claims on botswana (not Benechualand) are dropped and JE is closed. 
 
 ### BC-06 — High — generic legacy hooks can resolve the corridor from an unrelated war
 
@@ -147,27 +153,33 @@ Evidence: `localization/english/sb_bechuanaland_corridor_l_english.yml:45-48,67-
 
 ## B. Other gameplay systems
 
-### GP-01 — Critical — Zoutpansberg crackdown JE preempts its own choice event
+### GP-01 — Resolved (formerly Critical) — the Zoutpansberg crackdown JE no longer preempts its choice event
 
-**Confirmed.** `je_sb_zpb_crackdown` becomes possible from independent TRN plus living ZPB without requiring `sb_zpb_crackdown_active_var` (`common/journal_entries/1-05_sb_transvaal_unity.txt:203-209`). The event is supposed to set that flag and add the JE (`events/sb_boer_conventions_events.txt:604-617`), while its scheduler explicitly requires that the JE not already exist (`common/on_actions/sb_on_actions.txt:2084-2104`). Automatic activation therefore blocks the lawlessness choice and can later time out without its branch setup.
+**Fixed in this pass.** The JE now requires `sb_zpb_crackdown_active_var`, mirroring the adjacent unity branch. Only the crackdown choice sets that flag before its guarded explicit JE addition, so the monthly scheduler can present the intended lawlessness choice and establish the claim/branch state first. Static validation confirms that the frontier-unity choice does not satisfy the gate and valid active-without-JE states still self-repair through automatic activation.
 
-### GP-02 — High — East Transvaal pacification JE preempts the frontier-republic choice
+Already-poisoned legacy saves containing the crackdown JE without its active flag are not silently migrated into either branch; that separate save-migration decision remains outside this forward fix.
+
+### GP-02 — Very High — East Transvaal pacification JE preempts the frontier-republic choice
 
 **Confirmed.** Its `possible` block omits `has_modifier = sb_trek_frontier_republic` (`1-05_sb_transvaal_unity.txt:438-444`). Event `.130.b` is meant to grant that modifier, claim the state, and add the JE (`events/sb_boer_republics_events.txt:278-302`). Because the JE can already exist, that guarded setup is skipped; the catch-up path correctly requires the modifier (`on_actions:1782-1792`).
 
-### GP-03 — High — Gaza consolidation JE preempts its introduction and grace period
+**Depro's comments:** yes `.130.b` should be the main / only driver of creating je_sb_pacifying_eastern_transvaal
+
+### GP-03 — Very High — Gaza consolidation JE preempts its introduction and grace period
 
 **Confirmed.** The JE can activate directly and seed itself (`common/journal_entries/1-09_sb_eastern_sphere.txt:19-54`). Both the intro scheduler and event require no existing JE; the event is meant to set `sb_gaza_consolidation_grace_var` and add it (`common/scripted_effects/sb_eastern_sphere_effects.txt:1260-1277`; `events/sb_gaza_events.txt:16-38`). The complete check depends on that missing grace. An early save already shows the JE active on 1836-01-02 without the intro-scheduled marker.
 
-### GP-04 — High — Xhosa frontier pressure is removed by almost every country pulse
+**Depro's comments:** Yes this is wrong, the event should fire on day 1 or 2 (however the engine handles it) and then creates the JE via its button, after which the events occur. 
+
+### GP-04 — Very High — Xhosa frontier pressure is removed by almost every country pulse
 
 **Confirmed.** Country monthly pulse adds the modifier when current ROOT owns the qualifying Eastern Cape state, but its paired `else` removes it from XHO (`common/on_actions/sb_on_actions.txt:803-848`). Since ROOT is each country in turn, nearly every country removes it; final state is iteration-order dependent.
 
-### GP-05 — High — Namibia punishment applies one country's atrocities to every owner's partition
+### GP-05 — Very High — Namibia punishment applies one country's atrocities to every owner's partition
 
 **Confirmed.** Events `.200` and `.201` are triggered by ROOT-specific law/movement conditions, then loop every state in Namaqualand/Hereroland without `owner = ROOT` (`events/sb_namibia_events.txt:1442-1481,1529-1570`). Rival colonial partitions and independent Nama/Herero land receive ROOT's forced-camp/extermination effects. The monthly caller does not require full-region ownership.
 
-### GP-06 — High — subject-requested responsible government uses the wrong country scope
+### GP-06 — Very High — subject-requested responsible government uses the wrong country scope
 
 **Confirmed by control flow and runtime log.** In `sb_ask_responsible_government`, ROOT/actor is the requesting subject. The accept effect changes relations with `scope:actor` (self) and calls helpers that inspect `scope:actor` as though it were the overlord (`common/diplomatic_actions/sb_subject_autonomy_actions.txt:157-166`; `common/scripted_effects/sb_subject_autonomy_effects.txt:13-20,38-85`). Non-British government/subject type can be selected from the subject's laws; the relation change is a self-target/no-op. Vanilla's analogous requester action enters the target/overlord scope.
 
@@ -405,7 +417,7 @@ These were not promoted to confirmed defects:
 5. `sb_revoke_oranje_griqualand_claim` can remain valid if ORA disappears midwar but may enforce nothing without the TRN federation marker.
 6. MZQ territory transfer is direct-owner-only and does not collect land held by subordinate administrations; confirm this is intended.
 7. The SGO restraint patch cannot cancel a transfer-subject play already started before the next monthly refresh.
-8. Highest-value Bechuanaland runtime scenarios are BC-01/02/03/05/10/13/15/16 plus SGO/SWA alignment changes during pending routes.
+8. Highest-value Bechuanaland runtime scenarios are the resolved-BC-01 regression matrix plus BC-02/03/05/10/13/15/16 and SGO/SWA alignment changes during pending routes.
 
 ---
 
@@ -414,17 +426,19 @@ These were not promoted to confirmed defects:
 ### Passed
 
 - `git diff --check`.
-- Independent Clausewitz brace/quote scan.
+- Independent repository-wide Clausewitz brace/quote scan.
+- Targeted control-flow assertions for lease acquisition, delayed-event cancellation/effect guards, queue validation, live-state launch rejection, GP-01 gating, singleton Delagoa ownership, and active-gated Imperial synchronization.
 - `python3 tools/check_state_region_hub_impassables.py`.
-- Localization BOM/header/UTF-8 checks.
+- Changed-file BOM/UTF-8 checks.
+- Tiger reported no errors or scope warnings in the changed gameplay files; its one changed-file warning is the known CMF GUI dependency false positive.
 - Explicit asset reference scan: no missing literal gfx paths.
 - State/province membership, state-ID collision, terrain/image-palette, and locator ID count/uniqueness checks.
-- Current 1.13.9 startup parses the new Bechuanaland diplomatic-play/effect/on-action syntax; no unknown-effect/trigger/parser error was found for the rewrite.
+- The pre-remediation 1.13.9 startup parsed the Bechuanaland diplomatic-play/effect/on-action rewrite without an unknown-effect/trigger/parser error. The new decision-lease paths still require the targeted engine regression noted under `BC-01`.
 
 ### Failed or diagnostic
 
 - Resource pipeline: 82 pass, one aggregate failure covering 12 mismatches.
-- Tiger: `0 fatal, 16 errors, 53 warnings, 2 untidy`.
+- Tiger after this pass: `0 fatal, 16 errors, 53 warnings, 0 untidy`; the 16 errors remain the known 1.13.5-schema noise below.
 - Current logs: missing Griqualand description, duplicate `Spies`, missing requester lens icon, four never-set variables, map adjacency/spline errors, and Bechuanaland button AI wrong-scope errors.
 
 ### Known validator/external noise
@@ -437,14 +451,14 @@ These were not promoted to confirmed defects:
 
 ## Suggested triage order
 
-1. Lock/revalidate Bechuanaland event windows and make war-end settlement goal-specific.
-2. Fix JE auto-activation gates (`GP-01` to `GP-03`).
+1. Make Bechuanaland war-end settlement goal-specific and repair the legacy no-intervention lock (`BC-03`, `BC-05`).
+2. Fix the remaining JE auto-activation gates (`GP-02`, `GP-03`).
 3. Repair country/owner scoping (`BC-04`, `GP-04` to `GP-06`).
-4. Harden legacy Bechuanaland route identity and cleanup.
+4. Harden remaining legacy Bechuanaland route identity and cleanup.
 5. Rebase global Vanilla replacements and document third-party load-order constraints.
 6. Fix the small runtime-visible support defects (STA CoA, missing loc, lens icon, named color).
 7. Regenerate/reconcile map locator/spline output and resource audit/live data.
-8. Run the explicit Bechuanaland and delayed-event playtest queue before release.
+8. Run the resolved-BC-01 and other delayed-event playtest queues before release.
 
 
 ---
@@ -453,19 +467,15 @@ These were not promoted to confirmed defects:
 
 This pass is structural: recurring work and asymptotic shape are confirmed from script, but no engine wall-time profiler was available. One-shot startup effects, event option effects, and static map loading were not treated as performance defects merely because they are large.
 
-### PERF-01 — Critical — Delagoa maintenance becomes quadratic in live-country count
+### PERF-01 — Resolved (formerly Critical) — Delagoa maintenance has one global monthly owner
 
-**Confirmed.** A correct once-per-world monthly path already exists (`common/on_actions/sb_mineral_discoveries_on_actions.txt:9-10,211-214` -> `common/scripted_effects/sb_eastern_sphere_effects.txt:713-743`). Substantially identical repair/enrollment logic is repeated at `sb_eastern_sphere_effects.txt:1300-1340` inside `sb_eastern_sphere_monthly_housekeeping`, which is called once for every country (`common/on_actions/sb_on_actions.txt:56-58,454-457`). Its `any_country` and `every_country` scans therefore run N times per month, in addition to the singleton global copy. While a gateway remains open with incomplete actors, this is O(N²)-shaped work.
+**Fixed structurally in this pass; no wall-time profiler was available.** Root-independent Delagoa stale-state repair and actor enrollment remain on `sb_on_monthly_pulse` through `sb_delagoa_route_monthly_open_check`. The duplicate repair, root enrollment, and global `any_country`/`every_country` enrollment block was removed from per-country eastern-sphere housekeeping. The O(N²)-shaped country fan-out is no longer present; genuinely actor-relative AI railway and treaty work remains on the country pulse.
 
-**Direction:** retain one global monthly owner. Remove the root-independent Delagoa block from country housekeeping; keep only actor-relative work behind an early actor gate.
+### PERF-02 — Resolved (formerly Critical) — Imperial Confederation monthly maintenance is consolidated and active-gated
 
-### PERF-02 — Critical — Imperial Confederation performs about eight to nine full-country passes in an active month
+**Fixed structurally in this pass; no wall-time profiler was available.** GBR country-monthly housekeeping is now the sole recurring owner. After the unlock watchdog, a named phase gate suppresses all recurring work while dormant or terminal; failure is checked first and the active state is revalidated before synchronization. Owner-JE repair now direct-scopes GBR and no longer validates or recounts internally. Involvement validation and subject counting each run once, bar setters consume cached values, and sea-access maintenance runs once.
 
-**Confirmed.** GBR housekeeping calls ensure/validate/sync/update (`sb_eastern_sphere_effects.txt:1252-1258`). The ensure helper already counts participants, scans for an owner, validates involvement, and syncs/counts again (`:1079-1097`). Housekeeping repeats validate and sync; the JE repeats both on its own monthly pulse (`common/journal_entries/1-09_sb_eastern_sphere.txt:216-220`). Validation and counting each use `every_country` (`effects:1100-1167`), while failure and sea-access maintenance add `any_country` scans.
-
-Two full scans also run from 1836 because outer validate/sync calls are not gated by unlocked/active/unresolved state. Existing terminal-cleanup defect `GP-14` makes this permanent after success/failure.
-
-**Direction:** one active-gated composite monthly pass owned by either GBR or the JE, not both. Count and validate participants once; setters should consume cached values rather than recount. Event-drive involvement changes and use quarterly/yearly repair where possible.
+The duplicate JE monthly pulse was removed; its `immediate` block remains as event-driven initialization with an explicit validate/count/apply order. Distinct failure and sea-access watchdog scans remain because they enforce separate semantics, but the repeated eight-to-nine-pass maintenance path and pre-unlock validation/count scans are gone. `GP-14` remains an independent terminal-cleanup issue rather than a recurring-work owner.
 
 ### PERF-03 — High — play-start handler is rerun on every side join and queues duplicate deployment trains
 
@@ -583,13 +593,11 @@ Event files specifically are also healthy in size: SB median 413/max 2,363; Morg
 6. **Localization structure is healthy.** Active English files have correct BOM/header/UTF-8 structure and no internal duplicate keys.
 7. **Explicit override naming is directionally good.** `zz_sb_*_override` plus `REPLACE:` is more discoverable than silent generic-name collisions.
 
-### QUAL-01 — Critical maintainability risk — scope and state-machine contracts are implicit
+### QUAL-01 — Resolved for the agreed scope (formerly Critical maintainability risk) — Bechuanaland lifecycle and scope contracts are explicit
 
-The Bechuanaland state machine spans a 1,752-line near-commentless effect file, triggers, buttons, a global JE, events, progress bar, and on-actions. At least 46 Bechuanaland variables/saved scopes participate, but there is no transition table, authoritative phase value, invariants, or terminal-path matrix. Four near-duplicate queue transitions live at `common/scripted_effects/sb_bechuanaland_corridor_effects.txt:938-982`; validation and popup state live elsewhere. The functional failures in `BC-01` through `BC-21` are the practical consequence.
+**Scope-limited resolution.** The Bechuanaland state machine touched by this pass now documents its authoritative decision, queued-crisis, active-war, and terminal phases; route/lease ownership; required ROOT and saved-scope expectations; transition guards; and cleanup owner. The BC-01 implementation enforces those contracts through live-state predicates, atomic route-specific decision leases, event cancellation/effect guards, queue validation, and terminal cleanup.
 
-More broadly, nontrivial helpers rarely declare expected ROOT, required named scopes, outputs, idempotence, or cleanup owner. This makes implicit `root`, `PREV`, `scope:actor`, and contextless-JE behavior difficult to review and has already produced `BC-04`, `GP-04`, `GP-05`, and `GP-06`.
-
-**Best practice:** add a short contract above every public nontrivial effect/trigger/on-action: caller/root type, required/optional scopes, variables set/cleared, idempotence, and allowed transitions. For long chains, use one authoritative phase/route value, guarded transition helpers, and one idempotent finalizer covering complete/fail/cancel/backdown/white peace.
+This does not claim that every legacy helper in the repository now has a formal contract. Broader ROOT/`PREV`/named-scope documentation, a full transition table, selective queue deduplication, and one idempotent finalizer remain non-blocking maintenance guidance; the independent functional findings below remain open at their recorded severities.
 
 ### QUAL-02 — High — router ownership is hard to audit
 
@@ -693,10 +701,10 @@ SB is **readable at the feature/file level but not yet reliably auditable across
 
 ### Maintainability priority order
 
-1. Fix `PERF-01`/`PERF-02` and the scope/state defects while introducing explicit contracts.
-2. Split the on-action router at existing feature boundaries and add early gates.
-3. Generate and enforce the override/upstream-delta manifest.
-4. Build one portable nonzero-on-failure validation entry point and CI.
-5. Centralize repeated invariants/transitions; selectively parameterize only clear repetitions.
+1. Split the on-action router at existing feature boundaries and add early gates.
+2. Generate and enforce the override/upstream-delta manifest.
+3. Build one portable nonzero-on-failure validation entry point and CI.
+4. Centralize repeated invariants/transitions; selectively parameterize only clear repetitions.
+5. Extend explicit scope/lifecycle contracts beyond the Bechuanaland paths touched here.
 6. Triage dead code with a save/API allowlist, then remove decided scaffolding.
 7. Reconcile README/compatibility/metadata and complete localization proofreading.

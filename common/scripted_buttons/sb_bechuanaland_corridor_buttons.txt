@@ -160,7 +160,11 @@ je_sb_bechuanaland_send_warren_expedition_button = {
 	}
 
 	effect = {
-		sb_bechuanaland_prepare_cap_warren_demand = yes
+		if = {
+			limit = { sb_bechuanaland_crisis_escalation_available = yes }
+			sb_bechuanaland_reserve_warren_decision = yes
+			sb_bechuanaland_prepare_cap_warren_demand = yes
+		}
 	}
 }
 
@@ -192,8 +196,11 @@ je_sb_bechuanaland_gbr_direct_warren_button = {
 	}
 
 	effect = {
-		set_variable = sb_bechuanaland_gbr_warren_sent_var
-		sb_bechuanaland_prepare_gbr_warren_demand = yes
+		if = {
+			limit = { sb_bechuanaland_crisis_escalation_available = yes }
+			sb_bechuanaland_reserve_warren_decision = yes
+			sb_bechuanaland_prepare_gbr_warren_demand = yes
+		}
 	}
 }
 
@@ -234,8 +241,16 @@ je_sb_bechuanaland_demand_caprivi_button = {
 	}
 
 	effect = {
-		set_variable = sb_bechuanaland_caprivi_demanded_var
-		c:GBR ?= { trigger_event = { id = sb_bechuanaland_corridor.030 days = 3 popup = yes } }
+		if = {
+			limit = {
+				sb_bechuanaland_crisis_escalation_available = yes
+				exists = c:GBR
+				c:GBR ?= { is_country_alive = yes }
+			}
+			sb_bechuanaland_reserve_caprivi_decision = yes
+			set_variable = sb_bechuanaland_caprivi_demanded_var
+			c:GBR ?= { trigger_event = { id = sb_bechuanaland_corridor.030 days = 3 popup = yes } }
+		}
 	}
 }
 

@@ -1,4 +1,15 @@
 ﻿# Spes Bona - Bechuanaland Corridor / Caprivi Crisis effects
+#
+# Lifecycle contract
+# - Button/preparation effects run in the acting country scope.
+# - A delayed Warren/Caprivi chain owns
+#   sb_bechuanaland_crisis_decision_pending_global_var.
+# - Queue effects run in the current SWA-sponsor scope, consume that decision
+#   reservation, remember their required scopes, and become the sole pending route.
+# - Launch effects consume the pending route only after all participants validate.
+# - Settlement/skip effects own terminal cleanup and must remove every phase lock.
+# Saved/global country scopes are refreshed before use; callers must not retain PREV
+# across delayed events.
 
 sb_bechuanaland_save_loc_scopes = {
 	c:GBR ?= { if = { limit = { is_country_alive = yes } save_scope_as = sb_gbr_scope } }
@@ -683,6 +694,26 @@ sb_bechuanaland_make_tsw_subject_of_cap = {
 	}
 }
 
+# ROOT = country dispatching the delayed decision event. The lease exceeds both
+# three-day popup windows but expires if a recipient or follow-up event disappears.
+sb_bechuanaland_reserve_warren_decision = {
+	set_global_variable = { name = sb_bechuanaland_crisis_decision_pending_global_var days = 30 }
+	set_global_variable = { name = sb_bechuanaland_warren_decision_pending_global_var days = 30 }
+}
+
+sb_bechuanaland_reserve_caprivi_decision = {
+	set_global_variable = { name = sb_bechuanaland_crisis_decision_pending_global_var days = 30 }
+	set_global_variable = { name = sb_bechuanaland_caprivi_decision_pending_global_var days = 30 }
+}
+
+# Root-agnostic; used by terminal choices, queues, cancellation repair, and cleanup.
+sb_bechuanaland_clear_escalation_decision = {
+	if = { limit = { has_global_variable = sb_bechuanaland_crisis_decision_pending_global_var } remove_global_variable = sb_bechuanaland_crisis_decision_pending_global_var }
+	if = { limit = { has_global_variable = sb_bechuanaland_warren_decision_pending_global_var } remove_global_variable = sb_bechuanaland_warren_decision_pending_global_var }
+	if = { limit = { has_global_variable = sb_bechuanaland_caprivi_decision_pending_global_var } remove_global_variable = sb_bechuanaland_caprivi_decision_pending_global_var }
+}
+
+# ROOT = CAP under a caller-held Warren lease; dispatches the current recipient.
 sb_bechuanaland_prepare_cap_warren_demand = {
 	if = {
 		limit = {
@@ -713,6 +744,9 @@ sb_bechuanaland_prepare_cap_warren_demand = {
 		}
 		c:CAP ?= { set_variable = sb_bechuanaland_cap_warren_sent_var }
 	}
+	else = {
+		sb_bechuanaland_clear_escalation_decision = yes
+	}
 }
 
 sb_bechuanaland_repair_stalled_cap_warren_dispatch = {
@@ -734,6 +768,7 @@ sb_bechuanaland_repair_stalled_cap_warren_dispatch = {
 	}
 }
 
+# ROOT = GBR under a caller-held Warren lease; dispatches the current recipient.
 sb_bechuanaland_prepare_gbr_warren_demand = {
 	s:STATE_BECHUANALAND = { add_claim = c:CAP }
 	s:STATE_GRIQUALAND_WEST = { add_claim = c:CAP }
@@ -750,6 +785,7 @@ sb_bechuanaland_prepare_gbr_warren_demand = {
 			}
 			set_variable = sb_bechuanaland_gbr_warren_demand_var
 			trigger_event = { id = sb_bechuanaland_corridor.010 days = 3 popup = yes }
+			c:GBR ?= { set_variable = sb_bechuanaland_gbr_warren_sent_var }
 		}
 	}
 	else_if = {
@@ -765,6 +801,7 @@ sb_bechuanaland_prepare_gbr_warren_demand = {
 			}
 			set_variable = sb_bechuanaland_gbr_warren_demand_var
 			trigger_event = { id = sb_bechuanaland_corridor.010 days = 3 popup = yes }
+			c:GBR ?= { set_variable = sb_bechuanaland_gbr_warren_sent_var }
 		}
 	}
 	else_if = {
@@ -780,6 +817,7 @@ sb_bechuanaland_prepare_gbr_warren_demand = {
 		c:TRN ?= {
 			set_variable = sb_bechuanaland_gbr_warren_demand_var
 			trigger_event = { id = sb_bechuanaland_corridor.010 days = 3 popup = yes }
+			c:GBR ?= { set_variable = sb_bechuanaland_gbr_warren_sent_var }
 		}
 	}
 	else_if = {
@@ -796,23 +834,41 @@ sb_bechuanaland_prepare_gbr_warren_demand = {
 		c:ORA ?= {
 			set_variable = sb_bechuanaland_gbr_warren_demand_var
 			trigger_event = { id = sb_bechuanaland_corridor.010 days = 3 popup = yes }
+			c:GBR ?= { set_variable = sb_bechuanaland_gbr_warren_sent_var }
 		}
+	}
+	else = {
+		sb_bechuanaland_clear_escalation_decision = yes
 	}
 }
 
+# ROOT = Warren recipient. The delayed chain retains its decision reservation
+# while control passes to the current SWA sponsor.
 sb_bechuanaland_prepare_swa_intervention_choice = {
-	every_country = {
-		limit = { sb_bechuanaland_swa_overlord_candidate = yes }
-		if = {
-			limit = { root = { has_variable = sb_bechuanaland_cap_warren_demand_var } }
-			set_variable = sb_bechuanaland_cap_warren_refusal_var
-			trigger_event = { id = sb_bechuanaland_corridor.020 days = 3 popup = yes }
+	if = {
+		limit = {
+			any_country = { sb_bechuanaland_swa_overlord_candidate = yes }
+			OR = {
+				has_variable = sb_bechuanaland_cap_warren_demand_var
+				has_variable = sb_bechuanaland_gbr_warren_demand_var
+			}
 		}
-		else_if = {
-			limit = { root = { has_variable = sb_bechuanaland_gbr_warren_demand_var } }
-			set_variable = sb_bechuanaland_gbr_warren_refusal_var
-			trigger_event = { id = sb_bechuanaland_corridor.021 days = 3 popup = yes }
+		every_country = {
+			limit = { sb_bechuanaland_swa_overlord_candidate = yes }
+			if = {
+				limit = { root = { has_variable = sb_bechuanaland_cap_warren_demand_var } }
+				set_variable = sb_bechuanaland_cap_warren_refusal_var
+				trigger_event = { id = sb_bechuanaland_corridor.020 days = 3 popup = yes }
+			}
+			else_if = {
+				limit = { root = { has_variable = sb_bechuanaland_gbr_warren_demand_var } }
+				set_variable = sb_bechuanaland_gbr_warren_refusal_var
+				trigger_event = { id = sb_bechuanaland_corridor.021 days = 3 popup = yes }
+			}
 		}
+	}
+	else = {
+		sb_bechuanaland_clear_escalation_decision = yes
 	}
 }
 
@@ -827,6 +883,7 @@ sb_bechuanaland_mark_boer_swa_war_side = {
 }
 
 sb_bechuanaland_clear_pending_crisis_flags = {
+	sb_bechuanaland_clear_escalation_decision = yes
 	if = { limit = { has_global_variable = sb_bechuanaland_crisis_escalation_pending_global_var } remove_global_variable = sb_bechuanaland_crisis_escalation_pending_global_var }
 	if = { limit = { has_global_variable = sb_bechuanaland_crisis_direct_route_global_var } remove_global_variable = sb_bechuanaland_crisis_direct_route_global_var }
 	if = { limit = { has_global_variable = sb_bechuanaland_crisis_proxy_route_global_var } remove_global_variable = sb_bechuanaland_crisis_proxy_route_global_var }
@@ -935,50 +992,78 @@ sb_bechuanaland_refresh_crisis_launch_participants = {
 	}
 }
 
+# ROOT = current SWA sponsor; valid Warren decision lease required.
 sb_bechuanaland_queue_warren_direct_crisis = {
-	sb_bechuanaland_clear_pending_crisis_flags = yes
-	sb_bechuanaland_clear_crisis_participant_markers = yes
-	sb_bechuanaland_remember_crisis_swa_overlord = yes
-	sb_bechuanaland_shift_swa_influence_50 = yes
-	set_global_variable = sb_bechuanaland_crisis_escalation_pending_global_var
-	set_global_variable = sb_bechuanaland_crisis_direct_route_global_var
-	set_global_variable = sb_bechuanaland_crisis_boer_support_global_var
-	sb_bechuanaland_try_launch_pending_crisis = yes
+	if = {
+		limit = {
+			sb_bechuanaland_warren_decision_window_is_valid = yes
+			sb_bechuanaland_swa_overlord_candidate = yes
+		}
+		sb_bechuanaland_clear_pending_crisis_flags = yes
+		sb_bechuanaland_clear_crisis_participant_markers = yes
+		sb_bechuanaland_remember_crisis_swa_overlord = yes
+		sb_bechuanaland_shift_swa_influence_50 = yes
+		set_global_variable = sb_bechuanaland_crisis_escalation_pending_global_var
+		set_global_variable = sb_bechuanaland_crisis_direct_route_global_var
+		set_global_variable = sb_bechuanaland_crisis_boer_support_global_var
+		sb_bechuanaland_try_launch_pending_crisis = yes
+	}
 }
 
+# ROOT = current SWA sponsor; valid Warren decision lease required.
 sb_bechuanaland_queue_warren_proxy_crisis = {
-	sb_bechuanaland_clear_pending_crisis_flags = yes
-	sb_bechuanaland_clear_crisis_participant_markers = yes
-	sb_bechuanaland_remember_crisis_swa_overlord = yes
-	sb_bechuanaland_shift_swa_influence_25 = yes
-	set_global_variable = sb_bechuanaland_crisis_escalation_pending_global_var
-	set_global_variable = sb_bechuanaland_crisis_proxy_route_global_var
-	set_global_variable = sb_bechuanaland_crisis_boer_support_global_var
-	sb_bechuanaland_try_launch_pending_crisis = yes
+	if = {
+		limit = {
+			sb_bechuanaland_warren_decision_window_is_valid = yes
+			sb_bechuanaland_swa_overlord_candidate = yes
+		}
+		sb_bechuanaland_clear_pending_crisis_flags = yes
+		sb_bechuanaland_clear_crisis_participant_markers = yes
+		sb_bechuanaland_remember_crisis_swa_overlord = yes
+		sb_bechuanaland_shift_swa_influence_25 = yes
+		set_global_variable = sb_bechuanaland_crisis_escalation_pending_global_var
+		set_global_variable = sb_bechuanaland_crisis_proxy_route_global_var
+		set_global_variable = sb_bechuanaland_crisis_boer_support_global_var
+		sb_bechuanaland_try_launch_pending_crisis = yes
+	}
 }
 
+# ROOT = current SWA sponsor; valid Caprivi decision lease required.
 sb_bechuanaland_queue_caprivi_direct_crisis = {
-	sb_bechuanaland_clear_pending_crisis_flags = yes
-	sb_bechuanaland_clear_crisis_participant_markers = yes
-	sb_bechuanaland_remember_crisis_swa_overlord = yes
-	sb_bechuanaland_shift_swa_influence_50 = yes
-	set_global_variable = sb_bechuanaland_crisis_escalation_pending_global_var
-	set_global_variable = sb_bechuanaland_crisis_direct_route_global_var
-	set_global_variable = sb_bechuanaland_crisis_caprivi_route_global_var
-	set_global_variable = sb_bechuanaland_crisis_boer_choice_pending_global_var
-	sb_bechuanaland_try_launch_pending_crisis = yes
+	if = {
+		limit = {
+			sb_bechuanaland_caprivi_decision_window_is_valid = yes
+			sb_bechuanaland_swa_overlord_candidate = yes
+		}
+		sb_bechuanaland_clear_pending_crisis_flags = yes
+		sb_bechuanaland_clear_crisis_participant_markers = yes
+		sb_bechuanaland_remember_crisis_swa_overlord = yes
+		sb_bechuanaland_shift_swa_influence_50 = yes
+		set_global_variable = sb_bechuanaland_crisis_escalation_pending_global_var
+		set_global_variable = sb_bechuanaland_crisis_direct_route_global_var
+		set_global_variable = sb_bechuanaland_crisis_caprivi_route_global_var
+		set_global_variable = sb_bechuanaland_crisis_boer_choice_pending_global_var
+		sb_bechuanaland_try_launch_pending_crisis = yes
+	}
 }
 
+# ROOT = current SWA sponsor; valid Caprivi decision lease required.
 sb_bechuanaland_queue_caprivi_proxy_crisis = {
-	sb_bechuanaland_clear_pending_crisis_flags = yes
-	sb_bechuanaland_clear_crisis_participant_markers = yes
-	sb_bechuanaland_remember_crisis_swa_overlord = yes
-	sb_bechuanaland_shift_swa_influence_25 = yes
-	set_global_variable = sb_bechuanaland_crisis_escalation_pending_global_var
-	set_global_variable = sb_bechuanaland_crisis_proxy_route_global_var
-	set_global_variable = sb_bechuanaland_crisis_caprivi_route_global_var
-	set_global_variable = sb_bechuanaland_crisis_boer_choice_pending_global_var
-	sb_bechuanaland_try_launch_pending_crisis = yes
+	if = {
+		limit = {
+			sb_bechuanaland_caprivi_decision_window_is_valid = yes
+			sb_bechuanaland_swa_overlord_candidate = yes
+		}
+		sb_bechuanaland_clear_pending_crisis_flags = yes
+		sb_bechuanaland_clear_crisis_participant_markers = yes
+		sb_bechuanaland_remember_crisis_swa_overlord = yes
+		sb_bechuanaland_shift_swa_influence_25 = yes
+		set_global_variable = sb_bechuanaland_crisis_escalation_pending_global_var
+		set_global_variable = sb_bechuanaland_crisis_proxy_route_global_var
+		set_global_variable = sb_bechuanaland_crisis_caprivi_route_global_var
+		set_global_variable = sb_bechuanaland_crisis_boer_choice_pending_global_var
+		sb_bechuanaland_try_launch_pending_crisis = yes
+	}
 }
 
 sb_bechuanaland_choose_boer_crisis_support = {

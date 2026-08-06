@@ -1079,21 +1079,18 @@ sb_imperial_confederation_check_failure_state = {
 sb_imperial_confederation_ensure_active_owner_je = {
 	if = {
 		limit = {
-			has_global_variable = sb_imperial_confederation_scheme_unlocked_var
-			NOT = { has_global_variable = sb_imperial_confederation_scheme_failed_var }
-			NOT = { exists = c:SAF }
+			sb_imperial_confederation_scheme_is_active = yes
 			sb_imperial_confederation_has_live_boer_participant = yes
 		}
-		sb_imperial_confederation_sync_subject_control_counts = yes
-		every_country = {
-			limit = {
-				sb_is_imperial_confederation_owner = yes
-				NOT = { has_journal_entry = je_sb_imperial_confederation_scheme }
+		c:GBR ?= {
+			if = {
+				limit = {
+					is_country_alive = yes
+					NOT = { has_journal_entry = je_sb_imperial_confederation_scheme }
+				}
+				add_contextless_journal_entry = je_sb_imperial_confederation_scheme
 			}
-			add_contextless_journal_entry = je_sb_imperial_confederation_scheme
 		}
-		sb_imperial_confederation_validate_involvement = yes
-		sb_imperial_confederation_sync_subject_control_bar = yes
 	}
 }
 
@@ -1166,8 +1163,8 @@ sb_imperial_confederation_sync_subject_control_counts = {
 	}
 }
 
+# Applies the cached count; callers synchronize counts explicitly.
 sb_imperial_confederation_sync_subject_control_bar = {
-	sb_imperial_confederation_sync_subject_control_counts = yes
 	c:GBR ?= {
 		je:je_sb_imperial_confederation_scheme ?= {
 			set_bar_progress = {
@@ -1246,17 +1243,31 @@ sb_unlock_imperial_confederation_scheme = {
 	}
 }
 
+# ROOT = GBR from the country-monthly pulse. This is the sole recurring owner;
+# initialization remains event-driven through the journal entry immediate block.
+sb_imperial_confederation_monthly_housekeeping = {
+	sb_unlock_imperial_confederation_scheme = yes
+	if = {
+		limit = { sb_imperial_confederation_scheme_is_active = yes }
+		sb_imperial_confederation_check_failure_state = yes
+		if = {
+			# Failure may have made the scheme terminal earlier in this tick.
+			limit = { sb_imperial_confederation_scheme_is_active = yes }
+			sb_imperial_confederation_ensure_active_owner_je = yes
+			sb_imperial_confederation_validate_involvement = yes
+			sb_imperial_confederation_sync_subject_control_counts = yes
+			sb_imperial_confederation_sync_subject_control_bar = yes
+			sb_imperial_confederation_update_sea_access_counter = yes
+		}
+	}
+}
+
 sb_eastern_sphere_monthly_housekeeping = {
 	sb_mozambique_update_company_slot = yes
 	if = {
 		limit = { country_definition = cd:GBR }
-			sb_unlock_imperial_confederation_scheme = yes
-			sb_imperial_confederation_check_failure_state = yes
-			sb_imperial_confederation_ensure_active_owner_je = yes
-			sb_imperial_confederation_validate_involvement = yes
-			sb_imperial_confederation_sync_subject_control_bar = yes
-			sb_imperial_confederation_update_sea_access_counter = yes
-		}
+		sb_imperial_confederation_monthly_housekeeping = yes
+	}
 	if = {
 		limit = {
 			OR = {
@@ -1296,47 +1307,6 @@ sb_eastern_sphere_monthly_housekeeping = {
 			exists = c:MZQ
 		}
 		sb_portugal_redirect_southern_africa_claims_to_mzq = yes
-	}
-	if = {
-		limit = {
-			has_global_variable = sb_delagoa_route_complete_global_var
-			NOT = {
-				any_country = {
-					has_variable = sb_delagoa_route_complete_var
-				}
-			}
-		}
-		remove_global_variable = sb_delagoa_route_complete_global_var
-	}
-	if = {
-		limit = {
-			sb_is_delagoa_route_actor = yes
-			NOT = { has_journal_entry = je_sb_delagoa_route_to_sea }
-			NOT = { has_variable = sb_delagoa_route_complete_var }
-			NOT = { has_global_variable = sb_delagoa_route_complete_global_var }
-			sb_delagoa_has_valid_gateway = yes
-			NOT = { exists = c:SAF }
-		}
-		add_journal_entry = { type = je_sb_delagoa_route_to_sea }
-	}
-	if = {
-		limit = {
-			NOT = { has_global_variable = sb_delagoa_route_complete_global_var }
-			sb_delagoa_has_valid_gateway = yes
-			NOT = { exists = c:SAF }
-			any_country = {
-				sb_is_delagoa_route_actor = yes
-				NOT = { has_variable = sb_delagoa_route_complete_var }
-			}
-		}
-		every_country = {
-			limit = {
-				sb_is_delagoa_route_actor = yes
-				NOT = { has_variable = sb_delagoa_route_complete_var }
-				NOT = { has_journal_entry = je_sb_delagoa_route_to_sea }
-			}
-			add_journal_entry = { type = je_sb_delagoa_route_to_sea }
-		}
 	}
 	if = {
 		limit = {

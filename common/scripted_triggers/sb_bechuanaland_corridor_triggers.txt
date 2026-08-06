@@ -1,4 +1,9 @@
 ﻿# Spes Bona - Bechuanaland Corridor / Caprivi Crisis triggers
+#
+# Lifecycle predicates below are root-agnostic unless a country predicate says
+# otherwise. The escalation sequence is exclusive:
+# decision window -> queued crisis -> active war -> settlement/cleanup.
+# No transition may start unless the corridor is open and unresolved.
 
 sb_bechuanaland_has_no_british_security_treaty = {
 	NOT = {
@@ -98,16 +103,50 @@ sb_bechuanaland_is_primary_boer_actor = {
 	}
 }
 
+# Global terminal guard shared by decisions, queues, and delayed launch retries.
+sb_bechuanaland_corridor_crisis_is_live = {
+	has_global_variable = sb_bechuanaland_corridor_open_global_var
+	NOT = { has_global_variable = sb_bechuanaland_corridor_resolved_global_var }
+	NOT = { has_global_variable = sb_bechuanaland_british_victory_global_var }
+	NOT = { has_global_variable = sb_bechuanaland_boer_swa_victory_global_var }
+}
+
+# Used by the escalation buttons before reserving a delayed decision window.
 sb_bechuanaland_crisis_escalation_available = {
+	sb_bechuanaland_corridor_crisis_is_live = yes
 	NOT = {
 		OR = {
+			has_global_variable = sb_bechuanaland_crisis_decision_pending_global_var
 			has_global_variable = sb_bechuanaland_crisis_escalation_pending_global_var
 			has_global_variable = sb_bechuanaland_crisis_war_active_var
 		}
 	}
 }
 
+# Delayed Warren/Caprivi events must cancel when this reservation is no longer
+# authoritative. Queuing a route consumes the reservation and sets escalation.
+sb_bechuanaland_crisis_decision_window_is_valid = {
+	sb_bechuanaland_corridor_crisis_is_live = yes
+	has_global_variable = sb_bechuanaland_crisis_decision_pending_global_var
+	NOT = { has_global_variable = sb_bechuanaland_crisis_escalation_pending_global_var }
+	NOT = { has_global_variable = sb_bechuanaland_crisis_war_active_var }
+}
+
+sb_bechuanaland_warren_decision_window_is_valid = {
+	sb_bechuanaland_crisis_decision_window_is_valid = yes
+	has_global_variable = sb_bechuanaland_warren_decision_pending_global_var
+	NOT = { has_global_variable = sb_bechuanaland_caprivi_decision_pending_global_var }
+}
+
+sb_bechuanaland_caprivi_decision_window_is_valid = {
+	sb_bechuanaland_crisis_decision_window_is_valid = yes
+	has_global_variable = sb_bechuanaland_caprivi_decision_pending_global_var
+	NOT = { has_global_variable = sb_bechuanaland_warren_decision_pending_global_var }
+	any_country = { sb_bechuanaland_swa_overlord_candidate = yes }
+}
+
 sb_bechuanaland_crisis_core_is_valid = {
+	sb_bechuanaland_corridor_crisis_is_live = yes
 	has_global_variable = sb_bechuanaland_crisis_swa_overlord_global_scope
 	c:GBR ?= {
 		is_country_alive = yes
