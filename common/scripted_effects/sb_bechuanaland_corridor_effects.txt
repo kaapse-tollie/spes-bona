@@ -888,6 +888,9 @@ sb_bechuanaland_clear_pending_crisis_flags = {
 	if = { limit = { has_global_variable = sb_bechuanaland_crisis_direct_route_global_var } remove_global_variable = sb_bechuanaland_crisis_direct_route_global_var }
 	if = { limit = { has_global_variable = sb_bechuanaland_crisis_proxy_route_global_var } remove_global_variable = sb_bechuanaland_crisis_proxy_route_global_var }
 	if = { limit = { has_global_variable = sb_bechuanaland_crisis_caprivi_route_global_var } remove_global_variable = sb_bechuanaland_crisis_caprivi_route_global_var }
+	if = { limit = { has_global_variable = sb_bechuanaland_legacy_cap_sgo_route_global_var } remove_global_variable = sb_bechuanaland_legacy_cap_sgo_route_global_var }
+	if = { limit = { has_global_variable = sb_bechuanaland_legacy_dual_return_route_global_var } remove_global_variable = sb_bechuanaland_legacy_dual_return_route_global_var }
+	if = { limit = { has_global_variable = sb_bechuanaland_unresolved_settlement_pending_global_var } remove_global_variable = sb_bechuanaland_unresolved_settlement_pending_global_var }
 	if = { limit = { has_global_variable = sb_bechuanaland_crisis_boer_choice_pending_global_var } remove_global_variable = sb_bechuanaland_crisis_boer_choice_pending_global_var }
 	if = { limit = { has_global_variable = sb_bechuanaland_crisis_boer_choice_dispatched_global_var } remove_global_variable = sb_bechuanaland_crisis_boer_choice_dispatched_global_var }
 	if = { limit = { has_global_variable = sb_bechuanaland_crisis_boer_support_global_var } remove_global_variable = sb_bechuanaland_crisis_boer_support_global_var }
@@ -1328,12 +1331,7 @@ sb_bechuanaland_set_boer_swa_crisis_victory = {
 
 sb_bechuanaland_handle_crisis_backdown = {
 	if = {
-		limit = {
-			OR = {
-				is_diplomatic_play_type = dp_sb_bechuanaland_direct_intervention_locked
-				is_diplomatic_play_type = dp_sb_bechuanaland_proxy_intervention_locked
-			}
-		}
+		limit = { sb_bechuanaland_is_corridor_diplomatic_play = yes }
 		if = {
 			limit = { scope:actor ?= { has_variable = sb_bechuanaland_british_war_side_var } }
 			sb_bechuanaland_set_boer_swa_crisis_victory = yes
@@ -1348,12 +1346,7 @@ sb_bechuanaland_handle_crisis_backdown = {
 sb_bechuanaland_track_crisis_wargoal_enforcement = {
 	if = {
 		limit = {
-			scope:diplomatic_play ?= {
-				OR = {
-					is_diplomatic_play_type = dp_sb_bechuanaland_direct_intervention_locked
-					is_diplomatic_play_type = dp_sb_bechuanaland_proxy_intervention_locked
-				}
-			}
+			scope:diplomatic_play ?= { sb_bechuanaland_is_corridor_diplomatic_play = yes }
 			NOT = { has_global_variable = sb_bechuanaland_corridor_resolved_global_var }
 		}
 		if = {
@@ -1370,10 +1363,7 @@ sb_bechuanaland_track_crisis_wargoal_enforcement = {
 sb_bechuanaland_resolve_crisis_war_at_end = {
 	if = {
 		limit = {
-			OR = {
-				is_diplomatic_play_type = dp_sb_bechuanaland_direct_intervention_locked
-				is_diplomatic_play_type = dp_sb_bechuanaland_proxy_intervention_locked
-			}
+			sb_bechuanaland_is_corridor_diplomatic_play = yes
 			NOT = { has_global_variable = sb_bechuanaland_corridor_resolved_global_var }
 			NOT = { has_global_variable = sb_bechuanaland_british_victory_global_var }
 			NOT = { has_global_variable = sb_bechuanaland_boer_swa_victory_global_var }
@@ -1392,25 +1382,59 @@ sb_bechuanaland_resolve_crisis_war_at_end = {
 			}
 			sb_bechuanaland_set_boer_swa_crisis_victory = yes
 		}
-		else_if = {
-			limit = { is_diplomatic_play_type = dp_sb_bechuanaland_direct_intervention_locked }
-			sb_bechuanaland_set_british_crisis_victory = yes
-		}
 		else = {
-			sb_bechuanaland_set_boer_swa_crisis_victory = yes
+			sb_bechuanaland_queue_unresolved_settlement_event = yes
 		}
 	}
 }
 
+# ROOT = current SWA sponsor. The Cape and SGO each demand the other's
+# Bechuanaland partition; no crisis markers are set until the play is found.
 sb_bechuanaland_start_cap_sgo_annex_war = {
-	c:CAP ?= {
-		sb_bechuanaland_mark_british_war_side = yes
-		create_diplomatic_play = {
-			type = dp_annex_war
-			target_country = c:SGO
+	if = {
+		limit = {
+			c:CAP ?= { is_country_alive = yes }
+			c:SGO ?= { is_country_alive = yes }
+			exists = s:STATE_BECHUANALAND.region_state:CAP
+			exists = s:STATE_BECHUANALAND.region_state:SGO
 		}
+		s:STATE_BECHUANALAND = { add_claim = c:CAP }
+		s:STATE_BECHUANALAND = { add_claim = c:SGO }
+		s:STATE_BECHUANALAND.region_state:CAP = { save_temporary_scope_as = sb_bechuanaland_cap_return_state }
+		s:STATE_BECHUANALAND.region_state:SGO = { save_temporary_scope_as = sb_bechuanaland_sgo_return_state }
+		c:CAP ?= {
+			create_diplomatic_play = {
+				type = dp_sb_bechuanaland_cap_sgo_return_locked
+				target_country = c:SGO
+				target_state = scope:sb_bechuanaland_sgo_return_state
+			}
+		}
+		random_diplomatic_play = {
+			limit = {
+				initiator = c:CAP
+				target = c:SGO
+				is_diplomatic_play_type = dp_sb_bechuanaland_cap_sgo_return_locked
+			}
+			save_temporary_scope_as = sb_bechuanaland_cap_sgo_return_play
+		}
+		if = {
+			limit = { exists = scope:sb_bechuanaland_cap_sgo_return_play }
+			scope:sb_bechuanaland_cap_sgo_return_play = {
+				add_war_goal = {
+					holder = c:SGO
+					type = return_state
+					target_country = c:CAP
+					target_state = scope:sb_bechuanaland_cap_return_state
+					primary_demand = yes
+				}
+			}
+			set_global_variable = sb_bechuanaland_legacy_cap_sgo_route_global_var
+			c:CAP ?= { sb_bechuanaland_mark_british_war_side = yes }
+			c:SGO ?= { sb_bechuanaland_mark_boer_swa_war_side = yes }
+		}
+		else = { sb_bechuanaland_queue_unresolved_settlement_event = yes }
 	}
-	c:SGO ?= { sb_bechuanaland_mark_boer_swa_war_side = yes }
+	else = { sb_bechuanaland_queue_unresolved_settlement_event = yes }
 }
 
 sb_bechuanaland_save_dual_return_scopes = {
@@ -1465,6 +1489,8 @@ sb_bechuanaland_save_dual_return_scopes = {
 	}
 }
 
+# ROOT = current SWA sponsor. Mark only the countries actually attached to the
+# recovered-state package, and only after the exact play has been rediscovered.
 sb_bechuanaland_start_cap_dual_return_war = {
 	sb_bechuanaland_save_dual_return_scopes = yes
 	if = {
@@ -1475,7 +1501,6 @@ sb_bechuanaland_start_cap_dual_return_war = {
 			exists = scope:sb_bechuanaland_corridor_return_state
 		}
 		c:CAP ?= {
-			sb_bechuanaland_mark_british_war_side = yes
 			create_diplomatic_play = {
 				type = dp_sb_bechuanaland_cap_dual_return_locked
 				target_country = scope:sb_bechuanaland_glw_return_target
@@ -1485,31 +1510,46 @@ sb_bechuanaland_start_cap_dual_return_war = {
 		random_diplomatic_play = {
 			limit = {
 				initiator = c:CAP
+				target = scope:sb_bechuanaland_glw_return_target
 				is_diplomatic_play_type = dp_sb_bechuanaland_cap_dual_return_locked
 			}
+			save_temporary_scope_as = sb_bechuanaland_cap_dual_return_play
+		}
+		if = {
+			limit = { exists = scope:sb_bechuanaland_cap_dual_return_play }
+			scope:sb_bechuanaland_cap_dual_return_play = {
+				if = {
+					limit = {
+						scope:sb_bechuanaland_corridor_return_target = {
+							NOT = { this = scope:sb_bechuanaland_glw_return_target }
+						}
+					}
+					add_target_backers = { scope:sb_bechuanaland_corridor_return_target }
+				}
+				add_war_goal = {
+					holder = c:CAP
+					type = return_state
+					target_country = scope:sb_bechuanaland_corridor_return_target
+					target_state = scope:sb_bechuanaland_corridor_return_state
+					primary_demand = yes
+				}
+			}
+			set_global_variable = sb_bechuanaland_legacy_dual_return_route_global_var
+			c:CAP ?= { sb_bechuanaland_mark_british_war_side = yes }
+			c:GBR ?= { sb_bechuanaland_mark_british_war_side = yes }
+			scope:sb_bechuanaland_glw_return_target = { sb_bechuanaland_mark_boer_swa_war_side = yes }
 			if = {
 				limit = {
 					scope:sb_bechuanaland_corridor_return_target = {
 						NOT = { this = scope:sb_bechuanaland_glw_return_target }
 					}
 				}
-				add_target_backers = { scope:sb_bechuanaland_corridor_return_target }
-			}
-			add_war_goal = {
-				holder = c:CAP
-				type = return_state
-				target_country = scope:sb_bechuanaland_corridor_return_target
-				target_state = scope:sb_bechuanaland_corridor_return_state
+				scope:sb_bechuanaland_corridor_return_target = { sb_bechuanaland_mark_boer_swa_war_side = yes }
 			}
 		}
-		c:GBR ?= { sb_bechuanaland_mark_british_war_side = yes }
-		scope:sb_bechuanaland_glw_return_target = { sb_bechuanaland_mark_boer_swa_war_side = yes }
-		scope:sb_bechuanaland_corridor_return_target = { sb_bechuanaland_mark_boer_swa_war_side = yes }
-		c:ORA ?= { if = { limit = { is_country_alive = yes } sb_bechuanaland_mark_boer_swa_war_side = yes } }
-		c:TRN ?= { if = { limit = { is_country_alive = yes } sb_bechuanaland_mark_boer_swa_war_side = yes } }
-		c:WBL ?= { if = { limit = { is_country_alive = yes } sb_bechuanaland_mark_boer_swa_war_side = yes } }
-		c:SGO ?= { if = { limit = { is_country_alive = yes } sb_bechuanaland_mark_boer_swa_war_side = yes } }
+		else = { sb_bechuanaland_queue_unresolved_settlement_event = yes }
 	}
+	else = { sb_bechuanaland_queue_unresolved_settlement_event = yes }
 }
 
 sb_bechuanaland_transfer_dual_corridor_to_cap = {
@@ -1570,6 +1610,74 @@ sb_bechuanaland_save_settlement_loc_scopes = {
 			global_var:sb_bechuanaland_swa_claimant_global_scope = { is_country_alive = yes }
 		}
 		global_var:sb_bechuanaland_swa_claimant_global_scope = { save_scope_as = sb_bechuanaland_swa_settlement_claimant_scope }
+	}
+}
+
+# Terminal path for white peace or mutually enforced corridor packages. It drops
+# claims on STATE_BOTSWANA only; Bechuanaland ownership/claims remain untouched.
+sb_bechuanaland_apply_unresolved_settlement = {
+	if = {
+		limit = {
+			has_global_variable = sb_bechuanaland_corridor_open_global_var
+			NOT = { has_global_variable = sb_bechuanaland_corridor_resolved_global_var }
+		}
+		every_country = {
+			limit = { has_claim = s:STATE_BOTSWANA }
+			save_temporary_scope_as = sb_bechuanaland_unresolved_claimant
+			s:STATE_BOTSWANA = { remove_claim = scope:sb_bechuanaland_unresolved_claimant }
+		}
+		set_global_variable = sb_bechuanaland_corridor_resolved_global_var
+		sb_bechuanaland_cleanup_corridor_crisis = yes
+	}
+}
+
+sb_bechuanaland_queue_unresolved_settlement_event = {
+	if = {
+		limit = {
+			has_global_variable = sb_bechuanaland_corridor_open_global_var
+			NOT = { has_global_variable = sb_bechuanaland_corridor_resolved_global_var }
+			NOT = { has_global_variable = sb_bechuanaland_unresolved_settlement_pending_global_var }
+		}
+		set_global_variable = sb_bechuanaland_unresolved_settlement_pending_global_var
+		if = {
+			limit = {
+				has_global_variable = sb_bechuanaland_boer_actor_global_scope
+				global_var:sb_bechuanaland_boer_actor_global_scope = { is_country_alive = yes is_player = yes }
+			}
+			global_var:sb_bechuanaland_boer_actor_global_scope = { trigger_event = { id = sb_bechuanaland_corridor.042 popup = yes } }
+		}
+		else_if = {
+			limit = {
+				has_global_variable = sb_bechuanaland_crisis_swa_overlord_global_scope
+				global_var:sb_bechuanaland_crisis_swa_overlord_global_scope = { is_country_alive = yes is_player = yes }
+			}
+			global_var:sb_bechuanaland_crisis_swa_overlord_global_scope = { trigger_event = { id = sb_bechuanaland_corridor.042 popup = yes } }
+		}
+		else_if = {
+			limit = { c:CAP ?= { is_country_alive = yes is_player = yes } }
+			c:CAP ?= { trigger_event = { id = sb_bechuanaland_corridor.042 popup = yes } }
+		}
+		else_if = {
+			limit = { c:GBR ?= { is_country_alive = yes is_player = yes } }
+			c:GBR ?= { trigger_event = { id = sb_bechuanaland_corridor.042 popup = yes } }
+		}
+		else_if = {
+			limit = { c:GBR ?= { is_country_alive = yes } }
+			c:GBR ?= { trigger_event = { id = sb_bechuanaland_corridor.042 popup = yes } }
+		}
+		else_if = {
+			limit = { c:CAP ?= { is_country_alive = yes } }
+			c:CAP ?= { trigger_event = { id = sb_bechuanaland_corridor.042 popup = yes } }
+		}
+		else_if = {
+			limit = { c:SWA ?= { is_country_alive = yes } }
+			c:SWA ?= { trigger_event = { id = sb_bechuanaland_corridor.042 popup = yes } }
+		}
+		else_if = {
+			limit = { c:SGO ?= { is_country_alive = yes } }
+			c:SGO ?= { trigger_event = { id = sb_bechuanaland_corridor.042 popup = yes } }
+		}
+		else = { sb_bechuanaland_apply_unresolved_settlement = yes }
 	}
 }
 

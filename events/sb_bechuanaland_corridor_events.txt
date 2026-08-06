@@ -178,12 +178,12 @@ sb_bechuanaland_corridor.020 = {
 				sb_bechuanaland_warren_decision_window_is_valid = yes
 				sb_bechuanaland_swa_overlord_candidate = yes
 			}
+			sb_bechuanaland_shift_boer_influence_5 = yes
+			sb_bechuanaland_clear_escalation_decision = yes
 			if = {
 				limit = { has_variable = sb_bechuanaland_cap_warren_refusal_var }
 				sb_bechuanaland_start_cap_sgo_annex_war = yes
 			}
-			sb_bechuanaland_shift_boer_influence_5 = yes
-			sb_bechuanaland_clear_escalation_decision = yes
 		}
 		custom_tooltip = sb_bechuanaland_influence_boer_gain_5_tt
 		ai_chance = {
@@ -261,9 +261,9 @@ sb_bechuanaland_corridor.021 = {
 				sb_bechuanaland_warren_decision_window_is_valid = yes
 				sb_bechuanaland_swa_overlord_candidate = yes
 			}
-			sb_bechuanaland_start_cap_dual_return_war = yes
 			sb_bechuanaland_shift_boer_influence_5 = yes
 			sb_bechuanaland_clear_escalation_decision = yes
+			sb_bechuanaland_start_cap_dual_return_war = yes
 		}
 		custom_tooltip = sb_bechuanaland_influence_boer_gain_5_tt
 		ai_chance = {
@@ -514,6 +514,39 @@ sb_bechuanaland_corridor.041 = {
 			custom_tooltip = sb_bechuanaland_corridor_041_balanced_settlement_tt
 		}
 		hidden_effect = { sb_bechuanaland_apply_boer_swa_settlement = yes }
+		ai_chance = { base = 100 }
+	}
+}
+
+sb_bechuanaland_corridor.042 = {
+	type = country_event
+	placement = root
+
+	title = sb_bechuanaland_corridor.042.t
+	desc = sb_bechuanaland_corridor.042.d
+	flavor = sb_bechuanaland_corridor.042.f
+
+	event_image = {
+		video = "africa_diplomats_negotiating"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/waving_flag.dds"
+	duration = 3
+
+	trigger = {
+		has_global_variable = sb_bechuanaland_unresolved_settlement_pending_global_var
+		NOT = { has_global_variable = sb_bechuanaland_corridor_resolved_global_var }
+	}
+
+	immediate = {
+		sb_bechuanaland_save_loc_scopes = yes
+		sb_bechuanaland_apply_unresolved_settlement = yes
+	}
+
+	option = {
+		name = sb_bechuanaland_corridor.042.a
+		default_option = yes
 		ai_chance = { base = 100 }
 	}
 }

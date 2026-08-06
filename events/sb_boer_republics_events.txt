@@ -291,15 +291,18 @@ sb_boer_republics.130 = {
 		if = {
 			limit = {
 				country_definition = cd:TRN
-				NOT = { has_journal_entry = je_sb_pacifying_eastern_transvaal }
 				s:STATE_EAST_TRANSVAAL = {
 					NOT = { is_homeland = cu:boer }
 				}
 			}
-			s:STATE_EAST_TRANSVAAL = {
-				add_claim = root
+			if = {
+				limit = { NOT = { has_claim = s:STATE_EAST_TRANSVAAL } }
+				s:STATE_EAST_TRANSVAAL = { add_claim = root }
 			}
-			add_journal_entry = { type = je_sb_pacifying_eastern_transvaal }
+			if = {
+				limit = { NOT = { has_journal_entry = je_sb_pacifying_eastern_transvaal } }
+				add_journal_entry = { type = je_sb_pacifying_eastern_transvaal }
+			}
 		}
 		if = {
 			limit = { has_variable = sb_lydenburg_spawn_var }

@@ -31,9 +31,13 @@ sb_gaza.001 = {
 	option = {
 		name = sb_gaza.001.a
 		default_option = yes
-		set_variable = sb_gaza_consolidation_seeded_var
+		set_variable = sb_gaza_intro_sequence_completed_var
+		if = {
+			limit = { NOT = { has_variable = sb_gaza_consolidation_seeded_var } }
+			set_variable = sb_gaza_consolidation_seeded_var
+			sb_gaza_apply_startup_consolidation_effects = yes
+		}
 		set_variable = { name = sb_gaza_consolidation_grace_var months = 1 }
-		sb_gaza_apply_startup_consolidation_effects = yes
 		add_journal_entry = { type = je_sb_consolidating_gaza }
 		ai_chance = { base = 1 }
 	}

@@ -117,6 +117,7 @@ sb_bechuanaland_crisis_escalation_available = {
 	NOT = {
 		OR = {
 			has_global_variable = sb_bechuanaland_crisis_decision_pending_global_var
+			has_global_variable = sb_bechuanaland_unresolved_settlement_pending_global_var
 			has_global_variable = sb_bechuanaland_crisis_escalation_pending_global_var
 			has_global_variable = sb_bechuanaland_crisis_war_active_var
 		}
@@ -143,6 +144,31 @@ sb_bechuanaland_caprivi_decision_window_is_valid = {
 	has_global_variable = sb_bechuanaland_caprivi_decision_pending_global_var
 	NOT = { has_global_variable = sb_bechuanaland_warren_decision_pending_global_var }
 	any_country = { sb_bechuanaland_swa_overlord_candidate = yes }
+}
+
+# Diplomatic-play scope. The final branch supports saves already running the
+# pre-0.13.5 generic CAP-SGO annexation play; new launches use exact custom IDs.
+sb_bechuanaland_is_corridor_diplomatic_play = {
+	OR = {
+		is_diplomatic_play_type = dp_sb_bechuanaland_direct_intervention_locked
+		is_diplomatic_play_type = dp_sb_bechuanaland_proxy_intervention_locked
+		is_diplomatic_play_type = dp_sb_bechuanaland_cap_sgo_return_locked
+		is_diplomatic_play_type = dp_sb_bechuanaland_cap_dual_return_locked
+		AND = {
+			is_diplomatic_play_type = dp_annex_war
+			initiator = c:CAP
+			target = c:SGO
+			has_global_variable = sb_bechuanaland_crisis_war_active_var
+			c:CAP ?= { has_variable = sb_bechuanaland_british_war_side_var }
+			c:SGO ?= { has_variable = sb_bechuanaland_boer_swa_war_side_var }
+		}
+	}
+}
+
+sb_bechuanaland_has_active_corridor_diplomatic_play = {
+	any_country = {
+		any_diplomatic_play = { sb_bechuanaland_is_corridor_diplomatic_play = yes }
+	}
 }
 
 sb_bechuanaland_crisis_core_is_valid = {

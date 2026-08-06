@@ -16,36 +16,6 @@ je_sb_consolidating_gaza = {
 		}
 	}
 
-	is_shown_when_inactive = {
-		hidden_trigger = {
-			OR = {
-				country_definition = cd:GZA
-				AND = {
-					country_definition = cd:NGN
-					has_variable = sb_ngu_inherited_gza_content_var
-				}
-			}
-			is_subject = no
-			NOT = { has_variable = sb_gaza_consolidated_var }
-			NOT = { has_variable = sb_gaza_consolidation_failed_var }
-			sb_gaza_has_target_holdings = yes
-		}
-	}
-
-	possible = {
-		OR = {
-			country_definition = cd:GZA
-			AND = {
-				country_definition = cd:NGN
-				has_variable = sb_ngu_inherited_gza_content_var
-			}
-		}
-		is_subject = no
-		NOT = { has_variable = sb_gaza_consolidated_var }
-		NOT = { has_variable = sb_gaza_consolidation_failed_var }
-		sb_gaza_has_target_holdings = yes
-	}
-
 	immediate = {
 		if = {
 			limit = { NOT = { has_variable = sb_gaza_consolidation_seeded_var } }
@@ -90,6 +60,7 @@ je_sb_consolidating_gaza = {
 
 	invalid = {
 		OR = {
+			NOT = { has_variable = sb_gaza_intro_sequence_completed_var }
 			custom_tooltip = {
 				text = je_sb_consolidating_gaza_invalid_subject_tt
 				hidden_trigger = {
