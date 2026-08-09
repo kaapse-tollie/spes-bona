@@ -61,7 +61,6 @@ sb_bechuanaland_corridor.010 = {
 	option = {
 		name = sb_bechuanaland_corridor.010.a
 		default_option = yes
-		custom_tooltip = sb_bechuanaland_corridor_010_backdown_tt
 		if = {
 			limit = {
 				sb_bechuanaland_warren_decision_window_is_valid = yes
@@ -72,16 +71,16 @@ sb_bechuanaland_corridor.010 = {
 			}
 			if = {
 				limit = { has_variable = sb_bechuanaland_gbr_warren_demand_var }
-				s:STATE_BECHUANALAND = { add_claim = c:CAP }
-				s:STATE_GRIQUALAND_WEST = { add_claim = c:CAP }
+				#s:STATE_BECHUANALAND = { add_claim = c:CAP } # surely cap would already have a claim at this point, since the opening of the BC JE creates them
+				#s:STATE_GRIQUALAND_WEST = { add_claim = c:CAP } # likewise here 
 				sb_bechuanaland_annex_sgo_and_wbl_to_cap = yes
-				sb_bechuanaland_transfer_dual_corridor_to_cap = yes
+				#sb_bechuanaland_transfer_dual_corridor_to_cap = yes
 			}
 			else = {
 				c:CAP ?= {
 					if = {
 						limit = { c:SGO ?= { is_country_alive = yes } }
-						if = { limit = { c:SGO ?= { is_subject = yes } } transfer_subject = c:SGO }
+						#if = { limit = { c:SGO ?= { is_subject = yes } } transfer_subject = c:SGO } # this is redundant and crap code
 						annex = c:SGO
 					}
 				}
@@ -90,7 +89,7 @@ sb_bechuanaland_corridor.010 = {
 			sb_bechuanaland_clear_escalation_decision = yes
 			set_global_variable = sb_bechuanaland_british_victory_global_var
 		}
-		ai_chance = {
+		ai_chance = { # TODO: these weights need updating
 			base = 35
 		}
 	}
@@ -102,7 +101,7 @@ sb_bechuanaland_corridor.010 = {
 			limit = { sb_bechuanaland_warren_decision_window_is_valid = yes }
 			sb_bechuanaland_prepare_swa_intervention_choice = yes
 		}
-		ai_chance = {
+		ai_chance = {  # TODO: these weights need updating
 			base = 65
 			modifier = {
 				trigger = {
@@ -173,15 +172,13 @@ sb_bechuanaland_corridor.020 = {
 	option = {
 		name = sb_bechuanaland_corridor.020.c
 		default_option = yes
-		custom_tooltip = sb_bechuanaland_corridor_020_no_intervention_tt
+		# custom_tooltip = sb_bechuanaland_corridor_020_no_intervention_tt
 		if = {
 			limit = {
 				sb_bechuanaland_warren_decision_window_is_valid = yes
 				sb_bechuanaland_swa_active_sponsor = yes
 			}
 			sb_bechuanaland_shift_boer_influence_5 = yes
-			sb_bechuanaland_finish_warren_attempt = yes
-			sb_bechuanaland_clear_escalation_decision = yes
 			if = {
 				limit = { has_variable = sb_bechuanaland_cap_warren_refusal_var }
 				sb_bechuanaland_start_cap_sgo_annex_war = yes
@@ -381,7 +378,7 @@ sb_bechuanaland_corridor.031 = {
 		custom_tooltip = sb_bechuanaland_corridor_031_gp_tt
 		custom_tooltip = sb_bechuanaland_influence_swa_gain_50_tt
 		if = { limit = { sb_bechuanaland_caprivi_decision_window_is_valid = yes } sb_bechuanaland_queue_caprivi_direct_crisis = yes }
-		ai_chance = { base = 20 }
+		ai_chance = { base = 20 } #todo weights
 	}
 
 	option = {
@@ -523,7 +520,7 @@ sb_bechuanaland_corridor.034 = {
 			s:STATE_BECHUANALAND = { add_claim = c:CAP }
 			s:STATE_GRIQUALAND_WEST = { add_claim = c:CAP }
 			sb_bechuanaland_annex_sgo_and_wbl_to_cap = yes
-			sb_bechuanaland_transfer_dual_corridor_to_cap = yes
+			#sb_bechuanaland_transfer_dual_corridor_to_cap = yes
 			sb_bechuanaland_finish_warren_attempt = yes
 			sb_bechuanaland_reset_warren_attempt_country_flags = yes
 			sb_bechuanaland_clear_escalation_decision = yes

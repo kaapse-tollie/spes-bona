@@ -261,7 +261,7 @@ sb_bechuanaland_handle_post_open_lifecycle = {
 			if = { limit = { has_global_variable = sb_bechuanaland_boer_swa_victory_global_var } remove_global_variable = sb_bechuanaland_boer_swa_victory_global_var }
 			if = {
 				limit = { c:GBR ?= { has_claim = s:STATE_BOTSWANA } }
-				s:STATE_BOTSWANA = { remove_claim = c:GBR add_claim = c:SAF }
+				s:STATE_BOTSWANA = { add_claim = c:SAF }
 			}
 			set_global_variable = sb_bechuanaland_corridor_resolved_global_var
 			sb_bechuanaland_cleanup_corridor_crisis = yes
@@ -677,12 +677,10 @@ sb_bechuanaland_annex_sgo_and_wbl_to_cap = {
 	c:CAP ?= {
 		if = {
 			limit = { c:SGO ?= { is_country_alive = yes } }
-			if = { limit = { c:SGO ?= { is_subject = yes } } transfer_subject = c:SGO }
 			annex = c:SGO
 		}
 		if = {
 			limit = { c:WBL ?= { is_country_alive = yes } }
-			if = { limit = { c:WBL ?= { is_subject = yes } } transfer_subject = c:WBL }
 			annex = c:WBL
 		}
 	}
@@ -881,7 +879,6 @@ sb_bechuanaland_queue_sgo_annexation_offer = {
 sb_bechuanaland_invalidate_for_third_party_sgo = {
 	if = { limit = { has_global_variable = sb_bechuanaland_british_victory_global_var } remove_global_variable = sb_bechuanaland_british_victory_global_var }
 	if = { limit = { has_global_variable = sb_bechuanaland_boer_swa_victory_global_var } remove_global_variable = sb_bechuanaland_boer_swa_victory_global_var }
-	if = { limit = { c:GBR ?= { has_claim = s:STATE_BOTSWANA } } s:STATE_BOTSWANA = { remove_claim = c:GBR } }
 	set_global_variable = sb_bechuanaland_corridor_resolved_global_var
 	sb_bechuanaland_cleanup_corridor_crisis = yes
 }
@@ -1695,7 +1692,7 @@ sb_bechuanaland_resolve_crisis_war_at_end = {
 }
 
 # ROOT = current SWA sponsor. The Cape and SGO each demand the other's
-# Bechuanaland partition; no crisis markers are set until the play is found.
+# Bechuanaland partition; both demands are created atomically with the play.
 sb_bechuanaland_start_cap_sgo_annex_war = {
 	if = {
 		limit = {
@@ -1704,28 +1701,18 @@ sb_bechuanaland_start_cap_sgo_annex_war = {
 			exists = s:STATE_BECHUANALAND.region_state:CAP
 			exists = s:STATE_BECHUANALAND.region_state:SGO
 		}
-		s:STATE_BECHUANALAND = { add_claim = c:CAP }
-		s:STATE_BECHUANALAND = { add_claim = c:SGO }
+		hidden_effect = {
+		 s:STATE_BECHUANALAND = { add_claim = c:CAP }
+		 s:STATE_BECHUANALAND = { add_claim = c:SGO }
+		}
+
 		s:STATE_BECHUANALAND.region_state:CAP = { save_temporary_scope_as = sb_bechuanaland_cap_return_state }
 		s:STATE_BECHUANALAND.region_state:SGO = { save_temporary_scope_as = sb_bechuanaland_sgo_return_state }
 		c:CAP ?= {
 			create_diplomatic_play = {
-				type = dp_sb_bechuanaland_cap_sgo_return_locked
+				type = dp_sb_bechuanaland_cap_sgo_return # changed from locked
 				target_country = c:SGO
 				target_state = scope:sb_bechuanaland_sgo_return_state
-			}
-		}
-		random_diplomatic_play = {
-			limit = {
-				initiator = c:CAP
-				target = c:SGO
-				is_diplomatic_play_type = dp_sb_bechuanaland_cap_sgo_return_locked
-			}
-			save_temporary_scope_as = sb_bechuanaland_cap_sgo_return_play
-		}
-		if = {
-			limit = { exists = scope:sb_bechuanaland_cap_sgo_return_play }
-			scope:sb_bechuanaland_cap_sgo_return_play = {
 				add_war_goal = {
 					holder = c:SGO
 					type = return_state
@@ -1734,12 +1721,13 @@ sb_bechuanaland_start_cap_sgo_annex_war = {
 					primary_demand = yes
 				}
 			}
-			set_global_variable = sb_bechuanaland_legacy_cap_sgo_route_global_var
-			set_global_variable = sb_bechuanaland_crisis_war_active_var
-			c:CAP ?= { sb_bechuanaland_mark_british_war_side = yes }
-			c:SGO ?= { sb_bechuanaland_mark_boer_swa_war_side = yes }
 		}
-		else = { sb_bechuanaland_queue_unresolved_settlement_event = yes }
+		set_global_variable = sb_bechuanaland_legacy_cap_sgo_route_global_var
+		set_global_variable = sb_bechuanaland_crisis_war_active_var
+		c:CAP ?= { sb_bechuanaland_mark_british_war_side = yes }
+		c:SGO ?= { sb_bechuanaland_mark_boer_swa_war_side = yes }
+		sb_bechuanaland_finish_warren_attempt = yes
+		sb_bechuanaland_clear_escalation_decision = yes
 	}
 	else = { sb_bechuanaland_queue_unresolved_settlement_event = yes }
 }
@@ -1860,7 +1848,7 @@ sb_bechuanaland_start_cap_dual_return_war = {
 	else = { sb_bechuanaland_queue_unresolved_settlement_event = yes }
 }
 
-sb_bechuanaland_transfer_dual_corridor_to_cap = {
+sb_bechuanaland_transfer_dual_corridor_to_cap = { # TODO: why is this necessary?
 	every_country = {
 		limit = {
 			OR = {
@@ -2089,7 +2077,6 @@ sb_bechuanaland_apply_british_settlement = {
 				sb_bechuanaland_make_tsw_subject_of_cap = yes
 			}
 			else = {
-				if = { limit = { c:GBR ?= { has_claim = s:STATE_BOTSWANA } } s:STATE_BOTSWANA = { remove_claim = c:GBR } }
 				s:STATE_BECHUANALAND = { add_claim = c:CAP }
 				c:CAP ?= {
 					if = {
@@ -2119,7 +2106,6 @@ sb_bechuanaland_apply_boer_swa_settlement = {
 		set_global_variable = sb_bechuanaland_boer_swa_victory_global_var
 		set_global_variable = sb_bechuanaland_corridor_resolved_global_var
 	}
-	if = { limit = { c:GBR ?= { has_claim = s:STATE_BOTSWANA } } s:STATE_BOTSWANA = { remove_claim = c:GBR } }
 	if = { limit = { c:CAP ?= { has_claim = s:STATE_BECHUANALAND } } s:STATE_BECHUANALAND = { remove_claim = c:CAP } }
 	if = {
 		limit = { global_var:sb_bechuanaland_influence_score_global_var >= 10 }
@@ -2159,7 +2145,8 @@ sb_bechuanaland_apply_boer_swa_settlement = {
 }
 
 sb_bechuanaland_apply_support_to_british_side = {
-	c:CAP ?= {
+	every_country = {
+		limit = { has_variable = sb_bechuanaland_british_war_side_var }
 		add_modifier = {
 			name = sb_bechuanaland_crisis_support
 			months = 12
@@ -2168,19 +2155,17 @@ sb_bechuanaland_apply_support_to_british_side = {
 }
 
 sb_bechuanaland_apply_support_to_boer_swa_side = {
-	c:SWA ?= {
+	every_country = {
+		limit = { has_variable = sb_bechuanaland_boer_swa_war_side_var }
 		add_modifier = {
 			name = sb_bechuanaland_crisis_support
 			months = 12
 		}
 	}
-	c:SGO ?= {
-		if = {
-			limit = { is_country_alive = yes }
-			add_modifier = {
-				name = sb_bechuanaland_crisis_support
-				months = 12
-			}
+	if = {
+		limit = { has_global_variable = sb_bechuanaland_crisis_swa_overlord_global_scope }
+		global_var:sb_bechuanaland_crisis_swa_overlord_global_scope = {
+			set_variable = { name = sb_bechuanaland_swa_crisis_support_active_var months = 12 }
 		}
 	}
 }
@@ -2237,6 +2222,8 @@ sb_bechuanaland_cleanup_corridor_crisis = {
 				has_variable = sb_bechuanaland_swa_subsidy_active_var
 				has_variable = sb_bechuanaland_swa_subsidy_cooldown_var
 				has_variable = sb_bechuanaland_support_cooldown_var
+				has_variable = sb_bechuanaland_swa_crisis_support_active_var
+				has_modifier = sb_bechuanaland_crisis_support
 			}
 		}
 		if = { limit = { has_variable = sb_bechuanaland_british_war_side_var } remove_variable = sb_bechuanaland_british_war_side_var }
@@ -2249,5 +2236,7 @@ sb_bechuanaland_cleanup_corridor_crisis = {
 		if = { limit = { has_variable = sb_bechuanaland_boer_subsidy_cooldown_var } remove_variable = sb_bechuanaland_boer_subsidy_cooldown_var }
 		if = { limit = { has_variable = sb_bechuanaland_swa_subsidy_active_var } remove_variable = sb_bechuanaland_swa_subsidy_active_var }
 		if = { limit = { has_variable = sb_bechuanaland_swa_subsidy_cooldown_var } remove_variable = sb_bechuanaland_swa_subsidy_cooldown_var }
+		if = { limit = { has_variable = sb_bechuanaland_swa_crisis_support_active_var } remove_variable = sb_bechuanaland_swa_crisis_support_active_var }
+		if = { limit = { has_modifier = sb_bechuanaland_crisis_support } remove_modifier = sb_bechuanaland_crisis_support }
 	}
 }

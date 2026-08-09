@@ -217,7 +217,7 @@ sb_bechuanaland_is_corridor_diplomatic_play = {
 	OR = {
 		is_diplomatic_play_type = dp_sb_bechuanaland_direct_intervention_locked
 		is_diplomatic_play_type = dp_sb_bechuanaland_proxy_intervention_locked
-		is_diplomatic_play_type = dp_sb_bechuanaland_cap_sgo_return_locked
+		is_diplomatic_play_type = dp_sb_bechuanaland_cap_sgo_return
 		is_diplomatic_play_type = dp_sb_bechuanaland_cap_dual_return_locked
 		AND = {
 			is_diplomatic_play_type = dp_annex_war
@@ -368,11 +368,24 @@ sb_bechuanaland_sgo_is_british_subject = {
 	}
 }
 
+# The scripted Boer protectorate/tributary is the intended alignment, not a third party.
 sb_bechuanaland_sgo_is_third_party_subject = {
 	c:SGO ?= {
 		is_country_alive = yes
 		is_subject = yes
 		NOT = { is_subject_of = c:GBR }
+		NOT = {
+			OR = {
+				AND = {
+					is_direct_subject_of = c:TRN
+					c:TRN ?= { sb_bechuanaland_boer_actor = yes }
+				}
+				AND = {
+					is_direct_subject_of = c:ORA
+					c:ORA ?= { sb_bechuanaland_boer_actor = yes }
+				}
+			}
+		}
 	}
 }
 

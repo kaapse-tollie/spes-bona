@@ -1098,7 +1098,17 @@ sb_bechuanaland_boer_swa_influence_bar = {
 			add = { desc = "sb_bechuanaland_influence_swa_subsidy" value = -0.25 }
 		}
 		if = {
-			limit = { c:SWA ?= { has_modifier = sb_bechuanaland_crisis_support } }
+			limit = {
+				OR = {
+					c:SWA ?= { has_modifier = sb_bechuanaland_crisis_support }
+					AND = {
+						has_global_variable = sb_bechuanaland_crisis_swa_overlord_global_scope
+						global_var:sb_bechuanaland_crisis_swa_overlord_global_scope = {
+							has_variable = sb_bechuanaland_swa_crisis_support_active_var
+						}
+					}
+				}
+			}
 			add = { desc = "sb_bechuanaland_influence_swa_crisis_support" value = -0.125 }
 		}
 
