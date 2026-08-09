@@ -194,6 +194,77 @@ sb_apply_natalia_boer_republic_setup = {
 		sb_ensure_boer_anti_british_lobby = yes
 	}
 
+# Late-game counterpart to the founding setup. Restore republican Natalia after
+# a Boer corridor victory without replaying starting tech, an 1840 election,
+# the Great Trek journal, or a new twenty-year British truce.
+sb_restore_natalia_after_boer_corridor_victory = {
+	random_scope_character = {
+		limit = { has_variable = sb_martin_west_var }
+		transfer_character = c:GBR
+	}
+	if = {
+		limit = { has_variable = southern_africa_subject_var }
+		remove_variable = southern_africa_subject_var
+	}
+	if = {
+		limit = { has_variable = sb_natalia_british_colony_resolved_var }
+		remove_variable = sb_natalia_british_colony_resolved_var
+	}
+	# A side victory can settle before every secondary goal is formally enforced.
+	# Never leave the restored republic inside the defeated British hierarchy.
+	if = {
+		limit = { is_subject_of = c:GBR }
+		make_independent = yes
+	}
+	# Liberation restores an unrecognized republic. If a transfer goal instead
+	# placed Natalia under TRN, preserve the validated subject relationship's
+	# country type rather than invalidating that peace term after the fact.
+	if = {
+		limit = { is_subject = no }
+		set_country_type = unrecognized
+	}
+	if = {
+		limit = { NOT = { country_has_primary_culture = cu:boer } }
+		add_primary_culture = cu:boer
+	}
+	if = {
+		limit = { country_has_primary_culture = cu:british }
+		remove_primary_culture = cu:british
+	}
+	if = {
+		limit = { country_has_primary_culture = cu:anglo_african }
+		remove_primary_culture = cu:anglo_african
+	}
+	sb_apply_boer_commandant_general_baseline = yes
+	activate_law = law_type:law_national_supremacy
+	sb_ensure_boer_supremacist_movement = yes
+	activate_law = law_type:law_elected_bureaucrats
+	activate_law = law_type:law_agrarianism
+	activate_law = law_type:law_land_based_taxation
+	activate_law = law_type:law_homesteading
+	activate_law = law_type:law_national_militia
+	activate_law = law_type:law_discrete_inboekstelsel
+	activate_law = law_type:law_no_colonial_affairs
+	sb_apply_boer_republic_interest_group_identity = yes
+	active_law:lawgroup_army_model ?= {
+		if = {
+			limit = { NOT = { has_amendment = amendment_type:amendment_sb_commando_corps } }
+			add_amendment = {
+				type = amendment_sb_commando_corps
+				sponsor = PREV.ig:ig_rural_folk
+			}
+		}
+	}
+	every_interest_group = { remove_ruling_interest_group = yes }
+	ig:ig_armed_forces ?= { add_ruling_interest_group = yes }
+	ig:ig_landowners ?= { add_ruling_interest_group = yes }
+	ig:ig_rural_folk ?= { add_ruling_interest_group = yes }
+	ig:ig_devout ?= { add_ruling_interest_group = yes }
+	sb_refresh_boer_commandant_general_government = yes
+	sb_ensure_commandant_general_ruler_command = yes
+	sb_ensure_boer_anti_british_lobby = yes
+}
+
 sb_create_british_natal_colony_if_missing = {
 	if = {
 		limit = {

@@ -197,6 +197,15 @@ sb_bechuanaland_crisis_decision_window_is_valid = {
 	NOT = { has_global_variable = sb_bechuanaland_crisis_war_active_var }
 }
 
+sb_bechuanaland_caprivi_boer_choice_is_valid = {
+	sb_bechuanaland_corridor_crisis_is_live = yes
+	has_global_variable = sb_bechuanaland_crisis_escalation_pending_global_var
+	has_global_variable = sb_bechuanaland_crisis_caprivi_route_global_var
+	has_global_variable = sb_bechuanaland_crisis_boer_choice_pending_global_var
+	NOT = { has_global_variable = sb_bechuanaland_crisis_war_active_var }
+	sb_bechuanaland_is_primary_boer_actor = yes
+}
+
 sb_bechuanaland_warren_decision_window_is_valid = {
 	sb_bechuanaland_crisis_decision_window_is_valid = yes
 	has_global_variable = sb_bechuanaland_warren_decision_pending_global_var
@@ -217,6 +226,7 @@ sb_bechuanaland_is_corridor_diplomatic_play = {
 	OR = {
 		is_diplomatic_play_type = dp_sb_bechuanaland_direct_intervention_locked
 		is_diplomatic_play_type = dp_sb_bechuanaland_proxy_intervention_locked
+		is_diplomatic_play_type = dp_sb_bechuanaland_proxy_namaqualand_locked
 		is_diplomatic_play_type = dp_sb_bechuanaland_cap_sgo_return
 		is_diplomatic_play_type = dp_sb_bechuanaland_cap_dual_return_locked
 		AND = {
@@ -266,44 +276,22 @@ sb_bechuanaland_crisis_core_is_valid = {
 
 sb_bechuanaland_crisis_launch_participants_ready = {
 	sb_bechuanaland_crisis_core_is_valid = yes
-	c:GBR ?= {
-		is_at_war = no
-		is_active_in_diplomatic_play = no
-	}
-	c:CAP ?= {
-		is_at_war = no
-		is_active_in_diplomatic_play = no
-	}
-	c:SWA ?= {
-		is_at_war = no
-		is_active_in_diplomatic_play = no
-	}
-	global_var:sb_bechuanaland_crisis_swa_overlord_global_scope = {
-		is_at_war = no
-		is_active_in_diplomatic_play = no
-	}
+	# Scripted corridor plays are closed packages and may open alongside unrelated
+	# wars or diplomatic plays. The former peace/activity gate could strand a
+	# Caprivi choice forever even though the proxy sponsor was not a participant.
 	OR = {
-		NOT = { has_global_variable = sb_bechuanaland_crisis_boer_support_global_var }
-		NOT = {
-			any_country = {
-				has_variable = sb_bechuanaland_crisis_boer_network_var
-				OR = {
-					is_at_war = yes
-					is_active_in_diplomatic_play = yes
-				}
+		has_global_variable = sb_bechuanaland_crisis_proxy_route_global_var
+		AND = {
+			has_global_variable = sb_bechuanaland_crisis_direct_route_global_var
+			c:CAP ?= {
+				is_direct_subject_of = c:GBR
+				sb_bechuanaland_subject_can_be_transferred = yes
 			}
-		}
-	}
-	OR = {
-		NOT = { has_global_variable = sb_bechuanaland_crisis_direct_route_global_var }
-		NOT = {
-			any_country = {
-				has_variable = sb_bechuanaland_crisis_british_subject_target_var
-				OR = {
-					is_at_war = yes
-					is_active_in_diplomatic_play = yes
-				}
+			c:SWA ?= { sb_bechuanaland_subject_can_be_transferred = yes }
+			global_var:sb_bechuanaland_crisis_swa_overlord_global_scope = {
+				can_transfer_subject = c:CAP
 			}
+			c:GBR ?= { can_transfer_subject = c:SWA }
 		}
 	}
 }

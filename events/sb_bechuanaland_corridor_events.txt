@@ -172,7 +172,7 @@ sb_bechuanaland_corridor.020 = {
 	option = {
 		name = sb_bechuanaland_corridor.020.c
 		default_option = yes
-		# custom_tooltip = sb_bechuanaland_corridor_020_no_intervention_tt
+		custom_tooltip = sb_bechuanaland_corridor_020_no_intervention_tt
 		if = {
 			limit = {
 				sb_bechuanaland_warren_decision_window_is_valid = yes
@@ -261,9 +261,7 @@ sb_bechuanaland_corridor.021 = {
 				sb_bechuanaland_swa_active_sponsor = yes
 			}
 			sb_bechuanaland_shift_boer_influence_5 = yes
-			sb_bechuanaland_finish_warren_attempt = yes
-			sb_bechuanaland_clear_escalation_decision = yes
-			sb_bechuanaland_start_cap_dual_return_war = yes
+			sb_bechuanaland_start_cap_sgo_annex_war = yes
 		}
 		custom_tooltip = sb_bechuanaland_influence_boer_gain_5_tt
 		ai_chance = {
@@ -422,30 +420,24 @@ sb_bechuanaland_corridor.032 = {
 
 	immediate = { sb_bechuanaland_save_loc_scopes = yes }
 
-	trigger = {
-		sb_bechuanaland_corridor_crisis_is_live = yes
-		has_global_variable = sb_bechuanaland_crisis_escalation_pending_global_var
-		has_global_variable = sb_bechuanaland_crisis_caprivi_route_global_var
-		has_global_variable = sb_bechuanaland_crisis_boer_choice_pending_global_var
-		sb_bechuanaland_is_primary_boer_actor = yes
-	}
+	trigger = { sb_bechuanaland_caprivi_boer_choice_is_valid = yes }
 
 	cancellation_trigger = {
-		NOT = { sb_bechuanaland_corridor_crisis_is_live = yes }
+		NOT = { sb_bechuanaland_caprivi_boer_choice_is_valid = yes }
 	}
 
 	option = {
 		name = sb_bechuanaland_corridor.032.a
 		default_option = yes
 		custom_tooltip = sb_bechuanaland_corridor_032_support_tt
-		if = { limit = { sb_bechuanaland_corridor_crisis_is_live = yes } sb_bechuanaland_choose_boer_crisis_support = yes }
+		if = { limit = { sb_bechuanaland_caprivi_boer_choice_is_valid = yes } sb_bechuanaland_choose_boer_crisis_support = yes }
 		ai_chance = { base = 70 }
 	}
 
 	option = {
 		name = sb_bechuanaland_corridor.032.b
 		custom_tooltip = sb_bechuanaland_corridor_032_neutral_tt
-		if = { limit = { sb_bechuanaland_corridor_crisis_is_live = yes } sb_bechuanaland_choose_boer_crisis_neutrality = yes }
+		if = { limit = { sb_bechuanaland_caprivi_boer_choice_is_valid = yes } sb_bechuanaland_choose_boer_crisis_neutrality = yes }
 		ai_chance = { base = 30 }
 	}
 }
@@ -532,6 +524,7 @@ sb_bechuanaland_corridor.034 = {
 
 	option = {
 		name = sb_bechuanaland_corridor.034.b
+		custom_tooltip = sb_bechuanaland_corridor_020_no_intervention_tt
 		if = {
 			limit = {
 				sb_bechuanaland_warren_decision_window_is_valid = yes
@@ -822,6 +815,76 @@ sb_bechuanaland_corridor.042 = {
 	option = {
 		name = sb_bechuanaland_corridor.042.a
 		default_option = yes
+		ai_chance = { base = 100 }
+	}
+}
+
+# A Boer victory in the locked Warren total war remakes the settler colonies.
+sb_bechuanaland_corridor.043 = {
+	type = country_event
+	placement = root
+
+	title = sb_bechuanaland_corridor.043.t
+	desc = sb_bechuanaland_corridor.043.d
+	flavor = sb_bechuanaland_corridor.043.f
+
+	event_image = {
+		video = "gfx/event_pictures/europenorthamerica_political_extremism.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/principles_icons/creative_legislature.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:CAP
+		is_country_alive = yes
+		has_variable = sb_bechuanaland_warren_boer_victory_event_pending_var
+	}
+
+	option = {
+		name = sb_bechuanaland_corridor.043.a
+		default_option = yes
+		if = {
+			limit = { has_modifier = sb_boerehaat }
+			remove_modifier = sb_boerehaat
+		}
+		if = {
+			limit = { NOT = { country_has_primary_culture = cu:boer } }
+			add_primary_culture = cu:boer
+		}
+		remove_variable = sb_bechuanaland_warren_boer_victory_event_pending_var
+		ai_chance = { base = 100 }
+	}
+}
+
+sb_bechuanaland_corridor.044 = {
+	type = country_event
+	placement = root
+
+	title = sb_bechuanaland_corridor.044.t
+	desc = sb_bechuanaland_corridor.044.d
+	flavor = sb_bechuanaland_corridor.044.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:NAL
+		is_country_alive = yes
+		has_variable = sb_bechuanaland_warren_boer_victory_event_pending_var
+	}
+
+	option = {
+		name = sb_bechuanaland_corridor.044.a
+		default_option = yes
+		sb_restore_natalia_after_boer_corridor_victory = yes
+		remove_variable = sb_bechuanaland_warren_boer_victory_event_pending_var
 		ai_chance = { base = 100 }
 	}
 }

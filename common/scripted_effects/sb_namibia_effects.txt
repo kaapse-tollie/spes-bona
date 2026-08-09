@@ -222,9 +222,12 @@ sb_nam_finalize_coastal_expedition_success = {
 			limit = { NOT = { has_technology_researched = sb_namibian_coastal_access } }
 			add_technology_researched = sb_namibian_coastal_access
 		}
+		# The mapping claim is retained even after administration passes to SWA,
+		# permanently sustaining Engaged status. Keep the immediate grant modest.
+		set_variable = sb_nam_mapping_permanent_engagement_var
 		add_involvement = {
 			strategic_region = sr:region_southern_africa
-			value = 2500
+			value = 1100
 		}
 		set_global_variable = sb_namibian_coast_race_closed_var
 	}
@@ -330,14 +333,22 @@ sb_nam_finalize_swa_administration = {
 		GIVER = root
 		TAKER = c:SWA
 	}
+	# Mapping winners retain their expedition claims after delegating government;
+	# either permanent claim keeps their Southern African interest Engaged.
 	if = {
-		limit = { has_claim = s:STATE_NAMAQUALAND }
+		limit = {
+			has_claim = s:STATE_NAMAQUALAND
+			NOT = { has_variable = sb_nam_mapping_permanent_engagement_var }
+		}
 		s:STATE_NAMAQUALAND = {
 			remove_claim = root
 		}
 	}
 	if = {
-		limit = { has_claim = s:STATE_HEREROLAND }
+		limit = {
+			has_claim = s:STATE_HEREROLAND
+			NOT = { has_variable = sb_nam_mapping_permanent_engagement_var }
+		}
 		s:STATE_HEREROLAND = {
 			remove_claim = root
 		}
