@@ -334,7 +334,41 @@ sb_update_firearms_progress = {
 }
 
 sb_sync_iron_age_weapons_penalty = {
+	if = {
+		limit = { has_variable = sb_firearms_modernized_var }
+		if = {
+			limit = { has_variable = sb_firearms_applied_tier_var }
+			sb_remove_iron_age_weapons_modifiers = yes
+			remove_variable = sb_firearms_applied_tier_var
+		}
+	}
+	else_if = {
+		limit = {
+			has_variable = sb_firearms_progress_months_var
+			OR = {
+				NOT = { has_variable = sb_firearms_applied_tier_var }
+				NOT = { var:sb_firearms_applied_tier_var = var:sb_firearms_progress_months_var }
+			}
+		}
+		sb_remove_iron_age_weapons_modifiers = yes
+		sb_apply_iron_age_weapons_penalty_for_current_progress = yes
+		set_variable = {
+			name = sb_firearms_applied_tier_var
+			value = var:sb_firearms_progress_months_var
+		}
+	}
+}
+
+sb_repair_iron_age_weapons_penalty = {
 	sb_remove_iron_age_weapons_modifiers = yes
+	if = {
+		limit = { has_variable = sb_firearms_applied_tier_var }
+		remove_variable = sb_firearms_applied_tier_var
+	}
+	sb_sync_iron_age_weapons_penalty = yes
+}
+
+sb_apply_iron_age_weapons_penalty_for_current_progress = {
 	if = {
 		limit = {
 			has_variable = sb_firearms_modernized_var

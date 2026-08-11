@@ -4,16 +4,18 @@ Target game version: `1.13.9` (Steam build `23897342`)
 
 This document explains the policy. The canonical machine-readable inventory is `Docs/compatibility/override_inventory.json`; it records every exact-path collision and keyed override with owner, scope, intended delta, load-order semantics, rebase date, and pinned upstream/mod hashes.
 
-Run the mandatory gate with the declared Community Mod Framework dependency installed:
+Run the mandatory portable gate from the repository root:
 
 ```sh
-python3 tools/check_override_inventory.py \
+python3 tools/validate.py \
   --game-root '/path/to/Victoria 3/game' \
-  --cmf-root '/path/to/3385002128'
-python3 -m unittest discover -s tests
+  --cmf-root '/path/to/3385002128' \
+  --tiger
 ```
 
-The gate fails on an unmanifested or stale collision/replacement, upstream drift, mod/object drift, changed state-region membership, dependency-baseline drift, or descriptor version/`replace_path` drift. Hash updates are review actions, not an automatic acceptance workflow.
+The suite runs unit, resource, override, map-connectivity, localisation, stale-symbol, and delayed-event lifecycle checks. With proprietary dependencies available, it also compares Vanilla/CMF baselines and runs Tiger. Missing proprietary dependencies report `SKIP`; CI does not require them.
+
+The override gate fails on an unmanifested or stale collision/replacement, upstream drift, mod/object drift, changed state-region membership, dependency-baseline drift, or descriptor version/`replace_path` drift. Hash updates are review actions, not an automatic acceptance workflow.
 
 ## Directory replacement policy
 

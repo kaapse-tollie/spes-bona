@@ -9,6 +9,10 @@ on_law_enactment_started = {
 	on_actions = { sb_on_cape_law_enactment_started }
 }
 
+on_law_enactment_ended = {
+	on_actions = { sb_on_cape_law_enactment_ended }
+}
+
 sb_on_cape_law_enactment_started = {
 	effect = {
 		if = {
@@ -20,8 +24,23 @@ sb_on_cape_law_enactment_started = {
 					NOT = { has_amendment = amendment_type:amendment_sb_cape_qualified_franchise }
 				}
 			}
-			set_variable = sb_cqf_first_checkpoint_pending_var
+			set_variable = {
+				name = sb_cqf_first_checkpoint_pending_var
+				days = 30
+			}
 			trigger_event = { id = sb_cape.130 days = 21 popup = yes }
+		}
+	}
+}
+
+sb_on_cape_law_enactment_ended = {
+	effect = {
+		if = {
+			limit = {
+				country_definition = cd:CAP
+				has_variable = sb_cqf_first_checkpoint_pending_var
+			}
+			remove_variable = sb_cqf_first_checkpoint_pending_var
 		}
 	}
 }

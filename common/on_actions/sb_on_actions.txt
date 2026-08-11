@@ -61,7 +61,7 @@ on_monthly_pulse_country = {
 }
 
 on_yearly_pulse_country = {
-	on_actions = { sb_on_cape_yearly_pulse_country sb_on_namibia_yearly_pulse_country }
+	on_actions = { sb_on_cape_yearly_pulse_country }
 }
 
 on_acquired_technology = {
@@ -455,6 +455,15 @@ sb_on_game_started = {
 }
 
 sb_on_eastern_sphere_monthly_pulse_country = {
+	trigger = {
+		OR = {
+			country_definition = cd:GBR
+			country_definition = cd:GZA
+			country_definition = cd:NGN
+			country_has_primary_culture = cu:portuguese
+			country_has_primary_culture = cu:boer
+		}
+	}
 	effect = {
 		sb_eastern_sphere_monthly_housekeeping = yes
 	}
@@ -478,6 +487,7 @@ sb_on_mozambique_company_disbanded = {
 }
 
 sb_on_natal_colony_monthly_pulse_country = {
+	trigger = { country_definition = cd:NAL }
 	effect = {
 		sb_ensure_british_natal_colony_governor = yes
 		sb_klip_river_county_monthly_housekeeping = yes
@@ -732,6 +742,18 @@ sb_on_spes_bona_colony_created = {
 }
 
 sb_on_cape_monthly_pulse_country = {
+	trigger = {
+		OR = {
+			country_has_primary_culture = cu:british
+			country_has_primary_culture = cu:anglo_african
+			country_has_primary_culture = cu:boer
+			country_definition = cd:XHO
+			any_scope_state = {
+				state_region = s:STATE_EASTERN_CAPE
+				has_state_trait = state_trait_sb_xhosa_resistance
+			}
+		}
+	}
 	effect = {
 		if = {
 			limit = {
@@ -871,9 +893,10 @@ sb_on_cape_monthly_pulse_country = {
 						OR = {
 							country_definition = cd:CAP
 						country_definition = cd:ABY
-						}
-						is_country_alive = yes
-							OR = {
+							}
+							is_country_alive = yes
+							sb_xhosa_frontier_war_target_is_launchable = yes
+								OR = {
 								is_player = yes
 								sb_xhosa_frontier_ai_wars_enabled = yes
 							}
@@ -1364,6 +1387,14 @@ sb_on_cape_secession_start = {
 # Trek-side monthly pulse. This keeps the slower-boiling republican content
 # away from the already-busy Cape monthly block.
 sb_on_trek_monthly_pulse_country = {
+	trigger = {
+		OR = {
+			country_has_primary_culture = cu:boer
+			country_definition = cd:MTB
+			country_definition = cd:GBR
+			country_definition = cd:BST
+		}
+	}
 	effect = {
 		if = {
 			limit = { country_definition = cd:ORA }
@@ -1614,6 +1645,14 @@ sb_on_trek_monthly_pulse_country = {
 				months = 240
 			}
 			set_variable = sb_natalia_ultimatum_truce_var
+		}
+
+		if = {
+			limit = {
+				country_definition = cd:NAL
+				has_variable = sb_natalia_player_consultation_ready_var
+			}
+			sb_natalia_try_finish_player_consultation = yes
 		}
 
 			# 1850s Boer confederal crisis hooks. These only schedule one-off events
@@ -1959,6 +1998,13 @@ sb_on_martinus_union_election_end = {
 
 # Post-trek republican recognition and Zoutpansberg crisis timing.
 sb_on_zpb_monthly_pulse_country = {
+	trigger = {
+		OR = {
+			country_definition = cd:GBR
+			country_definition = cd:TRN
+			country_definition = cd:ORA
+		}
+	}
 	effect = {
 			if = {
 				limit = {
@@ -2099,6 +2145,7 @@ sb_on_zpb_monthly_pulse_country = {
 }
 
 sb_on_gbr_colonial_offices_monthly_pulse_country = {
+	trigger = { country_definition = cd:GBR }
 	effect = {
 		if = {
 			limit = { country_definition = cd:GBR }
@@ -2163,6 +2210,51 @@ sb_on_spes_bona_diplomatic_play_started = {
 		sb_withdraw_ai_frontier_goods_exports_to_boers = yes
 		sb_restore_ai_frontier_force_floors_for_play = yes
 		c:GBR ?= { sb_gbr_refresh_boer_restraint = yes }
+		if = {
+			limit = { is_diplomatic_play_type = dp_sb_xhosa_war_7 }
+			scope:target ?= {
+				if = {
+					limit = {
+						OR = {
+							country_definition = cd:CAP
+							country_definition = cd:ABY
+						}
+					}
+					set_variable = sb_xhosa_frontier_war_7_resolved_var
+					if = { limit = { has_variable = sb_xhosa_frontier_war_7_scheduled_var } remove_variable = sb_xhosa_frontier_war_7_scheduled_var }
+				}
+			}
+		}
+		if = {
+			limit = { is_diplomatic_play_type = dp_sb_xhosa_war_8 }
+			scope:target ?= {
+				if = {
+					limit = {
+						OR = {
+							country_definition = cd:CAP
+							country_definition = cd:ABY
+						}
+					}
+					set_variable = sb_xhosa_frontier_war_8_resolved_var
+					if = { limit = { has_variable = sb_xhosa_frontier_war_8_scheduled_var } remove_variable = sb_xhosa_frontier_war_8_scheduled_var }
+				}
+			}
+		}
+		if = {
+			limit = { is_diplomatic_play_type = dp_sb_xhosa_war_9 }
+			scope:target ?= {
+				if = {
+					limit = {
+						OR = {
+							country_definition = cd:CAP
+							country_definition = cd:ABY
+						}
+					}
+					set_variable = sb_xhosa_frontier_war_9_resolved_var
+					if = { limit = { has_variable = sb_xhosa_frontier_war_9_scheduled_var } remove_variable = sb_xhosa_frontier_war_9_scheduled_var }
+				}
+			}
+		}
 		if = {
 			limit = {
 				is_diplomatic_play_type = dp_sb_natal_crisis
@@ -2773,6 +2865,16 @@ sb_on_spes_bona_war_end = {
 }
 
 sb_on_frontier_force_monthly_pulse_country = {
+	trigger = {
+		OR = {
+			country_definition = cd:ZUL
+			country_definition = cd:SWZ
+			country_definition = cd:GZA
+			country_definition = cd:BST
+			has_modifier = sb_frontier_levy_reconstitution
+			has_modifier = sb_amabutho_levy_reconstitution
+		}
+	}
 	effect = {
 		if = {
 			limit = { sb_frontier_ai_force_floor_eligible = yes }

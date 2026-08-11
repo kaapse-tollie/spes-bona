@@ -9,9 +9,9 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
-ROOT = Path("/Users/depro/Documents/Paradox Interactive/Victoria 3/mod")
-REPO = ROOT / "Spes Bona - A Southern Africa Flavour Pack"
-PUBLIC_ROOT = REPO / "resource-rework/resources"
+PUBLIC_ROOT = Path(__file__).resolve().parents[2]
+REPO = PUBLIC_ROOT.parents[1]
+ROOT = REPO.parent
 AUDIT_DIR = PUBLIC_ROOT / "audit"
 DERIVED_DIR = PUBLIC_ROOT / "data/derived"
 BUILDER = PUBLIC_ROOT / "scripts/_internal/build_resources_workbook.py"
@@ -145,7 +145,7 @@ def duplicate_active_keys(rows: list[dict[str, str]], logical_key_fields: list[s
     return duplicates
 
 
-def run_tests() -> str:
+def run_tests(*, write_report: bool = True) -> str:
     builder = load_builder()
     readme_text = README.read_text(encoding="utf-8")
     data_readme_text = DATA_README.read_text(encoding="utf-8") if DATA_README.exists() else ""
@@ -974,7 +974,7 @@ def run_tests() -> str:
     results.append(
         CheckResult(
             "loop surfaces persist stateful progress after the v3 reset",
-            "PASS",
+            "FAIL" if reset_baseline else "PASS",
             tracker_surface_detail,
         )
     )
@@ -1067,6 +1067,7 @@ def run_tests() -> str:
             "",
         ]
     )
-    REPORT.parent.mkdir(parents=True, exist_ok=True)
-    REPORT.write_text(report, encoding="utf-8")
+    if write_report:
+        REPORT.parent.mkdir(parents=True, exist_ok=True)
+        REPORT.write_text(report, encoding="utf-8")
     return report

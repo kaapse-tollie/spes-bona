@@ -24,8 +24,8 @@ Spes Bona is a Victoria 3 regional flavor mod for greater Southern Africa built 
 
 ## Requirements
 
-- Victoria 3 `1.12.5`
-- Community Mod Framework
+- Victoria 3 `1.13.9`
+- Community Mod Framework `1.58.2`
 
 ## Compatibility
 
@@ -43,46 +43,32 @@ It will conflict with other mods that substantially rewrite Southern Africa in 1
 
 ## Documentation
 
-The live repo docs are now the source of truth:
+The live repository documentation is the source of truth:
 
-- [docs/current_state.md](/Users/depro/Documents/Paradox%20Interactive/Victoria%203/mod/Spes%20Bona%20-%20A%20Southern%20Africa%20Flavour%20Pack/docs/current_state.md)
-- [docs/testing_checklist.md](/Users/depro/Documents/Paradox%20Interactive/Victoria%203/mod/Spes%20Bona%20-%20A%20Southern%20Africa%20Flavour%20Pack/docs/testing_checklist.md)
-- [docs/flag_texture_scaffolds.md](/Users/depro/Documents/Paradox%20Interactive/Victoria%203/mod/Spes%20Bona%20-%20A%20Southern%20Africa%20Flavour%20Pack/docs/flag_texture_scaffolds.md)
+- [Audit issue register](Docs/audit_issue_register.md)
+- [Override manifest](Docs/compatibility/override_manifest.md)
+- [Third-party compatibility notes](Docs/compatibility/third_party_compatibility.md)
+- [Cross-tag event travel times](Docs/cross_tag_event_travel_times.md)
+- [Bechuanaland map-connectivity exception](Docs/bechuanaland_map_connectivity.md)
 
 ## Validation
 
-Before parser or map validation, enforce the reviewed Vanilla/CMF override surface and run its mutation tests:
+Run the portable, non-writing validation suite from the repository root:
 
 ```sh
-python3 tools/check_override_inventory.py \
-  --game-root '/Users/depro/Library/Application Support/Steam/steamapps/common/Victoria 3/game' \
-  --cmf-root '/Users/depro/Library/Application Support/Steam/steamapps/workshop/content/529340/3385002128'
-python3 -m unittest discover -s tests
+python3 tools/validate.py
 ```
 
-Current standard parser validation command:
+When the proprietary dependencies are available, include explicit Vanilla/CMF comparison and Tiger validation:
 
 ```sh
-vic3-tiger -c --unused --no-color \
-  --game '/Users/depro/Library/Application Support/Steam/steamapps/common/Victoria 3' \
-  --workshop '/Users/depro/Library/Application Support/Steam/steamapps/workshop/content/529340' \
-  'Spes Bona - A Southern Africa Flavour Pack'
+python3 tools/validate.py \
+  --game-root '/path/to/Victoria 3/game' \
+  --cmf-root '/path/to/3385002128' \
+  --tiger
 ```
 
-For Southern Africa `map_data/state_regions` and `map_data/province_terrains.txt` edits, run:
-
-```sh
-python3 tools/check_state_region_hub_impassables.py
-```
-
-Then validate from a cold restart. Do not rely on filewatcher hot reload for map-data changes.
-
-Current target state:
-
-- `0 fatals`
-- `0 errors`
-- `0 warnings`
-- `0 untidy`
+Missing proprietary dependencies report `SKIP`; CI does not require them. Tiger is useful for parser validation, but cold-launch logs and fresh-start smoke tests remain authoritative. Do not rely on filewatcher hot reload for map-data or startup-history changes.
 
 ## Current Priority
 

@@ -65,6 +65,10 @@ REPLACE:law_frontier_colonization = {
 
 	progressiveness = 0
 
+	disallowing_laws = {
+		law_sakoku
+	}
+
 	unlocking_technologies = {
 		colonization
 	}
@@ -95,8 +99,20 @@ REPLACE:law_frontier_colonization = {
 		}
 	}
 
-	ai_enact_weight_modifier = {
+	ai_enact_weight_modifier = { #Petitions
 		value = 0
+
+		if = {
+			limit = { ai_has_enact_weight_modifier_journal_entries = yes }
+			add = 750
+		}
+
+		if = {
+			limit = {
+				has_journal_entry = je_taming_the_north
+			}
+			add = 250
+		}
 	}
 
 	ai_impose_chance = {

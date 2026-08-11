@@ -24,7 +24,7 @@ Spes Bona changes these state regions:
 
 `STATE_CAPE_COLONY`, `STATE_EASTERN_CAPE`, `STATE_NORTHERN_CAPE`, `STATE_VRYSTAAT`, `STATE_TRANSVAAL`, `STATE_EAST_TRANSVAAL`, `STATE_NORTHERN_TRANSVAAL`, `STATE_DRAKENSBERG`, `STATE_ZULULAND`, `STATE_BOTSWANA`, `STATE_BECHUANALAND`, `STATE_GRIQUALAND_WEST`, `STATE_NAMAQUALAND`, `STATE_HEREROLAND`, `STATE_ZAMBEZI`, `STATE_ZAMBEZIA`, and `STATE_LOURENCO_MARQUES`.
 
-Mods editing those region blocks need a compatibility patch. Spes Bona also ships global province-raster, terrain, locator, spline-network, and journal-GUI baselines, so an otherwise unrelated map or UI mod can still collide at file level. The exhaustive, hash-pinned surface is recorded in `override_inventory.json` and enforced by `tools/check_override_inventory.py`.
+Mods editing those region blocks need a compatibility patch. Spes Bona also ships global province-raster, terrain, locator, spline-network, and journal-GUI baselines, so an otherwise unrelated map or UI mod can still collide at file level. The exhaustive, hash-pinned surface is recorded in `override_inventory.json` and enforced through `python3 tools/validate.py`.
 
 ## Treaty History Compatibility
 

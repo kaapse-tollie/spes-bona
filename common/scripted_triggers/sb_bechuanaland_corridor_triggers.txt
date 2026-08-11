@@ -50,8 +50,8 @@ sb_bechuanaland_swa_active_sponsor = {
 }
 
 sb_bechuanaland_cap_is_swa_overlord_subject = {
-	has_global_variable = sb_bechuanaland_crisis_swa_overlord_global_scope
-	global_var:sb_bechuanaland_crisis_swa_overlord_global_scope = {
+	any_country = {
+		sb_bechuanaland_swa_direct_overlord = yes
 		c:CAP ?= {
 			is_country_alive = yes
 			is_direct_subject_of = PREV
@@ -379,6 +379,22 @@ sb_bechuanaland_warren_decision_window_is_valid = {
 	has_global_variable = sb_bechuanaland_warren_decision_pending_global_var
 	NOT = { has_global_variable = sb_bechuanaland_caprivi_decision_pending_global_var }
 	sb_bechuanaland_no_decentralized_corridor_land = yes
+	is_country_alive = yes
+	c:CAP ?= {
+		is_country_alive = yes
+		is_subject_of = c:GBR
+	}
+	OR = {
+		AND = {
+			has_variable = sb_bechuanaland_cap_warren_demand_var
+			c:CAP ?= { sb_bechuanaland_cap_has_corridor_foothold = yes }
+		}
+		AND = {
+			has_variable = sb_bechuanaland_gbr_warren_demand_var
+			c:GBR ?= { is_country_alive = yes }
+			sb_bechuanaland_boer_sphere_controls_dual_corridor = yes
+		}
+	}
 }
 
 sb_bechuanaland_caprivi_decision_window_is_valid = {

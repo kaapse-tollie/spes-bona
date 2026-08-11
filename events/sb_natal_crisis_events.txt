@@ -954,10 +954,27 @@ sb_natal_crisis.108 = {
 					NOT = { has_variable = sb_natalia_british_colony_resolved_var }
 				}
 			}
-			c:NAL ?= { trigger_event = { id = sb_natal_crisis.110 popup = yes } }
+			c:NAL ?= {
+				if = {
+					limit = {
+						any_country = {
+							has_variable = sb_natalia_player_appeal_outstanding_var
+						}
+					}
+					set_variable = {
+						name = sb_natalia_player_consultation_ready_var
+						days = 150
+					}
+				}
+				else = {
+					sb_natalia_clear_player_consultation = yes
+					trigger_event = { id = sb_natal_crisis.110 popup = yes }
+				}
+			}
 		}
 		else = {
 			c:NAL ?= {
+				sb_natalia_clear_player_consultation = yes
 				if = {
 					limit = { has_variable = sb_british_natal_ultimatum_var }
 					remove_variable = sb_british_natal_ultimatum_var
@@ -1000,6 +1017,11 @@ sb_natal_crisis.109 = {
 				NOT = { has_variable = sb_natalia_british_colony_resolved_var }
 				c:GBR ?= { is_country_alive = yes }
 			}
+			sb_natalia_clear_player_consultation = yes
+			set_variable = {
+				name = sb_natalia_player_consultation_pending_var
+				days = 150
+			}
 			every_country = {
 				limit = {
 					is_country_alive = yes
@@ -1007,11 +1029,16 @@ sb_natal_crisis.109 = {
 					country_has_primary_culture = cu:boer
 					NOT = { country_definition = cd:NAL }
 				}
+				set_variable = {
+					name = sb_natalia_player_appeal_outstanding_var
+					days = 120
+				}
 				trigger_event = { id = sb_natal_crisis.119 days = sb_natalia_boer_appeal_message_days popup = yes }
 			}
 			c:GBR ?= { trigger_event = { id = sb_natal_crisis.108 days = 9 popup = no } }
 		}
 		else = {
+			sb_natalia_clear_player_consultation = yes
 			remove_variable = sb_british_natal_ultimatum_var
 			if = {
 				limit = { has_variable = sb_natalia_player_boer_support_pledged_var }
@@ -1724,12 +1751,13 @@ sb_natal_crisis.119 = {
 
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
 	icon = "gfx/interface/icons/event_icons/event_default.dds"
-	duration = 3
+	duration = 90
 
 	trigger = {
 		is_player = yes
 		country_has_primary_culture = cu:boer
 		NOT = { country_definition = cd:NAL }
+		has_variable = sb_natalia_player_appeal_outstanding_var
 		c:NAL ?= {
 			is_country_alive = yes
 			has_variable = sb_british_natal_ultimatum_var
@@ -1747,12 +1775,12 @@ sb_natal_crisis.119 = {
 		default_option = yes
 		set_variable = {
 			name = sb_natalia_player_support_pledged_var
-			months = 3
+			months = 9
 		}
 		scope:natalia ?= {
 			set_variable = {
 				name = sb_natalia_player_boer_support_pledged_var
-				months = 3
+				months = 9
 			}
 		}
 		if = {
@@ -1767,6 +1795,8 @@ sb_natal_crisis.119 = {
 			value = 20
 		}
 		custom_tooltip = sb_natalia_player_support_pledge_tt
+		remove_variable = sb_natalia_player_appeal_outstanding_var
+		scope:natalia ?= { sb_natalia_try_finish_player_consultation = yes }
 	}
 
 	option = {
@@ -1779,5 +1809,7 @@ sb_natal_crisis.119 = {
 			country = scope:britain
 			value = 10
 		}
+		remove_variable = sb_natalia_player_appeal_outstanding_var
+		scope:natalia ?= { sb_natalia_try_finish_player_consultation = yes }
 	}
 }

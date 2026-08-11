@@ -59,10 +59,12 @@ def cmd_sync_live() -> None:
     print(f"Tracked {len(synced_result['resource_adjustment_rows'])} state-resource result rows")
 
 
-def cmd_test() -> None:
+def cmd_test(*, write_report: bool = True) -> None:
     tester = load_module("resources_tester", "test_resources_pipeline.py")
-    report = tester.run_tests()
+    report = tester.run_tests(write_report=write_report)
     print(report)
+    if report_has_failures(report):
+        raise SystemExit(1)
 
 
 def report_has_failures(report: str) -> bool:
@@ -201,7 +203,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Run exactly one state audit pass: rebuild, test, update the tracker, rebuild, retest, and stop without live sync.",
     )
     subparsers.add_parser("sync-live", help="Sync audited caps into the live SB state file, then rebuild outputs.")
-    subparsers.add_parser("test", help="Run the public audit tests and rewrite the test report.")
+    test_parser = subparsers.add_parser("test", help="Run the public audit tests and rewrite the test report.")
+    test_parser.add_argument(
+        "--no-write",
+        action="store_true",
+        help="Run read-only without rewriting the checked-in Markdown report.",
+    )
     subparsers.add_parser(
         "refresh-public-data",
         help="Freeze raw public snapshots from the maintainer-side research pipeline.",
@@ -227,7 +234,7 @@ def main() -> None:
     elif args.command == "sync-live":
         cmd_sync_live()
     elif args.command == "test":
-        cmd_test()
+        cmd_test(write_report=not args.no_write)
     elif args.command == "refresh-public-data":
         cmd_refresh_public_data()
     elif args.command == "refresh-comparators":

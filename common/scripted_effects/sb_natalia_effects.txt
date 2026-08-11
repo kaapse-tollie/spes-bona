@@ -745,3 +745,66 @@ sb_found_natalia_after_guns_bargain_rejection = {
 		}
 	}
 }
+
+# ROOT = NAL. Consultation state is centralized here so invalidation and timeout
+# recovery cannot leave one Boer player's reply marker blocking the ultimatum.
+sb_natalia_clear_player_consultation = {
+	if = {
+		limit = { has_variable = sb_natalia_player_consultation_pending_var }
+		remove_variable = sb_natalia_player_consultation_pending_var
+	}
+	if = {
+		limit = { has_variable = sb_natalia_player_consultation_ready_var }
+		remove_variable = sb_natalia_player_consultation_ready_var
+	}
+	every_country = {
+		limit = { has_variable = sb_natalia_player_appeal_outstanding_var }
+		remove_variable = sb_natalia_player_appeal_outstanding_var
+	}
+}
+
+# ROOT = NAL. The nine-day aggregation event opens this gate; the last player
+# response, or the monthly timeout repair, then advances the chain immediately.
+sb_natalia_try_finish_player_consultation = {
+	if = {
+		limit = {
+			has_variable = sb_natalia_player_consultation_pending_var
+			has_variable = sb_natalia_player_consultation_ready_var
+			NOT = {
+				any_country = {
+					has_variable = sb_natalia_player_appeal_outstanding_var
+				}
+			}
+		}
+		if = {
+			limit = {
+				is_country_alive = yes
+				is_subject = no
+				is_at_war = no
+				is_active_in_diplomatic_play = no
+				has_variable = sb_british_natal_ultimatum_var
+				NOT = { has_diplomatic_pact = { who = c:GBR type = colony } }
+				NOT = { has_variable = sb_natalia_british_colony_resolved_var }
+				c:GBR ?= {
+					is_country_alive = yes
+					has_variable = sb_british_natal_ultimatum_var
+				}
+			}
+			sb_natalia_clear_player_consultation = yes
+			c:GBR ?= { trigger_event = { id = sb_natal_crisis.108 days = 1 popup = no } }
+		}
+		else = {
+			sb_natalia_clear_player_consultation = yes
+			if = {
+				limit = { has_variable = sb_british_natal_ultimatum_var }
+				remove_variable = sb_british_natal_ultimatum_var
+			}
+			c:GBR ?= {
+				if = {
+					limit = { has_variable = sb_british_natal_ultimatum_var }
+					remove_variable = sb_british_natal_ultimatum_var
+				}
+			}
+		}
+	}
+}
