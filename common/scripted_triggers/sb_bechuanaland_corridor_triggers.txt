@@ -49,6 +49,16 @@ sb_bechuanaland_swa_active_sponsor = {
 	}
 }
 
+sb_bechuanaland_cap_is_swa_overlord_subject = {
+	has_global_variable = sb_bechuanaland_crisis_swa_overlord_global_scope
+	global_var:sb_bechuanaland_crisis_swa_overlord_global_scope = {
+		c:CAP ?= {
+			is_country_alive = yes
+			is_direct_subject_of = PREV
+		}
+	}
+}
+
 # Root-agnostic: either GBR directly owns SWA or its current direct overlord
 # has an alliance/defensive-pact treaty with GBR.
 sb_bechuanaland_swa_overlord_is_british_aligned = {
@@ -164,6 +174,164 @@ sb_bechuanaland_is_primary_boer_actor = {
 		}
 	}
 }
+
+sb_bechuanaland_swa_o_finances_exhausted = {
+	net_fixed_income < 0
+	gold_reserves <= {
+		value = gold_reserves_limit
+		multiply = -0.67
+	}
+}
+
+sb_bechuanaland_ai_in_default_or_bankrupt = {
+	OR = {
+		in_default = yes
+		has_modifier = declared_bankruptcy
+	}
+}
+
+sb_bechuanaland_ai_has_positive_finances = {
+	net_fixed_income > 0
+	gold_reserves > 0
+}
+
+sb_bechuanaland_ai_is_running_deficit = {
+	net_fixed_income < 0
+	gold_reserves < 0
+}
+
+sb_bechuanaland_ai_has_brewing_insurrection = {
+	any_political_movement = {
+		political_movement_radicalism >= 0.75
+	}
+}
+
+sb_bechuanaland_ai_gbr_at_war_with_other_gp = {
+	country_definition = cd:GBR
+	has_global_variable = sb_bechuanaland_swa_overlord_global_scope
+	any_enemy_in_war = {
+		country_rank = rank_value:great_power
+		NOT = { this = global_var:sb_bechuanaland_swa_overlord_global_scope }
+	}
+}
+
+sb_bechuanaland_ai_swa_side_has_player = {
+	OR = {
+		c:SWA ?= { is_country_alive = yes is_player = yes }
+		AND = {
+			has_global_variable = sb_bechuanaland_swa_overlord_global_scope
+			global_var:sb_bechuanaland_swa_overlord_global_scope = {
+				is_country_alive = yes
+				is_player = yes
+			}
+		}
+	}
+}
+
+sb_bechuanaland_ai_main_boer_is_trn_with_confederal_ora = {
+	has_global_variable = sb_bechuanaland_boer_actor_global_scope
+	global_var:sb_bechuanaland_boer_actor_global_scope = {
+		country_definition = cd:TRN
+		c:ORA ?= {
+			is_country_alive = yes
+			is_direct_subject_of = global_var:sb_bechuanaland_boer_actor_global_scope
+			is_subject_type = subject_type_sb_boer_confederal_partner
+		}
+	}
+}
+
+sb_bechuanaland_ai_main_boer_is_ora_kimberley_winner = {
+	has_global_variable = sb_bechuanaland_boer_actor_global_scope
+	has_global_variable = sb_kimberley_boer_victory_global_var
+	global_var:sb_bechuanaland_boer_actor_global_scope = {
+		country_definition = cd:ORA
+	}
+}
+
+sb_bechuanaland_ai_main_boer_is_trn_confederal_kimberley_winner = {
+	has_global_variable = sb_kimberley_boer_victory_global_var
+	sb_bechuanaland_ai_main_boer_is_trn_with_confederal_ora = yes
+}
+
+sb_bechuanaland_ai_main_boer_gdp_above_cap = {
+	c:CAP ?= { is_country_alive = yes }
+	has_global_variable = sb_bechuanaland_boer_actor_global_scope
+	global_var:sb_bechuanaland_boer_actor_global_scope = {
+		gdp > c:CAP.gdp
+		gdp < { value = c:CAP.gdp multiply = 2 }
+	}
+}
+
+sb_bechuanaland_ai_main_boer_gdp_twice_cap = {
+	c:CAP ?= { is_country_alive = yes }
+	has_global_variable = sb_bechuanaland_boer_actor_global_scope
+	global_var:sb_bechuanaland_boer_actor_global_scope = {
+		gdp >= { value = c:CAP.gdp multiply = 2 }
+	}
+}
+
+sb_bechuanaland_ai_main_boer_gdp_at_most_three_quarters_cap = {
+	c:CAP ?= { is_country_alive = yes }
+	has_global_variable = sb_bechuanaland_boer_actor_global_scope
+	global_var:sb_bechuanaland_boer_actor_global_scope = {
+		gdp <= { value = c:CAP.gdp multiply = 0.75 }
+	}
+}
+
+sb_bechuanaland_ai_main_boer_army_above_cap = {
+	c:CAP ?= { is_country_alive = yes }
+	has_global_variable = sb_bechuanaland_boer_actor_global_scope
+	global_var:sb_bechuanaland_boer_actor_global_scope = {
+		army_power_projection > c:CAP.army_power_projection
+		army_power_projection < { value = c:CAP.army_power_projection multiply = 2 }
+	}
+}
+
+sb_bechuanaland_ai_main_boer_army_twice_cap = {
+	c:CAP ?= { is_country_alive = yes }
+	has_global_variable = sb_bechuanaland_boer_actor_global_scope
+	global_var:sb_bechuanaland_boer_actor_global_scope = {
+		army_power_projection >= { value = c:CAP.army_power_projection multiply = 2 }
+	}
+}
+
+sb_bechuanaland_ai_main_boer_army_at_most_three_quarters_cap = {
+	c:CAP ?= { is_country_alive = yes }
+	has_global_variable = sb_bechuanaland_boer_actor_global_scope
+	global_var:sb_bechuanaland_boer_actor_global_scope = {
+		army_power_projection <= { value = c:CAP.army_power_projection multiply = 0.75 }
+	}
+}
+
+sb_bechuanaland_fighting_british_side = {
+	is_at_war = yes
+	any_enemy_in_war = {
+		OR = {
+			country_definition = cd:GBR
+			country_definition = cd:CAP
+		}
+	}
+}
+
+sb_bechuanaland_boer_swa_network_fighting_british_side = {
+	OR = {
+		c:SWA ?= { sb_bechuanaland_fighting_british_side = yes }
+		AND = {
+			has_global_variable = sb_bechuanaland_boer_actor_global_scope
+			any_country = {
+				sb_bechuanaland_fighting_british_side = yes
+				OR = {
+					this = global_var:sb_bechuanaland_boer_actor_global_scope
+					AND = {
+						country_has_primary_culture = cu:boer
+						is_subject_of = global_var:sb_bechuanaland_boer_actor_global_scope
+					}
+				}
+			}
+		}
+	}
+}
+
 # Global terminal guard shared by decisions, queues, and delayed launch retries.
 sb_bechuanaland_corridor_crisis_is_live = {
 	has_global_variable = sb_bechuanaland_corridor_open_global_var
@@ -210,6 +378,7 @@ sb_bechuanaland_warren_decision_window_is_valid = {
 	sb_bechuanaland_crisis_decision_window_is_valid = yes
 	has_global_variable = sb_bechuanaland_warren_decision_pending_global_var
 	NOT = { has_global_variable = sb_bechuanaland_caprivi_decision_pending_global_var }
+	sb_bechuanaland_no_decentralized_corridor_land = yes
 }
 
 sb_bechuanaland_caprivi_decision_window_is_valid = {
@@ -225,6 +394,7 @@ sb_bechuanaland_caprivi_decision_window_is_valid = {
 sb_bechuanaland_is_corridor_diplomatic_play = {
 	OR = {
 		is_diplomatic_play_type = dp_sb_bechuanaland_direct_intervention_locked
+		is_diplomatic_play_type = dp_sb_bechuanaland_warren_intervention_locked
 		is_diplomatic_play_type = dp_sb_bechuanaland_proxy_intervention_locked
 		is_diplomatic_play_type = dp_sb_bechuanaland_proxy_namaqualand_locked
 		is_diplomatic_play_type = dp_sb_bechuanaland_cap_sgo_return
@@ -280,18 +450,44 @@ sb_bechuanaland_crisis_launch_participants_ready = {
 	# wars or diplomatic plays. The former peace/activity gate could strand a
 	# Caprivi choice forever even though the proxy sponsor was not a participant.
 	OR = {
-		has_global_variable = sb_bechuanaland_crisis_proxy_route_global_var
 		AND = {
-			has_global_variable = sb_bechuanaland_crisis_direct_route_global_var
+			has_global_variable = sb_bechuanaland_crisis_caprivi_route_global_var
+			OR = {
+				has_global_variable = sb_bechuanaland_crisis_proxy_route_global_var
+				AND = {
+					has_global_variable = sb_bechuanaland_crisis_direct_route_global_var
+					c:CAP ?= {
+						is_direct_subject_of = c:GBR
+						sb_bechuanaland_subject_can_be_transferred = yes
+					}
+					c:SWA ?= { sb_bechuanaland_subject_can_be_transferred = yes }
+					global_var:sb_bechuanaland_crisis_swa_overlord_global_scope = {
+						can_transfer_subject = c:CAP
+					}
+					c:GBR ?= { can_transfer_subject = c:SWA }
+				}
+			}
+		}
+		AND = {
+			NOT = { has_global_variable = sb_bechuanaland_crisis_caprivi_route_global_var }
+			has_global_variable = sb_bechuanaland_warren_defender_global_scope
+			global_var:sb_bechuanaland_warren_defender_global_scope = {
+				is_country_alive = yes
+				NOT = { is_subject_of = c:GBR }
+			}
 			c:CAP ?= {
-				is_direct_subject_of = c:GBR
-				sb_bechuanaland_subject_can_be_transferred = yes
+				any_scope_state = {
+					state_region = s:STATE_BECHUANALAND
+					num_provinces >= 1
+				}
 			}
-			c:SWA ?= { sb_bechuanaland_subject_can_be_transferred = yes }
-			global_var:sb_bechuanaland_crisis_swa_overlord_global_scope = {
-				can_transfer_subject = c:CAP
+			c:SGO ?= {
+				is_country_alive = yes
+				any_scope_state = {
+					state_region = s:STATE_BECHUANALAND
+					num_provinces >= 1
+				}
 			}
-			c:GBR ?= { can_transfer_subject = c:SWA }
 		}
 	}
 }
@@ -308,6 +504,17 @@ sb_bechuanaland_tsw_holds_beachhead_province = {
 		is_country_alive = yes
 		s:STATE_BECHUANALAND = {
 			any_scope_state = { owner = c:TSW }
+		}
+	}
+}
+
+sb_bechuanaland_no_decentralized_corridor_land = {
+	s:STATE_BECHUANALAND = {
+		NOT = {
+			any_scope_state = {
+				num_provinces >= 1
+				owner = { is_country_type = decentralized }
+			}
 		}
 	}
 }

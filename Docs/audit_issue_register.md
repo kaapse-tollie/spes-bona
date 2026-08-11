@@ -1,6 +1,7 @@
 ﻿# Repository Audit Issue Register
 
 **Audit date:** 2026-08-06  
+**Latest status refresh:** 2026-08-11 (Bechuanaland live scripts and current 1.13.9 `error.log`)
 **Original audit baseline:** `e5706779e0d9fed7f93d930301c5e8162ea09f05` plus ten Bechuanaland files, committed as `45d804a069721db82bfa38d36f6e076ecee9a076`
 **Critical remediation commit:** `48d8794776532ae0739cabe54c07cb4a97c24272`
 **Very High remediation baseline:** `48d8794776532ae0739cabe54c07cb4a97c24272`
@@ -27,11 +28,11 @@ Severity order: **Critical → Very High → High → Medium-High → Medium →
 
 **No open Critical, Very High, High, or Medium-High findings remain after this pass.**
 
-Open inventory after the Medium-High pass: **21 Medium, 25 Medium-Low, and 13 Low/blocked**. Eight findings were resolved; `SUP-05` was explicitly deferred from Medium-High to Low/blocked because spline edits are not cross-mod compatible. The lists below intentionally divide the remaining tiers into small remediation batches.
+Open inventory after the Bechuanaland refresh: **21 Medium, 23 Medium-Low, and 13 Low/blocked**. Since the Medium-High pass, `BC-02` and `BC-23` were resolved, `BC-17` was accepted as intentional pacing, and current logs added `BC-24`. `SUP-05` remains explicitly deferred from Medium-High to Low/blocked because spline edits are not cross-mod compatible. The lists below intentionally divide the remaining tiers into small remediation batches.
 
 ## Highest-priority open items
 
-1. Contained Bechuanaland popup, AI, hierarchy, claim, and settlement defects (`BC-02`, `BC-04`, `BC-15`, `BC-18`, `BC-19`, `BC-21`).
+1. Contained Bechuanaland AI, hierarchy, claim, settlement, and scope defects (`BC-04`, `BC-15`, `BC-18`, `BC-19`, `BC-21`, `BC-24`).
 2. Delayed-chain locks, player-action races, and consumed progression (`GP-07`, `GP-11`, `GP-12`, `GP-13`, `GP-15`).
 3. Compatibility, presentation, pathing, validation, and defensive-lifecycle integrity (`CP-03`, `CP-05`, `SUP-01`, `SUP-07`, `QUAL-04`, `QUAL-08`).
 4. Highest-cost recurring-work candidates (`PERF-04`, `PERF-05`, `PERF-06`, `PERF-10`).
@@ -46,9 +47,9 @@ Open inventory after the Medium-High pass: **21 Medium, 25 Medium-Low, and 13 Lo
 
 Static control-flow validation confirms that a stale/cancelled window cannot clear or replace another queued route or relaunch a terminal corridor. Runtime tests should still cover simultaneous button attempts, held-open popups, lease expiry, participant death/overlord change, and save/load at each transition.
 
-### BC-02 — Medium — Boer choice event can be dispatched repeatedly
+### ~~BC-02 — Resolved (formerly Medium) — Boer choice dispatch is globally leased~~
 
-**Confirmed.** The `.032` dispatch flag lasts 15 days (`effects:1180-1187`), but `.032` is a duration-three event (`events:337-377`) and the monthly retry calls the launch effect again. An unanswered player popup can therefore be redispatched, leaving competing support/neutrality choices.
+**Fixed in the live August 11 scripts; held-event regression remains.** Direct and proxy Boer responses share one global dispatch marker lasting four months (`common/scripted_effects/sb_bechuanaland_corridor_effects.txt:2383`), while `.032` and `.033` each have a three-month duration. The monthly launch retry cannot redispatch either event while the original popup remains answerable. Terminal choice and crisis cleanup consume the pending-choice state, so the later expiry of the dispatch lease cannot reopen the same decision.
 
 ### ~~BC-03 — Resolved (formerly Very High) — white peace and mixed treaty outcomes now close as unresolved~~
 
@@ -59,7 +60,7 @@ White peace (caprivi ± boers, warren + SWA/O involvement) -> fire event "unreso
 
 ### BC-04 — Medium — international-JE AI weights run in `none` scope
 
-**Confirmed by current logs.** The JE is global/international (`common/journal_entries/1-11_sb_bechuanaland_corridor.txt:3-4,26-30`), but button AI weights call country triggers without an explicit country scope (`common/scripted_buttons/sb_bechuanaland_corridor_buttons.txt:64-66,117-119`). Current `error.1.log` reports `has_strategy`, `gold_reserves`, and `net_fixed_income` in `none` scope. The intended subsidy/trade-mission AI weighting is not functioning.
+**Confirmed by the current 16:31 boot log.** The international JE's button AI blocks evaluate without a country root. `Finance Boer Settlers`, `Finance Interior Trade Missions`, and `Strengthen Colonial Garrison` therefore call `gold_reserves` or `net_fixed_income` from `none` (`common/scripted_buttons/sb_bechuanaland_corridor_buttons.txt:55,102,149`; `common/scripted_triggers/sb_bechuanaland_corridor_triggers.txt:179`). Their intended financial vetoes are not functioning.
 
 ### ~~BC-05 — Resolved (formerly Very High) — legacy no-intervention routes no longer freeze the JE~~
 
@@ -134,11 +135,11 @@ In the case SGO becomes third party (ex SWA-O or another Boer tag) aligned inval
 
 ### BC-14 — Medium-Low — Sponsor Settlers can be enabled but do nothing
 
-**Confirmed for non-hard-coded fragments.** The button accepts any TSW-owned Bechuanaland fragment (`triggers:189-200,365-370`), but country creation supports only four hard-coded provinces (`effects:503-563`). If TSW retains another corridor province, the button and its AI weight remain active but create no SGO and give no influence. Also test whether `exists = c:SGO` is true for a dead static tag while dispatch requires `is_country_alive`.
+**Confirmed for non-hard-coded fragments.** `sb_bechuanaland_tsw_holds_beachhead_province` currently accepts any TSW-owned state fragment in Bechuanaland (`common/scripted_triggers/sb_bechuanaland_corridor_triggers.txt:500-508`), but SGO creation supports only `xD76CB9`, `x20CAA7`, `x4AFDFD`, and `x8E325C` (`common/scripted_effects/sb_bechuanaland_corridor_effects.txt:626-686`). If TSW retains only another corridor province, the button can be pressed without creating SGO. Also test whether `exists = c:SGO` behaves as intended for a dead static tag; the button should use the same live-country contract as its effect.
 
 ### BC-15 — Medium — subject settlement does not reliably establish the intended direct overlord
 
-**Runtime check.** The TSW helpers use transitive `is_subject_of` and then unqualified `change_subject_type` (`effects:634-684`). For example, an indirect British subject under CAP can enter the GBR branch but merely have its direct CAP pact changed; a subject in another hierarchy can reach `create_diplomatic_pact` without an explicit transfer/break. Directness should be tested against the intended GBR/CAP outcome.
+**Runtime check.** The landed-TSW helpers use transitive `is_subject_of` and then unqualified `change_subject_type` (`common/scripted_effects/sb_bechuanaland_corridor_effects.txt:755-803`). An indirect British subject under CAP can therefore enter the GBR branch but merely have its direct CAP pact changed, rather than becoming GBR's direct lowest-autonomy subject. A foreign hierarchy can likewise reach pact creation without an explicit transfer or release. Directness remains unproven and the latest observed immediate release makes this a live regression target.
 
 ### ~~BC-16 — Resolved (formerly Medium-High) — non-transferable subjects remain backers without invalid goals~~
 
@@ -146,43 +147,37 @@ In the case SGO becomes third party (ex SWA-O or another Boer tag) aligned inval
 
 **Depro's comments:** Yes for presidential-union/confederal just have the dp be puppet/vassilise/etc (which ever is the correct one) if possible
 
-### BC-17 — Medium-Low — new pacing bypasses the influence game
+### ~~BC-17 — Accepted design (formerly Medium-Low) — escalation may pre-empt the influence phase~~
 
-**Design/UX.** The current diff removes the 12-month Caprivi AI delay and Namaqualand/Namibian-core gate. SWA AI can demand immediately on opening with weight 1000; CAP/GBR Warren buttons are likewise weight 1000 and do not consult the frontier-AI rule (`buttons:135-239`). This can preempt the 12/24-month subsidy and influence loop.
+**Closed as intentional pacing.** The one-year Caprivi delay was explicitly removed and the principal Warren, Caprivi, and corridor-question buttons intentionally use weight `1000`. Competition actions now use 12-month durations and cooldowns. Early escalation can still shorten the organic influence phase, but this is the selected design rather than an implementation defect.
 
 ### BC-18 — Medium — incomplete cleanup and contradictory claims
 
-**Confirmed.** Six demand/refusal/concession country flags survive final cleanup (`effects:686-815,1687-1752`). Direct Warren adds CAP claims on Griqualand West and Bechuanaland (`effects:737-739`), but Boer/SWA interior settlement removes only CAP's Bechuanaland and GBR's Botswana claim (`effects:1621-1622`), leaving a Cape Griqualand claim after the proclaimed final settlement.
+**Narrowed but still open.** Warren demand, refusal, and dispatch flags now have centralized cleanup, but `sb_bechuanaland_caprivi_conceded_var` is set and never removed. Boer/SWA settlement removes CAP's Bechuanaland claim and GBR's Botswana claim, while a Cape Griqualand West claim added by Warren paths can survive the proclaimed final settlement (`common/scripted_effects/sb_bechuanaland_corridor_effects.txt:3157-3217,3451-3530`). The intended terminal claim matrix needs one explicit decision before cleanup can be considered complete. The unused `sb_bechuanaland_transfer_dual_corridor_to_cap` helper and its commented call sites are also residual cleanup from this rewrite.
 
 ### BC-19 — Medium — “remaining Tswana-held land” transfers only the initial 20 provinces
 
-**Confirmed.** `sb_bechuanaland_transfer_tsw_corridor_to_root` hard-codes 20 provinces (`effects:599-623`), while STATE_BECHUANALAND contains 30 (`map_data/state_regions/04_subsaharan_africa.txt:1340-1355`). Any additional corridor province later acquired by TSW stays behind despite the settlement text.
+**Confirmed.** `sb_bechuanaland_transfer_tsw_corridor_to_root` still hard-codes 20 provinces (`common/scripted_effects/sb_bechuanaland_corridor_effects.txt:719-743`), while `STATE_BECHUANALAND` contains 30 (`map_data/state_regions/04_subsaharan_africa.txt:1340-1355`). Any omitted province later acquired by TSW stays behind despite the settlement promising all remaining Tswana-held territory.
 
 ### BC-20 — Medium-Low — the SGO British-restraint fix is permanent rather than crisis-scoped
 
-**Fixed behavior awaiting design/playtest decision.** The new exception in `common/scripted_triggers/sb_british_boer_restraint_triggers.txt:14-32` has no open/unresolved condition. Monthly refresh continues GBR's befriend strategy and `-500` conquest offset after final settlement, although its comment describes preventing pre-emption of the crisis. The original subject-transfer hole is fixed, but duration is broader than the stated purpose.
+**Awaiting a design decision, not a broken crisis path.** `common/scripted_triggers/sb_british_boer_restraint_triggers.txt:14-32` has no open/unresolved condition. Monthly refresh therefore continues GBR's befriend strategy and `-500` conquest offset after final settlement. This is valid if the requested restraint is a permanent SB policy toward the Boer states; otherwise it needs an active-crisis gate.
 
 ### BC-21 — Medium — delayed `.010` can award victory after CAP disappears
 
-**Confirmed.** `.010` rechecks only the demand variable (`events:49-54`). If CAP dies during the delay, its annex/transfer effects safely no-op, but `.010.a` still sets British victory (`events:76`).
+**Confirmed.** `.010` now rechecks the shared Warren decision lease, but that contract does not require a live CAP (`common/scripted_triggers/sb_bechuanaland_corridor_triggers.txt:377-382`). If CAP disappears while the popup is held, its annex/transfer effects safely no-op and `.010.a` can still set British victory (`events/sb_bechuanaland_corridor_events.txt:64-91`).
 
 ### BC-22 — Medium-Low — result and tooltip text often describes a different system
 
-**Confirmed UX drift.** Notable examples:
+**Reduced to a focused proofreading pass.** The war-package and influence descriptions were substantially rebased. Event scripts `.032`, `.033`, `.036`, `.041`, `.043`, and `.044` remain marked `### TO REVIEW ###`; four corresponding localization groups still carry that marker. Current visible defects include `Truimph`, `dominiation`, and several awkward or stale formulations in the proxy-war and settlement prose (`localization/english/sb_bechuanaland_corridor_l_english.yml:1-5,164-216`). Dynamic claimant scopes should also be held and save/reloaded before those result events are signed off.
 
-- Proxy play says “humiliation-only” although reciprocal Return State goals can be added.
-- `.032` uses implementation jargon and one tooltip for direct and proxy paths although British subject goals exist only on direct.
-- `.040` implies a London-versus-Cape choice, but has one option and silently selects the outcome from Cape laws/government while also normalizing subjects and adding British claims.
-- Victory prose can be false after arbitrary draw fallback because settlement does not universally transfer corridor land.
-- “Will begin” ignores indefinite pending and silent cancellation.
-- Fixed influence numbers ignore score clamping.
-- `.041` can dereference missing claimant scopes if countries die between save and display.
+### ~~BC-23 — Resolved (formerly Medium-Low) — crisis support follows active participants and the influence model~~
 
-Evidence: `localization/english/sb_bechuanaland_corridor_l_english.yml:45-48,67-90,114-118,137-166`; `events:379-451`; `effects:1003-1037,1149-1160,1285-1317,1465-1658`.
+**Fixed in the live August 11 scripts; war-participant regression remains.** SWA-overlord support now costs `£1,000` monthly, remains active only while SWA or the participating primary Boer network fights Britain/Cape, buffs only those active participants, and contributes `-0.125` monthly influence. Neutral or uninvolved actors no longer receive the modifier (`common/scripted_buttons/sb_bechuanaland_corridor_buttons.txt:296-328`; `common/scripted_effects/sb_bechuanaland_corridor_effects.txt:3369-3448`).
 
-### BC-23 — Medium-Low — crisis support is asymmetric and disconnected from `.032`
+### BC-24 — Medium — an unset crisis sponsor scope is dereferenced by JE invalidation
 
-**Design/UX.** Support is free and grants +5% offense/defense. Britain buffs CAP only; the SWA sponsor buffs SWA and SGO even when `.032` chose neutrality (`buttons:242-279`; `effects:1660-1685`; `common/static_modifiers/sb_bechuanaland_corridor_modifiers.txt:3-6`). Localization describes one aligned government rather than this behavior.
+**Confirmed by the current 16:31 boot log.** `sb_bechuanaland_cap_is_swa_overlord_subject` checks for `sb_bechuanaland_crisis_swa_overlord_global_scope` and then dereferences it in the same trigger block (`common/scripted_triggers/sb_bechuanaland_corridor_triggers.txt:52-60`). The engine does not short-circuit this safely: every JE invalidation evaluation before the crisis sponsor is initialized reports `Failed to fetch variable ... due to not being set`, through `common/journal_entries/1-11_sb_bechuanaland_corridor.txt:135`. The optional scope access must be restructured so a missing crisis sponsor is a clean false result.
 
 ---
 
@@ -699,7 +694,7 @@ These were not promoted to confirmed defects:
 5. `sb_revoke_oranje_griqualand_claim` can remain valid if ORA disappears midwar but may enforce nothing without the TRN federation marker.
 6. MZQ territory transfer is direct-owner-only and does not collect land held by subordinate administrations; confirm this is intended.
 7. The SGO restraint patch cannot cancel a transfer-subject play already started before the next monthly refresh.
-8. Highest-value Bechuanaland runtime scenarios are the resolved-BC-01/03/05/07/08/09/10/11/12/13/16 matrices plus open BC-02/15: test sponsor demotion, SWA transfer/security alignment during pending routes, concurrent JE completion, British/third-party SGO subject changes, and presidential/confederal backers in a direct crisis.
+8. Highest-value Bechuanaland runtime scenarios are the resolved-BC-01/02/03/05/07/08/09/10/11/12/13/16/23 matrices plus open BC-14/15/18/19/21/24: test all four direct/proxy Warren and Caprivi routes, support versus neutrality, backdown, white peace, mixed goal enforcement, held response popups, sponsor demotion, SWA transfer/security alignment, British/third-party SGO subject changes, landed TSW hierarchy, and presidential/confederal backers.
 9. Hold and save/reload the one-day Delagoa `.010` delay while multiple actors qualify to confirm the saved `sb_delagoa_actor_scope` remains bound to the dispatching actor.
 
 ---
@@ -727,7 +722,7 @@ These were not promoted to confirmed defects:
 
 - Resource pipeline: 82 pass, one aggregate failure covering 12 known live-state/final-cap mismatches; the tester still returns success and is tracked by `QUAL-04`.
 - Tiger with the README's documented `--unused` command after the Medium-High pass: `0 fatal, 65 errors, 57 warnings, 2 untidy`. The one-warning increase from the High pass is the Vanilla-equivalent commander-coup scope diagnostic described below; the movement-derived error baseline is unchanged.
-- Current logs still record the open Griqualand description, duplicate `Spies`, requester lens icon, never-set-variable, deferred map adjacency/spline, and Bechuanaland button AI-scope findings tracked elsewhere in this register.
+- The current 16:31 boot log still records the Bechuanaland button AI `none`-scope errors (`BC-04`), repeated missing crisis-sponsor dereferences (`BC-24`), and three legacy Bechuanaland influence-migration variables read but never set (`TOOL-06`), alongside unrelated diagnostics tracked elsewhere in this register.
 
 ### Known validator/dependency noise
 
@@ -750,14 +745,14 @@ Each numbered line is intended as a separate, reviewable remediation batch.
 
 ### Medium batches
 
-1. Contained Bechuanaland popup, AI, hierarchy, claim, and settlement defects (`BC-02`, `BC-04`, `BC-15`, `BC-18`, `BC-19`, `BC-21`).
+1. Contained Bechuanaland AI, hierarchy, claim, settlement, and scope defects (`BC-04`, `BC-15`, `BC-18`, `BC-19`, `BC-21`, `BC-24`).
 2. Delayed-chain locks, player-action races, and consumed progression (`GP-07`, `GP-11`, `GP-12`, `GP-13`, `GP-15`).
 3. Compatibility, presentation, pathing, validation, and defensive-lifecycle integrity (`CP-03`, `CP-05`, `SUP-01`, `SUP-07`, `QUAL-04`, `QUAL-08`).
 4. Highest-cost recurring-work candidates (`PERF-04`, `PERF-05`, `PERF-06`, `PERF-10`).
 
 ### Medium-Low batches
 
-5. Bechuanaland edge-case, pacing, and presentation alignment (`BC-14`, `BC-17`, `BC-20`, `BC-22`, `BC-23`).
+5. Bechuanaland edge-case, policy-duration, and presentation alignment (`BC-14`, `BC-20`, `BC-22`).
 6. Contained gameplay lifecycle and parity behavior (`GP-09`, `GP-10`, `GP-14`, `GP-17`, `GP-18`, `GP-19`).
 7. Optional compatibility and presentation correctness (`CP-04`, `CP-07`, `SUP-02`, `SUP-04`).
 8. Resource, release-tool, and documentation correctness (`TOOL-01`, `TOOL-02`, `TOOL-04`, `TOOL-05`).

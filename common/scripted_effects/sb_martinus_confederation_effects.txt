@@ -585,6 +585,82 @@ sb_martinus_break_confederation_with_ora = {
 	}
 }
 
+# Custom Boer union types are meaningful only under a Boer-led direct overlord.
+# Preserve ORA's autonomy level when a foreign overlord inherits the relationship.
+sb_martinus_normalize_ora_foreign_union = {
+	if = {
+		limit = {
+			country_definition = cd:ORA
+			is_country_alive = yes
+			is_subject = yes
+			OR = {
+				is_subject_type = subject_type_sb_boer_presidential_union
+				is_subject_type = subject_type_sb_boer_confederal_partner
+			}
+			overlord = {
+				NOT = { country_has_primary_culture = cu:boer }
+			}
+		}
+
+		if = {
+			limit = {
+				is_subject_type = subject_type_sb_boer_presidential_union
+			}
+			if = {
+				limit = {
+					overlord = { is_country_type = unrecognized }
+				}
+				change_subject_type = subject_type_tributary
+			}
+			else = {
+				change_subject_type = subject_type_protectorate
+			}
+		}
+		else_if = {
+			limit = {
+				is_subject_type = subject_type_sb_boer_confederal_partner
+			}
+			if = {
+				limit = {
+					overlord = { is_country_type = unrecognized }
+				}
+				change_subject_type = subject_type_vassal
+			}
+			else = {
+				change_subject_type = subject_type_puppet
+			}
+		}
+
+		if = {
+			limit = { has_variable = sb_martinus_confederal_relationship_v3_var }
+			remove_variable = sb_martinus_confederal_relationship_v3_var
+		}
+		if = {
+			limit = { has_variable = sb_martinus_confederal_partner_var }
+			remove_variable = sb_martinus_confederal_partner_var
+		}
+		if = {
+			limit = { has_variable = sb_martinus_presidential_union_junior_var }
+			remove_variable = sb_martinus_presidential_union_junior_var
+		}
+
+		c:TRN ?= {
+			if = {
+				limit = { has_variable = sb_martinus_confederation_active_var }
+				remove_variable = sb_martinus_confederation_active_var
+			}
+			if = {
+				limit = { has_variable = sb_martinus_presidential_union_active_var }
+				remove_variable = sb_martinus_presidential_union_active_var
+			}
+			if = {
+				limit = { has_variable = sb_martinus_presidential_union_president_var }
+				remove_variable = sb_martinus_presidential_union_president_var
+			}
+		}
+	}
+}
+
 # Shared-ruler subject pacts can be retired automatically by the engine. Durable
 # confederal markers remain authoritative, so repair any marked relationship.
 sb_martinus_restore_confederal_relationship = {

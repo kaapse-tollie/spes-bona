@@ -26,6 +26,7 @@ je_sb_bechuanaland_corridor = {
 	scripted_button = je_sb_bechuanaland_sponsor_boer_settlers_button
 	scripted_button = je_sb_bechuanaland_support_settler_government_button
 	scripted_button = je_sb_bechuanaland_finance_interior_trade_missions_button
+	scripted_button = je_sb_bechuanaland_strengthen_colonial_garrison_button
 	scripted_button = je_sb_bechuanaland_send_warren_expedition_button
 	scripted_button = je_sb_bechuanaland_gbr_direct_warren_button
 	scripted_button = je_sb_bechuanaland_demand_caprivi_button
@@ -34,14 +35,14 @@ je_sb_bechuanaland_corridor = {
 	status_desc = {
 		first_valid = {
 			triggered_desc = {
-				trigger = { global_var:sb_bechuanaland_influence_score_global_var <= -10 }
+				trigger = { global_var:sb_bechuanaland_influence_score_global_var < 0 }
 				desc = je_sb_bechuanaland_corridor_status_swa_advantage
 			}
 			triggered_desc = {
-				trigger = { global_var:sb_bechuanaland_influence_score_global_var >= 10 }
+				trigger = { global_var:sb_bechuanaland_influence_score_global_var > 0 }
 				desc = je_sb_bechuanaland_corridor_status_boer_advantage
 			}
-			desc = je_sb_bechuanaland_corridor_status_balanced
+			desc = je_sb_bechuanaland_corridor_status_undecided
 		}
 	}
 
@@ -95,6 +96,7 @@ je_sb_bechuanaland_corridor = {
 			text = je_sb_bechuanaland_corridor_boer_swa_victory_tt
 			OR = {
 				has_global_variable = sb_bechuanaland_boer_swa_victory_global_var
+				sb_bechuanaland_cap_is_swa_overlord_subject = yes
 				AND = {
 					NOT = {
 						OR = {
@@ -128,7 +130,11 @@ je_sb_bechuanaland_corridor = {
 			has_global_variable = sb_bechuanaland_corridor_resolved_global_var
 			NOT = { has_global_variable = sb_bechuanaland_corridor_open_global_var }
 			c:SAF ?= { is_country_alive = yes }
-			NOT = { c:CAP ?= { is_country_alive = yes is_subject_of = c:GBR } }
+			AND = {
+				NOT = { has_global_variable = sb_bechuanaland_crisis_war_active_var }
+				NOT = { sb_bechuanaland_cap_is_swa_overlord_subject = yes }
+				NOT = { c:CAP ?= { is_country_alive = yes is_subject_of = c:GBR } }
+			}
 		}
 	}
 

@@ -413,6 +413,43 @@ dp_sb_bechuanaland_direct_intervention_locked = {
 	on_war_end = {}
 }
 
+# Warren's expedition opens a British-led corridor play against the Boer
+# government above SGO. Its temporary Humiliation goal is replaced in script
+# by the reciprocal CAP-SGO corridor demands before the launch completes.
+dp_sb_bechuanaland_warren_intervention_locked = {
+	war_goal = humiliation
+
+	requires_interest_marker = no
+	blocked_by_diplomatic_status = no
+	add_infamy_for_starting_initiator_wargoals = no
+	initiator_can_add_war_goals = no
+	target_can_add_war_goals = no
+
+	texture = "gfx/interface/icons/war_goals/return_state.dds"
+
+	selectable_in_lens = { always = no }
+
+	possible = {
+		country_definition = cd:GBR
+		c:CAP ?= {
+			is_country_alive = yes
+			is_subject_of = c:GBR
+		}
+		c:SGO ?= {
+			is_country_alive = yes
+			any_scope_state = { state_region = s:STATE_BECHUANALAND }
+		}
+		scope:target_country = {
+			is_country_alive = yes
+			NOT = { is_subject_of = c:GBR }
+		}
+	}
+
+	on_weekly_pulse = {}
+	on_war_begins = {}
+	on_war_end = {}
+}
+
 # A colonial proxy confrontation in which Britain defends the Cape, but the
 # South West African overlord remains outside the play.
 dp_sb_bechuanaland_proxy_intervention_locked = {
