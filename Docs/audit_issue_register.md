@@ -1,7 +1,7 @@
 ﻿# Repository Audit Issue Register
 
 **Audit date:** 2026-08-06  
-**Latest status refresh:** 2026-08-11 (Medium remediation and portable validation gate)
+**Latest status refresh:** 2026-08-12 (Medium-Low remediation and archive split)
 **Original audit baseline:** `e5706779e0d9fed7f93d930301c5e8162ea09f05` plus ten Bechuanaland files, committed as `45d804a069721db82bfa38d36f6e076ecee9a076`
 **Critical remediation commit:** `48d8794776532ae0739cabe54c07cb4a97c24272`
 **Very High remediation baseline:** `48d8794776532ae0739cabe54c07cb4a97c24272`
@@ -26,16 +26,15 @@ This maintained register records open, resolved, runtime-check, performance, and
 
 Severity order: **Critical → Very High → High → Medium-High → Medium → Medium-Low → Low**.
 
-**No open Critical, Very High, High, Medium-High, or Medium findings remain after this pass.**
+**No open Critical, Very High, High, Medium-High, Medium, or Medium-Low findings remain after this pass.**
 
-Open inventory after the Medium remediation: **23 Medium-Low and 13 Low/blocked**. All 21 Medium findings were resolved in this pass. `SUP-05` remains explicitly deferred to Low/blocked because spline edits are not cross-mod compatible. The lists below intentionally divide the remaining tiers into small remediation batches.
+Open inventory after the Medium-Low remediation: **16 Low/blocked**. Nineteen Medium-Low findings were resolved, four received their safe immediate fixes and moved to Low/blocked, and the archived resource-path cleanup also resolved `TOOL-03`. `SUP-05` remains explicitly deferred because spline edits are not cross-mod compatible.
 
 ## Highest-priority open items
 
-1. Bechuanaland edge-case, policy-duration, and presentation alignment (`BC-14`, `BC-20`, `BC-22`).
-2. Contained gameplay lifecycle and parity behavior (`GP-09`, `GP-10`, `GP-14`, `GP-17`, `GP-18`, `GP-19`).
-3. Optional compatibility, presentation, resource, and release-tool correctness (`CP-04`, `CP-07`, `SUP-02`, `SUP-04`, `TOOL-01`, `TOOL-02`, `TOOL-04`, `TOOL-05`).
-4. Lower-cost recurring work and maintainability (`PERF-07`, `PERF-09`, `PERF-11`, `QUAL-02`, `QUAL-05`, `QUAL-09`).
+1. Human localisation review and compatibility-patch work (`BC-22`, `CP-07`, `QUAL-09`).
+2. Southern African war-policy and restraint duration (`BC-20`).
+3. Minor gameplay, fallback-art, UI, localisation, dead-code, and bounded-performance cleanup recorded in the Low sections below.
 
 ---
 
@@ -130,12 +129,14 @@ If SGO instead becomes a third-party subject, the corridor is invalidated, Brita
 -20 SGO army power projection > 1.5x CAP army power projection 
 +10 2x SGO army power projection ≥ CAP army power projection > 1.5x SGO army power projection 
 +20 CAP army power projection > 2x SGO army power projection 
-In the case SGO becomes third party (ex SWA-O or another Boer tag) aligned invalidate the JE and drop the GBR botswana claim, this is outside of scope. For another boer tag it replaces the old one as leader, for SWA-O pretty much the same. I guess we could check if TRN/ORA exist own their states and are also the third-party aligned but this complicates things for an extreme edge case so I would rather just invalidate the whole thing. 
+In the case SGO becomes third party (ex SWA-O or another Boer tag) aligned invalidate the JE and drop the GBR botswana claim, this is outside of scope. For another boer tag it replaces the old one as leader, for SWA-O pretty much the same. I guess we could check if TRN/ORA exist own their states and are also the third-party aligned but this complicates things for an extreme edge case so I would rather just invalidate the whole thing.
+^Above is depreciated
 
+### ~~BC-14 — Resolved (formerly Medium-Low) — Sponsor Settlers uses one raster-border contract~~
 
-### BC-14 — Medium-Low — Sponsor Settlers can be enabled but do nothing
+**Fixed in this pass.** Button eligibility and SGO creation now share the same actual-raster border contract. The eligible TSW provinces are `xD76CB9`, `x20CAA7`, `x4AFDFD`, and `xA494F8`, and creation uses that exact priority. Each candidate must border land owned by the primary Boer actor, and only a live SGO blocks the action. A regression test locks both the province set and ordering.
 
-**Confirmed for non-hard-coded fragments.** `sb_bechuanaland_tsw_holds_beachhead_province` currently accepts any TSW-owned state fragment in Bechuanaland (`common/scripted_triggers/sb_bechuanaland_corridor_triggers.txt:500-508`), but SGO creation supports only `xD76CB9`, `x20CAA7`, `x4AFDFD`, and `x8E325C` (`common/scripted_effects/sb_bechuanaland_corridor_effects.txt:626-686`). If TSW retains only another corridor province, the button can be pressed without creating SGO. Also test whether `exists = c:SGO` behaves as intended for a dead static tag; the button should use the same live-country contract as its effect.
+**Depro's Comment:** The valid provinces for creation should be those in Bechuanaland bordering the primary boer actor; those listed provinces are the ones bordering w. transvaal.
 
 ### ~~BC-15 — Resolved (formerly Medium) — landed TSW establishes the intended direct overlord~~
 
@@ -159,17 +160,25 @@ In the case SGO becomes third party (ex SWA-O or another Boer tag) aligned inval
 
 **Fixed in this pass.** The settlement helper now iterates TSW's live state fragments in `STATE_BECHUANALAND` and transfers every owned province in those fragments. The result no longer depends on a copied 20-province list and automatically covers later Bechuanaland ownership changes.
 
-### BC-20 — Medium-Low — the SGO British-restraint fix is permanent rather than crisis-scoped
+### BC-20 — Low / blocked (formerly Medium-Low) — restraint duration awaits the Southern African wars rework
 
-**Awaiting a design decision, not a broken crisis path.** `common/scripted_triggers/sb_british_boer_restraint_triggers.txt:14-32` has no open/unresolved condition. Monthly refresh therefore continues GBR's befriend strategy and `-500` conquest offset after final settlement. This is valid if the requested restraint is a permanent SB policy toward the Boer states; otherwise it needs an active-crisis gate.
+**Safe immediate fix completed.** CAP now receives the same anti-conquest/befriend restraint as GBR. Source-specific markers ensure CAP and GBR can refresh or clear only their own AI goals, so a responsible Cape government cannot overwrite Britain's restraint and neither source accidentally removes the other's policy.
+
+The broader duration and war-specific behavior remain deliberately blocked until the Southern African wars rework establishes the intended post-crisis policy. The current restraint therefore remains persistent rather than being given a speculative crisis-only lifetime.
+
+**Depro's comments:** Move to blocked, further content (esp SAn wars) are needed. Also add CAP to this befriend strategy towards the boers, otherwise a responsible one can override.
 
 ### ~~BC-21 — Resolved (formerly Medium) — delayed Warren demand revalidates its destination~~
 
 **Fixed in this pass; held-popup engine regression remains.** Before `.010` can resolve, it now revalidates live CAP, CAP's British relationship, the frontier foothold, and the current demand owner. Losing any prerequisite cancels through normal corridor invalidation and cannot award a British victory from a stale popup.
 
-### BC-22 — Medium-Low — result and tooltip text often describes a different system
+### BC-22 — Low / deferred (formerly Medium-Low) — Bechuanaland prose awaits rolling human review
 
-**Reduced to a focused proofreading pass.** The war-package and influence descriptions were substantially rebased. Event scripts `.032`, `.033`, `.036`, `.041`, `.043`, and `.044` remain marked `### TO REVIEW ###`; four corresponding localization groups still carry that marker. Current visible defects include `Truimph`, `dominiation`, and several awkward or stale formulations in the proxy-war and settlement prose (`localization/english/sb_bechuanaland_corridor_l_english.yml:1-5,164-216`). Dynamic claimant scopes should also be held and save/reloaded before those result events are signed off.
+**Safe immediate fix completed.** All `### TO REVIEW ###` and `### REVIEWED ###` markers were removed from event scripts without changing event prose. Review state now exists only beside the corresponding localisation blocks, and the validator enforces one localisation-side classification per scripted event.
+
+Substantive proofreading remains intentionally deferred to Depro's rolling in-game review. No event prose was rewritten in this pass.
+
+**Depro's comments:** `### TO REVIEW ###` only applies to localisation blocs, remove those outside this. Then move this to deferred. This must be done by a human (me), I do it on a rolling basis when I come across the events in-game while testing.
 
 ### ~~BC-23 — Resolved (formerly Medium-Low) — crisis support follows active participants and the influence model~~
 
@@ -227,13 +236,13 @@ This removes cross-owner partition contamination and all mortality effects; the 
 
 **Fixed in this pass.** Event `.040` now iterates both `STATE_LOURENCO_MARQUES` and `STATE_ZAMBEZIA`, applying ten devastation only to state partitions owned by Portugal. Gaza and third-party partitions are excluded, and the outcome now matches either branch of the existing eligibility gate.
 
-### GP-09 — Medium-Low — BST retreat selects two independent frontier actors
+### ~~GP-09 — Resolved (formerly Medium-Low) — BST retreat uses one frontier actor~~
 
-**Confirmed.** `.020` moves a Sotho pop from one random qualifying country, then independently chooses another random country for the claim/relations result (`events/sb_bst_frontier_events.txt:126-168`). Split Vrystaat ownership can evacuate one actor's population while rewarding or penalizing another.
+**Fixed in this pass.** `.020` selects one Boer frontier actor and reuses it for migration, relations, the Drakensberg claim, and its completion marker. Selection prefers an eligible actor with at least 5,000 Sotho in its Vrystaat fragment, then falls back to any eligible actor. A regression assertion prevents a second actor scope from being introduced.
 
-### GP-10 — Medium-Low — Martinus delayed coercion can strand its active flag
+### ~~GP-10 — Resolved (formerly Medium-Low) — Martinus coercion has one leased lifecycle~~
 
-**Confirmed.** `.010` sets `sb_martinus_coercive_chain_active_var`, while delayed child events require ORA still be an independent candidate (`events/sb_martinus_confederation_events.txt:157-164,785-1122`). If ORA is annexed or subjected before delivery, the event cancels and no failure path clears the flag. Cleanup exists only on successful resolution (`common/scripted_effects/sb_martinus_confederation_effects.txt:36-46,224-229,281-286`).
+**Fixed in this pass.** Active and backer state now use 90-day leases. A single idempotent cleanup effect clears TRN, ORA, LYD, ZPB, and NAL chain state, and every completion or cancellation route uses it. Monthly repair cancels the chain when ORA dies or ceases to be an independent candidate, so a delayed event cannot strand the active marker.
 
 ### ~~GP-11 — Resolved (formerly Medium) — Cape CQF pending state is a timed lease~~
 
@@ -247,9 +256,9 @@ This removes cross-owner partition contamination and all mortality effects; the 
 
 **Fixed in this pass.** Complete Oranje control of Vrystaat and Drakensberg is now a victory even when BST survives elsewhere. The reward is guarded to fire once, and its event text describes Basotho expulsion from the frontier rather than requiring destruction of the country.
 
-### GP-14 — Medium-Low — Imperial Confederation has no terminal cleanup
+### ~~GP-14 — Resolved (formerly Medium-Low) — Imperial Confederation terminal state is explicit~~
 
-**Confirmed.** The JE has failure cleanup only (`1-09_sb_eastern_sphere.txt:292-297`); SAF formation clears none of its globals/flags (`effects:819-865`). GBR's monthly housekeeping continues full validation/count/progress/sea-access scans and permanent subject marking after SAF formation or failure (`effects:1139-1166,1249-1259`).
+**Fixed in this pass.** Success and failure set a permanent terminal marker and immediately clear runtime globals, participant state, warnings, and JE copies through one helper. Failure-reason variables survive only until `.051` renders and are then cleared. Monthly Imperial Confederation maintenance exits once the terminal marker exists.
 
 ### ~~GP-15 — Resolved (formerly Medium) — every Natalia appeal receives its full response window~~
 
@@ -259,17 +268,19 @@ This removes cross-owner partition contamination and all mortality effects; the 
 
 **Fixed in this pass; delayed-scope engine regression remains.** Monthly dispatch saves the qualifying route actor before queueing `.010`. The event revalidates that actor's independence, JE, railway, refusal, and trade-through state; acceptance creates one treaty and sends `.020` only to that actor, while refusal changes relations and sets the refusal lock only there. The previous `every_country` result fan-out has been removed. Static scope checks pass; a save/load test across the one-day delayed event should still confirm named-scope retention in engine.
 
-### GP-17 — Medium-Low — Delagoa gateway logic admits British-network and self-treaty cases
+### ~~GP-17 — Resolved (formerly Medium-Low) — Delagoa uses the actual market gateway~~
 
-**Confirmed control-flow risk.** `sb_delagoa_has_valid_gateway` excludes only a market leader whose country definition is GBR, rather than the broader British network (`common/scripted_triggers/sb_eastern_sphere_triggers.txt:474-492`). If the route actor is itself the market leader, `actor_has_trade_through` still requires a transit treaty and the accept effect can attempt a treaty from the actor to itself (`triggers:524-545`; `effects:548-580`).
+**Fixed in this pass.** Gateway validity now uses the existing “outside the British imperial network” predicate on Lourenço Marques's market leader. Completion accepts either the Boer actor itself as market leader or transit rights from that leader. Treaty creation and AI treaty helpers skip the self-owner case, so no self-treaty is attempted.
 
-### GP-18 — Medium-Low — Mozambique Company creation omits Vanilla charter setup
+### ~~GP-18 — Resolved (formerly Medium-Low) — MZQ mirrors Vanilla charter setup~~
 
-**Confirmed parity gap / design decision needed.** The custom effect activates the base charter laws but omits the racialized subjecthood amendment and `resource_extraction_charter_modifier` applied by Vanilla colonial-administration chartering (`common/scripted_effects/sb_eastern_sphere_effects.txt:382-418`; Vanilla `events/colonial_administration_events.txt:47-92`). This makes MZQ mechanically weaker/different from the charter path it mirrors.
+**Fixed in this pass.** MZQ now receives Vanilla's racialized-subjecthood amendment, extraction charter, Industrialist ideology adjustment, qualifying-overlord IG package, charter laws, extraction strategy, and modifiers. SB's existing territory transfer, company-country link, capital selection, presentation, and additional company slot remain intact.
 
-### GP-19 — Medium-Low — GUI overrides do not register after required CMF
+**Depro's comments:** It should mirror vanilla.
 
-**Confirmed current diagnostic; impact partly mitigated.** Spes defines `journal_panel`, `journal_entry`, and `journal_entry_panel`, but CMF has already registered them. Current `gui.log` reports all three as already registered, so the Spes copies are ineffective. CMF provides its own dynamic double-sided bar, but Spes-specific GUI changes cannot be assumed live (`gui/journal.gui:18,342`; `gui/journal_entry.gui:19`).
+### ~~GP-19 — Resolved (formerly Medium-Low) — progress bars rely on CMF widgets~~
+
+**Fixed in this pass.** The ineffective `gui/journal.gui` and `gui/journal_entry.gui` copies were deleted, and their exact-path inventory entries were removed. Standard and double-sided progress bars now rely exclusively on the required CMF widget injection, eliminating the duplicate-registration path.
 
 ### GP-20 — Low — stake-colonial-claim action can expose an empty picker
 
@@ -301,9 +312,9 @@ Another mod owning the exact `00_historical_treaties.txt` remains a last-writer 
 
 **Fixed in this pass.** The replacement now restores Vanilla's Sakoku exclusion, petition/JE enactment weights, and complete 1.13.9 law body. Exact-object review confirms that the only remaining functional delta is SB's Boer eligibility clause; the reviewed object hash is locked in the override inventory.
 
-### CP-04 — Medium-Low — ideology replacements contain out-of-scope drift
+### ~~CP-04 — Resolved (formerly Medium-Low) — ideology overrides retain only SB deltas~~
 
-**Confirmed.** `REPLACE:ideology_reformer` omits Vanilla's Edo social-system stance, and the Junker-colonialism replacement omits Vanilla `law_social_monarchy = approve` (`common/ideologies/zz_sb_reformer_ideology_override.txt`; `zz_sb_junker_colonialism.txt`; corresponding Vanilla ideology files).
+**Fixed in this pass.** The redundant Reformer replacement was deleted. Junker is rebased to Vanilla 1.13.9, including Social Monarchy, and retains only SB's Colonial Exploitation and Colonial Resettlement stances. The reviewed object hash is pinned in the override inventory.
 
 ### ~~CP-05 — Resolved (formerly Medium) — Highveld selector safeguards restored~~
 
@@ -315,13 +326,13 @@ Another mod owning the exact `00_historical_treaties.txt` remains a last-writer 
 
 **Depro's comments:** Okay so there must have been vanilla drift on this since 1.12.x. Originally iirc the issue was vanilla retired historically old commanders like Moshoeshoe so we increased the retirement age to 60. If vanilla is at 75 now, remove this feature. 
 
-### CP-07 — Medium-Low — Hail Columbia can conditionally undo the Inboekstelsel visibility guard
+### CP-07 — Low / blocked (formerly Medium-Low) — Hail Columbia requires an explicit load order
 
-Both mods hard-replace `law_legacy_slavery`. If Hail Columbia's copy wins load order, it lacks SB's Boer visibility guard (`common/laws/02_sb_inboekstelsel_slavery.txt:3-12`; HC `common/laws/usfp_law_slavery_overrides.txt:517`), allowing the legacy law where SB expects the variant.
+**Documented compatibility boundary.** Both mods hard-replace `law_legacy_slavery`. The compatibility guide now requires SB to load after Hail Columbia so SB's Boer visibility guard wins. A dedicated compatibility patch remains a Low/blocked TODO; this pass deliberately does not weaken Inboekstelsel behavior.
 
 ### ~~CP-08 — Resolved (formerly Medium-High) — override manifests cover the complete live surface~~
 
-**Fixed with QUAL-03.** The canonical inventory includes the previously omitted 29 exact-path files, `STATE_GRIQUALAND_WEST`, `STATE_BECHUANALAND`, and every global keyed replacement. Human compatibility notes now disclose full raster, terrain, locator, spline, GUI, history, treaty, and keyed-object load-order risks, while the checker prevents either the prose-backed inventory or the live surface from drifting silently.
+**Fixed with QUAL-03.** The canonical inventory includes the previously omitted exact-path files, `STATE_GRIQUALAND_WEST`, `STATE_BECHUANALAND`, and every global keyed replacement. Human compatibility notes disclose full raster, terrain, locator, spline, history, treaty, and keyed-object load-order risks, while the checker prevents either the prose-backed inventory or the live surface from drifting silently. The retired GUI copies and Reformer replacement have since been removed from that surface.
 
 ## D. Localization, graphics, map, and presentation
 
@@ -331,17 +342,19 @@ Both mods hard-replace `law_legacy_slavery`. If Hail Columbia's copy wins load o
 
 **Depros comments:** You can remove this, this was placeholder for stellaland only.
 
-### SUP-02 — Medium-Low — reachable Griqualand West event description is missing
+### ~~SUP-02 — Resolved (formerly Medium-Low) — Griqualand annexation description is defined~~
 
-**Confirmed by current 1.13.9 log.** `events/sb_griqualand_west_events.txt:1884` references `sb_griqualand_west.025.oranje_annexation_d`, but only `.cap_d`, `.ora_d`, and generic descriptions exist. `error.log` reports the key as unrecognized; the branch can show a raw/blank key.
+**Verified in this pass.** `sb_griqualand_west.025.oranje_annexation_d` exists exactly once and the event references that exact key. The localisation validator now locks both definition and use. The historical error-log entries predate the key; a fresh launch remains authoritative for presentation.
 
 ### SUP-03 — Low — SGO uses an undefined named color
 
 **Confirmed by Tiger.** `common/coat_of_arms/coat_of_arms/sb_countries.txt:484` uses `"dark green"`; the live named-color database has `green_dark`. The opaque textured emblem may mask normal display, but fallback rendering is invalid.
 
-### SUP-04 — Medium-Low — diplomatic lens icons are missing
+### ~~SUP-04 — Resolved (formerly Medium-Low) — responsible-government lens icons supplied~~
 
-**One path runtime-confirmed.** Visible responsible-government actions have action-panel textures but no same-ID lens icons. Current logs report missing `gfx/interface/icons/lens_toolbar_icons/sb_ask_responsible_government.dds`; the grant-side file is also absent. Because the ask action permits obligations, an `_obligation.dds` variant is an additional runtime check.
+**Fixed in this pass.** Grant, ask, and ask-with-obligation lens icons now reuse `responsible_government.dds` byte-for-byte under their required action IDs. Regression tests lock all three assets to the source icon.
+
+**Depros comments:** reuse diplomatic_action_icons/responsible_government.dds
 
 ### SUP-05 — Low / blocked — spline graph repair is release-only compatibility work
 
@@ -389,9 +402,11 @@ These formatting items are tolerated by the current Paradox loader; only the dup
 
 ## E. Tooling, resources, and documentation
 
-### TOOL-01 — Medium-Low — accepted resource audit data does not match live state caps
+### ~~TOOL-01 — Resolved (formerly Medium-Low) — resource/live differences are archived and documented~~
 
-**Confirmed by running the pipeline with its report redirected outside the repository:** 82 checks pass and one aggregate check fails, covering 12 live mismatches on rows marked accepted and `live_synced=yes`:
+**Resolved as an archival/research boundary.** The complete resource workbook, scripts, data, and audit package moved to outer-repository `References/Resource rework/resources/`. The inner `Docs/resource_balance_summary.md` records the methodology and the accepted state-split/balance differences. The live state file is explicitly authoritative; only Transvaal/Orangia gold remains deferred to the next relevant content block.
+
+The archived pipeline currently reports 82 passes and one expected aggregate failure covering accepted live-cap differences:
 
 - Cape Colony: Arable 44→42; Fishing 15→12.
 - Northern Cape: Arable 12→6; Fishing 0→3; Iron 21→0; undiscovered Gold 20→0.
@@ -400,26 +415,25 @@ These formatting items are tolerated by the current Paradox loader; only the dup
 - Transorangia: Wood 0→1; undiscovered Gold 4→0.
 - Namaqualand: Arable 2→4.
 
-The checked-in `resource-rework/resources/audit/test_report.md` is also stale and reports a different mismatch count.
+This non-green result is retained honestly rather than baselined as a release success.
 
-### TOOL-02 — Medium-Low — resource validation can print failure and still exit successfully
+**Depro's comments:* With the exception of the gold in transvaal & orangia these come from balance passes or introduction of new states (griqualand, bechuanaland). Mark the gold issue todo for the next content bloc. Otherwise the resource audit and related docs / tools can be moved into the super folder and removed from the inner repo, just write an executive summary somewhere on how we came to these numbers.
 
-`resource-rework/resources/scripts/resources.py:62-69` reports failed checks without a nonzero process exit. The internal tester also contains a hard-coded checkout path (`scripts/_internal/test_resources_pipeline.py:12-18`) and an unconditional pass path around `:968-979`, making CI/portable use unreliable.
+### ~~TOOL-02 — Resolved (formerly Medium-Low) — archived resource validation fails honestly~~
 
-### TOOL-03 — Low — resource documentation points to retired paths
+**Fixed in the archived package.** Paths are derived from the archive location, stale command examples were corrected, and the public test command exits nonzero whenever any check fails. Running the current accepted-live mismatch case returns status 1 after reporting 82 passes and one failure; no unconditional success path remains.
 
-Commands in `resource-rework/resources/README.md:660-681` and `audit/README.md:32-35` refer to nonexistent `Docs/resources/scripts/resources.py`. The live CLI is under `resource-rework/resources/scripts/`.
+### ~~TOOL-03 — Resolved (formerly Low) — archived resource commands use live paths~~
 
-### TOOL-04 — Medium-Low — root README and metadata are stale/nonportable
+**Fixed while archiving TOOL-01/02.** Both resource READMEs invoke the CLI at its actual `References/Resource rework/resources/scripts/resources.py` location relative to the outer repository.
 
-- README says Victoria 3 `1.12.5`, while descriptors target `1.13.9`.
-- Three links use absolute machine-local lowercase `docs/...` paths that do not exist.
-- The documented Tiger command fails from repo root because it assumes execution from the mod parent.
-- Metadata says 19 JEs; the current static count is 21 custom JEs (24 including three Vanilla overrides).
+### ~~TOOL-04 — Resolved (formerly Medium-Low) — release metadata and commands are current~~
 
-### TOOL-05 — Medium-Low — map checker is narrow and format-fragile
+**Fixed in this pass.** README and compatibility commands are repository-relative, target strict `1.13.9`, and use the unified validator. Documentation links resolve with the repository's actual capitalization. Metadata now advertises 21 custom journal entries, and stale claims about inner resource validation and SB journal-GUI ownership were removed.
 
-`tools/check_state_region_hub_impassables.py:37-38` recognizes province IDs only on the physical line containing `impassable`; a valid multiline block would be missed. It does not verify locator coordinates, province duplication/membership, image/terrain palette, state connectivity, or spline consistency—the areas where this audit found current risk/errors.
+### ~~TOOL-05 — Resolved (formerly Medium-Low) — map validation is consolidated and hash-pinned~~
+
+**Fixed in this pass.** `tools/validate.py` now checks raster membership, unique terrain records, state membership, passable hubs, the exact Bechuanaland isolation allowlist, locator uniqueness, audited coordinate samples, and pinned terrain/locator/spline hashes. The obsolete standalone hub checker was deleted. Semantic `.splnet` inspection remains outside this ticket and `SUP-05` remains the release-map blocker.
 
 ### TOOL-06 — Low — active dead-variable cleanup produces engine diagnostics
 
@@ -481,11 +495,9 @@ Monthly scope refresh also runs `any_country` and `random_country` with the same
 
 **Fixed structurally in this pass; UI-source regression remains.** The global monthly owner refreshes actor scopes once, evaluates each drift source once, caches source flags, updates GBR's canonical score, and broadcasts one synchronized value. Every contextless JE copy reads the same cached source flags for its localized progress breakdown instead of repeating treaty, relations, territory, and sponsor scans.
 
-### PERF-07 — Medium-Low — other JEs churn stable modifier ladders
+### ~~PERF-07 — Resolved (formerly Medium-Low) — stable JE modifier bands are cached~~
 
-**Confirmed.** Zulu succession removes/checks and re-adds one of 20 modifier tiers each month (`common/journal_entries/1-03_sb_zulu_kingdom.txt:100-114`; `common/scripted_effects/sb_zulu_dynasty_effects.txt:320-625`). Namibia consolidation clears country and split-state modifiers and then re-iterates the regions to restore the current tier every month (`common/journal_entries/1-08_sb_namibia.txt:90-94`; `common/scripted_effects/sb_namibia_effects.txt:737-897`). Cape balance bands use the same remove-all/re-add pattern (`common/on_actions/sb_on_actions.txt:1137-1179`).
-
-**Direction:** cache current tier and resync only on bar/state change; keep a low-frequency repair path for save robustness.
+**Fixed structurally in this pass.** Zulu dynastic stability, Namibia consolidation, and Cape political balance cache their currently applied tier or band. Unchanged pulses return without rewriting modifiers; boundary crossings remove only the old tier and apply the new one. JE-open/annual repair remains, and Namibia resynchronizes immediately after relevant buttons or ownership changes.
 
 ### PERF-08 — Low — Boer restraint scans the world for eight fixed tags
 
@@ -493,11 +505,9 @@ Monthly scope refresh also runs `any_country` and `random_country` with the same
 
 **Direction:** direct-scope the eight optional tags. Refresh on relevant war/play/subject transitions and retain only a quarterly or annual GBR watchdog if other systems can overwrite secret goals.
 
-### PERF-09 — Medium-Low — CAP/ABY subject cleanup is both event-driven and perpetual
+### ~~PERF-09 — Resolved (formerly Medium-Low) — CAP/ABY cleanup is transition-owned~~
 
-**Confirmed.** Subject/independence hooks already call the cleanup (`common/on_actions/sb_cap_subject_cleanup_on_actions.txt:9-15`), but a separate all-country monthly registration remains (`:5-7`). Dominion color variables are written every month without “not already set” guards, and part of CAP autonomy cleanup duplicates work in the main Cape pulse.
-
-**Direction:** consolidate the owner, make writes idempotent, use transition hooks, and keep annual rather than monthly repair if subject-type transitions cannot all be observed.
+**Fixed structurally in this pass.** One idempotent helper owns CAP/ABY autonomy and presentation cleanup. Subject and independence hooks call it immediately; an annual fallback repairs missed transitions. The all-country monthly registration and duplicate Cape-pulse cleanup are gone.
 
 ### ~~PERF-10 — Resolved (formerly Medium) — Imperial form validity uses one counted scan~~
 
@@ -507,11 +517,9 @@ Related duplication: the bind button evaluates the same “unbound independent p
 
 **Fixed structurally in this pass.** The nested country-within-country query was replaced by one `any_country` scope with `count >= 2`, retaining the existing complete-state-owner predicate without the quadratic scan.
 
-### PERF-11 — Medium-Low — Bechuanaland broadcasts twice and rebuilds marker sets while stalled
+### ~~PERF-11 — Resolved (formerly Medium-Low) — Bechuanaland mutates and broadcasts once~~
 
-**Confirmed.** Influence shifts call a full sync/broadcast before mutation and broadcast again afterward (`common/scripted_effects/sb_bechuanaland_corridor_effects.txt:107-195`). Pending monthly retry can clear/rebuild Boer and British participant sets with up to four `every_country` scans (`effects:875-935`) plus readiness scans until actors are free.
-
-**Direction:** initialize/read once and broadcast once after mutation. Build marker sets when queued; revalidate marked scopes and rebuild only on invalidation or a throttled repair cadence.
+**Fixed structurally in this pass.** Canonical score preparation is separate from participant broadcast. Each discrete shift performs one read, one clamped mutation, and one post-mutation broadcast. Crisis participant snapshots are built once at queue initialization and rebuilt only when missing or invalid; stalled retries no longer reconstruct a valid snapshot every pulse.
 
 ### PERF-12 — Low — smaller recurring redundancies
 
@@ -539,13 +547,13 @@ Related duplication: the bind button evaluates the same “unbound independent p
 
 The comparison sampled equivalent event, JE, effect, trigger, on-action, diplomatic-play, override, documentation, and validation surfaces in Hail Columbia, Gates of the Bosphorus, Morgenröte, and Vanilla 1.13.9. These projects are comparators, not correctness gold standards.
 
-**Verdict:** Spes Bona has a good feature-oriented foundation and is locally readable. It is markedly more maintainable than Morgenröte, generally more granular and better documented than Gates of the Bosphorus, and competitive with Hail Columbia. Its event/JE file sizes are close to Vanilla norms. It is **not yet consistently best-practice/audit-ready**, because global lifecycle and scope contracts are implicit, a 3,285-line router centralizes unrelated systems, recurring work is poorly gated, the Vanilla override surface is broad and incompletely tracked, and validation/documentation is not self-enforcing.
+**Current verdict:** Spes Bona retains its strong feature-oriented foundation and is now mechanically auditable across the highest-risk surfaces. The central router is bounded, recurring systems have early gates and cached transitions, the complete override surface is pinned, and validation/documentation are self-enforcing. Remaining gaps are engine regression coverage, broader legacy scope contracts, release-only spline work, and human localisation review rather than an architectural release blocker.
 
 The right conclusion is not a broad rewrite. Preserve the strong naming and feature slices; surgically improve state contracts, router ownership, override containment, and executable validation.
 
 ### Quantitative context, not a quality score
 
-For a common sample surface (`events`, on-actions, scripted effects/triggers, JEs, and scripted buttons):
+For the original audit's common sample surface (`events`, on-actions, scripted effects/triggers, JEs, and scripted buttons):
 
 | Project | Files | Lines | Median file | Files over 3,000 lines |
 |---|---:|---:|---:|---:|
@@ -561,7 +569,7 @@ Event files specifically are also healthy in size: SB median 413/max 2,363; Morg
 
 1. **Stable ownership/naming.** Most authored top-level effects and triggers use `sb_`; feature families such as Bechuanaland, Firearms, Namibia, BST, and Great Trek are easy to grep across JE/event/effect/trigger/localization files. A static sample found 501/512 top-level effects and 175/177 triggers using the SB prefix or an engine-required override name.
 2. **Feature-oriented layering.** Event options often call named transition effects; compound conditions have named triggers. This is much easier to audit than large inline event bodies.
-3. **Descriptive intent comments where they exist.** Good examples include the startup rationale in `common/on_actions/sb_on_actions.txt:1-22`, the Cape JE design/cross-reference header, Cape button cross-references, and the country-scope explanation in `common/scripted_effects/sb_firearms_effects.txt:240-257`.
+3. **Descriptive intent comments where they exist.** Good examples include the startup handler rationale, the Cape JE design/cross-reference header, Cape button cross-references, and the country-scope explanation in `common/scripted_effects/sb_firearms_effects.txt`.
 4. **Optional-scope safety is common.** `c:TAG ?=` and descriptive saved scopes are used more consistently than in many example-mod scripts.
 5. **Unusually good audit/research artifacts.** The compatibility manifest, travel-time audit, resource provenance package, map checker, and this evidence-classified issue ledger are stronger governance than the sampled example mods provide.
 6. **Localization structure is healthy.** Active English files have correct BOM/header/UTF-8 structure and no internal duplicate keys.
@@ -573,39 +581,25 @@ Event files specifically are also healthy in size: SB median 413/max 2,363; Morg
 
 This does not claim that every legacy helper in the repository now has a formal contract. Broader ROOT/`PREV`/named-scope documentation, a full transition table, selective queue deduplication, and one idempotent finalizer remain non-blocking maintenance guidance; the independent functional findings below remain open at their recorded severities.
 
-### QUAL-02 — Medium-Low — router ownership is hard to audit
+### ~~QUAL-02 — Resolved (formerly Medium-Low) — central on-actions are a bounded router~~
 
-`common/on_actions/sb_on_actions.txt` is 3,285 lines, while its header still says “Game Start Effects” and “Runs once.” It now registers monthly/yearly, diplomacy, war, law, election, company, colony, revolution, and technology hooks; it contains approximately 585-line Cape and 564-line Trek monthly blocks plus large war-goal handlers. Monthly registration is spread across four files.
-
-Complex blocks also show indentation drift (`sb_on_actions.txt:2213-2249,2783-2846`; the Great Trek monthly block), so valid braces do not guarantee visually obvious control flow.
-
-**Best practice:** keep a small central registration/dispatch inventory, then move startup, pulse, diplomacy/war, and feature resolution into feature-owned on-action files. Put cheap top-level triggers on handlers. Generate or test the hook inventory so execution order is searchable.
+**Fixed in this pass.** `common/on_actions/sb_on_actions.txt` is now a 92-line registrations-only router. Startup, Cape, Boer-story, regional, and diplomatic-play bodies live in feature-owned handler files with their original ordering and cheap entry triggers. The validator requires every registered handler to be defined exactly once and keeps the router below its bounded size.
 
 ### ~~QUAL-03 — Resolved for the agreed scope (formerly High) — override policy is mechanically enforced~~
 
-**Fixed in the High remediation pass.** `Docs/compatibility/override_inventory.json` is now the canonical review lock for all 37 exact-path Vanilla collisions, 101 keyed replacement objects, all 17 changed/added state-region blocks, and the empty approved `replace_path` set. Entries record upstream and mod/object hashes, intended delta, global/regional scope, owner, rebase date, and load-order semantics; the five retained movement objects also pin CMF `1.58.2` baselines.
+**Fixed in the High remediation pass.** `Docs/compatibility/override_inventory.json` is the canonical review lock for all 35 current exact-path Vanilla collisions, 100 keyed replacement objects, all 17 changed/added state-region blocks, and the empty approved `replace_path` set. Entries record upstream and mod/object hashes, intended delta, global/regional scope, owner, rebase date, and load-order semantics; the five retained movement objects also pin CMF `1.58.2` baselines.
 
-`tools/check_override_inventory.py` fails nonzero on unmanifested/stale surfaces, upstream/mod/dependency hash drift, object-set drift, state-block drift, or descriptor drift. Five mutation tests cover clean, collision, hash, keyed-object, parser, version, and replace-path cases. The human compatibility documents now disclose global map/UI and keyed surfaces rather than implying purely regional compatibility.
+`tools/check_override_inventory.py` fails nonzero on unmanifested/stale surfaces, upstream/mod/dependency hash drift, object-set drift, state-block drift, or descriptor drift. Five mutation tests cover clean, collision, hash, keyed-object, parser, version, and replace-path cases. The human compatibility documents disclose global map and keyed surfaces rather than implying purely regional compatibility.
 
 This resolves mechanical containment, not every broad override's design quality; narrower open CP/QUAL findings remain independently tracked.
 
 ### ~~QUAL-04 — Resolved (formerly Medium) — one portable validation and CI gate~~
 
-**Fixed in this pass.** `tools/validate.py` is a repository-relative, non-writing Python-standard-library gate for unit tests, resources, overrides, map connectivity, localisation, stale symbols, and delayed-event lifecycle. Vanilla/CMF comparison and Tiger are optional and report `SKIP` when proprietary dependencies are absent; `.github/workflows/validate.yml` runs the portable subset in CI. The resource runner now derives repository paths, supports `--no-write`, and exits nonzero on real failures; its two known Medium-Low findings are explicit baselined warnings rather than false success. README and compatibility instructions now target strict 1.13.9 and the unified command.
+**Fixed in this pass.** `tools/validate.py` is a repository-relative, non-writing Python-standard-library gate for unit tests, overrides, map connectivity, localisation, on-action routing, stale symbols, and delayed-event lifecycle. Vanilla/CMF comparison and Tiger are optional and report `SKIP` when proprietary dependencies are absent; `.github/workflows/validate.yml` runs the portable subset in CI. The archived resource-research package has its own honest nonzero test command rather than being baselined into the release gate. README and compatibility instructions target strict 1.13.9 and the unified command.
 
-### QUAL-05 — Medium-Low — useful abstractions exist, but duplication remains the dominant source of drift
+### ~~QUAL-05 — Resolved for the agreed scope (formerly Medium-Low) — three duplicated transitions are centralized~~
 
-Examples:
-
-- `sb_normalize_boer_trade_treaties` is a 677-line definition-only block (`common/scripted_effects/sb_treaty_effects.txt:5-681`). Later treaty creators/fallbacks repeat parallel bodies across targets.
-- Transvaal unity repeats its completion requirements in monthly progress.
-- Bechuanaland has four near-identical queue transitions and multiple repeated participant scans.
-- Modifier ladders manually encode 20-60 parallel branches.
-- Province/country lists are copied into triggers/effects/history; the 20-versus-30 Bechuanaland transfer drift is the functional example.
-
-SB currently uses no scripted `$PARAM$` placeholders, compared with selective use in HC and GotB. Parameterization is not automatically better—Morgenröte's thousands of dynamic substitutions harm static tracing—but small documented helpers can remove genuine repeated transitions.
-
-**Best practice:** extract one named invariant/transition when behavior is truly identical; use a parameterized or saved-target helper only when its scope contract remains obvious. Do not abstract mandatory diplomatic-play boilerplate merely to reduce line count.
+**Fixed within the explicitly selected scope.** The four Bechuanaland crisis queues share one initializer, Transvaal Unity progress and completion use one readiness predicate, and the three stable modifier ladders use the cached transitions recorded under `PERF-07`. Treaty normalization and diplomatic-play boilerplate were deliberately left untouched; this ticket does not claim repository-wide deduplication.
 
 ### QUAL-06 — Low — dead/retired scaffolding and manual archaeology remain in the active tree
 
@@ -617,7 +611,7 @@ Do not delete every definition-only symbol blindly: save compatibility, scripted
 
 ### QUAL-07 — Low — comment quality and terminology are uneven
 
-The strongest comments explain why; several most complex files have almost none: Bechuanaland effects (1,752 lines), Eastern Sphere effects (1,430), Namibia effects (1,020), and Griqualand West events (2,363). Other comments are stale or understate their override delta. The central on-action header is materially false.
+The strongest comments explain why; several complex feature files still have sparse scope/invariant commentary, especially Bechuanaland, Eastern Sphere, Namibia, and Griqualand West. Other comments are stale or understate their override delta. The central on-action header itself was corrected during `QUAL-02`.
 
 Persistent/saved-scope names are mostly descriptive in new code, but generic legacy names (`ig`, `britain`, `migration_target`) and stable typos reduce searchability. Do not rename stable keys casually; register/deprecate aliases when cleanup is justified.
 
@@ -625,20 +619,20 @@ Persistent/saved-scope names are mostly descriptive in new code, but generic leg
 
 ### ~~QUAL-08 — Resolved (formerly Medium) — every delayed dispatch is classified and lifecycle-checked~~
 
-**Fixed for the audited surface in this pass.** `tools/delayed_event_lifecycle_manifest.json` classifies all 366 delayed dispatches and 205 unique destinations as interactive, pending-state, mechanical-finalizer, or narrative. Interactive/pending routes document their lease marker, destination revalidation, cancellation, idempotence, and centralized cleanup; explicit exceptions carry rationale. The validator pins the duplicate-preserving dispatch fingerprint and fails on any unclassified, duplicated, stale, or changed route. The touched Xhosa, CQF, Natalia, and Warren chains received the concrete lifecycle repairs recorded above.
+**Fixed for the audited surface in this pass.** `tools/delayed_event_lifecycle_manifest.json` classifies all 365 current delayed dispatches and 205 unique destinations as interactive, pending-state, mechanical-finalizer, or narrative. Interactive/pending routes document their lease marker, destination revalidation, cancellation, idempotence, and centralized cleanup; explicit exceptions carry rationale. The validator pins the duplicate-preserving dispatch fingerprint and fails on any unclassified, duplicated, stale, or changed route. The touched Xhosa, CQF, Natalia, Warren, and Martinus chains received the concrete lifecycle repairs recorded above.
 
-### QUAL-09 — Medium-Low — localization review status is not reliable QA state
+### QUAL-09 — Low / deferred (formerly Medium-Low) — substantive localisation review remains human-owned
 
-There are 128 `TO REVIEW` markers across 17 localization files. Some blocks labelled reviewed still contain visible proofreading errors. A 668-line residual `sb_l_english.yml` contains empty sections and inconsistent indentation. Formatting drift is small but machine-checkable.
+**Structural fix completed.** The validator checks UTF-8/BOM state, headers, final newlines, trailing and leading whitespace, duplicate and missing keys, review-marker placement, and exactly one review classification per scripted event. Current coverage is printed as `89 reviewed / 131 to review`, and event scripts may no longer contain review markers.
 
-**Best practice:** move review state to a checklist/generated coverage report, proofread remaining blocks, and lint BOM/header/newline/whitespace, mod/Vanilla collisions, referenced event keys, and review-marker counts.
+Substantive proofreading remains intentionally deferred to Depro's rolling in-game pass and is therefore tracked as Low rather than represented as machine-complete.
 
 ### Comparator-specific lessons
 
 #### Hail Columbia
 
 - **SB advantage:** stronger feature naming, smaller median core files, explicit compatibility/issue documentation, and more feature-aligned effect/trigger slices.
-- **HC advantage:** a much smaller single on-action router (~1,197 lines versus SB's 3,285-line central file), selective parameter helpers (`$AMOUNT$`, `$MULT$`, `$RADICALS$`), three scripted gameplay tests, and a mature changelog.
+- **HC advantage:** selective parameter helpers (`$AMOUNT$`, `$MULT$`, `$RADICALS$`), three scripted gameplay tests, and a mature changelog. SB's central router is now smaller and registrations-only, so router size is no longer an HC advantage.
 - **Do not treat HC as a gold standard:** its country-monthly router drives a very large event/random-event list for every country, it has no comparable override manifest/known-issue ledger, helper scope contracts are not systematic, and its Tiger dependency path is machine-specific.
 
 #### Gates of the Bosphorus
@@ -660,22 +654,21 @@ There are 128 `TO REVIEW` markers across 17 localization files. Some blocks labe
 
 ### Comparative bottom line
 
-SB is **readable at the feature/file level but not yet reliably auditable across feature lifecycles**. Relative position:
+SB is **readable at the feature/file level and mechanically auditable across its highest-risk lifecycle, override, map, localisation, and routing surfaces**. Engine-only outcomes still require the recorded gameplay matrix. Relative position:
 
 - **Better than Morgenröte** on granularity, naming, and documentation.
 - **Usually better than GotB** on local feature readability and governance, while GotB has some stronger scope-contract/router patterns.
-- **Comparable to HC**, with SB ahead on explicit governance, naming, and feature topology but behind on compact routing, selective reuse, and committed gameplay tests.
-- **Near Vanilla norms for event/JE size**, but behind Vanilla's defensive delayed-event and rebase discipline.
+- **Comparable to HC**, with SB ahead on explicit governance, naming, feature topology, and the bounded central router; HC still has more committed gameplay tests and selective parameter reuse.
+- **Near Vanilla norms for event/JE size**, with delayed-event classification and rebase discipline now mechanically enforced for the audited surface.
 
 ### Maintainability priority order
 
-1. Split the on-action router at existing feature boundaries and add early gates.
-2. Use the enforced override inventory to rebase remaining broad global objects and upstream narrower CMF hooks.
-3. Build one portable nonzero-on-failure validation entry point and CI.
-4. Centralize repeated invariants/transitions; selectively parameterize only clear repetitions.
-5. Extend explicit scope/lifecycle contracts beyond the Bechuanaland paths touched here.
+1. Run the recorded fresh-start and engine-only regression matrices.
+2. Finish the release-only spline repair after the final map/mod stack is frozen.
+3. Complete rolling human localisation review and the Hail Columbia compatibility patch.
+4. Use the enforced inventory to rebase or upstream any remaining broad global overrides.
+5. Extend explicit scope/lifecycle contracts beyond the currently classified delayed-event and Bechuanaland surfaces.
 6. Triage dead code with a save/API allowlist, then remove decided scaffolding.
-7. Reconcile README/compatibility/metadata and complete localization proofreading.
 
 ---
 
@@ -690,7 +683,7 @@ These were not promoted to confirmed defects:
 5. `sb_revoke_oranje_griqualand_claim` can remain valid if ORA disappears midwar but may enforce nothing without the TRN federation marker.
 6. MZQ territory transfer is direct-owner-only and does not collect land held by subordinate administrations; confirm this is intended.
 7. The SGO restraint patch cannot cancel a transfer-subject play already started before the next monthly refresh.
-8. Highest-value Bechuanaland runtime scenarios are the resolved-BC-01/02/03/04/05/07/08/09/10/11/12/13/15/16/18/19/21/23/24 matrices plus open BC-14: test all four direct/proxy Warren and Caprivi routes, support versus neutrality, backdown, white peace, mixed goal enforcement, held response popups, sponsor demotion, SWA transfer/security alignment, British/third-party SGO subject changes, landed TSW hierarchy, and presidential/confederal backers.
+8. Highest-value Bechuanaland runtime scenarios are the resolved BC-01/02/03/04/05/07/08/09/10/11/12/13/14/15/16/18/19/21/23/24 matrices: test all four direct/proxy Warren and Caprivi routes, support versus neutrality, backdown, white peace, mixed goal enforcement, held response popups, sponsor demotion, SWA transfer/security alignment, British/third-party SGO subject changes, landed TSW hierarchy, SGO creation through TRN and ORA, and presidential/confederal backers.
 9. Hold and save/reload the one-day Delagoa `.010` delay while multiple actors qualify to confirm the saved `sb_delagoa_actor_scope` remains bound to the dispatching actor.
 
 ---
@@ -699,29 +692,24 @@ These were not promoted to confirmed defects:
 
 ### Passed
 
-- `git diff --check` passes across the full working tree; existing Depro comment blocks remain present.
-- Repository-wide Clausewitz brace/quote scan over 285 tracked or new script/text files.
-- Targeted control-flow assertions for all eight High remediations: retry-safe/deferred crisis influence, post-open lifecycle precedence, SGO priority/independence, reciprocal primary demands, Caprivi ownership, CMF movement parity, treaty VFS behavior, and origin-bound deployment trains.
-- Targeted assertions for the Medium-High pass: active-sponsor replacement/demotion behavior; no-appeal Warren routing; one guarded `.040` dispatch; SGO-only British annexation and exact 70:30 AI tiers; third-party invalidation; guarded subject-transfer goals; POR-only devastation in both eligible regions; and actor-bound Delagoa results.
-- `python3 tools/validate.py --tiger`: all nine validation categories passed or produced an explicitly baselined warning; zero categories failed.
-- `python3 -m unittest discover -s tests -v`: all eight override-checker and repository-validator regression tests passed.
-- The override inventory validates 37 same-path files, 101 keyed overrides, 17 changed state-region blocks, and zero `replace_path` directives. Frontier Colonization and Highveld were reviewed against Vanilla 1.13.9 before their mod hashes were refreshed.
-- The delayed-event lifecycle manifest classifies all 366 dispatches and 205 destinations with zero unclassified or stale entries.
-- The Bechuanaland map manifest validates the pinned province raster, complete state membership, passable hubs, and exactly one intentional three-province isolated component.
-- The five retained political-movement objects match their CMF `1.58.2` baselines plus only the documented SB deltas after non-semantic line-end normalization; the no-delta religious replacement is absent.
-- Commander-retirement parity against Vanilla `1.13.9`: removing the single BST `-1000` modifier from the mod object produces exact normalized object equality.
-- Resource validation is now repository-relative, non-writing under the aggregate gate, and returns nonzero when run directly with unresolved failures.
-- Repository-wide BOM/UTF-8, localization header/key/duplicate/reference, stale-symbol, state membership, hub, and connectivity checks pass.
-- Tiger reports no new Bechuanaland, Gaza, Delagoa, locator, lifecycle, descriptor, or inventory diagnostic. The only newly surfaced changed-file warning is the Vanilla-equivalent commander-coup scope warning described below.
-- Explicit asset reference scan, state/province membership, state-ID collision, terrain/image-palette, and locator ID count/uniqueness checks from the repository audit remain passed.
-- No spline, route-strip, or graph-connection file is dirty; `SUP-05` remains intentionally deferred.
-- Tiger passes through the unified non-`--unused` parser gate. All resolved gameplay paths still require the targeted fresh-save engine regressions recorded above.
+- `python3 -B tools/validate.py`: all eight portable categories pass, including unit tests, local override inventory, map data, localisation, on-action routing, stale symbols, delayed-event lifecycle, and the dependency-optional override comparison.
+- `python3 -B -m unittest discover -s tests -v`: all 18 override, validator, and Medium-Low contract regressions pass.
+- The override inventory validates 35 exact-path files, 100 keyed overrides, 17 changed state-region blocks, and zero `replace_path` directives.
+- The delayed-event lifecycle manifest classifies all 365 dispatches and 205 destinations with zero unclassified or stale entries.
+- Map validation covers state/raster/terrain membership, passable hubs, the exact Bechuanaland isolation allowlist, locator uniqueness and audited coordinates, plus pinned terrain, locator, and spline hashes.
+- Localisation validation reports 89 reviewed and 131 to-review event blocks, with one classification per event and no review markers in event scripts.
+- The central on-action router is 92 lines and every registered handler is defined exactly once.
+- The three responsible-government lens icons are byte-identical to their source asset; the Griqualand annexation key is uniquely defined and referenced.
+- The archived resource test is repository-relative and honest: it reports 82 passes and one accepted live-cap mismatch failure, then exits nonzero.
+- Tiger reports `fatal: 0`, `error: 65`, and `warning: 59`; review found no new Medium-Low authored parser error. The remaining diagnostics are the known 1.13.9-schema and dependency limitations summarized below.
+- No spline semantic data was edited; `SUP-05` remains intentionally deferred to the final release map stack.
 
 ### Outstanding or diagnostic
 
-- The raw resource audit reports 81 passes and two known Medium-Low failures: the checked-in `Docs/.DS_Store` and 12 live-state/final-cap mismatches. The aggregate validator baselines these exact findings as a warning and fails if either the findings or baseline drift.
-- A fresh 1.13.9 launch was not performed in this remediation run. The prior 16:31 boot log predates the BC-04/BC-24 fixes and cannot verify their runtime cleanup; cold-start logs and the targeted matrices remain required.
-- The previous `--unused` Tiger report remains historical diagnostic context. The unified Tiger gate intentionally checks parser validity without making unrelated unused-content cleanup part of the Medium pass.
+- A fresh 1.13.9 launch was not performed in this remediation run. Cold-start logs and the targeted gameplay matrices remain authoritative for engine-only behavior.
+- The locally installed CMF is `1.55.1`, while the dependency inventory is pinned to required `1.58.2`; dependency-baseline comparison is therefore skipped rather than accepting stale CMF hashes.
+- The archived resource package intentionally remains non-green until its accepted live-cap rows are resynchronized; it is research evidence, not an inner release-gate baseline.
+- The previous `--unused` Tiger report remains historical diagnostic context; unrelated unused-content cleanup is not part of this remediation.
 
 ### Known validator/dependency noise
 
@@ -746,20 +734,17 @@ Each numbered line is intended as a separate, reviewable remediation batch.
 
 `BC-04`, `BC-15`, `BC-18`, `BC-19`, `BC-21`, `BC-24`, `GP-07`, `GP-11`, `GP-12`, `GP-13`, `GP-15`, `CP-03`, `CP-05`, `SUP-01`, `SUP-07`, `PERF-04`, `PERF-05`, `PERF-06`, `PERF-10`, `QUAL-04`, and `QUAL-08` are resolved. Runtime-sensitive entries retain explicit engine-regression notes in their sections.
 
-### Medium-Low batches
+### Completed Medium-Low pass
 
-1. Bechuanaland edge-case, policy-duration, and presentation alignment (`BC-14`, `BC-20`, `BC-22`).
-2. Contained gameplay lifecycle and parity behavior (`GP-09`, `GP-10`, `GP-14`, `GP-17`, `GP-18`, `GP-19`).
-3. Optional compatibility and presentation correctness (`CP-04`, `CP-07`, `SUP-02`, `SUP-04`).
-4. Resource, release-tool, and documentation correctness (`TOOL-01`, `TOOL-02`, `TOOL-04`, `TOOL-05`).
-5. Lower-cost recurring work and maintainability (`PERF-07`, `PERF-09`, `PERF-11`, `QUAL-02`, `QUAL-05`, `QUAL-09`).
+`BC-14`, `GP-09`, `GP-10`, `GP-14`, `GP-17`, `GP-18`, `GP-19`, `CP-04`, `SUP-02`, `SUP-04`, `TOOL-01`, `TOOL-02`, `TOOL-04`, `TOOL-05`, `PERF-07`, `PERF-09`, `PERF-11`, `QUAL-02`, and `QUAL-05` are resolved. `BC-20`, `BC-22`, `CP-07`, and `QUAL-09` received their safe immediate fixes and are now Low/blocked or Low/deferred. `TOOL-03` was resolved as part of the resource archive move.
 
 ### Low / blocked batches
 
-6. Minor gameplay, fallback-art, UI, and localization cleanup (`GP-20`, `GP-21`, `SUP-03`, `SUP-08`, `SUP-09`).
-7. Release-map-only spline and graph repair after the final mod stack is frozen (`SUP-05`).
-8. Documentation, bounded performance, dead-code, and comment cleanup (`TOOL-03`, `TOOL-06`, `TOOL-07`, `PERF-08`, `PERF-12`, `QUAL-06`, `QUAL-07`).
+1. Deferred human/compatibility/policy work (`BC-20`, `BC-22`, `CP-07`, `QUAL-09`).
+2. Minor gameplay, fallback-art, UI, and localization cleanup (`GP-20`, `GP-21`, `SUP-03`, `SUP-08`, `SUP-09`).
+3. Release-map-only spline and graph repair after the final mod stack is frozen (`SUP-05`).
+4. Documentation, bounded performance, dead-code, and comment cleanup (`TOOL-06`, `TOOL-07`, `PERF-08`, `PERF-12`, `QUAL-06`, `QUAL-07`).
 
-9. Run the resolved Critical/Very High/High/Medium-High/Medium engine regression matrices before release; do not mix those regressions into a remediation batch.
+5. Run the resolved Critical/Very High/High/Medium-High/Medium/Medium-Low engine regression matrices before release; do not mix those regressions into a remediation batch.
 
 ---

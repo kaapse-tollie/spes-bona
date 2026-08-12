@@ -50,6 +50,7 @@ The live repository documentation is the source of truth:
 - [Third-party compatibility notes](Docs/compatibility/third_party_compatibility.md)
 - [Cross-tag event travel times](Docs/cross_tag_event_travel_times.md)
 - [Bechuanaland map-connectivity exception](Docs/bechuanaland_map_connectivity.md)
+- [Resource-balance executive summary](Docs/resource_balance_summary.md)
 
 ## Validation
 

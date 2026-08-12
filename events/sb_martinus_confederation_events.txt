@@ -158,7 +158,10 @@ sb_martinus_confederation.010 = {
 		name = sb_martinus_confederation.010.a
 		default_option = yes
 		remove_variable = sb_martinus_coercive_chain_pending_var
-		set_variable = sb_martinus_coercive_chain_active_var
+		set_variable = {
+			name = sb_martinus_coercive_chain_active_var
+			days = 90
+		}
 		c:ORA ?= {
 			trigger_event = { id = sb_martinus_confederation.020 days = 5 popup = yes }
 		}
@@ -191,7 +194,7 @@ sb_martinus_confederation.010 = {
 
 	option = {
 		name = sb_martinus_confederation.010.b
-		remove_variable = sb_martinus_coercive_chain_pending_var
+		sb_martinus_clear_coercive_chain_state = yes
 		set_variable = sb_martinus_ambition_resolved_var
 		set_variable = sb_martinus_legal_union_resolved_var
 		add_modifier = {
@@ -434,7 +437,7 @@ sb_martinus_confederation.030 = {
 		name = sb_martinus_confederation.030.a
 		default_option = yes
 		custom_tooltip = sb_martinus_player_warn_tt
-		set_variable = sb_martinus_backed_ora_var
+		set_variable = { name = sb_martinus_backed_ora_var days = 90 }
 		change_relations = {
 			country = c:ORA
 			value = 15
@@ -533,7 +536,7 @@ sb_martinus_confederation.031 = {
 		name = sb_martinus_confederation.031.a
 		default_option = yes
 		custom_tooltip = sb_martinus_player_warn_tt
-		set_variable = sb_martinus_backed_ora_var
+		set_variable = { name = sb_martinus_backed_ora_var days = 90 }
 		change_relations = {
 			country = c:ORA
 			value = 15
@@ -634,7 +637,7 @@ sb_martinus_confederation.032 = {
 		name = sb_martinus_confederation.032.a
 		default_option = yes
 		custom_tooltip = sb_martinus_player_warn_tt
-		set_variable = sb_martinus_backed_ora_var
+		set_variable = { name = sb_martinus_backed_ora_var days = 90 }
 		change_relations = {
 			country = c:ORA
 			value = 15
@@ -1196,10 +1199,6 @@ sb_martinus_confederation.050 = {
 		default_option = yes
 		c:TRN ?= {
 			set_variable = sb_martinus_ambition_resolved_var
-			if = {
-				limit = { has_variable = sb_martinus_coercive_chain_active_var }
-				remove_variable = sb_martinus_coercive_chain_active_var
-			}
 			sb_martinus_break_boer_war_path_compacts = yes
 			create_diplomatic_play = {
 				type = dp_sb_martinus_humiliation
@@ -1242,6 +1241,7 @@ sb_martinus_confederation.050 = {
 					add_target_backers = { c:ZPB }
 				}
 			}
+			sb_martinus_clear_coercive_chain_state = yes
 		}
 		ai_chance = {
 			base = 45

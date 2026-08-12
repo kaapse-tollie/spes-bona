@@ -386,7 +386,7 @@ sb_bechuanaland_cache_influence_sources = {
 	}
 }
 
-sb_bechuanaland_sync_influence_bar = {
+sb_bechuanaland_prepare_influence_score = {
 	sb_bechuanaland_refresh_influence_scopes = yes
 	sb_bechuanaland_cache_influence_sources = yes
 	sb_bechuanaland_initialize_influence_score = yes
@@ -413,11 +413,15 @@ sb_bechuanaland_sync_influence_bar = {
 			max = 40
 		}
 	}
+}
+
+sb_bechuanaland_sync_influence_bar = {
+	sb_bechuanaland_prepare_influence_score = yes
 	sb_bechuanaland_apply_influence_score_to_all = yes
 }
 
 sb_bechuanaland_shift_boer_influence_5 = {
-	sb_bechuanaland_sync_influence_bar = yes
+	sb_bechuanaland_prepare_influence_score = yes
 	change_global_variable = { name = sb_bechuanaland_influence_score_global_var add = 5 }
 	set_global_variable = {
 		name = sb_bechuanaland_influence_score_global_var
@@ -427,7 +431,7 @@ sb_bechuanaland_shift_boer_influence_5 = {
 }
 
 sb_bechuanaland_shift_swa_influence_5 = {
-	sb_bechuanaland_sync_influence_bar = yes
+	sb_bechuanaland_prepare_influence_score = yes
 	change_global_variable = { name = sb_bechuanaland_influence_score_global_var subtract = 5 }
 	set_global_variable = {
 		name = sb_bechuanaland_influence_score_global_var
@@ -437,7 +441,7 @@ sb_bechuanaland_shift_swa_influence_5 = {
 }
 
 sb_bechuanaland_shift_swa_influence_40 = {
-	sb_bechuanaland_sync_influence_bar = yes
+	sb_bechuanaland_prepare_influence_score = yes
 	change_global_variable = { name = sb_bechuanaland_influence_score_global_var subtract = 40 }
 	set_global_variable = {
 		name = sb_bechuanaland_influence_score_global_var
@@ -447,7 +451,7 @@ sb_bechuanaland_shift_swa_influence_40 = {
 }
 
 sb_bechuanaland_set_swa_influence_maximum = {
-	sb_bechuanaland_sync_influence_bar = yes
+	sb_bechuanaland_prepare_influence_score = yes
 	set_global_variable = {
 		name = sb_bechuanaland_influence_score_global_var
 		value = -40
@@ -828,8 +832,8 @@ sb_bechuanaland_ensure_sgo_population_floor = {
 sb_bechuanaland_create_sgo_beachhead_for_root = {
 	if = {
 		limit = {
-			NOT = { exists = c:SGO }
-			p:xD76CB9.state.owner = c:TSW
+			NOT = { c:SGO ?= { is_country_alive = yes } }
+			sb_bechuanaland_tsw_holds_d76cb9_actor_border = yes
 		}
 		create_country = {
 			tag = SGO
@@ -843,8 +847,8 @@ sb_bechuanaland_create_sgo_beachhead_for_root = {
 	}
 	else_if = {
 		limit = {
-			NOT = { exists = c:SGO }
-			p:x20CAA7.state.owner = c:TSW
+			NOT = { c:SGO ?= { is_country_alive = yes } }
+			sb_bechuanaland_tsw_holds_20caa7_actor_border = yes
 		}
 		create_country = {
 			tag = SGO
@@ -858,8 +862,8 @@ sb_bechuanaland_create_sgo_beachhead_for_root = {
 	}
 	else_if = {
 		limit = {
-			NOT = { exists = c:SGO }
-			p:x4AFDFD.state.owner = c:TSW
+			NOT = { c:SGO ?= { is_country_alive = yes } }
+			sb_bechuanaland_tsw_holds_4afdfd_actor_border = yes
 		}
 		create_country = {
 			tag = SGO
@@ -873,13 +877,13 @@ sb_bechuanaland_create_sgo_beachhead_for_root = {
 	}
 	else_if = {
 		limit = {
-			NOT = { exists = c:SGO }
-			p:x8E325C.state.owner = c:TSW
+			NOT = { c:SGO ?= { is_country_alive = yes } }
+			sb_bechuanaland_tsw_holds_a494f8_actor_border = yes
 		}
 		create_country = {
 			tag = SGO
 			origin = root
-			province = p:x8E325C
+			province = p:xA494F8
 			on_created = {
 				set_country_type = unrecognized
 				s:STATE_BECHUANALAND = { add_claim = c:SGO }
@@ -1326,6 +1330,10 @@ sb_bechuanaland_clear_pending_crisis_flags = {
 }
 
 sb_bechuanaland_clear_crisis_participant_markers = {
+	if = {
+		limit = { has_global_variable = sb_bechuanaland_crisis_participant_snapshot_global_var }
+		remove_global_variable = sb_bechuanaland_crisis_participant_snapshot_global_var
+	}
 	every_country = {
 		limit = {
 			OR = {
@@ -1664,6 +1672,15 @@ sb_bechuanaland_refresh_crisis_launch_participants = {
 		limit = { has_global_variable = sb_bechuanaland_crisis_direct_route_global_var }
 		sb_bechuanaland_mark_current_british_subject_package = yes
 	}
+	set_global_variable = sb_bechuanaland_crisis_participant_snapshot_global_var
+}
+
+sb_bechuanaland_initialize_crisis_queue = {
+	sb_bechuanaland_clear_pending_crisis_flags = yes
+	sb_bechuanaland_clear_crisis_participant_markers = yes
+	sb_bechuanaland_remember_crisis_swa_overlord = yes
+	set_global_variable = sb_bechuanaland_crisis_influence_deferred_global_var
+	set_global_variable = sb_bechuanaland_crisis_escalation_pending_global_var
 }
 
 # ROOT = current SWA sponsor; valid Warren decision lease required.
@@ -1673,14 +1690,11 @@ sb_bechuanaland_queue_warren_direct_crisis = {
 			sb_bechuanaland_warren_decision_window_is_valid = yes
 			sb_bechuanaland_swa_active_sponsor = yes
 		}
-		sb_bechuanaland_clear_pending_crisis_flags = yes
-		sb_bechuanaland_clear_crisis_participant_markers = yes
+		sb_bechuanaland_initialize_crisis_queue = yes
 		sb_bechuanaland_remember_warren_defender = yes
-		sb_bechuanaland_remember_crisis_swa_overlord = yes
-		set_global_variable = sb_bechuanaland_crisis_influence_deferred_global_var
-		set_global_variable = sb_bechuanaland_crisis_escalation_pending_global_var
 		set_global_variable = sb_bechuanaland_crisis_direct_route_global_var
 		set_global_variable = sb_bechuanaland_crisis_boer_support_global_var
+		sb_bechuanaland_refresh_crisis_launch_participants = yes
 		sb_bechuanaland_try_launch_pending_crisis = yes
 	}
 }
@@ -1692,14 +1706,11 @@ sb_bechuanaland_queue_warren_proxy_crisis = {
 			sb_bechuanaland_warren_decision_window_is_valid = yes
 			sb_bechuanaland_swa_active_sponsor = yes
 		}
-		sb_bechuanaland_clear_pending_crisis_flags = yes
-		sb_bechuanaland_clear_crisis_participant_markers = yes
+		sb_bechuanaland_initialize_crisis_queue = yes
 		sb_bechuanaland_remember_warren_defender = yes
-		sb_bechuanaland_remember_crisis_swa_overlord = yes
-		set_global_variable = sb_bechuanaland_crisis_influence_deferred_global_var
-		set_global_variable = sb_bechuanaland_crisis_escalation_pending_global_var
 		set_global_variable = sb_bechuanaland_crisis_proxy_route_global_var
 		set_global_variable = sb_bechuanaland_crisis_boer_support_global_var
+		sb_bechuanaland_refresh_crisis_launch_participants = yes
 		sb_bechuanaland_try_launch_pending_crisis = yes
 	}
 }
@@ -1711,14 +1722,11 @@ sb_bechuanaland_queue_caprivi_direct_crisis = {
 			sb_bechuanaland_caprivi_decision_window_is_valid = yes
 			sb_bechuanaland_swa_active_sponsor = yes
 		}
-		sb_bechuanaland_clear_pending_crisis_flags = yes
-		sb_bechuanaland_clear_crisis_participant_markers = yes
-		sb_bechuanaland_remember_crisis_swa_overlord = yes
-		set_global_variable = sb_bechuanaland_crisis_influence_deferred_global_var
-		set_global_variable = sb_bechuanaland_crisis_escalation_pending_global_var
+		sb_bechuanaland_initialize_crisis_queue = yes
 		set_global_variable = sb_bechuanaland_crisis_direct_route_global_var
 		set_global_variable = sb_bechuanaland_crisis_caprivi_route_global_var
 		set_global_variable = sb_bechuanaland_crisis_boer_choice_pending_global_var
+		sb_bechuanaland_refresh_crisis_launch_participants = yes
 		sb_bechuanaland_try_launch_pending_crisis = yes
 	}
 }
@@ -1730,14 +1738,11 @@ sb_bechuanaland_queue_caprivi_proxy_crisis = {
 			sb_bechuanaland_caprivi_decision_window_is_valid = yes
 			sb_bechuanaland_swa_active_sponsor = yes
 		}
-		sb_bechuanaland_clear_pending_crisis_flags = yes
-		sb_bechuanaland_clear_crisis_participant_markers = yes
-		sb_bechuanaland_remember_crisis_swa_overlord = yes
-		set_global_variable = sb_bechuanaland_crisis_influence_deferred_global_var
-		set_global_variable = sb_bechuanaland_crisis_escalation_pending_global_var
+		sb_bechuanaland_initialize_crisis_queue = yes
 		set_global_variable = sb_bechuanaland_crisis_proxy_route_global_var
 		set_global_variable = sb_bechuanaland_crisis_caprivi_route_global_var
 		set_global_variable = sb_bechuanaland_crisis_boer_choice_pending_global_var
+		sb_bechuanaland_refresh_crisis_launch_participants = yes
 		sb_bechuanaland_try_launch_pending_crisis = yes
 	}
 }
@@ -2602,7 +2607,10 @@ sb_bechuanaland_try_launch_pending_crisis = {
 					has_global_variable = sb_bechuanaland_crisis_escalation_pending_global_var
 					NOT = { has_global_variable = sb_bechuanaland_crisis_boer_choice_pending_global_var }
 				}
-				sb_bechuanaland_refresh_crisis_launch_participants = yes
+				if = {
+					limit = { NOT = { sb_bechuanaland_crisis_participant_snapshot_is_valid = yes } }
+					sb_bechuanaland_refresh_crisis_launch_participants = yes
+				}
 				if = {
 					limit = { sb_bechuanaland_crisis_launch_participants_ready = yes }
 					if = {

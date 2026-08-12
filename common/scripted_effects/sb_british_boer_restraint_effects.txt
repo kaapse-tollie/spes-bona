@@ -1,14 +1,17 @@
 ﻿# Keep vanilla's broad South African consolidation desire from pre-empting
-# Spes Bona's scripted British-Boer confrontations. This is intentionally a
-# soft, one-way diplomatic goal rather than a truce.
-sb_gbr_refresh_boer_restraint = {
+# Spes Bona's scripted British-Boer confrontations. Britain and the Cape track
+# their own goals so one actor can never clear the other's restraint.
+sb_refresh_boer_restraint_for_root = {
 	if = {
 		limit = {
-			country_definition = cd:GBR
+			OR = {
+				country_definition = cd:GBR
+				country_definition = cd:CAP
+			}
 			is_country_alive = yes
 		}
 
-		save_temporary_scope_as = sb_boer_restraint_gbr_scope
+		save_temporary_scope_as = sb_boer_restraint_actor_scope
 
 		every_country = {
 			limit = {
@@ -19,20 +22,20 @@ sb_gbr_refresh_boer_restraint = {
 
 			if = {
 				limit = {
-					scope:sb_boer_restraint_gbr_scope = {
+					scope:sb_boer_restraint_actor_scope = {
 						is_ai = yes
 						sb_frontier_ai_scripting_enabled = yes
 					}
 					sb_is_british_boer_restraint_target = yes
 					NOT = {
-						has_war_with = scope:sb_boer_restraint_gbr_scope
+						has_war_with = scope:sb_boer_restraint_actor_scope
 					}
 					NOT = {
-						is_diplomatic_play_enemy_of = scope:sb_boer_restraint_gbr_scope
+						is_diplomatic_play_enemy_of = scope:sb_boer_restraint_actor_scope
 					}
 				}
 
-				scope:sb_boer_restraint_gbr_scope = {
+				scope:sb_boer_restraint_actor_scope = {
 					if = {
 						limit = {
 							NOT = {
@@ -46,32 +49,69 @@ sb_gbr_refresh_boer_restraint = {
 							country = scope:sb_boer_restraint_target_scope
 							secret_goal = befriend
 						}
-						scope:sb_boer_restraint_target_scope = {
-							set_variable = sb_british_boer_restraint_goal_var
+						if = {
+							limit = { country_definition = cd:GBR }
+							scope:sb_boer_restraint_target_scope = {
+								set_variable = sb_british_boer_restraint_goal_var
+							}
+						}
+						else = {
+							scope:sb_boer_restraint_target_scope = {
+								set_variable = sb_cape_boer_restraint_goal_var
+							}
 						}
 					}
 				}
 			}
-			else_if = {
-				limit = { has_variable = sb_british_boer_restraint_goal_var }
-
-				scope:sb_boer_restraint_gbr_scope = {
-					if = {
-						limit = {
-							has_secret_goal = {
-								who = scope:sb_boer_restraint_target_scope
-								secret_goal = befriend
+			else = {
+				if = {
+					limit = {
+						has_variable = sb_british_boer_restraint_goal_var
+						scope:sb_boer_restraint_actor_scope = { country_definition = cd:GBR }
+					}
+					scope:sb_boer_restraint_actor_scope = {
+						if = {
+							limit = {
+								has_secret_goal = {
+									who = scope:sb_boer_restraint_target_scope
+									secret_goal = befriend
+								}
+							}
+							set_secret_goal = {
+								country = scope:sb_boer_restraint_target_scope
+								secret_goal = none
 							}
 						}
-						set_secret_goal = {
-							country = scope:sb_boer_restraint_target_scope
-							secret_goal = none
+					}
+					remove_variable = sb_british_boer_restraint_goal_var
+				}
+				else_if = {
+					limit = {
+						has_variable = sb_cape_boer_restraint_goal_var
+						scope:sb_boer_restraint_actor_scope = { country_definition = cd:CAP }
+					}
+					scope:sb_boer_restraint_actor_scope = {
+						if = {
+							limit = {
+								has_secret_goal = {
+									who = scope:sb_boer_restraint_target_scope
+									secret_goal = befriend
+								}
+							}
+							set_secret_goal = {
+								country = scope:sb_boer_restraint_target_scope
+								secret_goal = none
+							}
 						}
 					}
+					remove_variable = sb_cape_boer_restraint_goal_var
 				}
-
-				remove_variable = sb_british_boer_restraint_goal_var
 			}
 		}
 	}
+}
+
+sb_refresh_british_cape_boer_restraint = {
+	c:GBR ?= { sb_refresh_boer_restraint_for_root = yes }
+	c:CAP ?= { sb_refresh_boer_restraint_for_root = yes }
 }

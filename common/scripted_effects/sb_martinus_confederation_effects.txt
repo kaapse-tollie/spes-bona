@@ -21,6 +21,43 @@
 	}
 }
 
+sb_martinus_clear_coercive_chain_state = {
+	c:TRN ?= {
+		if = {
+			limit = { has_variable = sb_martinus_coercive_chain_active_var }
+			remove_variable = sb_martinus_coercive_chain_active_var
+		}
+		if = {
+			limit = { has_variable = sb_martinus_coercive_chain_pending_var }
+			remove_variable = sb_martinus_coercive_chain_pending_var
+		}
+	}
+	c:ORA ?= {
+		if = {
+			limit = { has_variable = sb_martinus_ora_union_pending_var }
+			remove_variable = sb_martinus_ora_union_pending_var
+		}
+	}
+	c:LYD ?= {
+		if = {
+			limit = { has_variable = sb_martinus_backed_ora_var }
+			remove_variable = sb_martinus_backed_ora_var
+		}
+	}
+	c:ZPB ?= {
+		if = {
+			limit = { has_variable = sb_martinus_backed_ora_var }
+			remove_variable = sb_martinus_backed_ora_var
+		}
+	}
+	c:NAL ?= {
+		if = {
+			limit = { has_variable = sb_martinus_backed_ora_var }
+			remove_variable = sb_martinus_backed_ora_var
+		}
+	}
+}
+
 # A Presidential Union lasts only for the incumbent who held office when that
 # autonomy level began.
 sb_martinus_record_presidential_union_president = {
@@ -37,14 +74,7 @@ sb_martinus_create_presidential_union_with_ora = {
 	set_variable = sb_martinus_ambition_resolved_var
 	set_variable = sb_martinus_presidential_union_active_var
 	sb_martinus_record_presidential_union_president = yes
-	if = {
-		limit = { has_variable = sb_martinus_coercive_chain_active_var }
-		remove_variable = sb_martinus_coercive_chain_active_var
-	}
-	if = {
-		limit = { has_variable = sb_martinus_coercive_chain_pending_var }
-		remove_variable = sb_martinus_coercive_chain_pending_var
-	}
+	sb_martinus_clear_coercive_chain_state = yes
 	if = {
 		limit = {
 			c:ORA ?= {
@@ -223,10 +253,7 @@ sb_martinus_resolve_legal_union_success = {
 
 sb_martinus_coercive_compromise = {
 	set_variable = sb_martinus_ambition_resolved_var
-	if = {
-		limit = { has_variable = sb_martinus_coercive_chain_active_var }
-		remove_variable = sb_martinus_coercive_chain_active_var
-	}
+	sb_martinus_clear_coercive_chain_state = yes
 	add_modifier = {
 		name = sb_martinus_mutual_recognition
 		months = 120
@@ -280,10 +307,6 @@ sb_martinus_break_boer_war_path_compacts = {
 
 sb_martinus_force_pretorius_standoff = {
 	set_variable = sb_martinus_ambition_resolved_var
-	if = {
-		limit = { has_variable = sb_martinus_coercive_chain_active_var }
-		remove_variable = sb_martinus_coercive_chain_active_var
-	}
 	sb_martinus_break_boer_war_path_compacts = yes
 	create_diplomatic_play = {
 		type = dp_sb_martinus_humiliation
@@ -342,6 +365,7 @@ sb_martinus_force_pretorius_standoff = {
 			add_target_backers = { c:NAL }
 		}
 	}
+	sb_martinus_clear_coercive_chain_state = yes
 }
 
 sb_martinus_withdraw_trn_compact_with_ora = {

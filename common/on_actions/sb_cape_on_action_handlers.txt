@@ -1,0 +1,680 @@
+﻿# Cape political and secession handlers.
+
+sb_on_cape_yearly_pulse_country = {
+	trigger = { country_definition = cd:CAP }
+	effect = {
+		if = {
+			limit = {
+				country_definition = cd:CAP
+			}
+			every_scope_state = {
+				limit = {
+					OR = {
+						state_region = s:STATE_CAPE_COLONY
+						state_region = s:STATE_EASTERN_CAPE
+						state_region = s:STATE_NORTHERN_CAPE
+						state_region = s:STATE_GRIQUALAND_WEST
+						state_region = s:STATE_NAMAQUALAND
+						state_region = s:STATE_HEREROLAND
+					}
+					any_scope_pop = {
+						religion = rel:protestant
+						culture = {
+							has_discrimination_trait_group = heritage_group_european
+							NOT = { has_discrimination_trait = heritage_british }
+							NOT = { this = cu:boer }
+						}
+					}
+				}
+				every_scope_pop = {
+					limit = {
+						religion = rel:protestant
+						culture = {
+							has_discrimination_trait_group = heritage_group_european
+							NOT = { has_discrimination_trait = heritage_british }
+							NOT = { this = cu:boer }
+						}
+					}
+					change_pop_culture = {
+						target = cu:boer
+						value = 0.02
+					}
+				}
+			}
+			every_scope_state = {
+				limit = {
+					OR = {
+						state_region = s:STATE_CAPE_COLONY
+						state_region = s:STATE_EASTERN_CAPE
+						state_region = s:STATE_NORTHERN_CAPE
+					}
+					any_scope_pop = {
+						religion = { has_discrimination_trait = heritage_islamic }
+						NOT = { culture = cu:cape_malay }
+					}
+				}
+				every_scope_pop = {
+					limit = {
+						religion = { has_discrimination_trait = heritage_islamic }
+						NOT = { culture = cu:cape_malay }
+					}
+					change_pop_culture = {
+						target = cu:cape_malay
+						value = 0.02
+					}
+				}
+			}
+			every_scope_state = {
+				limit = {
+					OR = {
+						state_region = s:STATE_CAPE_COLONY
+						state_region = s:STATE_EASTERN_CAPE
+						state_region = s:STATE_NORTHERN_CAPE
+						state_region = s:STATE_GRIQUALAND_WEST
+						state_region = s:STATE_NAMAQUALAND
+						state_region = s:STATE_HEREROLAND
+					}
+					any_scope_pop = {
+						culture = {
+							NOT = { has_discrimination_trait_group = heritage_group_european }
+						}
+						NOT = { culture = cu:xhosa }
+						NOT = { culture = cu:nama }
+						NOT = { culture = cu:san }
+						NOT = { culture = cu:tswana }
+						NOT = { culture = cu:cape_malay }
+						NOT = { culture = cu:cape_creole }
+						NOT = { culture = cu:griqua }
+						NOT = { culture = cu:oorlam }
+						NOT = { culture = cu:baster }
+					}
+				}
+				every_scope_pop = {
+					limit = {
+						culture = {
+							NOT = { has_discrimination_trait_group = heritage_group_european }
+						}
+						NOT = { culture = cu:xhosa }
+						NOT = { culture = cu:nama }
+						NOT = { culture = cu:san }
+						NOT = { culture = cu:tswana }
+						NOT = { culture = cu:cape_malay }
+						NOT = { culture = cu:cape_creole }
+						NOT = { culture = cu:griqua }
+						NOT = { culture = cu:oorlam }
+						NOT = { culture = cu:baster }
+					}
+					change_pop_culture = {
+						target = cu:cape_creole
+						value = 0.02
+					}
+				}
+			}
+		}
+	}
+}
+
+sb_on_cape_monthly_pulse_country = {
+	trigger = {
+		OR = {
+			country_has_primary_culture = cu:british
+			country_has_primary_culture = cu:anglo_african
+			country_has_primary_culture = cu:boer
+			country_definition = cd:XHO
+			any_scope_state = {
+				state_region = s:STATE_EASTERN_CAPE
+				has_state_trait = state_trait_sb_xhosa_resistance
+			}
+		}
+	}
+	effect = {
+		if = {
+			limit = {
+				country_definition = cd:CAP
+				game_date >= 1854.1.1
+				NOT = { has_variable = sb_george_grey_cast_var }
+				NOT = { any_scope_character = { has_template = CAP_george_grey } }
+			}
+			create_character = {
+				template = CAP_george_grey
+			}
+			set_variable = sb_george_grey_cast_var
+		}
+
+			if = {
+				limit = {
+					country_definition = cd:CAP
+					is_subject_of = c:GBR
+					sb_anglo_african_national_awakening_occurred = yes
+					NOT = {
+						OR = {
+							is_subject_type = subject_type_dominion
+							is_subject_type = subject_type_sb_dominion
+							is_subject_type = subject_type_sb_responsible_colony
+							is_subject_type = subject_type_sb_responsible_colony_monarchy
+						}
+					}
+					NOT = { has_modifier = sb_cape_autonomy_pressure }
+					NOT = { has_variable = sb_cape_autonomy_pressure_pending_var }
+				}
+				set_variable = sb_cape_autonomy_pressure_pending_var
+				trigger_event = { id = sb_cape.030 days = 1 popup = yes }
+			}
+
+			if = {
+				limit = {
+					OR = {
+						country_has_primary_culture = cu:british
+						country_has_primary_culture = cu:anglo_african
+					country_has_primary_culture = cu:boer
+				}
+					any_scope_state = {
+						OR = {
+							state_region = s:STATE_CAPE_COLONY
+							state_region = s:STATE_EASTERN_CAPE
+							state_region = s:STATE_NORTHERN_CAPE
+							state_region = s:STATE_GRIQUALAND_WEST
+							state_region = s:STATE_ZULULAND
+						state_region = s:STATE_TRANSVAAL
+						state_region = s:STATE_EAST_TRANSVAAL
+						state_region = s:STATE_NORTHERN_TRANSVAAL
+						state_region = s:STATE_VRYSTAAT
+						state_region = s:STATE_NAMAQUALAND
+						state_region = s:STATE_HEREROLAND
+						state_region = s:STATE_BOTSWANA
+						state_region = s:STATE_LOURENCO_MARQUES
+					}
+				}
+			}
+				ig:ig_rural_folk ?= {
+					if = {
+						limit = { has_ideology = ideology:ideology_isolationist }
+						remove_ideology = ideology_isolationist
+					}
+					if = {
+						limit = { NOT = { has_ideology = ideology:ideology_sb_settler_colonialist } }
+						add_ideology = ideology_sb_settler_colonialist
+					}
+				}
+		}
+
+			# Eastern Cape resistance is owner-agnostic. Any country that currently
+			# holds the state should remove the trait once XHO is gone, while XHO
+			# keeps frontier tension from decaying during active resistance.
+			if = {
+				limit = {
+					any_scope_state = {
+						state_region = s:STATE_EASTERN_CAPE
+						has_state_trait = state_trait_sb_xhosa_resistance
+					}
+				}
+				if = {
+					limit = {
+						NOT = { c:XHO ?= { is_country_alive = yes } }
+					}
+					s:STATE_EASTERN_CAPE = {
+						remove_state_trait = state_trait_sb_xhosa_resistance
+					}
+					}
+				}
+
+			if = {
+				limit = { country_definition = cd:XHO }
+				if = {
+					limit = {
+						any_scope_state = {
+							state_region = s:STATE_EASTERN_CAPE
+							has_state_trait = state_trait_sb_xhosa_resistance
+						}
+					}
+					if = {
+						limit = { NOT = { has_modifier = sb_xhosa_frontier_pressure } }
+						add_modifier = { name = sb_xhosa_frontier_pressure }
+					}
+				}
+				else = {
+					if = {
+						limit = { has_modifier = sb_xhosa_frontier_pressure }
+						remove_modifier = sb_xhosa_frontier_pressure
+					}
+				}
+			}
+
+			if = {
+				limit = {
+					country_definition = cd:CAP
+					is_country_alive = yes
+					game_date >= 1856.4.1
+					c:XHO ?= {
+						is_country_alive = yes
+						NOT = { has_variable = sb_xhosa_cattle_killing_fired_var }
+						NOT = { has_war_with = c:CAP }
+						any_scope_state = {
+							state_region = s:STATE_EASTERN_CAPE
+							num_provinces >= 1
+						}
+					}
+				}
+				c:XHO ?= {
+					set_variable = sb_xhosa_cattle_killing_fired_var
+				}
+				trigger_event = { id = sb_frontier_ai_wars.130 popup = yes }
+			}
+
+			if = {
+				limit = {
+						OR = {
+							country_definition = cd:CAP
+						country_definition = cd:ABY
+							}
+							is_country_alive = yes
+							sb_xhosa_frontier_war_target_is_launchable = yes
+								OR = {
+								is_player = yes
+								sb_xhosa_frontier_ai_wars_enabled = yes
+							}
+							any_scope_state = {
+								state_region = s:STATE_EASTERN_CAPE
+								has_state_trait = state_trait_sb_xhosa_resistance
+						}
+					}
+							# Windowed Xhosa frontier wars. AI stays blocked unless the
+							# file-level sb_xhosa_frontier_ai_wars_enabled toggle is yes.
+						# They still require colonial capacity and prior frontier pressure.
+				if = {
+					limit = {
+						NOT = { has_variable = sb_xhosa_frontier_war_7_resolved_var }
+					}
+					if = {
+						limit = {
+							OR = {
+								NOT = { c:XHO ?= { is_country_alive = yes } }
+								c:XHO ?= {
+									NOT = {
+										any_scope_state = {
+											state_region = s:STATE_EASTERN_CAPE
+											num_provinces >= 1
+									}
+								}
+							}
+						}
+						}
+						set_variable = sb_xhosa_frontier_war_7_resolved_var
+					}
+					else_if = {
+						limit = {
+								game_date >= 1845.1.1
+									NOT = { has_variable = sb_xhosa_frontier_war_7_scheduled_var }
+									has_technology_researched = colonization
+										c:XHO ?= {
+											is_country_alive = yes
+											NOT = { has_truce_with = c:CAP }
+											NOT = { has_truce_with = c:GBR }
+											any_scope_state = {
+												state_region = s:STATE_EASTERN_CAPE
+												num_provinces >= 1
+											}
+											NOT = { sb_xho_owns_all_thembu_frontier_provinces = yes }
+										}
+									}
+							set_variable = sb_xhosa_frontier_war_7_scheduled_var
+							c:XHO ?= {
+								random_list = {
+									1 = { trigger_event = { id = sb_frontier_ai_wars.100 days = 7 } }
+									1 = { trigger_event = { id = sb_frontier_ai_wars.100 days = 30 } }
+								1 = { trigger_event = { id = sb_frontier_ai_wars.100 days = 90 } }
+								1 = { trigger_event = { id = sb_frontier_ai_wars.100 days = 180 } }
+								1 = { trigger_event = { id = sb_frontier_ai_wars.100 days = 270 } }
+							}
+						}
+					}
+				}
+
+				if = {
+					limit = {
+						NOT = { has_variable = sb_xhosa_frontier_war_8_resolved_var }
+					}
+					if = {
+						limit = {
+							OR = {
+								NOT = { c:XHO ?= { is_country_alive = yes } }
+								c:XHO ?= {
+									NOT = {
+										any_scope_state = {
+											state_region = s:STATE_EASTERN_CAPE
+											num_provinces >= 1
+									}
+								}
+							}
+						}
+						}
+						set_variable = sb_xhosa_frontier_war_8_resolved_var
+					}
+					else_if = {
+						limit = {
+								game_date >= 1850.1.1
+									has_variable = sb_xhosa_frontier_war_7_resolved_var
+									NOT = { has_variable = sb_xhosa_frontier_war_8_scheduled_var }
+									has_technology_researched = colonization
+										c:XHO ?= {
+											is_country_alive = yes
+											NOT = { has_truce_with = c:CAP }
+											NOT = { has_truce_with = c:GBR }
+											any_scope_state = {
+												state_region = s:STATE_EASTERN_CAPE
+												num_provinces >= 1
+											}
+											NOT = { sb_xho_owns_all_rharhabe_frontier_provinces = yes }
+										}
+									}
+							set_variable = sb_xhosa_frontier_war_8_scheduled_var
+							c:XHO ?= {
+								random_list = {
+									1 = { trigger_event = { id = sb_frontier_ai_wars.110 days = 7 } }
+									1 = { trigger_event = { id = sb_frontier_ai_wars.110 days = 30 } }
+								1 = { trigger_event = { id = sb_frontier_ai_wars.110 days = 90 } }
+								1 = { trigger_event = { id = sb_frontier_ai_wars.110 days = 180 } }
+								1 = { trigger_event = { id = sb_frontier_ai_wars.110 days = 270 } }
+							}
+						}
+					}
+				}
+
+				if = {
+					limit = {
+						NOT = { has_variable = sb_xhosa_frontier_war_9_resolved_var }
+					}
+					if = {
+						limit = {
+							OR = {
+								NOT = { c:XHO ?= { is_country_alive = yes } }
+								c:XHO ?= {
+									NOT = {
+										any_scope_state = {
+											state_region = s:STATE_EASTERN_CAPE
+											num_provinces >= 1
+										}
+									}
+								}
+							}
+						}
+						set_variable = sb_xhosa_frontier_war_9_resolved_var
+					}
+					else_if = {
+						limit = {
+								game_date >= 1870.1.1
+									has_variable = sb_xhosa_frontier_war_8_resolved_var
+									NOT = { has_variable = sb_xhosa_frontier_war_9_scheduled_var }
+									has_technology_researched = colonization
+										c:XHO ?= {
+											is_country_alive = yes
+											NOT = { has_truce_with = c:CAP }
+											NOT = { has_truce_with = c:GBR }
+											any_scope_state = {
+												state_region = s:STATE_EASTERN_CAPE
+												num_provinces >= 1
+											}
+											NOT = { sb_xho_owns_all_gcaleka_frontier_provinces = yes }
+										}
+									}
+							set_variable = sb_xhosa_frontier_war_9_scheduled_var
+							c:XHO ?= {
+								random_list = {
+									1 = { trigger_event = { id = sb_frontier_ai_wars.120 days = 30 } }
+									1 = { trigger_event = { id = sb_frontier_ai_wars.120 days = 365 } }
+								1 = { trigger_event = { id = sb_frontier_ai_wars.120 days = 730 } }
+								1 = { trigger_event = { id = sb_frontier_ai_wars.120 days = 1095 } }
+								1 = { trigger_event = { id = sb_frontier_ai_wars.120 days = 1460 } }
+							}
+						}
+					}
+				}
+		}
+
+			if = {
+				limit = {
+					country_definition = cd:CAP
+					has_journal_entry = je_sb_cape_politics
+				}
+
+				if = {
+					limit = {
+						NOT = { has_variable = sb_cape_balance_current }
+					}
+				set_variable = { name = sb_cape_balance_current value = 0 }
+			}
+
+				je:je_sb_cape_politics = {
+					if = {
+						limit = {
+							has_variable = sb_cape_tensions_initialized_var
+							NOT = { has_modifier = sb_cape_political_tensions }
+					}
+					add_modifier = {
+						name = sb_cape_political_tensions
+						}
+					}
+				}
+
+				if = {
+					limit = {
+						is_subject_of = c:GBR
+						sb_anglo_african_national_awakening_occurred = yes
+						NOT = {
+							OR = {
+								is_subject_type = subject_type_dominion
+								is_subject_type = subject_type_sb_dominion
+								is_subject_type = subject_type_sb_responsible_colony
+								is_subject_type = subject_type_sb_responsible_colony_monarchy
+							}
+						}
+					}
+					every_political_movement = {
+						limit = {
+							is_political_movement_type = movement_sb_cape_liberal
+							NOT = { has_modifier = sb_cape_liberal_autonomy_pressure }
+						}
+						add_modifier = {
+							name = sb_cape_liberal_autonomy_pressure
+						}
+					}
+				}
+				else = {
+					every_political_movement = {
+						limit = {
+							is_political_movement_type = movement_sb_cape_liberal
+							has_modifier = sb_cape_liberal_autonomy_pressure
+						}
+						remove_modifier = sb_cape_liberal_autonomy_pressure
+					}
+				}
+
+					set_variable = {
+						name = sb_cape_balance_current
+						value = "je:je_sb_cape_politics.scripted_bar_progress(sb_cape_balance_bar)"
+					}
+				sb_cape_sync_balance_band = yes
+
+			every_political_movement = {
+				limit = {
+					OR = {
+						is_political_movement_type = movement_cultural_majority
+						AND = {
+							is_political_movement_type = movement_cultural_minority
+							culture = cu:boer
+						}
+					}
+					NOT = { is_being_suppressed = yes }
+				}
+				set_suppression = yes
+			}
+
+			# Once either side becomes dominant, surface a one-off demand for the
+			# matching law instead of leaving the pressure hidden in the bar drift.
+			if = {
+				limit = {
+						var:sb_cape_balance_current <= -60
+					NOT = {
+						OR = {
+							has_law = law_type:law_cultural_exclusion
+							has_law_or_variant = law_type:law_multicultural
+						}
+					}
+					NOT = {
+						OR = {
+							is_enacting_law = law_type:law_cultural_exclusion
+							is_enacting_law = law_type:law_multicultural
+							is_enacting_law = law_type:law_sb_non_racialism
+						}
+					}
+					NOT = { has_variable = sb_cape_liberal_complaint_seen_var }
+				}
+				set_variable = sb_cape_liberal_complaint_seen_var
+				trigger_event = { id = sb_cape.120 days = 7 popup = yes }
+			}
+			if = {
+				limit = {
+						var:sb_cape_balance_current >= 60
+					NOT = {
+						OR = {
+							has_law = law_type:law_frontier_colonization
+							has_law = law_type:law_colonial_resettlement
+							has_law = law_type:law_colonial_exploitation
+						}
+					}
+					NOT = {
+						OR = {
+							is_enacting_law = law_type:law_frontier_colonization
+							is_enacting_law = law_type:law_colonial_resettlement
+							is_enacting_law = law_type:law_colonial_exploitation
+						}
+					}
+					NOT = { has_variable = sb_cape_settler_complaint_seen_var }
+				}
+				set_variable = sb_cape_settler_complaint_seen_var
+				if = {
+					limit = {
+						any_scope_character = {
+							has_variable = sb_robert_godlonton_var
+							has_role_of_type = agitator
+						}
+					}
+					trigger_event = { id = sb_cape.121 days = 7 popup = yes }
+				}
+				else = {
+					trigger_event = { id = sb_cape.122 days = 7 popup = yes }
+				}
+			}
+
+				# The monthly pulse no longer resolves the "normal" endings itself.
+			# It only opens the Albany crisis; the JE's on_complete block handles
+			# liberal / settler / compromise / failure so the visible reward event
+			# always fires exactly once.
+			if = {
+				limit = {
+					NOT = { has_variable = sb_albany_crisis_var }
+					NOT = { has_variable = sb_albany_sanctioned_var }
+					NOT = { has_variable = sb_albany_refused_var }
+					any_political_movement = {
+						is_political_movement_type = movement_sb_eastern_cape_separatist
+						civil_war ?= {
+							civil_war_progress >= 0.99
+						}
+					}
+				}
+				set_variable = sb_albany_crisis_var
+				trigger_event = { id = sb_cape.103 popup = yes }
+			}
+
+			if = {
+				limit = {
+					NOT = { has_variable = sb_cape_convict_crisis_fired }
+					game_date >= 1849.1.1
+					game_date < 1851.1.1
+					NOT = { has_law = law_type:law_closed_borders }
+				}
+				set_variable = sb_cape_convict_crisis_fired
+				trigger_event = { id = sb_cape.111 days = 7 popup = yes }
+			}
+
+			# A more liberal Cape order encourages a fresh northern trek away from
+			# Cape institutions. This is the player-facing trigger for the later
+			# Zoutpansberg breakaway, and it remains separate from the post-trek
+			# Lydenburg split so the two republics emerge for different reasons.
+			if = {
+				limit = {
+					NOT = { has_variable = sb_zoutpansberg_spawned_var }
+					NOT = { exists = c:ZPB }
+					c:TRN ?= {
+						is_country_alive = yes
+					}
+					OR = {
+							var:sb_cape_balance_current >= 30
+						has_law = law_type:law_cultural_exclusion
+						has_law = law_type:law_landed_voting
+						has_law = law_type:law_wealth_voting
+						has_law = law_type:law_census_voting
+						has_law = law_type:law_universal_suffrage
+						has_law = law_type:law_women_own_property
+						has_law = law_type:law_women_in_the_workplace
+						has_law = law_type:law_womens_suffrage
+					}
+				}
+				set_variable = sb_zoutpansberg_spawned_var
+				c:TRN ?= {
+					set_variable = sb_zoutpansberg_spawned_var
+					}
+					trigger_event = { id = sb_boer_republics.110 days = 180 popup = yes }
+				}
+			}
+		}
+}
+
+sb_on_cape_secession_end = {
+	effect = {
+		# Intentionally empty. The Albany chain now resolves on London's answer
+		# itself rather than waiting for the secession war to conclude.
+	}
+}
+
+sb_on_cape_secession_start = {
+	effect = {
+		# Fallback hook: the main Albany crisis should fire at ECSL >= 99% from the
+		# monthly Cape pulse, but if the revolt slips past that threshold between
+		# checks we still open the crisis the moment the secession starts.
+		if = {
+			limit = {
+				country_definition = cd:CAP
+				has_journal_entry = je_sb_cape_politics
+				NOT = { has_variable = sb_albany_crisis_var }
+				NOT = { has_variable = sb_albany_sanctioned_var }
+				NOT = { has_variable = sb_albany_refused_var }
+				any_civil_war = {
+					OR = {
+						is_civil_war_type = secession
+						is_civil_war_type = revolution
+					}
+					political_movement = {
+						is_political_movement_type = movement_sb_eastern_cape_separatist
+					}
+				}
+			}
+			set_variable = sb_albany_crisis_var
+			trigger_event = { id = sb_cape.103 popup = yes }
+		}
+		if = {
+			limit = {
+				country_definition = cd:CAP
+				has_journal_entry = je_sb_cape_politics
+				NOT = { has_variable = sb_cape_liberal_revolution_settler_outcome_var }
+				any_civil_war = {
+					is_civil_war_type = revolution
+					political_movement = {
+						is_political_movement_type = movement_sb_cape_liberal
+					}
+				}
+			}
+			set_variable = sb_cape_liberal_revolution_settler_outcome_var
+		}
+	}
+}

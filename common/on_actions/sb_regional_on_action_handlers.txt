@@ -1,0 +1,110 @@
+﻿# Eastern Sphere, Natal, British-office, and frontier support handlers.
+
+sb_on_eastern_sphere_monthly_pulse_country = {
+	trigger = {
+		OR = {
+			country_definition = cd:GBR
+			country_definition = cd:GZA
+			country_definition = cd:NGN
+			country_has_primary_culture = cu:portuguese
+			country_has_primary_culture = cu:boer
+		}
+	}
+	effect = {
+		sb_eastern_sphere_monthly_housekeeping = yes
+	}
+}
+
+sb_on_mozambique_company_disbanded = {
+	effect = {
+		if = {
+			limit = {
+				OR = {
+					country_definition = cd:POR
+					country_definition = cd:IBE
+				}
+				scope:company = {
+					is_company_type = company_type:company_mozambique_company
+				}
+			}
+			sb_mozambique_disband_company_country = yes
+		}
+	}
+}
+
+sb_on_natal_colony_monthly_pulse_country = {
+	trigger = { country_definition = cd:NAL }
+	effect = {
+		sb_ensure_british_natal_colony_governor = yes
+		sb_klip_river_county_monthly_housekeeping = yes
+	}
+}
+
+sb_on_gbr_colonial_offices_monthly_pulse_country = {
+	trigger = { country_definition = cd:GBR }
+	effect = {
+		sb_refresh_british_cape_boer_restraint = yes
+
+		if = {
+			limit = {
+				country_definition = cd:GBR
+				is_ai = yes
+				power_bloc ?= {
+					has_principle = principle:principle_colonial_offices_3
+				}
+				NOT = { has_variable = sb_gbr_cap_frontier_colonization_demand_cooldown_var }
+				c:CAP ?= {
+					is_country_alive = yes
+					is_subject_of = c:GBR
+					NOT = { has_law = law_type:law_frontier_colonization }
+					NOT = { has_law = law_type:law_colonial_resettlement }
+					NOT = { has_law = law_type:law_colonial_exploitation }
+					NOT = {
+						OR = {
+							is_enacting_law = law_type:law_frontier_colonization
+							is_enacting_law = law_type:law_colonial_resettlement
+							is_enacting_law = law_type:law_colonial_exploitation
+						}
+					}
+					enacting_any_law = no
+				}
+			}
+			set_variable = {
+				name = sb_gbr_cap_frontier_colonization_demand_cooldown_var
+				days = 365
+			}
+			c:CAP ?= {
+				trigger_event = { id = sb_cape.204 days = sb_travel_london_southern_africa_message_days popup = yes }
+			}
+		}
+	}
+}
+
+sb_on_frontier_force_monthly_pulse_country = {
+	trigger = {
+		OR = {
+			country_definition = cd:ZUL
+			country_definition = cd:SWZ
+			country_definition = cd:GZA
+			country_definition = cd:BST
+			has_modifier = sb_frontier_levy_reconstitution
+			has_modifier = sb_amabutho_levy_reconstitution
+		}
+	}
+	effect = {
+		if = {
+			limit = { sb_frontier_ai_force_floor_eligible = yes }
+			sb_restore_ai_frontier_force_floor = yes
+		}
+		else = {
+			if = {
+				limit = { has_modifier = sb_frontier_levy_reconstitution }
+				remove_modifier = sb_frontier_levy_reconstitution
+			}
+			if = {
+				limit = { has_modifier = sb_amabutho_levy_reconstitution }
+				remove_modifier = sb_amabutho_levy_reconstitution
+			}
+		}
+	}
+}

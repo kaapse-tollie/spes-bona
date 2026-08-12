@@ -153,3 +153,28 @@ sb_controls_transvaal_except_swazi = {
 	sb_controls_lydenburg_core = yes
 	sb_controls_north_transvaal_core = yes
 }
+sb_transvaal_unity_readiness = {
+	government_legitimacy >= 50
+	ig:ig_intelligentsia ?= { is_in_government = no }
+	ig:ig_trade_unions ?= { is_in_government = no }
+	OR = {
+		has_law = law_type:law_national_supremacy
+		has_law = law_type:law_ethnostate
+	}
+	OR = {
+		has_law_or_variant = law_type:law_state_religion
+		has_law_or_variant = law_type:law_freedom_of_conscience
+	}
+	has_law = law_type:law_national_militia
+	active_law:lawgroup_army_model ?= {
+		has_amendment = amendment_type:amendment_sb_commando_corps
+	}
+	c:LYD ?= {
+		is_country_alive = yes
+		relations:root >= relations_threshold:amicable
+	}
+	root.gdp > {
+		value = c:LYD.gdp
+		multiply = 1.25
+	}
+}

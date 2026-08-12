@@ -405,6 +405,12 @@ sb_mozambique_transfer_to_company_rule = {
 		activate_law = law_type:law_colonial_administration
 		activate_law = law_type:law_oligarchy
 		activate_law = law_type:law_subjecthood
+		active_law:lawgroup_citizenship ?= {
+			add_amendment = {
+				type = amendment_racialized_subjecthood
+				sponsor = PREV.ig:ig_armed_forces
+			}
+		}
 		activate_law = law_type:law_extraction_economy
 		activate_law = law_type:law_colonial_exploitation
 		activate_law = law_type:law_no_schools
@@ -415,9 +421,34 @@ sb_mozambique_transfer_to_company_rule = {
 		activate_law = law_type:law_no_social_security
 		activate_law = law_type:law_migration_controls
 		add_modifier = { name = colonial_administration }
+		add_modifier = {
+			name = resource_extraction_charter_modifier
+			days = very_long_modifier_time
+		}
+		ig:ig_industrialists ?= {
+			if = {
+				limit = { has_ideology = ideology:ideology_laissez_faire }
+				remove_ideology = ideology_laissez_faire
+				add_ideology = ideology_colonialist
+			}
+		}
 	}
 
 	scope:sb_mozambique_charter_overlord_scope = {
+		every_interest_group = {
+			limit = {
+				OR = {
+					law_stance = { law = law_type:law_laissez_faire value > neutral }
+					law_stance = { law = law_type:law_free_trade value > neutral }
+					law_stance = { law = law_type:law_interventionism value > neutral }
+				}
+				ig_counts_as_marginal = no
+			}
+			add_modifier = {
+				name = colonial_enterprise_modifier
+				days = normal_modifier_time
+			}
+		}
 		sb_mozambique_transfer_lourenco_to_mzq = yes
 		sb_mozambique_transfer_zambezia_to_mzq = yes
 		sb_mozambique_transfer_mocambique_to_mzq = yes
@@ -548,24 +579,27 @@ sb_delagoa_apply_actor_state_bonuses = {
 sb_delagoa_create_trade_treaty_with_actor = {
 	save_scope_as = sb_delagoa_partner_scope
 	scope:sb_delagoa_actor_scope ?= {
-		create_treaty = {
-			first_country = scope:sb_delagoa_partner_scope
-			second_country = scope:sb_delagoa_actor_scope
-			is_draft = no
-			binding_period = { years = 25 }
-			articles_to_create = {
-				{
-					article = transit_rights
-					source_country = scope:sb_delagoa_partner_scope
-					target_country = scope:sb_delagoa_actor_scope
-				}
-				{
-					article = goods_transfer
-					source_country = scope:sb_delagoa_partner_scope
-					target_country = scope:sb_delagoa_actor_scope
-					inputs = {
-						{ goods = g:merchant_marine }
-						{ quantity = 10 }
+		if = {
+			limit = { NOT = { this = scope:sb_delagoa_partner_scope } }
+			create_treaty = {
+				first_country = scope:sb_delagoa_partner_scope
+				second_country = scope:sb_delagoa_actor_scope
+				is_draft = no
+				binding_period = { years = 25 }
+				articles_to_create = {
+					{
+						article = transit_rights
+						source_country = scope:sb_delagoa_partner_scope
+						target_country = scope:sb_delagoa_actor_scope
+					}
+					{
+						article = goods_transfer
+						source_country = scope:sb_delagoa_partner_scope
+						target_country = scope:sb_delagoa_actor_scope
+						inputs = {
+							{ goods = g:merchant_marine }
+							{ quantity = 10 }
+						}
 					}
 				}
 			}
@@ -652,6 +686,7 @@ sb_delagoa_ai_build_railways_and_por_treaty = {
 					save_temporary_scope_as = sb_delagoa_market_leader_scope
 					if = {
 						limit = {
+							NOT = { this = scope:sb_delagoa_actor_scope }
 							NOT = {
 								any_scope_treaty = {
 									binds = scope:sb_delagoa_actor_scope
@@ -856,6 +891,8 @@ sb_imperial_confederation_form_saf = {
 			add_journal_entry = { type = je_sb_confederate_southern_africa }
 		}
 	}
+	set_global_variable = sb_imperial_confederation_scheme_resolved_var
+	sb_imperial_confederation_clear_runtime = yes
 	sb_bechuanaland_handle_post_open_lifecycle = yes
 }
 
@@ -944,6 +981,66 @@ sb_imperial_confederation_clear_sea_access_warning = {
 	}
 }
 
+sb_imperial_confederation_clear_runtime = {
+	if = {
+		limit = { has_global_variable = sb_imperial_confederation_scheme_scope }
+		remove_global_variable = sb_imperial_confederation_scheme_scope
+	}
+	if = {
+		limit = { has_global_variable = sb_imperial_confederation_scheme_unlocked_var }
+		remove_global_variable = sb_imperial_confederation_scheme_unlocked_var
+	}
+	if = {
+		limit = { has_global_variable = sb_imperial_confederation_subject_control_count_var }
+		remove_global_variable = sb_imperial_confederation_subject_control_count_var
+	}
+	if = {
+		limit = { has_global_variable = sb_imperial_confederation_subject_control_total_var }
+		remove_global_variable = sb_imperial_confederation_subject_control_total_var
+	}
+	if = {
+		limit = { has_global_variable = sb_imperial_confederation_subject_control_progress_var }
+		remove_global_variable = sb_imperial_confederation_subject_control_progress_var
+	}
+	if = {
+		limit = { has_global_variable = sb_imperial_confederation_sea_access_months_var }
+		remove_global_variable = sb_imperial_confederation_sea_access_months_var
+	}
+	every_country = {
+		limit = {
+			OR = {
+				is_involved_in_journal_entry = je_sb_imperial_confederation_scheme
+				has_variable = sb_imperial_confederation_bound_subject_var
+				has_variable = sb_imperial_confederation_sea_access_warning_var
+				has_variable = sb_imperial_confederation_sea_access_warned_var
+				has_variable = sb_imperial_confederation_delagoa_response_var
+			}
+		}
+		save_temporary_scope_as = sb_imperial_confederation_cleanup_country
+		c:GBR ?= {
+			je:je_sb_imperial_confederation_scheme ?= {
+				remove_involved_country = scope:sb_imperial_confederation_cleanup_country
+			}
+		}
+		if = {
+			limit = { has_variable = sb_imperial_confederation_bound_subject_var }
+			remove_variable = sb_imperial_confederation_bound_subject_var
+		}
+		if = {
+			limit = { has_variable = sb_imperial_confederation_sea_access_warning_var }
+			remove_variable = sb_imperial_confederation_sea_access_warning_var
+		}
+		if = {
+			limit = { has_variable = sb_imperial_confederation_sea_access_warned_var }
+			remove_variable = sb_imperial_confederation_sea_access_warned_var
+		}
+		if = {
+			limit = { has_variable = sb_imperial_confederation_delagoa_response_var }
+			remove_variable = sb_imperial_confederation_delagoa_response_var
+		}
+	}
+}
+
 sb_imperial_confederation_fail_scheme = {
 	if = {
 		limit = {
@@ -968,6 +1065,7 @@ sb_imperial_confederation_fail_scheme = {
 			set_global_variable = sb_imperial_confederation_failure_no_boers_var
 		}
 		set_global_variable = sb_imperial_confederation_scheme_failed_var
+		set_global_variable = sb_imperial_confederation_scheme_resolved_var
 		every_country = {
 			limit = {
 				sb_is_imperial_confederation_participant = yes
@@ -996,6 +1094,7 @@ sb_imperial_confederation_fail_scheme = {
 			limit = { c:GBR ?= { is_country_alive = yes } }
 			c:GBR ?= { trigger_event = { id = sb_imperial_confederation.051 days = 1 popup = yes } }
 		}
+		sb_imperial_confederation_clear_runtime = yes
 	}
 }
 
@@ -1218,6 +1317,7 @@ sb_unlock_imperial_confederation_scheme = {
 		limit = {
 			NOT = { has_global_variable = sb_imperial_confederation_scheme_unlocked_var }
 			NOT = { has_global_variable = sb_imperial_confederation_scheme_failed_var }
+			NOT = { has_global_variable = sb_imperial_confederation_scheme_resolved_var }
 			c:ORA ?= {
 				is_country_alive = yes
 				NOT = { has_variable = sb_voortrekker_start_var }

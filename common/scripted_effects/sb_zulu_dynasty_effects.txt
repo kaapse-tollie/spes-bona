@@ -398,10 +398,98 @@ sb_zulu_clear_dynastic_stability_modifiers = {
 		limit = { has_modifier = sb_zulu_dynastic_stability_decile_19 }
 		remove_modifier = sb_zulu_dynastic_stability_decile_19
 	}
+	if = {
+		limit = { has_variable = sb_zulu_dynastic_stability_applied_tier_var }
+		remove_variable = sb_zulu_dynastic_stability_applied_tier_var
+	}
 }
 
 sb_zulu_update_dynastic_stability_modifiers = {
-	sb_zulu_clear_dynastic_stability_modifiers = yes
+	set_variable = { name = sb_zulu_dynastic_stability_target_tier_var value = 19 }
+	if = {
+		limit = { je:je_sb_zulu_kingdom ?= { "scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 4 } }
+		set_variable = { name = sb_zulu_dynastic_stability_target_tier_var value = 0 }
+	}
+	else_if = {
+		limit = { je:je_sb_zulu_kingdom ?= { "scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 9 } }
+		set_variable = { name = sb_zulu_dynastic_stability_target_tier_var value = 1 }
+	}
+	else_if = {
+		limit = { je:je_sb_zulu_kingdom ?= { "scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 14 } }
+		set_variable = { name = sb_zulu_dynastic_stability_target_tier_var value = 2 }
+	}
+	else_if = {
+		limit = { je:je_sb_zulu_kingdom ?= { "scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 19 } }
+		set_variable = { name = sb_zulu_dynastic_stability_target_tier_var value = 3 }
+	}
+	else_if = {
+		limit = { je:je_sb_zulu_kingdom ?= { "scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 24 } }
+		set_variable = { name = sb_zulu_dynastic_stability_target_tier_var value = 4 }
+	}
+	else_if = {
+		limit = { je:je_sb_zulu_kingdom ?= { "scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 29 } }
+		set_variable = { name = sb_zulu_dynastic_stability_target_tier_var value = 5 }
+	}
+	else_if = {
+		limit = { je:je_sb_zulu_kingdom ?= { "scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 34 } }
+		set_variable = { name = sb_zulu_dynastic_stability_target_tier_var value = 6 }
+	}
+	else_if = {
+		limit = { je:je_sb_zulu_kingdom ?= { "scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 39 } }
+		set_variable = { name = sb_zulu_dynastic_stability_target_tier_var value = 7 }
+	}
+	else_if = {
+		limit = { je:je_sb_zulu_kingdom ?= { "scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 44 } }
+		set_variable = { name = sb_zulu_dynastic_stability_target_tier_var value = 8 }
+	}
+	else_if = {
+		limit = { je:je_sb_zulu_kingdom ?= { "scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 49 } }
+		set_variable = { name = sb_zulu_dynastic_stability_target_tier_var value = 9 }
+	}
+	else_if = {
+		limit = { je:je_sb_zulu_kingdom ?= { "scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 54 } }
+		set_variable = { name = sb_zulu_dynastic_stability_target_tier_var value = 10 }
+	}
+	else_if = {
+		limit = { je:je_sb_zulu_kingdom ?= { "scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 59 } }
+		set_variable = { name = sb_zulu_dynastic_stability_target_tier_var value = 11 }
+	}
+	else_if = {
+		limit = { je:je_sb_zulu_kingdom ?= { "scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 64 } }
+		set_variable = { name = sb_zulu_dynastic_stability_target_tier_var value = 12 }
+	}
+	else_if = {
+		limit = { je:je_sb_zulu_kingdom ?= { "scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 69 } }
+		set_variable = { name = sb_zulu_dynastic_stability_target_tier_var value = 13 }
+	}
+	else_if = {
+		limit = { je:je_sb_zulu_kingdom ?= { "scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 74 } }
+		set_variable = { name = sb_zulu_dynastic_stability_target_tier_var value = 14 }
+	}
+	else_if = {
+		limit = { je:je_sb_zulu_kingdom ?= { "scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 79 } }
+		set_variable = { name = sb_zulu_dynastic_stability_target_tier_var value = 15 }
+	}
+	else_if = {
+		limit = { je:je_sb_zulu_kingdom ?= { "scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 84 } }
+		set_variable = { name = sb_zulu_dynastic_stability_target_tier_var value = 16 }
+	}
+	else_if = {
+		limit = { je:je_sb_zulu_kingdom ?= { "scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 89 } }
+		set_variable = { name = sb_zulu_dynastic_stability_target_tier_var value = 17 }
+	}
+	else_if = {
+		limit = { je:je_sb_zulu_kingdom ?= { "scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 94 } }
+		set_variable = { name = sb_zulu_dynastic_stability_target_tier_var value = 18 }
+	}
+	if = {
+		limit = {
+			OR = {
+				NOT = { has_variable = sb_zulu_dynastic_stability_applied_tier_var }
+				NOT = { var:sb_zulu_dynastic_stability_applied_tier_var = var:sb_zulu_dynastic_stability_target_tier_var }
+			}
+		}
+		sb_zulu_clear_dynastic_stability_modifiers = yes
 	if = {
 		limit = {
 			has_journal_entry = je_sb_zulu_kingdom
@@ -622,4 +710,10 @@ sb_zulu_update_dynastic_stability_modifiers = {
 			name = sb_zulu_dynastic_stability_decile_19
 		}
 	}
+		set_variable = {
+			name = sb_zulu_dynastic_stability_applied_tier_var
+			value = var:sb_zulu_dynastic_stability_target_tier_var
+		}
+	}
+	remove_variable = sb_zulu_dynastic_stability_target_tier_var
 }

@@ -87,6 +87,7 @@ sb_is_imperial_confederation_owner = {
 sb_imperial_confederation_scheme_is_active = {
 	has_global_variable = sb_imperial_confederation_scheme_unlocked_var
 	NOT = { has_global_variable = sb_imperial_confederation_scheme_failed_var }
+	NOT = { has_global_variable = sb_imperial_confederation_scheme_resolved_var }
 	NOT = { exists = c:SAF }
 }
 
@@ -487,7 +488,7 @@ sb_delagoa_has_valid_gateway = {
 					is_country_type = company
 				}
 				market.owner = {
-					NOT = { country_definition = cd:GBR }
+					sb_is_outside_british_imperial_network = yes
 				}
 			}
 		}
@@ -532,13 +533,16 @@ sb_delagoa_actor_has_trade_through = {
 				owns_entire_state_region = STATE_LOURENCO_MARQUES
 				market.owner = {
 					save_temporary_scope_as = sb_delagoa_market_leader_scope
-					any_scope_treaty = {
-						binds = scope:sb_delagoa_actor_scope
-						binds = scope:sb_delagoa_market_leader_scope
-						any_scope_article = {
-							has_type = transit_rights
-							source_country = scope:sb_delagoa_market_leader_scope
-							target_country = scope:sb_delagoa_actor_scope
+					OR = {
+						this = scope:sb_delagoa_actor_scope
+						any_scope_treaty = {
+							binds = scope:sb_delagoa_actor_scope
+							binds = scope:sb_delagoa_market_leader_scope
+							any_scope_article = {
+								has_type = transit_rights
+								source_country = scope:sb_delagoa_market_leader_scope
+								target_country = scope:sb_delagoa_actor_scope
+							}
 						}
 					}
 				}

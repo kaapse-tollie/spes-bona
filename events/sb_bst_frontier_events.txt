@@ -122,9 +122,28 @@ sb_bst_frontier.020 = {
 		name = sb_bst_frontier.020.a
 		default_option = yes
 		custom_tooltip = sb_bst_frontier_020_sotho_retreat_tt
-		hidden_effect = {
+		random_country = {
+			limit = {
+				sb_bst_oranje_frontier_actor = yes
+				any_scope_state = {
+					state_region = s:STATE_VRYSTAAT
+					any_scope_pop = {
+						culture = cu:sotho
+						total_size >= 5000
+					}
+				}
+			}
+			save_temporary_scope_as = sb_bst_current_oranje_actor
+		}
+		if = {
+			limit = { NOT = { exists = scope:sb_bst_current_oranje_actor } }
 			random_country = {
 				limit = { sb_bst_oranje_frontier_actor = yes }
+				save_temporary_scope_as = sb_bst_current_oranje_actor
+			}
+		}
+		scope:sb_bst_current_oranje_actor ?= {
+			hidden_effect = {
 				random_scope_state = {
 					limit = {
 						state_region = s:STATE_VRYSTAAT
@@ -151,10 +170,6 @@ sb_bst_frontier.020 = {
 					}
 				}
 			}
-		}
-		random_country = {
-			limit = { sb_bst_oranje_frontier_actor = yes }
-			save_temporary_scope_as = sb_bst_current_oranje_actor
 			change_relations = {
 				country = root
 				value = -20

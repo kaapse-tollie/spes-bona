@@ -508,6 +508,28 @@ sb_bechuanaland_crisis_launch_participants_ready = {
 	}
 }
 
+sb_bechuanaland_crisis_participant_snapshot_is_valid = {
+	has_global_variable = sb_bechuanaland_crisis_participant_snapshot_global_var
+	NOT = {
+		any_country = {
+			has_variable = sb_bechuanaland_crisis_boer_network_var
+			OR = {
+				is_country_alive = no
+				is_subject_of = c:GBR
+			}
+		}
+	}
+	NOT = {
+		any_country = {
+			has_variable = sb_bechuanaland_crisis_british_subject_target_var
+			OR = {
+				is_country_alive = no
+				NOT = { is_direct_subject_of = c:GBR }
+			}
+		}
+	}
+}
+
 sb_bechuanaland_owns_corridor_land = {
 	any_scope_state = {
 		state_region = s:STATE_BECHUANALAND
@@ -521,6 +543,52 @@ sb_bechuanaland_tsw_holds_beachhead_province = {
 		s:STATE_BECHUANALAND = {
 			any_scope_state = { owner = c:TSW }
 		}
+	}
+}
+
+# SGO can only be planted where TSW's corridor directly meets land held by the
+# sponsoring Boer actor. Keep these per-province predicates shared with the
+# creation effect so the button can never consume its action without a result.
+sb_bechuanaland_tsw_holds_d76cb9_actor_border = {
+	c:TSW ?= { is_country_alive = yes }
+	p:xD76CB9.state.owner = c:TSW
+	OR = {
+		p:xD0A010.state.owner = root
+		p:xF075D7.state.owner = root
+	}
+}
+
+sb_bechuanaland_tsw_holds_20caa7_actor_border = {
+	c:TSW ?= { is_country_alive = yes }
+	p:x20CAA7.state.owner = c:TSW
+	p:xD0A010.state.owner = root
+}
+
+sb_bechuanaland_tsw_holds_4afdfd_actor_border = {
+	c:TSW ?= { is_country_alive = yes }
+	p:x4AFDFD.state.owner = c:TSW
+	OR = {
+		p:x3B06D4.state.owner = root
+		p:xBE553D.state.owner = root
+		p:xCF2BAB.state.owner = root
+	}
+}
+
+sb_bechuanaland_tsw_holds_a494f8_actor_border = {
+	c:TSW ?= { is_country_alive = yes }
+	p:xA494F8.state.owner = c:TSW
+	OR = {
+		p:xBE553D.state.owner = root
+		p:xD0A010.state.owner = root
+	}
+}
+
+sb_bechuanaland_tsw_holds_actor_border_beachhead = {
+	OR = {
+		sb_bechuanaland_tsw_holds_d76cb9_actor_border = yes
+		sb_bechuanaland_tsw_holds_20caa7_actor_border = yes
+		sb_bechuanaland_tsw_holds_4afdfd_actor_border = yes
+		sb_bechuanaland_tsw_holds_a494f8_actor_border = yes
 	}
 }
 
@@ -740,7 +808,6 @@ sb_bechuanaland_is_involved_actor = {
 
 sb_bechuanaland_can_sponsor_sgo = {
 	sb_bechuanaland_is_primary_boer_actor = yes
-	NOT = { exists = c:SGO }
-	c:TSW ?= { is_country_alive = yes }
-	sb_bechuanaland_tsw_holds_beachhead_province = yes
+	NOT = { c:SGO ?= { is_country_alive = yes } }
+	sb_bechuanaland_tsw_holds_actor_border_beachhead = yes
 }

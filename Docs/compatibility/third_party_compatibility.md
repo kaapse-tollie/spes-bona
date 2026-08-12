@@ -24,7 +24,7 @@ Spes Bona changes these state regions:
 
 `STATE_CAPE_COLONY`, `STATE_EASTERN_CAPE`, `STATE_NORTHERN_CAPE`, `STATE_VRYSTAAT`, `STATE_TRANSVAAL`, `STATE_EAST_TRANSVAAL`, `STATE_NORTHERN_TRANSVAAL`, `STATE_DRAKENSBERG`, `STATE_ZULULAND`, `STATE_BOTSWANA`, `STATE_BECHUANALAND`, `STATE_GRIQUALAND_WEST`, `STATE_NAMAQUALAND`, `STATE_HEREROLAND`, `STATE_ZAMBEZI`, `STATE_ZAMBEZIA`, and `STATE_LOURENCO_MARQUES`.
 
-Mods editing those region blocks need a compatibility patch. Spes Bona also ships global province-raster, terrain, locator, spline-network, and journal-GUI baselines, so an otherwise unrelated map or UI mod can still collide at file level. The exhaustive, hash-pinned surface is recorded in `override_inventory.json` and enforced through `python3 tools/validate.py`.
+Mods editing those region blocks need a compatibility patch. Spes Bona also ships global province-raster, terrain, locator, and spline-network baselines, so an otherwise unrelated map mod can still collide at file level. Journal progress bars use the required Community Mod Framework widgets; SB no longer overrides Vanilla's journal GUI files. The exhaustive, hash-pinned surface is recorded in `override_inventory.json` and enforced through `python3 tools/validate.py`.
 
 ## Treaty History Compatibility
 
@@ -35,6 +35,12 @@ A mod that also supplies `common/history/treaties/00_historical_treaties.txt` re
 ## Keyed Global Overrides
 
 Several SB definitions are global keyed replacements even when their design goal is Southern African: dominion action/type, stake-colonial-claim, abolish-monarchy, commander retirement, frontier-colonization and slavery laws, ideologies, technologies, state traits, and political movements. The inventory identifies each object and its upstream source. The retained movement objects are rebased to Community Mod Framework `1.58.2`; mods that replace the same keys after SB may supersede the CAP exclusions.
+
+## Hail Columbia Load Order
+
+SB and Hail Columbia both replace `law_legacy_slavery`. Until a dedicated compatibility patch is available, SB must load after Hail Columbia so the Inboekstelsel visibility guard remains authoritative. Reversing that order can expose Legacy Slavery to Boer countries where SB expects the Inboekstelsel variant.
+
+This is a documented compatibility constraint, not permission to weaken Inboekstelsel behavior. A future compatibility patch should merge Hail Columbia's law changes into SB's guarded object.
 
 ## File Naming Rule
 

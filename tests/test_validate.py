@@ -9,6 +9,7 @@ class RepositoryValidatorTests(unittest.TestCase):
             validate.check_local_override_inventory(),
             validate.check_map_data(),
             validate.check_localization(),
+            validate.check_on_action_router(),
             validate.check_stale_symbols(),
             validate.check_delayed_lifecycle(),
         )

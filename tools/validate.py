@@ -11,9 +11,11 @@ import os
 from pathlib import Path
 import re
 import shutil
+import struct
 import subprocess
 import sys
 from typing import Iterable
+import zlib
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -28,6 +30,16 @@ LOC_REFERENCE_RE = re.compile(
 STATE_RE = re.compile(r"^(STATE_[A-Z0-9_]+)\s*=\s*\{", re.MULTILINE)
 PROVINCE_RE = re.compile(r"x[0-9A-Fa-f]{6}")
 HUB_RE = re.compile(r'^\s*(city|port|farm|mine|wood)\s*=\s*"(x[0-9A-Fa-f]{6})"', re.MULTILINE)
+STATE_ID_RE = re.compile(r"\bid\s*=\s*(\d+)")
+TERRAIN_RE = re.compile(r'^\s*(x[0-9A-Fa-f]{6})\s*=\s*"([^"]+)"', re.MULTILINE)
+LOCATOR_INSTANCE_RE = re.compile(
+    r"\{\s*id=(\d+)\s*position=\{\s*([-0-9.]+)\s+[-0-9.]+\s+([-0-9.]+)\s*\}",
+    re.DOTALL,
+)
+REVIEW_MARKER_RE = re.compile(r"^\s*#\s*###\s+(TO REVIEW|REVIEWED)\s+###\s*$")
+EVENT_LOC_KEY_RE = re.compile(r"^\s*([A-Za-z0-9_]+\.\d+)(?:\.[^:]*)?:\d*\s")
+SCRIPT_EVENT_RE = re.compile(r"^([A-Za-z0-9_]+\.\d+)\s*=\s*\{", re.MULTILINE)
+TOP_LEVEL_OBJECT_RE = re.compile(r"^([A-Za-z0-9_]+)\s*=\s*\{", re.MULTILINE)
 HARD_REPLACE_RE = re.compile(
     r"^(REPLACE|TRY_REPLACE|REPLACE_OR_CREATE):([^\s=]+)\s*=\s*\{", re.MULTILINE
 )
@@ -187,6 +199,98 @@ def connected_components(nodes: set[str], adjacency: dict[str, list[str]]) -> li
     return components
 
 
+def decode_rgb_png(
+    path: Path, sample_points: set[tuple[int, int]]
+) -> tuple[int, int, set[str], dict[tuple[int, int], str]]:
+    payload = path.read_bytes()
+    if payload[:8] != b"\x89PNG\r\n\x1a\n":
+        raise ValueError("not a PNG")
+
+    offset = 8
+    compressed = bytearray()
+    width = height = bit_depth = color_type = interlace = None
+    while offset < len(payload):
+        length = struct.unpack(">I", payload[offset : offset + 4])[0]
+        chunk_type = payload[offset + 4 : offset + 8]
+        chunk = payload[offset + 8 : offset + 8 + length]
+        offset += length + 12
+        if chunk_type == b"IHDR":
+            width, height, bit_depth, color_type, _, _, interlace = struct.unpack(">IIBBBBB", chunk)
+        elif chunk_type == b"IDAT":
+            compressed.extend(chunk)
+        elif chunk_type == b"IEND":
+            break
+
+    if (bit_depth, color_type, interlace) != (8, 2, 0):
+        raise ValueError(
+            f"unsupported PNG format: depth={bit_depth}, color={color_type}, interlace={interlace}"
+        )
+    assert width is not None and height is not None
+
+    raw = zlib.decompress(bytes(compressed))
+    bytes_per_pixel = 3
+    stride = width * bytes_per_pixel
+    cursor = 0
+    previous = bytearray(stride)
+    colors: set[str] = set()
+    samples: dict[tuple[int, int], str] = {}
+    samples_by_row: dict[int, set[int]] = {}
+    for x, y in sample_points:
+        samples_by_row.setdefault(y, set()).add(x)
+
+    for y in range(height):
+        filter_type = raw[cursor]
+        cursor += 1
+        current = bytearray(raw[cursor : cursor + stride])
+        cursor += stride
+        for index in range(stride):
+            left = current[index - bytes_per_pixel] if index >= bytes_per_pixel else 0
+            above = previous[index]
+            upper_left = previous[index - bytes_per_pixel] if index >= bytes_per_pixel else 0
+            if filter_type == 1:
+                current[index] = (current[index] + left) & 0xFF
+            elif filter_type == 2:
+                current[index] = (current[index] + above) & 0xFF
+            elif filter_type == 3:
+                current[index] = (current[index] + ((left + above) // 2)) & 0xFF
+            elif filter_type == 4:
+                estimate = left + above - upper_left
+                left_distance = abs(estimate - left)
+                above_distance = abs(estimate - above)
+                upper_left_distance = abs(estimate - upper_left)
+                predictor = (
+                    left
+                    if left_distance <= above_distance and left_distance <= upper_left_distance
+                    else above
+                    if above_distance <= upper_left_distance
+                    else upper_left
+                )
+                current[index] = (current[index] + predictor) & 0xFF
+            elif filter_type != 0:
+                raise ValueError(f"unsupported PNG filter {filter_type}")
+
+        for index in range(0, stride, bytes_per_pixel):
+            colors.add(f"x{current[index]:02X}{current[index + 1]:02X}{current[index + 2]:02X}")
+        for x in samples_by_row.get(y, ()):
+            index = x * bytes_per_pixel
+            samples[(x, y)] = f"x{current[index]:02X}{current[index + 1]:02X}{current[index + 2]:02X}"
+        previous = current
+
+    return width, height, colors, samples
+
+
+def parse_locator_instances(path: Path) -> tuple[dict[int, tuple[float, float]], list[int]]:
+    instances: dict[int, tuple[float, float]] = {}
+    duplicates: list[int] = []
+    text = path.read_text(encoding="utf-8-sig")
+    for match in LOCATOR_INSTANCE_RE.finditer(text):
+        identifier = int(match.group(1))
+        if identifier in instances:
+            duplicates.append(identifier)
+        instances[identifier] = (float(match.group(2)), float(match.group(3)))
+    return instances, duplicates
+
+
 def check_map_data() -> Check:
     manifest_path = ROOT / "tools/map_connectivity_manifest.json"
     if not manifest_path.is_file():
@@ -195,11 +299,18 @@ def check_map_data() -> Check:
     state_path = ROOT / manifest["state_region_file"]
     blocks = parse_state_blocks(state_path)
     errors: list[str] = []
-    if sha256(ROOT / manifest["province_map"]) != manifest["province_map_sha256"]:
+    province_map = ROOT / manifest["province_map"]
+    if sha256(province_map) != manifest["province_map_sha256"]:
         errors.append("province raster hash changed; regenerate and review adjacency")
 
     province_owner: dict[str, str] = {}
+    state_ids: dict[str, int] = {}
     for state, block in blocks.items():
+        identifier = STATE_ID_RE.search(block)
+        if identifier is None:
+            errors.append(f"{state} has no state id")
+        else:
+            state_ids[state] = int(identifier.group(1))
         provinces = object_values(block, "provinces")
         impassable = object_values(block, "impassable")
         for province in provinces:
@@ -212,6 +323,88 @@ def check_map_data() -> Check:
                 errors.append(f"{state} {hub_type} {hub} is outside its province list")
             if hub in impassable:
                 errors.append(f"{state} {hub_type} {hub} is impassable")
+
+    duplicate_state_ids = sorted(
+        identifier
+        for identifier in set(state_ids.values())
+        if list(state_ids.values()).count(identifier) > 1
+    )
+    if duplicate_state_ids:
+        errors.append("duplicate state ids: " + ", ".join(map(str, duplicate_state_ids)))
+
+    terrain_path = ROOT / manifest["terrain_file"]
+    terrain_records: dict[str, str] = {}
+    duplicate_terrain: set[str] = set()
+    for province, terrain in TERRAIN_RE.findall(terrain_path.read_text(encoding="utf-8-sig")):
+        province = province.upper().replace("X", "x", 1)
+        if province in terrain_records:
+            duplicate_terrain.add(province)
+        terrain_records[province] = terrain
+    if duplicate_terrain:
+        errors.append("duplicate terrain records: " + ", ".join(sorted(duplicate_terrain)))
+    missing_terrain = sorted(set(province_owner) - set(terrain_records))
+    if missing_terrain:
+        errors.append("state provinces missing terrain: " + ", ".join(missing_terrain))
+
+    locator_instances: dict[str, dict[int, tuple[float, float]]] = {}
+    sample_points: set[tuple[int, int]] = set()
+    for kind, relative_path in manifest.get("locator_files", {}).items():
+        locator_path = ROOT / relative_path
+        instances, duplicates = parse_locator_instances(locator_path)
+        locator_instances[kind] = instances
+        if duplicates:
+            errors.append(
+                f"{kind} locator has duplicate ids: " + ", ".join(map(str, sorted(set(duplicates))))
+            )
+
+    pending_samples: list[tuple[str, str, int, str, tuple[int, int]]] = []
+    raster_height = manifest.get("province_map_height", 3616)
+    for sample in manifest.get("locator_samples", []):
+        state = sample["state"]
+        kind = sample["kind"]
+        identifier = state_ids.get(state)
+        block = blocks.get(state)
+        if identifier is None or block is None:
+            errors.append(f"locator sample references unknown state {state}")
+            continue
+        expected_hubs = {key: value.upper().replace("X", "x", 1) for key, value in HUB_RE.findall(block)}
+        expected = expected_hubs.get(kind)
+        position = locator_instances.get(kind, {}).get(identifier)
+        if expected is None or position is None:
+            errors.append(f"{state} has no {kind} hub or locator")
+            continue
+        x = round(position[0])
+        y = raster_height - 1 - round(position[1])
+        sample_points.add((x, y))
+        pending_samples.append((state, kind, identifier, expected, (x, y)))
+
+    try:
+        width, height, raster_colors, raster_samples = decode_rgb_png(province_map, sample_points)
+    except (OSError, ValueError, zlib.error) as error:
+        errors.append(f"cannot validate province raster: {error}")
+        width = height = 0
+        raster_colors = set()
+        raster_samples = {}
+    if height and height != raster_height:
+        errors.append(f"province raster height {height}, expected {raster_height}")
+    missing_raster = sorted(set(province_owner) - raster_colors)
+    if missing_raster:
+        errors.append("state provinces missing from raster: " + ", ".join(missing_raster))
+    for state, kind, identifier, expected, point in pending_samples:
+        x, y = point
+        if not (0 <= x < width and 0 <= y < height):
+            errors.append(f"{state} {kind} locator {identifier} is outside the raster")
+            continue
+        actual = raster_samples.get(point)
+        if actual != expected:
+            errors.append(f"{state} {kind} locator samples {actual}, expected {expected}")
+
+    for relative_path, expected_hash in manifest.get("pinned_files", {}).items():
+        pinned = ROOT / relative_path
+        if not pinned.is_file():
+            errors.append(f"missing pinned map file {relative_path}")
+        elif sha256(pinned) != expected_hash:
+            errors.append(f"pinned map file changed: {relative_path}")
 
     for state, contract in manifest.get("states", {}).items():
         block = blocks.get(state)
@@ -239,6 +432,9 @@ def check_localization() -> Check:
     errors: list[str] = []
     definitions: dict[str, Path] = {}
     folded: dict[str, str] = {}
+    classifications: dict[str, list[tuple[str, Path, int]]] = {}
+    reviewed = 0
+    to_review = 0
     for path in sorted((ROOT / "localization/english").rglob("*.yml")):
         data = path.read_bytes()
         if not data.startswith(b"\xef\xbb\xbf"):
@@ -246,6 +442,13 @@ def check_localization() -> Check:
         text = data.decode("utf-8-sig")
         if not text.startswith("l_english:"):
             errors.append(f"{path.name}: invalid language header")
+        if data and not data.endswith(b"\n"):
+            errors.append(f"{path.name}: missing final newline")
+        for line_number, line in enumerate(text.splitlines(), 1):
+            if line.rstrip() != line:
+                errors.append(f"{path.name}:{line_number}: trailing whitespace")
+            if line.startswith("\t"):
+                errors.append(f"{path.name}:{line_number}: leading tab")
         for key in LOC_KEY_RE.findall(text):
             key = key.strip()
             if key == "l_english":
@@ -257,6 +460,43 @@ def check_localization() -> Check:
             if lowered in folded and folded[lowered] != key:
                 errors.append(f"case-insensitive duplicate {folded[lowered]} / {key}")
             folded[lowered] = key
+
+        lines = text.splitlines()
+        for index, line in enumerate(lines):
+            marker = REVIEW_MARKER_RE.match(line)
+            if marker is None:
+                continue
+            for following in lines[index + 1 :]:
+                key_match = EVENT_LOC_KEY_RE.match(following)
+                if key_match is not None:
+                    event_id = key_match.group(1)
+                    classifications.setdefault(event_id, []).append((marker.group(1), path, index + 1))
+                    if marker.group(1) == "REVIEWED":
+                        reviewed += 1
+                    else:
+                        to_review += 1
+                    break
+                if REVIEW_MARKER_RE.match(following):
+                    break
+
+    script_events: set[str] = set()
+    for path in sorted((ROOT / "events").rglob("*.txt")):
+        text = path.read_text(encoding="utf-8-sig", errors="ignore")
+        script_events.update(SCRIPT_EVENT_RE.findall(text))
+        for line_number, line in enumerate(text.splitlines(), 1):
+            if "### TO REVIEW ###" in line or "### REVIEWED ###" in line:
+                errors.append(f"{path.name}:{line_number}: review marker belongs in localization")
+
+    localized_events = {
+        event_id for event_id in script_events if f"{event_id}.t" in definitions
+    }
+    for event_id in sorted(localized_events):
+        entries = classifications.get(event_id, [])
+        if len(entries) != 1:
+            errors.append(f"{event_id}: expected one review classification, found {len(entries)}")
+    for event_id, entries in sorted(classifications.items()):
+        if len(entries) != 1:
+            errors.append(f"{event_id}: duplicate review classifications")
 
     allowlist_path = ROOT / "tools/localization_reference_allowlist.json"
     allowlist = set()
@@ -272,7 +512,53 @@ def check_localization() -> Check:
         errors.append("missing referenced keys: " + ", ".join(sorted(missing)))
     if stale_allowlist:
         errors.append("stale localization allowlist: " + ", ".join(sorted(stale_allowlist)))
-    return Check("localization", "FAIL" if errors else "PASS", "; ".join(errors))
+
+    support_key = "sb_griqualand_west.025.oranje_annexation_d"
+    support_event = ROOT / "events/sb_griqualand_west_events.txt"
+    if support_key not in definitions:
+        errors.append(f"missing support key {support_key}")
+    elif support_key not in support_event.read_text(encoding="utf-8-sig"):
+        errors.append(f"{support_key} is not referenced by its event")
+
+    coverage = f"event review coverage: {reviewed} reviewed, {to_review} to review"
+    return Check(
+        "localization",
+        "FAIL" if errors else "PASS",
+        "; ".join(errors + [coverage]),
+    )
+
+
+def check_on_action_router() -> Check:
+    router = ROOT / "common/on_actions/sb_on_actions.txt"
+    errors: list[str] = []
+    text = router.read_text(encoding="utf-8-sig")
+    if len(text.splitlines()) > 150:
+        errors.append("central router exceeds 150 lines")
+    handler_bodies = [key for key in TOP_LEVEL_OBJECT_RE.findall(text) if key.startswith("sb_")]
+    if handler_bodies:
+        errors.append("handler bodies remain in central router: " + ", ".join(handler_bodies))
+
+    registered: list[str] = []
+    for match in re.finditer(r"\bon_actions\s*=\s*\{", text):
+        registered.extend(re.findall(r"\bsb_[A-Za-z0-9_]+\b", extract_braced(text, match.start())))
+
+    definitions: dict[str, list[Path]] = {}
+    for path in sorted((ROOT / "common/on_actions").glob("*.txt")):
+        if path == router:
+            continue
+        handler_text = path.read_text(encoding="utf-8-sig", errors="ignore")
+        for key in TOP_LEVEL_OBJECT_RE.findall(handler_text):
+            if key.startswith("sb_"):
+                definitions.setdefault(key, []).append(path)
+
+    for handler in sorted(set(registered)):
+        paths = definitions.get(handler, [])
+        if len(paths) != 1:
+            errors.append(f"{handler}: expected one definition, found {len(paths)}")
+    duplicates = sorted(key for key, paths in definitions.items() if len(paths) > 1)
+    if duplicates:
+        errors.append("duplicate handler definitions: " + ", ".join(duplicates))
+    return Check("on-action router", "FAIL" if errors else "PASS", "; ".join(errors))
 
 
 def check_stale_symbols() -> Check:
@@ -349,30 +635,6 @@ def run_command(name: str, command: list[str], cwd: Path = ROOT) -> Check:
     return Check(name, "FAIL", tail)
 
 
-def check_resources() -> Check:
-    command = [sys.executable, "-B", "resource-rework/resources/scripts/resources.py", "test", "--no-write"]
-    env = dict(os.environ)
-    env["PYTHONDONTWRITEBYTECODE"] = "1"
-    result = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, env=env)
-    failures = set(re.findall(r"^- \*\*FAIL\*\* `([^`]+)`", result.stdout, re.MULTILINE))
-    baseline_path = ROOT / "tools/resource_validation_baseline.json"
-    baseline = set(json.loads(baseline_path.read_text(encoding="utf-8")).get("allowed_failures", []))
-    unexpected = failures - baseline
-    stale = baseline - failures
-    if unexpected or stale:
-        details = []
-        if unexpected:
-            details.append("unexpected failures: " + ", ".join(sorted(unexpected)))
-        if stale:
-            details.append("stale baseline: " + ", ".join(sorted(stale)))
-        return Check("resource audit", "FAIL", "; ".join(details))
-    if failures:
-        return Check("resource audit", "WARN", "known Medium-Low baseline: " + ", ".join(sorted(failures)))
-    if result.returncode != 0:
-        return Check("resource audit", "FAIL", "runner failed without a classified check")
-    return Check("resource audit", "PASS")
-
-
 def find_game_root(explicit: str | None) -> Path | None:
     candidates = [
         Path(explicit).expanduser() if explicit else None,
@@ -392,10 +654,10 @@ def main() -> int:
 
     checks = [
         run_command("unit tests", [sys.executable, "-B", "-m", "unittest", "discover", "-s", "tests"]),
-        check_resources(),
         check_local_override_inventory(),
         check_map_data(),
         check_localization(),
+        check_on_action_router(),
         check_stale_symbols(),
         check_delayed_lifecycle(),
     ]

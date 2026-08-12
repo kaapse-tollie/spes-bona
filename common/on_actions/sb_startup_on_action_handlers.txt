@@ -1,0 +1,485 @@
+﻿# Startup, colony-creation, and technology handlers.
+
+sb_on_game_started = {
+	effect = {
+		# The vanilla Highveld JE is deliberately disabled by Spes Bona. Without a
+		# live reference path, two of its endpoint flavor events show up as
+		# orphaned in the startup log. Keep a dead-code reference under an actual
+		# country scope so the event manager still sees them as wired while never
+		# firing them in practice.
+			c:CAP ?= {
+				if = {
+					limit = { always = no }
+					trigger_event = { id = struggle_for_the_highveld.6 days = 1 popup = no }
+					trigger_event = { id = struggle_for_the_highveld.7 days = 1 popup = no }
+					trigger_event = { id = sb_cape.104 days = 1 popup = no }
+					trigger_event = { id = sb_martinus_confederation.050 days = 1 popup = no }
+				}
+			}
+			# ============================================================
+			# Homeland corrections — enforcing the 50-100yr presence rule
+		# ============================================================
+		# Vanilla V3 assigns homelands too liberally in Southern Africa.
+		# Many cultures are given homeland status in states where they had
+		# little or no presence by 1836. These removals correct that.
+		#
+		# Counterpart additions are in common/history/states/00_states.txt.
+
+		# Western Cape: remove sotho
+		# Sotho peoples are indigenous to the Highveld (Lesotho/Free State),
+		# not the Western Cape. Vanilla incorrectly assigns them here.
+		s:STATE_CAPE_COLONY = {
+			remove_homeland = cu:sotho
+		}
+		# Northern Cape: remove sotho
+		# Same reasoning — Sotho presence here was minimal and recent.
+		# The Northern Cape was historically Khoisan and later Griqua territory.
+		s:STATE_NORTHERN_CAPE = {
+			remove_homeland = cu:sotho
+		}
+		s:STATE_GRIQUALAND_WEST = {
+			remove_homeland = cu:sotho
+		}
+		# Zululand (KZN): remove sotho
+		# Zululand was Zulu/Nguni territory. Sotho homeland is Lesotho,
+		# not KwaZulu-Natal. Vanilla conflates "Bantu" groups incorrectly.
+		s:STATE_ZULULAND = {
+			remove_homeland = cu:sotho
+		}
+			# Free State: remove griqua and boer
+			# - griqua: Philippolis settlement only ~1826 (Adam Kok II). Too recent.
+			# - boer: Great Trek hadn't happened yet (1836-38). No Boer settlement.
+			# Correct homelands: sotho, tswana (long indigenous presence)
+			s:STATE_VRYSTAAT = {
+				remove_homeland = cu:griqua
+				remove_homeland = cu:boer
+			}
+		# Transvaal: remove zulu, boer
+		# - zulu: Zulu homeland is KZN, not the Transvaal. The Ndebele (a Zulu
+		#   offshoot) were here, but "zulu" culture represents the Zulu kingdom.
+		# - boer: Great Trek hadn't reached the Transvaal by 1836.
+		# Correct homelands: tswana, sotho, venda (long indigenous presence)
+		s:STATE_TRANSVAAL = {
+			remove_homeland = cu:zulu
+			remove_homeland = cu:boer
+		}
+		s:STATE_EAST_TRANSVAAL = {
+			remove_homeland = cu:zulu
+			remove_homeland = cu:boer
+		}
+		s:STATE_NORTHERN_TRANSVAAL = {
+			remove_homeland = cu:zulu
+			remove_homeland = cu:boer
+		}
+			# Namaqualand: remove tswana
+			# Tswana are indigenous to Botswana and the Northern Cape interior,
+			# not the arid Namaqualand coast. This region was Nama/Khoisan territory.
+			s:STATE_NAMAQUALAND = {
+				remove_homeland = cu:tswana
+			}
+			# Botswana: remove herero
+			# - herero: Herero homeland is Hereroland (Namibia), not Botswana.
+			# Correct homelands: tswana, san, and the north-western Kavango corridor.
+			s:STATE_BOTSWANA = {
+				remove_homeland = cu:herero
+			}
+
+			c:SAN ?= {
+				if = {
+					limit = { NOT = { has_modifier = sb_hunter_gatherer_society } }
+					add_modifier = {
+						name = sb_hunter_gatherer_society
+						months = -1
+					}
+				}
+			}
+			# c:ORL ?= {
+			# 	if = {
+			# 		limit = { NOT = { has_modifier = sb_arid_frontier_pastoralism } }
+			# 		add_modifier = {
+			# 			name = sb_arid_frontier_pastoralism
+			# 			months = -1
+			# 		}
+			# 	}
+			# }
+			# c:RHB ?= {
+			# 	if = {
+			# 		limit = { NOT = { has_modifier = sb_arid_frontier_pastoralism } }
+			# 		add_modifier = {
+			# 			name = sb_arid_frontier_pastoralism
+			# 			months = -1
+			# 		}
+			# 	}
+			# }
+			# c:HRO ?= {
+			# 	if = {
+			# 		limit = { NOT = { has_modifier = sb_arid_frontier_pastoralism } }
+			# 		add_modifier = {
+			# 			name = sb_arid_frontier_pastoralism
+			# 			months = -1
+			# 		}
+			# 	}
+			# 	if = {
+			# 		limit = { NOT = { has_modifier = sb_herero_pastoral_subsistence } }
+			# 		add_modifier = {
+			# 			name = sb_herero_pastoral_subsistence
+			# 			months = -1
+			# 		}
+			# 	}
+			# }
+			# c:OVB ?= {
+			# 	if = {
+			# 		limit = { NOT = { has_modifier = sb_arid_frontier_pastoralism } }
+			# 		add_modifier = {
+			# 			name = sb_arid_frontier_pastoralism
+			# 			months = -1
+			# 		}
+			# 	}
+			# }
+			# c:BST ?= {
+			# 	if = {
+			# 		limit = { NOT = { has_modifier = sb_basotho_highland_agriculture } }
+			# 		add_modifier = {
+			# 			name = sb_basotho_highland_agriculture
+			# 			months = -1
+			# 		}
+			# 	}
+			# }
+
+			# Southern African English/Boer agrarians should use the settler-colonialist
+			# rural ideology rather than vanilla isolationism. This is no longer tied to
+			# the Cape JE and applies to any qualifying stateholder in the region.
+		every_country = {
+			limit = {
+				OR = {
+					country_has_primary_culture = cu:british
+					country_has_primary_culture = cu:anglo_african
+					country_has_primary_culture = cu:boer
+				}
+					any_scope_state = {
+						OR = {
+							state_region = s:STATE_CAPE_COLONY
+							state_region = s:STATE_EASTERN_CAPE
+							state_region = s:STATE_NORTHERN_CAPE
+							state_region = s:STATE_GRIQUALAND_WEST
+							state_region = s:STATE_ZULULAND
+						state_region = s:STATE_TRANSVAAL
+						state_region = s:STATE_EAST_TRANSVAAL
+						state_region = s:STATE_NORTHERN_TRANSVAAL
+						state_region = s:STATE_VRYSTAAT
+						state_region = s:STATE_NAMAQUALAND
+						state_region = s:STATE_HEREROLAND
+						state_region = s:STATE_BOTSWANA
+						state_region = s:STATE_LOURENCO_MARQUES
+					}
+				}
+			}
+				ig:ig_rural_folk ?= {
+					if = {
+						limit = { has_ideology = ideology:ideology_isolationist }
+						remove_ideology = ideology_isolationist
+					}
+					if = {
+						limit = { NOT = { has_ideology = ideology:ideology_sb_settler_colonialist } }
+						add_ideology = ideology_sb_settler_colonialist
+					}
+				}
+		}
+
+		# Force the trekker republics into their intended opening coalitions after
+		# startup character generation has completed.
+		c:ORA ?= {
+			every_interest_group = {
+				remove_ruling_interest_group = yes
+			}
+			ig:ig_armed_forces ?= {
+				add_ruling_interest_group = yes
+			}
+			ig:ig_landowners ?= {
+				add_ruling_interest_group = yes
+			}
+			ig:ig_devout ?= {
+				add_ruling_interest_group = yes
+			}
+		}
+		c:TRN ?= {
+			every_interest_group = {
+				remove_ruling_interest_group = yes
+			}
+			ig:ig_armed_forces ?= {
+				add_ruling_interest_group = yes
+			}
+			ig:ig_landowners ?= {
+				add_ruling_interest_group = yes
+			}
+			ig:ig_rural_folk ?= {
+				add_ruling_interest_group = yes
+			}
+			ig:ig_devout ?= {
+				add_ruling_interest_group = yes
+			}
+		}
+
+		# ============================================================
+		# Initial tensions — drive AI behavior in the first decades
+		# ============================================================
+		# Tension is a hidden value (0-100) that affects AI willingness
+		# to start diplomatic plays. Combined with negative relations
+		# (sb_relations.txt), high tension makes early wars likely.
+
+		# --- Cape-Xhosa Frontier ---
+		# The 6th Frontier War (1834-36) had just ended. Tensions remained
+		# extremely high, especially with the Rharhabe who lost territory.
+		# These values make the 7th Frontier War (historically 1846) plausible
+		# within the first 5-10 years of gameplay.
+			c:CAP ?= {
+				if = {
+					limit = {
+						has_journal_entry = je_sb_cape_politics
+				}
+				if = {
+					limit = {
+						NOT = { has_variable = sb_cape_balance_current }
+					}
+					set_variable = { name = sb_cape_balance_current value = 0 }
+				}
+				if = {
+					limit = {
+						NOT = { has_variable = sb_cape_tensions_initialized_var }
+						NOT = { has_variable = sb_cape_tensions_event_pending_var }
+					}
+					set_variable = sb_cape_tensions_event_pending_var
+					trigger_event = { id = sb_cape.001 days = 7 popup = yes }
+				}
+				every_political_lobby = {
+					limit = {
+						is_political_lobby_type = lobby_pro_overlord
+						target = c:GBR
+					}
+					remove_variable = lobby_custom_name_var_15
+					remove_variable = lobby_custom_name_var_16
+					remove_variable = lobby_custom_name_var_17
+					remove_variable = lobby_custom_name_var_18
+					remove_variable = lobby_custom_name_var_19
+					remove_variable = lobby_custom_name_var_20
+					set_variable = lobby_custom_name_var_15
+				}
+				every_political_lobby = {
+					limit = {
+						is_political_lobby_type = lobby_anti_overlord
+						target = c:GBR
+					}
+					remove_variable = lobby_custom_name_var_7
+					remove_variable = lobby_custom_name_var_8
+					remove_variable = lobby_custom_name_var_9
+					remove_variable = lobby_custom_name_var_10
+					remove_variable = lobby_custom_name_var_11
+					remove_variable = lobby_custom_name_var_12
+					remove_variable = lobby_custom_name_var_13
+					remove_variable = lobby_custom_name_var_14
+						set_variable = lobby_custom_name_var_14
+					}
+				}
+					change_tension = {
+						country = c:XHO
+						value = 100
+					}
+			}
+
+		# --- Voortrekker-Ndebele Conflict ---
+		# In the v2 setup the inland trek starts as one Voortrekker polity under
+		# ORA, so the opening Highveld war is now MTB against ORA directly.
+		c:ORA ?= {
+			change_tension = {
+				country = c:MTB
+				value = 90
+			}
+			if = {
+				limit = {
+					is_at_war = no
+					aggressive_diplomatic_plays_permitted = yes
+					c:MTB ?= {
+						NOT = { has_variable = sb_ndebele_opening_play_fired }
+						is_country_alive = yes
+						is_at_war = no
+						aggressive_diplomatic_plays_permitted = yes
+					}
+				}
+				# Native uprisings are vanilla plays whose initiator must be the
+				# decentralized country itself. Fire the opening event from MTB,
+				# not TRN, or the play will either fail to start or present the
+				# default colonization-rights article on the wrong side.
+				c:MTB ?= {
+					trigger_event = { id = sb_great_trek.001 days = 90 }
+				}
+			}
+		}
+		# Ndebele reciprocal tension — Mzilikazi now reads the inland
+		# Voortrekker camps as a single advancing frontier under ORA.
+		c:MTB ?= {
+			change_tension = {
+				country = c:ORA
+				value = 90
+			}
+		}
+
+		# --- Orange Free State Frontier ---
+		# ORA-PHL tension 50: Griqua-Boer land competition around Philippolis.
+		# Adam Kok III's Griqua territory was being encroached upon.
+		# Historically led to the 1845 Kok-Maitland Treaty and later conflict.
+		# Tension 50 makes war possible but not immediate — correct for the
+		# slower-burning Griqua-Boer rivalry.
+		c:ORA ?= {
+			change_tension = {
+				country = c:PHL
+				value = 50
+			}
+			# ORA-BST tension 15: Boer-Basotho friction over the Caledon River valley
+			# should exist at start, but it should not immediately collapse into a
+			# maximal annexation war before the historical escalation of the 1850s.
+			change_tension = {
+				country = c:BST
+				value = 15
+			}
+		}
+
+	}
+}
+
+sb_on_game_started_after_lobby = {
+	effect = {
+		# Startup treaties are now history-authored in the local
+		# 00_historical_treaties override. Do not withdraw/recreate them here:
+		# doing so creates visible treaty banners and "broken obligation" scars.
+
+		every_state = {
+			limit = { state_region = s:STATE_EAST_TRANSVAAL }
+			evaluate_and_assign_state_hub_dynamic_names = yes
+		}
+
+		# Nguni startup JEs are history-authored on the relevant tags. Retaining
+		# the old after-lobby fallback only creates duplicate-startup warnings.
+
+		c:MTB ?= {
+			if = {
+				limit = { has_modifier = sb_native_conscription_MTB_player }
+				remove_modifier = sb_native_conscription_MTB_player
+			}
+			if = {
+				limit = { has_modifier = sb_native_conscription_MTB }
+				remove_modifier = sb_native_conscription_MTB
+			}
+			if = {
+				limit = {
+					c:ORA ?= {
+						is_country_alive = yes
+						is_player = yes
+					}
+				}
+				add_modifier = {
+					name = sb_native_conscription_MTB_player
+					months = -1
+				}
+			}
+		}
+		c:GBR ?= {
+			if = {
+				limit = { has_modifier = repudiated_obligation }
+				remove_modifier = repudiated_obligation
+			}
+		}
+	}
+}
+
+sb_on_spes_bona_colony_created = {
+	effect = {
+		# V2 Potchefstroom split: once ORA establishes a real foothold in the west
+		# Transvaal core, surface the delayed TRN republic split immediately
+		# instead of waiting on the old Blood River/date gate.
+		if = {
+			limit = {
+				state_region = s:STATE_TRANSVAAL
+				owner = {
+					country_definition = cd:ORA
+					is_country_alive = yes
+					NOT = { has_variable = sb_trn_v2_spawned_var }
+					NOT = { has_variable = sb_trn_v2_spawn_pending_var }
+					NOT = { exists = c:TRN }
+					# Inline the foothold check on the action path too so the split can
+					# fire as soon as a real West Transvaal colony is created, without
+					# depending on a separate scripted trigger resolving during boot.
+					OR = {
+						p:xD0A010.state.owner = this
+						p:x8BDC4D.state.owner = this
+						p:xA22DC2.state.owner = this
+						p:xD02190.state.owner = this
+						p:x6C1786.state.owner = this
+						p:x9A137B.state.owner = this
+					}
+				}
+			}
+			owner = {
+				set_variable = {
+					name = sb_trn_v2_spawn_pending_var
+					days = 21
+				}
+				if = {
+					limit = {
+						NOT = {
+							c:NAL ?= {
+								is_country_alive = yes
+								is_player = yes
+							}
+						}
+					}
+					trigger_event = { id = sb_great_trek.006 days = 1 popup = yes }
+				}
+			}
+			if = {
+				limit = {
+					c:NAL ?= {
+						is_country_alive = yes
+						is_player = yes
+					}
+				}
+				c:NAL ?= {
+					trigger_event = { id = sb_great_trek.006 days = 1 popup = yes }
+				}
+			}
+		}
+		if = {
+			limit = {
+				state_region = s:STATE_BECHUANALAND
+				NOT = { exists = c:SGO }
+				c:CAP ?= {
+					NOT = { has_claim = s:STATE_BECHUANALAND }
+				}
+				owner = {
+					is_country_alive = yes
+					country_has_primary_culture = cu:boer
+				}
+			}
+			owner = {
+				sb_stellaland_goshen_create_from_boer_colony = yes
+			}
+		}
+	}
+}
+
+sb_on_spes_bona_acquired_technology = {
+	effect = {
+		if = {
+			limit = {
+				NOT = { has_variable = sb_malaria_prevention_cost_reduction_applied_var }
+				NOT = { has_technology_researched = malaria_prevention }
+				has_technology_researched = civilizing_mission
+				can_research = malaria_prevention
+			}
+			set_variable = sb_malaria_prevention_cost_reduction_applied_var
+			add_technology_progress = {
+				progress = 15000
+				technology = malaria_prevention
+			}
+		}
+	}
+}

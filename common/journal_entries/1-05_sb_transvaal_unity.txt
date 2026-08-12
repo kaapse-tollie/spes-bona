@@ -43,29 +43,7 @@ je_sb_transvaal_unity = {
 	}
 
 	complete = {
-		government_legitimacy >= 50
-		ig:ig_intelligentsia ?= { is_in_government = no }
-		ig:ig_trade_unions ?= { is_in_government = no }
-		OR = {
-			has_law = law_type:law_national_supremacy
-			has_law = law_type:law_ethnostate
-		}
-		OR = {
-			has_law_or_variant = law_type:law_state_religion
-			has_law_or_variant = law_type:law_freedom_of_conscience
-		}
-		has_law = law_type:law_national_militia
-		active_law:lawgroup_army_model ?= {
-			has_amendment = amendment_type:amendment_sb_commando_corps
-		}
-		c:LYD ?= {
-			is_country_alive = yes
-			relations:root >= relations_threshold:amicable
-		}
-		root.gdp > {
-			value = c:LYD.gdp
-			multiply = 1.25
-		}
+		sb_transvaal_unity_readiness = yes
 		custom_tooltip = {
 			text = je_sb_transvaal_unity_progress_tt
 			has_variable = sb_transvaal_unity_progress
@@ -136,31 +114,7 @@ je_sb_transvaal_unity = {
 	on_monthly_pulse = {
 		effect = {
 			if = {
-				limit = {
-					government_legitimacy >= 50
-					ig:ig_intelligentsia ?= { is_in_government = no }
-					ig:ig_trade_unions ?= { is_in_government = no }
-					OR = {
-						has_law = law_type:law_national_supremacy
-						has_law = law_type:law_ethnostate
-					}
-					OR = {
-						has_law_or_variant = law_type:law_state_religion
-						has_law_or_variant = law_type:law_freedom_of_conscience
-					}
-					has_law = law_type:law_national_militia
-					active_law:lawgroup_army_model ?= {
-						has_amendment = amendment_type:amendment_sb_commando_corps
-					}
-					c:LYD ?= {
-						is_country_alive = yes
-						relations:root >= relations_threshold:amicable
-					}
-					root.gdp > {
-						value = c:LYD.gdp
-						multiply = 1.25
-					}
-				}
+				limit = { sb_transvaal_unity_readiness = yes }
 				change_variable = {
 					name = sb_transvaal_unity_progress
 					add = 1

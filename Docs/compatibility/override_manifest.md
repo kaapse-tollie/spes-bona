@@ -13,7 +13,7 @@ python3 tools/validate.py \
   --tiger
 ```
 
-The suite runs unit, resource, override, map-connectivity, localisation, stale-symbol, and delayed-event lifecycle checks. With proprietary dependencies available, it also compares Vanilla/CMF baselines and runs Tiger. Missing proprietary dependencies report `SKIP`; CI does not require them.
+The suite runs unit, override, map-connectivity, localisation, stale-symbol, on-action-router, and delayed-event lifecycle checks. With proprietary dependencies available, it also compares Vanilla/CMF baselines and runs Tiger. Missing proprietary dependencies report `SKIP`; CI does not require them. The archived resource-research pipeline has its own command and is not part of the inner release gate.
 
 The override gate fails on an unmanifested or stale collision/replacement, upstream drift, mod/object drift, changed state-region membership, dependency-baseline drift, or descriptor version/`replace_path` drift. Hash updates are review actions, not an automatic acceptance workflow.
 
@@ -25,15 +25,14 @@ No `replace_path` directive is approved. In particular, treaty history must not 
 
 ## Exact-path Vanilla files
 
-The inventory currently locks **37** exact-path files. It includes all of the following compatibility surfaces rather than only the narrow regional exceptions:
+The inventory currently locks **35** exact-path files. It includes all of the following compatibility surfaces rather than only the narrow regional exceptions:
 
 - Southern African building, population, state, country, character, military-formation, and treaty histories.
 - The Vanilla Highveld event baseline.
 - `map_data/state_regions/04_subsaharan_africa.txt`, `map_data/province_terrains.txt`, and the full `map_data/provinces.png` raster.
 - All five generated map-object locator files and the full spline-network baseline.
-- Both global journal GUI files.
 
-The raster, terrain, locator, spline, and GUI copies are global file-level collisions even where the authored delta is Southern African. Mods changing the same files require explicit compatibility work. The JSON hash pair is the parity lock for binary/generated copies; textual files are also reviewable with an ordinary pinned-upstream diff.
+The raster, terrain, locator, and spline copies are global file-level collisions even where the authored delta is Southern African. Mods changing the same files require explicit compatibility work. Journal progress bars rely on Community Mod Framework's injected widgets rather than SB file copies. The JSON hash pair is the parity lock for binary/generated copies; textual files are also reviewable with an ordinary pinned-upstream diff.
 
 ## State regions intentionally changed or added
 
@@ -65,7 +64,7 @@ The retired North Africa and Middle East state-region copies remain absent.
 
 ## Keyed overrides
 
-The JSON currently locks **101** `REPLACE`, `TRY_REPLACE`, and `REPLACE_OR_CREATE` objects individually, including their source paths and object hashes. The surface includes:
+The JSON currently locks **100** `REPLACE`, `TRY_REPLACE`, and `REPLACE_OR_CREATE` objects individually, including their source paths and object hashes. The surface includes:
 
 - Southern African character templates, country definitions, names, flags, CoAs, regions, state names, companies, and Highveld replacements.
 - Global dominion action/type, stake-colonial-claim, abolish-monarchy, commander-retirement, law, ideology, technology, state-trait, and movement objects whose compatibility risk cannot be described as regional file ownership.

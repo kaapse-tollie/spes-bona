@@ -746,6 +746,10 @@ sb_nam_sync_consolidation_harshness_value = {
 }
 
 sb_nam_clear_consolidation_modifiers = {
+	if = {
+		limit = { has_variable = sb_nam_consolidation_applied_tier_var }
+		remove_variable = sb_nam_consolidation_applied_tier_var
+	}
 	if = { limit = { has_modifier = sb_nam_rule_accommodating } remove_modifier = sb_nam_rule_accommodating }
 	if = { limit = { has_modifier = sb_nam_rule_supervised } remove_modifier = sb_nam_rule_supervised }
 	if = { limit = { has_modifier = sb_nam_rule_coercive } remove_modifier = sb_nam_rule_coercive }
@@ -858,7 +862,31 @@ sb_nam_add_exterminatory_state_modifier = {
 
 sb_nam_sync_consolidation_modifiers = {
 	sb_nam_sync_consolidation_harshness_value = yes
-	sb_nam_clear_consolidation_modifiers = yes
+	set_variable = { name = sb_nam_consolidation_target_tier_var value = 4 }
+	if = {
+		limit = { global_var:sb_nam_rule_harshness_current_var < 2 }
+		set_variable = { name = sb_nam_consolidation_target_tier_var value = 0 }
+	}
+	else_if = {
+		limit = { global_var:sb_nam_rule_harshness_current_var < 5 }
+		set_variable = { name = sb_nam_consolidation_target_tier_var value = 1 }
+	}
+	else_if = {
+		limit = { global_var:sb_nam_rule_harshness_current_var < 7 }
+		set_variable = { name = sb_nam_consolidation_target_tier_var value = 2 }
+	}
+	else_if = {
+		limit = { global_var:sb_nam_rule_harshness_current_var < 10 }
+		set_variable = { name = sb_nam_consolidation_target_tier_var value = 3 }
+	}
+	if = {
+		limit = {
+			OR = {
+				NOT = { has_variable = sb_nam_consolidation_applied_tier_var }
+				NOT = { var:sb_nam_consolidation_applied_tier_var = var:sb_nam_consolidation_target_tier_var }
+			}
+		}
+		sb_nam_clear_consolidation_modifiers = yes
 	if = {
 		limit = {
 			global_var:sb_nam_rule_harshness_current_var < 2
@@ -905,6 +933,12 @@ sb_nam_sync_consolidation_modifiers = {
 		}
 		sb_nam_add_exterminatory_state_modifier = yes
 	}
+		set_variable = {
+			name = sb_nam_consolidation_applied_tier_var
+			value = var:sb_nam_consolidation_target_tier_var
+		}
+	}
+	remove_variable = sb_nam_consolidation_target_tier_var
 }
 
 sb_nam_clear_consolidation_runtime = {

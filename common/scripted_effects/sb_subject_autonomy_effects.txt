@@ -101,3 +101,118 @@ sb_grant_responsible_government_effect = {
 		value = 20
 	}
 }
+
+sb_refresh_cap_aby_subject_state = {
+	if = {
+		limit = {
+			country_definition = cd:CAP
+			is_subject = yes
+			OR = {
+				is_subject_type = subject_type_dominion
+				is_subject_type = subject_type_sb_dominion
+			}
+			NOT = { has_variable = sb_cap_dominion_map_color_var }
+		}
+		set_variable = sb_cap_dominion_map_color_var
+	}
+	else_if = {
+		limit = {
+			country_definition = cd:CAP
+			has_variable = sb_cap_dominion_map_color_var
+			OR = {
+				is_subject = no
+				NOT = {
+					OR = {
+						is_subject_type = subject_type_dominion
+						is_subject_type = subject_type_sb_dominion
+					}
+				}
+			}
+		}
+		remove_variable = sb_cap_dominion_map_color_var
+	}
+	if = {
+		limit = {
+			country_definition = cd:ABY
+			is_subject = yes
+			OR = {
+				is_subject_type = subject_type_dominion
+				is_subject_type = subject_type_sb_dominion
+			}
+			NOT = { has_variable = sb_aby_dominion_map_color_var }
+		}
+		set_variable = sb_aby_dominion_map_color_var
+	}
+	else_if = {
+		limit = {
+			country_definition = cd:ABY
+			has_variable = sb_aby_dominion_map_color_var
+			OR = {
+				is_subject = no
+				NOT = {
+					OR = {
+						is_subject_type = subject_type_dominion
+						is_subject_type = subject_type_sb_dominion
+					}
+				}
+			}
+		}
+		remove_variable = sb_aby_dominion_map_color_var
+	}
+	if = {
+		limit = { is_subject_type = subject_type_dominion }
+		change_subject_type = subject_type_sb_dominion
+	}
+	if = {
+		limit = {
+			country_definition = cd:CAP
+			has_modifier = sb_cape_autonomy_pressure
+			NOT = { has_variable = sb_cape_autonomy_pressure_resolution_pending_var }
+			OR = {
+				NOT = { is_subject_of = c:GBR }
+				is_subject_type = subject_type_dominion
+				is_subject_type = subject_type_sb_dominion
+				is_subject_type = subject_type_sb_responsible_colony
+				is_subject_type = subject_type_sb_responsible_colony_monarchy
+			}
+		}
+		set_variable = sb_cape_autonomy_pressure_resolution_pending_var
+		trigger_event = { id = sb_cape.031 days = 1 popup = yes }
+	}
+	if = {
+		limit = {
+			country_definition = cd:CAP
+			has_variable = sb_cape_autonomy_pressure_pending_var
+			OR = {
+				NOT = { is_subject_of = c:GBR }
+				is_subject_type = subject_type_dominion
+				is_subject_type = subject_type_sb_dominion
+				is_subject_type = subject_type_sb_responsible_colony
+				is_subject_type = subject_type_sb_responsible_colony_monarchy
+			}
+		}
+		remove_variable = sb_cape_autonomy_pressure_pending_var
+	}
+	if = {
+		limit = {
+			is_subject = yes
+			NOT = { is_country_type = colonial }
+		}
+		set_country_type = colonial
+	}
+	if = {
+		limit = {
+			is_subject = no
+			is_country_type = colonial
+		}
+		set_country_type = recognized
+	}
+	if = {
+		limit = {
+			country_definition = cd:CAP
+			is_subject = no
+			has_variable = southern_africa_subject_var
+		}
+		remove_variable = southern_africa_subject_var
+	}
+}

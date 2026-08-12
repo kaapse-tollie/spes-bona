@@ -1,0 +1,74 @@
+﻿# Cape political-balance modifier transitions.
+
+sb_cape_clear_balance_band = {
+	je:je_sb_cape_politics ?= {
+		if = { limit = { has_modifier = sb_cape_liberal_ascendant } remove_modifier = sb_cape_liberal_ascendant }
+		if = { limit = { has_modifier = sb_cape_liberal_dominant } remove_modifier = sb_cape_liberal_dominant }
+		if = { limit = { has_modifier = sb_cape_settler_ascendant } remove_modifier = sb_cape_settler_ascendant }
+		if = { limit = { has_modifier = sb_cape_settler_dominant } remove_modifier = sb_cape_settler_dominant }
+	}
+	if = {
+		limit = { has_variable = sb_cape_balance_applied_band_var }
+		remove_variable = sb_cape_balance_applied_band_var
+	}
+}
+
+sb_cape_sync_balance_band = {
+	set_variable = { name = sb_cape_balance_target_band_var value = 0 }
+	if = {
+		limit = { var:sb_cape_balance_current >= 60 }
+		set_variable = { name = sb_cape_balance_target_band_var value = 2 }
+	}
+	else_if = {
+		limit = { var:sb_cape_balance_current >= 30 }
+		set_variable = { name = sb_cape_balance_target_band_var value = 1 }
+	}
+	else_if = {
+		limit = { var:sb_cape_balance_current <= -60 }
+		set_variable = { name = sb_cape_balance_target_band_var value = -2 }
+	}
+	else_if = {
+		limit = { var:sb_cape_balance_current <= -30 }
+		set_variable = { name = sb_cape_balance_target_band_var value = -1 }
+	}
+	if = {
+		limit = {
+			OR = {
+				NOT = { has_variable = sb_cape_balance_applied_band_var }
+				NOT = { var:sb_cape_balance_applied_band_var = var:sb_cape_balance_target_band_var }
+			}
+		}
+		sb_cape_clear_balance_band = yes
+		je:je_sb_cape_politics ?= {
+			if = {
+				limit = { root.var:sb_cape_balance_target_band_var = 2 }
+				add_modifier = { name = sb_cape_liberal_dominant }
+			}
+			else_if = {
+				limit = { root.var:sb_cape_balance_target_band_var = 1 }
+				add_modifier = { name = sb_cape_liberal_ascendant }
+			}
+			else_if = {
+				limit = { root.var:sb_cape_balance_target_band_var = -2 }
+				add_modifier = { name = sb_cape_settler_dominant }
+			}
+			else_if = {
+				limit = { root.var:sb_cape_balance_target_band_var = -1 }
+				add_modifier = { name = sb_cape_settler_ascendant }
+			}
+		}
+		set_variable = {
+			name = sb_cape_balance_applied_band_var
+			value = var:sb_cape_balance_target_band_var
+		}
+	}
+	remove_variable = sb_cape_balance_target_band_var
+}
+
+sb_cape_repair_balance_band = {
+	sb_cape_clear_balance_band = yes
+	if = {
+		limit = { has_journal_entry = je_sb_cape_politics }
+		sb_cape_sync_balance_band = yes
+	}
+}

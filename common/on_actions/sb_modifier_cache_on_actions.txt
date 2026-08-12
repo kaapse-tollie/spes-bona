@@ -1,0 +1,67 @@
+﻿# Low-frequency repairs for cached modifier ladders.
+
+sb_on_modifier_cache_yearly_repair = {
+	trigger = {
+		OR = {
+			AND = {
+				country_definition = cd:CAP
+				has_journal_entry = je_sb_cape_politics
+			}
+			AND = {
+				sb_is_zulu_dynasty_country = yes
+				has_journal_entry = je_sb_zulu_kingdom
+			}
+			AND = {
+				country_definition = cd:SWA
+				has_journal_entry = je_sb_consolidation_of_south_west_africa
+			}
+		}
+	}
+	effect = {
+		if = {
+			limit = {
+				country_definition = cd:CAP
+				has_journal_entry = je_sb_cape_politics
+			}
+			sb_cape_repair_balance_band = yes
+		}
+		if = {
+			limit = {
+				sb_is_zulu_dynasty_country = yes
+				has_journal_entry = je_sb_zulu_kingdom
+			}
+			sb_zulu_clear_dynastic_stability_modifiers = yes
+			sb_zulu_update_dynastic_stability_modifiers = yes
+		}
+		if = {
+			limit = {
+				country_definition = cd:SWA
+				has_journal_entry = je_sb_consolidation_of_south_west_africa
+			}
+			sb_nam_clear_consolidation_modifiers = yes
+			sb_nam_sync_consolidation_modifiers = yes
+		}
+	}
+}
+
+sb_on_namibia_consolidation_state_owner_change = {
+	trigger = {
+		OR = {
+			state_region = s:STATE_NAMAQUALAND
+			state_region = s:STATE_HEREROLAND
+		}
+	}
+	effect = {
+		sb_nam_clear_consolidation_state_modifiers = yes
+		owner ?= {
+			if = {
+				limit = { has_journal_entry = je_sb_consolidation_of_south_west_africa }
+				if = {
+					limit = { has_variable = sb_nam_consolidation_applied_tier_var }
+					remove_variable = sb_nam_consolidation_applied_tier_var
+				}
+				sb_nam_sync_consolidation_modifiers = yes
+			}
+		}
+	}
+}
