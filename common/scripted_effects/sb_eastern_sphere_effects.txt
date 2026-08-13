@@ -260,16 +260,6 @@ sb_mozambique_move_mocambique_claim_to_mzq = {
 	}
 }
 
-sb_mozambique_move_zambezi_claim_to_mzq = {
-	if = {
-		limit = { has_claim = s:STATE_ZAMBEZI }
-		s:STATE_ZAMBEZI = {
-			remove_claim = root
-			add_claim = c:MZQ
-		}
-	}
-}
-
 sb_mozambique_move_botswana_claim_to_mzq = {
 	if = {
 		limit = { has_claim = s:STATE_BOTSWANA }
@@ -531,7 +521,6 @@ sb_portugal_redirect_southern_africa_claims_to_mzq = {
 			sb_mozambique_move_lourenco_claim_to_mzq = yes
 			sb_mozambique_move_zambezia_claim_to_mzq = yes
 			sb_mozambique_move_mocambique_claim_to_mzq = yes
-			sb_mozambique_move_zambezi_claim_to_mzq = yes
 			sb_mozambique_move_botswana_claim_to_mzq = yes
 			sb_mozambique_move_hereroland_claim_to_mzq = yes
 			sb_mozambique_move_namaqualand_claim_to_mzq = yes
@@ -983,10 +972,6 @@ sb_imperial_confederation_clear_sea_access_warning = {
 
 sb_imperial_confederation_clear_runtime = {
 	if = {
-		limit = { has_global_variable = sb_imperial_confederation_scheme_scope }
-		remove_global_variable = sb_imperial_confederation_scheme_scope
-	}
-	if = {
 		limit = { has_global_variable = sb_imperial_confederation_scheme_unlocked_var }
 		remove_global_variable = sb_imperial_confederation_scheme_unlocked_var
 	}
@@ -1189,10 +1174,6 @@ sb_imperial_confederation_ensure_active_owner_je = {
 }
 
 sb_imperial_confederation_validate_involvement = {
-	if = {
-		limit = { has_global_variable = sb_imperial_confederation_scheme_scope }
-		remove_global_variable = sb_imperial_confederation_scheme_scope
-	}
 	every_country = {
 		limit = {
 			OR = {
@@ -1359,6 +1340,24 @@ sb_imperial_confederation_monthly_housekeeping = {
 
 sb_eastern_sphere_monthly_housekeeping = {
 	sb_mozambique_update_company_slot = yes
+	if = {
+		limit = {
+			OR = {
+				has_variable = sb_pink_map_defiance_active_var
+				has_variable = sb_pink_map_defiance_arbiter_var
+			}
+		}
+		sb_pink_map_cleanup_defiance_hostility = yes
+	}
+	if = {
+		limit = {
+			OR = {
+				country_definition = cd:POR
+				country_definition = cd:IBE
+			}
+		}
+		sb_pink_map_repair_missing_arbiter = yes
+	}
 	if = {
 		limit = { country_definition = cd:GBR }
 		sb_imperial_confederation_monthly_housekeeping = yes

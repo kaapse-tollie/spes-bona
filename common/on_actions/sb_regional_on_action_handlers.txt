@@ -43,8 +43,6 @@ sb_on_natal_colony_monthly_pulse_country = {
 sb_on_gbr_colonial_offices_monthly_pulse_country = {
 	trigger = { country_definition = cd:GBR }
 	effect = {
-		sb_refresh_british_cape_boer_restraint = yes
-
 		if = {
 			limit = {
 				country_definition = cd:GBR
@@ -80,6 +78,11 @@ sb_on_gbr_colonial_offices_monthly_pulse_country = {
 	}
 }
 
+sb_on_boer_restraint_yearly_repair = {
+	trigger = { country_definition = cd:GBR }
+	effect = { sb_refresh_british_cape_boer_restraint = yes }
+}
+
 sb_on_frontier_force_monthly_pulse_country = {
 	trigger = {
 		OR = {
@@ -92,19 +95,6 @@ sb_on_frontier_force_monthly_pulse_country = {
 		}
 	}
 	effect = {
-		if = {
-			limit = { sb_frontier_ai_force_floor_eligible = yes }
-			sb_restore_ai_frontier_force_floor = yes
-		}
-		else = {
-			if = {
-				limit = { has_modifier = sb_frontier_levy_reconstitution }
-				remove_modifier = sb_frontier_levy_reconstitution
-			}
-			if = {
-				limit = { has_modifier = sb_amabutho_levy_reconstitution }
-				remove_modifier = sb_amabutho_levy_reconstitution
-			}
-		}
+		sb_restore_ai_frontier_force_floor = yes
 	}
 }

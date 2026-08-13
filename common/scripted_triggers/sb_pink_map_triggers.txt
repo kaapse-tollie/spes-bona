@@ -1,0 +1,155 @@
+﻿# Pink Map / Bechuanaland integration triggers.
+
+sb_pink_map_has_qualifying_colonization = {
+	OR = {
+		any_scope_state = {
+			OR = {
+				state_region = s:STATE_KAZEMBE
+				state_region = s:STATE_ZAMBIA
+				state_region = s:STATE_ZAMBEZI
+			}
+			is_under_colonization = yes
+		}
+		any_subject_or_below = {
+			country_is_colonial_or_company = yes
+			any_scope_state = {
+				OR = {
+					state_region = s:STATE_KAZEMBE
+					state_region = s:STATE_ZAMBIA
+					state_region = s:STATE_ZAMBEZI
+				}
+				is_under_colonization = yes
+			}
+		}
+	}
+}
+
+sb_pink_map_precedes_bechuanaland = {
+	OR = {
+		c:POR ?= { has_variable = sb_pink_map_precedes_bechuanaland_var }
+		c:IBE ?= { has_variable = sb_pink_map_precedes_bechuanaland_var }
+	}
+}
+
+sb_pink_map_recorded_arbiter_exists = {
+	any_country = {
+		is_country_alive = yes
+		has_variable = sb_bechuanaland_pink_map_arbiter_var
+	}
+}
+
+sb_pink_map_story_requires_naval_support = {
+	OR = {
+		has_journal_entry = je_portuguese_colonialism
+		has_journal_entry = je_the_pink_map
+		has_variable = pink_map_seeking
+		AND = {
+			has_variable = portuguese_colonialism_je_completed
+			NOT = { has_variable = pink_map_sent }
+		}
+	}
+}
+
+sb_pink_map_kongo_holds_northern_angola = {
+	scope:target_country = {
+		country_definition = cd:KON
+		any_scope_state = {
+			state_region = s:STATE_NORTH_ANGOLA
+		}
+	}
+}
+
+# Arbitration AI predicates. ROOT is the saved British/SWA arbiter and the
+# petitioner is retained as a country-scope variable for the event's lifetime.
+sb_pink_map_petitioner_is_valid = {
+	has_variable = sb_pink_map_petitioner_scope
+	var:sb_pink_map_petitioner_scope = {
+		is_country_alive = yes
+		is_subject = no
+		OR = {
+			country_definition = cd:POR
+			country_definition = cd:IBE
+		}
+		has_variable = pink_map_seeking
+	}
+}
+
+sb_pink_map_ai_relations_friendly = {
+	"relations(var:sb_pink_map_petitioner_scope)" >= relations_threshold:friendly
+}
+
+sb_pink_map_ai_relations_amicable = {
+	"relations(var:sb_pink_map_petitioner_scope)" >= relations_threshold:amicable
+	"relations(var:sb_pink_map_petitioner_scope)" < relations_threshold:friendly
+}
+
+sb_pink_map_ai_relations_cordial = {
+	"relations(var:sb_pink_map_petitioner_scope)" >= relations_threshold:cordial
+	"relations(var:sb_pink_map_petitioner_scope)" < relations_threshold:amicable
+}
+
+sb_pink_map_ai_relations_poor = {
+	"relations(var:sb_pink_map_petitioner_scope)" <= relations_threshold:poor
+	"relations(var:sb_pink_map_petitioner_scope)" > relations_threshold:cold
+}
+
+sb_pink_map_ai_relations_cold = {
+	"relations(var:sb_pink_map_petitioner_scope)" <= relations_threshold:cold
+	"relations(var:sb_pink_map_petitioner_scope)" > relations_threshold:hostile
+}
+
+sb_pink_map_ai_relations_hostile = {
+	"relations(var:sb_pink_map_petitioner_scope)" <= relations_threshold:hostile
+}
+
+sb_pink_map_ai_rivals_petitioner = {
+	has_diplomatic_pact = { who = var:sb_pink_map_petitioner_scope type = rivalry }
+}
+
+sb_pink_map_ai_petitioner_is_great_power = {
+	var:sb_pink_map_petitioner_scope = { country_rank = rank_value:great_power }
+}
+
+sb_pink_map_ai_same_power_bloc = {
+	is_in_same_power_bloc = var:sb_pink_map_petitioner_scope
+}
+
+sb_pink_map_ai_has_defensive_pact = {
+	has_treaty_defensive_pact_with = { TARGET = var:sb_pink_map_petitioner_scope }
+}
+
+sb_pink_map_ai_has_alliance = {
+	has_treaty_alliance_with = { TARGET = var:sb_pink_map_petitioner_scope }
+}
+
+sb_pink_map_ai_petitioner_navy_at_least_equal = {
+	var:sb_pink_map_petitioner_scope = {
+		naval_power_projection >= ROOT.naval_power_projection
+	}
+}
+
+sb_pink_map_ai_petitioner_navy_at_least_three_quarters = {
+	var:sb_pink_map_petitioner_scope = {
+		naval_power_projection >= {
+			value = ROOT.naval_power_projection
+			multiply = 0.75
+		}
+		naval_power_projection < ROOT.naval_power_projection
+	}
+}
+
+sb_pink_map_ai_petitioner_gdp_at_least_equal = {
+	var:sb_pink_map_petitioner_scope = {
+		gdp >= ROOT.gdp
+	}
+}
+
+sb_pink_map_ai_petitioner_gdp_at_least_three_quarters = {
+	var:sb_pink_map_petitioner_scope = {
+		gdp >= {
+			value = ROOT.gdp
+			multiply = 0.75
+		}
+		gdp < ROOT.gdp
+	}
+}

@@ -1,6 +1,96 @@
 ﻿# Keep vanilla's broad South African consolidation desire from pre-empting
-# Spes Bona's scripted British-Boer confrontations. Britain and the Cape track
-# their own goals so one actor can never clear the other's restraint.
+# Spes Bona's scripted British-Boer confrontations. The caller saves the actor;
+# this target-scoped helper preserves source-specific ownership of each goal.
+sb_refresh_boer_restraint_for_current_target = {
+	save_temporary_scope_as = sb_boer_restraint_target_scope
+
+	if = {
+		limit = {
+			scope:sb_boer_restraint_actor_scope = {
+				is_ai = yes
+				sb_frontier_ai_scripting_enabled = yes
+			}
+			sb_is_british_boer_restraint_target = yes
+			NOT = { has_war_with = scope:sb_boer_restraint_actor_scope }
+			NOT = { is_diplomatic_play_enemy_of = scope:sb_boer_restraint_actor_scope }
+		}
+
+		scope:sb_boer_restraint_actor_scope = {
+			if = {
+				limit = {
+					NOT = {
+						has_secret_goal = {
+							who = scope:sb_boer_restraint_target_scope
+							secret_goal = befriend
+						}
+					}
+				}
+				set_secret_goal = {
+					country = scope:sb_boer_restraint_target_scope
+					secret_goal = befriend
+				}
+				if = {
+					limit = { country_definition = cd:GBR }
+					scope:sb_boer_restraint_target_scope = {
+						set_variable = sb_british_boer_restraint_goal_var
+					}
+				}
+				else = {
+					scope:sb_boer_restraint_target_scope = {
+						set_variable = sb_cape_boer_restraint_goal_var
+					}
+				}
+			}
+		}
+	}
+	else = {
+		if = {
+			limit = {
+				has_variable = sb_british_boer_restraint_goal_var
+				scope:sb_boer_restraint_actor_scope = { country_definition = cd:GBR }
+			}
+			scope:sb_boer_restraint_actor_scope = {
+				if = {
+					limit = {
+						has_secret_goal = {
+							who = scope:sb_boer_restraint_target_scope
+							secret_goal = befriend
+						}
+					}
+					set_secret_goal = {
+						country = scope:sb_boer_restraint_target_scope
+						secret_goal = none
+					}
+				}
+			}
+			remove_variable = sb_british_boer_restraint_goal_var
+		}
+		else_if = {
+			limit = {
+				has_variable = sb_cape_boer_restraint_goal_var
+				scope:sb_boer_restraint_actor_scope = { country_definition = cd:CAP }
+			}
+			scope:sb_boer_restraint_actor_scope = {
+				if = {
+					limit = {
+						has_secret_goal = {
+							who = scope:sb_boer_restraint_target_scope
+							secret_goal = befriend
+						}
+					}
+					set_secret_goal = {
+						country = scope:sb_boer_restraint_target_scope
+						secret_goal = none
+					}
+				}
+			}
+			remove_variable = sb_cape_boer_restraint_goal_var
+		}
+	}
+}
+
+# Fixed tags are intentionally direct-scoped. This avoids a country-wide scan
+# on each story transition while optional scopes safely skip absent republics.
 sb_refresh_boer_restraint_for_root = {
 	if = {
 		limit = {
@@ -10,104 +100,15 @@ sb_refresh_boer_restraint_for_root = {
 			}
 			is_country_alive = yes
 		}
-
 		save_temporary_scope_as = sb_boer_restraint_actor_scope
-
-		every_country = {
-			limit = {
-				sb_is_british_boer_restraint_tag = yes
-			}
-
-			save_temporary_scope_as = sb_boer_restraint_target_scope
-
-			if = {
-				limit = {
-					scope:sb_boer_restraint_actor_scope = {
-						is_ai = yes
-						sb_frontier_ai_scripting_enabled = yes
-					}
-					sb_is_british_boer_restraint_target = yes
-					NOT = {
-						has_war_with = scope:sb_boer_restraint_actor_scope
-					}
-					NOT = {
-						is_diplomatic_play_enemy_of = scope:sb_boer_restraint_actor_scope
-					}
-				}
-
-				scope:sb_boer_restraint_actor_scope = {
-					if = {
-						limit = {
-							NOT = {
-								has_secret_goal = {
-									who = scope:sb_boer_restraint_target_scope
-									secret_goal = befriend
-								}
-							}
-						}
-						set_secret_goal = {
-							country = scope:sb_boer_restraint_target_scope
-							secret_goal = befriend
-						}
-						if = {
-							limit = { country_definition = cd:GBR }
-							scope:sb_boer_restraint_target_scope = {
-								set_variable = sb_british_boer_restraint_goal_var
-							}
-						}
-						else = {
-							scope:sb_boer_restraint_target_scope = {
-								set_variable = sb_cape_boer_restraint_goal_var
-							}
-						}
-					}
-				}
-			}
-			else = {
-				if = {
-					limit = {
-						has_variable = sb_british_boer_restraint_goal_var
-						scope:sb_boer_restraint_actor_scope = { country_definition = cd:GBR }
-					}
-					scope:sb_boer_restraint_actor_scope = {
-						if = {
-							limit = {
-								has_secret_goal = {
-									who = scope:sb_boer_restraint_target_scope
-									secret_goal = befriend
-								}
-							}
-							set_secret_goal = {
-								country = scope:sb_boer_restraint_target_scope
-								secret_goal = none
-							}
-						}
-					}
-					remove_variable = sb_british_boer_restraint_goal_var
-				}
-				else_if = {
-					limit = {
-						has_variable = sb_cape_boer_restraint_goal_var
-						scope:sb_boer_restraint_actor_scope = { country_definition = cd:CAP }
-					}
-					scope:sb_boer_restraint_actor_scope = {
-						if = {
-							limit = {
-								has_secret_goal = {
-									who = scope:sb_boer_restraint_target_scope
-									secret_goal = befriend
-								}
-							}
-							set_secret_goal = {
-								country = scope:sb_boer_restraint_target_scope
-								secret_goal = none
-							}
-						}
-					}
-					remove_variable = sb_cape_boer_restraint_goal_var
-				}
-			}
-		}
+		c:ORA ?= { sb_refresh_boer_restraint_for_current_target = yes }
+		c:TRN ?= { sb_refresh_boer_restraint_for_current_target = yes }
+		c:ZPB ?= { sb_refresh_boer_restraint_for_current_target = yes }
+		c:LYD ?= { sb_refresh_boer_restraint_for_current_target = yes }
+		c:NAL ?= { sb_refresh_boer_restraint_for_current_target = yes }
+		c:SGO ?= { sb_refresh_boer_restraint_for_current_target = yes }
+		c:ABY ?= { sb_refresh_boer_restraint_for_current_target = yes }
+		c:KLR ?= { sb_refresh_boer_restraint_for_current_target = yes }
 	}
 }
 

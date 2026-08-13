@@ -1,0 +1,371 @@
+namespace = sb_pink_map
+
+# British or SWA arbitration after the Bechuanaland settlement.
+sb_pink_map.010 = {
+	type = country_event
+	placement = root
+	duration = 3
+	dlc = dlc016
+
+	title = portuguese_colonialism.4.t
+	desc = portuguese_colonialism.4.d
+	flavor = portuguese_colonialism.4.f
+
+	event_image = { video = "southamerica_aristocrats" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+
+	trigger = {
+		is_country_alive = yes
+		sb_pink_map_petitioner_is_valid = yes
+	}
+
+	immediate = {
+		ROOT = { save_scope_as = gbr_scope }
+		var:sb_pink_map_petitioner_scope = { save_scope_as = por_scope }
+	}
+
+	cancellation_trigger = {
+		NOT = { sb_pink_map_petitioner_is_valid = yes }
+	}
+
+	option = {
+		name = portuguese_colonialism.4.a
+		custom_tooltip = {
+			text = portuguese_colonialism.4.a_tt
+			scope:por_scope ?= { trigger_event = { id = sb_pink_map.020 popup = yes } }
+		}
+		show_as_tooltip = {
+			scope:por_scope ?= {
+				change_relations = { country = scope:gbr_scope value = 15 }
+			}
+			custom_tooltip = might_get_additional_rewards_tt
+		}
+		ai_chance = {
+			# A. Together with the other options this is A:3A:(400-4A),
+			# exactly reproducing 25% A, 75% A, and 100-A after clamping.
+			base = 5
+			modifier = { trigger = { sb_pink_map_ai_relations_cordial = yes } add = 5 }
+			modifier = { trigger = { sb_pink_map_ai_relations_amicable = yes } add = 10 }
+			modifier = { trigger = { sb_pink_map_ai_relations_friendly = yes } add = 15 }
+			modifier = { trigger = { sb_pink_map_ai_relations_poor = yes } add = -5 }
+			modifier = { trigger = { sb_pink_map_ai_relations_cold = yes } add = -15 }
+			modifier = { trigger = { sb_pink_map_ai_relations_hostile = yes } add = -15 }
+			modifier = { trigger = { sb_pink_map_ai_rivals_petitioner = yes } add = -20 }
+			modifier = { trigger = { sb_pink_map_ai_petitioner_is_great_power = yes } add = 10 }
+			modifier = { trigger = { sb_pink_map_ai_same_power_bloc = yes } add = 5 }
+			modifier = { trigger = { sb_pink_map_ai_has_defensive_pact = yes } add = 5 }
+			modifier = { trigger = { sb_pink_map_ai_has_alliance = yes } add = 10 }
+			modifier = { trigger = { sb_pink_map_ai_petitioner_navy_at_least_three_quarters = yes } add = 25 }
+			modifier = { trigger = { sb_pink_map_ai_petitioner_navy_at_least_equal = yes } add = 50 }
+			modifier = { trigger = { sb_pink_map_ai_petitioner_gdp_at_least_three_quarters = yes } add = 15 }
+			modifier = { trigger = { sb_pink_map_ai_petitioner_gdp_at_least_equal = yes } add = 30 }
+		}
+	}
+
+	option = {
+		name = portuguese_colonialism.4.b
+		default_option = yes
+		custom_tooltip = {
+			text = portuguese_colonialism.4.b_tt
+			scope:por_scope ?= { trigger_event = { id = sb_pink_map.030 popup = yes } }
+		}
+		ai_chance = {
+			base = 15
+			modifier = { trigger = { sb_pink_map_ai_relations_cordial = yes } add = 15 }
+			modifier = { trigger = { sb_pink_map_ai_relations_amicable = yes } add = 30 }
+			modifier = { trigger = { sb_pink_map_ai_relations_friendly = yes } add = 45 }
+			modifier = { trigger = { sb_pink_map_ai_relations_poor = yes } add = -15 }
+			modifier = { trigger = { sb_pink_map_ai_relations_cold = yes } add = -45 }
+			modifier = { trigger = { sb_pink_map_ai_relations_hostile = yes } add = -45 }
+			modifier = { trigger = { sb_pink_map_ai_rivals_petitioner = yes } add = -60 }
+			modifier = { trigger = { sb_pink_map_ai_petitioner_is_great_power = yes } add = 30 }
+			modifier = { trigger = { sb_pink_map_ai_same_power_bloc = yes } add = 15 }
+			modifier = { trigger = { sb_pink_map_ai_has_defensive_pact = yes } add = 15 }
+			modifier = { trigger = { sb_pink_map_ai_has_alliance = yes } add = 30 }
+			modifier = { trigger = { sb_pink_map_ai_petitioner_navy_at_least_three_quarters = yes } add = 75 }
+			modifier = { trigger = { sb_pink_map_ai_petitioner_navy_at_least_equal = yes } add = 150 }
+			modifier = { trigger = { sb_pink_map_ai_petitioner_gdp_at_least_three_quarters = yes } add = 45 }
+			modifier = { trigger = { sb_pink_map_ai_petitioner_gdp_at_least_equal = yes } add = 90 }
+		}
+	}
+
+	option = {
+		name = portuguese_colonialism.4.c
+		custom_tooltip = {
+			text = portuguese_colonialism.4.c_tt
+			scope:por_scope ?= { trigger_event = { id = sb_pink_map.040 popup = yes } }
+		}
+		ai_chance = {
+			base = 380
+			modifier = { trigger = { sb_pink_map_ai_relations_cordial = yes } add = -20 }
+			modifier = { trigger = { sb_pink_map_ai_relations_amicable = yes } add = -40 }
+			modifier = { trigger = { sb_pink_map_ai_relations_friendly = yes } add = -60 }
+			modifier = { trigger = { sb_pink_map_ai_relations_poor = yes } add = 20 }
+			modifier = { trigger = { sb_pink_map_ai_relations_cold = yes } add = 60 }
+			modifier = { trigger = { sb_pink_map_ai_relations_hostile = yes } add = 60 }
+			modifier = { trigger = { sb_pink_map_ai_rivals_petitioner = yes } add = 80 }
+			modifier = { trigger = { sb_pink_map_ai_petitioner_is_great_power = yes } add = -40 }
+			modifier = { trigger = { sb_pink_map_ai_same_power_bloc = yes } add = -20 }
+			modifier = { trigger = { sb_pink_map_ai_has_defensive_pact = yes } add = -20 }
+			modifier = { trigger = { sb_pink_map_ai_has_alliance = yes } add = -40 }
+			modifier = { trigger = { sb_pink_map_ai_petitioner_navy_at_least_three_quarters = yes } add = -100 }
+			modifier = { trigger = { sb_pink_map_ai_petitioner_navy_at_least_equal = yes } add = -200 }
+			modifier = { trigger = { sb_pink_map_ai_petitioner_gdp_at_least_three_quarters = yes } add = -60 }
+			modifier = { trigger = { sb_pink_map_ai_petitioner_gdp_at_least_equal = yes } add = -120 }
+		}
+	}
+}
+
+# The arbiter accepts outright.
+sb_pink_map.020 = {
+	type = country_event
+	placement = root
+	duration = 3
+	dlc = dlc016
+
+	title = portuguese_colonialism.5.t
+	desc = portuguese_colonialism.5.d
+	flavor = portuguese_colonialism.5.f
+
+	event_image = { video = "unspecific_signed_contract" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+
+	trigger = {
+		is_country_alive = yes
+		has_variable = pink_map_seeking
+		has_variable = sb_pink_map_arbiter_scope
+		var:sb_pink_map_arbiter_scope = { is_country_alive = yes }
+	}
+
+	immediate = {
+		ROOT = { save_scope_as = por_scope }
+		var:sb_pink_map_arbiter_scope = { save_scope_as = gbr_scope }
+	}
+
+	cancellation_trigger = {
+		OR = {
+			NOT = { has_variable = pink_map_seeking }
+			NOT = { has_variable = sb_pink_map_arbiter_scope }
+			AND = {
+				has_variable = sb_pink_map_arbiter_scope
+				var:sb_pink_map_arbiter_scope = { is_country_alive = no }
+			}
+		}
+	}
+
+	option = {
+		name = portuguese_colonialism.5.a
+		default_option = yes
+		change_relations = { country = scope:gbr_scope value = 15 }
+		sb_pink_map_accept_arbitration = yes
+		sb_pink_map_finish_arbitration = yes
+	}
+
+	option = {
+		name = portuguese_colonialism.5.b
+		custom_tooltip = portuguese_colonialism.5.b_tt
+		scope:gbr_scope = {
+			post_notification = pink_map_britain_accepts_with_gift
+			add_modifier = { name = gbr_receives_gift_from_portugal_for_approval_mod days = normal_modifier_time }
+		}
+		change_relations = { country = scope:gbr_scope value = 30 }
+		create_diplomatic_catalyst = { type = catalyst_event_positive target = scope:gbr_scope }
+		add_modifier = { name = portuguese_sends_gbr_gift_for_approval_mod days = short_modifier_time }
+		sb_pink_map_accept_arbitration = yes
+		sb_pink_map_finish_arbitration = yes
+	}
+}
+
+# The arbiter accepts in exchange for a favour.
+sb_pink_map.030 = {
+	type = country_event
+	placement = root
+	duration = 3
+	dlc = dlc016
+
+	title = portuguese_colonialism.10.t
+	desc = portuguese_colonialism.10.d
+	flavor = portuguese_colonialism.10.f
+
+	event_image = { video = "southamerica_aristocrats" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+
+	trigger = {
+		is_country_alive = yes
+		has_variable = pink_map_seeking
+		has_variable = sb_pink_map_arbiter_scope
+		var:sb_pink_map_arbiter_scope = { is_country_alive = yes }
+	}
+
+	immediate = {
+		ROOT = { save_scope_as = por_scope }
+		var:sb_pink_map_arbiter_scope = { save_scope_as = gbr_scope }
+	}
+
+	cancellation_trigger = {
+		OR = {
+			NOT = { has_variable = pink_map_seeking }
+			NOT = { has_variable = sb_pink_map_arbiter_scope }
+			AND = {
+				has_variable = sb_pink_map_arbiter_scope
+				var:sb_pink_map_arbiter_scope = { is_country_alive = no }
+			}
+		}
+	}
+
+	option = {
+		name = portuguese_colonialism.10.a
+		default_option = yes
+		if = {
+			limit = { NOT = { owes_obligation_to = scope:gbr_scope } }
+			set_owes_obligation_to = { country = scope:gbr_scope setting = yes }
+		}
+		else = {
+			custom_tooltip = {
+				text = portuguese_colonialism.10.a_tt
+				create_treaty = {
+					name = treaty_name_the_pink_map_treaty
+					first_country = ROOT
+					second_country = scope:gbr_scope
+					is_draft = no
+					binding_period = { years = 2 }
+					articles_to_create = {
+						{
+							article = money_transfer
+							source_country = ROOT
+							target_country = scope:gbr_scope
+							inputs = { { quantity = 200 } }
+						}
+					}
+				}
+			}
+		}
+		scope:gbr_scope = { change_relations = { country = scope:por_scope value = 10 } }
+		every_subject_or_below = {
+			limit = { is_direct_subject_of = ROOT }
+			add_liberty_desire = 5
+		}
+		sb_pink_map_accept_arbitration = yes
+		sb_pink_map_finish_arbitration = yes
+		scope:gbr_scope = { post_notification = pink_map_britain_accepts_with_favor }
+	}
+
+	option = {
+		name = portuguese_colonialism.10.b
+		scope:gbr_scope = {
+			post_notification = pink_map_britain_portugal_backs_down
+			change_relations = { country = scope:por_scope value = 25 }
+		}
+		add_modifier = { name = portuguese_backs_down_from_pursuing_the_pink_map_mod days = long_modifier_time }
+		every_interest_group = {
+			limit = {
+				OR = {
+					law_stance = { law = law_type:law_colonial_resettlement value > neutral }
+					law_stance = { law = law_type:law_colonial_exploitation value > neutral }
+					law_stance = { law = law_type:law_colonial_slavery value > neutral }
+				}
+			}
+			add_modifier = { name = portuguese_refuses_to_back_down_from_pursuing_the_pink_map_ig_mod days = long_modifier_time }
+		}
+		sb_pink_map_remove_root_claim_package = yes
+		sb_pink_map_finish_arbitration = yes
+	}
+
+	option = {
+		name = portuguese_colonialism.10.c
+		custom_tooltip = sb_pink_map_defiance_tt
+		scope:gbr_scope = {
+			post_notification = pink_map_britain_portugal_ignores
+			add_modifier = {
+				name = portuguese_refuses_to_back_down_from_pursuing_the_pink_map_mod
+				days = short_modifier_time
+			}
+		}
+		add_modifier = { name = portuguese_insists_on_pink_map_mod days = long_modifier_time }
+		change_infamy = 25
+		create_diplomatic_catalyst = { type = catalyst_event_negative target = scope:gbr_scope }
+		sb_pink_map_apply_defiance = yes
+	}
+}
+
+# The arbiter refuses the claim.
+sb_pink_map.040 = {
+	type = country_event
+	placement = root
+	duration = 3
+	dlc = dlc016
+
+	title = portuguese_colonialism.6.t
+	desc = portuguese_colonialism.6.d
+	flavor = portuguese_colonialism.6.f
+
+	event_image = { video = "ep1_printing_press" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+
+	trigger = {
+		is_country_alive = yes
+		has_variable = pink_map_seeking
+		has_variable = sb_pink_map_arbiter_scope
+		var:sb_pink_map_arbiter_scope = { is_country_alive = yes }
+	}
+
+	immediate = {
+		ROOT = { save_scope_as = por_scope }
+		var:sb_pink_map_arbiter_scope = { save_scope_as = gbr_scope }
+	}
+
+	cancellation_trigger = {
+		OR = {
+			NOT = { has_variable = pink_map_seeking }
+			NOT = { has_variable = sb_pink_map_arbiter_scope }
+			AND = {
+				has_variable = sb_pink_map_arbiter_scope
+				var:sb_pink_map_arbiter_scope = { is_country_alive = no }
+			}
+		}
+	}
+
+	option = {
+		name = portuguese_colonialism.6.a
+		default_option = yes
+		custom_tooltip = portuguese_colonialism.6.a_tt
+		scope:gbr_scope = {
+			post_notification = pink_map_britain_portugal_backs_down
+			change_relations = { country = scope:por_scope value = 20 }
+			add_modifier = { name = portuguese_colonialism_gbr_forces_por_to_back_down_mod days = normal_modifier_time }
+		}
+		add_modifier = { name = portuguese_backs_down_from_pursuing_the_pink_map_mod days = long_modifier_time }
+		every_interest_group = {
+			limit = {
+				OR = {
+					law_stance = { law = law_type:law_colonial_resettlement value > neutral }
+					law_stance = { law = law_type:law_colonial_exploitation value > neutral }
+					law_stance = { law = law_type:law_colonial_slavery value > neutral }
+				}
+			}
+			add_modifier = { name = portuguese_refuses_to_back_down_from_pursuing_the_pink_map_ig_mod days = normal_modifier_time }
+		}
+		sb_pink_map_remove_root_claim_package = yes
+		sb_pink_map_finish_arbitration = yes
+	}
+
+	option = {
+		name = portuguese_colonialism.6.b
+		custom_tooltip = sb_pink_map_defiance_tt
+		scope:gbr_scope = {
+			post_notification = pink_map_britain_portugal_intractable
+			add_modifier = {
+				name = portuguese_refuses_to_back_down_from_pursuing_the_pink_map_mod
+				days = short_modifier_time
+			}
+		}
+		add_modifier = { name = portuguese_insists_on_pink_map_mod days = long_modifier_time }
+		change_infamy = 25
+		create_diplomatic_catalyst = { type = catalyst_event_negative target = scope:gbr_scope }
+		sb_pink_map_apply_defiance = yes
+	}
+}

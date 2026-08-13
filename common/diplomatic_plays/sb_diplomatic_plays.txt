@@ -313,40 +313,6 @@ dp_sb_griqualand_oranje_return_wbl_proxy_locked = {
 	on_war_end = {}
 }
 
-# The British hardline corridor route is a closed Cape recovery package.
-# Both Griqualand West and Bechuanaland are settled in the same play.
-dp_sb_bechuanaland_cap_dual_return_locked = {
-	war_goal = return_state
-
-	requires_interest_marker = no
-	blocked_by_diplomatic_status = no
-	add_infamy_for_starting_initiator_wargoals = no
-	initiator_can_add_war_goals = no
-	target_can_add_war_goals = no
-
-	texture = "gfx/interface/icons/war_goals/return_state.dds"
-
-	selectable_in_lens = { always = no }
-
-	possible = {
-		country_definition = cd:CAP
-		has_claim = s:STATE_GRIQUALAND_WEST
-		has_claim = s:STATE_BECHUANALAND
-		scope:target_country = {
-			OR = {
-				country_definition = cd:WBL
-				country_definition = cd:ORA
-				country_definition = cd:TRN
-			}
-			any_scope_state = { state_region = s:STATE_GRIQUALAND_WEST }
-		}
-	}
-
-	on_weekly_pulse = {}
-	on_war_begins = {}
-	on_war_end = {}
-}
-
 # A locked total war between the Cape/British system and the Boer republics.
 # All route-specific participants and demands are fixed when the play is made.
 dp_sb_bechuanaland_cap_sgo_return = {
@@ -368,7 +334,7 @@ dp_sb_bechuanaland_cap_sgo_return = {
 		any_scope_state = { state_region = s:STATE_BECHUANALAND }
 		scope:target_country = {
 			is_country_alive = yes
-			has_variable = sb_bechuanaland_total_war_primary_target_var
+			container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_total_war_primary_target_scope = { this = PREV }
 			NOT = { is_subject_of = c:GBR }
 			any_scope_state = { state_region = s:STATE_BECHUANALAND }
 		}

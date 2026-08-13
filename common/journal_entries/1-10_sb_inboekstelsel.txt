@@ -11,6 +11,7 @@ je_sb_inboekstelsel_system = {
 	is_shown_when_inactive = {
 		sb_is_boer_inboekstelsel_country = yes
 		sb_has_inboekstelsel_law = yes
+		NOT = { has_variable = sb_inboekstelsel_reopen_required_var }
 	}
 
 	possible = {
@@ -30,6 +31,20 @@ je_sb_inboekstelsel_system = {
 		OR = {
 			NOT = { sb_is_boer_inboekstelsel_country = yes }
 			NOT = { sb_has_inboekstelsel_law = yes }
+		}
+	}
+
+	on_invalid = {
+		if = {
+			limit = {
+				sb_is_boer_inboekstelsel_country = yes
+				NOT = { sb_has_inboekstelsel_law = yes }
+			}
+			if = {
+				limit = { has_variable = sb_inboekstelsel_reopen_pending_var }
+				remove_variable = sb_inboekstelsel_reopen_pending_var
+			}
+			set_variable = sb_inboekstelsel_reopen_required_var
 		}
 	}
 	should_be_pinned_by_default_uninvolved_or_context = yes

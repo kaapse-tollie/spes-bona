@@ -167,7 +167,7 @@ ai_strategy_sb_frontier_levy_preservation = {
 	}
 }
 
-# Vanilla 1.13.9 applies its +500 "Britain consolidating South Africa"
+# Vanilla 1.13.10 applies its +500 "Britain consolidating South Africa"
 # conquer score twice. Offset only the duplicated copy for SB's Boer states;
 # the intended vanilla score and the broader Scramble logic remain active.
 ai_strategy_sb_british_boer_restraint = {
@@ -250,4 +250,78 @@ ai_strategy_sb_klip_river_secession_resistance = {
 	weight = {
 		value = 10000
 	}
+}
+
+# Bounded support for the Portuguese colonial programme. It raises the desired
+# fleet rather than creating ships, and pressures only Kongo-held North Angola.
+ai_strategy_sb_portuguese_african_planning = {
+	icon = "gfx/interface/icons/ai_strategy_icons/colonial_expansion.dds"
+
+	type = diplomatic
+
+	wanted_navy_size = { value = 6 }
+	wanted_num_supply_ships = { value = 120 }
+
+	building_group_weights = {
+		bg_navy = 1.5
+	}
+
+	aggression = {
+		value = 0
+		if = {
+			limit = { sb_pink_map_kongo_holds_northern_angola = yes }
+			add = 1.0
+		}
+	}
+
+	secret_goal_scores = {
+		conquer = {
+			trigger = { sb_pink_map_kongo_holds_northern_angola = yes }
+			score = { value = 500 }
+		}
+	}
+
+	possible = {
+		is_ai = yes
+		is_subject = no
+		OR = {
+			country_definition = cd:POR
+			country_definition = cd:IBE
+		}
+		sb_pink_map_story_requires_naval_support = yes
+	}
+
+	weight = { value = 10000 }
+}
+
+# Defiance creates hostility only in the arbiter that actually rejected the
+# Pink Map, and only until the Portuguese JE ends.
+ai_strategy_sb_pink_map_defiance_hostility = {
+	icon = "gfx/interface/icons/ai_strategy_icons/colonial_expansion.dds"
+
+	type = diplomatic
+
+	aggression = {
+		value = 0
+		if = {
+			limit = {
+				scope:target_country = {
+					has_variable = sb_pink_map_defiance_active_var
+					has_journal_entry = je_the_pink_map
+				}
+			}
+			add = 25
+		}
+	}
+
+	possible = {
+		is_ai = yes
+		has_variable = sb_pink_map_defiance_arbiter_var
+		any_country = {
+			has_variable = sb_pink_map_defiance_active_var
+			has_journal_entry = je_the_pink_map
+		}
+	}
+
+	weight = { value = 10000 }
 }

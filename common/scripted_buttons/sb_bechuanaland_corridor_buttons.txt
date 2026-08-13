@@ -51,8 +51,8 @@ je_sb_bechuanaland_support_settler_government_button = {
 	ai_chance = {
 		value = 100
 		if = {
-			limit = { has_global_variable = sb_bechuanaland_boer_actor_global_scope }
-			global_var:sb_bechuanaland_boer_actor_global_scope = {
+			limit = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_boer_actor_scope } }
+			container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_boer_actor_scope = {
 				if = {
 					limit = {
 						gold_reserves < 0
@@ -107,8 +107,8 @@ je_sb_bechuanaland_finance_interior_trade_missions_button = {
 	ai_chance = {
 		value = 100
 		if = {
-			limit = { has_global_variable = sb_bechuanaland_swa_overlord_global_scope }
-			global_var:sb_bechuanaland_swa_overlord_global_scope = {
+			limit = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_swa_overlord_scope } }
+			container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_swa_overlord_scope = {
 				if = {
 					limit = { sb_bechuanaland_swa_o_finances_exhausted = yes }
 					add = -200
@@ -162,8 +162,8 @@ je_sb_bechuanaland_strengthen_colonial_garrison_button = {
 	ai_chance = {
 		value = 100
 		if = {
-			limit = { has_global_variable = sb_bechuanaland_swa_overlord_global_scope }
-			global_var:sb_bechuanaland_swa_overlord_global_scope = {
+			limit = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_swa_overlord_scope } }
+			container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_swa_overlord_scope = {
 				if = {
 					limit = { sb_bechuanaland_swa_o_finances_exhausted = yes }
 					add = -200
@@ -204,7 +204,7 @@ je_sb_bechuanaland_send_warren_expedition_button = {
 					sb_bechuanaland_cap_has_corridor_foothold = yes
 					exists = c:SGO
 					sb_bechuanaland_no_decentralized_corridor_land = yes
-					NOT = { has_variable = sb_bechuanaland_cap_warren_sent_var }
+					NOT = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_warren_sent_var } }
 				}
 		}
 	}
@@ -243,7 +243,7 @@ je_sb_bechuanaland_gbr_direct_warren_button = {
 				sb_bechuanaland_boer_sphere_controls_dual_corridor = yes
 				sb_bechuanaland_no_decentralized_corridor_land = yes
 				c:CAP ?= { is_country_alive = yes }
-				NOT = { has_variable = sb_bechuanaland_gbr_warren_sent_var }
+					NOT = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_warren_sent_var } }
 			}
 		}
 	}
@@ -279,7 +279,7 @@ je_sb_bechuanaland_demand_caprivi_button = {
 			hidden_trigger = {
 				c:SWA ?= { owns_entire_state_region = STATE_HEREROLAND }
 				sb_bechuanaland_caprivi_not_held_by_swa = yes
-				NOT = { has_variable = sb_bechuanaland_caprivi_demanded_var }
+					NOT = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_caprivi_demanded_var } }
 				OR = {
 					is_player = yes
 					AND = {
@@ -310,7 +310,7 @@ je_sb_bechuanaland_demand_caprivi_button = {
 			change_relations = { country = c:GBR value = -5 }
 			sb_bechuanaland_shift_swa_influence_5 = yes
 			sb_bechuanaland_reserve_caprivi_decision = yes
-			set_variable = sb_bechuanaland_caprivi_demanded_var
+			container:sb_bechuanaland_corridor_state = { set_variable = sb_bechuanaland_caprivi_demanded_var }
 			c:GBR ?= { trigger_event = { id = sb_bechuanaland_corridor.030 days = 3 popup = yes } }
 		}
 		custom_tooltip = sb_bechuanaland_influence_swa_gain_5_tt
@@ -330,7 +330,7 @@ je_sb_bechuanaland_send_crisis_support_button = {
 		custom_tooltip = {
 			text = je_sb_bechuanaland_send_crisis_support_possible_tt
 			hidden_trigger = {
-				has_global_variable = sb_bechuanaland_crisis_war_active_var
+				container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_crisis_war_active_var }
 				sb_bechuanaland_boer_swa_network_fighting_british_side = yes
 				in_default = no
 				NOT = { has_variable = sb_bechuanaland_swa_crisis_support_active_var }
@@ -341,8 +341,8 @@ je_sb_bechuanaland_send_crisis_support_button = {
 	ai_chance = {
 		value = 100
 		if = {
-			limit = { has_global_variable = sb_bechuanaland_swa_overlord_global_scope }
-			global_var:sb_bechuanaland_swa_overlord_global_scope = {
+			limit = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_swa_overlord_scope } }
+			container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_swa_overlord_scope = {
 				if = {
 					limit = { sb_bechuanaland_swa_o_finances_exhausted = yes }
 					add = -200

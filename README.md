@@ -24,8 +24,8 @@ Spes Bona is a Victoria 3 regional flavor mod for greater Southern Africa built 
 
 ## Requirements
 
-- Victoria 3 `1.13.9`
-- Community Mod Framework `1.58.2`
+- Victoria 3 `1.13.10`
+- Community Mod Framework `1.61.x`
 
 ## Compatibility
 
@@ -54,22 +54,27 @@ The live repository documentation is the source of truth:
 
 ## Validation
 
-Run the portable, non-writing validation suite from the repository root:
+Run the validation suite from the repository root:
 
 ```sh
 python3 tools/validate.py
 ```
+
+Validation queries GitHub for CMF's latest stable release and synchronizes the official release payload to the canonical sibling directory `../Community Mod Framework` before running compatibility checks. If GitHub publishes a newer CMF minor release, it is installed and validation then fails with a rebase-required error until SB's pinned CMF baseline is updated. Use `--skip-cmf-sync` only for an intentional offline run.
 
 When the proprietary dependencies are available, include explicit Vanilla/CMF comparison and Tiger validation:
 
 ```sh
 python3 tools/validate.py \
   --game-root '/path/to/Victoria 3/game' \
-  --cmf-root '/path/to/3385002128' \
   --tiger
 ```
 
 Missing proprietary dependencies report `SKIP`; CI does not require them. Tiger is useful for parser validation, but cold-launch logs and fresh-start smoke tests remain authoritative. Do not rely on filewatcher hot reload for map-data or startup-history changes.
+
+Release validation is pinned to CMF `1.61.0` commit `9b999e3`. The launcher dependency is `1.61.*`, so patch releases are accepted while each new CMF minor line requires an explicit compatibility review.
+
+On the primary development machine, the canonical GitHub release is installed without local edits at `/Users/depro/Documents/Paradox Interactive/Victoria 3/mod/Community Mod Framework`.
 
 ## Current Priority
 

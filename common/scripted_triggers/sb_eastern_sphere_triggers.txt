@@ -185,28 +185,6 @@ sb_is_delagoa_route_actor = {
 	sb_delagoa_actor_has_transvaal_presence = yes
 }
 
-sb_should_be_involved_in_delagoa_route = {
-	NOT = { exists = c:SAF }
-	NOT = { has_global_variable = sb_delagoa_route_complete_global_var }
-	sb_delagoa_has_valid_gateway = yes
-	OR = {
-		AND = {
-			sb_is_delagoa_route_actor = yes
-			NOT = { has_variable = sb_delagoa_route_complete_var }
-		}
-		AND = {
-			OR = {
-				sb_is_delagoa_gateway_owner = yes
-				sb_is_delagoa_market_leader = yes
-			}
-			any_country = {
-				sb_is_delagoa_route_actor = yes
-				NOT = { has_variable = sb_delagoa_route_complete_var }
-			}
-		}
-	}
-}
-
 sb_delagoa_actor_has_transvaal_presence = {
 	save_temporary_scope_as = sb_delagoa_actor_scope
 	s:STATE_TRANSVAAL = {
@@ -377,10 +355,6 @@ sb_imperial_confederation_two_great_treks_completed = {
 	}
 }
 
-sb_imperial_confederation_all_participants_subjects_of_owner_network = {
-	sb_imperial_confederation_all_participants_level_1_british_subjects = yes
-}
-
 sb_imperial_confederation_has_unbound_independent_participant = {
 	OR = {
 		c:ORA ?= { sb_imperial_confederation_needs_trade_binding_from_gbr = yes }
@@ -549,8 +523,4 @@ sb_delagoa_actor_has_trade_through = {
 			}
 		}
 	}
-}
-
-sb_trn_has_delagoa_trade_through = {
-	sb_delagoa_actor_has_trade_through = yes
 }

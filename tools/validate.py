@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Run Spes Bona's portable, non-writing repository validation suite."""
+"""Synchronize CMF and run Spes Bona's repository validation suite."""
 
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 from dataclasses import dataclass
 import hashlib
 import json
@@ -19,6 +20,9 @@ import zlib
 
 
 ROOT = Path(__file__).resolve().parents[1]
+CMF_ID = "com.github.Victoria-3-Modding-Co-op.Community-Mod-Framework"
+CMF_PINNED_VERSION = "1.61.0"
+DEFAULT_CMF_ROOT = ROOT.parent / "Community Mod Framework"
 TEXT_ROOTS = ("common", "events", "localization", "map_data")
 TRIGGER_EVENT_RE = re.compile(r"\btrigger_event\s*=\s*\{")
 EVENT_ID_RE = re.compile(r"\bid\s*=\s*([A-Za-z0-9_.:-]+)")
@@ -43,6 +47,12 @@ TOP_LEVEL_OBJECT_RE = re.compile(r"^([A-Za-z0-9_]+)\s*=\s*\{", re.MULTILINE)
 HARD_REPLACE_RE = re.compile(
     r"^(REPLACE|TRY_REPLACE|REPLACE_OR_CREATE):([^\s=]+)\s*=\s*\{", re.MULTILINE
 )
+SB_SYMBOL_RE = re.compile(r"\bsb_[A-Za-z0-9_.]+\b")
+SB_DEFINITION_RE = re.compile(
+    r"^(?:(?:REPLACE|TRY_REPLACE|REPLACE_OR_CREATE):)?(sb_[A-Za-z0-9_]+)\s*=\s*\{",
+    re.MULTILINE,
+)
+EXPECTED_DEFERRED_GATES = {"BC-20", "BC-22", "CP-07", "SUP-05", "QUAL-09", "CONTENT-01"}
 
 
 @dataclass
@@ -582,6 +592,195 @@ def check_stale_symbols() -> Check:
     return Check("stale symbols", "FAIL" if hits else "PASS", "; ".join(hits))
 
 
+def check_unused_symbols() -> Check:
+    manifest_path = ROOT / "tools/unused_symbol_allowlist.json"
+    if not manifest_path.is_file():
+        return Check("unused symbols", "FAIL", "allowlist is missing")
+
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    allowed_categories = {"engine-entry-point", "public-api", "save-api", "migration-api", "staged-api"}
+    errors: list[str] = []
+    allowlist: dict[str, dict] = {}
+    for entry in manifest.get("symbols", []):
+        symbol = entry.get("symbol")
+        if not isinstance(symbol, str) or not symbol:
+            errors.append("allowlist entry has no symbol")
+            continue
+        if symbol in allowlist:
+            errors.append(f"duplicate unused-symbol allowlist entry: {symbol}")
+        allowlist[symbol] = entry
+        if entry.get("category") not in allowed_categories:
+            errors.append(f"{symbol}: invalid category {entry.get('category')}")
+        if not str(entry.get("definition", "")).strip():
+            errors.append(f"{symbol}: missing definition path")
+        if not str(entry.get("reason", "")).strip():
+            errors.append(f"{symbol}: missing rationale")
+
+    texts: dict[Path, str] = {}
+    counts: Counter[str] = Counter()
+    for base in ("common", "events", "localization"):
+        for path in sorted((ROOT / base).rglob("*")):
+            if not path.is_file() or path.suffix not in {".txt", ".yml", ".gui"}:
+                continue
+            source = path.read_text(encoding="utf-8-sig", errors="ignore")
+            texts[path] = source
+            counts.update(SB_SYMBOL_RE.findall(source))
+
+    definitions: dict[str, list[str]] = {}
+    for path, source in texts.items():
+        relative = path.relative_to(ROOT).as_posix()
+        for symbol in SB_DEFINITION_RE.findall(source):
+            definitions.setdefault(symbol, []).append(relative)
+
+    definition_only = {
+        symbol: paths
+        for symbol, paths in definitions.items()
+        if counts[symbol] == 1
+    }
+    for symbol in sorted(set(definition_only) - set(allowlist)):
+        errors.append(f"unclassified definition-only symbol: {symbol} in {definition_only[symbol][0]}")
+    for symbol in sorted(set(allowlist) - set(definition_only)):
+        errors.append(f"stale unused-symbol allowlist entry: {symbol}")
+    for symbol in sorted(set(definition_only) & set(allowlist)):
+        expected = allowlist[symbol].get("definition")
+        if definition_only[symbol] != [expected]:
+            errors.append(
+                f"{symbol}: definition path {definition_only[symbol]}, expected {[expected]}"
+            )
+
+    detail = f"{len(definition_only)} reviewed definition-only symbols"
+    return Check("unused symbols", "FAIL" if errors else "PASS", "; ".join(errors + [detail]))
+
+
+def check_deferred_release_gates() -> Check:
+    manifest_path = ROOT / "tools/deferred_release_gates.json"
+    if not manifest_path.is_file():
+        return Check("deferred release gates", "FAIL", "manifest is missing")
+
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    errors: list[str] = []
+    if manifest.get("schema_version") != 1:
+        errors.append("schema_version must be 1")
+    gates: dict[str, dict] = {}
+    for gate in manifest.get("gates", []):
+        identifier = gate.get("id")
+        if not isinstance(identifier, str) or not identifier:
+            errors.append("gate has no id")
+            continue
+        if identifier in gates:
+            errors.append(f"duplicate gate {identifier}")
+        gates[identifier] = gate
+        if gate.get("status") not in {"blocked", "deferred-human", "deferred-content"}:
+            errors.append(f"{identifier}: invalid status {gate.get('status')}")
+        for field in ("owner", "unblock_condition", "artifact", "acceptance_test"):
+            if not str(gate.get(field, "")).strip():
+                errors.append(f"{identifier}: missing {field}")
+
+    missing = EXPECTED_DEFERRED_GATES - set(gates)
+    extra = set(gates) - EXPECTED_DEFERRED_GATES
+    if missing:
+        errors.append("missing gates: " + ", ".join(sorted(missing)))
+    if extra:
+        errors.append("unexpected gates: " + ", ".join(sorted(extra)))
+    return Check(
+        "deferred release gates",
+        "FAIL" if errors else "PASS",
+        "; ".join(errors or [f"{len(gates)} explicit gates"]),
+    )
+
+
+def check_release_invariants() -> Check:
+    errors: list[str] = []
+    script_paths = [
+        path
+        for base in ("common", "events", "localization")
+        for path in (ROOT / base).rglob("*")
+        if path.is_file() and path.suffix in {".txt", ".yml", ".gui"}
+    ]
+    script_text = "\n".join(
+        path.read_text(encoding="utf-8-sig", errors="ignore") for path in script_paths
+    )
+
+    for tag in ("XHG", "XHR", "XHT"):
+        if re.search(rf"(?<![A-Za-z0-9_]){tag}(?![A-Za-z0-9_])", script_text):
+            errors.append(f"retired country tag remains live: {tag}")
+    retained_sgo_flag = ROOT / "gfx/coat_of_arms/textured_emblems/te_sgo_united_flag.tga"
+    if not retained_sgo_flag.is_file():
+        errors.append("retained SGO united flag is missing")
+
+    router = (ROOT / "common/on_actions/sb_on_actions.txt").read_text(encoding="utf-8-sig")
+    handlers = (ROOT / "common/on_actions/sb_regional_on_action_handlers.txt").read_text(
+        encoding="utf-8-sig"
+    )
+    if len(re.findall(r"^on_company_disbanded\s*=", router, re.MULTILINE)) != 1:
+        errors.append("SB must register exactly one company-disband on-action")
+    if len(re.findall(r"^sb_on_mozambique_company_disbanded\s*=", handlers, re.MULTILINE)) != 1:
+        errors.append("SB must define exactly one Mozambique disband handler")
+    if "on_treaty_ports_inherited" in script_text or "renege_treaty_ports_with" in script_text:
+        errors.append("SB must not shadow or duplicate Vanilla treaty-port inheritance")
+
+    journal = (ROOT / "common/journal_entries/1-11_sb_bechuanaland_corridor.txt").read_text(
+        encoding="utf-8-sig"
+    )
+    for token in (
+        "gui/com_journal_injects/situation_widgets.gui",
+        "com_save_journal_to_variable =",
+        "name = sb_bechuanaland_corridor_journal_handle_var",
+        "com_set_situation_left_title =",
+        "title = sb_bechuanaland_situation_left_title",
+        "com_set_situation_right_title =",
+        "title = sb_bechuanaland_situation_right_title",
+    ):
+        if token not in journal:
+            errors.append(f"Bechuanaland JE is missing its CMF 1.61 journal projection: {token}")
+    progress_bars = (ROOT / "common/scripted_progress_bars/sb_progress_bars.txt").read_text(
+        encoding="utf-8-sig"
+    )
+    bar = progress_bars.split("sb_bechuanaland_boer_swa_influence_bar = {", 1)[-1]
+    bar = bar.split("########################## END ZULU", 1)[0]
+    if len(
+        re.findall(
+            r"owner\s*=\s*\{\s*has_variable\s*=\s*sb_bechuanaland_influence_source_",
+            bar,
+        )
+    ) != 14:
+        errors.append(
+            "Bechuanaland influence sources must read all 14 projected variables "
+            "through the bar owner"
+        )
+    if re.search(
+        r"limit\s*=\s*\{\s*has_variable\s*=\s*sb_bechuanaland_influence_source_",
+        bar,
+    ):
+        errors.append("Bechuanaland influence bar contains a contextless source-variable trigger")
+    for path in (ROOT / "gui").glob("journal*.gui") if (ROOT / "gui").exists() else ():
+        errors.append(f"obsolete journal GUI override remains: {path.relative_to(ROOT)}")
+
+    war_goal_count = 0
+    for path in [
+        path
+        for base in ("common", "events")
+        for path in (ROOT / base).rglob("*.txt")
+    ]:
+        source = path.read_text(encoding="utf-8-sig", errors="ignore")
+        for match in re.finditer(r"\badd_war_goal\s*=\s*\{", source):
+            war_goal_count += 1
+            block = extract_braced(source, match.start())
+            line = source.count("\n", 0, match.start()) + 1
+            missing = [
+                key for key in ("holder", "type") if not re.search(rf"\b{key}\s*=", block)
+            ]
+            if not re.search(r"\btarget_(?:country|state)\s*=", block):
+                missing.append("target_country/state")
+            if missing:
+                errors.append(
+                    f"{path.relative_to(ROOT)}:{line}: incomplete add_war_goal ({', '.join(missing)})"
+                )
+
+    detail = f"{war_goal_count} complete scripted war-goal blocks"
+    return Check("1.13.10 release invariants", "FAIL" if errors else "PASS", "; ".join(errors or [detail]))
+
+
 def check_local_override_inventory() -> Check:
     path = ROOT / "Docs/compatibility/override_inventory.json"
     inventory = json.loads(path.read_text(encoding="utf-8"))
@@ -635,6 +834,33 @@ def run_command(name: str, command: list[str], cwd: Path = ROOT) -> Check:
     return Check(name, "FAIL", tail)
 
 
+def check_cmf_install(cmf_root: Path) -> Check:
+    metadata_path = cmf_root / ".metadata/metadata.json"
+    errors: list[str] = []
+    if not metadata_path.is_file():
+        return Check("CMF compatibility", "FAIL", f"CMF is not installed at {cmf_root}")
+    try:
+        metadata = json.loads(metadata_path.read_text(encoding="utf-8-sig"))
+    except (json.JSONDecodeError, UnicodeDecodeError) as exc:
+        return Check("CMF compatibility", "FAIL", f"invalid CMF metadata: {exc}")
+    if metadata.get("id") != CMF_ID:
+        errors.append(f"unexpected metadata id {metadata.get('id')}")
+    if metadata.get("version") != CMF_PINNED_VERSION:
+        errors.append(
+            f"latest CMF is {metadata.get('version')}; SB remains pinned to "
+            f"{CMF_PINNED_VERSION} and requires a rebase"
+        )
+    for relative in (
+        "common/scripted_effects/com_general_effects.txt",
+        "common/scripted_effects/com_international_situation_effects.txt",
+        "common/console_command_macros/com_macros.txt",
+        "gui/com_journal_injects/situation_widgets.gui",
+    ):
+        if not (cmf_root / relative).is_file():
+            errors.append(f"missing CMF API file {relative}")
+    return Check("CMF compatibility", "FAIL" if errors else "PASS", "; ".join(errors))
+
+
 def find_game_root(explicit: str | None) -> Path | None:
     candidates = [
         Path(explicit).expanduser() if explicit else None,
@@ -649,26 +875,44 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--game-root", help="Optional Victoria 3 game directory for upstream comparison")
     parser.add_argument("--cmf-root", help="Optional Community Mod Framework directory")
+    parser.add_argument(
+        "--skip-cmf-sync",
+        action="store_true",
+        help="Use the installed CMF without querying or updating from GitHub",
+    )
     parser.add_argument("--tiger", action="store_true", help="Run vic3-tiger when its binary and game root are available")
     args = parser.parse_args()
 
-    checks = [
+    cmf_root = Path(args.cmf_root).expanduser().absolute() if args.cmf_root else DEFAULT_CMF_ROOT
+    checks = []
+    if args.skip_cmf_sync:
+        checks.append(Check("CMF release sync", "SKIP", "disabled by --skip-cmf-sync"))
+    else:
+        checks.append(run_command(
+            "CMF release sync",
+            [sys.executable, "-B", "tools/sync_cmf.py", "--target", str(cmf_root)],
+        ))
+    checks.extend([
+        check_cmf_install(cmf_root),
         run_command("unit tests", [sys.executable, "-B", "-m", "unittest", "discover", "-s", "tests"]),
         check_local_override_inventory(),
         check_map_data(),
         check_localization(),
         check_on_action_router(),
         check_stale_symbols(),
+        check_unused_symbols(),
+        check_deferred_release_gates(),
+        check_release_invariants(),
         check_delayed_lifecycle(),
-    ]
+    ])
 
     game_root = find_game_root(args.game_root)
     if game_root is None:
         checks.append(Check("Vanilla/CMF override comparison", "SKIP", "game root not available"))
     else:
         command = [sys.executable, "-B", "tools/check_override_inventory.py", "--game-root", str(game_root)]
-        if args.cmf_root:
-            command.extend(("--cmf-root", args.cmf_root))
+        if cmf_root.is_dir():
+            command.extend(("--cmf-root", str(cmf_root)))
         checks.append(run_command("Vanilla/CMF override comparison", command))
 
     if args.tiger:

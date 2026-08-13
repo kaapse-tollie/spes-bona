@@ -1,10 +1,10 @@
-﻿# Third-Party Compatibility Notes
+# Third-Party Compatibility Notes
 
-Target game version: `1.13.9`
+Target game version: `1.13.10`
 
-Validation note: Tiger is useful for parser validation on 1.13.9, but launch logs and fresh-start smoke tests remain authoritative for runtime compatibility.
+Required framework: Community Mod Framework `1.61.x`. The launcher dependency is pinned to `1.61.*`, and release validation is pinned to `1.61.0` commit `9b999e3`.
 
-Spes Bona is a Southern Africa map, population, and flavor overhaul. It should not change Japan, Australia, North Africa, the Middle East, or other non-SB map scopes.
+Spes Bona is a Southern Africa map, population, and flavor overhaul. It is not a light overlay.
 
 ## Detection
 
@@ -16,34 +16,34 @@ spes_bona_southern_africa_map_rework_active = yes
 spes_bona_population_rework_active = yes
 ```
 
-These are CMF-style triggers defined with `REPLACE_OR_CREATE`.
+These are CMF-style `REPLACE_OR_CREATE` triggers.
 
-## Main Compatibility Risks
+## Map Compatibility
 
-Spes Bona changes these state regions:
+SB changes `STATE_CAPE_COLONY`, `STATE_EASTERN_CAPE`, `STATE_NORTHERN_CAPE`, `STATE_VRYSTAAT`, `STATE_TRANSVAAL`, `STATE_EAST_TRANSVAAL`, `STATE_NORTHERN_TRANSVAAL`, `STATE_DRAKENSBERG`, `STATE_ZULULAND`, `STATE_BOTSWANA`, `STATE_BECHUANALAND`, `STATE_GRIQUALAND_WEST`, `STATE_NAMAQUALAND`, `STATE_HEREROLAND`, `STATE_ZAMBEZI`, `STATE_ZAMBEZIA`, and `STATE_LOURENCO_MARQUES`.
 
-`STATE_CAPE_COLONY`, `STATE_EASTERN_CAPE`, `STATE_NORTHERN_CAPE`, `STATE_VRYSTAAT`, `STATE_TRANSVAAL`, `STATE_EAST_TRANSVAAL`, `STATE_NORTHERN_TRANSVAAL`, `STATE_DRAKENSBERG`, `STATE_ZULULAND`, `STATE_BOTSWANA`, `STATE_BECHUANALAND`, `STATE_GRIQUALAND_WEST`, `STATE_NAMAQUALAND`, `STATE_HEREROLAND`, `STATE_ZAMBEZI`, `STATE_ZAMBEZIA`, and `STATE_LOURENCO_MARQUES`.
+Mods editing those blocks need a compatibility patch. SB also ships the province raster, terrain, locator, and spline-network baselines, so unrelated map mods may still collide at file level. The exact surface is pinned in `override_inventory.json`.
 
-Mods editing those region blocks need a compatibility patch. Spes Bona also ships global province-raster, terrain, locator, and spline-network baselines, so an otherwise unrelated map mod can still collide at file level. Journal progress bars use the required Community Mod Framework widgets; SB no longer overrides Vanilla's journal GUI files. The exhaustive, hash-pinned surface is recorded in `override_inventory.json` and enforced through `python3 tools/validate.py`.
+The three intentional isolated passable Bechuanaland pockets are allowlisted by exact province membership. Any new disconnected pocket fails map validation.
 
-## Treaty History Compatibility
+## Treaty And GUI Compatibility
 
-Spes Bona does not replace the treaty-history directory. Its exact-path `common/history/treaties/00_historical_treaties.txt` shadows the Vanilla file and changes only the South African startup treaty block; uniquely named third-party treaty files remain additive. SB-only treaties live in `common/history/treaties/sb_treaties.txt`.
+SB does not use a treaty-history `replace_path`. Its exact-path `00_historical_treaties.txt` shadows Vanilla and changes the Southern African startup rows; uniquely named treaty files remain additive. Another mod changing the same Vanilla filename requires a merged patch.
 
-A mod that also supplies `common/history/treaties/00_historical_treaties.txt` remains an exact-path conflict: the higher-priority file wins, so combining both sets of changes requires a compatibility patch. Directory-level `replace_path` is prohibited because it would discard every uniquely named treaty file from lower-priority mods.
+SB does not override Vanilla 1.13.10's treaty-port inheritance on-action. It also relies on CMF 1.61.0's standard and double-sided journal widgets and ships no competing journal GUI copy.
 
-## Keyed Global Overrides
+## Global Keyed Overrides
 
-Several SB definitions are global keyed replacements even when their design goal is Southern African: dominion action/type, stake-colonial-claim, abolish-monarchy, commander retirement, frontier-colonization and slavery laws, ideologies, technologies, state traits, and political movements. The inventory identifies each object and its upstream source. The retained movement objects are rebased to Community Mod Framework `1.58.2`; mods that replace the same keys after SB may supersede the CAP exclusions.
+Some definitions are global keyed replacements despite a Southern African design goal: dominion actions/types, Stake Colonial Claim, Abolish Monarchy, commander retirement, Frontier Colonization and Legacy Slavery, selected ideologies and technologies, state traits, companies, and political movements. The inventory identifies every object and pins its Vanilla or CMF source.
 
-## Hail Columbia Load Order
+The Cultural Supremacy override is rebased to CMF 1.61.0 plus Vanilla 1.13.10's three hotfix clauses, retaining only SB's CAP exclusion.
 
-SB and Hail Columbia both replace `law_legacy_slavery`. Until a dedicated compatibility patch is available, SB must load after Hail Columbia so the Inboekstelsel visibility guard remains authoritative. Reversing that order can expose Legacy Slavery to Boer countries where SB expects the Inboekstelsel variant.
+## Hail Columbia
 
-This is a documented compatibility constraint, not permission to weaken Inboekstelsel behavior. A future compatibility patch should merge Hail Columbia's law changes into SB's guarded object.
+SB and Hail Columbia both replace `law_legacy_slavery`. Until a dedicated compatibility patch is available, SB must load after Hail Columbia so the Inboekstelsel visibility guard remains authoritative. Reversing the order may expose Legacy Slavery to Boer countries where SB expects the Inboekstelsel variant.
 
-## File Naming Rule
+This is an explicit deferred release gate, not permission to weaken either mod's behavior.
 
-SB-specific additive content uses `sb_<feature>_*` filenames. Intentional load-order overrides use `zz_sb_<feature>_override(s)` or `zzz_sb_<feature>_override(s)` when the file must load after other overrides. New Vanilla-name history/map files require an entry in the machine-checked override inventory.
+## Validation Authority
 
-Milestone names such as `phase2`, `phase3`, `wave`, or `misc` should not be used for active script files, scripted effects, variables, or comments. Event IDs are treated as stable public API and should not be renamed during hygiene passes.
+Tiger is useful for parser validation, but a cold launch, fresh-start logs, and the focused engine cases in `1_13_10_runtime_matrix.md` remain authoritative for runtime and load-order behavior.

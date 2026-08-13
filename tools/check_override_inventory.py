@@ -17,6 +17,11 @@ HARD_REPLACE_RE = re.compile(
 )
 TOP_LEVEL_RE = re.compile(r"^([A-Za-z0-9_]+)\s*=\s*\{", re.MULTILINE)
 SKIP_TOP_LEVEL = {".git", ".claude", ".prime"}
+SUPPORTED_TARGETS = {"1.13.10": "24689003"}
+CMF_NAME = "Community Mod Framework"
+CMF_VERSION = "1.61.0"
+CMF_COMMIT = "9b999e3"
+CMF_DEPENDENCY_RANGE = "1.61.*"
 
 
 def sha256_bytes(data: bytes) -> str:
@@ -116,13 +121,159 @@ def extract_top_level_blocks(text: str) -> dict[str, str]:
     return {match.group(1): extract_braced_object(text, match.start()) for match in TOP_LEVEL_RE.finditer(text)}
 
 
-def differing_state_region_blocks(root: Path, game_root: Path) -> set[str]:
+def state_region_block_comparison(root: Path, game_root: Path) -> tuple[set[str], set[str]]:
     rel = Path("map_data/state_regions/04_subsaharan_africa.txt")
     if not (root / rel).is_file() or not (game_root / rel).is_file():
-        return set()
+        return set(), set()
     mod_blocks = extract_top_level_blocks((root / rel).read_text(encoding="utf-8-sig"))
     upstream_blocks = extract_top_level_blocks((game_root / rel).read_text(encoding="utf-8-sig"))
-    return {name for name, block in mod_blocks.items() if upstream_blocks.get(name) != block}
+    changed = {name for name, block in mod_blocks.items() if upstream_blocks.get(name) != block}
+    missing = set(upstream_blocks) - set(mod_blocks)
+    return changed, missing
+
+
+def load_metadata(path: Path, label: str, errors: list[str]) -> dict:
+    if not path.is_file():
+        errors.append(f"{label}: metadata file is missing")
+        return {}
+    try:
+        return json.loads(path.read_text(encoding="utf-8-sig"))
+    except (json.JSONDecodeError, UnicodeDecodeError) as exc:
+        errors.append(f"{label}: invalid metadata JSON: {exc}")
+        return {}
+
+
+def validate_release_metadata(root: Path, inventory: dict, errors: list[str]) -> None:
+    target = inventory.get("target_game_version")
+    expected_build = SUPPORTED_TARGETS.get(target)
+    if expected_build is None:
+        errors.append(f"unsupported target_game_version: {target}")
+    elif str(inventory.get("target_steam_build")) != expected_build:
+        errors.append(
+            f"target_steam_build {inventory.get('target_steam_build')} does not match "
+            f"{target} build {expected_build}"
+        )
+
+    baseline = inventory.get("generated_for_commit_baseline")
+    if not isinstance(baseline, str) or re.fullmatch(r"[0-9a-f]{40}", baseline) is None:
+        errors.append("generated_for_commit_baseline must be a full 40-character Git commit")
+
+    metadata = load_metadata(root / ".metadata/metadata.json", "SB", errors)
+    if metadata:
+        if metadata.get("supported_game_version") != target:
+            errors.append(
+                ".metadata supported_game_version does not match inventory target "
+                f"{target}"
+            )
+        relationships = metadata.get("relationships", [])
+        cmf_relationships = [
+            relation
+            for relation in relationships
+            if relation.get("id") == "com.github.Victoria-3-Modding-Co-op.Community-Mod-Framework"
+        ]
+        if (
+            len(cmf_relationships) != 1
+            or cmf_relationships[0].get("version") != CMF_DEPENDENCY_RANGE
+        ):
+            errors.append(
+                "SB metadata must declare exactly one CMF dependency at version "
+                f"{CMF_DEPENDENCY_RANGE}"
+            )
+
+    dependencies = [
+        dependency
+        for dependency in inventory.get("dependencies", [])
+        if dependency.get("name") == CMF_NAME
+    ]
+    if len(dependencies) != 1:
+        errors.append(f"inventory must declare exactly one {CMF_NAME} dependency")
+    else:
+        dependency = dependencies[0]
+        if dependency.get("version") != CMF_VERSION:
+            errors.append(f"inventory CMF version must be {CMF_VERSION}")
+        if dependency.get("commit") != CMF_COMMIT:
+            errors.append(f"inventory CMF commit must be {CMF_COMMIT}")
+
+
+def validate_cmf_checkout(cmf_root: Path, errors: list[str]) -> None:
+    metadata = load_metadata(cmf_root / ".metadata/metadata.json", "CMF", errors)
+    if metadata and metadata.get("version") != CMF_VERSION:
+        errors.append(
+            f"CMF checkout metadata version {metadata.get('version')} does not match {CMF_VERSION}"
+        )
+    if (cmf_root / ".git").exists():
+        result = subprocess.run(
+            ["git", "-C", str(cmf_root), "rev-parse", "HEAD"],
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode != 0 or not result.stdout.strip().startswith(CMF_COMMIT):
+            actual = result.stdout.strip() or "unavailable"
+            errors.append(f"CMF checkout commit {actual} does not match {CMF_COMMIT}")
+
+
+def validate_upstream_api_surface(
+    game_root: Path, cmf_root: Path | None, errors: list[str]
+) -> None:
+    vanilla_on_actions = game_root / "common/on_actions/00_code_on_actions.txt"
+    if not vanilla_on_actions.is_file():
+        errors.append("Vanilla 1.13.10 code on-actions file is missing")
+    else:
+        source = vanilla_on_actions.read_text(encoding="utf-8-sig")
+        expected = {
+            "on_treaty_ports_inherited": (
+                "id = treaty_port_inheritance_events.1",
+                "popup = yes",
+            ),
+            "on_company_disbanded": (
+                "re_add_disbanded_company_prestige_good_jes = yes",
+            ),
+        }
+        for key, tokens in expected.items():
+            try:
+                block = find_object(source, key)
+            except ValueError as exc:
+                errors.append(f"Vanilla 1.13.10 API {key}: {exc}")
+                continue
+            for token in tokens:
+                if token not in block:
+                    errors.append(f"Vanilla 1.13.10 API {key} is missing: {token}")
+
+    if cmf_root is None:
+        return
+
+    requirements = {
+        "common/scripted_effects/com_general_effects.txt": (
+            ("com_save_journal_to_variable", "REPLACE_OR_CREATE"),
+        ),
+        "common/scripted_effects/com_international_situation_effects.txt": (
+            ("com_set_situation_left_title", None),
+            ("com_set_situation_right_title", None),
+        ),
+        "common/console_command_macros/com_macros.txt": (
+            ("com_container", None),
+        ),
+    }
+    for rel, objects in requirements.items():
+        path = cmf_root / rel
+        if not path.is_file():
+            errors.append(f"CMF 1.61.0 API source is missing: {rel}")
+            continue
+        source = path.read_text(encoding="utf-8-sig")
+        for key, directive in objects:
+            try:
+                find_object(source, key, directive=directive)
+            except ValueError as exc:
+                errors.append(f"CMF 1.61.0 API {key}: {exc}")
+
+    widget = cmf_root / "gui/com_journal_injects/situation_widgets.gui"
+    if not widget.is_file():
+        errors.append("CMF 1.61.0 situation widget is missing")
+    else:
+        source = widget.read_text(encoding="utf-8-sig")
+        for token in ("com_situation_left_title_var", "com_situation_right_title_var"):
+            if token not in source:
+                errors.append(f"CMF 1.61.0 situation widget is missing: {token}")
 
 
 def require_metadata(entry: dict, label: str, errors: list[str]) -> None:
@@ -134,6 +285,10 @@ def require_metadata(entry: dict, label: str, errors: list[str]) -> None:
 def validate(root: Path, game_root: Path, inventory: dict, cmf_root: Path | None = None) -> list[str]:
     errors: list[str] = []
     target = inventory.get("target_game_version")
+    validate_release_metadata(root, inventory, errors)
+    if cmf_root is not None:
+        validate_cmf_checkout(cmf_root, errors)
+    validate_upstream_api_surface(game_root, cmf_root, errors)
     descriptor = (root / "descriptor.mod").read_text(encoding="utf-8-sig")
     supported = re.findall(r'^\s*supported_version\s*=\s*"([^"]+)"', descriptor, re.MULTILINE)
     if supported != [target]:
@@ -210,7 +365,9 @@ def validate(root: Path, game_root: Path, inventory: dict, cmf_root: Path | None
                     except ValueError as exc:
                         errors.append(f"{label}: dependency baseline {exc}")
 
-    actual_blocks = differing_state_region_blocks(root, game_root)
+    actual_blocks, missing_upstream_blocks = state_region_block_comparison(root, game_root)
+    for name in sorted(missing_upstream_blocks):
+        errors.append(f"collided state-region file omits upstream block: {name}")
     declared_blocks = set(inventory.get("state_region_blocks", []))
     for name in sorted(actual_blocks - declared_blocks):
         errors.append(f"unmanifested changed state-region block: {name}")
@@ -251,9 +408,7 @@ def main() -> int:
         print("Victoria 3 game root not found; pass --game-root or set VIC3_GAME_ROOT")
         return 2
     cmf_root = find_root(args.cmf_root, "CMF_ROOT", [
-        Path.home() / "Library/Application Support/Steam/steamapps/workshop/content/529340/3385002128",
-        Path.home() / ".steam/steam/steamapps/workshop/content/529340/3385002128",
-        Path.home() / ".local/share/Steam/steamapps/workshop/content/529340/3385002128",
+        Path.home() / "Documents/Paradox Interactive/Victoria 3/mod/Community Mod Framework",
     ], ("common",))
     inventory = json.loads((root / args.inventory).read_text(encoding="utf-8"))
     errors = validate(root, game_root, inventory, cmf_root)

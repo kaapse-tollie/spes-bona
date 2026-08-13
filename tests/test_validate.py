@@ -1,9 +1,24 @@
+import json
+from pathlib import Path
+import tempfile
 import unittest
 
 from tools import validate
 
 
 class RepositoryValidatorTests(unittest.TestCase):
+    def test_cmf_compatibility_rejects_an_unreviewed_release(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / ".metadata").mkdir()
+            (root / ".metadata/metadata.json").write_text(json.dumps({
+                "id": validate.CMF_ID,
+                "version": "1.62.0",
+            }))
+            check = validate.check_cmf_install(root)
+            self.assertEqual("FAIL", check.status)
+            self.assertIn("requires a rebase", check.detail)
+
     def test_repository_manifests_are_current(self):
         checks = (
             validate.check_local_override_inventory(),
@@ -11,6 +26,9 @@ class RepositoryValidatorTests(unittest.TestCase):
             validate.check_localization(),
             validate.check_on_action_router(),
             validate.check_stale_symbols(),
+            validate.check_unused_symbols(),
+            validate.check_deferred_release_gates(),
+            validate.check_release_invariants(),
             validate.check_delayed_lifecycle(),
         )
         failures = [f"{check.name}: {check.detail}" for check in checks if check.status != "PASS"]

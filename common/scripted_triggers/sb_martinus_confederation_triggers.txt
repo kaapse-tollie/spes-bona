@@ -4,7 +4,6 @@
 		has_template = TRN_marthinus_wessel_pretorius
 	}
 }
-
 sb_martinus_ora_ruler_is_pretorius = {
 	exists = ruler
 	ruler = {
@@ -130,65 +129,5 @@ sb_martinus_trn_can_complete_legal_union = {
 		sb_martinus_ora_is_independent_candidate = yes
 		has_law_or_variant = law_type:law_presidential_republic
 		has_variable = sb_martinus_legal_union_pending_var
-	}
-}
-
-sb_martinus_trn_can_offer_confederation = {
-	country_definition = cd:TRN
-	is_country_alive = yes
-	is_subject = no
-	is_at_war = no
-	sb_martinus_trn_ruler_is_pretorius = yes
-	has_variable = sb_martinus_presidential_union_active_var
-	NOT = { has_variable = sb_martinus_confederation_active_var }
-	c:ORA ?= {
-		is_country_alive = yes
-		is_direct_subject_of = root
-		is_subject_type = subject_type_sb_boer_presidential_union
-		is_active_in_diplomatic_play = no
-		relations:root >= relations_threshold:amicable
-		liberty_desire < 50
-	}
-}
-
-sb_martinus_trn_has_gbr_trade_through = {
-	c:GBR ?= {
-		any_scope_treaty = {
-			binds = root
-			any_scope_article = {
-				has_type = transit_rights
-				source_country = c:GBR
-				target_country = root
-			}
-		}
-	}
-}
-
-sb_martinus_trn_has_non_gbr_gp_shield = {
-	any_country = {
-		is_country_alive = yes
-		country_rank = rank_value:great_power
-		NOT = { country_definition = cd:GBR }
-		relations:root >= relations_threshold:friendly
-	}
-}
-
-sb_martinus_gbr_can_respond_to_confederation = {
-	country_definition = cd:GBR
-	is_country_alive = yes
-	NOT = { has_variable = sb_martinus_gbr_confederation_response_resolved_var }
-	c:TRN ?= {
-		is_country_alive = yes
-		is_country_type = recognized
-		OR = {
-			has_variable = sb_sand_river_convention_accepted_var
-			sb_martinus_trn_has_gbr_trade_through = yes
-		}
-		has_variable = sb_martinus_confederation_active_var
-	}
-	c:ORA ?= {
-		is_country_alive = yes
-		is_direct_subject_of = c:TRN
-		is_subject_type = subject_type_sb_boer_confederal_partner
 	}
 }

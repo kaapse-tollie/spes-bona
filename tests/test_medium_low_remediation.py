@@ -147,6 +147,7 @@ class MediumLowRemediationTests(unittest.TestCase):
             "on_yearly_pulse_country": (
                 "sb_on_cape_yearly_pulse_country",
                 "sb_on_modifier_cache_yearly_repair",
+                "sb_on_boer_restraint_yearly_repair",
             ),
             "on_state_owner_change": ("sb_on_namibia_consolidation_state_owner_change",),
             "on_acquired_technology": ("sb_on_spes_bona_acquired_technology",),
@@ -165,6 +166,39 @@ class MediumLowRemediationTests(unittest.TestCase):
             block = validate.extract_braced(router, router.index(f"{on_action} = {{"))
             registered = tuple(re.findall(r"\bsb_[a-z0-9_]+\b", block))
             self.assertEqual(handlers, registered, on_action)
+
+    def test_boer_restraint_uses_direct_tags_and_annual_watchdog(self):
+        effects = text("common/scripted_effects/sb_british_boer_restraint_effects.txt")
+        self.assertNotIn("every_country", effects)
+        for tag in ("ORA", "TRN", "ZPB", "LYD", "NAL", "SGO", "ABY", "KLR"):
+            self.assertIn(f"c:{tag} ?=", effects)
+        handlers = text("common/on_actions/sb_regional_on_action_handlers.txt")
+        self.assertIn("sb_on_boer_restraint_yearly_repair", handlers)
+        monthly = object_block(
+            "common/on_actions/sb_regional_on_action_handlers.txt",
+            "sb_on_gbr_colonial_offices_monthly_pulse_country",
+        )
+        self.assertNotIn("sb_refresh_british_cape_boer_restraint", monthly)
+
+    def test_recurring_feature_ownership_is_singular(self):
+        mineral = text("common/on_actions/sb_mineral_discoveries_on_actions.txt")
+        self.assertEqual(1, mineral.count("sb_on_mineral_discoveries_acquired_technology = {"))
+        self.assertEqual(1, mineral.count("on_actions = { sb_on_mineral_discoveries_acquired_technology }"))
+
+        cape_handlers = text("common/on_actions/sb_cape_on_action_handlers.txt")
+        router = text("common/on_actions/sb_on_actions.txt")
+        self.assertEqual(1, cape_handlers.count("sb_on_cape_yearly_pulse_country = {"))
+        self.assertEqual(1, router.count("sb_on_cape_yearly_pulse_country"))
+
+        boer_actions = text("common/on_actions/sb_boer_ai_economy_on_actions.txt")
+        self.assertEqual(1, boer_actions.count("sb_boer_ai_economy_ora_law_yearly_pulse = yes"))
+        self.assertEqual(1, boer_actions.count("sb_boer_ai_economy_ora_yearly_pulse = yes"))
+
+        all_on_actions = "\n".join(
+            path.read_text(encoding="utf-8-sig")
+            for path in (ROOT / "common/on_actions").glob("*.txt")
+        )
+        self.assertNotRegex(all_on_actions, r"sb_on_namibia_[a-z0-9_]*yearly")
 
 
 if __name__ == "__main__":

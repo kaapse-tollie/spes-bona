@@ -1,91 +1,75 @@
-﻿# Spes Bona Override Manifest
+# Spes Bona Override Manifest
 
-Target game version: `1.13.9` (Steam build `23897342`)
+Target game version: `1.13.10` (Steam build `24689003`)
 
-This document explains the policy. The canonical machine-readable inventory is `Docs/compatibility/override_inventory.json`; it records every exact-path collision and keyed override with owner, scope, intended delta, load-order semantics, rebase date, and pinned upstream/mod hashes.
+Minimum tested dependency: Community Mod Framework `1.61.0`, commit `9b999e3`. The launcher relationship is `1.61.*`, accepting patch releases while requiring an explicit rebase before a later CMF minor line is permitted.
 
-Run the mandatory portable gate from the repository root:
+The canonical machine-readable inventory is `Docs/compatibility/override_inventory.json`. It records every exact-path collision and keyed override with ownership, intended delta, load-order semantics, review date, and pinned source hashes.
+
+Run the complete local gate from the repository root:
 
 ```sh
-python3 tools/validate.py \
+python3 -B tools/validate.py \
   --game-root '/path/to/Victoria 3/game' \
-  --cmf-root '/path/to/3385002128' \
   --tiger
 ```
 
-The suite runs unit, override, map-connectivity, localisation, stale-symbol, on-action-router, and delayed-event lifecycle checks. With proprietary dependencies available, it also compares Vanilla/CMF baselines and runs Tiger. Missing proprietary dependencies report `SKIP`; CI does not require them. The archived resource-research pipeline has its own command and is not part of the inner release gate.
+The validator first queries GitHub's latest stable CMF release and synchronizes its verified official asset into `../Community Mod Framework`. A newly published minor release is installed normally and then fails SB's pinned compatibility gate, deliberately forcing a rebase. `--skip-cmf-sync` is available for offline work only. Missing game or Tiger installations report `SKIP`; a release build must run the explicit comparison against Victoria 3 `1.13.10` and the synchronized CMF installation.
 
-The override gate fails on an unmanifested or stale collision/replacement, upstream drift, mod/object drift, changed state-region membership, dependency-baseline drift, or descriptor version/`replace_path` drift. Hash updates are review actions, not an automatic acceptance workflow.
+On Depro's development machine, the canonical path is `/Users/depro/Documents/Paradox Interactive/Victoria 3/mod/Community Mod Framework`. Its contents remain byte-for-byte from the latest verified GitHub release asset rather than carrying launcher-specific local metadata edits.
 
-## Directory replacement policy
+## Inventory Surface
 
-No `replace_path` directive is approved. In particular, treaty history must not replace its directory: that would delete uniquely named treaty files from lower-priority mods.
+The current lock covers:
 
-`common/history/treaties/00_historical_treaties.txt` remains an exact-path Vanilla shadow because startup treaties cannot be removed with a keyed `REPLACE`. It is pinned to Vanilla `1.13.9` and changes the Southern African startup block. `common/history/treaties/sb_treaties.txt` is additive. Another mod that owns the exact `00_historical_treaties.txt` path remains a last-writer conflict and requires a compatibility patch if both deltas are wanted.
+- `36` exact-path files;
+- `100` keyed `REPLACE`, `TRY_REPLACE`, or `REPLACE_OR_CREATE` objects;
+- `17` intentionally changed state-region blocks; and
+- no approved `replace_path` directives.
 
-## Exact-path Vanilla files
+The exact-path set includes Southern African history, the Highveld event baseline, the regional state file, the province raster, terrain, locators, and spline network. Generated and binary files use hash parity; textual files also require a reviewed source diff.
 
-The inventory currently locks **35** exact-path files. It includes all of the following compatibility surfaces rather than only the narrow regional exceptions:
+`common/history/treaties/00_historical_treaties.txt` remains an exact-path Vanilla shadow because startup treaty rows cannot be removed additively. It is pinned to Vanilla `1.13.10`; uniquely named third-party treaty files remain additive. SB does not replace or register `on_treaty_ports_inherited`, leaving the new 1.13.10 inheritance prompt and market reconnection path to Vanilla.
 
-- Southern African building, population, state, country, character, military-formation, and treaty histories.
-- The Vanilla Highveld event baseline.
-- `map_data/state_regions/04_subsaharan_africa.txt`, `map_data/province_terrains.txt`, and the full `map_data/provinces.png` raster.
-- All five generated map-object locator files and the full spline-network baseline.
+`common/history/diplomacy/00_relations.txt` retains Vanilla's `1.13.10` relation baseline and removes only ORA's relation to TRN. SB does not create TRN at game start, so the upstream row otherwise attempts to create a relation with an invalid country; later TRN diplomacy remains story-authored.
 
-The raster, terrain, locator, and spline copies are global file-level collisions even where the authored delta is Southern African. Mods changing the same files require explicit compatibility work. Journal progress bars rely on Community Mod Framework's injected widgets rather than SB file copies. The JSON hash pair is the parity lock for binary/generated copies; textual files are also reviewable with an ordinary pinned-upstream diff.
+## Dependency Rebases
 
-## State regions intentionally changed or added
+The five retained political-movement replacements are pinned to CMF `1.61.0`. Cultural Supremacy includes all three Vanilla 1.13.10 unowned-homeland and neighbouring-movement fixes; the only SB-specific delta is CAP creation/disband exclusion. The other retained movement deltas remain the documented CAP exclusion or Anglo-African utilitarian eligibility.
 
-The inventory mechanically enforces these **17** blocks in `map_data/state_regions/04_subsaharan_africa.txt`:
+The company replacements are intentionally narrow:
 
-- `STATE_BECHUANALAND`
-- `STATE_BOTSWANA`
-- `STATE_CAPE_COLONY`
-- `STATE_DRAKENSBERG`
-- `STATE_EASTERN_CAPE`
-- `STATE_EAST_TRANSVAAL`
-- `STATE_GRIQUALAND_WEST`
-- `STATE_HEREROLAND`
-- `STATE_LOURENCO_MARQUES`
-- `STATE_NAMAQUALAND`
-- `STATE_NORTHERN_CAPE`
-- `STATE_NORTHERN_TRANSVAAL`
-- `STATE_TRANSVAAL`
-- `STATE_VRYSTAAT`
-- `STATE_ZAMBEZI`
-- `STATE_ZAMBEZIA`
-- `STATE_ZULULAND`
+- `company_mozambique_company` retains Vanilla player eligibility and presentation, removes incorporation only from AI pursuit/construction checks, and gives POR/IBE a total AI weight of `100`.
+- `company_de_beers` retains the Vanilla 1.13.10 structure while replacing gold-field requirements and targets with SB diamond mines.
 
-The retired North Africa and Middle East state-region copies remain absent.
+Vanilla's additive `on_company_disbanded` handler remains untouched. SB registers exactly one separate Mozambique cleanup handler.
 
-## Additive state-trait assignments
+The `pink_map` decision is pinned to its Vanilla 1.13.10 object. Its DLC, independence, Portuguese Colonialism, and one-use gates remain unchanged; SB adds only colonial/company-subject colonization eligibility and routing through the durable Bechuanaland terminal outcome. The Vanilla Pink Map JE, presentation, modifiers, and favour transaction remain authoritative.
 
-`common/history/global/sb_state_traits.txt` changes malaria by scoped history effects rather than additional map-file overrides. Severe malaria is assigned to Eastern/Western Mali, Volta, Hausaland/Outer/East Hausaland, Bornu, Nigeria, North Cameroon, Waddai, North Angola, Lindi, Tanganyika, Kazembe, Rift Valley, and Uganda; Gabon is adjusted in the opposite direction.
+## CMF 1.61 Integration
 
-## Keyed overrides
+The Bechuanaland Corridor uses CMF 1.61.0's journal-scope and International Situation interfaces:
 
-The JSON currently locks **100** `REPLACE`, `TRY_REPLACE`, and `REPLACE_OR_CREATE` objects individually, including their source paths and object hashes. The surface includes:
+- `com_save_journal_to_variable` stores participant JE handles;
+- the CMF title setters project both titles for the situation widgets; and
+- `com_container` is the supported test-time inspector.
 
-- Southern African character templates, country definitions, names, flags, CoAs, regions, state names, companies, and Highveld replacements.
-- Global dominion action/type, stake-colonial-claim, abolish-monarchy, commander-retirement, law, ideology, technology, state-trait, and movement objects whose compatibility risk cannot be described as regional file ownership.
-- Three `REPLACE_OR_CREATE` CMF detection triggers.
+SB calls these public helpers directly. Its launcher dependency is pinned to `1.61.*`, so an older CMF build is intentionally unsupported rather than maintained through duplicate inline implementations.
 
-The five retained political-movement replacements are additionally pinned to Community Mod Framework `1.58.2` baselines; their only SB deltas are the documented CAP creation/disband exclusions and Anglo-African utilitarian eligibility. Religious-majority is no longer replaced because it had no authored SB delta.
+One named container, `sb_bechuanaland_corridor_state`, owns all shared active-crisis state. SB ships no journal GUI replacement and no container debug UI.
 
-A manifest entry means “reviewed and mechanically contained,” not that every broad override is ideal. Open compatibility findings continue to track objects that should be rebased, narrowed, or upstreamed to CMF.
+The validator pins these CMF APIs and Vanilla's treaty-port/company-disband hooks. Upstream removal or signature drift fails validation instead of silently changing SB behavior.
 
-## History baseline rules
+## State And Naming Policy
 
-Touched state scopes purge/recreate their startup populations and buildings so Vanilla rows do not double-load. Portugal and Southern African military-formation histories remain exact-path baselines where the engine offers no keyed row-removal mechanism. New Vanilla-name history/map files are prohibited until added to the inventory with an explicit intent and parity review.
+The changed state regions are `STATE_BECHUANALAND`, `STATE_BOTSWANA`, `STATE_CAPE_COLONY`, `STATE_DRAKENSBERG`, `STATE_EASTERN_CAPE`, `STATE_EAST_TRANSVAAL`, `STATE_GRIQUALAND_WEST`, `STATE_HEREROLAND`, `STATE_LOURENCO_MARQUES`, `STATE_NAMAQUALAND`, `STATE_NORTHERN_CAPE`, `STATE_NORTHERN_TRANSVAAL`, `STATE_TRANSVAAL`, `STATE_VRYSTAAT`, `STATE_ZAMBEZI`, `STATE_ZAMBEZIA`, and `STATE_ZULULAND`.
 
-## Naming and interoperability
+Additive definitions use `sb_<feature>_*`. Intentional late keyed replacements use `zz_sb_*` or `zzz_sb_*`. Stable event and public script keys are not renamed during cleanup.
 
-Additive definitions use `sb_<feature>_*`. Intentional late keyed replacements use `zz_sb_*` or `zzz_sb_*` and carry a local reason. Internal milestone names are not active API. Event IDs remain stable.
-
-CMF detection is provided by:
+CMF-style detection remains available through:
 
 - `spes_bona_is_active`
 - `spes_bona_southern_africa_map_rework_active`
 - `spes_bona_population_rework_active`
 
-Tiger remains useful for parser validation, but fresh-start logs and focused engine tests remain authoritative for runtime and load-order behavior.
+Static parity does not certify engine behavior. Required launch checks are maintained in `Docs/compatibility/1_13_10_runtime_matrix.md`.

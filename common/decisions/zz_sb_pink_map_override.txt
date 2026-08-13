@@ -1,0 +1,53 @@
+﻿# Source: Victoria 3 1.13.10 common/decisions/pink_map_decision.txt.
+# Delta: route the Pink Map through the terminal Bechuanaland settlement and
+# accept qualifying colonization by Portuguese colonial/company subjects.
+REPLACE:pink_map = {
+	is_shown = {
+		has_dlc_feature = ip4_content
+		OR = {
+			c:POR ?= this
+			c:IBE ?= this
+		}
+		is_subject = no
+		NOT = { has_variable = pink_map_sent }
+		has_variable = portuguese_colonialism_je_completed
+	}
+
+	possible = {
+		custom_tooltip = {
+			text = sb_pink_map_qualifying_colonization_tt
+			sb_pink_map_has_qualifying_colonization = yes
+		}
+		custom_tooltip = {
+			text = sb_pink_map_bechuanaland_resolved_tt
+			NOT = { has_global_variable = sb_bechuanaland_corridor_open_global_var }
+		}
+	}
+
+	when_taken = {
+		set_variable = pink_map_seeking
+		set_variable = pink_map_sent
+		if = {
+			limit = { NOT = { has_global_variable = sb_bechuanaland_corridor_resolved_global_var } }
+			set_variable = sb_pink_map_precedes_bechuanaland_var
+			sb_pink_map_begin_full_claim_route = yes
+		}
+		else_if = {
+			limit = { has_global_variable = sb_bechuanaland_terminal_outcome_boer_global_var }
+			sb_pink_map_begin_boer_claim_route = yes
+		}
+		else_if = {
+			limit = {
+				OR = {
+					has_global_variable = sb_bechuanaland_terminal_outcome_british_global_var
+					has_global_variable = sb_bechuanaland_terminal_outcome_swa_global_var
+				}
+				sb_pink_map_recorded_arbiter_exists = yes
+			}
+			sb_pink_map_dispatch_to_recorded_arbiter = yes
+		}
+		else = { sb_pink_map_begin_full_claim_route = yes }
+	}
+
+	ai_chance = { value = 1 }
+}

@@ -205,7 +205,6 @@ The `minimum lag` column is the earliest defensible delay for the event as writt
 | `sb_martinus_confederation.080-.082`, election and shared presidency | 1850s onward | Same ORA political process | Same-country administration | `1 day` | `0-1 day`; exempt. |
 | `sb_martinus_confederation.120-.121`, Natalia voluntarily joins the union | 1850s onward | Pietermaritzburg-Potchefstroom/Pretoria about `450-480 km` | Frontier courier | `3 days` | `5 days` before telegraph; `1 day` once connected. |
 | `sb_martinus_confederation.131 -> .130`, Grey's Transvaal proposal | Late 1850s-1860s | Cape Town-Potchefstroom/Pretoria about `1,270-1,310 km` | Cape post plus frontier courier | `7 days` | About `9-12 days` before a through telegraph route. |
-| `sb_martinus_confederation.110 -> .111`, British response to Boer confederation | 1850s onward | London-TRN about `9,000-9,100 km` | Steam packet, later cable | `7 days` | `45-55 days` before 1879; `1 day` after 1879. |
 | `sb_swazi_border.1-.4`, TRN-SWZ border claim | 1850s-1860s | Potchefstroom-Lobamba about `410 km`, or Pretoria-Lobamba `310 km` | Frontier courier | `7 days` each way | `4-5 days`. Current value is conservative. |
 | `sb_cape.103/.200-.205`, Albany secession and London response | 1850s-1870s | Cape Town-London `9,670 km`; Cape Town-Grahamstown `750 km` | Steam mail and Cape post; Cape-Grahamstown telegraph after 1864 | CAP-GBR can be immediate; GBR-CAP `7/21 days`; CAP-ABY `14 days` | CAP-London `42-50 days` in the 1850s, `30 days` in the 1870s before 1879, then `1 day`; Cape-ABY `5 days` before 1864 or `1 day` after. The pre-cable imperial replies are too fast. |
 | `sb_cape.020/.030/.031`, Responsible Government | 1850s-1872 normally, but dynamic | Cape Town-London `9,670 km` | Steam mail, later cable | Several `1-7 day` follow-ups | `30-50 days` before 1879; `1 day` after 1879. Same-CAP cleanup events remain exempt. |
@@ -290,8 +289,7 @@ These are convenient script-facing bands for a future implementation pass. They 
 | `sb_griqualand_west` | Kimberley rows. |
 | `sb_imperial_confederation` | Scheme, Delagoa response, and Natal acceleration rows. |
 | `sb_klip_river_county` | Klip River row. |
-| `sb_martinus_confederation` | Grey, coercive claim, election, NAL union, and British-response rows. |
-| `sb_mozambique_company` | Portugal/MZQ administrative row. |
+| `sb_martinus_confederation` | Grey, coercive claim, election, and NAL union rows. |
 | `sb_namibia` | Mission/SWA administration row. |
 | `sb_natal_crisis` | Retief/Blood River and British ultimatum rows. |
 | `sb_swazi_border` | TRN-SWZ row. |

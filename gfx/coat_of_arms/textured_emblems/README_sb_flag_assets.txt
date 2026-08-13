@@ -1,34 +1,22 @@
-Spes Bona textured-flag asset handoff
-====================================
+Spes Bona textured flag assets
+================================
 
-Live active textures in this folder:
+Cape and Albany:
+- te_cap_cape_colony_heraldy.tga: CAP colonial ensign heraldry.
+- te_cap_independent_flag.tga: independent CAP flag.
+- te_aby_port_elizabeth_heraldry.tga: ABY colonial/dominion heraldry.
+- te_aby_independent_flag.tga: independent ABY flag.
 
-- te_cap_independent_flag.tga
-  Active full-texture flag for fully independent Cape of Goodhope / Cape Republic.
+Mozambique:
+- te_mzq_company_coa.tga: Companhia de Mocambique emblem used by the chartered-company variants.
+- te_mzq_governer_colony_flag.tga: MZQ colony and responsible-colony flag.
+- te_mzq_dominion_independent_flag.tga: MZQ dominion and Portuguese-primary independent flag.
 
-- te_aby_independent_flag.tga
-  Active full-texture flag for fully independent Albany.
+South West Africa:
+- te_ger_SWA_proposed_flag.tga and te_ger_SWA_reichskolonialflagge.tga: German SWA presentation variants.
 
-Current live implementation:
-- CAP colony uses the CAP-local `CAP_subject_colony` + `CAP_subject_colony_ensign` clone of the vanilla SAF setup.
-- CAP dominion uses the CAP-local blue `CAP_subject_dominion` ensign.
-- ABY colony uses the same CAP-local colony setup.
-- ABY dominion uses the same CAP-local blue `CAP_subject_dominion` ensign.
-- Only the fully independent CAP / ABY flags use bespoke DDS art.
+Stellaland-Goshen:
+- te_sgo_initial_flag.tga: live frontier-republic flag.
+- te_sgo_united_flag.tga: intentionally retained staged asset for a future united presentation; do not remove as dead art.
 
-Relevant script files:
-- common/flag_definitions/sb_flag_definitions.txt
-- common/coat_of_arms/coat_of_arms/sb_countries.txt
-
-Source assets retained in References:
-- References/flags/sp_CAP_independent.dds
-- References/flags/sp_ABY_independent.dds
-
-Conversion note:
-- The supplied DDS sources are kept in `References/flags`.
-- The live mod uses TGA conversions because the source DDS dimensions are not a
-  clean fit for Tiger's compressed-DDS checks.
-
-Open TODO:
-- If you later want distinct colony or dominion art beyond the current shared
-  SAF / blue-ensign setup, add dedicated DDS textures and wire them here.
+Flag selection lives in common/flag_definitions/sb_flag_definitions.txt. Coat-of-arms composition lives in common/coat_of_arms/coat_of_arms/sb_countries.txt.

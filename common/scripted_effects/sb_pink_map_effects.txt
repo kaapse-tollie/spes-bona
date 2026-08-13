@@ -1,0 +1,149 @@
+﻿# Pink Map / Bechuanaland integration effects.
+
+sb_pink_map_add_full_claim_package = {
+	s:STATE_KAZEMBE = { add_claim = ROOT }
+	s:STATE_ZAMBIA = { add_claim = ROOT }
+	s:STATE_ZAMBEZI = { add_claim = ROOT }
+}
+
+sb_pink_map_add_boer_settlement_claim_package = {
+	s:STATE_KAZEMBE = { add_claim = ROOT }
+	s:STATE_ZAMBIA = { add_claim = ROOT }
+}
+
+sb_pink_map_remove_root_claim_package = {
+	if = { limit = { has_claim = s:STATE_KAZEMBE } s:STATE_KAZEMBE = { remove_claim = ROOT } }
+	if = { limit = { has_claim = s:STATE_ZAMBIA } s:STATE_ZAMBIA = { remove_claim = ROOT } }
+	if = { limit = { has_claim = s:STATE_ZAMBEZI } s:STATE_ZAMBEZI = { remove_claim = ROOT } }
+}
+
+sb_pink_map_remove_competing_corridor_claims = {
+	every_country = {
+		limit = { has_variable = sb_bechuanaland_pink_map_claimant_var }
+		save_temporary_scope_as = sb_pink_map_competing_claimant
+		if = { limit = { has_claim = s:STATE_KAZEMBE } s:STATE_KAZEMBE = { remove_claim = scope:sb_pink_map_competing_claimant } }
+		if = { limit = { has_claim = s:STATE_ZAMBIA } s:STATE_ZAMBIA = { remove_claim = scope:sb_pink_map_competing_claimant } }
+		if = { limit = { has_claim = s:STATE_ZAMBEZI } s:STATE_ZAMBEZI = { remove_claim = scope:sb_pink_map_competing_claimant } }
+	}
+}
+
+sb_pink_map_begin_full_claim_route = {
+	add_journal_entry = { type = je_the_pink_map }
+	sb_pink_map_add_full_claim_package = yes
+	if = { limit = { has_variable = pink_map_seeking } remove_variable = pink_map_seeking }
+}
+
+sb_pink_map_begin_boer_claim_route = {
+	add_journal_entry = { type = je_the_pink_map }
+	sb_pink_map_add_boer_settlement_claim_package = yes
+	if = { limit = { has_variable = pink_map_seeking } remove_variable = pink_map_seeking }
+}
+
+sb_pink_map_finish_arbitration = {
+	if = {
+		limit = {
+			has_variable = sb_pink_map_arbiter_scope
+			var:sb_pink_map_arbiter_scope = { is_country_alive = yes }
+		}
+		var:sb_pink_map_arbiter_scope = {
+			if = { limit = { has_variable = sb_pink_map_petitioner_scope } remove_variable = sb_pink_map_petitioner_scope }
+		}
+	}
+	if = { limit = { has_variable = pink_map_seeking } remove_variable = pink_map_seeking }
+	if = { limit = { has_variable = sb_pink_map_arbiter_scope } remove_variable = sb_pink_map_arbiter_scope }
+}
+
+sb_pink_map_accept_arbitration = {
+	sb_pink_map_remove_competing_corridor_claims = yes
+	add_journal_entry = { type = je_the_pink_map }
+	sb_pink_map_add_full_claim_package = yes
+}
+
+sb_pink_map_apply_defiance = {
+	add_journal_entry = { type = je_the_pink_map }
+	sb_pink_map_add_full_claim_package = yes
+	set_variable = sb_pink_map_defiance_active_var
+	if = {
+		limit = {
+			has_variable = sb_pink_map_arbiter_scope
+			var:sb_pink_map_arbiter_scope = { is_country_alive = yes }
+		}
+		var:sb_pink_map_arbiter_scope = {
+			set_variable = sb_pink_map_defiance_arbiter_var
+			if = { limit = { has_variable = sb_pink_map_petitioner_scope } remove_variable = sb_pink_map_petitioner_scope }
+			change_relations = { country = ROOT value = -50 }
+		}
+	}
+	if = { limit = { has_variable = pink_map_seeking } remove_variable = pink_map_seeking }
+}
+
+sb_pink_map_dispatch_to_recorded_arbiter = {
+	save_temporary_scope_as = sb_pink_map_petitioner
+	random_country = {
+		limit = {
+			is_country_alive = yes
+			has_variable = sb_bechuanaland_pink_map_arbiter_var
+		}
+		save_temporary_scope_as = sb_pink_map_arbiter
+	}
+	if = {
+		limit = { exists = scope:sb_pink_map_arbiter }
+		set_variable = { name = sb_pink_map_arbiter_scope value = scope:sb_pink_map_arbiter }
+		scope:sb_pink_map_arbiter = {
+			set_variable = { name = sb_pink_map_petitioner_scope value = scope:sb_pink_map_petitioner }
+			trigger_event = { id = sb_pink_map.010 popup = yes }
+		}
+	}
+	else = { sb_pink_map_begin_full_claim_route = yes }
+}
+
+# If a saved arbiter disappears while either event is being held, proceed with
+# the direct claim package instead of leaving the one-use decision stranded.
+sb_pink_map_repair_missing_arbiter = {
+	if = {
+		limit = {
+			has_variable = pink_map_seeking
+			OR = {
+				NOT = { has_variable = sb_pink_map_arbiter_scope }
+				AND = {
+					has_variable = sb_pink_map_arbiter_scope
+					var:sb_pink_map_arbiter_scope = { is_country_alive = no }
+				}
+			}
+		}
+		if = { limit = { has_variable = sb_pink_map_arbiter_scope } remove_variable = sb_pink_map_arbiter_scope }
+		sb_pink_map_begin_full_claim_route = yes
+	}
+}
+
+sb_pink_map_cleanup_defiance_hostility = {
+	if = {
+		limit = {
+			has_variable = sb_pink_map_defiance_active_var
+			NOT = { has_journal_entry = je_the_pink_map }
+		}
+		if = {
+			limit = {
+				has_variable = sb_pink_map_arbiter_scope
+				var:sb_pink_map_arbiter_scope = { is_country_alive = yes }
+			}
+			var:sb_pink_map_arbiter_scope = {
+				if = { limit = { has_variable = sb_pink_map_defiance_arbiter_var } remove_variable = sb_pink_map_defiance_arbiter_var }
+			}
+		}
+		remove_variable = sb_pink_map_defiance_active_var
+		if = { limit = { has_variable = sb_pink_map_arbiter_scope } remove_variable = sb_pink_map_arbiter_scope }
+	}
+	if = {
+		limit = {
+			has_variable = sb_pink_map_defiance_arbiter_var
+			NOT = {
+				any_country = {
+					has_variable = sb_pink_map_defiance_active_var
+					has_journal_entry = je_the_pink_map
+				}
+			}
+		}
+		remove_variable = sb_pink_map_defiance_arbiter_var
+	}
+}
