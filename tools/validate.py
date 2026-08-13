@@ -21,7 +21,7 @@ import zlib
 
 ROOT = Path(__file__).resolve().parents[1]
 CMF_ID = "com.github.Victoria-3-Modding-Co-op.Community-Mod-Framework"
-CMF_PINNED_VERSION = "1.61.0"
+CMF_PINNED_VERSION = "1.62.0"
 DEFAULT_CMF_ROOT = ROOT.parent / "Community Mod Framework"
 TEXT_ROOTS = ("common", "events", "localization", "map_data")
 TRIGGER_EVENT_RE = re.compile(r"\btrigger_event\s*=\s*\{")
@@ -732,7 +732,7 @@ def check_release_invariants() -> Check:
         "title = sb_bechuanaland_situation_right_title",
     ):
         if token not in journal:
-            errors.append(f"Bechuanaland JE is missing its CMF 1.61 journal projection: {token}")
+            errors.append(f"Bechuanaland JE is missing its CMF 1.62 journal projection: {token}")
     progress_bars = (ROOT / "common/scripted_progress_bars/sb_progress_bars.txt").read_text(
         encoding="utf-8-sig"
     )

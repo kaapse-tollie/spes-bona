@@ -19,9 +19,9 @@ TOP_LEVEL_RE = re.compile(r"^([A-Za-z0-9_]+)\s*=\s*\{", re.MULTILINE)
 SKIP_TOP_LEVEL = {".git", ".claude", ".prime"}
 SUPPORTED_TARGETS = {"1.13.10": "24689003"}
 CMF_NAME = "Community Mod Framework"
-CMF_VERSION = "1.61.0"
-CMF_COMMIT = "9b999e3"
-CMF_DEPENDENCY_RANGE = "1.61.*"
+CMF_VERSION = "1.62.0"
+CMF_COMMIT = "e06645b"
+CMF_DEPENDENCY_RANGE = "1.62.*"
 
 
 def sha256_bytes(data: bytes) -> str:
@@ -257,23 +257,23 @@ def validate_upstream_api_surface(
     for rel, objects in requirements.items():
         path = cmf_root / rel
         if not path.is_file():
-            errors.append(f"CMF 1.61.0 API source is missing: {rel}")
+            errors.append(f"CMF 1.62.0 API source is missing: {rel}")
             continue
         source = path.read_text(encoding="utf-8-sig")
         for key, directive in objects:
             try:
                 find_object(source, key, directive=directive)
             except ValueError as exc:
-                errors.append(f"CMF 1.61.0 API {key}: {exc}")
+                errors.append(f"CMF 1.62.0 API {key}: {exc}")
 
     widget = cmf_root / "gui/com_journal_injects/situation_widgets.gui"
     if not widget.is_file():
-        errors.append("CMF 1.61.0 situation widget is missing")
+        errors.append("CMF 1.62.0 situation widget is missing")
     else:
         source = widget.read_text(encoding="utf-8-sig")
         for token in ("com_situation_left_title_var", "com_situation_right_title_var"):
             if token not in source:
-                errors.append(f"CMF 1.61.0 situation widget is missing: {token}")
+                errors.append(f"CMF 1.62.0 situation widget is missing: {token}")
 
 
 def require_metadata(entry: dict, label: str, errors: list[str]) -> None:

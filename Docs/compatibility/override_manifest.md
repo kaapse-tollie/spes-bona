@@ -2,7 +2,7 @@
 
 Target game version: `1.13.10` (Steam build `24689003`)
 
-Minimum tested dependency: Community Mod Framework `1.61.0`, commit `9b999e3`. The launcher relationship is `1.61.*`, accepting patch releases while requiring an explicit rebase before a later CMF minor line is permitted.
+Minimum tested dependency: Community Mod Framework `1.62.0`, commit `e06645b`. The launcher relationship is `1.62.*`, accepting patch releases while requiring an explicit rebase before a later CMF minor line is permitted.
 
 The canonical machine-readable inventory is `Docs/compatibility/override_inventory.json`. It records every exact-path collision and keyed override with ownership, intended delta, load-order semantics, review date, and pinned source hashes.
 
@@ -35,7 +35,7 @@ The exact-path set includes Southern African history, the Highveld event baselin
 
 ## Dependency Rebases
 
-The five retained political-movement replacements are pinned to CMF `1.61.0`. Cultural Supremacy includes all three Vanilla 1.13.10 unowned-homeland and neighbouring-movement fixes; the only SB-specific delta is CAP creation/disband exclusion. The other retained movement deltas remain the documented CAP exclusion or Anglo-African utilitarian eligibility.
+The five retained political-movement replacements are pinned to CMF `1.62.0`. Cultural Supremacy includes all three Vanilla 1.13.10 unowned-homeland and neighbouring-movement fixes; the only SB-specific delta is CAP creation/disband exclusion. The other retained movement deltas remain the documented CAP exclusion or Anglo-African utilitarian eligibility.
 
 The company replacements are intentionally narrow:
 
@@ -46,15 +46,15 @@ Vanilla's additive `on_company_disbanded` handler remains untouched. SB register
 
 The `pink_map` decision is pinned to its Vanilla 1.13.10 object. Its DLC, independence, Portuguese Colonialism, and one-use gates remain unchanged; SB adds only colonial/company-subject colonization eligibility and routing through the durable Bechuanaland terminal outcome. The Vanilla Pink Map JE, presentation, modifiers, and favour transaction remain authoritative.
 
-## CMF 1.61 Integration
+## CMF 1.62 Integration
 
-The Bechuanaland Corridor uses CMF 1.61.0's journal-scope and International Situation interfaces:
+The Bechuanaland Corridor uses CMF 1.62.0's journal-scope and International Situation interfaces:
 
 - `com_save_journal_to_variable` stores participant JE handles;
 - the CMF title setters project both titles for the situation widgets; and
 - `com_container` is the supported test-time inspector.
 
-SB calls these public helpers directly. Its launcher dependency is pinned to `1.61.*`, so an older CMF build is intentionally unsupported rather than maintained through duplicate inline implementations.
+SB calls these public helpers directly. Its launcher dependency is pinned to `1.62.*`, so an older CMF build is intentionally unsupported rather than maintained through duplicate inline implementations.
 
 One named container, `sb_bechuanaland_corridor_state`, owns all shared active-crisis state. SB ships no journal GUI replacement and no container debug UI.
 
