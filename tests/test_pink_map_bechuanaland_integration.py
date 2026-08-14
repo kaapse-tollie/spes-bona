@@ -196,6 +196,16 @@ class PinkMapBechuanalandIntegrationTests(unittest.TestCase):
             monthly.index("country_definition = cd:POR"),
         )
 
+    def test_portugal_starts_with_a_conquer_goal_against_kongo(self):
+        history = text("common/history/ai/zz_sb_portuguese_kongo_secret_goal.txt")
+        match = re.search(r"^\s*c:POR\s*\?=\s*\{", history, re.MULTILINE)
+        self.assertIsNotNone(match)
+        portugal = validate.extract_braced(history, match.start())
+        self.assertIn("set_secret_goal = {", portugal)
+        self.assertIn("country = c:KON", portugal)
+        self.assertIn("secret_goal = conquer", portugal)
+        self.assertNotIn("country = c:KON", text("common/history/diplomacy/sb_relations.txt"))
+
 
 if __name__ == "__main__":
     unittest.main()

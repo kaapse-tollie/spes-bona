@@ -1,6 +1,6 @@
 # Victoria 3 1.13.10 Runtime Matrix
 
-Static implementation targets Victoria 3 `1.13.10` (build `24689003`) and CMF `1.62.0` (`e06645b`). The cases below require a real game process and are not certified by repository tests.
+Static implementation targets Victoria 3 `1.13.10` (build `24689003`) and CMF `1.63.0` (`bd92022`). The cases below require a real game process and are not certified by repository tests.
 
 Canonical GitHub release path: `/Users/depro/Documents/Paradox Interactive/Victoria 3/mod/Community Mod Framework`. `tools/validate.py` updates this directory from GitHub's latest stable release before checking SB's pinned compatibility baseline. A newer minor release is installed but leaves validation red until the corresponding rebase is complete.
 
@@ -8,7 +8,7 @@ Record save type, active mods/load order, observed result, and relevant log line
 
 | ID | Scenario | Acceptance condition | Status |
 |---|---|---|---|
-| `RV-01` | Cold launch a fresh 1836 game with CMF 1.62.0 and SB, then save and reload. | No new parser, missing-scope, stale-JE, or duplicate Situation-widget errors. | Engine pending |
+| `RV-01` | Cold launch a fresh 1836 game with CMF 1.63.0 and SB, then save and reload. | No new parser, missing-scope, stale-JE, or duplicate Situation-widget errors. | Engine pending |
 | `RV-02` | Open Bechuanaland, inspect `com_container`, save/reload, replace an actor, then resolve or invalidate the story. | Exactly one `sb_bechuanaland_corridor_state` exists while active; scopes, lists, score, drift, JE handles, and title boxes survive reload; no container remains after terminal cleanup. | Engine pending |
 | `RV-03` | Exercise every Warren/Caprivi direct and proxy route, support/neutrality choice, backdown, white peace, and mixed enforcement. | Intended participants and each scripted goal appear once; no self-transfer, invalid transfer, stranded pending phase, or duplicate settlement occurs. | Engine pending |
 | `RV-04` | Establish, disband, and re-establish the Mozambique Company and a generic-prestige-good company. | Vanilla HQ/assets remain valid, SB MZQ cleanup runs once, and Vanilla restores the eligible prestige-good JE once. | Engine pending |

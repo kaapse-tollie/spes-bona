@@ -1,0 +1,71 @@
+sb_rhodesian_venture_has_colonial_law = {
+	OR = {
+		has_law = law_type:law_colonial_resettlement
+		has_law = law_type:law_colonial_exploitation
+	}
+}
+
+sb_rhodesian_venture_has_available_commander = {
+	any_scope_character = {
+		is_busy = no
+		is_ruler_of_own_country = no
+		character_is_valid_for_events = yes
+		OR = {
+			has_role_of_type = general
+			has_role_of_type = admiral
+		}
+	}
+}
+
+# Root remains GBR when this trigger is evaluated in the seed owner's scope.
+sb_rhodesian_venture_seed_owner_is_eligible = {
+	OR = {
+		this = root
+		top_overlord = root
+		is_country_type = decentralized
+		AND = {
+			is_subject = no
+			is_country_type = unrecognized
+			any_primary_culture = {
+				has_discrimination_trait_group = heritage_group_african
+			}
+		}
+	}
+}
+
+sb_rhodesian_venture_has_eligible_seed = {
+	p:x2A4E0D.state.owner = {
+		sb_rhodesian_venture_seed_owner_is_eligible = yes
+	}
+}
+
+sb_british_south_africa_company_is_linked_to_bsa = {
+	exists = c:BSA
+	c:BSA = {
+		is_country_alive = yes
+		is_subject_of = root
+		is_subject_type = subject_type_chartered_company
+		exists = owning_company
+		owning_company = {
+			is_company_type = company_type:company_sb_british_south_africa_company
+			owner = root
+		}
+	}
+}
+
+sb_can_back_rhodesian_venture = {
+	has_global_variable = sb_bechuanaland_terminal_outcome_british_global_var
+	NOT = { exists = c:BSA }
+	NOT = { has_company = company_type:company_sb_british_south_africa_company }
+	is_subject = no
+	is_country_type = recognized
+	in_default = no
+	is_at_war = no
+	is_diplomatic_play_committed_participant = no
+	sb_rhodesian_venture_has_colonial_law = yes
+	sb_rhodesian_venture_has_available_commander = yes
+	sb_rhodesian_venture_has_eligible_seed = yes
+	NOT = { has_variable = on_expedition }
+	NOT = { has_variable = sb_rhodesian_venture_active_var }
+	NOT = { has_variable = sb_rhodesian_venture_retry_cooldown_var }
+}

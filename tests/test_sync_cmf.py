@@ -24,7 +24,7 @@ class Response:
         return self.payload
 
 
-def release_archive(version="1.62.0", extra=None):
+def release_archive(version="1.63.0", extra=None):
     output = io.BytesIO()
     with zipfile.ZipFile(output, "w") as bundle:
         bundle.writestr(
@@ -38,7 +38,7 @@ def release_archive(version="1.62.0", extra=None):
     return output.getvalue()
 
 
-def fake_opener(version="1.62.0", archive=None, digest=None):
+def fake_opener(version="1.63.0", archive=None, digest=None):
     archive = archive if archive is not None else release_archive(version)
     digest = digest or hashlib.sha256(archive).hexdigest()
     metadata = json.dumps({
@@ -69,12 +69,12 @@ class CmfSynchronizationTests(unittest.TestCase):
     def test_latest_release_is_installed_even_across_minor_lines(self):
         with tempfile.TemporaryDirectory() as temporary:
             target = Path(temporary) / "Community Mod Framework"
-            opener, calls = fake_opener("1.62.0")
+            opener, calls = fake_opener("1.63.0")
             status, version = sync_cmf.synchronize(target, opener=opener)
 
-            self.assertEqual(("updated", "1.62.0"), (status, version))
+            self.assertEqual(("updated", "1.63.0"), (status, version))
             metadata = json.loads((target / ".metadata/metadata.json").read_text())
-            self.assertEqual("1.62.0", metadata["version"])
+            self.assertEqual("1.63.0", metadata["version"])
             self.assertEqual(2, len(calls))
 
     def test_current_release_queries_github_without_redownloading(self):
@@ -82,11 +82,11 @@ class CmfSynchronizationTests(unittest.TestCase):
             target = Path(temporary) / "Community Mod Framework"
             (target / ".metadata").mkdir(parents=True)
             (target / ".metadata/metadata.json").write_text(
-                json.dumps({"id": sync_cmf.CMF_ID, "version": "1.62.0"})
+                json.dumps({"id": sync_cmf.CMF_ID, "version": "1.63.0"})
             )
-            opener, calls = fake_opener("1.62.0")
+            opener, calls = fake_opener("1.63.0")
 
-            self.assertEqual(("current", "1.62.0"), sync_cmf.synchronize(target, opener=opener))
+            self.assertEqual(("current", "1.63.0"), sync_cmf.synchronize(target, opener=opener))
             self.assertEqual(1, len(calls))
 
     def test_digest_failure_preserves_existing_install(self):
@@ -98,7 +98,7 @@ class CmfSynchronizationTests(unittest.TestCase):
             (target / ".metadata/metadata.json").write_text(
                 json.dumps({"id": sync_cmf.CMF_ID, "version": "1.61.0"})
             )
-            opener, _calls = fake_opener("1.62.0", digest="0" * 64)
+            opener, _calls = fake_opener("1.63.0", digest="0" * 64)
 
             with self.assertRaises(sync_cmf.SyncError):
                 sync_cmf.synchronize(target, opener=opener)
@@ -126,7 +126,7 @@ class CmfSynchronizationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             target = Path(temporary) / "Community Mod Framework"
             self.assertEqual(
-                ("updated", "1.62.0"),
+                ("updated", "1.63.0"),
                 sync_cmf.synchronize(target, opener=flaky_open),
             )
             self.assertTrue((target / "common/example.txt").is_file())

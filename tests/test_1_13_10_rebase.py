@@ -22,12 +22,12 @@ def text(path: str) -> str:
 
 
 class RebaseTests(unittest.TestCase):
-    def test_release_metadata_targets_1_13_10_and_cmf_1_62_x(self):
+    def test_release_metadata_targets_1_13_10_and_cmf_1_63_x(self):
         self.assertIn('supported_version="1.13.10"', text("descriptor.mod"))
         metadata = json.loads(text(".metadata/metadata.json"))
         self.assertEqual("1.13.10", metadata["supported_game_version"])
         relationships = [item for item in metadata["relationships"] if item["id"] == CMF_ID]
-        self.assertEqual(["1.62.*"], [item["version"] for item in relationships])
+        self.assertEqual(["1.63.*"], [item["version"] for item in relationships])
 
     def test_corridor_has_one_named_container_and_no_debug_scan(self):
         effects = text("common/scripted_effects/sb_bechuanaland_corridor_effects.txt")

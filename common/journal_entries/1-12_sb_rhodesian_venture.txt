@@ -1,0 +1,84 @@
+je_sb_rhodesian_venture = {
+	group = je_group_expeditions
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+
+	scripted_progress_bar = sb_rhodesian_venture_progress_bar
+	scripted_progress_bar = sb_rhodesian_venture_peril_bar
+
+	status_desc = {
+		first_valid = {
+			triggered_desc = {
+				desc = je_sb_rhodesian_venture_status_pioneer_column
+				trigger = {
+					scope:journal_entry = {
+						"scripted_bar_progress(sb_rhodesian_venture_progress_bar)" >= 12
+					}
+				}
+			}
+			triggered_desc = {
+				desc = je_sb_rhodesian_venture_status_charter
+				trigger = {
+					scope:journal_entry = {
+						"scripted_bar_progress(sb_rhodesian_venture_progress_bar)" >= 6
+					}
+				}
+			}
+			desc = je_sb_rhodesian_venture_status_concessions
+		}
+	}
+
+	on_monthly_pulse = {
+		random_events = {
+			chance_to_happen = 20
+			10 = sb_rhodesian_venture.020
+			10 = sb_rhodesian_venture.021
+			10 = sb_rhodesian_venture.022
+			10 = sb_rhodesian_venture.023
+			10 = sb_rhodesian_venture.024
+			10 = sb_rhodesian_venture.025
+		}
+	}
+
+	complete = {
+		custom_tooltip = {
+			text = je_sb_rhodesian_venture_complete_tt
+			scope:journal_entry = {
+				"scripted_bar_progress(sb_rhodesian_venture_progress_bar)" >= 18
+			}
+		}
+	}
+
+	on_complete = {
+		trigger_event = { id = sb_rhodesian_venture.010 popup = yes }
+	}
+
+	fail = {
+		custom_tooltip = {
+			text = je_sb_rhodesian_venture_fail_tt
+			scope:journal_entry = {
+				"scripted_bar_progress(sb_rhodesian_venture_peril_bar)" >= 5
+			}
+		}
+	}
+
+	on_fail = {
+		trigger_event = { id = sb_rhodesian_venture.011 popup = yes }
+	}
+
+	invalid = {
+		OR = {
+			in_default = yes
+			is_subject = yes
+			NOT = { sb_rhodesian_venture_has_colonial_law = yes }
+			NOT = { sb_rhodesian_venture_has_eligible_seed = yes }
+		}
+	}
+
+	on_invalid = {
+		trigger_event = { id = sb_rhodesian_venture.011 popup = yes }
+	}
+
+	weight = 200
+	transferable = no
+	should_be_pinned_by_default_uninvolved_or_context = yes
+}

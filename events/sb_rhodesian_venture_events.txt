@@ -1,0 +1,531 @@
+namespace = sb_rhodesian_venture
+
+sb_rhodesian_venture.001 = {
+	type = country_event
+	placement = root
+	title = sb_rhodesian_venture.001.t
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				desc = sb_rhodesian_venture.001.rhodes_d
+				trigger = { has_variable = sb_rhodesian_venture_rhodes_present_var }
+			}
+			desc = sb_rhodesian_venture.001.no_rhodes_d
+		}
+	}
+	flavor = sb_rhodesian_venture.001.f
+	event_image = { video = "gfx/event_pictures/africa_desert_expedition.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+
+	immediate = {
+		random_scope_character = {
+			limit = {
+				is_busy = no
+				is_ruler_of_own_country = no
+				character_is_valid_for_events = yes
+				OR = {
+					has_role_of_type = general
+					has_role_of_type = admiral
+				}
+			}
+			save_scope_as = sb_rhodesian_venture_leader_1
+		}
+		random_scope_character = {
+			limit = {
+				is_busy = no
+				is_ruler_of_own_country = no
+				character_is_valid_for_events = yes
+				OR = {
+					has_role_of_type = general
+					has_role_of_type = admiral
+				}
+				NOT = { this = scope:sb_rhodesian_venture_leader_1 }
+			}
+			save_scope_as = sb_rhodesian_venture_leader_2
+		}
+		random_scope_character = {
+			limit = {
+				is_busy = no
+				is_ruler_of_own_country = no
+				character_is_valid_for_events = yes
+				OR = {
+					has_role_of_type = general
+					has_role_of_type = admiral
+				}
+				NOR = {
+					this = scope:sb_rhodesian_venture_leader_1
+					this = scope:sb_rhodesian_venture_leader_2
+				}
+			}
+			save_scope_as = sb_rhodesian_venture_leader_3
+		}
+	}
+
+	option = {
+		name = sb_rhodesian_venture.001.a
+		default_option = yes
+		trigger = { exists = scope:sb_rhodesian_venture_leader_1 }
+		custom_tooltip = sb_rhodesian_venture_expedition_cost_tt
+		hidden_effect = {
+			scope:sb_rhodesian_venture_leader_1 = { set_as_expedition_leader = yes }
+			add_modifier = {
+				name = modifier_large_expedition_cost
+				multiplier = money_amount_multiplier_medium
+			}
+			add_journal_entry = { type = je_sb_rhodesian_venture }
+		}
+		ai_chance = { base = 60 }
+	}
+
+	option = {
+		name = sb_rhodesian_venture.001.b
+		trigger = { exists = scope:sb_rhodesian_venture_leader_2 }
+		custom_tooltip = sb_rhodesian_venture_expedition_cost_tt
+		hidden_effect = {
+			scope:sb_rhodesian_venture_leader_2 = { set_as_expedition_leader = yes }
+			add_modifier = {
+				name = modifier_large_expedition_cost
+				multiplier = money_amount_multiplier_medium
+			}
+			add_journal_entry = { type = je_sb_rhodesian_venture }
+		}
+		ai_chance = { base = 25 }
+	}
+
+	option = {
+		name = sb_rhodesian_venture.001.c
+		trigger = { exists = scope:sb_rhodesian_venture_leader_3 }
+		custom_tooltip = sb_rhodesian_venture_expedition_cost_tt
+		hidden_effect = {
+			scope:sb_rhodesian_venture_leader_3 = { set_as_expedition_leader = yes }
+			add_modifier = {
+				name = modifier_large_expedition_cost
+				multiplier = money_amount_multiplier_medium
+			}
+			add_journal_entry = { type = je_sb_rhodesian_venture }
+		}
+		ai_chance = { base = 15 }
+	}
+
+	option = {
+		name = sb_rhodesian_venture.001.cancel
+		trigger = { NOT = { exists = scope:sb_rhodesian_venture_leader_1 } }
+		hidden_effect = {
+			set_variable = {
+				name = sb_rhodesian_venture_retry_cooldown_var
+				days = 1095
+			}
+			sb_rhodesian_venture_cleanup = yes
+		}
+		ai_chance = { base = 100 }
+	}
+}
+
+sb_rhodesian_venture.010 = {
+	type = country_event
+	placement = root
+	title = sb_rhodesian_venture.010.t
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				desc = sb_rhodesian_venture.010.rhodes_d
+				trigger = { exists = scope:sb_rhodesian_venture_success_rhodes_scope }
+			}
+			desc = sb_rhodesian_venture.010.no_rhodes_d
+		}
+	}
+	flavor = sb_rhodesian_venture.010.f
+	event_image = { video = "gfx/event_pictures/africa_construction_colony.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+
+	immediate = {
+		random_character = {
+			limit = {
+				has_template = SAF_cecil_rhodes
+				is_character_alive = yes
+			}
+			save_scope_as = sb_rhodesian_venture_success_rhodes_scope
+		}
+	}
+
+	option = {
+		name = sb_rhodesian_venture.010.a
+		default_option = yes
+		trigger = { sb_rhodesian_venture_has_eligible_seed = yes }
+		custom_tooltip = sb_rhodesian_venture_success_tt
+		hidden_effect = { sb_rhodesian_venture_finalize_success = yes }
+	}
+	option = {
+		name = sb_rhodesian_venture.010.b
+		trigger = { NOT = { sb_rhodesian_venture_has_eligible_seed = yes } }
+		hidden_effect = { trigger_event = { id = sb_rhodesian_venture.011 popup = yes } }
+	}
+}
+
+sb_rhodesian_venture.011 = {
+	type = country_event
+	placement = root
+	title = sb_rhodesian_venture.011.t
+	desc = sb_rhodesian_venture.011.d
+	flavor = sb_rhodesian_venture.011.f
+	event_image = { video = "gfx/event_pictures/africa_desert_expedition.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+
+	option = {
+		name = sb_rhodesian_venture.011.a
+		default_option = yes
+		hidden_effect = {
+			set_variable = {
+				name = sb_rhodesian_venture_retry_cooldown_var
+				days = 1095
+			}
+			sb_rhodesian_venture_cleanup = yes
+		}
+	}
+}
+
+sb_rhodesian_venture.020 = {
+	type = country_event
+	placement = root
+	title = sb_rhodesian_venture.020.t
+	desc = sb_rhodesian_venture.020.d
+	flavor = sb_rhodesian_venture.020.f
+	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+	cooldown = { months = 9 }
+	trigger = {
+		has_journal_entry = je_sb_rhodesian_venture
+		je:je_sb_rhodesian_venture = {
+			"scripted_bar_progress(sb_rhodesian_venture_progress_bar)" < 6
+		}
+	}
+	cancellation_trigger = { NOT = { has_journal_entry = je_sb_rhodesian_venture } }
+
+	option = {
+		name = sb_rhodesian_venture.020.a
+		default_option = yes
+		add_treasury = -10000
+		je:je_sb_rhodesian_venture = {
+			add_progress = { name = sb_rhodesian_venture_peril_bar value = -1 }
+		}
+		ai_chance = {
+			base = 50
+			modifier = {
+				trigger = {
+					je:je_sb_rhodesian_venture = {
+						"scripted_bar_progress(sb_rhodesian_venture_peril_bar)" >= 3
+					}
+				}
+				add = 75
+			}
+		}
+	}
+	option = {
+		name = sb_rhodesian_venture.020.b
+		je:je_sb_rhodesian_venture = {
+			add_progress = { name = sb_rhodesian_venture_progress_bar value = 2 }
+			add_progress = { name = sb_rhodesian_venture_peril_bar value = 1 }
+		}
+		ai_chance = {
+			base = 50
+			modifier = {
+				trigger = {
+					net_fixed_income > 0
+					gold_reserves > 0
+					je:je_sb_rhodesian_venture = {
+						"scripted_bar_progress(sb_rhodesian_venture_peril_bar)" < 3
+					}
+				}
+				add = 75
+			}
+		}
+	}
+}
+
+sb_rhodesian_venture.021 = {
+	type = country_event
+	placement = root
+	title = sb_rhodesian_venture.021.t
+	desc = sb_rhodesian_venture.021.d
+	flavor = sb_rhodesian_venture.021.f
+	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+	cooldown = { months = 9 }
+	trigger = {
+		has_journal_entry = je_sb_rhodesian_venture
+		je:je_sb_rhodesian_venture = {
+			"scripted_bar_progress(sb_rhodesian_venture_progress_bar)" < 6
+		}
+	}
+	cancellation_trigger = { NOT = { has_journal_entry = je_sb_rhodesian_venture } }
+
+	option = {
+		name = sb_rhodesian_venture.021.a
+		default_option = yes
+		add_treasury = -15000
+		je:je_sb_rhodesian_venture = {
+			add_progress = { name = sb_rhodesian_venture_progress_bar value = 1 }
+		}
+		ai_chance = {
+			base = 50
+			modifier = { trigger = { net_fixed_income > 0 gold_reserves > 0 } add = 50 }
+		}
+	}
+	option = {
+		name = sb_rhodesian_venture.021.b
+		je:je_sb_rhodesian_venture = {
+			add_progress = { name = sb_rhodesian_venture_progress_bar value = -1 }
+			add_progress = { name = sb_rhodesian_venture_peril_bar value = -1 }
+		}
+		ai_chance = {
+			base = 50
+			modifier = {
+				trigger = {
+					je:je_sb_rhodesian_venture = {
+						"scripted_bar_progress(sb_rhodesian_venture_peril_bar)" >= 3
+					}
+				}
+				add = 50
+			}
+		}
+	}
+}
+
+sb_rhodesian_venture.022 = {
+	type = country_event
+	placement = root
+	title = sb_rhodesian_venture.022.t
+	desc = sb_rhodesian_venture.022.d
+	flavor = sb_rhodesian_venture.022.f
+	event_image = { video = "gfx/event_pictures/europenorthamerica_london_center.bk2" }
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+	cooldown = { months = 9 }
+	trigger = {
+		has_journal_entry = je_sb_rhodesian_venture
+		je:je_sb_rhodesian_venture = {
+			"scripted_bar_progress(sb_rhodesian_venture_progress_bar)" >= 6
+			"scripted_bar_progress(sb_rhodesian_venture_progress_bar)" < 12
+		}
+	}
+	cancellation_trigger = { NOT = { has_journal_entry = je_sb_rhodesian_venture } }
+
+	option = {
+		name = sb_rhodesian_venture.022.a
+		default_option = yes
+		add_treasury = -25000
+		je:je_sb_rhodesian_venture = {
+			add_progress = { name = sb_rhodesian_venture_progress_bar value = 2 }
+		}
+		ai_chance = {
+			base = 50
+			modifier = { trigger = { net_fixed_income > 0 gold_reserves > 0 } add = 50 }
+		}
+	}
+	option = {
+		name = sb_rhodesian_venture.022.b
+		je:je_sb_rhodesian_venture = {
+			add_progress = { name = sb_rhodesian_venture_progress_bar value = -1 }
+			add_progress = { name = sb_rhodesian_venture_peril_bar value = -1 }
+		}
+		ai_chance = {
+			base = 50
+			modifier = {
+				trigger = {
+					je:je_sb_rhodesian_venture = {
+						"scripted_bar_progress(sb_rhodesian_venture_peril_bar)" >= 3
+					}
+				}
+				add = 50
+			}
+		}
+	}
+}
+
+sb_rhodesian_venture.023 = {
+	type = country_event
+	placement = root
+	title = sb_rhodesian_venture.023.t
+	desc = sb_rhodesian_venture.023.d
+	flavor = sb_rhodesian_venture.023.f
+	event_image = { video = "gfx/event_pictures/europenorthamerica_london_center.bk2" }
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+	cooldown = { months = 9 }
+	trigger = {
+		has_journal_entry = je_sb_rhodesian_venture
+		je:je_sb_rhodesian_venture = {
+			"scripted_bar_progress(sb_rhodesian_venture_progress_bar)" >= 6
+			"scripted_bar_progress(sb_rhodesian_venture_progress_bar)" < 12
+		}
+	}
+	cancellation_trigger = { NOT = { has_journal_entry = je_sb_rhodesian_venture } }
+
+	option = {
+		name = sb_rhodesian_venture.023.a
+		default_option = yes
+		je:je_sb_rhodesian_venture = {
+			add_progress = { name = sb_rhodesian_venture_progress_bar value = -1 }
+			add_progress = { name = sb_rhodesian_venture_peril_bar value = -1 }
+		}
+		ai_chance = {
+			base = 50
+			modifier = {
+				trigger = {
+					je:je_sb_rhodesian_venture = {
+						"scripted_bar_progress(sb_rhodesian_venture_peril_bar)" >= 3
+					}
+				}
+				add = 50
+			}
+		}
+	}
+	option = {
+		name = sb_rhodesian_venture.023.b
+		add_treasury = -20000
+		je:je_sb_rhodesian_venture = {
+			add_progress = { name = sb_rhodesian_venture_progress_bar value = 2 }
+			add_progress = { name = sb_rhodesian_venture_peril_bar value = 1 }
+		}
+		ai_chance = {
+			base = 50
+			modifier = {
+				trigger = {
+					net_fixed_income > 0
+					gold_reserves > 0
+					je:je_sb_rhodesian_venture = {
+						"scripted_bar_progress(sb_rhodesian_venture_peril_bar)" < 3
+					}
+				}
+				add = 50
+			}
+		}
+	}
+}
+
+sb_rhodesian_venture.024 = {
+	type = country_event
+	placement = root
+	title = sb_rhodesian_venture.024.t
+	desc = sb_rhodesian_venture.024.d
+	flavor = sb_rhodesian_venture.024.f
+	event_image = { video = "gfx/event_pictures/africa_desert_expedition.bk2" }
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+	cooldown = { months = 9 }
+	trigger = {
+		has_journal_entry = je_sb_rhodesian_venture
+		je:je_sb_rhodesian_venture = {
+			"scripted_bar_progress(sb_rhodesian_venture_progress_bar)" >= 12
+		}
+	}
+	cancellation_trigger = { NOT = { has_journal_entry = je_sb_rhodesian_venture } }
+
+	option = {
+		name = sb_rhodesian_venture.024.a
+		default_option = yes
+		add_treasury = -15000
+		je:je_sb_rhodesian_venture = {
+			add_progress = { name = sb_rhodesian_venture_peril_bar value = -1 }
+		}
+		ai_chance = {
+			base = 50
+			modifier = {
+				trigger = {
+					je:je_sb_rhodesian_venture = {
+						"scripted_bar_progress(sb_rhodesian_venture_peril_bar)" >= 3
+					}
+				}
+				add = 50
+			}
+		}
+	}
+	option = {
+		name = sb_rhodesian_venture.024.b
+		je:je_sb_rhodesian_venture = {
+			add_progress = { name = sb_rhodesian_venture_progress_bar value = 2 }
+			add_progress = { name = sb_rhodesian_venture_peril_bar value = 1 }
+		}
+		ai_chance = {
+			base = 50
+			modifier = {
+				trigger = {
+					net_fixed_income > 0
+					gold_reserves > 0
+					je:je_sb_rhodesian_venture = {
+						"scripted_bar_progress(sb_rhodesian_venture_peril_bar)" < 3
+					}
+				}
+				add = 50
+			}
+		}
+	}
+}
+
+sb_rhodesian_venture.025 = {
+	type = country_event
+	placement = root
+	title = sb_rhodesian_venture.025.t
+	desc = sb_rhodesian_venture.025.d
+	flavor = sb_rhodesian_venture.025.f
+	event_image = { video = "gfx/event_pictures/africa_desert_expedition.bk2" }
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+	cooldown = { months = 9 }
+	trigger = {
+		has_journal_entry = je_sb_rhodesian_venture
+		je:je_sb_rhodesian_venture = {
+			"scripted_bar_progress(sb_rhodesian_venture_progress_bar)" >= 12
+		}
+	}
+	cancellation_trigger = { NOT = { has_journal_entry = je_sb_rhodesian_venture } }
+
+	option = {
+		name = sb_rhodesian_venture.025.a
+		default_option = yes
+		add_treasury = -25000
+		je:je_sb_rhodesian_venture = {
+			add_progress = { name = sb_rhodesian_venture_progress_bar value = -1 }
+			add_progress = { name = sb_rhodesian_venture_peril_bar value = -2 }
+		}
+		ai_chance = {
+			base = 50
+			modifier = {
+				trigger = {
+					je:je_sb_rhodesian_venture = {
+						"scripted_bar_progress(sb_rhodesian_venture_peril_bar)" >= 3
+					}
+				}
+				add = 75
+			}
+		}
+	}
+	option = {
+		name = sb_rhodesian_venture.025.b
+		je:je_sb_rhodesian_venture = {
+			add_progress = { name = sb_rhodesian_venture_progress_bar value = 1 }
+			add_progress = { name = sb_rhodesian_venture_peril_bar value = 2 }
+		}
+		ai_chance = {
+			base = 50
+			modifier = {
+				trigger = {
+					net_fixed_income > 0
+					gold_reserves > 0
+					je:je_sb_rhodesian_venture = {
+						"scripted_bar_progress(sb_rhodesian_venture_peril_bar)" < 3
+					}
+				}
+				add = 50
+			}
+		}
+	}
+}

@@ -1,0 +1,472 @@
+sb_de_beers_assign_cecil_rhodes_if_available = {
+	scope:company = { save_scope_as = sb_de_beers_company_scope }
+
+	if = {
+		limit = {
+			is_template_used = SAF_cecil_rhodes
+			NOT = { has_global_variable = sb_cecil_rhodes_ever_created_global_var }
+		}
+		set_global_variable = sb_cecil_rhodes_ever_created_global_var
+	}
+
+	random_character = {
+		limit = {
+			has_template = SAF_cecil_rhodes
+			is_character_alive = yes
+		}
+		save_scope_as = sb_de_beers_rhodes_scope
+	}
+	if = {
+		limit = { exists = scope:sb_de_beers_rhodes_scope }
+		every_country = {
+			limit = {
+				has_company = company_type:company_de_beers
+				company:company_de_beers = { executive = scope:sb_de_beers_rhodes_scope }
+			}
+			save_scope_as = sb_existing_rhodes_de_beers_owner_scope
+		}
+	}
+
+	if = {
+		limit = {
+			exists = scope:sb_de_beers_rhodes_scope
+			NOT = { exists = scope:sb_existing_rhodes_de_beers_owner_scope }
+			NOT = {
+				c:GBR ?= {
+					company:company_sb_british_south_africa_company ?= {
+						executive = scope:sb_de_beers_rhodes_scope
+					}
+				}
+			}
+		}
+		scope:sb_de_beers_rhodes_scope = {
+			transfer_character = root
+			set_character_as_executive = scope:sb_de_beers_company_scope
+		}
+	}
+	else_if = {
+		limit = {
+			NOT = { is_template_used = SAF_cecil_rhodes }
+			NOT = { has_global_variable = sb_cecil_rhodes_ever_created_global_var }
+		}
+		create_character = {
+			template = SAF_cecil_rhodes
+			on_created = {
+				set_global_variable = sb_cecil_rhodes_ever_created_global_var
+				set_character_as_executive = scope:sb_de_beers_company_scope
+			}
+		}
+	}
+}
+
+sb_rhodesian_venture_protect_existing_rhodes = {
+	if = {
+		limit = {
+			is_template_used = SAF_cecil_rhodes
+			NOT = { has_global_variable = sb_cecil_rhodes_ever_created_global_var }
+		}
+		set_global_variable = sb_cecil_rhodes_ever_created_global_var
+	}
+	random_character = {
+		limit = {
+			has_template = SAF_cecil_rhodes
+			is_character_alive = yes
+		}
+		set_variable = sb_rhodesian_venture_protected_rhodes_var
+		set_character_busy_and_immortal = yes
+		ROOT = { set_variable = sb_rhodesian_venture_rhodes_present_var }
+	}
+}
+
+sb_rhodesian_venture_cleanup = {
+	random_scope_character = {
+		limit = { has_variable = expedition_leader_var }
+		set_character_busy_and_immortal = no
+		remove_variable = expedition_leader_var
+	}
+	random_character = {
+		limit = { has_variable = sb_rhodesian_venture_protected_rhodes_var }
+		set_character_busy_and_immortal = no
+		remove_variable = sb_rhodesian_venture_protected_rhodes_var
+	}
+	if = {
+		limit = { has_modifier = modifier_large_expedition_cost }
+		remove_modifier = modifier_large_expedition_cost
+	}
+	remove_variable = expedition_leader_storage_var
+	remove_variable = on_expedition
+	remove_variable = sb_rhodesian_venture_active_var
+	remove_variable = sb_rhodesian_venture_rhodes_present_var
+}
+
+sb_rhodesian_venture_transfer_eligible_footprint = {
+	# Zambezi
+	if = {
+		limit = { p:x7E355F.state.owner = { sb_rhodesian_venture_seed_owner_is_eligible = yes } }
+		s:STATE_ZAMBEZI = { set_owner_of_provinces = { country = c:BSA provinces = { x7E355F } } }
+	}
+	if = {
+		limit = { p:x24BDE2.state.owner = { sb_rhodesian_venture_seed_owner_is_eligible = yes } }
+		s:STATE_ZAMBEZI = { set_owner_of_provinces = { country = c:BSA provinces = { x24BDE2 } } }
+	}
+	if = {
+		limit = { p:x9389EA.state.owner = { sb_rhodesian_venture_seed_owner_is_eligible = yes } }
+		s:STATE_ZAMBEZI = { set_owner_of_provinces = { country = c:BSA provinces = { x9389EA } } }
+	}
+	if = {
+		limit = { p:x90A011.state.owner = { sb_rhodesian_venture_seed_owner_is_eligible = yes } }
+		s:STATE_ZAMBEZI = { set_owner_of_provinces = { country = c:BSA provinces = { x90A011 } } }
+	}
+	if = {
+		limit = { p:xC8D3A2.state.owner = { sb_rhodesian_venture_seed_owner_is_eligible = yes } }
+		s:STATE_ZAMBEZI = { set_owner_of_provinces = { country = c:BSA provinces = { xC8D3A2 } } }
+	}
+	if = {
+		limit = { p:x8BC875.state.owner = { sb_rhodesian_venture_seed_owner_is_eligible = yes } }
+		s:STATE_ZAMBEZI = { set_owner_of_provinces = { country = c:BSA provinces = { x8BC875 } } }
+	}
+	if = {
+		limit = { p:x87A1D6.state.owner = { sb_rhodesian_venture_seed_owner_is_eligible = yes } }
+		s:STATE_ZAMBEZI = { set_owner_of_provinces = { country = c:BSA provinces = { x87A1D6 } } }
+	}
+	if = {
+		limit = { p:x687096.state.owner = { sb_rhodesian_venture_seed_owner_is_eligible = yes } }
+		s:STATE_ZAMBEZI = { set_owner_of_provinces = { country = c:BSA provinces = { x687096 } } }
+	}
+	if = {
+		limit = { p:x9E48A3.state.owner = { sb_rhodesian_venture_seed_owner_is_eligible = yes } }
+		s:STATE_ZAMBEZI = { set_owner_of_provinces = { country = c:BSA provinces = { x9E48A3 } } }
+	}
+	if = {
+		limit = { p:x3EC9D7.state.owner = { sb_rhodesian_venture_seed_owner_is_eligible = yes } }
+		s:STATE_ZAMBEZI = { set_owner_of_provinces = { country = c:BSA provinces = { x3EC9D7 } } }
+	}
+	if = {
+		limit = { p:x0C1465.state.owner = { sb_rhodesian_venture_seed_owner_is_eligible = yes } }
+		s:STATE_ZAMBEZI = { set_owner_of_provinces = { country = c:BSA provinces = { x0C1465 } } }
+	}
+	if = {
+		limit = { p:x2A4E0D.state.owner = { sb_rhodesian_venture_seed_owner_is_eligible = yes } }
+		s:STATE_ZAMBEZI = { set_owner_of_provinces = { country = c:BSA provinces = { x2A4E0D } } }
+	}
+	if = {
+		limit = { p:x1DDFC8.state.owner = { sb_rhodesian_venture_seed_owner_is_eligible = yes } }
+		s:STATE_ZAMBEZI = { set_owner_of_provinces = { country = c:BSA provinces = { x1DDFC8 } } }
+	}
+	if = {
+		limit = { p:x72538D.state.owner = { sb_rhodesian_venture_seed_owner_is_eligible = yes } }
+		s:STATE_ZAMBEZI = { set_owner_of_provinces = { country = c:BSA provinces = { x72538D } } }
+	}
+	if = {
+		limit = { p:x9E9DE0.state.owner = { sb_rhodesian_venture_seed_owner_is_eligible = yes } }
+		s:STATE_ZAMBEZI = { set_owner_of_provinces = { country = c:BSA provinces = { x9E9DE0 } } }
+	}
+
+	# Zambia
+	if = {
+		limit = { p:xA02031.state.owner = { sb_rhodesian_venture_seed_owner_is_eligible = yes } }
+		s:STATE_ZAMBIA = { set_owner_of_provinces = { country = c:BSA provinces = { xA02031 } } }
+	}
+	if = {
+		limit = { p:x361062.state.owner = { sb_rhodesian_venture_seed_owner_is_eligible = yes } }
+		s:STATE_ZAMBIA = { set_owner_of_provinces = { country = c:BSA provinces = { x361062 } } }
+	}
+	if = {
+		limit = { p:x6D48F8.state.owner = { sb_rhodesian_venture_seed_owner_is_eligible = yes } }
+		s:STATE_ZAMBIA = { set_owner_of_provinces = { country = c:BSA provinces = { x6D48F8 } } }
+	}
+	if = {
+		limit = { p:x42585D.state.owner = { sb_rhodesian_venture_seed_owner_is_eligible = yes } }
+		s:STATE_ZAMBIA = { set_owner_of_provinces = { country = c:BSA provinces = { x42585D } } }
+	}
+	if = {
+		limit = { p:x076DB2.state.owner = { sb_rhodesian_venture_seed_owner_is_eligible = yes } }
+		s:STATE_ZAMBIA = { set_owner_of_provinces = { country = c:BSA provinces = { x076DB2 } } }
+	}
+	if = {
+		limit = { p:xDC956A.state.owner = { sb_rhodesian_venture_seed_owner_is_eligible = yes } }
+		s:STATE_ZAMBIA = { set_owner_of_provinces = { country = c:BSA provinces = { xDC956A } } }
+	}
+	if = {
+		limit = { p:x931020.state.owner = { sb_rhodesian_venture_seed_owner_is_eligible = yes } }
+		s:STATE_ZAMBIA = { set_owner_of_provinces = { country = c:BSA provinces = { x931020 } } }
+	}
+	if = {
+		limit = { p:xB54AA9.state.owner = { sb_rhodesian_venture_seed_owner_is_eligible = yes } }
+		s:STATE_ZAMBIA = { set_owner_of_provinces = { country = c:BSA provinces = { xB54AA9 } } }
+	}
+
+	# Kazembe
+	if = {
+		limit = { p:xA0E030.state.owner = { sb_rhodesian_venture_seed_owner_is_eligible = yes } }
+		s:STATE_KAZEMBE = { set_owner_of_provinces = { country = c:BSA provinces = { xA0E030 } } }
+	}
+	if = {
+		limit = { p:xBE2516.state.owner = { sb_rhodesian_venture_seed_owner_is_eligible = yes } }
+		s:STATE_KAZEMBE = { set_owner_of_provinces = { country = c:BSA provinces = { xBE2516 } } }
+	}
+	if = {
+		limit = { p:xF2A85D.state.owner = { sb_rhodesian_venture_seed_owner_is_eligible = yes } }
+		s:STATE_KAZEMBE = { set_owner_of_provinces = { country = c:BSA provinces = { xF2A85D } } }
+	}
+	if = {
+		limit = { p:x596FF5.state.owner = { sb_rhodesian_venture_seed_owner_is_eligible = yes } }
+		s:STATE_KAZEMBE = { set_owner_of_provinces = { country = c:BSA provinces = { x596FF5 } } }
+	}
+}
+
+sb_rhodesian_venture_move_british_claims_to_bsa = {
+	if = {
+		limit = { has_claim = s:STATE_ZAMBEZI }
+		s:STATE_ZAMBEZI = {
+			remove_claim = root
+			add_claim = c:BSA
+		}
+	}
+	if = {
+		limit = { has_claim = s:STATE_ZAMBIA }
+		s:STATE_ZAMBIA = {
+			remove_claim = root
+			add_claim = c:BSA
+		}
+	}
+	if = {
+		limit = { has_claim = s:STATE_KAZEMBE }
+		s:STATE_KAZEMBE = {
+			remove_claim = root
+			add_claim = c:BSA
+		}
+	}
+}
+
+sb_rhodesian_venture_apply_chartered_company_package = {
+	set_country_type = company
+	set_strategy = ai_strategy_colonial_extraction
+	set_capital = STATE_ZAMBEZI
+	activate_law = law_type:law_colonial_administration
+	activate_law = law_type:law_oligarchy
+	activate_law = law_type:law_subjecthood
+	active_law:lawgroup_citizenship ?= {
+		add_amendment = {
+			type = amendment_racialized_subjecthood
+			sponsor = PREV.ig:ig_armed_forces
+		}
+	}
+	activate_law = law_type:law_extraction_economy
+	activate_law = law_type:law_colonial_exploitation
+	activate_law = law_type:law_no_schools
+	activate_law = law_type:law_no_health_system
+	activate_law = law_type:law_censorship
+	activate_law = law_type:law_no_workers_rights
+	activate_law = law_type:law_child_labor_allowed
+	activate_law = law_type:law_no_social_security
+	activate_law = law_type:law_migration_controls
+	add_modifier = { name = colonial_administration }
+	add_modifier = {
+		name = resource_extraction_charter_modifier
+		days = very_long_modifier_time
+	}
+	ig:ig_industrialists ?= {
+		if = {
+			limit = { has_ideology = ideology:ideology_laissez_faire }
+			remove_ideology = ideology_laissez_faire
+			add_ideology = ideology_colonialist
+		}
+	}
+}
+
+sb_rhodesian_venture_install_bsac_executive = {
+	company:company_sb_british_south_africa_company = {
+		save_scope_as = sb_bsac_company_scope
+	}
+	if = {
+		limit = {
+			is_template_used = SAF_cecil_rhodes
+			NOT = { has_global_variable = sb_cecil_rhodes_ever_created_global_var }
+		}
+		set_global_variable = sb_cecil_rhodes_ever_created_global_var
+	}
+	random_character = {
+		limit = {
+			has_template = SAF_cecil_rhodes
+			is_character_alive = yes
+		}
+		save_scope_as = sb_bsac_rhodes_scope
+	}
+
+	if = {
+		limit = { exists = scope:sb_bsac_rhodes_scope }
+		every_country = {
+			limit = {
+				has_company = company_type:company_de_beers
+				company:company_de_beers = { executive = scope:sb_bsac_rhodes_scope }
+			}
+			save_scope_as = sb_rhodes_de_beers_owner_scope
+			company:company_de_beers = { save_scope_as = sb_rhodes_de_beers_company_scope }
+		}
+		scope:sb_bsac_rhodes_scope = {
+			transfer_character = root
+			set_character_as_executive = scope:sb_bsac_company_scope
+		}
+		if = {
+			limit = {
+				exists = scope:sb_rhodes_de_beers_owner_scope
+				exists = scope:sb_rhodes_de_beers_company_scope
+			}
+			scope:sb_rhodes_de_beers_owner_scope = {
+				create_character = {
+					role = character_role_executive
+					interest_group = ig_industrialists
+					on_created = {
+						set_character_as_executive = scope:sb_rhodes_de_beers_company_scope
+					}
+				}
+			}
+		}
+	}
+	else_if = {
+		limit = {
+			NOT = { is_template_used = SAF_cecil_rhodes }
+			NOT = { has_global_variable = sb_cecil_rhodes_ever_created_global_var }
+		}
+		create_character = {
+			template = SAF_cecil_rhodes
+			on_created = {
+				set_global_variable = sb_cecil_rhodes_ever_created_global_var
+				set_character_as_executive = scope:sb_bsac_company_scope
+			}
+		}
+	}
+	else = {
+		create_character = {
+			role = character_role_executive
+			interest_group = ig_industrialists
+			on_created = {
+				set_character_as_executive = scope:sb_bsac_company_scope
+			}
+		}
+	}
+}
+
+sb_rhodesian_venture_finalize_success = {
+	# Secure the seed first so country creation always has a valid British origin province.
+	s:STATE_ZAMBEZI = {
+		set_owner_of_provinces = {
+			country = root
+			provinces = { x2A4E0D }
+		}
+	}
+	create_country = {
+		tag = BSA
+		origin = root
+		province = p:x2A4E0D
+	}
+
+	add_company = company_type:company_sb_british_south_africa_company
+	company:company_sb_british_south_africa_company = {
+		set_company_state_region = s:STATE_HOME_COUNTIES
+		add_owned_country = c:BSA
+	}
+	create_diplomatic_pact = {
+		country = c:BSA
+		type = chartered_company
+	}
+
+	c:BSA = { sb_rhodesian_venture_apply_chartered_company_package = yes }
+	sb_rhodesian_venture_transfer_eligible_footprint = yes
+	sb_rhodesian_venture_move_british_claims_to_bsa = yes
+
+	s:STATE_ZAMBEZI.region_state:BSA = {
+		create_building = {
+			building = building_government_administration
+			level = 1
+			reserves = 1
+		}
+		create_building = {
+			building = building_barracks
+			level = 1
+			reserves = 1
+		}
+	}
+
+	every_interest_group = {
+		limit = {
+			OR = {
+				law_stance = { law = law_type:law_laissez_faire value > neutral }
+				law_stance = { law = law_type:law_free_trade value > neutral }
+				law_stance = { law = law_type:law_interventionism value > neutral }
+			}
+			ig_counts_as_marginal = no
+		}
+		add_modifier = {
+			name = colonial_enterprise_modifier
+			days = normal_modifier_time
+		}
+	}
+
+	add_modifier = {
+		name = sb_british_south_africa_company_charter_slot
+		months = -1
+	}
+	sb_rhodesian_venture_install_bsac_executive = yes
+	set_variable = sb_rhodesian_venture_resolved_var
+	sb_rhodesian_venture_cleanup = yes
+}
+
+sb_update_british_south_africa_company_slot = {
+	if = {
+		limit = {
+			sb_british_south_africa_company_is_linked_to_bsa = yes
+			NOT = { has_modifier = sb_british_south_africa_company_charter_slot }
+		}
+		add_modifier = {
+			name = sb_british_south_africa_company_charter_slot
+			months = -1
+		}
+	}
+	else_if = {
+		limit = {
+			has_modifier = sb_british_south_africa_company_charter_slot
+			NOT = { sb_british_south_africa_company_is_linked_to_bsa = yes }
+		}
+		remove_modifier = sb_british_south_africa_company_charter_slot
+	}
+}
+
+sb_disband_british_south_africa_company_country = {
+	if = {
+		limit = { has_modifier = sb_british_south_africa_company_charter_slot }
+		remove_modifier = sb_british_south_africa_company_charter_slot
+	}
+	if = {
+		limit = {
+			exists = c:BSA
+			c:BSA = {
+				is_country_alive = yes
+				is_subject_of = root
+				is_subject_type = subject_type_chartered_company
+			}
+		}
+		c:BSA = {
+			if = {
+				limit = {
+					exists = owning_company
+					owning_company = {
+						is_company_type = company_type:company_sb_british_south_africa_company
+						owner = ROOT
+					}
+				}
+				owning_company = { remove_owned_country = c:BSA }
+			}
+			set_country_type = colonial
+		}
+		remove_diplomatic_pact = {
+			country = c:BSA
+			type = chartered_company
+		}
+		create_diplomatic_pact = {
+			country = c:BSA
+			type = colony
+		}
+	}
+}

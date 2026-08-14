@@ -13,7 +13,7 @@ class RepositoryValidatorTests(unittest.TestCase):
             (root / ".metadata").mkdir()
             (root / ".metadata/metadata.json").write_text(json.dumps({
                 "id": validate.CMF_ID,
-                "version": "1.63.0",
+                "version": "1.64.0",
             }))
             check = validate.check_cmf_install(root)
             self.assertEqual("FAIL", check.status)

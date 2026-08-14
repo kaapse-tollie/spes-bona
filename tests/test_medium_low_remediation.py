@@ -139,6 +139,7 @@ class MediumLowRemediationTests(unittest.TestCase):
                 "sb_on_trek_monthly_pulse_country",
                 "sb_on_zpb_monthly_pulse_country",
                 "sb_on_gbr_colonial_offices_monthly_pulse_country",
+                "sb_on_rhodesian_venture_monthly_pulse_country",
                 "sb_on_namibia_monthly_pulse_country",
                 "sb_on_eastern_sphere_monthly_pulse_country",
                 "sb_on_natal_colony_monthly_pulse_country",
@@ -160,7 +161,11 @@ class MediumLowRemediationTests(unittest.TestCase):
             "on_wargoal_enforced": ("sb_on_spes_bona_wargoal_enforced",),
             "on_war_end": ("sb_on_spes_bona_war_end",),
             "on_law_activated": ("sb_on_boer_convention_law_activated",),
-            "on_company_disbanded": ("sb_on_mozambique_company_disbanded",),
+            "on_company_established": ("sb_on_de_beers_company_established",),
+            "on_company_disbanded": (
+                "sb_on_mozambique_company_disbanded",
+                "sb_on_british_south_africa_company_disbanded",
+            ),
         }
         for on_action, handlers in expected.items():
             block = validate.extract_braced(router, router.index(f"{on_action} = {{"))
@@ -169,7 +174,20 @@ class MediumLowRemediationTests(unittest.TestCase):
 
     def test_boer_restraint_uses_direct_tags_and_annual_watchdog(self):
         effects = text("common/scripted_effects/sb_british_boer_restraint_effects.txt")
+        strategies = text("common/ai_strategies/sb_ai_strategies.txt")
+        localization = text("localization/english/sb_l_english.yml")
+        self.assertNotIn("ai_strategy_sb_british_boer_restraint", strategies)
+        self.assertNotIn("ai_strategy_sb_british_boer_restraint", localization)
         self.assertNotIn("every_country", effects)
+        self.assertIn("secret_goal = befriend", effects)
+        self.assertIn("sb_frontier_ai_scripting_enabled = yes", effects)
+        self.assertIn("NOT = { has_war_with = scope:sb_boer_restraint_actor_scope }", effects)
+        self.assertIn(
+            "NOT = { is_diplomatic_play_enemy_of = scope:sb_boer_restraint_actor_scope }",
+            effects,
+        )
+        self.assertIn("sb_british_boer_restraint_goal_var", effects)
+        self.assertIn("sb_cape_boer_restraint_goal_var", effects)
         for tag in ("ORA", "TRN", "ZPB", "LYD", "NAL", "SGO", "ABY", "KLR"):
             self.assertIn(f"c:{tag} ?=", effects)
         handlers = text("common/on_actions/sb_regional_on_action_handlers.txt")

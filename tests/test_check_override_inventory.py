@@ -36,7 +36,7 @@ class OverrideInventoryTests(unittest.TestCase):
             "supported_game_version": "1.13.10",
             "relationships": [{
                 "id": "com.github.Victoria-3-Modding-Co-op.Community-Mod-Framework",
-                "version": "1.62.*",
+                "version": "1.63.*",
             }],
         }))
         (self.mod / "common/test.txt").write_text("mod copy\n")
@@ -64,8 +64,8 @@ class OverrideInventoryTests(unittest.TestCase):
             "generated_for_commit_baseline": "1" * 40,
             "dependencies": [{
                 "name": "Community Mod Framework",
-                "version": "1.62.0",
-                "commit": "e06645b",
+                "version": "1.63.0",
+                "commit": "bd92022",
             }],
             "approved_replace_paths": [],
             "state_region_blocks": [],
@@ -149,7 +149,7 @@ class OverrideInventoryTests(unittest.TestCase):
         (self.mod / ".metadata/metadata.json").write_text(json.dumps(metadata))
         errors = self.validate()
         self.assertTrue(any("supported_game_version" in error for error in errors))
-        self.assertTrue(any("version 1.62.*" in error for error in errors))
+        self.assertTrue(any("version 1.63.*" in error for error in errors))
 
     def test_missing_upstream_state_region_block_fails(self):
         (self.mod / "map_data/state_regions").mkdir(parents=True)
@@ -187,13 +187,13 @@ class OverrideInventoryTests(unittest.TestCase):
         self.assertTrue(any("treaty_port_inheritance_events.1" in error for error in errors))
         self.assertTrue(any("re_add_disbanded_company" in error for error in errors))
 
-    def test_cmf_1_62_api_surface_is_locked(self):
+    def test_cmf_1_63_api_surface_is_locked(self):
         cmf = Path(self.temp.name) / "cmf"
         (cmf / ".metadata").mkdir(parents=True)
         (cmf / "common/scripted_effects").mkdir(parents=True)
         (cmf / "common/console_command_macros").mkdir(parents=True)
         (cmf / "gui/com_journal_injects").mkdir(parents=True)
-        (cmf / ".metadata/metadata.json").write_text(json.dumps({"version": "1.62.0"}))
+        (cmf / ".metadata/metadata.json").write_text(json.dumps({"version": "1.63.0"}))
         (cmf / "common/scripted_effects/com_general_effects.txt").write_text(
             "REPLACE_OR_CREATE:com_save_journal_to_variable = { set_variable = { } }\n"
         )
@@ -211,7 +211,7 @@ class OverrideInventoryTests(unittest.TestCase):
 
         (cmf / "common/console_command_macros/com_macros.txt").write_text("")
         errors = CHECKER.validate(self.mod, self.game, self.inventory, cmf)
-        self.assertTrue(any("CMF 1.62.0 API com_container" in error for error in errors))
+        self.assertTrue(any("CMF 1.63.0 API com_container" in error for error in errors))
 
 
 if __name__ == "__main__":
