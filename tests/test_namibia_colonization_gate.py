@@ -21,6 +21,28 @@ def object_block(path: str, name: str) -> str:
 
 
 class NamibiaColonizationGateTests(unittest.TestCase):
+    def test_rehoboth_formation_installs_baster_ruler_and_migration(self):
+        event = object_block("events/sb_namibia_events.txt", "sb_nam.020")
+        ruler_effects = object_block(
+            "common/scripted_effects/sb_namibia_effects.txt",
+            "sb_nam_install_rehoboth_historical_ruler",
+        )
+        ruler = object_block(
+            "common/character_templates/sb_southern_africa_character_template_overrides.txt",
+            "RHB_hermanus_van_wyk",
+        )
+        modifier = object_block(
+            "common/static_modifiers/sb_modifiers.txt",
+            "sb_arid_frontier_pastoralism",
+        )
+        self.assertIn("sb_nam_install_rehoboth_historical_ruler = yes", event)
+        self.assertIn("population = 2500", event)
+        self.assertIn("historical = yes", ruler)
+        self.assertIn("culture = cu:baster", ruler)
+        self.assertIn("birth_date = 1835.1.1", ruler)
+        self.assertIn("set_character_as_ruler = yes", ruler_effects)
+        self.assertIn("state_food_security_add = 0.30", modifier)
+
     def test_desert_coastline_blocks_walvis_bay_frontier_expansion(self):
         trait = object_block(
             "common/state_traits/sb_state_traits.txt",
@@ -71,6 +93,14 @@ class NamibiaColonizationGateTests(unittest.TestCase):
             decision.count("sb_nam_has_coastal_engineering_technologies = yes"),
             2,
         )
+
+    def test_scramble_growth_adds_the_global_fallback_generation_bonus(self):
+        modifier = object_block(
+            "common/static_modifiers/sb_modifiers.txt",
+            "sb_scramble_for_africa_colonial_growth",
+        )
+        self.assertIn("state_colony_growth_creation_factor = 0.10", modifier)
+        self.assertIn("state_colony_growth_speed_mult = 1.00", modifier)
 
 
 if __name__ == "__main__":

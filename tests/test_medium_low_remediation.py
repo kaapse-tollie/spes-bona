@@ -54,9 +54,23 @@ class MediumLowRemediationTests(unittest.TestCase):
         self.assertIn("sb_martinus_clear_coercive_chain_state = yes", monthly)
 
     def test_imperial_confederation_terminal_cleanup_is_persistent(self):
-        effects = text("common/scripted_effects/sb_eastern_sphere_effects.txt")
+        effects_path = "common/scripted_effects/sb_eastern_sphere_effects.txt"
+        effects = text(effects_path)
+        journal = object_block(
+            "common/journal_entries/1-09_sb_eastern_sphere.txt",
+            "je_sb_imperial_confederation_scheme",
+        )
+        success = object_block(effects_path, "sb_imperial_confederation_form_saf")
+        failure = object_block(effects_path, "sb_imperial_confederation_fail_scheme")
+        recovery = object_block(effects_path, "sb_imperial_confederation_recover_terminal_je")
         self.assertGreaterEqual(effects.count("set_global_variable = sb_imperial_confederation_scheme_resolved_var"), 2)
-        self.assertGreaterEqual(effects.count("sb_imperial_confederation_clear_runtime = yes"), 2)
+        self.assertNotIn("sb_imperial_confederation_clear_runtime = yes", success)
+        self.assertNotIn("sb_imperial_confederation_clear_runtime = yes", failure)
+        self.assertEqual(2, journal.count("sb_imperial_confederation_clear_runtime = yes"))
+        self.assertIn("has_global_variable = sb_imperial_confederation_scheme_resolved_var", journal)
+        self.assertIn("NOT = { exists = c:SAF }", journal)
+        self.assertIn("add_involved_country = c:GBR", recovery)
+        self.assertIn("sb_imperial_confederation_recover_terminal_je = yes", effects)
 
     def test_delagoa_gateway_handles_network_and_market_owner(self):
         gateway = object_block(
@@ -139,6 +153,8 @@ class MediumLowRemediationTests(unittest.TestCase):
                 "sb_on_trek_monthly_pulse_country",
                 "sb_on_zpb_monthly_pulse_country",
                 "sb_on_gbr_colonial_offices_monthly_pulse_country",
+                "sb_on_de_beers_rhodes_monthly_pulse_country",
+                "sb_on_de_beers_prosperous_under_rhodes_monthly_pulse_country",
                 "sb_on_rhodesian_venture_monthly_pulse_country",
                 "sb_on_namibia_monthly_pulse_country",
                 "sb_on_eastern_sphere_monthly_pulse_country",

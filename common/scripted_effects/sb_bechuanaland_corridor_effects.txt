@@ -2,7 +2,9 @@
 #
 # Lifecycle contract
 # - One named script container, parented to GBR, owns every shared corridor scope,
-#   phase marker, score, participant list, and saved journal handle.
+#   phase marker, score, and participant list.
+# - The one contextless corridor JE receives only the scopes and values needed by
+#   its presentation; it is addressed through GBR's standard je: link.
 # - Country variables are reserved for country-local cooldowns and modifiers.
 # - Queue effects consume one decision lease before recording one pending route.
 # - Launch effects consume that route only after all participants validate.
@@ -23,66 +25,6 @@ sb_bechuanaland_create_corridor_container = {
 				set_variable = { name = sb_bechuanaland_influence_score_var value = 0 }
 			}
 		}
-	}
-}
-
-# ROOT = participant country. CMF stores the contextless JE on ROOT; the
-# container list is the only broadcast registry used by the corridor story.
-sb_bechuanaland_register_corridor_journal = {
-	if = {
-		limit = {
-			container_exists = sb_bechuanaland_corridor_state
-			has_variable = sb_bechuanaland_corridor_journal_handle_var
-		}
-		var:sb_bechuanaland_corridor_journal_handle_var ?= {
-			save_temporary_scope_as = sb_bechuanaland_journal_handle
-		}
-		container:sb_bechuanaland_corridor_state = {
-			if = {
-				limit = {
-					NOT = {
-						is_target_in_variable_list = {
-							name = sb_bechuanaland_journal_entries
-							target = scope:sb_bechuanaland_journal_handle
-						}
-					}
-				}
-				add_to_variable_list = {
-					name = sb_bechuanaland_journal_entries
-					target = scope:sb_bechuanaland_journal_handle
-				}
-			}
-		}
-	}
-}
-
-sb_bechuanaland_unregister_corridor_journal = {
-	if = {
-		limit = {
-			container_exists = sb_bechuanaland_corridor_state
-			has_variable = sb_bechuanaland_corridor_journal_handle_var
-		}
-		var:sb_bechuanaland_corridor_journal_handle_var ?= {
-			save_temporary_scope_as = sb_bechuanaland_journal_handle
-		}
-		container:sb_bechuanaland_corridor_state = {
-			if = {
-				limit = {
-					is_target_in_variable_list = {
-						name = sb_bechuanaland_journal_entries
-						target = scope:sb_bechuanaland_journal_handle
-					}
-				}
-				remove_list_variable = {
-					name = sb_bechuanaland_journal_entries
-					target = scope:sb_bechuanaland_journal_handle
-				}
-			}
-		}
-	}
-	if = {
-		limit = { has_variable = sb_bechuanaland_corridor_journal_handle_var }
-		remove_variable = sb_bechuanaland_corridor_journal_handle_var
 	}
 }
 
@@ -239,65 +181,50 @@ sb_bechuanaland_initialize_influence_score = {
 	}
 }
 
-sb_bechuanaland_apply_influence_score_to_all = {
+# ROOT = the singleton contextless corridor JE.
+sb_bechuanaland_project_corridor_journal = {
 	if = {
 		limit = {
 			container_exists = sb_bechuanaland_corridor_state
 			container:sb_bechuanaland_corridor_state = {
-				has_variable_list = sb_bechuanaland_journal_entries
+				has_variable = sb_bechuanaland_influence_score_var
 			}
 		}
 		container:sb_bechuanaland_corridor_state = {
 			save_temporary_scope_as = sb_bechuanaland_container
-			every_in_list = {
-				variable = sb_bechuanaland_journal_entries
+		}
+		if = { limit = { has_variable = com_situation_left_title_var } com_remove_situation_left_title = yes }
+		if = { limit = { has_variable = com_situation_right_title_var } com_remove_situation_right_title = yes }
 
-				if = { limit = { has_variable = sb_bechuanaland_gbr_scope } remove_variable = sb_bechuanaland_gbr_scope }
-				if = { limit = { has_variable = sb_bechuanaland_swa_scope } remove_variable = sb_bechuanaland_swa_scope }
-				if = { limit = { has_variable = sb_bechuanaland_swa_overlord_scope } remove_variable = sb_bechuanaland_swa_overlord_scope }
-				if = { limit = { has_variable = sb_bechuanaland_boer_actor_scope } remove_variable = sb_bechuanaland_boer_actor_scope }
-				if = { limit = { scope:sb_bechuanaland_container = { has_variable = sb_bechuanaland_gbr_scope } } set_variable = { name = sb_bechuanaland_gbr_scope value = scope:sb_bechuanaland_container.var:sb_bechuanaland_gbr_scope } }
-				if = { limit = { scope:sb_bechuanaland_container = { has_variable = sb_bechuanaland_swa_scope } } set_variable = { name = sb_bechuanaland_swa_scope value = scope:sb_bechuanaland_container.var:sb_bechuanaland_swa_scope } }
-				if = { limit = { scope:sb_bechuanaland_container = { has_variable = sb_bechuanaland_swa_overlord_scope } } set_variable = { name = sb_bechuanaland_swa_overlord_scope value = scope:sb_bechuanaland_container.var:sb_bechuanaland_swa_overlord_scope } }
-				if = { limit = { scope:sb_bechuanaland_container = { has_variable = sb_bechuanaland_boer_actor_scope } } set_variable = { name = sb_bechuanaland_boer_actor_scope value = scope:sb_bechuanaland_container.var:sb_bechuanaland_boer_actor_scope } }
+		if = { limit = { has_variable = sb_bechuanaland_gbr_scope } remove_variable = sb_bechuanaland_gbr_scope }
+		if = { limit = { has_variable = sb_bechuanaland_swa_scope } remove_variable = sb_bechuanaland_swa_scope }
+		if = { limit = { has_variable = sb_bechuanaland_swa_overlord_scope } remove_variable = sb_bechuanaland_swa_overlord_scope }
+		if = { limit = { has_variable = sb_bechuanaland_boer_actor_scope } remove_variable = sb_bechuanaland_boer_actor_scope }
+		if = { limit = { scope:sb_bechuanaland_container = { has_variable = sb_bechuanaland_gbr_scope } } set_variable = { name = sb_bechuanaland_gbr_scope value = scope:sb_bechuanaland_container.var:sb_bechuanaland_gbr_scope } }
+		if = { limit = { scope:sb_bechuanaland_container = { has_variable = sb_bechuanaland_swa_scope } } set_variable = { name = sb_bechuanaland_swa_scope value = scope:sb_bechuanaland_container.var:sb_bechuanaland_swa_scope } }
+		if = { limit = { scope:sb_bechuanaland_container = { has_variable = sb_bechuanaland_swa_overlord_scope } } set_variable = { name = sb_bechuanaland_swa_overlord_scope value = scope:sb_bechuanaland_container.var:sb_bechuanaland_swa_overlord_scope } }
+		if = { limit = { scope:sb_bechuanaland_container = { has_variable = sb_bechuanaland_boer_actor_scope } } set_variable = { name = sb_bechuanaland_boer_actor_scope value = scope:sb_bechuanaland_container.var:sb_bechuanaland_boer_actor_scope } }
 
-				if = { limit = { has_variable = sb_bechuanaland_influence_source_boer_settlers_var } remove_variable = sb_bechuanaland_influence_source_boer_settlers_var }
-				if = { limit = { has_variable = sb_bechuanaland_influence_source_boer_in_swa_bloc_var } remove_variable = sb_bechuanaland_influence_source_boer_in_swa_bloc_var }
-				if = { limit = { has_variable = sb_bechuanaland_influence_source_swa_investment_var } remove_variable = sb_bechuanaland_influence_source_swa_investment_var }
-				if = { limit = { has_variable = sb_bechuanaland_influence_source_swa_trade_var } remove_variable = sb_bechuanaland_influence_source_swa_trade_var }
-				if = { limit = { has_variable = sb_bechuanaland_influence_source_swa_military_aid_var } remove_variable = sb_bechuanaland_influence_source_swa_military_aid_var }
-				if = { limit = { has_variable = sb_bechuanaland_influence_source_boer_subsidy_var } remove_variable = sb_bechuanaland_influence_source_boer_subsidy_var }
-				if = { limit = { has_variable = sb_bechuanaland_influence_source_swa_subsidy_var } remove_variable = sb_bechuanaland_influence_source_swa_subsidy_var }
-				if = { limit = { has_variable = sb_bechuanaland_influence_source_swa_crisis_support_var } remove_variable = sb_bechuanaland_influence_source_swa_crisis_support_var }
-				if = { limit = { has_variable = sb_bechuanaland_influence_source_relations_friendly_var } remove_variable = sb_bechuanaland_influence_source_relations_friendly_var }
-				if = { limit = { has_variable = sb_bechuanaland_influence_source_relations_amicable_var } remove_variable = sb_bechuanaland_influence_source_relations_amicable_var }
-				if = { limit = { has_variable = sb_bechuanaland_influence_source_relations_cordial_var } remove_variable = sb_bechuanaland_influence_source_relations_cordial_var }
-				if = { limit = { has_variable = sb_bechuanaland_influence_source_relations_poor_var } remove_variable = sb_bechuanaland_influence_source_relations_poor_var }
-				if = { limit = { has_variable = sb_bechuanaland_influence_source_relations_cold_var } remove_variable = sb_bechuanaland_influence_source_relations_cold_var }
-				if = { limit = { has_variable = sb_bechuanaland_influence_source_relations_hostile_var } remove_variable = sb_bechuanaland_influence_source_relations_hostile_var }
-				if = { limit = { scope:sb_bechuanaland_container = { has_variable = sb_bechuanaland_influence_source_boer_settlers_var } } set_variable = sb_bechuanaland_influence_source_boer_settlers_var }
-				if = { limit = { scope:sb_bechuanaland_container = { has_variable = sb_bechuanaland_influence_source_boer_in_swa_bloc_var } } set_variable = sb_bechuanaland_influence_source_boer_in_swa_bloc_var }
-				if = { limit = { scope:sb_bechuanaland_container = { has_variable = sb_bechuanaland_influence_source_swa_investment_var } } set_variable = sb_bechuanaland_influence_source_swa_investment_var }
-				if = { limit = { scope:sb_bechuanaland_container = { has_variable = sb_bechuanaland_influence_source_swa_trade_var } } set_variable = sb_bechuanaland_influence_source_swa_trade_var }
-				if = { limit = { scope:sb_bechuanaland_container = { has_variable = sb_bechuanaland_influence_source_swa_military_aid_var } } set_variable = sb_bechuanaland_influence_source_swa_military_aid_var }
-				if = { limit = { scope:sb_bechuanaland_container = { has_variable = sb_bechuanaland_influence_source_boer_subsidy_var } } set_variable = sb_bechuanaland_influence_source_boer_subsidy_var }
-				if = { limit = { scope:sb_bechuanaland_container = { has_variable = sb_bechuanaland_influence_source_swa_subsidy_var } } set_variable = sb_bechuanaland_influence_source_swa_subsidy_var }
-				if = { limit = { scope:sb_bechuanaland_container = { has_variable = sb_bechuanaland_influence_source_swa_crisis_support_var } } set_variable = sb_bechuanaland_influence_source_swa_crisis_support_var }
-				if = { limit = { scope:sb_bechuanaland_container = { has_variable = sb_bechuanaland_influence_source_relations_friendly_var } } set_variable = sb_bechuanaland_influence_source_relations_friendly_var }
-				if = { limit = { scope:sb_bechuanaland_container = { has_variable = sb_bechuanaland_influence_source_relations_amicable_var } } set_variable = sb_bechuanaland_influence_source_relations_amicable_var }
-				if = { limit = { scope:sb_bechuanaland_container = { has_variable = sb_bechuanaland_influence_source_relations_cordial_var } } set_variable = sb_bechuanaland_influence_source_relations_cordial_var }
-				if = { limit = { scope:sb_bechuanaland_container = { has_variable = sb_bechuanaland_influence_source_relations_poor_var } } set_variable = sb_bechuanaland_influence_source_relations_poor_var }
-				if = { limit = { scope:sb_bechuanaland_container = { has_variable = sb_bechuanaland_influence_source_relations_cold_var } } set_variable = sb_bechuanaland_influence_source_relations_cold_var }
-				if = { limit = { scope:sb_bechuanaland_container = { has_variable = sb_bechuanaland_influence_source_relations_hostile_var } } set_variable = sb_bechuanaland_influence_source_relations_hostile_var }
+		set_variable = {
+			name = sb_bechuanaland_influence_score_var
+			value = scope:sb_bechuanaland_container.var:sb_bechuanaland_influence_score_var
+		}
+		set_bar_progress = {
+			name = sb_bechuanaland_boer_swa_influence_bar
+			value = scope:sb_bechuanaland_container.var:sb_bechuanaland_influence_score_var
+		}
+	}
+}
 
-				set_variable = {
-					name = sb_bechuanaland_influence_score_var
-					value = scope:sb_bechuanaland_container.var:sb_bechuanaland_influence_score_var
-				}
-			set_bar_progress = {
-				name = sb_bechuanaland_boer_swa_influence_bar
-				value = scope:sb_bechuanaland_container.var:sb_bechuanaland_influence_score_var
-				}
+sb_bechuanaland_apply_influence_score_to_all = {
+	if = {
+		limit = {
+			container_exists = sb_bechuanaland_corridor_state
+			c:GBR ?= { has_journal_entry = je_sb_bechuanaland_corridor }
+		}
+		c:GBR = {
+			je:je_sb_bechuanaland_corridor ?= {
+				sb_bechuanaland_project_corridor_journal = yes
 			}
 		}
 	}
@@ -440,7 +367,7 @@ sb_bechuanaland_clear_influence_source_cache = {
 }
 
 # Evaluate expensive actor, treaty, territory, and relation checks once. Every
-# contextless JE copy reads these flags for its identical progress breakdown.
+# The contextless JE reads these flags for its progress breakdown.
 sb_bechuanaland_cache_influence_sources = {
 	sb_bechuanaland_clear_influence_source_cache = yes
 	if = {
@@ -640,7 +567,7 @@ sb_bechuanaland_prepare_influence_score = {
 }
 
 # The global pulse is the sole authority for recurring drift. Native JE bars
-# retain their projected source descriptions, then this broadcast pins every
+# read source descriptions from the container, then this broadcast pins every
 # copy back to the one canonical score.
 sb_bechuanaland_advance_influence_monthly = {
 	sb_bechuanaland_prepare_influence_score = yes

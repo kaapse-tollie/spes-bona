@@ -27,6 +27,8 @@ COUNTRIES = {
 
 		# Conservative politics: reflects Tory-aligned colonial governance in the 1830s.
 		effect_starting_politics_conservative = yes
+		# Agrarianism reflects the colony's export-oriented farming and pastoral economy.
+		activate_law = law_type:law_agrarianism
 
 		# Freedom of Conscience: Cape had relative religious tolerance (Dutch Reformed + Anglican coexistence).
 		activate_law = law_type:law_freedom_of_conscience
@@ -36,12 +38,18 @@ COUNTRIES = {
 		activate_law = law_type:law_homesteading
 		# Colonial Administration: British-appointed governor system (no representative assembly until 1854).
 		activate_law = law_type:law_colonial_administration
-		# Racial Segregation: de facto racial hierarchy under colonial rule; precursor to later apartheid.
-		activate_law = law_type:law_racial_segregation
+		# Subjecthood and Colonial Racialization formalize hierarchy within the imperial dependency.
+		activate_law = law_type:law_subjecthood
+		active_law:lawgroup_citizenship ?= {
+			add_amendment = {
+				type = amendment_racialized_subjecthood
+				sponsor = PREV.ig:ig_armed_forces
+			}
+		}
 		# Land-Based Taxation: primary revenue from land quitrents, not income tax.
 		activate_law = law_type:law_land_based_taxation
-		# Appointed Bureaucrats: colonial civil service appointed by the Crown, not elected.
-		activate_law = law_type:law_appointed_bureaucrats
+		# Imperial Administration binds Crown officials to the colonial officer establishment.
+		activate_law = law_type:law_sb_imperial_administration
 		# Public Schools: reflects early mission schools and colonial education efforts.
 		activate_law = law_type:law_public_schools
 		# Mercantilism: Cape trade was regulated under British imperial preference system.

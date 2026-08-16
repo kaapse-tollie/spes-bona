@@ -110,7 +110,20 @@ sb_apply_british_natal_colony_setup = {
 	activate_law = law_type:law_colonial_administration
 	activate_law = law_type:law_professional_army
 	activate_law = law_type:law_slavery_banned
-	activate_law = law_type:law_racial_segregation
+	activate_law = law_type:law_subjecthood
+	active_law:lawgroup_citizenship ?= {
+		if = {
+			limit = {
+				NOT = { has_amendment = amendment_type:amendment_racialized_subjecthood }
+			}
+			add_amendment = {
+				type = amendment_racialized_subjecthood
+				sponsor = PREV.ig:ig_armed_forces
+			}
+		}
+	}
+	activate_law = law_type:law_extraction_economy
+	activate_law = law_type:law_sb_imperial_administration
 	if = {
 		limit = {
 			c:ZUL ?= { is_country_alive = yes }
@@ -153,6 +166,7 @@ sb_apply_british_natal_colony_setup = {
 		remove_primary_culture = cu:boer
 	}
 	sb_apply_generic_british_colony_interest_group_identity = yes
+	sb_apply_british_natal_interest_group_identity = yes
 	every_interest_group = {
 		remove_ruling_interest_group = yes
 	}

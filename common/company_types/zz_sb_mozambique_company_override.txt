@@ -1,5 +1,5 @@
 ﻿# Vanilla 1.13.10 baseline. Players retain Vanilla eligibility; POR/IBE AI gets
-# a strong selection weight and may pursue the company before incorporation.
+# a strong selection weight and may establish from a smaller existing plantation.
 REPLACE:company_mozambique_company = {
 	icon = "gfx/interface/icons/company_icons/historical_company_icons/mozambique_companhia_de_mocambique.dds"
 	background = "gfx/interface/icons/company_icons/company_backgrounds/comp_illu_plantation.dds"
@@ -37,18 +37,41 @@ REPLACE:company_mozambique_company = {
 
 	possible = {
 		has_technology_researched = mutual_funds
-		any_scope_state = {
-			OR = {
-				state_region = s:STATE_MOCAMBIQUE
-				state_region = s:STATE_ZAMBEZIA
-				state_region = s:STATE_LOURENCO_MARQUES
-			}
-			any_scope_building = {
+		OR = {
+			any_scope_state = {
 				OR = {
-					is_building_type = building_cotton_plantation
-					is_building_type = building_tea_plantation
+					state_region = s:STATE_MOCAMBIQUE
+					state_region = s:STATE_ZAMBEZIA
+					state_region = s:STATE_LOURENCO_MARQUES
 				}
-				level >= 5
+				any_scope_building = {
+					OR = {
+						is_building_type = building_cotton_plantation
+						is_building_type = building_tea_plantation
+					}
+					level >= 5
+				}
+			}
+			AND = {
+				is_ai = yes
+				OR = {
+					country_definition = cd:POR
+					country_definition = cd:IBE
+				}
+				any_scope_state = {
+					OR = {
+						state_region = s:STATE_MOCAMBIQUE
+						state_region = s:STATE_ZAMBEZIA
+						state_region = s:STATE_LOURENCO_MARQUES
+					}
+					any_scope_building = {
+						OR = {
+							is_building_type = building_cotton_plantation
+							is_building_type = building_tea_plantation
+						}
+						level >= 2
+					}
+				}
 			}
 		}
 	}

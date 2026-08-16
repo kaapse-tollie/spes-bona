@@ -1,10 +1,55 @@
-sb_on_de_beers_company_established = {
+﻿sb_on_de_beers_company_established = {
 	trigger = {
 		scope:company = {
 			is_company_type = company_type:company_de_beers
 		}
 	}
-	effect = { sb_de_beers_assign_cecil_rhodes_if_available = yes }
+	effect = { sb_de_beers_schedule_or_assign_cecil_rhodes = yes }
+}
+
+sb_on_de_beers_rhodes_monthly_pulse_country = {
+	trigger = {
+		game_date >= 1870.1.1
+		NOT = { has_global_variable = sb_cecil_rhodes_entered_politics_global_var }
+		has_company = company_type:company_de_beers
+		OR = {
+			has_variable = sb_de_beers_rhodes_appointment_pending_var
+			AND = {
+				any_scope_character = {
+					has_template = SAF_cecil_rhodes
+					is_character_alive = yes
+				}
+				company:company_de_beers = {
+					executive = { NOT = { has_template = SAF_cecil_rhodes } }
+				}
+				NOT = {
+					company:company_sb_british_south_africa_company ?= {
+						executive = { has_template = SAF_cecil_rhodes }
+					}
+				}
+			}
+		}
+	}
+	effect = { sb_de_beers_complete_cecil_rhodes_appointment = yes }
+}
+
+sb_on_de_beers_prosperous_under_rhodes_monthly_pulse_country = {
+	trigger = {
+		NOT = { has_global_variable = sb_cecil_rhodes_entered_politics_global_var }
+		NOT = { has_variable = sb_de_beers_rhodes_political_transition_pending_var }
+		has_company = company_type:company_de_beers
+		company:company_de_beers = {
+			company_is_prosperous = yes
+			executive = {
+				has_template = SAF_cecil_rhodes
+				is_character_alive = yes
+			}
+		}
+	}
+	effect = {
+		set_variable = sb_de_beers_rhodes_political_transition_pending_var
+		trigger_event = { id = sb_rhodesian_venture.030 popup = yes }
+	}
 }
 
 sb_on_british_south_africa_company_disbanded = {
@@ -17,6 +62,50 @@ sb_on_british_south_africa_company_disbanded = {
 }
 
 sb_on_rhodesian_venture_monthly_pulse_country = {
-	trigger = { country_definition = cd:GBR }
-	effect = { sb_update_british_south_africa_company_slot = yes }
+	trigger = {
+		country_definition = cd:GBR
+		OR = {
+			has_modifier = sb_british_south_africa_company_charter_slot
+			AND = {
+				has_company = company_type:company_sb_british_south_africa_company
+				c:BSA ?= { is_country_alive = yes }
+				OR = {
+					NOT = { sb_british_south_africa_company_is_linked_to_bsa = yes }
+					NOT = { has_variable = sb_bsac_starting_asset_created_var }
+					AND = {
+						any_scope_character = {
+							has_template = SAF_cecil_rhodes
+							is_character_alive = yes
+						}
+						company:company_sb_british_south_africa_company = {
+							executive = { NOT = { has_template = SAF_cecil_rhodes } }
+						}
+					}
+				}
+			}
+		}
+	}
+	effect = {
+		if = {
+			limit = {
+				has_company = company_type:company_sb_british_south_africa_company
+				c:BSA ?= { is_country_alive = yes }
+				OR = {
+					NOT = { sb_british_south_africa_company_is_linked_to_bsa = yes }
+					NOT = { has_variable = sb_bsac_starting_asset_created_var }
+					AND = {
+						any_scope_character = {
+							has_template = SAF_cecil_rhodes
+							is_character_alive = yes
+						}
+						company:company_sb_british_south_africa_company = {
+							executive = { NOT = { has_template = SAF_cecil_rhodes } }
+						}
+					}
+				}
+			}
+			sb_rhodesian_venture_finalize_bsac_company_setup = yes
+		}
+		sb_update_british_south_africa_company_slot = yes
+	}
 }

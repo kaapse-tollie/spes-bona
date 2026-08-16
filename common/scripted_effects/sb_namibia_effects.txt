@@ -105,6 +105,26 @@ sb_nam_assign_german_swa_ruler = {
 	}
 }
 
+sb_nam_install_rehoboth_historical_ruler = {
+	c:RHB ?= {
+		if = {
+			limit = {
+				NOT = { any_scope_character = { has_template = RHB_hermanus_van_wyk } }
+			}
+			create_character = { template = RHB_hermanus_van_wyk }
+		}
+		random_scope_character = {
+			limit = {
+				has_template = RHB_hermanus_van_wyk
+				is_character_alive = yes
+			}
+			set_interest_group = c:RHB.ig:ig_landowners
+			set_as_interest_group_leader = yes
+			set_character_as_ruler = yes
+		}
+	}
+}
+
 sb_nam_grant_coastal_access_if_eligible = {
 	if = {
 		limit = {
@@ -665,7 +685,7 @@ sb_nam_seed_consolidation_harshness = {
 		limit = {
 			country_definition = cd:CAP
 			active_law:lawgroup_citizenship ?= {
-				has_amendment = amendment_type:amendment_sb_cape_qualified_franchise
+				sb_has_cape_qualified_franchise_amendment = yes
 			}
 		}
 		je:je_sb_consolidation_of_south_west_africa ?= {

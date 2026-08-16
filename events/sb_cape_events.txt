@@ -228,6 +228,7 @@ sb_cape.101 = {
 			name = sb_settler_victory
 			months = -1
 		}
+		set_variable = sb_cape_settler_victory_var
 		set_variable = sb_ecsl_resolved_var
 		every_political_movement = {
 			limit = {
@@ -271,6 +272,7 @@ sb_cape.102 = {
 	option = {
 		name = sb_cape.102.a
 		default_option = yes
+		set_variable = sb_cape_compromise_victory_var
 		set_variable = sb_ecsl_resolved_var
 		add_modifier = {
 			name = sb_cape_frontier_compromise
@@ -281,6 +283,82 @@ sb_cape.102 = {
 		}
 		remove_variable = sb_albany_sanctioned_var
 		remove_variable = sb_albany_refused_var
+	}
+}
+
+# A bigoted Cape ministry narrows the qualified franchise after the Spirit of
+# the Cape has ended in either settler ascendancy or constitutional compromise.
+sb_cape.210 = {
+	type = country_event
+	placement = root
+
+	title = sb_cape.210.t
+	desc = sb_cape.210.d
+	flavor = sb_cape.210.f
+
+	event_image = {
+		video = "gfx/event_pictures/europenorthamerica_sufferage.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/principles_icons/creative_legislature.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:CAP
+		NOT = { has_journal_entry = je_sb_cape_politics }
+		NOT = { has_variable = sb_cape_franchise_weakened_var }
+		OR = {
+			has_variable = sb_cape_settler_victory_var
+			has_variable = sb_cape_compromise_victory_var
+			has_modifier = sb_settler_victory
+			has_modifier = sb_cape_frontier_compromise
+		}
+		active_law:lawgroup_citizenship ?= {
+			has_amendment = amendment_type:amendment_sb_cape_qualified_franchise
+		}
+		ruler = { has_trait = bigoted }
+	}
+
+	immediate = {
+		ruler = {
+			save_scope_as = sb_cape_franchise_weakening_ruler_scope
+			interest_group ?= {
+				save_scope_as = sb_cape_franchise_weakening_sponsor_scope
+			}
+		}
+	}
+
+	option = {
+		name = sb_cape.210.a
+		default_option = yes
+		custom_tooltip = sb_cape_210_franchise_weakened_tt
+		hidden_effect = {
+			set_variable = sb_cape_franchise_weakened_var
+			active_law:lawgroup_citizenship ?= {
+				every_scope_amendment = {
+					limit = {
+						type = amendment_type:amendment_sb_cape_qualified_franchise
+					}
+					remove_amendment = yes
+				}
+				if = {
+					limit = { exists = scope:sb_cape_franchise_weakening_sponsor_scope }
+					add_amendment = {
+						type = amendment_sb_restricted_cape_qualified_franchise
+						sponsor = scope:sb_cape_franchise_weakening_sponsor_scope
+					}
+				}
+				else = {
+					add_amendment = {
+						type = amendment_sb_restricted_cape_qualified_franchise
+						sponsor = PREV.ig:ig_landowners
+					}
+				}
+			}
+			remove_variable = sb_cape_franchise_weakening_pending_var
+		}
+		ai_chance = { base = 100 }
 	}
 }
 
@@ -310,7 +388,7 @@ sb_cape.130 = {
 		has_variable = sb_cqf_first_checkpoint_pending_var
 		is_enacting_law = law_type:law_cultural_exclusion
 		currently_enacting_law ?= {
-			NOT = { has_amendment = amendment_type:amendment_sb_cape_qualified_franchise }
+			NOT = { sb_has_cape_qualified_franchise_amendment = yes }
 		}
 	}
 
@@ -972,6 +1050,7 @@ sb_cape.125 = {
 			name = sb_settler_victory
 			months = -1
 		}
+		set_variable = sb_cape_settler_victory_var
 		set_variable = sb_ecsl_resolved_var
 		every_political_movement = {
 			limit = {
@@ -1490,7 +1569,7 @@ sb_cape.201 = {
 				limit = {
 					has_law = law_type:law_cultural_exclusion
 					active_law:lawgroup_citizenship ?= {
-						NOT = { has_amendment = amendment_type:amendment_sb_cape_qualified_franchise }
+						NOT = { sb_has_cape_qualified_franchise_amendment = yes }
 					}
 				}
 				trigger_event = { id = sb_cape.205 days = 7 popup = yes }
@@ -1519,7 +1598,7 @@ sb_cape.201 = {
 				limit = {
 					has_law = law_type:law_cultural_exclusion
 					active_law:lawgroup_citizenship ?= {
-						NOT = { has_amendment = amendment_type:amendment_sb_cape_qualified_franchise }
+						NOT = { sb_has_cape_qualified_franchise_amendment = yes }
 					}
 				}
 				trigger_event = { id = sb_cape.205 days = 7 popup = yes }
@@ -1549,7 +1628,7 @@ sb_cape.201 = {
 			has_variable = sb_albany_sanctioned_var
 			has_law = law_type:law_cultural_exclusion
 			active_law:lawgroup_citizenship ?= {
-				NOT = { has_amendment = amendment_type:amendment_sb_cape_qualified_franchise }
+				NOT = { sb_has_cape_qualified_franchise_amendment = yes }
 			}
 		}
 

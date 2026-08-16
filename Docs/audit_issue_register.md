@@ -35,13 +35,13 @@ The active corridor story now has one authoritative container:
 - tags: `sb_story sb_bechuanaland_corridor`
 - parent: `c:GBR`
 
-It owns actors, influence, cached drift, route and phase state, leases, victory state, enforced goals, CAP's prewar subject type, pending settlement, the Boer network, British subject targets, and participant JE handles.
+It owns actors, influence, cached drift, route and phase state, leases, victory state, enforced goals, CAP's prewar subject type, pending settlement, the Boer network, and British subject targets.
 
 Only the permanent eligibility, story-open, terminal-resolution, and Pink Map terminal-outcome envelope remains global. Country-local cooldowns and temporary modifiers remain country-local. Score changes perform one clamped mutation and one participant broadcast; the singleton monthly pulse calculates drift once.
 
-Participant JEs store their handles and title variables through CMF 1.63's public helpers, then use CMF's International Situation title widgets. The `1.63.*` launcher dependency makes this API contract explicit. The repository contains no SB journal GUI replacement, no gameplay `every_container` scan, no debug UI, and no release canary. CMF's `com_container` manager is the supported runtime inspector.
+The corridor is one contextless JE shared by all involved countries. SB projects the container's actor scopes and influence state directly onto that singleton JE, while CMF 1.63's title setters and International Situation widgets provide its presentation. The `1.63.*` launcher dependency makes this API contract explicit. The repository contains no SB journal GUI replacement, no gameplay `every_container` scan, no debug UI, and no release canary. CMF's `com_container` manager is the supported runtime inspector.
 
-Static tests cover creation shape, parent/tags, container-owned shared state, variable lists, JE handles, projection without global display scopes, and removal of obsolete migration variables. Save/reload and terminal destruction remain `RV-02`.
+Static tests cover creation shape, parent/tags, container-owned shared state, variable lists, singleton-JE projection without global display scopes, and removal of obsolete migration variables. Save/reload and terminal destruction remain `RV-02`.
 
 ## Pink Map / Bechuanaland Cross-Content Audit
 

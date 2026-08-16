@@ -1,4 +1,4 @@
-namespace = sb_rhodesian_venture
+﻿namespace = sb_rhodesian_venture
 
 sb_rhodesian_venture.001 = {
 	type = country_event
@@ -187,6 +187,44 @@ sb_rhodesian_venture.011 = {
 			}
 			sb_rhodesian_venture_cleanup = yes
 		}
+	}
+}
+
+sb_rhodesian_venture.012 = {
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		country_definition = cd:GBR
+		c:BSA ?= { is_country_alive = yes }
+		NOT = { has_company = company_type:company_sb_british_south_africa_company }
+	}
+
+	immediate = {
+		sb_rhodesian_venture_transfer_eligible_footprint = yes
+		sb_rhodesian_venture_move_pioneer_column_settlers = yes
+		sb_rhodesian_venture_move_british_claims_to_bsa = yes
+		create_diplomatic_pact = {
+			country = c:BSA
+			type = chartered_company
+		}
+		every_interest_group = {
+			limit = {
+				OR = {
+					law_stance = { law = law_type:law_laissez_faire value > neutral }
+					law_stance = { law = law_type:law_free_trade value > neutral }
+					law_stance = { law = law_type:law_interventionism value > neutral }
+				}
+				ig_counts_as_marginal = no
+			}
+			add_modifier = {
+				name = colonial_enterprise_modifier
+				days = normal_modifier_time
+			}
+		}
+		add_company = company_type:company_sb_british_south_africa_company
+		# Configure the runtime company only after add_company returns, matching vanilla charter setup.
+		sb_rhodesian_venture_finalize_bsac_company_setup = yes
 	}
 }
 
@@ -527,5 +565,43 @@ sb_rhodesian_venture.025 = {
 				add = 50
 			}
 		}
+	}
+}
+
+sb_rhodesian_venture.030 = {
+	type = country_event
+	placement = root
+	title = sb_rhodesian_venture.030.t
+	desc = sb_rhodesian_venture.030.d
+	flavor = sb_rhodesian_venture.030.f
+	event_image = { video = "gfx/event_pictures/europenorthamerica_capitalists_meeting.bk2" }
+	icon = "gfx/interface/icons/event_icons/event_industry.dds"
+	duration = 3
+
+	trigger = {
+		NOT = { has_global_variable = sb_cecil_rhodes_entered_politics_global_var }
+		has_company = company_type:company_de_beers
+		company:company_de_beers = {
+			company_is_prosperous = yes
+			executive = {
+				has_template = SAF_cecil_rhodes
+				is_character_alive = yes
+			}
+		}
+	}
+
+	immediate = {
+		company:company_de_beers = {
+			save_scope_as = sb_de_beers_company_scope
+			executive = { save_scope_as = sb_de_beers_rhodes_scope }
+		}
+	}
+
+	option = {
+		name = sb_rhodesian_venture.030.a
+		default_option = yes
+		custom_tooltip = sb_rhodesian_venture.030.a.tt
+		hidden_effect = { sb_de_beers_transition_cecil_rhodes_to_politics = yes }
+		ai_chance = { base = 100 }
 	}
 }

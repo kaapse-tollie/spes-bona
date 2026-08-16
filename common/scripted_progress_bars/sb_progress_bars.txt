@@ -80,49 +80,109 @@ sb_cape_balance_bar = {
 	double_sided_bad = yes							# Both extremes cause instability
 
 	monthly_progress = {
-		# Liberal drift
-			if = {
-				limit = {
-					has_law = law_type:law_cultural_exclusion
+		# Citizenship drift. Active-law and enactment bands are each mutually exclusive.
+		if = {
+			limit = {
+				has_law = law_type:law_cultural_exclusion
+				active_law:lawgroup_citizenship = {
+					has_amendment = amendment_type:amendment_sb_cape_qualified_franchise
+				}
 			}
 			add = {
+				desc = "sb_cape_full_cqf_law"
+				value = 0.20
+			}
+		}
+		else_if = {
+			limit = {
+				has_law = law_type:law_cultural_exclusion
+				active_law:lawgroup_citizenship = {
+					has_amendment = amendment_type:amendment_sb_restricted_cape_qualified_franchise
+				}
+			}
+			add = {
+				desc = "sb_cape_restricted_cqf_law"
+				value = 0.15
+			}
+		}
+		else_if = {
+			limit = { has_law = law_type:law_cultural_exclusion }
+			add = {
 				desc = "sb_cape_cultural_exclusion_law"
-				value = 0.3
-				}
+				value = 0.10
 			}
+		}
+		else_if = {
+			limit = { has_law_or_variant = law_type:law_multicultural }
+			add = {
+				desc = "sb_cape_multicultural_law"
+				value = 0.50
+			}
+		}
+		else_if = {
+			limit = { has_law = law_type:law_ethnostate }
+			subtract = {
+				desc = "sb_cape_ethnostate_law"
+				value = 0.50
+			}
+		}
+		else_if = {
+			limit = { has_law = law_type:law_national_supremacy }
+			subtract = {
+				desc = "sb_cape_national_supremacy_law"
+				value = 0.20
+			}
+		}
+		else_if = {
+			limit = { has_law = law_type:law_racial_segregation }
+			subtract = {
+				desc = "sb_cape_racial_segregation_law"
+				value = 0.10
+			}
+		}
 
-			if = {
-				limit = {
-					is_enacting_law = law_type:law_cultural_exclusion
-				}
-				add = {
-					desc = "sb_cape_cultural_exclusion_enacting"
-					value = 0.1
+		if = {
+			limit = { is_enacting_law = law_type:law_cultural_exclusion }
+			add = {
+				desc = "sb_cape_cultural_exclusion_enacting"
+				value = 0.05
+			}
+		}
+		else_if = {
+			limit = {
+				OR = {
+					is_enacting_law = law_type:law_multicultural
+					is_enacting_law = law_type:law_sb_non_racialism
 				}
 			}
+			add = {
+				desc = "sb_cape_multicultural_enacting"
+				value = 0.25
+			}
+		}
+		else_if = {
+			limit = { is_enacting_law = law_type:law_ethnostate }
+			subtract = {
+				desc = "sb_cape_ethnostate_enacting"
+				value = 0.25
+			}
+		}
+		else_if = {
+			limit = { is_enacting_law = law_type:law_national_supremacy }
+			subtract = {
+				desc = "sb_cape_national_supremacy_enacting"
+				value = 0.10
+			}
+		}
+		else_if = {
+			limit = { is_enacting_law = law_type:law_racial_segregation }
+			subtract = {
+				desc = "sb_cape_racial_segregation_enacting"
+				value = 0.05
+			}
+		}
 
-			if = {
-				limit = {
-					has_law_or_variant = law_type:law_multicultural
-			}
-				add = {
-					desc = "sb_cape_multicultural_law"
-					value = 1.5
-				}
-			}
-
-			if = {
-				limit = {
-					OR = {
-						is_enacting_law = law_type:law_multicultural
-						is_enacting_law = law_type:law_sb_non_racialism
-					}
-				}
-				add = {
-					desc = "sb_cape_multicultural_enacting"
-					value = 0.4
-				}
-			}
+		# Liberal drift
 
 			if = {
 				limit = {
@@ -470,26 +530,6 @@ sb_cape_balance_bar = {
 				subtract = {
 					desc = "sb_cape_any_colonial_law_enacting"
 					value = 0.1
-				}
-			}
-
-			if = {
-				limit = {
-					has_law = law_type:law_national_supremacy
-				}
-				subtract = {
-					desc = "sb_cape_national_supremacy_law"
-					value = 0.7
-				}
-			}
-
-			if = {
-				limit = {
-					is_enacting_law = law_type:law_national_supremacy
-				}
-				subtract = {
-					desc = "sb_cape_national_supremacy_enacting"
-					value = 0.3
 				}
 			}
 
@@ -956,20 +996,22 @@ sb_bechuanaland_boer_swa_influence_bar = {
 	max_value = 40
 
 	monthly_progress = {
-		if = { limit = { owner = { has_variable = sb_bechuanaland_influence_source_boer_settlers_var } } add = { desc = "sb_bechuanaland_influence_boer_settlers" value = 0.3 } }
-		if = { limit = { owner = { has_variable = sb_bechuanaland_influence_source_boer_in_swa_bloc_var } } add = { desc = "sb_bechuanaland_influence_boer_in_swa_bloc" value = -0.3 } }
-		if = { limit = { owner = { has_variable = sb_bechuanaland_influence_source_swa_investment_var } } add = { desc = "sb_bechuanaland_influence_swa_investment_rights" value = -0.1 } }
-		if = { limit = { owner = { has_variable = sb_bechuanaland_influence_source_swa_trade_var } } add = { desc = "sb_bechuanaland_influence_swa_mutual_trade" value = -0.1 } }
-		if = { limit = { owner = { has_variable = sb_bechuanaland_influence_source_swa_military_aid_var } } add = { desc = "sb_bechuanaland_influence_swa_military_aid" value = -0.1 } }
-		if = { limit = { owner = { has_variable = sb_bechuanaland_influence_source_boer_subsidy_var } } add = { desc = "sb_bechuanaland_influence_boer_subsidy" value = 0.3 } }
-		if = { limit = { owner = { has_variable = sb_bechuanaland_influence_source_swa_subsidy_var } } add = { desc = "sb_bechuanaland_influence_swa_subsidy" value = -0.25 } }
-		if = { limit = { owner = { has_variable = sb_bechuanaland_influence_source_swa_crisis_support_var } } add = { desc = "sb_bechuanaland_influence_swa_crisis_support" value = -0.125 } }
-		if = { limit = { owner = { has_variable = sb_bechuanaland_influence_source_relations_friendly_var } } add = { desc = "sb_bechuanaland_influence_swa_boer_relations_friendly" value = -0.2 } }
-		else_if = { limit = { owner = { has_variable = sb_bechuanaland_influence_source_relations_amicable_var } } add = { desc = "sb_bechuanaland_influence_swa_boer_relations_amicable" value = -0.1 } }
-		else_if = { limit = { owner = { has_variable = sb_bechuanaland_influence_source_relations_cordial_var } } add = { desc = "sb_bechuanaland_influence_swa_boer_relations_cordial" value = -0.05 } }
-		else_if = { limit = { owner = { has_variable = sb_bechuanaland_influence_source_relations_poor_var } } add = { desc = "sb_bechuanaland_influence_swa_boer_relations_poor" value = 0.05 } }
-		else_if = { limit = { owner = { has_variable = sb_bechuanaland_influence_source_relations_cold_var } } add = { desc = "sb_bechuanaland_influence_swa_boer_relations_cold" value = 0.1 } }
-		else_if = { limit = { owner = { has_variable = sb_bechuanaland_influence_source_relations_hostile_var } } add = { desc = "sb_bechuanaland_influence_swa_boer_relations_hostile" value = 0.2 } }
+		container:sb_bechuanaland_corridor_state = {
+			if = { limit = { has_variable = sb_bechuanaland_influence_source_boer_settlers_var } add = { desc = "sb_bechuanaland_influence_boer_settlers" value = 0.3 } }
+			if = { limit = { has_variable = sb_bechuanaland_influence_source_boer_in_swa_bloc_var } add = { desc = "sb_bechuanaland_influence_boer_in_swa_bloc" value = -0.3 } }
+			if = { limit = { has_variable = sb_bechuanaland_influence_source_swa_investment_var } add = { desc = "sb_bechuanaland_influence_swa_investment_rights" value = -0.1 } }
+			if = { limit = { has_variable = sb_bechuanaland_influence_source_swa_trade_var } add = { desc = "sb_bechuanaland_influence_swa_mutual_trade" value = -0.1 } }
+			if = { limit = { has_variable = sb_bechuanaland_influence_source_swa_military_aid_var } add = { desc = "sb_bechuanaland_influence_swa_military_aid" value = -0.1 } }
+			if = { limit = { has_variable = sb_bechuanaland_influence_source_boer_subsidy_var } add = { desc = "sb_bechuanaland_influence_boer_subsidy" value = 0.3 } }
+			if = { limit = { has_variable = sb_bechuanaland_influence_source_swa_subsidy_var } add = { desc = "sb_bechuanaland_influence_swa_subsidy" value = -0.25 } }
+			if = { limit = { has_variable = sb_bechuanaland_influence_source_swa_crisis_support_var } add = { desc = "sb_bechuanaland_influence_swa_crisis_support" value = -0.125 } }
+			if = { limit = { has_variable = sb_bechuanaland_influence_source_relations_friendly_var } add = { desc = "sb_bechuanaland_influence_swa_boer_relations_friendly" value = -0.2 } }
+			else_if = { limit = { has_variable = sb_bechuanaland_influence_source_relations_amicable_var } add = { desc = "sb_bechuanaland_influence_swa_boer_relations_amicable" value = -0.1 } }
+			else_if = { limit = { has_variable = sb_bechuanaland_influence_source_relations_cordial_var } add = { desc = "sb_bechuanaland_influence_swa_boer_relations_cordial" value = -0.05 } }
+			else_if = { limit = { has_variable = sb_bechuanaland_influence_source_relations_poor_var } add = { desc = "sb_bechuanaland_influence_swa_boer_relations_poor" value = 0.05 } }
+			else_if = { limit = { has_variable = sb_bechuanaland_influence_source_relations_cold_var } add = { desc = "sb_bechuanaland_influence_swa_boer_relations_cold" value = 0.1 } }
+			else_if = { limit = { has_variable = sb_bechuanaland_influence_source_relations_hostile_var } add = { desc = "sb_bechuanaland_influence_swa_boer_relations_hostile" value = 0.2 } }
+		}
 	}
 }
 

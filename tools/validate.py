@@ -724,35 +724,45 @@ def check_release_invariants() -> Check:
     )
     for token in (
         "gui/com_journal_injects/situation_widgets.gui",
-        "com_save_journal_to_variable =",
-        "name = sb_bechuanaland_corridor_journal_handle_var",
-        "com_set_situation_left_title =",
-        "title = sb_bechuanaland_situation_left_title",
-        "com_set_situation_right_title =",
-        "title = sb_bechuanaland_situation_right_title",
+        "sb_bechuanaland_project_corridor_journal = yes",
     ):
         if token not in journal:
             errors.append(f"Bechuanaland JE is missing its CMF 1.63 journal projection: {token}")
+    for token in (
+        "com_set_situation_left_title =",
+        "com_set_situation_right_title =",
+    ):
+        if token in journal:
+            errors.append(f"Bechuanaland illustration still displays an actor title overlay: {token}")
+
+    corridor_effects = (
+        ROOT / "common/scripted_effects/sb_bechuanaland_corridor_effects.txt"
+    ).read_text(encoding="utf-8-sig")
+    for token in (
+        "sb_bechuanaland_project_corridor_journal = {",
+        "je:je_sb_bechuanaland_corridor ?= {",
+        "com_remove_situation_left_title = yes",
+        "com_remove_situation_right_title = yes",
+    ):
+        if token not in corridor_effects:
+            errors.append(f"Bechuanaland singleton JE projection is missing: {token}")
     progress_bars = (ROOT / "common/scripted_progress_bars/sb_progress_bars.txt").read_text(
         encoding="utf-8-sig"
     )
     bar = progress_bars.split("sb_bechuanaland_boer_swa_influence_bar = {", 1)[-1]
     bar = bar.split("########################## END ZULU", 1)[0]
-    if len(
-        re.findall(
-            r"owner\s*=\s*\{\s*has_variable\s*=\s*sb_bechuanaland_influence_source_",
-            bar,
-        )
-    ) != 14:
+    if "container:sb_bechuanaland_corridor_state = {" not in bar:
+        errors.append("Bechuanaland influence bar does not read its named container")
+    if len(re.findall(r"has_variable\s*=\s*sb_bechuanaland_influence_source_", bar)) != 14:
         errors.append(
-            "Bechuanaland influence sources must read all 14 projected variables "
-            "through the bar owner"
+            "Bechuanaland influence bar must read all 14 cached source variables"
         )
-    if re.search(
-        r"limit\s*=\s*\{\s*has_variable\s*=\s*sb_bechuanaland_influence_source_",
-        bar,
+    if (
+        "owner = {" in bar
+        or "scope:journal_entry = {" in bar
+        or "container_exists = sb_bechuanaland_corridor_state" in bar
     ):
-        errors.append("Bechuanaland influence bar contains a contextless source-variable trigger")
+        errors.append("Bechuanaland contextless influence bar enters an invalid trigger scope")
     for path in (ROOT / "gui").glob("journal*.gui") if (ROOT / "gui").exists() else ():
         errors.append(f"obsolete journal GUI override remains: {path.relative_to(ROOT)}")
 

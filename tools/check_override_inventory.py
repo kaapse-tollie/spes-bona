@@ -243,9 +243,6 @@ def validate_upstream_api_surface(
         return
 
     requirements = {
-        "common/scripted_effects/com_general_effects.txt": (
-            ("com_save_journal_to_variable", "REPLACE_OR_CREATE"),
-        ),
         "common/scripted_effects/com_international_situation_effects.txt": (
             ("com_set_situation_left_title", None),
             ("com_set_situation_right_title", None),

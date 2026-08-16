@@ -194,9 +194,6 @@ class OverrideInventoryTests(unittest.TestCase):
         (cmf / "common/console_command_macros").mkdir(parents=True)
         (cmf / "gui/com_journal_injects").mkdir(parents=True)
         (cmf / ".metadata/metadata.json").write_text(json.dumps({"version": "1.63.0"}))
-        (cmf / "common/scripted_effects/com_general_effects.txt").write_text(
-            "REPLACE_OR_CREATE:com_save_journal_to_variable = { set_variable = { } }\n"
-        )
         (cmf / "common/scripted_effects/com_international_situation_effects.txt").write_text(
             "com_set_situation_left_title = { set_variable = { } }\n"
             "com_set_situation_right_title = { set_variable = { } }\n"

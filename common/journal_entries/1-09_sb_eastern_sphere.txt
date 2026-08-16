@@ -236,7 +236,13 @@ je_sb_imperial_confederation_scheme = {
 			}
 			custom_tooltip = {
 				text = je_sb_imperial_confederation_failure_terminal_tt
-				has_global_variable = sb_imperial_confederation_scheme_failed_var
+				OR = {
+					has_global_variable = sb_imperial_confederation_scheme_failed_var
+					AND = {
+						has_global_variable = sb_imperial_confederation_scheme_resolved_var
+						NOT = { exists = c:SAF }
+					}
+				}
 			}
 			custom_tooltip = {
 				text = je_sb_imperial_confederation_failure_no_boers_tt
@@ -253,11 +259,18 @@ je_sb_imperial_confederation_scheme = {
 		}
 	}
 
+	on_complete = {
+		set_global_variable = sb_imperial_confederation_terminal_je_settled_var
+		sb_imperial_confederation_clear_runtime = yes
+	}
+
 	on_fail = {
 		if = {
 			limit = { NOT = { has_global_variable = sb_imperial_confederation_scheme_failed_var } }
 			sb_imperial_confederation_fail_scheme = yes
 		}
+		set_global_variable = sb_imperial_confederation_terminal_je_settled_var
+		sb_imperial_confederation_clear_runtime = yes
 	}
 
 	weight = 1000

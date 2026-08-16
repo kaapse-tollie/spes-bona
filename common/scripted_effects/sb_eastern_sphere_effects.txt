@@ -881,7 +881,6 @@ sb_imperial_confederation_form_saf = {
 		}
 	}
 	set_global_variable = sb_imperial_confederation_scheme_resolved_var
-	sb_imperial_confederation_clear_runtime = yes
 	sb_bechuanaland_handle_post_open_lifecycle = yes
 }
 
@@ -955,6 +954,20 @@ sb_confederated_south_africa_expand = {
 		}
 		else = {
 			annex_with_incorporation = scope:sb_confederated_south_africa_expand_target
+		}
+	}
+}
+
+sb_imperial_confederation_recover_terminal_je = {
+	if = {
+		limit = {
+			has_global_variable = sb_imperial_confederation_scheme_resolved_var
+			NOT = { has_global_variable = sb_imperial_confederation_terminal_je_settled_var }
+			c:GBR ?= { is_country_alive = yes }
+		}
+		je:je_sb_imperial_confederation_scheme ?= {
+			add_involved_country = c:GBR
+			set_global_variable = sb_imperial_confederation_terminal_je_settled_var
 		}
 	}
 }
@@ -1079,7 +1092,6 @@ sb_imperial_confederation_fail_scheme = {
 			limit = { c:GBR ?= { is_country_alive = yes } }
 			c:GBR ?= { trigger_event = { id = sb_imperial_confederation.051 days = 1 popup = yes } }
 		}
-		sb_imperial_confederation_clear_runtime = yes
 	}
 }
 
@@ -1322,6 +1334,7 @@ sb_unlock_imperial_confederation_scheme = {
 # ROOT = GBR from the country-monthly pulse. This is the sole recurring owner;
 # initialization remains event-driven through the journal entry immediate block.
 sb_imperial_confederation_monthly_housekeeping = {
+	sb_imperial_confederation_recover_terminal_je = yes
 	sb_unlock_imperial_confederation_scheme = yes
 	if = {
 		limit = { sb_imperial_confederation_scheme_is_active = yes }

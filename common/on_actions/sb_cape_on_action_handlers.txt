@@ -131,6 +131,27 @@ sb_on_cape_monthly_pulse_country = {
 		if = {
 			limit = {
 				country_definition = cd:CAP
+				NOT = { has_journal_entry = je_sb_cape_politics }
+				NOT = { has_variable = sb_cape_franchise_weakened_var }
+				NOT = { has_variable = sb_cape_franchise_weakening_pending_var }
+				OR = {
+					has_variable = sb_cape_settler_victory_var
+					has_variable = sb_cape_compromise_victory_var
+					has_modifier = sb_settler_victory
+					has_modifier = sb_cape_frontier_compromise
+				}
+				active_law:lawgroup_citizenship ?= {
+					has_amendment = amendment_type:amendment_sb_cape_qualified_franchise
+				}
+				ruler = { has_trait = bigoted }
+			}
+			set_variable = sb_cape_franchise_weakening_pending_var
+			trigger_event = { id = sb_cape.210 popup = yes }
+		}
+
+		if = {
+			limit = {
+				country_definition = cd:CAP
 				game_date >= 1854.1.1
 				NOT = { has_variable = sb_george_grey_cast_var }
 				NOT = { any_scope_character = { has_template = CAP_george_grey } }

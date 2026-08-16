@@ -3,7 +3,7 @@
 je_sb_bechuanaland_corridor = {
 	group = je_group_global_international_situations
 
-	icon = "gfx/interface/icons/event_icons/waving_flag.dds"
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
 	scripted_progress_bar = sb_bechuanaland_boer_swa_influence_bar
 
 	widget = {
@@ -19,23 +19,12 @@ je_sb_bechuanaland_corridor = {
 	}
 
 	immediate = {
-		com_save_journal_to_variable = {
-			name = sb_bechuanaland_corridor_journal_handle_var
-		}
 		scope:journal_entry = {
 			com_set_situation_illustration_background_effect = {
 				texture = com_situation_background_africa_construction_colony
 			}
-			com_set_situation_left_title = {
-				title = sb_bechuanaland_situation_left_title
-			}
-			fix_variable_error = { variable = sb_bechuanaland_situation_left_title }
-			com_set_situation_right_title = {
-				title = sb_bechuanaland_situation_right_title
-			}
-			fix_variable_error = { variable = sb_bechuanaland_situation_right_title }
+			sb_bechuanaland_project_corridor_journal = yes
 		}
-		sb_bechuanaland_register_corridor_journal = yes
 	}
 
 	should_be_involved = {
@@ -68,11 +57,11 @@ je_sb_bechuanaland_corridor = {
 	status_desc = {
 		first_valid = {
 			triggered_desc = {
-				trigger = { var:sb_bechuanaland_influence_score_var < 0 }
+				trigger = { container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_influence_score_var < 0 }
 				desc = je_sb_bechuanaland_corridor_status_swa_advantage
 			}
 			triggered_desc = {
-				trigger = { var:sb_bechuanaland_influence_score_var > 0 }
+				trigger = { container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_influence_score_var > 0 }
 				desc = je_sb_bechuanaland_corridor_status_boer_advantage
 			}
 			desc = je_sb_bechuanaland_corridor_status_undecided
@@ -173,7 +162,6 @@ je_sb_bechuanaland_corridor = {
 	}
 
 	on_invalid = {
-		sb_bechuanaland_unregister_corridor_journal = yes
 		sb_bechuanaland_handle_post_open_lifecycle = yes
 	}
 

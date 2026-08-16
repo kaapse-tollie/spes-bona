@@ -1,5 +1,44 @@
-sb_de_beers_assign_cecil_rhodes_if_available = {
-	scope:company = { save_scope_as = sb_de_beers_company_scope }
+﻿sb_de_beers_schedule_or_assign_cecil_rhodes = {
+	# The establishment callback runs before the new company is safe for executive replacement.
+	if = {
+		limit = { NOT = { has_global_variable = sb_cecil_rhodes_entered_politics_global_var } }
+		set_variable = sb_de_beers_rhodes_appointment_pending_var
+	}
+}
+
+sb_de_beers_complete_cecil_rhodes_appointment = {
+	if = {
+		limit = { has_global_variable = sb_cecil_rhodes_entered_politics_global_var }
+		remove_variable = sb_de_beers_rhodes_appointment_pending_var
+	}
+	else_if = {
+		limit = { has_company = company_type:company_de_beers }
+		company:company_de_beers = { save_scope_as = sb_de_beers_company_scope }
+		sb_de_beers_assign_cecil_rhodes_to_saved_company = yes
+	}
+	else = {
+		remove_variable = sb_de_beers_rhodes_appointment_pending_var
+	}
+}
+
+sb_de_beers_make_cecil_rhodes_executive = {
+	set_is_noble = no
+	if = {
+		limit = { has_role = character_role_ig_leader }
+		remove_character_role = character_role_ig_leader
+	}
+	if = {
+		limit = { has_role = character_role_politician }
+		remove_character_role = character_role_politician
+	}
+	if = {
+		limit = { NOT = { has_role = character_role_executive } }
+		add_character_role = character_role_executive
+	}
+	set_character_as_executive = scope:sb_de_beers_company_scope
+}
+
+sb_de_beers_assign_cecil_rhodes_to_saved_company = {
 
 	if = {
 		limit = {
@@ -41,7 +80,7 @@ sb_de_beers_assign_cecil_rhodes_if_available = {
 		}
 		scope:sb_de_beers_rhodes_scope = {
 			transfer_character = root
-			set_character_as_executive = scope:sb_de_beers_company_scope
+			sb_de_beers_make_cecil_rhodes_executive = yes
 		}
 	}
 	else_if = {
@@ -49,13 +88,146 @@ sb_de_beers_assign_cecil_rhodes_if_available = {
 			NOT = { is_template_used = SAF_cecil_rhodes }
 			NOT = { has_global_variable = sb_cecil_rhodes_ever_created_global_var }
 		}
+		set_global_variable = sb_cecil_rhodes_ever_created_global_var
 		create_character = {
 			template = SAF_cecil_rhodes
+			role = character_role_executive
 			on_created = {
-				set_global_variable = sb_cecil_rhodes_ever_created_global_var
-				set_character_as_executive = scope:sb_de_beers_company_scope
+				set_variable = sb_de_beers_new_rhodes_executive_var
 			}
 		}
+		random_character = {
+			limit = { has_variable = sb_de_beers_new_rhodes_executive_var }
+			remove_variable = sb_de_beers_new_rhodes_executive_var
+			save_scope_as = sb_de_beers_rhodes_scope
+			sb_de_beers_make_cecil_rhodes_executive = yes
+		}
+	}
+
+	if = {
+		limit = {
+			exists = scope:sb_de_beers_rhodes_scope
+			scope:sb_de_beers_company_scope = {
+				executive = scope:sb_de_beers_rhodes_scope
+			}
+		}
+		remove_variable = sb_de_beers_rhodes_appointment_pending_var
+	}
+	else_if = {
+		limit = {
+			exists = scope:sb_de_beers_rhodes_scope
+			OR = {
+				exists = scope:sb_existing_rhodes_de_beers_owner_scope
+				c:GBR ?= {
+					company:company_sb_british_south_africa_company ?= {
+						executive = scope:sb_de_beers_rhodes_scope
+					}
+				}
+			}
+		}
+		remove_variable = sb_de_beers_rhodes_appointment_pending_var
+	}
+	else_if = {
+		limit = {
+			NOT = { exists = scope:sb_de_beers_rhodes_scope }
+			has_global_variable = sb_cecil_rhodes_ever_created_global_var
+		}
+		remove_variable = sb_de_beers_rhodes_appointment_pending_var
+	}
+}
+
+sb_de_beers_transition_cecil_rhodes_to_politics = {
+	create_character = {
+		role = character_role_executive
+		interest_group = ig_industrialists
+		on_created = {
+			set_variable = sb_de_beers_political_replacement_executive_var
+		}
+	}
+	random_character = {
+		limit = { has_variable = sb_de_beers_political_replacement_executive_var }
+		remove_variable = sb_de_beers_political_replacement_executive_var
+		set_character_as_executive = scope:sb_de_beers_company_scope
+	}
+	scope:sb_de_beers_rhodes_scope = {
+		if = {
+			limit = { has_role = character_role_executive }
+			remove_character_role = character_role_executive
+		}
+		if = {
+			limit = { NOT = { has_role = character_role_politician } }
+			add_character_role = character_role_politician
+		}
+		if = {
+			limit = { NOT = { has_trait = experienced_political_operator } }
+			add_trait = experienced_political_operator
+		}
+		if = {
+			limit = { has_trait = basic_political_operator }
+			remove_trait = basic_political_operator
+		}
+		if = {
+			limit = { NOT = { has_trait = expert_entrepreneur } }
+			add_trait = expert_entrepreneur
+		}
+		if = {
+			limit = { has_trait = experienced_entrepreneur }
+			remove_trait = experienced_entrepreneur
+		}
+		set_as_interest_group_leader = yes
+		add_modifier = {
+			name = sb_rhodes_diamond_magnate
+			months = 120
+		}
+	}
+	set_global_variable = sb_cecil_rhodes_entered_politics_global_var
+	remove_variable = sb_de_beers_rhodes_appointment_pending_var
+	remove_variable = sb_de_beers_rhodes_political_transition_pending_var
+}
+
+sb_rhodesian_venture_prepare_rhodes_for_bsac = {
+	set_is_noble = no
+	if = {
+		limit = { has_role = character_role_ruler }
+		remove_character_role = character_role_ruler
+		on_remove_ruler_effects = yes
+	}
+	if = {
+		limit = { has_role = character_role_ig_leader }
+		remove_character_role = character_role_ig_leader
+	}
+	if = {
+		limit = { has_role = character_role_politician }
+		remove_character_role = character_role_politician
+	}
+	if = {
+		limit = { NOT = { has_role = character_role_executive } }
+		add_character_role = character_role_executive
+	}
+	if = {
+		limit = { NOT = { has_trait = expert_colonial_administrator } }
+		add_trait = expert_colonial_administrator
+	}
+	if = {
+		limit = { has_trait = experienced_colonial_administrator }
+		remove_trait = experienced_colonial_administrator
+	}
+	if = {
+		limit = { has_trait = basic_colonial_administrator }
+		remove_trait = basic_colonial_administrator
+	}
+}
+
+sb_rhodesian_venture_set_rhodes_colonialist_if_installed = {
+	save_scope_as = sb_rhodes_appointment_scope
+	if = {
+		limit = {
+			exists = scope:sb_bsac_company_scope
+			scope:sb_bsac_company_scope = {
+				executive = scope:sb_rhodes_appointment_scope
+			}
+		}
+		set_ideology = ideology:ideology_sb_colonialist_leader
 	}
 }
 
@@ -161,78 +333,12 @@ sb_rhodesian_venture_transfer_eligible_footprint = {
 		limit = { p:x9E9DE0.state.owner = { sb_rhodesian_venture_seed_owner_is_eligible = yes } }
 		s:STATE_ZAMBEZI = { set_owner_of_provinces = { country = c:BSA provinces = { x9E9DE0 } } }
 	}
-
-	# Zambia
-	if = {
-		limit = { p:xA02031.state.owner = { sb_rhodesian_venture_seed_owner_is_eligible = yes } }
-		s:STATE_ZAMBIA = { set_owner_of_provinces = { country = c:BSA provinces = { xA02031 } } }
-	}
-	if = {
-		limit = { p:x361062.state.owner = { sb_rhodesian_venture_seed_owner_is_eligible = yes } }
-		s:STATE_ZAMBIA = { set_owner_of_provinces = { country = c:BSA provinces = { x361062 } } }
-	}
-	if = {
-		limit = { p:x6D48F8.state.owner = { sb_rhodesian_venture_seed_owner_is_eligible = yes } }
-		s:STATE_ZAMBIA = { set_owner_of_provinces = { country = c:BSA provinces = { x6D48F8 } } }
-	}
-	if = {
-		limit = { p:x42585D.state.owner = { sb_rhodesian_venture_seed_owner_is_eligible = yes } }
-		s:STATE_ZAMBIA = { set_owner_of_provinces = { country = c:BSA provinces = { x42585D } } }
-	}
-	if = {
-		limit = { p:x076DB2.state.owner = { sb_rhodesian_venture_seed_owner_is_eligible = yes } }
-		s:STATE_ZAMBIA = { set_owner_of_provinces = { country = c:BSA provinces = { x076DB2 } } }
-	}
-	if = {
-		limit = { p:xDC956A.state.owner = { sb_rhodesian_venture_seed_owner_is_eligible = yes } }
-		s:STATE_ZAMBIA = { set_owner_of_provinces = { country = c:BSA provinces = { xDC956A } } }
-	}
-	if = {
-		limit = { p:x931020.state.owner = { sb_rhodesian_venture_seed_owner_is_eligible = yes } }
-		s:STATE_ZAMBIA = { set_owner_of_provinces = { country = c:BSA provinces = { x931020 } } }
-	}
-	if = {
-		limit = { p:xB54AA9.state.owner = { sb_rhodesian_venture_seed_owner_is_eligible = yes } }
-		s:STATE_ZAMBIA = { set_owner_of_provinces = { country = c:BSA provinces = { xB54AA9 } } }
-	}
-
-	# Kazembe
-	if = {
-		limit = { p:xA0E030.state.owner = { sb_rhodesian_venture_seed_owner_is_eligible = yes } }
-		s:STATE_KAZEMBE = { set_owner_of_provinces = { country = c:BSA provinces = { xA0E030 } } }
-	}
-	if = {
-		limit = { p:xBE2516.state.owner = { sb_rhodesian_venture_seed_owner_is_eligible = yes } }
-		s:STATE_KAZEMBE = { set_owner_of_provinces = { country = c:BSA provinces = { xBE2516 } } }
-	}
-	if = {
-		limit = { p:xF2A85D.state.owner = { sb_rhodesian_venture_seed_owner_is_eligible = yes } }
-		s:STATE_KAZEMBE = { set_owner_of_provinces = { country = c:BSA provinces = { xF2A85D } } }
-	}
-	if = {
-		limit = { p:x596FF5.state.owner = { sb_rhodesian_venture_seed_owner_is_eligible = yes } }
-		s:STATE_KAZEMBE = { set_owner_of_provinces = { country = c:BSA provinces = { x596FF5 } } }
-	}
 }
 
 sb_rhodesian_venture_move_british_claims_to_bsa = {
 	if = {
 		limit = { has_claim = s:STATE_ZAMBEZI }
 		s:STATE_ZAMBEZI = {
-			remove_claim = root
-			add_claim = c:BSA
-		}
-	}
-	if = {
-		limit = { has_claim = s:STATE_ZAMBIA }
-		s:STATE_ZAMBIA = {
-			remove_claim = root
-			add_claim = c:BSA
-		}
-	}
-	if = {
-		limit = { has_claim = s:STATE_KAZEMBE }
-		s:STATE_KAZEMBE = {
 			remove_claim = root
 			add_claim = c:BSA
 		}
@@ -275,10 +381,58 @@ sb_rhodesian_venture_apply_chartered_company_package = {
 	}
 }
 
-sb_rhodesian_venture_install_bsac_executive = {
+sb_rhodesian_venture_finalize_bsac_company_setup = {
 	company:company_sb_british_south_africa_company = {
 		save_scope_as = sb_bsac_company_scope
+		set_company_state_region = s:STATE_HOME_COUNTIES
 	}
+	if = {
+		limit = {
+			exists = scope:sb_bsac_company_scope
+			NOT = { sb_british_south_africa_company_is_linked_to_bsa = yes }
+		}
+		scope:sb_bsac_company_scope = { add_owned_country = c:BSA }
+	}
+	if = {
+		limit = {
+			exists = scope:sb_bsac_company_scope
+			sb_british_south_africa_company_is_linked_to_bsa = yes
+			NOT = { has_variable = sb_bsac_starting_asset_created_var }
+		}
+		s:STATE_ZAMBEZI = {
+			region_state:BSA ?= {
+				create_building = {
+					building = building_logging_camp
+					add_ownership = {
+						company = {
+							type = company_sb_british_south_africa_company
+							country = c:GBR
+							levels = 1
+						}
+					}
+					reserves = 1
+					activate_production_methods = {
+						"pm_simple_forestry"
+						"pm_no_hardwood"
+						"pm_no_equipment"
+						"pm_road_carts"
+					}
+				}
+			}
+		}
+		set_variable = sb_bsac_starting_asset_created_var
+	}
+	if = {
+		limit = {
+			exists = scope:sb_bsac_company_scope
+			sb_british_south_africa_company_is_linked_to_bsa = yes
+		}
+		sb_rhodesian_venture_install_bsac_executive = yes
+	}
+	sb_update_british_south_africa_company_slot = yes
+}
+
+sb_rhodesian_venture_install_bsac_executive = {
 	if = {
 		limit = {
 			is_template_used = SAF_cecil_rhodes
@@ -304,10 +458,6 @@ sb_rhodesian_venture_install_bsac_executive = {
 			save_scope_as = sb_rhodes_de_beers_owner_scope
 			company:company_de_beers = { save_scope_as = sb_rhodes_de_beers_company_scope }
 		}
-		scope:sb_bsac_rhodes_scope = {
-			transfer_character = root
-			set_character_as_executive = scope:sb_bsac_company_scope
-		}
 		if = {
 			limit = {
 				exists = scope:sb_rhodes_de_beers_owner_scope
@@ -318,10 +468,27 @@ sb_rhodesian_venture_install_bsac_executive = {
 					role = character_role_executive
 					interest_group = ig_industrialists
 					on_created = {
-						set_character_as_executive = scope:sb_rhodes_de_beers_company_scope
+						set_variable = sb_de_beers_replacement_executive_var
 					}
 				}
+				random_character = {
+					limit = { has_variable = sb_de_beers_replacement_executive_var }
+					remove_variable = sb_de_beers_replacement_executive_var
+					set_character_as_executive = scope:sb_rhodes_de_beers_company_scope
+				}
 			}
+		}
+		# Detach Rhodes from his old company before moving him into Britain's cast.
+		scope:sb_bsac_rhodes_scope = {
+			if = {
+				limit = { has_role = character_role_executive }
+				remove_character_role = character_role_executive
+			}
+			transfer_character = c:GBR
+			sb_rhodesian_venture_prepare_rhodes_for_bsac = yes
+			set_character_as_executive = scope:sb_bsac_company_scope
+			sb_rhodesian_venture_set_rhodes_colonialist_if_installed = yes
+			set_is_noble = no
 		}
 	}
 	else_if = {
@@ -329,12 +496,19 @@ sb_rhodesian_venture_install_bsac_executive = {
 			NOT = { is_template_used = SAF_cecil_rhodes }
 			NOT = { has_global_variable = sb_cecil_rhodes_ever_created_global_var }
 		}
+		set_global_variable = sb_cecil_rhodes_ever_created_global_var
 		create_character = {
 			template = SAF_cecil_rhodes
-			on_created = {
-				set_global_variable = sb_cecil_rhodes_ever_created_global_var
-				set_character_as_executive = scope:sb_bsac_company_scope
+		}
+		random_character = {
+			limit = {
+				has_template = SAF_cecil_rhodes
+				is_character_alive = yes
 			}
+			sb_rhodesian_venture_prepare_rhodes_for_bsac = yes
+			set_character_as_executive = scope:sb_bsac_company_scope
+			sb_rhodesian_venture_set_rhodes_colonialist_if_installed = yes
+			set_is_noble = no
 		}
 	}
 	else = {
@@ -342,9 +516,103 @@ sb_rhodesian_venture_install_bsac_executive = {
 			role = character_role_executive
 			interest_group = ig_industrialists
 			on_created = {
-				set_character_as_executive = scope:sb_bsac_company_scope
+				set_variable = sb_bsac_generated_executive_var
 			}
 		}
+		random_character = {
+			limit = { has_variable = sb_bsac_generated_executive_var }
+			remove_variable = sb_bsac_generated_executive_var
+			set_character_as_executive = scope:sb_bsac_company_scope
+		}
+	}
+}
+
+sb_rhodesian_venture_move_pioneer_column_settlers = {
+	if = {
+		limit = {
+			NOT = { has_variable = sb_bsac_pioneer_column_settlers_moved_var }
+			c:BSA ?= { is_country_alive = yes }
+			s:STATE_CAPE_COLONY = {
+				region_state:CAP ?= {
+					any_scope_pop = {
+						culture = cu:anglo_african
+						NOR = {
+							is_pop_type = bureaucrats
+							is_pop_type = clerks
+						}
+						total_size >= 380
+					}
+				}
+			}
+		}
+		# Keep the historical 380-person column while supplying its civil administration.
+		s:STATE_CAPE_COLONY = {
+			region_state:CAP = {
+				ordered_scope_pop = {
+					position = 0
+					order_by = total_size
+					limit = {
+						culture = cu:anglo_african
+						NOR = {
+							is_pop_type = bureaucrats
+							is_pop_type = clerks
+						}
+						total_size >= 380
+					}
+					save_scope_as = sb_bsac_pioneer_column_settler_pop_scope
+					move_partial_pop = {
+						state = s:STATE_ZAMBEZI.region_state:BSA
+						population_ratio = {
+							add = 80
+							divide = scope:sb_bsac_pioneer_column_settler_pop_scope.total_size
+						}
+					}
+					s:STATE_ZAMBEZI.region_state:BSA = {
+						ordered_scope_pop = {
+							position = 0
+							order_by = total_size
+							limit = {
+								culture = cu:anglo_african
+								NOR = {
+									is_pop_type = bureaucrats
+									is_pop_type = clerks
+								}
+							}
+							change_poptype = pop_type:bureaucrats
+						}
+					}
+					move_partial_pop = {
+						state = s:STATE_ZAMBEZI.region_state:BSA
+						population_ratio = {
+							add = 60
+							divide = scope:sb_bsac_pioneer_column_settler_pop_scope.total_size
+						}
+					}
+					s:STATE_ZAMBEZI.region_state:BSA = {
+						ordered_scope_pop = {
+							position = 0
+							order_by = total_size
+							limit = {
+								culture = cu:anglo_african
+								NOR = {
+									is_pop_type = bureaucrats
+									is_pop_type = clerks
+								}
+							}
+							change_poptype = pop_type:clerks
+						}
+					}
+					move_partial_pop = {
+						state = s:STATE_ZAMBEZI.region_state:BSA
+						population_ratio = {
+							add = 240
+							divide = scope:sb_bsac_pioneer_column_settler_pop_scope.total_size
+						}
+					}
+				}
+			}
+		}
+		set_variable = sb_bsac_pioneer_column_settlers_moved_var
 	}
 }
 
@@ -360,56 +628,24 @@ sb_rhodesian_venture_finalize_success = {
 		tag = BSA
 		origin = root
 		province = p:x2A4E0D
-	}
-
-	add_company = company_type:company_sb_british_south_africa_company
-	company:company_sb_british_south_africa_company = {
-		set_company_state_region = s:STATE_HOME_COUNTIES
-		add_owned_country = c:BSA
-	}
-	create_diplomatic_pact = {
-		country = c:BSA
-		type = chartered_company
-	}
-
-	c:BSA = { sb_rhodesian_venture_apply_chartered_company_package = yes }
-	sb_rhodesian_venture_transfer_eligible_footprint = yes
-	sb_rhodesian_venture_move_british_claims_to_bsa = yes
-
-	s:STATE_ZAMBEZI.region_state:BSA = {
-		create_building = {
-			building = building_government_administration
-			level = 1
-			reserves = 1
-		}
-		create_building = {
-			building = building_barracks
-			level = 1
-			reserves = 1
-		}
-	}
-
-	every_interest_group = {
-		limit = {
-			OR = {
-				law_stance = { law = law_type:law_laissez_faire value > neutral }
-				law_stance = { law = law_type:law_free_trade value > neutral }
-				law_stance = { law = law_type:law_interventionism value > neutral }
+		on_created = {
+			sb_rhodesian_venture_apply_chartered_company_package = yes
+			capital = {
+				create_building = {
+					building = building_government_administration
+					level = 2
+					reserves = 1
+				}
+				create_building = {
+					building = building_barrack
+					level = 1
+					reserves = 1
+				}
 			}
-			ig_counts_as_marginal = no
-		}
-		add_modifier = {
-			name = colonial_enterprise_modifier
-			days = normal_modifier_time
 		}
 	}
-
-	add_modifier = {
-		name = sb_british_south_africa_company_charter_slot
-		months = -1
-	}
-	sb_rhodesian_venture_install_bsac_executive = yes
-	set_variable = sb_rhodesian_venture_resolved_var
+	# Country tags and company objects become safe to link on the following day.
+	trigger_event = { id = sb_rhodesian_venture.012 days = 1 }
 	sb_rhodesian_venture_cleanup = yes
 }
 
@@ -434,6 +670,7 @@ sb_update_british_south_africa_company_slot = {
 }
 
 sb_disband_british_south_africa_company_country = {
+	remove_variable = sb_bsac_starting_asset_created_var
 	if = {
 		limit = { has_modifier = sb_british_south_africa_company_charter_slot }
 		remove_modifier = sb_british_south_africa_company_charter_slot

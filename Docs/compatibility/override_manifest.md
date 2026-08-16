@@ -23,7 +23,7 @@ On Depro's development machine, the canonical path is `/Users/depro/Documents/Pa
 The current lock covers:
 
 - `36` exact-path files;
-- `100` keyed `REPLACE`, `TRY_REPLACE`, or `REPLACE_OR_CREATE` objects;
+- `102` keyed `REPLACE`, `TRY_REPLACE`, or `REPLACE_OR_CREATE` objects;
 - `17` intentionally changed state-region blocks; and
 - no approved `replace_path` directives.
 
@@ -39,10 +39,14 @@ The five retained political-movement replacements are pinned to CMF `1.63.0`. Cu
 
 The company replacements are intentionally narrow:
 
-- `company_mozambique_company` retains Vanilla player eligibility and presentation, removes incorporation only from AI pursuit/construction checks, and gives POR/IBE a total AI weight of `100`.
+- `company_mozambique_company` retains Vanilla level-five player eligibility and presentation. POR/IBE AI may establish from an existing level-two cotton or tea plantation, may pursue construction before incorporation, and receives a total AI weight of `100`.
 - `company_de_beers` retains the Vanilla 1.13.10 structure while replacing gold-field requirements and targets with SB diamond mines.
 
 Vanilla's additive `on_company_disbanded` handler remains untouched. SB registers exactly one separate Mozambique cleanup handler.
+
+The Armed Forces definition is a keyed Vanilla `1.13.10` rebase. Its only SB delta consumes Imperial Administration's displayed flat `+50` Aristocrat attraction modifier; CMF `1.63.0` does not replace this object. The upstream source and object hashes are pinned so later military-interest-group changes require an explicit rebase.
+
+The Colonial Racialism amendment is a keyed Vanilla `1.13.10` rebase. Its only SB delta permits Rural Folk carrying Settler Colonialist to sponsor the amendment; Vanilla's approval gate and existing Armed Forces and Industrialist sponsors remain unchanged.
 
 The `pink_map` decision is pinned to its Vanilla 1.13.10 object. Its DLC, independence, Portuguese Colonialism, and one-use gates remain unchanged; SB adds only colonial/company-subject colonization eligibility and routing through the durable Bechuanaland terminal outcome. The Vanilla Pink Map JE, presentation, modifiers, and favour transaction remain authoritative.
 
@@ -50,11 +54,10 @@ The `pink_map` decision is pinned to its Vanilla 1.13.10 object. Its DLC, indepe
 
 The Bechuanaland Corridor uses CMF 1.63.0's journal-scope and International Situation interfaces:
 
-- `com_save_journal_to_variable` stores participant JE handles;
 - the CMF title setters project both titles for the situation widgets; and
 - `com_container` is the supported test-time inspector.
 
-SB calls these public helpers directly. Its launcher dependency is pinned to `1.63.*`, so an older CMF build is intentionally unsupported rather than maintained through duplicate inline implementations.
+The engine exposes the corridor as one contextless JE shared by its involved countries, so SB addresses that singleton through the standard `je:` link and projects its container-backed actor scopes and score directly. Its launcher dependency is pinned to `1.63.*`, so an older CMF build is intentionally unsupported rather than maintained through duplicate inline implementations.
 
 One named container, `sb_bechuanaland_corridor_state`, owns all shared active-crisis state. SB ships no journal GUI replacement and no container debug UI.
 
