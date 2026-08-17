@@ -651,10 +651,25 @@ sb_on_zpb_monthly_pulse_country = {
 			country_definition = cd:GBR
 			country_definition = cd:TRN
 			country_definition = cd:ORA
+			country_definition = cd:ZPB
 		}
 	}
 	effect = {
+		if = {
+			limit = {
+				country_definition = cd:ZPB
+				has_variable = sb_zpb_crackdown_total_conquest_route_var
+				has_variable = sb_zpb_crackdown_successor_pending_var
+				is_active_in_diplomatic_play = no
+			}
+			sb_zpb_assume_transvaal_after_crackdown_victory = yes
 			if = {
+				limit = { has_variable = sb_zpb_crackdown_total_conquest_route_var }
+				remove_variable = sb_zpb_crackdown_total_conquest_route_var
+				remove_variable = sb_zpb_crackdown_successor_pending_var
+			}
+		}
+		if = {
 				limit = {
 					country_definition = cd:GBR
 				game_date >= 1852.1.1

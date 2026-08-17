@@ -1067,7 +1067,7 @@ sb_natal_crisis.110 = {
 	flavor = sb_natal_crisis.110.f
 
 	event_image = {
-		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
+		video = "gfx/event_pictures/votp_gunboat_diplomacy.bk2"
 	}
 
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
@@ -1111,7 +1111,10 @@ sb_natal_crisis.110 = {
 	option = {
 		name = sb_natal_crisis.110.a
 		default_option = yes
-		sb_finalize_british_natal_colony = yes
+		custom_tooltip = sb_natal_crisis_british_colony_finalization_tt
+		hidden_effect = {
+			sb_finalize_british_natal_colony = yes
+		}
 		ai_chance = {
 			base = 80
 			modifier = {
@@ -1123,56 +1126,88 @@ sb_natal_crisis.110 = {
 
 	option = {
 		name = sb_natal_crisis.110.b
+		if = {
+			limit = { is_player = yes }
+			set_variable = {
+				name = sb_natalia_player_boer_support_pledged_var
+				months = 9
+			}
+		}
 		s:STATE_ZULULAND = {
 			set_owner_of_provinces = {
 				country = root
 				provinces = { x279045 }
 			}
 		}
-		if = {
-			limit = {
-				NOT = { has_variable = sb_natalia_player_boer_support_pledged_var }
-			}
-			c:ORA ?= {
-				if = {
-					limit = {
-						is_country_alive = yes
-						is_ai = yes
-					}
-					trigger_event = { id = sb_natal_crisis.111 days = 5 }
+		c:ORA ?= {
+			if = {
+				limit = {
+					is_country_alive = yes
+					is_ai = yes
 				}
-			}
-			c:TRN ?= {
-				if = {
-					limit = {
-						is_country_alive = yes
-						is_ai = yes
-					}
-					trigger_event = { id = sb_natal_crisis.112 days = 5 }
-				}
-			}
-			c:ZPB ?= {
-				if = {
-					limit = {
-						is_country_alive = yes
-						is_ai = yes
-					}
-					trigger_event = { id = sb_natal_crisis.113 days = 8 }
-				}
-			}
-			c:LYD ?= {
-				if = {
-					limit = {
-						is_country_alive = yes
-						is_ai = yes
-					}
-					trigger_event = { id = sb_natal_crisis.118 days = 5 }
-				}
+				trigger_event = { id = sb_natal_crisis.111 days = 5 }
 			}
 		}
-			scope:britain = {
-				trigger_event = { id = sb_natal_crisis.114 days = sb_travel_london_southern_africa_message_days }
+		c:TRN ?= {
+			if = {
+				limit = {
+					is_country_alive = yes
+					is_ai = yes
+				}
+				trigger_event = { id = sb_natal_crisis.112 days = 5 }
 			}
+		}
+		c:ZPB ?= {
+			if = {
+				limit = {
+					is_country_alive = yes
+					is_ai = yes
+				}
+				trigger_event = { id = sb_natal_crisis.113 days = 8 }
+			}
+		}
+		c:LYD ?= {
+			if = {
+				limit = {
+					is_country_alive = yes
+					is_ai = yes
+				}
+				trigger_event = { id = sb_natal_crisis.118 days = 5 }
+			}
+		}
+		scope:britain = {
+			if = {
+				limit = {
+					c:ZPB ?= {
+						is_country_alive = yes
+						is_ai = yes
+					}
+				}
+				trigger_event = { id = sb_natal_crisis.114 days = 99 }
+			}
+			else_if = {
+				limit = {
+					OR = {
+						c:ORA ?= {
+							is_country_alive = yes
+							is_ai = yes
+						}
+						c:TRN ?= {
+							is_country_alive = yes
+							is_ai = yes
+						}
+						c:LYD ?= {
+							is_country_alive = yes
+							is_ai = yes
+						}
+					}
+				}
+				trigger_event = { id = sb_natal_crisis.114 days = 96 }
+			}
+			else = {
+				trigger_event = { id = sb_natal_crisis.114 days = 91 }
+			}
+		}
 		ai_chance = {
 			base = 20
 			modifier = {
@@ -1235,6 +1270,12 @@ sb_natal_crisis.111 = {
 			}
 			modifier = {
 				trigger = {
+					scope:natalia ?= { is_player = yes }
+				}
+				add = 1000
+			}
+			modifier = {
+				trigger = {
 					scope:transvaal_supporter ?= { is_ai = yes }
 				}
 				add = 60
@@ -1254,6 +1295,12 @@ sb_natal_crisis.111 = {
 		}
 		ai_chance = {
 			base = 60
+			modifier = {
+				trigger = {
+					scope:natalia ?= { is_player = yes }
+				}
+				add = -1000
+			}
 		}
 	}
 }
@@ -1311,6 +1358,12 @@ sb_natal_crisis.112 = {
 			}
 			modifier = {
 				trigger = {
+					scope:natalia ?= { is_player = yes }
+				}
+				add = 1000
+			}
+			modifier = {
+				trigger = {
 					scope:orangia ?= { is_ai = yes }
 				}
 				add = 20
@@ -1330,6 +1383,12 @@ sb_natal_crisis.112 = {
 		}
 		ai_chance = {
 			base = 60
+			modifier = {
+				trigger = {
+					scope:natalia ?= { is_player = yes }
+				}
+				add = -1000
+			}
 		}
 	}
 }
@@ -1376,6 +1435,12 @@ sb_natal_crisis.113 = {
 				}
 				add = 45
 			}
+			modifier = {
+				trigger = {
+					scope:natalia ?= { is_player = yes }
+				}
+				add = 1000
+			}
 		}
 	}
 
@@ -1391,6 +1456,12 @@ sb_natal_crisis.113 = {
 		}
 		ai_chance = {
 			base = 45
+			modifier = {
+				trigger = {
+					scope:natalia ?= { is_player = yes }
+				}
+				add = -1000
+			}
 		}
 	}
 }
@@ -1585,7 +1656,7 @@ sb_natal_crisis.115 = {
 	flavor = sb_natal_crisis.115.f
 
 	event_image = {
-		video = "gfx/event_pictures/africa_construction_colony.bk2"
+		video = "gfx/event_pictures/ep1_transfer_of_authority.bk2"
 	}
 
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
@@ -1603,7 +1674,10 @@ sb_natal_crisis.115 = {
 	option = {
 		name = sb_natal_crisis.115.a
 		default_option = yes
-		sb_finalize_british_natal_colony = yes
+		custom_tooltip = sb_natal_crisis_british_colony_finalization_tt
+		hidden_effect = {
+			sb_finalize_british_natal_colony = yes
+		}
 		ai_chance = {
 			base = 100
 		}
@@ -1718,6 +1792,12 @@ sb_natal_crisis.118 = {
 				}
 				add = 45
 			}
+			modifier = {
+				trigger = {
+					scope:natalia ?= { is_player = yes }
+				}
+				add = 1000
+			}
 		}
 	}
 
@@ -1733,6 +1813,12 @@ sb_natal_crisis.118 = {
 		}
 		ai_chance = {
 			base = 45
+			modifier = {
+				trigger = {
+					scope:natalia ?= { is_player = yes }
+				}
+				add = -1000
+			}
 		}
 	}
 }

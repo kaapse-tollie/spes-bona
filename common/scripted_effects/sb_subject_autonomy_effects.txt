@@ -22,6 +22,18 @@ sb_apply_responsible_colony_subject_type_from_overlord = {
 	else = {
 		change_subject_type = subject_type_sb_responsible_colony
 	}
+
+	# Responsible ministries replace the two explicitly dependency-oriented laws.
+	# Every other citizenship and economic law is deliberately preserved.
+	if = {
+		limit = { has_law = law_type:law_subjecthood }
+		activate_law = law_type:law_racial_segregation
+	}
+	if = {
+		limit = { has_law = law_type:law_extraction_economy }
+		activate_law = law_type:law_agrarianism
+	}
+	sb_remove_colonial_industrialist_identity = yes
 }
 
 sb_apply_responsible_colony_governance_from_overlord = {

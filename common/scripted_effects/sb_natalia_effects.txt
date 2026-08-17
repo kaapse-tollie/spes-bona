@@ -131,7 +131,6 @@ sb_apply_natalia_boer_republic_setup = {
 		set_variable = sb_natalia_ultimatum_truce_var
 	}
 	effect_starting_technology_tier_3_tech = yes
-	effect_starting_politics_conservative = yes
 	add_technology_researched = napoleonic_warfare
 	set_country_type = unrecognized
 	set_next_election_date = 1840.1.1
@@ -153,6 +152,8 @@ sb_apply_natalia_boer_republic_setup = {
 		}
 		remove_primary_culture = cu:anglo_african
 	}
+	# Generate the republic's political cast only after Boer identity is active.
+	effect_starting_politics_conservative = yes
 	sb_apply_boer_commandant_general_baseline = yes
 	activate_law = law_type:law_national_supremacy
 	sb_ensure_boer_supremacist_movement = yes
@@ -280,6 +281,19 @@ sb_create_british_natal_colony_if_missing = {
 
 sb_seed_british_natal_colony_shell = {
 	effect_starting_technology_tier_2_tech = yes
+	if = {
+		limit = { NOT = { country_has_primary_culture = cu:anglo_african } }
+		add_primary_culture = cu:anglo_african
+	}
+	if = {
+		limit = { country_has_primary_culture = cu:british }
+		remove_primary_culture = cu:british
+	}
+	if = {
+		limit = { country_has_primary_culture = cu:boer }
+		remove_primary_culture = cu:boer
+	}
+	# The seed state is Zulu-populated, so establish the colonial identity first.
 	effect_starting_politics_conservative = yes
 }
 

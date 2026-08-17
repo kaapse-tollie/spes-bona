@@ -40,7 +40,7 @@ The Cultural Supremacy override is rebased to CMF 1.63.0, which incorporates Van
 
 ## Hail Columbia
 
-SB and Hail Columbia both replace `law_legacy_slavery`. Until a dedicated compatibility patch is available, SB must load after Hail Columbia so the Inboekstelsel visibility guard remains authoritative. Reversing the order may expose Legacy Slavery to Boer countries where SB expects the Inboekstelsel variant.
+SB and Hail Columbia both replace `law_legacy_slavery`. Until a dedicated compatibility patch is available, SB must load after Hail Columbia so the Inboekstelsel visibility guard remains authoritative. Reversing the order may expose Legacy Slavery to Boer countries or a settler-victory Cape where SB expects the Inboekstelsel variant.
 
 This is an explicit deferred release gate, not permission to weaken either mod's behavior.
 

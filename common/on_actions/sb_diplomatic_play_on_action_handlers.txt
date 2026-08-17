@@ -238,6 +238,34 @@ sb_on_spes_bona_diplo_play_back_down = {
 		sb_cleanup_ai_frontier_force_support_for_play = yes
 		sb_klip_river_handle_backdown = yes
 		sb_bechuanaland_handle_crisis_backdown = yes
+		sb_natal_handle_zulu_restoration_backdown = yes
+		if = {
+			limit = {
+				root = { is_diplomatic_play_type = dp_sb_trn_zpb_crackdown_locked }
+				scope:actor ?= { country_definition = cd:TRN }
+				scope:target ?= {
+					country_definition = cd:ZPB
+					has_variable = sb_zpb_crackdown_total_conquest_route_var
+				}
+			}
+			scope:target = { set_variable = sb_zpb_crackdown_successor_pending_var }
+		}
+		if = {
+			limit = {
+				root = { is_diplomatic_play_type = dp_sb_trn_zpb_crackdown_locked }
+				scope:actor ?= {
+					country_definition = cd:ZPB
+					has_variable = sb_zpb_crackdown_total_conquest_route_var
+				}
+			}
+			scope:actor = {
+				remove_variable = sb_zpb_crackdown_total_conquest_route_var
+				if = {
+					limit = { has_variable = sb_zpb_crackdown_successor_pending_var }
+					remove_variable = sb_zpb_crackdown_successor_pending_var
+				}
+			}
+		}
 		# If Oranje backs down from Pretorius's coercive claim, treat it as a
 		# Transvaal victory rather than waiting for a war-goal enforcement hook.
 		if = {
@@ -460,6 +488,23 @@ sb_on_spes_bona_war_end = {
 		sb_cleanup_ai_frontier_force_support_for_play = yes
 		sb_klip_river_handle_war_end = yes
 		sb_bechuanaland_resolve_crisis_war_at_end = yes
+		sb_natal_handle_zulu_restoration_war_end = yes
+		if = {
+			limit = {
+				root = { is_diplomatic_play_type = dp_sb_trn_zpb_crackdown_locked }
+				scope:target ?= {
+					country_definition = cd:ZPB
+					has_variable = sb_zpb_crackdown_total_conquest_route_var
+				}
+			}
+			scope:target = {
+				sb_zpb_assume_transvaal_after_crackdown_victory = yes
+				if = {
+					limit = { has_variable = sb_zpb_crackdown_total_conquest_route_var }
+					set_variable = sb_zpb_crackdown_successor_pending_var
+				}
+			}
+		}
 		if = {
 			limit = {
 				root = {
@@ -664,8 +709,22 @@ sb_on_spes_bona_war_end = {
 # War-goal hooks for the Phase 1 frontier wars.
 sb_on_spes_bona_wargoal_enforced = {
 	effect = {
+			if = {
+				limit = {
+					scope:target ?= {
+						country_definition = cd:ZUL
+						is_country_alive = yes
+					}
+					c:NAL ?= {
+						is_country_alive = yes
+						has_variable = sb_natalia_british_colony_resolved_var
+					}
+				}
+				scope:target = { sb_natal_archive_zulu_firearms = yes }
+			}
 			sb_klip_river_handle_wargoal_enforced = yes
 			sb_bechuanaland_track_crisis_wargoal_enforcement = yes
+			sb_natal_handle_zulu_restoration_wargoal_enforced = yes
 			if = {
 				limit = {
 					country_definition = cd:TRN

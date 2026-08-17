@@ -378,7 +378,7 @@ class RhodesianVentureTests(unittest.TestCase):
             for state_provinces in manifest["states"].values()
             for province in state_provinces
         }
-        self.assertEqual(15, len(provinces))
+        self.assertEqual(14, len(provinces))
         self.assertEqual({"STATE_ZAMBEZI"}, set(manifest["states"]))
         self.assertEqual("x2A4E0D", manifest["seed"])
         self.assertNotIn("x8F0060", provinces)
@@ -398,11 +398,29 @@ class RhodesianVentureTests(unittest.TestCase):
         )
         scripted = set(re.findall(r"provinces\s*=\s*\{\s*(x[0-9A-F]{6})\s*\}", transfer))
         self.assertEqual(provinces, scripted)
-        self.assertEqual(15, transfer.count("sb_rhodesian_venture_seed_owner_is_eligible = yes"))
+        self.assertEqual(14, transfer.count("sb_rhodesian_venture_seed_owner_is_eligible = yes"))
 
         province_map = ROOT / "map_data/provinces.png"
         digest = hashlib.sha256(province_map.read_bytes()).hexdigest()
         self.assertEqual(manifest["province_map_sha256"], digest)
+
+    def test_bsa_and_european_owners_use_salisbury_hub_name(self):
+        assignment = object_block(
+            "common/scripted_effects/zz_sb_dynamic_state_names_southern_africa.txt",
+            "STATE_ZAMBEZI_state_name_assign",
+        )
+        localization = text(
+            "localization/english/replace/dynamic_state_and_hub_names_l_english.yml"
+        )
+        self.assertIn("c:BSA ?= this", assignment)
+        self.assertIn("heritage_group_european", assignment)
+        self.assertIn("set_hub_names = european", assignment)
+        self.assertIn('HUB_NAME_STATE_ZAMBEZI_city_european:0 "Salisbury"', localization)
+        for hub, name in (("farm", "Bulawayo"), ("mine", "Gweru"), ("wood", "Hwange")):
+            self.assertIn(
+                f'HUB_NAME_STATE_ZAMBEZI_{hub}_european:0 "{name}"',
+                localization,
+            )
 
     def test_ownership_filter_and_claim_transfer_are_narrow(self):
         trigger = object_block(

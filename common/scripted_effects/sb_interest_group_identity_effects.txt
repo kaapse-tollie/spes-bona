@@ -1,4 +1,30 @@
-﻿sb_apply_cap_interest_group_identity = {
+﻿sb_apply_colonial_industrialist_identity = {
+	ig:ig_industrialists ?= {
+		if = {
+			limit = { has_ideology = ideology:ideology_laissez_faire }
+			remove_ideology = ideology_laissez_faire
+		}
+		if = {
+			limit = { NOT = { has_ideology = ideology:ideology_colonialist } }
+			add_ideology = ideology_colonialist
+		}
+	}
+}
+
+sb_remove_colonial_industrialist_identity = {
+	ig:ig_industrialists ?= {
+		if = {
+			limit = { has_ideology = ideology:ideology_colonialist }
+			remove_ideology = ideology_colonialist
+		}
+		if = {
+			limit = { NOT = { has_ideology = ideology:ideology_laissez_faire } }
+			add_ideology = ideology_laissez_faire
+		}
+	}
+}
+
+sb_apply_cap_interest_group_identity = {
 	ig:ig_armed_forces ?= {
 		set_interest_group_name = ig_sb_imperial_establishment
 		if = {
@@ -80,6 +106,13 @@
 		set_ig_trait = ig_trait:sb_ig_trait_stirring_the_masses
 		set_ig_trait = ig_trait:ig_trait_avant_garde
 		set_ig_trait = ig_trait:ig_trait_propagandists
+	}
+	if = {
+		limit = { is_subject_type = subject_type_colony }
+		sb_apply_colonial_industrialist_identity = yes
+	}
+	else = {
+		sb_remove_colonial_industrialist_identity = yes
 	}
 }
 
@@ -251,4 +284,5 @@ sb_apply_generic_british_colony_interest_group_identity = {
 			add_ideology = ideology_agrarian
 		}
 	}
+	sb_apply_colonial_industrialist_identity = yes
 }

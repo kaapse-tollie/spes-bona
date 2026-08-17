@@ -1,0 +1,370 @@
+﻿namespace = sb_natal_interwar
+
+sb_natal_interwar.001 = {
+	type = country_event
+	placement = root
+
+	title = sb_natal_interwar.001.t
+	desc = sb_natal_interwar.001.d
+	flavor = sb_natal_interwar.001.f
+
+	event_image = { video = "gfx/event_pictures/unspecific_signed_contract.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+
+	trigger = {
+		has_variable = sb_natal_indenture_pending_var
+		sb_natal_is_british_colony = yes
+		NOT = { has_variable = sb_natal_indenture_completed_var }
+		sb_natal_british_network_has_indenture_origin = yes
+		s:STATE_ZULULAND.region_state:NAL ?= {
+			state_is_eligible_as_mass_migration_target = yes
+		}
+	}
+
+	cancellation_trigger = {
+		OR = {
+			NOT = { sb_natal_is_british_colony = yes }
+			has_variable = sb_natal_indenture_completed_var
+			NOT = { sb_natal_british_network_has_indenture_origin = yes }
+			NOT = {
+				s:STATE_ZULULAND.region_state:NAL ?= {
+					state_is_eligible_as_mass_migration_target = yes
+				}
+			}
+		}
+	}
+
+	immediate = {
+		remove_variable = sb_natal_indenture_pending_var
+		# Match vanilla South American migration events: create before the option is shown.
+		sb_natal_select_indenture_origin_and_create_migration = yes
+	}
+
+	option = {
+		name = sb_natal_interwar.001.a
+		default_option = yes
+		custom_tooltip = sb_natal_indenture_migration_tt
+	}
+}
+
+sb_natal_interwar.010 = {
+	type = country_event
+	placement = root
+
+	title = sb_natal_interwar.010.t
+	desc = sb_natal_interwar.010.d
+	flavor = sb_natal_interwar.010.f
+
+	event_image = { video = "gfx/event_pictures/africa_public_protest.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_protest.dds"
+	duration = 3
+
+	trigger = {
+		has_variable = sb_natal_civil_rights_petition_pending_var
+		sb_natal_has_responsible_government = yes
+		has_law = law_type:law_racial_segregation
+		sb_natal_has_civil_rights_movement = yes
+		if = {
+			limit = { has_variable = sb_natal_civil_rights_petition_requires_gandhi_var }
+			any_scope_character = {
+				has_template = BIC_mohandas_karamchand_gandhi
+				is_character_alive = yes
+			}
+		}
+	}
+
+	cancellation_trigger = {
+		OR = {
+			NOT = { sb_natal_has_responsible_government = yes }
+			NOT = { has_law = law_type:law_racial_segregation }
+			NOT = { sb_natal_has_civil_rights_movement = yes }
+			AND = {
+				has_variable = sb_natal_civil_rights_petition_requires_gandhi_var
+				NOT = {
+					any_scope_character = {
+						has_template = BIC_mohandas_karamchand_gandhi
+						is_character_alive = yes
+					}
+				}
+			}
+		}
+	}
+
+	immediate = {
+		remove_variable = sb_natal_civil_rights_petition_pending_var
+		if = {
+			limit = { has_variable = sb_natal_civil_rights_petition_requires_gandhi_var }
+			remove_variable = sb_natal_civil_rights_petition_requires_gandhi_var
+		}
+	}
+
+	option = {
+		name = sb_natal_interwar.010.a
+		custom_tooltip = sb_natal_indian_civic_rights_accept_tt
+		hidden_effect = {
+			set_variable = sb_natal_indian_civic_rights_accepted_var
+			set_variable = sb_natal_civil_rights_resolved_var
+			active_law:lawgroup_citizenship ?= {
+				add_amendment = {
+					type = amendment_sb_natal_indian_civic_rights
+					sponsor = PREV.ig:ig_intelligentsia
+				}
+			}
+			sb_natal_make_indian_pops_loyalist_10 = yes
+		}
+		ai_chance = {
+			base = 20
+			modifier = {
+				trigger = { sb_frontier_ai_behavior_strict_historical = yes }
+				add = -1000
+			}
+		}
+	}
+
+	option = {
+		name = sb_natal_interwar.010.b
+		default_option = yes
+		custom_tooltip = sb_natal_indian_civic_rights_refuse_tt
+		hidden_effect = { sb_natal_make_indian_pops_radical_20 = yes }
+		ai_chance = {
+			base = 80
+			modifier = {
+				trigger = { sb_frontier_ai_behavior_strict_historical = yes }
+				add = 1000
+			}
+		}
+	}
+}
+
+sb_natal_interwar.020 = {
+	type = country_event
+	placement = root
+
+	title = sb_natal_interwar.020.t
+	desc = sb_natal_interwar.020.d
+
+	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:NAL
+		has_variable = sb_natal_zulu_chiefdom_bureaucracy_guard_var
+	}
+
+	option = {
+		name = sb_natal_interwar.020.a
+		default_option = yes
+	}
+}
+
+sb_natal_interwar.030 = {
+	type = country_event
+	placement = root
+
+	title = sb_natal_interwar.030.t
+	desc = sb_natal_interwar.030.d
+	flavor = sb_natal_interwar.030.f
+
+	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+
+	trigger = {
+		has_variable = sb_natal_zulu_settlement_pending_var
+		sb_natal_zulu_settlement_ready = yes
+	}
+
+	cancellation_trigger = { NOT = { sb_natal_zulu_settlement_ready = yes } }
+
+	immediate = {
+		remove_variable = sb_natal_zulu_settlement_pending_var
+	}
+
+	option = {
+		name = sb_natal_interwar.030.a
+		add_radicals = { value = 0.25 culture = cu:zulu }
+		hidden_effect = {
+			set_variable = sb_natal_zulu_settlement_resolved_var
+			s:STATE_ZULULAND = {
+				if = {
+					limit = { NOT = { is_homeland = cu:anglo_african } }
+					add_homeland = cu:anglo_african
+				}
+			}
+			sb_natal_create_zulu_restoration_movement = yes
+		}
+		ai_chance = {
+			base = 20
+			modifier = {
+				trigger = { sb_frontier_ai_behavior_strict_historical = yes }
+				add = -1000
+			}
+		}
+	}
+
+	option = {
+		name = sb_natal_interwar.030.b
+		default_option = yes
+		add_radicals = { value = -0.05 culture = cu:zulu }
+		hidden_effect = {
+			set_variable = sb_natal_zulu_settlement_resolved_var
+			s:STATE_ZULULAND = {
+				if = {
+					limit = { NOT = { is_homeland = cu:anglo_african } }
+					add_homeland = cu:anglo_african
+				}
+			}
+			sb_natal_apply_zulu_chiefdom_settlement = yes
+			sb_natal_create_zulu_restoration_movement = yes
+		}
+		ai_chance = {
+			base = 60
+			modifier = {
+				trigger = { sb_frontier_ai_behavior_strict_historical = yes }
+				add = 1000
+			}
+		}
+	}
+
+	option = {
+		name = sb_natal_interwar.030.c
+		hidden_effect = {
+			set_variable = sb_natal_zulu_settlement_resolved_var
+			s:STATE_ZULULAND = {
+				if = {
+					limit = { NOT = { is_homeland = cu:anglo_african } }
+					add_homeland = cu:anglo_african
+				}
+			}
+			set_variable = sb_natal_gradual_zulu_restoration_var
+			sb_natal_restore_zululand_as_puppet = yes
+		}
+		ai_chance = {
+			base = 20
+			modifier = {
+				trigger = { sb_frontier_ai_behavior_strict_historical = yes }
+				add = -1000
+			}
+		}
+	}
+}
+
+sb_natal_interwar.040 = {
+	type = country_event
+	placement = root
+
+	title = sb_natal_interwar.040.t
+	desc = sb_natal_interwar.040.d
+	flavor = sb_natal_interwar.040.f
+
+	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:TRN
+		is_country_alive = yes
+		c:NAL ?= {
+			is_country_alive = yes
+			has_variable = sb_natal_zulu_arms_appeal_sent_var
+			has_variable = sb_natal_zulu_arms_appeal_wait_var
+			NOT = { has_variable = sb_natal_zulu_arms_appeal_resolved_var }
+		}
+		c:ZUL ?= {
+			is_country_alive = yes
+			is_direct_subject_of = c:NAL
+		}
+	}
+
+	cancellation_trigger = {
+		OR = {
+			NOT = { c:NAL ?= { is_country_alive = yes } }
+			NOT = { c:ZUL ?= { is_country_alive = yes is_direct_subject_of = c:NAL } }
+			c:NAL ?= { has_variable = sb_natal_zulu_arms_appeal_resolved_var }
+		}
+	}
+
+	immediate = {
+		c:NAL = { save_scope_as = sb_natal_arms_appeal_natal_scope }
+		c:ZUL = { save_scope_as = sb_natal_arms_appeal_zulu_scope }
+	}
+
+	option = {
+		name = sb_natal_interwar.040.a
+		trigger = { sb_natal_trn_arms_treaty_possible = yes }
+		custom_tooltip = sb_natal_trn_supports_zulu_restoration_tt
+		hidden_effect = {
+			sb_natal_create_trn_zulu_arms_treaty = yes
+			sb_natal_resolve_zulu_arms_appeal = yes
+		}
+		ai_chance = {
+			base = 60
+			modifier = { trigger = { sb_natal_trn_is_imperial_confederation_participant = yes } add = 20 }
+			modifier = { trigger = { sb_natal_trn_leads_bechuanaland_story = yes } add = 15 }
+			modifier = { trigger = { has_diplomatic_pact = { who = c:GBR type = rivalry } } add = 20 }
+			modifier = { trigger = { sb_natal_trn_opposes_britain_or_natal = yes } add = 15 }
+			modifier = { trigger = { c:GBR ?= { relations:root >= relations_threshold:friendly } } add = -15 }
+			modifier = {
+				trigger = { c:GBR ?= { relations:root >= relations_threshold:amicable relations:root < relations_threshold:friendly } }
+				add = -10
+			}
+			modifier = {
+				trigger = { c:GBR ?= { relations:root >= relations_threshold:cordial relations:root < relations_threshold:amicable } }
+				add = -5
+			}
+			modifier = { trigger = { c:GBR ?= { relations:root <= relations_threshold:hostile } } add = 15 }
+			modifier = {
+				trigger = { c:GBR ?= { relations:root <= relations_threshold:cold relations:root > relations_threshold:hostile } }
+				add = 10
+			}
+			modifier = {
+				trigger = { c:GBR ?= { relations:root <= relations_threshold:poor relations:root > relations_threshold:cold } }
+				add = 5
+			}
+			modifier = { trigger = { is_in_same_power_bloc = c:GBR } add = -30 }
+			modifier = { trigger = { sb_natal_trn_has_british_security_treaty = yes } add = -20 }
+			modifier = { trigger = { sb_bechuanaland_ai_in_default_or_bankrupt = yes } add = -20 }
+		}
+	}
+
+	option = {
+		name = sb_natal_interwar.040.b
+		default_option = yes
+		hidden_effect = { sb_natal_resolve_zulu_arms_appeal = yes }
+		ai_chance = {
+			base = 40
+			modifier = { trigger = { sb_natal_trn_is_imperial_confederation_participant = yes } add = -20 }
+			modifier = { trigger = { sb_natal_trn_leads_bechuanaland_story = yes } add = -15 }
+			modifier = { trigger = { has_diplomatic_pact = { who = c:GBR type = rivalry } } add = -20 }
+			modifier = { trigger = { sb_natal_trn_opposes_britain_or_natal = yes } add = -15 }
+			modifier = { trigger = { c:GBR ?= { relations:root >= relations_threshold:friendly } } add = 15 }
+			modifier = {
+				trigger = { c:GBR ?= { relations:root >= relations_threshold:amicable relations:root < relations_threshold:friendly } }
+				add = 10
+			}
+			modifier = {
+				trigger = { c:GBR ?= { relations:root >= relations_threshold:cordial relations:root < relations_threshold:amicable } }
+				add = 5
+			}
+			modifier = { trigger = { c:GBR ?= { relations:root <= relations_threshold:hostile } } add = -15 }
+			modifier = {
+				trigger = { c:GBR ?= { relations:root <= relations_threshold:cold relations:root > relations_threshold:hostile } }
+				add = -10
+			}
+			modifier = {
+				trigger = { c:GBR ?= { relations:root <= relations_threshold:poor relations:root > relations_threshold:cold } }
+				add = -5
+			}
+			modifier = { trigger = { is_in_same_power_bloc = c:GBR } add = 30 }
+			modifier = { trigger = { sb_natal_trn_has_british_security_treaty = yes } add = 20 }
+			modifier = { trigger = { sb_bechuanaland_ai_in_default_or_bankrupt = yes } add = 20 }
+		}
+	}
+}

@@ -1,0 +1,1002 @@
+# Natal interwar, Indian indenture, and post-annexation Zululand settlement.
+
+sb_natal_archive_zulu_firearms = {
+	if = {
+		limit = {
+			country_definition = cd:ZUL
+			c:NAL ?= {
+				is_country_alive = yes
+				has_variable = sb_natalia_british_colony_resolved_var
+			}
+		}
+		c:NAL = {
+			set_variable = { name = sb_natal_archived_firearms_progress_var value = 0 }
+			set_variable = { name = sb_natal_archived_firearms_treaty_progress_var value = 0 }
+			set_variable = { name = sb_natal_archived_firearms_industry_progress_var value = 0 }
+			set_variable = { name = sb_natal_archived_firearms_tier_var value = 0 }
+			if = {
+				limit = { ROOT = { has_variable = sb_firearms_progress_months_var } }
+				set_variable = {
+					name = sb_natal_archived_firearms_progress_var
+					value = ROOT.var:sb_firearms_progress_months_var
+				}
+			}
+			if = {
+				limit = { ROOT = { has_variable = sb_firearms_treaty_progress_months_var } }
+				set_variable = {
+					name = sb_natal_archived_firearms_treaty_progress_var
+					value = ROOT.var:sb_firearms_treaty_progress_months_var
+				}
+			}
+			if = {
+				limit = { ROOT = { has_variable = sb_firearms_industry_progress_months_var } }
+				set_variable = {
+					name = sb_natal_archived_firearms_industry_progress_var
+					value = ROOT.var:sb_firearms_industry_progress_months_var
+				}
+			}
+			if = {
+				limit = { ROOT = { has_variable = sb_firearms_applied_tier_var } }
+				set_variable = {
+					name = sb_natal_archived_firearms_tier_var
+					value = ROOT.var:sb_firearms_applied_tier_var
+				}
+			}
+			if = {
+				limit = { ROOT = { has_variable = sb_firearms_modernized_var } }
+				set_variable = sb_natal_archived_firearms_modernized_var
+			}
+			else_if = {
+				limit = { has_variable = sb_natal_archived_firearms_modernized_var }
+				remove_variable = sb_natal_archived_firearms_modernized_var
+			}
+			set_variable = sb_natal_zulu_firearms_archived_var
+		}
+	}
+}
+
+sb_natal_restore_archived_zulu_firearms = {
+	if = {
+		limit = {
+			country_definition = cd:ZUL
+			c:NAL ?= { has_variable = sb_natal_zulu_firearms_archived_var }
+		}
+		set_variable = {
+			name = sb_firearms_progress_months_var
+			value = c:NAL.var:sb_natal_archived_firearms_progress_var
+		}
+		set_variable = {
+			name = sb_firearms_treaty_progress_months_var
+			value = c:NAL.var:sb_natal_archived_firearms_treaty_progress_var
+		}
+		set_variable = {
+			name = sb_firearms_industry_progress_months_var
+			value = c:NAL.var:sb_natal_archived_firearms_industry_progress_var
+		}
+		if = {
+			limit = { c:NAL = { has_variable = sb_natal_archived_firearms_modernized_var } }
+			set_variable = sb_firearms_modernized_var
+			sb_remove_iron_age_weapons_modifiers = yes
+		}
+		else = {
+			if = {
+				limit = { NOT = { has_journal_entry = je_sb_adopt_firearms } }
+				add_journal_entry = { type = je_sb_adopt_firearms }
+			}
+			if = {
+				limit = { c:NAL = { has_variable = sb_natal_archived_firearms_tier_var } }
+				set_variable = {
+					name = sb_firearms_applied_tier_var
+					value = c:NAL.var:sb_natal_archived_firearms_tier_var
+				}
+			}
+			sb_repair_iron_age_weapons_penalty = yes
+			sb_sync_firearms_progress_bar = yes
+		}
+	}
+}
+
+sb_natal_select_indenture_origin_and_create_migration = {
+	s:STATE_ZULULAND.region_state:NAL ?= {
+		if = {
+			limit = { state_is_eligible_as_mass_migration_target = yes }
+			save_scope_as = sb_natal_indenture_target_scope
+		}
+	}
+	random_list = {
+		35 = {
+			trigger = {
+				c:GBR = {
+					any_subject_or_below = {
+						sb_natal_country_is_indian = yes
+						any_scope_state = { any_scope_pop = { culture = cu:tamil } }
+					}
+				}
+			}
+			cu:tamil = { save_scope_as = sb_natal_indenture_culture_scope }
+		}
+		25 = {
+			trigger = {
+				c:GBR = {
+					any_subject_or_below = {
+						sb_natal_country_is_indian = yes
+						any_scope_state = { any_scope_pop = { culture = cu:telegu } }
+					}
+				}
+			}
+			cu:telegu = { save_scope_as = sb_natal_indenture_culture_scope }
+		}
+		20 = {
+			trigger = {
+				c:GBR = {
+					any_subject_or_below = {
+						sb_natal_country_is_indian = yes
+						any_scope_state = { any_scope_pop = { culture = cu:hindustani } }
+					}
+				}
+			}
+			cu:hindustani = { save_scope_as = sb_natal_indenture_culture_scope }
+		}
+		15 = {
+			trigger = {
+				c:GBR = {
+					any_subject_or_below = {
+						sb_natal_country_is_indian = yes
+						any_scope_state = { any_scope_pop = { culture = cu:bihari } }
+					}
+				}
+			}
+			cu:bihari = { save_scope_as = sb_natal_indenture_culture_scope }
+		}
+		5 = {
+			trigger = {
+				c:GBR = {
+					any_subject_or_below = {
+						sb_natal_country_is_indian = yes
+						any_scope_state = { any_scope_pop = { culture = cu:gujarati } }
+					}
+				}
+			}
+			cu:gujarati = { save_scope_as = sb_natal_indenture_culture_scope }
+		}
+	}
+	if = {
+		limit = {
+			exists = scope:sb_natal_indenture_target_scope
+			exists = scope:sb_natal_indenture_culture_scope
+		}
+		c:GBR = {
+			random_subject_or_below = {
+				limit = {
+					sb_natal_country_is_indian = yes
+					any_scope_state = {
+						any_scope_pop = { culture = scope:sb_natal_indenture_culture_scope }
+					}
+				}
+				save_scope_as = sb_natal_indenture_origin_scope
+			}
+		}
+	}
+	if = {
+		limit = {
+			exists = scope:sb_natal_indenture_target_scope
+			exists = scope:sb_natal_indenture_culture_scope
+			exists = scope:sb_natal_indenture_origin_scope
+		}
+		scope:sb_natal_indenture_target_scope = {
+			create_mass_migration = {
+				origin = scope:sb_natal_indenture_origin_scope
+				culture = scope:sb_natal_indenture_culture_scope
+			}
+		}
+		set_variable = sb_natal_indenture_completed_var
+	}
+}
+
+sb_natal_make_indian_pops_loyalist_10 = {
+	add_loyalists = { value = 0.10 culture = cu:kho }
+	add_loyalists = { value = 0.10 culture = cu:assamese }
+	add_loyalists = { value = 0.10 culture = cu:bengali }
+	add_loyalists = { value = 0.10 culture = cu:bihari }
+	add_loyalists = { value = 0.10 culture = cu:manipuri }
+	add_loyalists = { value = 0.10 culture = cu:nepali }
+	add_loyalists = { value = 0.10 culture = cu:oriya }
+	add_loyalists = { value = 0.10 culture = cu:sinhala }
+	add_loyalists = { value = 0.10 culture = cu:avadhi }
+	add_loyalists = { value = 0.10 culture = cu:panjabi }
+	add_loyalists = { value = 0.10 culture = cu:kashmiri }
+	add_loyalists = { value = 0.10 culture = cu:gujarati }
+	add_loyalists = { value = 0.10 culture = cu:marathi }
+	add_loyalists = { value = 0.10 culture = cu:sindi }
+	add_loyalists = { value = 0.10 culture = cu:rajput }
+	add_loyalists = { value = 0.10 culture = cu:kannada }
+	add_loyalists = { value = 0.10 culture = cu:malayalam }
+	add_loyalists = { value = 0.10 culture = cu:tamil }
+	add_loyalists = { value = 0.10 culture = cu:telegu }
+	add_loyalists = { value = 0.10 culture = cu:hindustani }
+	add_loyalists = { value = 0.10 culture = cu:lushai }
+	add_loyalists = { value = 0.10 culture = cu:bundeli }
+	add_loyalists = { value = 0.10 culture = cu:pahari }
+	add_loyalists = { value = 0.10 culture = cu:gondi }
+	add_loyalists = { value = 0.10 culture = cu:bageli }
+	add_loyalists = { value = 0.10 culture = cu:chhattisgarhi }
+	add_loyalists = { value = 0.10 culture = cu:naga }
+	add_loyalists = { value = 0.10 culture = cu:deccani }
+	add_loyalists = { value = 0.10 culture = cu:pathan }
+}
+
+sb_natal_make_indian_pops_radical_20 = {
+	add_radicals = { value = 0.20 culture = cu:kho }
+	add_radicals = { value = 0.20 culture = cu:assamese }
+	add_radicals = { value = 0.20 culture = cu:bengali }
+	add_radicals = { value = 0.20 culture = cu:bihari }
+	add_radicals = { value = 0.20 culture = cu:manipuri }
+	add_radicals = { value = 0.20 culture = cu:nepali }
+	add_radicals = { value = 0.20 culture = cu:oriya }
+	add_radicals = { value = 0.20 culture = cu:sinhala }
+	add_radicals = { value = 0.20 culture = cu:avadhi }
+	add_radicals = { value = 0.20 culture = cu:panjabi }
+	add_radicals = { value = 0.20 culture = cu:kashmiri }
+	add_radicals = { value = 0.20 culture = cu:gujarati }
+	add_radicals = { value = 0.20 culture = cu:marathi }
+	add_radicals = { value = 0.20 culture = cu:sindi }
+	add_radicals = { value = 0.20 culture = cu:rajput }
+	add_radicals = { value = 0.20 culture = cu:kannada }
+	add_radicals = { value = 0.20 culture = cu:malayalam }
+	add_radicals = { value = 0.20 culture = cu:tamil }
+	add_radicals = { value = 0.20 culture = cu:telegu }
+	add_radicals = { value = 0.20 culture = cu:hindustani }
+	add_radicals = { value = 0.20 culture = cu:lushai }
+	add_radicals = { value = 0.20 culture = cu:bundeli }
+	add_radicals = { value = 0.20 culture = cu:pahari }
+	add_radicals = { value = 0.20 culture = cu:gondi }
+	add_radicals = { value = 0.20 culture = cu:bageli }
+	add_radicals = { value = 0.20 culture = cu:chhattisgarhi }
+	add_radicals = { value = 0.20 culture = cu:naga }
+	add_radicals = { value = 0.20 culture = cu:deccani }
+	add_radicals = { value = 0.20 culture = cu:pathan }
+}
+
+sb_natal_ensure_civil_rights_movement = {
+	if = {
+		limit = {
+			sb_natal_has_responsible_government = yes
+			sb_natal_has_indian_pops = yes
+			NOT = { has_variable = sb_natal_civil_rights_resolved_var }
+			NOT = { sb_natal_has_civil_rights_movement = yes }
+		}
+		create_political_movement = { type = movement_sb_natal_civil_rights }
+	}
+}
+
+sb_natal_ensure_gandhi_for_civil_rights = {
+	if = {
+		limit = {
+			game_date >= 1893.1.1
+			sb_natal_has_civil_rights_movement = yes
+			NOT = { has_variable = sb_natal_civil_rights_resolved_var }
+		}
+		if = {
+			limit = {
+				any_country = {
+					NOT = { sb_natal_country_is_indian = yes }
+					any_scope_character = {
+						has_template = BIC_mohandas_karamchand_gandhi
+						is_character_alive = yes
+					}
+				}
+				NOT = {
+					any_scope_character = {
+						has_template = BIC_mohandas_karamchand_gandhi
+						is_character_alive = yes
+					}
+				}
+			}
+			random_country = {
+				limit = {
+					NOT = { sb_natal_country_is_indian = yes }
+					any_scope_character = {
+						has_template = BIC_mohandas_karamchand_gandhi
+						is_character_alive = yes
+					}
+				}
+				random_scope_character = {
+					limit = {
+						has_template = BIC_mohandas_karamchand_gandhi
+						is_character_alive = yes
+					}
+					transfer_character = ROOT
+				}
+			}
+		}
+		else_if = {
+			limit = {
+				any_character_in_exile_pool = {
+					has_template = BIC_mohandas_karamchand_gandhi
+					is_character_alive = yes
+				}
+			}
+			random_character_in_exile_pool = {
+				limit = {
+					has_template = BIC_mohandas_karamchand_gandhi
+					is_character_alive = yes
+				}
+				transfer_character = ROOT
+			}
+		}
+		else_if = {
+			limit = {
+				NOT = { has_global_variable = gandhi_spawn }
+				NOT = {
+					any_country = {
+						any_scope_character = {
+							has_template = BIC_mohandas_karamchand_gandhi
+							is_character_alive = yes
+						}
+					}
+				}
+			}
+			set_global_variable = gandhi_spawn
+			create_character = { template = BIC_mohandas_karamchand_gandhi }
+		}
+	}
+}
+
+sb_natal_schedule_civil_rights_petition = {
+	if = {
+		limit = {
+			sb_natal_has_responsible_government = yes
+			has_law = law_type:law_racial_segregation
+			NOT = { has_variable = sb_natal_civil_rights_petition_spent_var }
+			NOT = { has_variable = sb_natal_civil_rights_petition_pending_var }
+			any_political_movement = {
+				is_political_movement_type = movement_sb_natal_civil_rights
+				political_movement_radicalism >= 0.75
+			}
+		}
+		set_variable = sb_natal_civil_rights_petition_spent_var
+		set_variable = {
+			name = sb_natal_civil_rights_petition_pending_var
+			days = 120
+		}
+		if = {
+			limit = {
+				any_scope_character = {
+					has_template = BIC_mohandas_karamchand_gandhi
+					is_character_alive = yes
+				}
+			}
+			set_variable = sb_natal_civil_rights_petition_requires_gandhi_var
+		}
+		trigger_event = { id = sb_natal_interwar.010 days = 90 popup = yes }
+	}
+}
+
+sb_natal_cancel_invalid_civil_rights_petition = {
+	if = {
+		limit = {
+			has_variable = sb_natal_civil_rights_petition_pending_var
+			OR = {
+				NOT = { sb_natal_has_responsible_government = yes }
+				NOT = { sb_natal_has_civil_rights_movement = yes }
+				AND = {
+					has_variable = sb_natal_civil_rights_petition_requires_gandhi_var
+					NOT = {
+						any_scope_character = {
+							has_template = BIC_mohandas_karamchand_gandhi
+							is_character_alive = yes
+						}
+					}
+				}
+			}
+		}
+		remove_variable = sb_natal_civil_rights_petition_pending_var
+		if = {
+			limit = { has_variable = sb_natal_civil_rights_petition_requires_gandhi_var }
+			remove_variable = sb_natal_civil_rights_petition_requires_gandhi_var
+		}
+	}
+}
+
+sb_natal_schedule_zulu_settlement = {
+	if = {
+		limit = {
+			sb_natal_zulu_settlement_ready = yes
+			NOT = { has_variable = sb_natal_zulu_settlement_pending_var }
+		}
+		set_variable = {
+			name = sb_natal_zulu_settlement_pending_var
+			days = 60
+		}
+		trigger_event = { id = sb_natal_interwar.030 days = 30 popup = yes }
+	}
+}
+
+sb_natal_create_zulu_restoration_movement = {
+	if = {
+		limit = { NOT = { sb_natal_has_zulu_restoration_movement = yes } }
+		create_political_movement = { type = movement_sb_zulu_restoration }
+	}
+	sb_natal_ensure_zulu_restoration_agitator = yes
+}
+
+sb_natal_ensure_zulu_restoration_agitator = {
+	if = {
+		limit = {
+			game_date >= 1884.1.1
+			NOT = {
+				any_scope_character = {
+					has_template = ZUL_dinuzulu_heir
+					is_character_alive = yes
+				}
+			}
+		}
+		if = {
+			limit = {
+				any_country = {
+					any_scope_character = {
+						has_template = ZUL_dinuzulu_heir
+						is_character_alive = yes
+					}
+				}
+			}
+			set_global_variable = sb_dinuzulu_ever_created_global_var
+			random_country = {
+				limit = {
+					any_scope_character = {
+						has_template = ZUL_dinuzulu_heir
+						is_character_alive = yes
+					}
+				}
+				random_scope_character = {
+					limit = {
+						has_template = ZUL_dinuzulu_heir
+						is_character_alive = yes
+						NOT = { is_ruler_of_own_country = yes }
+					}
+					transfer_character = ROOT
+					replace_character_roles = { add = { agitator } remove_all = yes }
+				}
+			}
+		}
+		else_if = {
+			limit = { NOT = { has_global_variable = sb_dinuzulu_ever_created_global_var } }
+			set_global_variable = sb_dinuzulu_ever_created_global_var
+			create_character = {
+				template = ZUL_dinuzulu_heir
+				on_created = {
+					replace_character_roles = { add = { agitator } remove_all = yes }
+				}
+			}
+		}
+	}
+	if = {
+		limit = {
+			NOT = {
+				any_scope_character = {
+					is_character_alive = yes
+					OR = {
+						has_template = ZUL_dinuzulu_heir
+						has_variable = sb_natal_generated_zulu_restoration_leader_var
+					}
+				}
+			}
+		}
+		create_character = {
+			culture = cu:zulu
+			religion = rel:animist
+			age = 30
+			is_agitator = yes
+			interest_group = ig_landowners
+			ideology = ideology_ethno_nationalist
+			traits = { ambitious inspirational_orator }
+			on_created = { set_variable = sb_natal_generated_zulu_restoration_leader_var }
+		}
+	}
+}
+
+sb_natal_apply_restored_zulu_baseline = {
+	set_country_type = unrecognized
+	effect_starting_technology_tier_6_tech = yes
+	add_technology_researched = international_trade
+	effect_starting_politics_traditional = yes
+	activate_law = law_type:law_monarchy
+	activate_law = law_type:law_autocracy
+	activate_law = law_type:law_subjecthood
+	activate_law = law_type:law_traditionalism
+	activate_law = law_type:law_land_based_taxation
+	activate_law = law_type:law_legacy_slavery
+	activate_law = law_type:law_sb_amabutho_system
+	every_interest_group = { remove_ruling_interest_group = yes }
+	ig:ig_landowners ?= { add_ruling_interest_group = yes }
+	ig:ig_armed_forces ?= { add_ruling_interest_group = yes }
+	if = {
+		limit = { NOT = { has_claim = s:STATE_ZULULAND } }
+		s:STATE_ZULULAND = { add_claim = ROOT }
+	}
+}
+
+sb_natal_install_restored_zulu_ruler = {
+	if = {
+		limit = {
+			game_date >= 1884.1.1
+			any_country = {
+				any_scope_character = {
+					has_template = ZUL_dinuzulu_heir
+					is_character_alive = yes
+				}
+			}
+		}
+		random_country = {
+			limit = {
+				any_scope_character = {
+					has_template = ZUL_dinuzulu_heir
+					is_character_alive = yes
+				}
+			}
+			random_scope_character = {
+				limit = {
+					has_template = ZUL_dinuzulu_heir
+					is_character_alive = yes
+				}
+				transfer_character = c:ZUL
+			}
+		}
+		c:ZUL = {
+			random_scope_character = {
+				limit = {
+					has_template = ZUL_dinuzulu_heir
+					is_character_alive = yes
+				}
+				save_scope_as = summoned_character_scope
+			}
+			sb_zulu_install_summoned_claimant_as_ruler = yes
+		}
+	}
+	else_if = {
+		limit = {
+			c:NAL = {
+				any_scope_character = {
+					has_variable = sb_natal_generated_zulu_restoration_leader_var
+					is_character_alive = yes
+				}
+			}
+		}
+		c:NAL = {
+			random_scope_character = {
+				limit = {
+					has_variable = sb_natal_generated_zulu_restoration_leader_var
+					is_character_alive = yes
+				}
+				transfer_character = c:ZUL
+			}
+		}
+		c:ZUL = {
+			random_scope_character = {
+				limit = {
+					has_variable = sb_natal_generated_zulu_restoration_leader_var
+					is_character_alive = yes
+				}
+				save_scope_as = summoned_character_scope
+			}
+			sb_zulu_install_summoned_claimant_as_ruler = yes
+		}
+	}
+	else = {
+		c:ZUL = {
+			create_character = {
+				culture = cu:zulu
+				religion = rel:animist
+				age = 30
+				interest_group = ig_landowners
+				ideology = ideology_traditionalist
+				traits = { ambitious imperious basic_diplomat }
+				on_created = { save_scope_as = summoned_character_scope }
+			}
+			sb_zulu_install_summoned_claimant_as_ruler = yes
+		}
+	}
+}
+
+sb_natal_normalize_restored_zululand_population = {
+	if = {
+		limit = {
+			exists = s:STATE_ZULULAND.region_state:NAL
+			exists = s:STATE_ZULULAND.region_state:ZUL
+		}
+		s:STATE_ZULULAND.region_state:NAL = {
+			every_scope_pop = {
+				limit = { culture = cu:zulu }
+				move_partial_pop = {
+					state = s:STATE_ZULULAND.region_state:ZUL
+					population_ratio = 0.30
+				}
+			}
+		}
+		s:STATE_ZULULAND.region_state:ZUL = {
+			every_scope_pop = {
+				limit = { NOT = { culture = cu:zulu } }
+				move_partial_pop = {
+					state = s:STATE_ZULULAND.region_state:NAL
+					population_ratio = 1
+				}
+			}
+		}
+	}
+}
+
+sb_natal_restore_zululand_as_puppet = {
+	if = {
+		limit = {
+			country_definition = cd:NAL
+			sb_natal_owns_complete_northern_zulu_core = yes
+			NOT = { c:ZUL ?= { is_country_alive = yes } }
+		}
+		create_country = {
+			tag = ZUL
+			origin = ROOT
+			province = p:xBE6FEE
+			on_created = { sb_natal_apply_restored_zulu_baseline = yes }
+		}
+		s:STATE_ZULULAND = {
+			set_owner_of_provinces = {
+				country = c:ZUL
+				provinces = {
+					xBE6FEE x1A084B xBFA16B x9E9742 x88FAD4
+					x904EBE x41C070 xE882CE xE1E455
+				}
+			}
+		}
+		create_diplomatic_pact = {
+			country = c:ZUL
+			type = puppet
+		}
+		c:ZUL = { add_liberty_desire = 75 }
+		sb_natal_normalize_restored_zululand_population = yes
+		c:ZUL = { sb_natal_restore_archived_zulu_firearms = yes }
+		sb_natal_install_restored_zulu_ruler = yes
+	}
+}
+
+sb_natal_apply_zulu_chiefdom_settlement = {
+	set_variable = sb_natal_zulu_chiefdom_settlement_var
+	if = {
+		limit = { NOT = { has_law = law_type:law_sb_imperial_administration } }
+		activate_law = law_type:law_sb_imperial_administration
+	}
+	active_law:lawgroup_bureaucracy ?= {
+		add_amendment = {
+			type = amendment_sb_zulu_chiefdom_settlement
+			sponsor = PREV.ig:ig_armed_forces
+		}
+	}
+}
+
+sb_natal_remove_zulu_chiefdom_settlement = {
+	active_law:lawgroup_bureaucracy ?= {
+		every_scope_amendment = {
+			limit = { type = amendment_type:amendment_sb_zulu_chiefdom_settlement }
+			remove_amendment = yes
+		}
+	}
+	if = {
+		limit = { has_variable = sb_natal_zulu_chiefdom_settlement_var }
+		remove_variable = sb_natal_zulu_chiefdom_settlement_var
+	}
+}
+
+sb_natal_begin_zulu_restoration_uprising = {
+	if = {
+		limit = {
+			country_definition = cd:NAL
+			sb_natal_owns_complete_northern_zulu_core = yes
+			NOT = { c:ZUL ?= { is_country_alive = yes } }
+		}
+		set_variable = sb_natal_zulu_restoration_uprising_pending_var
+		sb_natal_remove_zulu_chiefdom_settlement = yes
+		sb_natal_restore_zululand_as_puppet = yes
+		if = {
+			limit = { c:TRN ?= { is_country_alive = yes } }
+			set_variable = sb_natal_zulu_arms_appeal_sent_var
+			set_variable = {
+				name = sb_natal_zulu_arms_appeal_wait_var
+				days = 30
+			}
+			c:TRN = { trigger_event = { id = sb_natal_interwar.040 days = 5 popup = yes } }
+		}
+		else = {
+			set_variable = sb_natal_zulu_arms_appeal_resolved_var
+			set_variable = sb_natal_zulu_restoration_play_pending_var
+		}
+	}
+}
+
+sb_natal_create_trn_zulu_arms_treaty = {
+	if = {
+		limit = { sb_natal_trn_arms_treaty_possible = yes }
+		s:STATE_ZULULAND = {
+			set_owner_of_provinces = {
+				country = c:TRN
+				provinces = { xE1E455 xE882CE x1A084B xBFA16B x41C070 }
+			}
+		}
+		add_infamy = 2.5
+		change_relations = { country = c:NAL value = -15 }
+		change_relations = { country = c:GBR value = -5 }
+		create_treaty = {
+			first_country = ROOT
+			second_country = c:ZUL
+			is_draft = no
+			binding_period = { years = 5 }
+			articles_to_create = {
+				{
+					article = military_assistance
+					source_country = ROOT
+					target_country = c:ZUL
+				}
+				{
+					article = goods_transfer
+					source_country = ROOT
+					target_country = c:ZUL
+					inputs = {
+						{ goods = g:small_arms }
+						{ quantity = 10 }
+					}
+				}
+			}
+		}
+	}
+}
+
+sb_natal_resolve_zulu_arms_appeal = {
+	if = {
+		limit = { c:NAL ?= { is_country_alive = yes } }
+		c:NAL = {
+			set_variable = sb_natal_zulu_arms_appeal_resolved_var
+			set_variable = sb_natal_zulu_restoration_play_pending_var
+			if = {
+				limit = { has_variable = sb_natal_zulu_arms_appeal_wait_var }
+				remove_variable = sb_natal_zulu_arms_appeal_wait_var
+			}
+		}
+	}
+}
+
+sb_natal_launch_zulu_restoration_play = {
+	if = {
+		limit = {
+			sb_natal_zulu_restoration_play_can_launch = yes
+			NOT = {
+				any_diplomatic_play = {
+					is_diplomatic_play_type = dp_sb_zulu_restoration_secession
+				}
+			}
+		}
+		set_variable = sb_natal_zulu_restoration_play_active_var
+		c:ZUL = {
+			set_variable = sb_natal_zulu_restoration_play_active_var
+			create_diplomatic_play = {
+				type = dp_sb_zulu_restoration_secession
+				target_country = c:NAL
+				add_war_goal = {
+					holder = c:NAL
+					target_country = c:ZUL
+					type = annex_country
+				}
+			}
+		}
+		random_diplomatic_play = {
+			limit = {
+				initiator = c:ZUL
+				target = c:NAL
+				is_diplomatic_play_type = dp_sb_zulu_restoration_secession
+			}
+			c:NAL = {
+				if = {
+					limit = { has_variable = sb_natal_zulu_restoration_play_pending_var }
+					remove_variable = sb_natal_zulu_restoration_play_pending_var
+				}
+			}
+		}
+		c:ZUL = {
+			if = { limit = { is_ai = yes } set_strategy = ai_strategy_sb_zulu_restoration_resistance }
+		}
+	}
+}
+
+sb_natal_clear_zulu_restoration_runtime = {
+	if = {
+		limit = { c:NAL ?= { is_country_alive = yes } }
+		c:NAL = {
+			if = { limit = { has_variable = sb_natal_zulu_restoration_uprising_pending_var } remove_variable = sb_natal_zulu_restoration_uprising_pending_var }
+			if = { limit = { has_variable = sb_natal_zulu_arms_appeal_sent_var } remove_variable = sb_natal_zulu_arms_appeal_sent_var }
+			if = { limit = { has_variable = sb_natal_zulu_arms_appeal_wait_var } remove_variable = sb_natal_zulu_arms_appeal_wait_var }
+			if = { limit = { has_variable = sb_natal_zulu_arms_appeal_resolved_var } remove_variable = sb_natal_zulu_arms_appeal_resolved_var }
+			if = { limit = { has_variable = sb_natal_zulu_restoration_play_pending_var } remove_variable = sb_natal_zulu_restoration_play_pending_var }
+			if = { limit = { has_variable = sb_natal_zulu_restoration_play_active_var } remove_variable = sb_natal_zulu_restoration_play_active_var }
+		}
+	}
+	c:ZUL ?= {
+		if = {
+			limit = { has_variable = sb_natal_zulu_restoration_play_active_var }
+			remove_variable = sb_natal_zulu_restoration_play_active_var
+		}
+	}
+}
+
+sb_natal_finalize_zulu_independence = {
+	c:ZUL ?= {
+		if = {
+			limit = {
+				is_country_alive = yes
+				is_subject = yes
+			}
+			make_independent = yes
+		}
+		if = {
+			limit = { is_country_alive = yes }
+			set_variable = sb_natal_zulu_restoration_resolved_var
+		}
+	}
+	c:NAL ?= {
+		if = {
+			limit = { is_country_alive = yes }
+			set_variable = sb_natal_zulu_restoration_resolved_var
+		}
+	}
+	sb_natal_clear_zulu_restoration_runtime = yes
+}
+
+sb_natal_finalize_zulu_reannexation = {
+	if = {
+		limit = {
+			country_definition = cd:NAL
+			c:ZUL ?= { is_country_alive = yes }
+		}
+		annex = c:ZUL
+	}
+	c:NAL ?= {
+		if = {
+			limit = { is_country_alive = yes }
+			set_variable = sb_natal_zulu_restoration_resolved_var
+		}
+	}
+	sb_natal_clear_zulu_restoration_runtime = yes
+}
+
+sb_natal_handle_zulu_restoration_wargoal_enforced = {
+	if = {
+		limit = {
+			country_definition = cd:ZUL
+			has_variable = sb_natal_zulu_restoration_play_active_var
+			scope:diplomatic_play ?= {
+				is_diplomatic_play_type = dp_sb_zulu_restoration_secession
+			}
+		}
+		sb_natal_finalize_zulu_independence = yes
+	}
+	else_if = {
+		limit = {
+			country_definition = cd:NAL
+			has_variable = sb_natal_zulu_restoration_play_active_var
+			scope:diplomatic_play ?= {
+				is_diplomatic_play_type = dp_sb_zulu_restoration_secession
+			}
+		}
+		sb_natal_finalize_zulu_reannexation = yes
+	}
+}
+
+sb_natal_handle_zulu_restoration_backdown = {
+	if = {
+		limit = {
+			is_diplomatic_play_type = dp_sb_zulu_restoration_secession
+			scope:actor ?= { country_definition = cd:ZUL }
+			scope:target ?= { country_definition = cd:NAL }
+		}
+		scope:target = { sb_natal_finalize_zulu_reannexation = yes }
+	}
+	else_if = {
+		limit = {
+			is_diplomatic_play_type = dp_sb_zulu_restoration_secession
+			scope:actor ?= { country_definition = cd:NAL }
+			scope:target ?= { country_definition = cd:ZUL }
+		}
+		scope:actor = { sb_natal_finalize_zulu_independence = yes }
+	}
+}
+
+sb_natal_handle_zulu_restoration_war_end = {
+	if = {
+		limit = {
+			is_diplomatic_play_type = dp_sb_zulu_restoration_secession
+			c:NAL ?= {
+				is_country_alive = yes
+				has_variable = sb_natal_zulu_restoration_play_active_var
+			}
+		}
+		c:NAL = { sb_natal_finalize_zulu_independence = yes }
+	}
+}
+
+sb_natal_interwar_monthly_housekeeping = {
+	if = {
+		limit = {
+			sb_natal_is_british_colony = yes
+			has_variable = sb_klip_river_county_resolved_var
+			NOT = { has_variable = sb_natal_indenture_completed_var }
+			NOT = { has_variable = sb_natal_indenture_pending_var }
+			sb_natal_british_network_has_indenture_origin = yes
+			s:STATE_ZULULAND.region_state:NAL ?= {
+				state_is_eligible_as_mass_migration_target = yes
+			}
+		}
+		random_list = {
+			1 = {
+				set_variable = {
+					name = sb_natal_indenture_pending_var
+					days = 30
+				}
+				trigger_event = { id = sb_natal_interwar.001 days = 1 popup = yes }
+			}
+			99 = { }
+		}
+	}
+	if = {
+		limit = {
+			sb_natal_is_british_colony = yes
+			c:ZUL ?= { is_country_alive = yes }
+		}
+		c:ZUL = { sb_natal_archive_zulu_firearms = yes }
+	}
+	sb_natal_ensure_civil_rights_movement = yes
+	sb_natal_ensure_gandhi_for_civil_rights = yes
+	sb_natal_schedule_civil_rights_petition = yes
+	sb_natal_cancel_invalid_civil_rights_petition = yes
+	sb_natal_schedule_zulu_settlement = yes
+	if = {
+		limit = { sb_natal_has_zulu_restoration_movement = yes }
+		sb_natal_ensure_zulu_restoration_agitator = yes
+	}
+	if = {
+		limit = {
+			sb_natal_has_zulu_restoration_movement = yes
+			NOT = { has_variable = sb_natal_zulu_restoration_uprising_pending_var }
+			NOT = { has_variable = sb_natal_zulu_restoration_resolved_var }
+			NOT = { c:ZUL ?= { is_country_alive = yes } }
+			sb_natal_owns_complete_northern_zulu_core = yes
+			any_political_movement = {
+				is_political_movement_type = movement_sb_zulu_restoration
+				political_movement_radicalism >= 1
+			}
+		}
+		sb_natal_begin_zulu_restoration_uprising = yes
+	}
+	if = {
+		limit = {
+			has_variable = sb_natal_zulu_arms_appeal_sent_var
+			NOT = { has_variable = sb_natal_zulu_arms_appeal_wait_var }
+			NOT = { has_variable = sb_natal_zulu_arms_appeal_resolved_var }
+		}
+		set_variable = sb_natal_zulu_arms_appeal_resolved_var
+		set_variable = sb_natal_zulu_restoration_play_pending_var
+	}
+	if = {
+		limit = { has_variable = sb_natal_zulu_restoration_play_pending_var }
+		sb_natal_launch_zulu_restoration_play = yes
+	}
+	if = {
+		limit = {
+			has_variable = sb_natal_zulu_restoration_play_active_var
+			is_at_war = no
+			is_active_in_diplomatic_play = no
+			c:ZUL ?= {
+				is_country_alive = yes
+				is_at_war = no
+				is_active_in_diplomatic_play = no
+			}
+		}
+		set_variable = sb_natal_zulu_restoration_play_pending_var
+		sb_natal_launch_zulu_restoration_play = yes
+	}
+}

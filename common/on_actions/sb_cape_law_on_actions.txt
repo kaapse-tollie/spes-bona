@@ -6,7 +6,7 @@
 # advance checkpoint.
 
 on_law_enactment_started = {
-	on_actions = { sb_on_cape_law_enactment_started }
+	on_actions = { sb_on_cape_law_enactment_started sb_on_natal_law_enactment_started }
 }
 
 on_law_enactment_ended = {
@@ -41,6 +41,25 @@ sb_on_cape_law_enactment_ended = {
 				has_variable = sb_cqf_first_checkpoint_pending_var
 			}
 			remove_variable = sb_cqf_first_checkpoint_pending_var
+		}
+	}
+}
+
+sb_on_natal_law_enactment_started = {
+	effect = {
+		if = {
+			limit = {
+				country_definition = cd:NAL
+				has_variable = sb_natal_zulu_chiefdom_bureaucracy_guard_var
+				OR = {
+					is_enacting_law = law_type:law_hereditary_bureaucrats
+					is_enacting_law = law_type:law_crownland_diets
+					is_enacting_law = law_type:law_appointed_bureaucrats
+					is_enacting_law = law_type:law_elected_bureaucrats
+				}
+			}
+			cancel_enactment = yes
+			trigger_event = { id = sb_natal_interwar.020 popup = yes }
 		}
 	}
 }

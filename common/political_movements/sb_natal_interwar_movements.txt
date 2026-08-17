@@ -1,0 +1,205 @@
+movement_sb_natal_civil_rights = {
+	category = movement_category_ideological
+	ideology = ideology_sb_natal_civil_rights
+
+	character_ideologies = {
+		ideology_humanitarian
+		ideology_reformer
+	}
+
+	can_pressure_interest_group = {
+		OR = {
+			is_interest_group_type = ig_intelligentsia
+			is_interest_group_type = ig_petty_bourgeoisie
+			is_interest_group_type = ig_devout
+		}
+	}
+
+	creation_trigger = { always = no }
+	creation_weight = { value = 0 }
+
+	on_created = {
+		add_modifier = { name = sb_natal_civil_rights_initial_activism }
+	}
+
+	disband_trigger = {
+		owner = {
+			OR = {
+				NOT = { country_definition = cd:NAL }
+				NOT = { sb_natal_has_responsible_government = yes }
+				has_variable = sb_natal_civil_rights_resolved_var
+			}
+		}
+	}
+
+	character_support_trigger = {
+		OR = {
+			has_template = BIC_mohandas_karamchand_gandhi
+			has_ideology = ideology:ideology_humanitarian
+			has_ideology = ideology:ideology_reformer
+		}
+	}
+
+	character_support_weight = {
+		value = 100
+		if = {
+			limit = { has_template = BIC_mohandas_karamchand_gandhi }
+			multiply = 20
+		}
+	}
+
+	pop_support_trigger = {
+		owner = { country_definition = cd:NAL }
+		sb_natal_pop_is_indian = yes
+		NOT = { is_pop_type = slaves }
+	}
+
+	pop_support_factors = {
+		movement_support_high_literacy
+		movement_support_cultural_discrimination
+		movement_support_academics
+		movement_support_clergymen
+		movement_support_clerks
+		movement_support_bureaucrats
+		movement_support_shopkeepers
+	}
+
+	pop_support_weight = {
+		add = { value = 20 desc = "POP_BASE_SUPPORT" }
+		if = {
+			limit = { is_pop_type = academics }
+			add = { value = 30 desc = "POP_ACADEMICS" }
+		}
+		else_if = {
+			limit = { is_pop_type = bureaucrats }
+			add = { value = 20 desc = "POP_BUREAUCRATS" }
+		}
+		else_if = {
+			limit = { is_pop_type = clerks }
+			add = { value = 15 desc = "POP_CLERKS" }
+		}
+		else_if = {
+			limit = { is_pop_type = clergymen }
+			add = { value = 15 desc = "POP_CLERGYMEN" }
+		}
+		multiply = {
+			desc = "POP_RADICALS"
+			value = pop_radical_fraction
+			add = 1
+		}
+	}
+
+	revolution = {
+		possible = { always = no }
+		weight = { value = 0 }
+	}
+
+	secession = {
+		possible = { always = no }
+		weight = { value = 0 }
+	}
+
+	law_enactment_radicalism_multiplier = 0.60
+	active_law_radicalism_multiplier = 0.85
+}
+
+movement_sb_zulu_restoration = {
+	category = movement_category_ideological
+	ideology = ideology_sb_zulu_restoration
+
+	character_ideologies = {
+		ideology_ethno_nationalist
+		ideology_traditionalist
+	}
+
+	can_pressure_interest_group = {
+		OR = {
+			is_interest_group_type = ig_landowners
+			is_interest_group_type = ig_rural_folk
+			is_interest_group_type = ig_armed_forces
+			is_interest_group_type = ig_devout
+		}
+	}
+
+	creation_trigger = { always = no }
+	creation_weight = { value = 0 }
+
+	disband_trigger = {
+		owner = {
+			OR = {
+				NOT = { country_definition = cd:NAL }
+				has_variable = sb_natal_zulu_restoration_resolved_var
+			}
+		}
+	}
+
+	character_support_trigger = {
+		OR = {
+			has_template = ZUL_dinuzulu_heir
+			has_ideology = ideology:ideology_ethno_nationalist
+			has_ideology = ideology:ideology_traditionalist
+		}
+	}
+
+	character_support_weight = {
+		value = 100
+		if = {
+			limit = { has_template = ZUL_dinuzulu_heir }
+			multiply = 20
+		}
+	}
+
+	pop_support_trigger = {
+		owner = { country_definition = cd:NAL }
+		culture = cu:zulu
+		NOT = { is_pop_type = slaves }
+	}
+
+	pop_support_factors = {
+		movement_support_cultural_discrimination
+		movement_support_rural
+		movement_support_farmers
+		movement_support_peasants
+		movement_support_aristocrats
+		movement_support_soldiers
+		movement_support_officers
+	}
+
+	pop_support_weight = {
+		add = { value = 10 desc = "POP_BASE_SUPPORT" }
+		if = {
+			limit = { is_pop_type = aristocrats }
+			add = { value = 20 desc = "POP_ARISTOCRATS" }
+		}
+		else_if = {
+			limit = { is_pop_type = soldiers }
+			add = { value = 15 desc = "POP_SOLDIERS" }
+		}
+		else_if = {
+			limit = { is_pop_type = officers }
+			add = { value = 15 desc = "POP_OFFICERS" }
+		}
+		else_if = {
+			limit = { is_pop_type = farmers }
+			add = { value = 10 desc = "POP_FARMERS" }
+		}
+		multiply = {
+			desc = "POP_RADICALS"
+			value = pop_radical_fraction
+			add = 0.10
+		}
+	}
+
+	revolution = {
+		possible = { always = no }
+		weight = { value = 0 }
+	}
+
+	secession = {
+		possible = { always = no }
+		weight = { value = 0 }
+	}
+
+	law_enactment_radicalism_multiplier = 0.50
+	active_law_radicalism_multiplier = 1.00
+}

@@ -99,6 +99,10 @@ natalia_raid_port_natal = {
 	when_taken = {
 		set_variable = sb_natalia_port_natal_raid_taken_var
 		set_variable = sb_british_natal_ultimatum_var
+		set_variable = {
+			name = sb_natalia_player_boer_support_pledged_var
+			months = 9
+		}
 		s:STATE_ZULULAND = {
 			set_owner_of_provinces = {
 				country = root
@@ -109,10 +113,9 @@ natalia_raid_port_natal = {
 			if = {
 				limit = { has_variable = sb_british_natal_ultimatum_pending_var }
 				remove_variable = sb_british_natal_ultimatum_pending_var
+				}
+				set_variable = sb_british_natal_ultimatum_var
 			}
-			set_variable = sb_british_natal_ultimatum_var
-			trigger_event = { id = sb_natal_crisis.114 days = sb_travel_london_southern_africa_message_days popup = yes }
-		}
 		c:ORA ?= {
 			if = {
 				limit = { is_country_alive = yes }
@@ -135,6 +138,25 @@ natalia_raid_port_natal = {
 			if = {
 				limit = { is_country_alive = yes }
 				trigger_event = { id = sb_natal_crisis.118 days = 5 popup = yes }
+			}
+		}
+		c:GBR ?= {
+			if = {
+				limit = { c:ZPB ?= { is_country_alive = yes } }
+				trigger_event = { id = sb_natal_crisis.114 days = 99 popup = yes }
+			}
+			else_if = {
+				limit = {
+					OR = {
+						c:ORA ?= { is_country_alive = yes }
+						c:TRN ?= { is_country_alive = yes }
+						c:LYD ?= { is_country_alive = yes }
+					}
+				}
+				trigger_event = { id = sb_natal_crisis.114 days = 96 popup = yes }
+			}
+			else = {
+				trigger_event = { id = sb_natal_crisis.114 days = 91 popup = yes }
 			}
 		}
 	}

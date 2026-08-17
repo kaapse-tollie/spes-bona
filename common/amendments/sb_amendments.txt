@@ -212,3 +212,116 @@ amendment_sb_expanded_inboekstelsel = {
 
 	amendment_activism_multiplier = 0.8
 }
+
+amendment_sb_natal_indian_civic_rights = {
+
+	parent = law_racial_segregation
+
+	allowed_laws = {
+		law_racial_segregation
+	}
+
+	modifier = {
+		country_kho_cultural_acceptance_add = 35
+		country_assamese_cultural_acceptance_add = 35
+		country_bengali_cultural_acceptance_add = 35
+		country_bihari_cultural_acceptance_add = 35
+		country_manipuri_cultural_acceptance_add = 35
+		country_nepali_cultural_acceptance_add = 35
+		country_oriya_cultural_acceptance_add = 35
+		country_sinhala_cultural_acceptance_add = 35
+		country_avadhi_cultural_acceptance_add = 35
+		country_panjabi_cultural_acceptance_add = 35
+		country_kashmiri_cultural_acceptance_add = 35
+		country_gujarati_cultural_acceptance_add = 35
+		country_marathi_cultural_acceptance_add = 35
+		country_sindi_cultural_acceptance_add = 35
+		country_rajput_cultural_acceptance_add = 35
+		country_kannada_cultural_acceptance_add = 35
+		country_malayalam_cultural_acceptance_add = 35
+		country_tamil_cultural_acceptance_add = 35
+		country_telegu_cultural_acceptance_add = 35
+		country_hindustani_cultural_acceptance_add = 35
+		country_lushai_cultural_acceptance_add = 35
+		country_bundeli_cultural_acceptance_add = 35
+		country_pahari_cultural_acceptance_add = 35
+		country_gondi_cultural_acceptance_add = 35
+		country_bageli_cultural_acceptance_add = 35
+		country_chhattisgarhi_cultural_acceptance_add = 35
+		country_naga_cultural_acceptance_add = 35
+		country_deccani_cultural_acceptance_add = 35
+		country_pathan_cultural_acceptance_add = 35
+	}
+
+	possible = {
+		country_definition = cd:NAL
+		has_variable = sb_natal_indian_civic_rights_accepted_var
+	}
+
+	would_sponsor = {
+		OR = {
+			is_interest_group_type = ig_intelligentsia
+			is_interest_group_type = ig_petty_bourgeoisie
+		}
+	}
+
+	ai_will_revoke = { always = no }
+
+	can_repeal = {
+		legitimacy >= legitimacy_to_repeal_amendment
+	}
+
+	amendment_activism_multiplier = 0.8
+}
+
+amendment_sb_zulu_chiefdom_settlement = {
+
+	parent = law_sb_imperial_administration
+
+	allowed_laws = {
+		law_sb_imperial_administration
+	}
+
+	possible = {
+		country_definition = cd:NAL
+		has_variable = sb_natal_zulu_chiefdom_settlement_var
+	}
+
+	would_sponsor = {
+		is_interest_group_type = ig_armed_forces
+	}
+
+	on_activate = {
+		set_variable = sb_natal_zulu_chiefdom_bureaucracy_guard_var
+		set_variable = {
+			name = sb_natal_zulu_chiefdom_dismantle_cooldown_var
+			days = 1825
+		}
+		s:STATE_ZULULAND.region_state:NAL ?= {
+			add_modifier = { name = sb_zulu_chiefdom_administration }
+		}
+	}
+
+	on_deactivate = {
+		if = {
+			limit = { has_variable = sb_natal_zulu_chiefdom_bureaucracy_guard_var }
+			remove_variable = sb_natal_zulu_chiefdom_bureaucracy_guard_var
+		}
+		if = {
+			limit = { has_variable = sb_natal_zulu_chiefdom_dismantle_cooldown_var }
+			remove_variable = sb_natal_zulu_chiefdom_dismantle_cooldown_var
+		}
+		s:STATE_ZULULAND.region_state:NAL ?= {
+			if = {
+				limit = { has_modifier = sb_zulu_chiefdom_administration }
+				remove_modifier = sb_zulu_chiefdom_administration
+			}
+		}
+	}
+
+	ai_will_revoke = { always = no }
+
+	can_repeal = { always = no }
+
+	amendment_activism_multiplier = 0.5
+}

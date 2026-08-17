@@ -1321,6 +1321,33 @@ sb_open_trn_zpb_crackdown_play = {
 		target_country = c:ZPB
 		target_state = s:STATE_NORTHERN_TRANSVAAL.region_state:ZPB
 	}
+	random_diplomatic_play = {
+		limit = {
+			initiator = c:TRN
+			target = c:ZPB
+			is_diplomatic_play_type = dp_sb_trn_zpb_crackdown_locked
+		}
+		save_temporary_scope_as = sb_zpb_crackdown_play
+	}
+	if = {
+		limit = { exists = scope:sb_zpb_crackdown_play }
+		c:ZPB ?= { set_variable = sb_zpb_crackdown_total_conquest_route_var }
+		# Pretoria's defeat lets Zoutpansberg replace the republic rather than
+		# merely recover its northern district.
+		c:TRN ?= {
+			every_scope_state = {
+				scope:sb_zpb_crackdown_play = {
+					add_war_goal = {
+						holder = c:ZPB
+						type = conquer_state
+						target_country = c:TRN
+						target_state = prev
+						primary_demand = yes
+					}
+				}
+			}
+		}
+	}
 	if = {
 		limit = {
 			c:ORA ?= {
@@ -1368,5 +1395,25 @@ sb_open_trn_zpb_crackdown_play = {
 			}
 			add_target_backers = { c:NAL }
 		}
+	}
+}
+
+sb_zpb_assume_transvaal_after_crackdown_victory = {
+	if = {
+		limit = {
+			country_definition = cd:ZPB
+			has_variable = sb_zpb_crackdown_total_conquest_route_var
+			NOT = { exists = c:TRN }
+		}
+		remove_variable = sb_zpb_crackdown_total_conquest_route_var
+		if = {
+			limit = { has_variable = sb_zpb_crackdown_successor_pending_var }
+			remove_variable = sb_zpb_crackdown_successor_pending_var
+		}
+		set_variable = sb_zpb_lawlessness_resolved_var
+		set_country_type = unrecognized
+		activate_law = law_type:law_discrete_inboekstelsel
+		sb_add_expanded_inboekstelsel_amendment = yes
+		change_tag = TRN
 	}
 }

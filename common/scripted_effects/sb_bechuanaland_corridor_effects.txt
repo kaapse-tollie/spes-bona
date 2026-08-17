@@ -1254,14 +1254,14 @@ sb_bechuanaland_make_tsw_subject_of_gbr = {
 				limit = { is_subject = yes }
 				make_independent = yes
 			}
-			c:GBR ?= { create_diplomatic_pact = { country = c:TSW type = puppet } }
+			c:GBR ?= { create_diplomatic_pact = { country = c:TSW type = protectorate } }
 		}
 		if = {
 			limit = {
 				is_direct_subject_of = c:GBR
-				NOT = { is_subject_type = subject_type_puppet }
+				NOT = { is_subject_type = subject_type_protectorate }
 			}
-			change_subject_type = subject_type_puppet
+			change_subject_type = subject_type_protectorate
 		}
 	}
 }
@@ -1286,14 +1286,14 @@ sb_bechuanaland_make_tsw_subject_of_cap = {
 				limit = { is_subject = yes }
 				make_independent = yes
 			}
-			c:CAP ?= { create_diplomatic_pact = { country = c:TSW type = puppet } }
+			c:CAP ?= { create_diplomatic_pact = { country = c:TSW type = protectorate } }
 		}
 		if = {
 			limit = {
 				is_direct_subject_of = c:CAP
-				NOT = { is_subject_type = subject_type_puppet }
+				NOT = { is_subject_type = subject_type_protectorate }
 			}
-			change_subject_type = subject_type_puppet
+			change_subject_type = subject_type_protectorate
 		}
 	}
 }
@@ -3432,7 +3432,7 @@ sb_bechuanaland_apply_british_settlement = {
 					limit = {
 						c:TSW ?= {
 							is_direct_subject_of = c:GBR
-							is_subject_type = subject_type_puppet
+							is_subject_type = subject_type_protectorate
 						}
 					}
 					container:sb_bechuanaland_corridor_state = { set_variable = sb_bechuanaland_british_settlement_ready_var }
@@ -3445,7 +3445,7 @@ sb_bechuanaland_apply_british_settlement = {
 					limit = {
 						c:TSW ?= {
 							is_direct_subject_of = c:CAP
-							is_subject_type = subject_type_puppet
+							is_subject_type = subject_type_protectorate
 						}
 					}
 					container:sb_bechuanaland_corridor_state = { set_variable = sb_bechuanaland_british_settlement_ready_var }
@@ -3476,6 +3476,14 @@ sb_bechuanaland_apply_british_settlement = {
 		}
 		if = {
 			limit = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_british_settlement_ready_var } }
+			s:STATE_BECHUANALAND = {
+				region_state:CAP ?= {
+					if = {
+						limit = { is_incorporated = no }
+						set_state_type = incorporated
+					}
+				}
+			}
 			sb_bechuanaland_record_british_terminal_outcome = yes
 			set_global_variable = sb_bechuanaland_corridor_resolved_global_var
 			container:sb_bechuanaland_corridor_state = { remove_variable = sb_bechuanaland_british_settlement_ready_var }

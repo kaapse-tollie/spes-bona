@@ -1,0 +1,253 @@
+sb_natal_is_british_colony = {
+	country_definition = cd:NAL
+	is_country_alive = yes
+	has_variable = sb_natalia_british_colony_resolved_var
+	c:GBR ?= {
+		is_country_alive = yes
+		any_subject_or_below = { this = ROOT }
+	}
+}
+
+sb_natal_has_responsible_government = {
+	OR = {
+		is_subject_type = subject_type_sb_responsible_colony
+		is_subject_type = subject_type_sb_responsible_colony_monarchy
+	}
+}
+
+sb_natal_pop_is_indian = {
+	OR = {
+		culture = cu:kho
+		culture = cu:assamese
+		culture = cu:bengali
+		culture = cu:bihari
+		culture = cu:manipuri
+		culture = cu:nepali
+		culture = cu:oriya
+		culture = cu:sinhala
+		culture = cu:avadhi
+		culture = cu:panjabi
+		culture = cu:kashmiri
+		culture = cu:gujarati
+		culture = cu:marathi
+		culture = cu:sindi
+		culture = cu:rajput
+		culture = cu:kannada
+		culture = cu:malayalam
+		culture = cu:tamil
+		culture = cu:telegu
+		culture = cu:hindustani
+		culture = cu:lushai
+		culture = cu:bundeli
+		culture = cu:pahari
+		culture = cu:gondi
+		culture = cu:bageli
+		culture = cu:chhattisgarhi
+		culture = cu:naga
+		culture = cu:deccani
+		culture = cu:pathan
+	}
+}
+
+# BIC is British-primary, so territorial administration in India must count as
+# well as an Indian primary culture.
+sb_natal_country_is_indian = {
+	OR = {
+		any_scope_state = { state_is_homeland_of_indian_cultures = yes }
+		any_primary_culture = {
+			OR = {
+				this = cu:kho
+				this = cu:assamese
+				this = cu:bengali
+				this = cu:bihari
+				this = cu:manipuri
+				this = cu:nepali
+				this = cu:oriya
+				this = cu:sinhala
+				this = cu:avadhi
+				this = cu:panjabi
+				this = cu:kashmiri
+				this = cu:gujarati
+				this = cu:marathi
+				this = cu:sindi
+				this = cu:rajput
+				this = cu:kannada
+				this = cu:malayalam
+				this = cu:tamil
+				this = cu:telegu
+				this = cu:hindustani
+				this = cu:lushai
+				this = cu:bundeli
+				this = cu:pahari
+				this = cu:gondi
+				this = cu:bageli
+				this = cu:chhattisgarhi
+				this = cu:naga
+				this = cu:deccani
+				this = cu:pathan
+			}
+		}
+	}
+}
+
+sb_natal_has_indian_pops = {
+	any_scope_state = {
+		state_region = s:STATE_ZULULAND
+		any_scope_pop = { sb_natal_pop_is_indian = yes }
+	}
+}
+
+sb_natal_british_network_has_indenture_origin = {
+	c:GBR ?= {
+		is_country_alive = yes
+		any_subject_or_below = {
+			sb_natal_country_is_indian = yes
+			any_scope_state = {
+				any_scope_pop = {
+					OR = {
+						culture = cu:tamil
+						culture = cu:telegu
+						culture = cu:hindustani
+						culture = cu:bihari
+						culture = cu:gujarati
+					}
+				}
+			}
+		}
+	}
+}
+
+sb_natal_owns_complete_northern_zulu_core = {
+	p:xBE6FEE.state.owner = ROOT
+	p:x1A084B.state.owner = ROOT
+	p:xBFA16B.state.owner = ROOT
+	p:x9E9742.state.owner = ROOT
+	p:x88FAD4.state.owner = ROOT
+	p:x904EBE.state.owner = ROOT
+	p:x41C070.state.owner = ROOT
+	p:xE882CE.state.owner = ROOT
+	p:xE1E455.state.owner = ROOT
+}
+
+sb_natal_zulu_settlement_ready = {
+	sb_natal_is_british_colony = yes
+	sb_natal_owns_complete_northern_zulu_core = yes
+	NOT = { has_variable = sb_natal_zulu_settlement_resolved_var }
+	NOT = {
+		c:ZUL ?= {
+			any_scope_state = { always = yes }
+		}
+	}
+}
+
+sb_natal_has_zulu_restoration_movement = {
+	any_political_movement = {
+		is_political_movement_type = movement_sb_zulu_restoration
+	}
+}
+
+sb_natal_has_civil_rights_movement = {
+	any_political_movement = {
+		is_political_movement_type = movement_sb_natal_civil_rights
+	}
+}
+
+sb_natal_trn_arms_treaty_possible = {
+	country_definition = cd:TRN
+	is_country_alive = yes
+	c:ZUL ?= { is_country_alive = yes }
+	c:GBR ?= {
+		NOT = { any_subject_or_below = { this = ROOT } }
+	}
+	can_create_treaty = {
+		first_country = ROOT
+		second_country = c:ZUL
+		is_draft = no
+		binding_period = { years = 5 }
+		articles_to_create = {
+			{
+				article = military_assistance
+				source_country = ROOT
+				target_country = c:ZUL
+			}
+			{
+				article = goods_transfer
+				source_country = ROOT
+				target_country = c:ZUL
+				inputs = {
+					{ goods = g:small_arms }
+					{ quantity = 10 }
+				}
+			}
+		}
+	}
+}
+
+sb_natal_zulu_restoration_play_can_launch = {
+	country_definition = cd:NAL
+	is_country_alive = yes
+	is_at_war = no
+	is_active_in_diplomatic_play = no
+	aggressive_diplomatic_plays_permitted = yes
+	c:ZUL ?= {
+		is_country_alive = yes
+		is_direct_subject_of = ROOT
+		is_at_war = no
+		is_active_in_diplomatic_play = no
+	}
+}
+
+sb_natal_can_integrate_restored_zululand = {
+	country_definition = cd:NAL
+	is_country_alive = yes
+	has_variable = sb_natal_gradual_zulu_restoration_var
+	is_at_war = no
+	is_active_in_diplomatic_play = no
+	c:ZUL ?= {
+		is_country_alive = yes
+		is_direct_subject_of = ROOT
+		is_subject_type = subject_type_puppet
+		liberty_desire <= 0
+		is_at_war = no
+		is_active_in_diplomatic_play = no
+	}
+}
+
+sb_natal_trn_is_imperial_confederation_participant = {
+	country_definition = cd:TRN
+	sb_imperial_confederation_scheme_is_active = yes
+	is_involved_in_journal_entry = je_sb_imperial_confederation_scheme
+}
+
+sb_natal_trn_leads_bechuanaland_story = {
+	country_definition = cd:TRN
+	container_exists = sb_bechuanaland_corridor_state
+	container:sb_bechuanaland_corridor_state = {
+		has_variable = sb_bechuanaland_boer_actor_scope
+	}
+	container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_boer_actor_scope = {
+		this = ROOT
+	}
+}
+
+sb_natal_trn_opposes_britain_or_natal = {
+	OR = {
+		AND = { c:GBR ?= { is_country_alive = yes } has_war_with = c:GBR }
+		AND = { c:NAL ?= { is_country_alive = yes } has_war_with = c:NAL }
+		AND = { c:GBR ?= { is_country_alive = yes } is_diplomatic_play_enemy_of = c:GBR }
+		AND = { c:NAL ?= { is_country_alive = yes } is_diplomatic_play_enemy_of = c:NAL }
+	}
+}
+
+sb_natal_trn_has_british_security_treaty = {
+	c:GBR ?= { is_country_alive = yes }
+	any_scope_treaty = {
+		binds = c:GBR
+		any_scope_article = {
+			OR = {
+				has_type = alliance
+				has_type = defensive_pact
+			}
+		}
+	}
+}

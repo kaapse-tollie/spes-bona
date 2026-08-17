@@ -1,0 +1,46 @@
+﻿decision_sb_dismantle_zulu_chiefdom_settlement = {
+	is_shown = {
+		country_definition = cd:NAL
+		has_variable = sb_natal_zulu_chiefdom_settlement_var
+		active_law:lawgroup_bureaucracy ?= {
+			has_amendment = amendment_type:amendment_sb_zulu_chiefdom_settlement
+		}
+	}
+
+	possible = {
+		NOT = { has_variable = sb_natal_zulu_chiefdom_dismantle_cooldown_var }
+		is_at_war = no
+		is_active_in_diplomatic_play = no
+	}
+
+	when_taken = {
+		sb_natal_remove_zulu_chiefdom_settlement = yes
+		add_radicals = { value = 0.10 culture = cu:zulu }
+	}
+
+	ai_chance = { value = 100 }
+}
+
+decision_sb_integrate_restored_zululand = {
+	is_shown = {
+		country_definition = cd:NAL
+		has_variable = sb_natal_gradual_zulu_restoration_var
+		c:ZUL ?= {
+			is_country_alive = yes
+			is_direct_subject_of = root
+			is_subject_type = subject_type_puppet
+		}
+	}
+
+	possible = { sb_natal_can_integrate_restored_zululand = yes }
+
+	when_taken = {
+		annex = c:ZUL
+		remove_variable = sb_natal_gradual_zulu_restoration_var
+		set_variable = sb_natal_zulu_restoration_resolved_var
+		set_variable = sb_natal_zulu_settlement_resolved_var
+		sb_natal_clear_zulu_restoration_runtime = yes
+	}
+
+	ai_chance = { value = 100 }
+}
