@@ -45,7 +45,7 @@ It will conflict with other mods that substantially rewrite Southern Africa in 1
 
 The live repository documentation is the source of truth:
 
-- [Audit issue register](Docs/audit_issue_register.md)
+- [Open audit issues](Docs/audit_issues_open.md) · [Completed audit issues](Docs/audit_issues_completed.md)
 - [Override manifest](Docs/compatibility/override_manifest.md)
 - [Third-party compatibility notes](Docs/compatibility/third_party_compatibility.md)
 - [Cross-tag event travel times](Docs/cross_tag_event_travel_times.md)
