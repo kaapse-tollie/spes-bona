@@ -73,11 +73,20 @@ sb_remove_iron_age_weapons_modifiers = {
 }
 
 sb_seed_initial_firearms_progress = {
-	# All firearms JEs begin at zero. Progress should come from live treaties,
-	# industry, raids, or scripted war rewards rather than hidden startup seeds.
-	set_variable = {
-		name = sb_firearms_treaty_progress_months_var
-		value = 0
+	# Basutoland begins with a substantial imported-firearms base: 9.6 of the
+	# 24 required import months produces exactly 40% visible progress.
+	if = {
+		limit = { country_definition = cd:BST }
+		set_variable = {
+			name = sb_firearms_treaty_progress_months_var
+			value = 9.6
+		}
+	}
+	else = {
+		set_variable = {
+			name = sb_firearms_treaty_progress_months_var
+			value = 0
+		}
 	}
 	set_variable = {
 		name = sb_firearms_industry_progress_months_var
