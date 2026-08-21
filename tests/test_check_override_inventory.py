@@ -127,6 +127,47 @@ class OverrideInventoryTests(unittest.TestCase):
         (self.mod / "common/laws/mod.txt").write_text('REPLACE:foo = { value = 3 }\n')
         self.assertTrue(any("mod object hash drift" in error for error in self.validate()))
 
+    def test_unregistered_additive_zz_file_fails(self):
+        (self.mod / "common/history/ai").mkdir(parents=True, exist_ok=True)
+        (self.mod / "common/history/ai/zz_sb_new_additive.txt").write_text("AI = { }\n")
+        errors = self.validate()
+        self.assertTrue(any("unregistered zz_ override-style file" in e for e in errors))
+
+    def test_registered_additive_override_hash_drift_fails(self):
+        rel = "common/history/ai/zz_sb_portuguese_kongo_secret_goal.txt"
+        (self.mod / "common/history/ai").mkdir(parents=True, exist_ok=True)
+        (self.mod / rel).write_text("AI = { }\n")
+        inv = dict(self.inventory)
+        inv["additive_overrides"] = [{
+            "path": rel, "intent": "test", "owner": "tests", "mod_sha256": "deadbeef",
+        }]
+        errors = self.validate(inv)
+        self.assertTrue(any("additive override mod hash drift" in e for e in errors))
+        inv["additive_overrides"][0]["mod_sha256"] = CHECKER.sha256(self.mod / rel)
+        self.assertEqual([], self.validate(inv))
+
+    def test_unregistered_localization_replace_file_fails(self):
+        replace = self.mod / "localization/english/replace"
+        replace.mkdir(parents=True, exist_ok=True)
+        (replace / "sb_new_l_english.yml").write_text("l_english:\n")
+        errors = self.validate()
+        self.assertTrue(any("unregistered localization replace file" in e for e in errors))
+
+    def test_registered_localization_replace_with_upstream_is_checked(self):
+        replace = self.mod / "localization/english/replace"
+        replace.mkdir(parents=True, exist_ok=True)
+        (replace / "sb_new_l_english.yml").write_text("l_english:\n")
+        inv = dict(self.inventory)
+        inv["localization_replace_files"] = [{
+            "path": "localization/english/replace/sb_new_l_english.yml",
+            "upstream_file": None, "intent": "test", "owner": "tests",
+            "mod_sha256": CHECKER.sha256(replace / "sb_new_l_english.yml"),
+        }]
+        self.assertEqual([], self.validate(inv))
+        inv["localization_replace_files"][0]["mod_sha256"] = "deadbeef"
+        errors = self.validate(inv)
+        self.assertTrue(any("localization replace mod hash drift" in e for e in errors))
+
     def test_descriptor_replace_path_and_version_are_locked(self):
         (self.mod / "descriptor.mod").write_text('supported_version="1.13.8"\n  replace_path = "common/history"\n')
         errors = self.validate()

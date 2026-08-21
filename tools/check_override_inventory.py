@@ -279,6 +279,83 @@ def require_metadata(entry: dict, label: str, errors: list[str]) -> None:
             errors.append(f"{label}: missing non-empty {field}")
 
 
+
+ZZ_OVERRIDE_FILE_RE = re.compile(r"^(zz|zzz)_sb_.+\.txt$")
+
+
+def validate_additive_overrides(root: Path, inventory: dict, errors: list[str]) -> None:
+    """Additive zz_/zzz_ files that create new objects instead of replacing upstream keys.
+
+    They must be registered in `additive_overrides` (path, intent, owner, mod_sha256).
+    Any unregistered override-style file under common/ or events/ is an error, so a new
+    zz_ file cannot silently bypass the inventory contract.
+    """
+    registered: set[str] = set()
+    for entry in inventory.get("additive_overrides", []):
+        rel = entry.get("path")
+        if not rel:
+            errors.append("additive override entry has no path")
+            continue
+        registered.add(rel)
+        path = root / rel
+        if not path.is_file():
+            errors.append(f"additive override path missing: {rel}")
+            continue
+        if entry.get("mod_sha256") != sha256(path):
+            errors.append(f"{rel}: additive override mod hash drift")
+        for field in ("intent", "owner"):
+            if not str(entry.get(field, "")).strip():
+                errors.append(f"{rel}: additive override missing {field}")
+    keyed_paths = {k.get("mod_path") for k in inventory.get("keyed_overrides", [])}
+    for base in ("common", "events"):
+        base_path = root / base
+        if not base_path.is_dir():
+            continue
+        for path in sorted(base_path.rglob("*.txt")):
+            rel = path.relative_to(root).as_posix()
+            if ZZ_OVERRIDE_FILE_RE.match(path.name) and rel not in registered and rel not in keyed_paths:
+                errors.append(
+                    f"unregistered zz_ override-style file: {rel} "
+                    "(register in additive_overrides or keyed_overrides)"
+                )
+
+
+def validate_localization_replace(root: Path, game_root: Path, inventory: dict, errors: list[str]) -> None:
+    """Files under localization/english/replace/ shadow upstream localisation by name and
+    must be registered in `localization_replace_files` with an explicit upstream reference
+    (or null for SB-authored names) and the mod file hash."""
+    registered: set[str] = set()
+    for entry in inventory.get("localization_replace_files", []):
+        rel = entry.get("path")
+        if not rel:
+            errors.append("localization replace entry has no path")
+            continue
+        registered.add(rel)
+        path = root / rel
+        if not path.is_file():
+            errors.append(f"localization replace path missing: {rel}")
+            continue
+        if entry.get("mod_sha256") != sha256(path):
+            errors.append(f"{rel}: localization replace mod hash drift")
+        if not str(entry.get("intent", "")).strip():
+            errors.append(f"{rel}: localization replace entry missing intent")
+        upstream = entry.get("upstream_file")
+        if upstream:
+            upstream_path = game_root / "localization/english" / upstream
+            if not upstream_path.is_file():
+                errors.append(f"{rel}: declared upstream localisation missing: {upstream}")
+            elif entry.get("upstream_sha256") != sha256(upstream_path):
+                errors.append(f"{rel}: upstream localisation hash drift for {upstream}")
+        elif "upstream_file" not in entry:
+            errors.append(f"{rel}: localization replace entry missing upstream_file (use null for SB-authored)")
+    base = root / "localization/english/replace"
+    if base.is_dir():
+        for path in sorted(base.rglob("*.yml")):
+            rel = path.relative_to(root).as_posix()
+            if rel not in registered:
+                errors.append(f"unregistered localization replace file: {rel}")
+
+
 def validate(root: Path, game_root: Path, inventory: dict, cmf_root: Path | None = None) -> list[str]:
     errors: list[str] = []
     target = inventory.get("target_game_version")
@@ -375,6 +452,9 @@ def validate(root: Path, game_root: Path, inventory: dict, cmf_root: Path | None
     declared_replace_paths = sorted(inventory.get("approved_replace_paths", []))
     if actual_replace_paths != declared_replace_paths:
         errors.append(f"descriptor replace_path drift: actual={actual_replace_paths}, declared={declared_replace_paths}")
+
+    validate_additive_overrides(root, inventory, errors)
+    validate_localization_replace(root, game_root, inventory, errors)
     return errors
 
 
@@ -418,7 +498,9 @@ def main() -> int:
         f"Override inventory OK: {len(inventory['same_path_files'])} same-path files, "
         f"{len(inventory['keyed_overrides'])} keyed overrides, "
         f"{len(inventory['state_region_blocks'])} changed state-region blocks, "
-        f"{len(inventory['approved_replace_paths'])} replace_path directives."
+        f"{len(inventory['approved_replace_paths'])} replace_path directives, "
+        f"{len(inventory.get('additive_overrides', []))} additive overrides, "
+        f"{len(inventory.get('localization_replace_files', []))} localization replace files."
     )
     return 0
 

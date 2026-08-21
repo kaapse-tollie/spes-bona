@@ -33,6 +33,24 @@ The exact-path set includes Southern African history, the Highveld event baselin
 
 `common/history/diplomacy/00_relations.txt` retains Vanilla's `1.13.11` relation baseline and removes only ORA's relation to TRN. SB does not create TRN at game start, so the upstream row otherwise attempts to create a relation with an invalid country; later TRN diplomacy remains story-authored.
 
+## Additive Overrides And Localization Replace Files
+
+Two further override surfaces are inventoried and hash-checked alongside the exact-path
+collisions above:
+
+1. **Additive `zz_` files** (`additive_overrides`): SB-authored files whose name uses the
+   `zz_sb_*` / `zzz_sb_*` convention but which create new objects instead of replacing an
+   upstream key (currently only `common/history/ai/zz_sb_portuguese_kongo_secret_goal.txt`).
+   Each entry pins the mod file hash and states intent and owner.
+2. **Localization replace files** (`localization_replace_files`): every file under
+   `localization/english/replace/`. Entries that shadow an upstream localisation *file*
+   (`country_flavor_text`, `dynamic_state_and_hub_names`, `map/states`) pin both the upstream
+   and mod hashes; SB-authored names record `upstream_file: null` and state why they live in
+   `replace/`.
+
+The checker fails on any unregistered `zz_` override-style file or any unregistered
+`replace/` localisation, so neither surface can silently bypass the contract again.
+
 ## Dependency Rebases
 
 The five retained political-movement replacements are pinned to CMF `1.63.0` and reviewed against Vanilla `1.13.11`. Cultural Supremacy retains the upstream unowned-homeland and neighbouring-movement scope fixes; the only SB-specific delta is CAP creation/disband exclusion. The other retained movement deltas remain the documented CAP exclusion or Anglo-African utilitarian eligibility.
