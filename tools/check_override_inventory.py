@@ -17,7 +17,7 @@ HARD_REPLACE_RE = re.compile(
 )
 TOP_LEVEL_RE = re.compile(r"^([A-Za-z0-9_]+)\s*=\s*\{", re.MULTILINE)
 SKIP_TOP_LEVEL = {".git", ".claude", ".prime"}
-SUPPORTED_TARGETS = {"1.13.10": "24689003"}
+SUPPORTED_TARGETS = {"1.13.11": "24799966"}
 CMF_NAME = "Community Mod Framework"
 CMF_VERSION = "1.63.0"
 CMF_COMMIT = "bd92022"
@@ -217,7 +217,7 @@ def validate_upstream_api_surface(
 ) -> None:
     vanilla_on_actions = game_root / "common/on_actions/00_code_on_actions.txt"
     if not vanilla_on_actions.is_file():
-        errors.append("Vanilla 1.13.10 code on-actions file is missing")
+        errors.append("Vanilla 1.13.11 code on-actions file is missing")
     else:
         source = vanilla_on_actions.read_text(encoding="utf-8-sig")
         expected = {
@@ -233,11 +233,11 @@ def validate_upstream_api_surface(
             try:
                 block = find_object(source, key)
             except ValueError as exc:
-                errors.append(f"Vanilla 1.13.10 API {key}: {exc}")
+                errors.append(f"Vanilla 1.13.11 API {key}: {exc}")
                 continue
             for token in tokens:
                 if token not in block:
-                    errors.append(f"Vanilla 1.13.10 API {key} is missing: {token}")
+                    errors.append(f"Vanilla 1.13.11 API {key} is missing: {token}")
 
     if cmf_root is None:
         return

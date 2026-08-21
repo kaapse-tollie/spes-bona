@@ -788,7 +788,7 @@ def check_release_invariants() -> Check:
                 )
 
     detail = f"{war_goal_count} complete scripted war-goal blocks"
-    return Check("1.13.10 release invariants", "FAIL" if errors else "PASS", "; ".join(errors or [detail]))
+    return Check("1.13.11 release invariants", "FAIL" if errors else "PASS", "; ".join(errors or [detail]))
 
 
 def check_local_override_inventory() -> Check:

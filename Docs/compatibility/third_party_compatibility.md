@@ -1,6 +1,6 @@
 # Third-Party Compatibility Notes
 
-Target game version: `1.13.10`
+Target game version: `1.13.11`
 
 Required framework: Community Mod Framework `1.63.x`. The launcher dependency is pinned to `1.63.*`, and release validation is pinned to `1.63.0` commit `bd92022`.
 
@@ -20,7 +20,9 @@ These are CMF-style `REPLACE_OR_CREATE` triggers.
 
 ## Map Compatibility
 
-SB changes `STATE_CAPE_COLONY`, `STATE_EASTERN_CAPE`, `STATE_NORTHERN_CAPE`, `STATE_VRYSTAAT`, `STATE_TRANSVAAL`, `STATE_EAST_TRANSVAAL`, `STATE_NORTHERN_TRANSVAAL`, `STATE_DRAKENSBERG`, `STATE_ZULULAND`, `STATE_BOTSWANA`, `STATE_BECHUANALAND`, `STATE_GRIQUALAND_WEST`, `STATE_NAMAQUALAND`, `STATE_HEREROLAND`, `STATE_ZAMBEZI`, `STATE_ZAMBEZIA`, and `STATE_LOURENCO_MARQUES`.
+SB changes `STATE_CAPE_COLONY`, `STATE_EASTERN_CAPE`, `STATE_NORTHERN_CAPE`, `STATE_VRYSTAAT`, `STATE_TRANSVAAL`, `STATE_EAST_TRANSVAAL`, `STATE_NORTHERN_TRANSVAAL`, `STATE_DRAKENSBERG`, `STATE_NATAL`, `STATE_ZULULAND`, `STATE_BOTSWANA`, `STATE_BECHUANALAND`, `STATE_GRIQUALAND_WEST`, `STATE_NAMAQUALAND`, `STATE_HEREROLAND`, `STATE_ZAMBEZI`, `STATE_ZAMBEZIA`, and `STATE_LOURENCO_MARQUES`.
+
+`STATE_NATAL` uses the new state ID `1213`; mods that assumed Natal content lived in `STATE_ZULULAND` must route settler/coastal content to Natal and retain northern Zulu content in Zululand.
 
 Mods editing those blocks need a compatibility patch. SB also ships the province raster, terrain, locator, and spline-network baselines, so unrelated map mods may still collide at file level. The exact surface is pinned in `override_inventory.json`.
 
@@ -30,13 +32,13 @@ The three intentional isolated passable Bechuanaland pockets are allowlisted by 
 
 SB does not use a treaty-history `replace_path`. Its exact-path `00_historical_treaties.txt` shadows Vanilla and changes the Southern African startup rows; uniquely named treaty files remain additive. Another mod changing the same Vanilla filename requires a merged patch.
 
-SB does not override Vanilla 1.13.10's treaty-port inheritance on-action. It also relies on CMF 1.63.0's standard and double-sided journal widgets and ships no competing journal GUI copy.
+SB does not override Vanilla 1.13.11's treaty-port inheritance on-action. It also relies on CMF 1.63.0's standard and double-sided journal widgets and ships no competing journal GUI copy.
 
 ## Global Keyed Overrides
 
 Some definitions are global keyed replacements despite a Southern African design goal: dominion actions/types, Stake Colonial Claim, Abolish Monarchy, commander retirement, Frontier Colonization and Legacy Slavery, selected ideologies and technologies, state traits, companies, and political movements. The inventory identifies every object and pins its Vanilla or CMF source.
 
-The Cultural Supremacy override is rebased to CMF 1.63.0, which incorporates Vanilla 1.13.10's three scope fixes, while retaining only SB's CAP exclusion.
+The Cultural Supremacy override is rebased to CMF 1.63.0 and reviewed against Vanilla 1.13.11, while retaining only SB's CAP exclusion.
 
 ## Hail Columbia
 
@@ -46,4 +48,4 @@ This is an explicit deferred release gate, not permission to weaken either mod's
 
 ## Validation Authority
 
-Tiger is useful for parser validation, but a cold launch, fresh-start logs, and the focused engine cases in `1_13_10_runtime_matrix.md` remain authoritative for runtime and load-order behavior.
+Tiger is useful for parser validation, but a cold launch, fresh-start logs, and the focused engine cases in `1_13_11_runtime_matrix.md` remain authoritative for runtime and load-order behavior.

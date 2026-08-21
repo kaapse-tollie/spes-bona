@@ -24,7 +24,7 @@ Spes Bona is a Victoria 3 regional flavor mod for greater Southern Africa built 
 
 ## Requirements
 
-- Victoria 3 `1.13.10`
+- Victoria 3 `1.13.11`
 - Community Mod Framework `1.63.x`
 
 ## Compatibility

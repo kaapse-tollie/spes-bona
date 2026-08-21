@@ -6,4 +6,4 @@ tags={
 	"Gameplay"
 }
 name="Spes Bona - A Southern Africa Flavour Pack"
-supported_version="1.13.10"
+supported_version="1.13.11"

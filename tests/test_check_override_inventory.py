@@ -31,9 +31,9 @@ class OverrideInventoryTests(unittest.TestCase):
         (self.game / "common/on_actions").mkdir(parents=True)
         (self.game / "map_data").mkdir()
         (self.mod / ".metadata").mkdir()
-        (self.mod / "descriptor.mod").write_text('supported_version="1.13.10"\n')
+        (self.mod / "descriptor.mod").write_text('supported_version="1.13.11"\n')
         (self.mod / ".metadata/metadata.json").write_text(json.dumps({
-            "supported_game_version": "1.13.10",
+            "supported_game_version": "1.13.11",
             "relationships": [{
                 "id": "com.github.Victoria-3-Modding-Co-op.Community-Mod-Framework",
                 "version": "1.63.*",
@@ -59,8 +59,8 @@ class OverrideInventoryTests(unittest.TestCase):
             "rebase_date": "2026-08-06",
         }
         self.inventory = {
-            "target_game_version": "1.13.10",
-            "target_steam_build": "24689003",
+            "target_game_version": "1.13.11",
+            "target_steam_build": "24799966",
             "generated_for_commit_baseline": "1" * 40,
             "dependencies": [{
                 "name": "Community Mod Framework",
@@ -71,7 +71,7 @@ class OverrideInventoryTests(unittest.TestCase):
             "state_region_blocks": [],
             "same_path_files": [{
                 "path": "common/test.txt",
-                "upstream_version": "1.13.10",
+                "upstream_version": "1.13.11",
                 "upstream_sha256": digest(self.game / "common/test.txt"),
                 "mod_sha256": digest(self.mod / "common/test.txt"),
                 "comparison": "text-hash-pair",
@@ -162,7 +162,7 @@ class OverrideInventoryTests(unittest.TestCase):
         )
         self.inventory["same_path_files"].append({
             "path": "map_data/state_regions/04_subsaharan_africa.txt",
-            "upstream_version": "1.13.10",
+            "upstream_version": "1.13.11",
             "upstream_sha256": digest(self.game / "map_data/state_regions/04_subsaharan_africa.txt"),
             "mod_sha256": digest(self.mod / "map_data/state_regions/04_subsaharan_africa.txt"),
             "comparison": "text-hash-pair",

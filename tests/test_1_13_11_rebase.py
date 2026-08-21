@@ -22,12 +22,18 @@ def text(path: str) -> str:
 
 
 class RebaseTests(unittest.TestCase):
-    def test_release_metadata_targets_1_13_10_and_cmf_1_63_x(self):
-        self.assertIn('supported_version="1.13.10"', text("descriptor.mod"))
+    def test_release_metadata_targets_1_13_11_and_cmf_1_63_x(self):
+        self.assertIn('supported_version="1.13.11"', text("descriptor.mod"))
+        self.assertIn('version="0.19.0"', text("descriptor.mod"))
         metadata = json.loads(text(".metadata/metadata.json"))
-        self.assertEqual("1.13.10", metadata["supported_game_version"])
+        self.assertEqual("1.13.11", metadata["supported_game_version"])
+        self.assertEqual("0.19.0", metadata["version"])
         relationships = [item for item in metadata["relationships"] if item["id"] == CMF_ID]
         self.assertEqual(["1.63.*"], [item["version"] for item in relationships])
+
+    def test_1_13_11_hotfix_files_remain_vanilla_owned(self):
+        self.assertFalse((ROOT / "common/production_methods/04_plantations.txt").exists())
+        self.assertFalse((ROOT / "events/tech_events/military_tech_events.txt").exists())
 
     def test_corridor_has_one_named_container_and_no_debug_scan(self):
         effects = text("common/scripted_effects/sb_bechuanaland_corridor_effects.txt")
@@ -75,8 +81,10 @@ class RebaseTests(unittest.TestCase):
         self.assertIn("sb_bechuanaland_project_corridor_journal = yes", journal)
         self.assertIn("je:je_sb_bechuanaland_corridor ?= {", effects)
         self.assertIn("sb_bechuanaland_project_corridor_journal = {", effects)
-        self.assertIn("com_remove_situation_left_title = yes", effects)
-        self.assertIn("com_remove_situation_right_title = yes", effects)
+        self.assertNotIn("com_remove_situation_left_title = yes", effects)
+        self.assertNotIn("com_remove_situation_right_title = yes", effects)
+        self.assertNotIn("com_situation_left_title_var", effects)
+        self.assertNotIn("com_situation_right_title_var", effects)
         self.assertIn(
             "container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_influence_score_var < 0",
             journal,
