@@ -20,6 +20,7 @@ class RepositoryValidatorTests(unittest.TestCase):
             self.assertIn("requires a rebase", check.detail)
 
     def test_repository_manifests_are_current(self):
+        deferred = validate.check_deferred_release_gates()
         checks = (
             validate.check_local_override_inventory(),
             validate.check_map_data(),
@@ -27,12 +28,13 @@ class RepositoryValidatorTests(unittest.TestCase):
             validate.check_on_action_router(),
             validate.check_stale_symbols(),
             validate.check_unused_symbols(),
-            validate.check_deferred_release_gates(),
+            validate.check_runtime_script_contracts(),
             validate.check_release_invariants(),
             validate.check_delayed_lifecycle(),
         )
         failures = [f"{check.name}: {check.detail}" for check in checks if check.status != "PASS"]
         self.assertEqual([], failures)
+        self.assertEqual("WARN", deferred.status, deferred.detail)
 
     def test_delayed_inventory_counts_duplicate_dispatches(self):
         first = ("events/a.txt", "example.1", (("days", "3"),), "yes")
@@ -49,6 +51,73 @@ class RepositoryValidatorTests(unittest.TestCase):
     def test_braced_parser_ignores_comment_and_quoted_braces(self):
         source = 'event = { text = "{quoted}" # } ignored\n effect = { value = 1 } }'
         self.assertEqual(source, validate.extract_braced(source, 0))
+
+    def test_runtime_contracts_reject_known_engine_only_failures(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            journals = root / "common/journal_entries"
+            history = root / "common/history/countries"
+            effects = root / "common/scripted_effects"
+            journals.mkdir(parents=True)
+            history.mkdir(parents=True)
+            effects.mkdir(parents=True)
+            (journals / "fixture.txt").write_text(
+                "je_global = {\n"
+                " group = je_group_global_international_situations\n"
+                " is_shown_when_inactive = { always = yes }\n"
+                "}\n"
+                "je_country = { group = je_group_events }\n"
+            )
+            (history / "fixture.txt").write_text(
+                "FIX = {\n"
+                " add_journal_entry = { type = je_global }\n"
+                " add_contextless_journal_entry = je_country\n"
+                "}\n"
+            )
+            (effects / "fixture.txt").write_text(
+                "bad_effect = {\n"
+                " if = { limit = { var:left = var:right } }\n"
+                " # var:commented = var:comparison\n"
+                " set_variable = { name = leaked_delta_var value = 1 }\n"
+                "}\n"
+            )
+
+            errors = validate.runtime_script_hazards(root)
+            self.assertTrue(any("variable-to-variable" in error for error in errors))
+            self.assertTrue(any("must use add_contextless" in error for error in errors))
+            self.assertTrue(any("created twice at startup" in error for error in errors))
+            self.assertTrue(any("country journal" in error for error in errors))
+            self.assertTrue(any("temporary delta variable" in error for error in errors))
+            self.assertFalse(any("commented" in error for error in errors))
+
+    def test_runtime_contracts_accept_safe_equivalents(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            journals = root / "common/journal_entries"
+            history = root / "common/history/countries"
+            effects = root / "common/scripted_effects"
+            journals.mkdir(parents=True)
+            history.mkdir(parents=True)
+            effects.mkdir(parents=True)
+            (journals / "fixture.txt").write_text(
+                "je_global = { group = je_group_global_international_situations }\n"
+                "je_country = { group = je_group_events }\n"
+            )
+            (history / "fixture.txt").write_text(
+                "FIX = {\n"
+                " add_contextless_journal_entry = je_global\n"
+                " add_journal_entry = { type = je_country }\n"
+                "}\n"
+            )
+            (effects / "fixture.txt").write_text(
+                "safe_effect = {\n"
+                " set_variable = { name = safe_delta_var value = 0 }\n"
+                " if = { limit = { var:safe_delta_var = 0 } }\n"
+                " remove_variable = safe_delta_var\n"
+                "}\n"
+            )
+
+            self.assertEqual([], validate.runtime_script_hazards(root))
 
 
 if __name__ == "__main__":

@@ -60,7 +60,7 @@ def localization_keys() -> set[str]:
 def defined_event_ids() -> set[str]:
     ids: set[str] = set()
     for path in sorted((ROOT / "events").rglob("*.txt")):
-        source = path.read_text(encoding="utf-8-sig")
+        source = validate.mask_script_comments(path.read_text(encoding="utf-8-sig"))
         for match in re.finditer(r"^\s*([a-z_0-9]+\.\d+)\s*=\s*\{", source, re.MULTILINE):
             ids.add(match.group(1))
     return ids
@@ -72,7 +72,7 @@ def vanilla_event_ids() -> set[str]:
     ids: set[str] = set()
     for path in sorted((GAME_ROOT / "events").rglob("*.txt")):
         try:
-            source = path.read_text(encoding="utf-8-sig")
+            source = validate.mask_script_comments(path.read_text(encoding="utf-8-sig"))
         except UnicodeDecodeError:
             continue
         for match in re.finditer(r"^\s*([a-z_0-9]+\.\d+)\s*=\s*\{", source, re.MULTILINE):
@@ -86,7 +86,9 @@ def repo_source_without(path_prefixes: tuple[str, ...]) -> str:
         base = ROOT / prefix
         if base.is_dir():
             for path in sorted(base.rglob("*.txt")):
-                chunks.append(path.read_text(encoding="utf-8-sig"))
+                chunks.append(
+                    validate.mask_script_comments(path.read_text(encoding="utf-8-sig"))
+                )
     return "\n".join(chunks)
 
 
@@ -141,14 +143,18 @@ class EventNamespaceSmokeTests(unittest.TestCase):
         known = self.mod_ids | self.vanilla_ids
         for ns in UNCOVERED_NAMESPACES:
             for eid, block in self.namespace_events(ns).items():
-                for target in re.findall(r"trigger_event = \{[^}]*id\s*=\s*([a-z_0-9]+\.\d+)", block):
+                active_block = validate.mask_script_comments(block)
+                for target in re.findall(r"trigger_event = \{[^}]*id\s*=\s*([a-z_0-9]+\.\d+)", active_block):
                     if target not in known:
                         problems.append(f"{eid}: trigger_event target undefined: {target}")
         self.assertEqual([], problems)
 
     def test_every_event_is_dispatched_somewhere(self):
         haystack = repo_source_without(("common",))
-        all_sources = [p.read_text(encoding="utf-8-sig") for p in sorted((ROOT / "events").rglob("*.txt"))]
+        all_sources = [
+            validate.mask_script_comments(p.read_text(encoding="utf-8-sig"))
+            for p in sorted((ROOT / "events").rglob("*.txt"))
+        ]
         problems = []
         for ns in UNCOVERED_NAMESPACES:
             for eid in self.namespace_events(ns):

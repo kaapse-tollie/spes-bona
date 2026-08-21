@@ -52,6 +52,14 @@ SB_DEFINITION_RE = re.compile(
     r"^(?:(?:REPLACE|TRY_REPLACE|REPLACE_OR_CREATE):)?(sb_[A-Za-z0-9_]+)\s*=\s*\{",
     re.MULTILINE,
 )
+VARIABLE_VALUE_RE = r"(?:[A-Za-z0-9_.:]+\.)?(?:var|global_var):[A-Za-z0-9_]+"
+VARIABLE_COMPARISON_RE = re.compile(
+    rf"(?<![A-Za-z0-9_]){VARIABLE_VALUE_RE}\s*(?:<=|>=|!=|=|<|>)\s*{VARIABLE_VALUE_RE}"
+)
+ADD_JOURNAL_ENTRY_RE = re.compile(r"\badd_journal_entry\s*=\s*\{")
+ADD_CONTEXTLESS_JOURNAL_ENTRY_RE = re.compile(
+    r"\badd_contextless_journal_entry\s*=\s*([A-Za-z0-9_.:-]+)"
+)
 EXPECTED_DEFERRED_GATES = {"BC-20", "BC-22", "CP-07", "SUP-05", "QUAL-09", "CONTENT-01"}
 
 
@@ -99,6 +107,132 @@ def extract_braced(text: str, start: int) -> str:
             if depth == 0:
                 return text[start : index + 1]
     raise ValueError("unclosed braced object")
+
+
+def mask_script_comments(text: str) -> str:
+    """Mask comments without moving offsets used in diagnostics."""
+    output = list(text)
+    quoted = False
+    escaped = False
+    commented = False
+    for index, char in enumerate(text):
+        if commented:
+            if char == "\n":
+                commented = False
+            else:
+                output[index] = " "
+            continue
+        if quoted:
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == '"':
+                quoted = False
+            continue
+        if char == "#":
+            commented = True
+            output[index] = " "
+        elif char == '"':
+            quoted = True
+    return "".join(output)
+
+
+def runtime_script_hazards(root: Path = ROOT) -> list[str]:
+    """Find script forms that parse statically but are rejected by the engine."""
+    errors: list[str] = []
+    journal_names: set[str] = set()
+    contextless_journals: set[str] = set()
+    inactive_journals: set[str] = set()
+    journal_root = root / "common/journal_entries"
+    if journal_root.is_dir():
+        for path in sorted(journal_root.rglob("*.txt")):
+            source = mask_script_comments(path.read_text(encoding="utf-8-sig", errors="ignore"))
+            for match in TOP_LEVEL_OBJECT_RE.finditer(source):
+                name = match.group(1)
+                if not name.startswith("je_"):
+                    continue
+                block = extract_braced(source, match.start())
+                journal_names.add(name)
+                if re.search(
+                    r"\bgroup\s*=\s*je_group_global_international_situations\b",
+                    block,
+                ):
+                    contextless_journals.add(name)
+                if re.search(r"\bis_shown_when_inactive\s*=", block):
+                    inactive_journals.add(name)
+
+    for base in ("common", "events"):
+        base_path = root / base
+        if not base_path.is_dir():
+            continue
+        for path in sorted(base_path.rglob("*.txt")):
+            source = path.read_text(encoding="utf-8-sig", errors="ignore")
+            masked = mask_script_comments(source)
+            relative = path.relative_to(root).as_posix()
+            for match in VARIABLE_COMPARISON_RE.finditer(masked):
+                line = masked.count("\n", 0, match.start()) + 1
+                errors.append(
+                    f"{relative}:{line}: variable-to-variable trigger comparison "
+                    f"is rejected by Victoria 3 ({match.group(0).strip()})"
+                )
+
+            if relative.startswith("common/scripted_effects/"):
+                for object_match in TOP_LEVEL_OBJECT_RE.finditer(masked):
+                    block = extract_braced(masked, object_match.start())
+                    delta_variables = set(
+                        re.findall(r"\bname\s*=\s*([A-Za-z0-9_]+_delta_var)\b", block)
+                    )
+                    for variable in sorted(delta_variables):
+                        if not re.search(
+                            rf"\bremove_variable\s*=\s*{re.escape(variable)}\b",
+                            block,
+                        ):
+                            line = masked.count("\n", 0, object_match.start()) + 1
+                            errors.append(
+                                f"{relative}:{line}: temporary delta variable {variable} "
+                                "is not removed by its scripted effect"
+                            )
+
+            for match in ADD_JOURNAL_ENTRY_RE.finditer(masked):
+                block = extract_braced(masked, match.start())
+                target_match = re.search(r"\btype\s*=\s*([A-Za-z0-9_.:-]+)", block)
+                if target_match is None:
+                    continue
+                target = target_match.group(1)
+                line = masked.count("\n", 0, match.start()) + 1
+                if target in contextless_journals:
+                    errors.append(
+                        f"{relative}:{line}: contextless journal {target} must use "
+                        "add_contextless_journal_entry"
+                    )
+                if (
+                    relative.startswith("common/history/countries/")
+                    and target in inactive_journals
+                ):
+                    errors.append(
+                        f"{relative}:{line}: history-authored journal {target} also has "
+                        "is_shown_when_inactive and can be created twice at startup"
+                    )
+
+            for match in ADD_CONTEXTLESS_JOURNAL_ENTRY_RE.finditer(masked):
+                target = match.group(1)
+                if target in journal_names and target not in contextless_journals:
+                    line = masked.count("\n", 0, match.start()) + 1
+                    errors.append(
+                        f"{relative}:{line}: country journal {target} cannot use "
+                        "add_contextless_journal_entry"
+                    )
+    return errors
+
+
+def check_runtime_script_contracts() -> Check:
+    errors = runtime_script_hazards()
+    return Check(
+        "runtime script contracts",
+        "FAIL" if errors else "PASS",
+        "; ".join(errors or ["no known engine-rejected script forms"]),
+    )
 
 
 def normalize_event_block(block: str) -> str:
@@ -682,10 +816,17 @@ def check_deferred_release_gates() -> Check:
         errors.append("missing gates: " + ", ".join(sorted(missing)))
     if extra:
         errors.append("unexpected gates: " + ", ".join(sorted(extra)))
+    spline_gate = gates.get("SUP-05", {})
+    if spline_gate.get("artifact") != "gfx/map/spline_network/spline_network.splnet":
+        errors.append("SUP-05 must identify the runtime-blocked spline asset")
+    acceptance = str(spline_gate.get("acceptance_test", ""))
+    for token in ("fresh launch", "STATE_NATAL", "STATE_ZULULAND", "travel"):
+        if token not in acceptance:
+            errors.append(f"SUP-05 acceptance test is missing {token}")
     return Check(
         "deferred release gates",
-        "FAIL" if errors else "PASS",
-        "; ".join(errors or [f"{len(gates)} explicit gates"]),
+        "FAIL" if errors else "WARN",
+        "; ".join(errors or [f"{len(gates)} unresolved gates: {', '.join(sorted(gates))}"]),
     )
 
 
@@ -921,6 +1062,7 @@ def main() -> int:
         check_on_action_router(),
         check_stale_symbols(),
         check_unused_symbols(),
+        check_runtime_script_contracts(),
         check_deferred_release_gates(),
         check_release_invariants(),
         check_delayed_lifecycle(),
