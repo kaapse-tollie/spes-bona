@@ -20,6 +20,13 @@ def object_block(path: str, name: str) -> str:
     return validate.extract_braced(source, match.start())
 
 
+def object_block_from_source(source: str, name: str) -> str:
+    match = re.search(rf"^\s*{re.escape(name)}\s*=\s*\{{", source, re.MULTILINE)
+    if match is None:
+        raise AssertionError(f"missing {name}")
+    return validate.extract_braced(source, match.start())
+
+
 class NatalInterwarTests(unittest.TestCase):
     def test_natal_sugar_trait_is_permanent_and_owner_neutral(self):
         trait = object_block(
@@ -28,7 +35,7 @@ class NatalInterwarTests(unittest.TestCase):
         )
         history = text("common/history/global/sb_state_traits.txt")
         self.assertIn("building_sugar_plantation_throughput_add = 0.10", trait)
-        self.assertIn("s:STATE_ZULULAND", history)
+        self.assertIn("s:STATE_NATAL", history)
         self.assertIn("add_state_trait = state_trait_sb_natal_sugar_country", history)
 
     def test_responsible_government_normalizes_only_dependency_laws(self):
@@ -113,17 +120,71 @@ class NatalInterwarTests(unittest.TestCase):
         self.assertIn("sb_apply_colonial_industrialist_identity = yes", british_colony)
         self.assertIn("sb_remove_colonial_industrialist_identity = yes", responsible)
 
-    def test_natalia_political_cast_follows_intended_primary_culture(self):
+    def test_boer_founders_precede_natalia_country_creation(self):
         path = "common/scripted_effects/sb_natalia_effects.txt"
-        boer_setup = object_block(path, "sb_apply_natalia_boer_republic_setup")
-        british_shell = object_block(path, "sb_seed_british_natal_colony_shell")
+        source = text(path)
+        creation = object_block(path, "sb_create_natalia_republic_if_missing")
+        self.assertIn("p:x5B124F.state", creation)
+        self.assertIn("culture = cu:boer", creation)
+        self.assertIn("population_ratio = 0.05", creation)
         self.assertLess(
-            boer_setup.index("add_primary_culture = cu:boer"),
-            boer_setup.index("effect_starting_politics_conservative = yes"),
+            creation.index("move_partial_pop ="),
+            creation.index("create_country ="),
         )
+        self.assertNotIn("sb_transfer_ora_boer_founders_to_natalia", source)
+        self.assertNotIn("sb_natalia_ora_boer_founders_transferred_var", source)
+
+    def test_split_states_make_founder_relocation_pipeline_obsolete(self):
+        path = "common/scripted_effects/sb_natalia_effects.txt"
+        source = text(path)
+        assignment = object_block(path, "sb_assign_natalia_republic_territory")
+        direct = object_block(path, "sb_found_natalia_after_blood_river")
+        peaceful = object_block(path, "sb_found_natalia_peacefully")
+        guns_bargain = object_block(
+            path, "sb_found_natalia_after_guns_bargain_rejection"
+        )
+        self.assertIn("s:STATE_NATAL", assignment)
+        self.assertIn("provinces = { x5B124F }", assignment)
+        self.assertNotIn("STATE_ZULULAND", assignment)
+        self.assertNotIn("sb_relocate_inherited_natalia_buildings_to_zul", source)
+        self.assertNotIn("sb_natalia_blood_river_building_transfer_pending_var", source)
+        for founding in (direct, peaceful):
+            self.assertLess(
+                founding.index("sb_assign_natalia_republic_territory = yes"),
+                founding.index("sb_apply_natalia_boer_republic_setup = yes"),
+            )
+        self.assertIn(
+            "set_variable = sb_natalia_blood_river_military_setup_pending_var",
+            guns_bargain,
+        )
+
+    def test_blood_river_natalia_uses_standard_boer_commando_without_levies(self):
+        path = "common/scripted_effects/sb_natalia_effects.txt"
+        military = object_block(
+            path, "sb_apply_natalia_blood_river_military_setup"
+        )
+        direct = object_block(path, "sb_found_natalia_after_blood_river")
+        peaceful = object_block(path, "sb_found_natalia_peacefully")
+
         self.assertLess(
-            british_shell.index("add_primary_culture = cu:anglo_african"),
-            british_shell.index("effect_starting_politics_conservative = yes"),
+            military.index("remove_building = building_conscription_center"),
+            military.index("create_military_formation ="),
+        )
+        self.assertEqual(2, military.count("combat_unit = {"))
+        self.assertEqual(2, military.count("count = 1"))
+        self.assertIn("combat_unit_type_irregular_infantry", military)
+        self.assertIn("combat_unit_type_dragoons", military)
+        self.assertNotIn("service_type = conscript", military)
+        self.assertNotIn("combat_unit_type_line_infantry", military)
+        self.assertEqual(
+            1, direct.count("sb_apply_natalia_blood_river_military_setup = yes")
+        )
+        self.assertIn("sb_apply_natalia_blood_river_military_setup = yes", peaceful)
+        self.assertLess(
+            peaceful.index("sb_apply_natalia_blood_river_military_setup = yes"),
+            peaceful.index(
+                "remove_variable = sb_natalia_blood_river_military_setup_pending_var"
+            ),
         )
 
     def test_british_natal_replaces_anti_british_lobby(self):
@@ -196,7 +257,14 @@ class NatalInterwarTests(unittest.TestCase):
             "sb_natal_owns_complete_northern_zulu_core",
         )
         self.assertEqual(9, len(re.findall(r"p:x[0-9A-F]+\.state\.owner = ROOT", trigger)))
-        self.assertIn("add_homeland = cu:anglo_african", event)
+        self.assertNotIn("add_homeland = cu:anglo_african", event)
+        responsible = object_block(
+            "common/scripted_effects/sb_subject_autonomy_effects.txt",
+            "sb_apply_responsible_colony_subject_type_from_overlord",
+        )
+        self.assertIn("s:STATE_NATAL", responsible)
+        self.assertIn("add_homeland = cu:anglo_african", responsible)
+        self.assertNotIn("STATE_ZULULAND", responsible)
         self.assertIn("add_radicals = { value = 0.25 culture = cu:zulu }", event)
         self.assertIn("add_radicals = { value = -0.05 culture = cu:zulu }", event)
         self.assertIn("sb_natal_apply_zulu_chiefdom_settlement = yes", event)
@@ -233,17 +301,23 @@ class NatalInterwarTests(unittest.TestCase):
 
     def test_restored_zululand_population_play_and_results_match_contract(self):
         effects_path = "common/scripted_effects/sb_natal_interwar_effects.txt"
+        effects = text(effects_path)
         restore = object_block(effects_path, "sb_natal_restore_zululand_as_puppet")
-        population = object_block(
-            effects_path, "sb_natal_normalize_restored_zululand_population"
-        )
         launch = object_block(effects_path, "sb_natal_launch_zulu_restoration_play")
         hooks = text("common/on_actions/sb_diplomatic_play_on_action_handlers.txt")
         self.assertIn("type = puppet", restore)
         self.assertIn("add_liberty_desire = 75", restore)
-        self.assertIn("population_ratio = 0.30", population)
-        self.assertIn("NOT = { culture = cu:zulu }", population)
-        self.assertIn("population_ratio = 1", population)
+        self.assertIn("s:STATE_ZULULAND", restore)
+        self.assertIn("province = p:xBE6FEE", restore)
+        for province in (
+            "xBE6FEE", "x1A084B", "xBFA16B", "x9E9742", "x88FAD4",
+            "x904EBE", "x41C070", "xE882CE", "xE1E455",
+        ):
+            self.assertIn(province, restore)
+        self.assertNotIn("STATE_NATAL", restore)
+        self.assertNotIn("population_ratio", restore)
+        self.assertNotIn("sb_natal_normalize_restored_zululand_population", effects)
+        self.assertNotIn("sb_restore_zululand_population_split_after_zulu_defeat", effects)
         self.assertIn("type = dp_sb_zulu_restoration_secession", launch)
         self.assertIn("type = annex_country", launch)
         self.assertIn("ai_strategy_sb_zulu_restoration_resistance", launch)
@@ -255,6 +329,10 @@ class NatalInterwarTests(unittest.TestCase):
             self.assertIn(f"{handler} = yes", hooks)
 
     def test_transvaal_appeal_creates_exact_treaty_and_territorial_payment(self):
+        trigger = object_block(
+            "common/scripted_triggers/sb_natal_interwar_triggers.txt",
+            "sb_natal_trn_arms_treaty_possible",
+        )
         effects = object_block(
             "common/scripted_effects/sb_natal_interwar_effects.txt",
             "sb_natal_create_trn_zulu_arms_treaty",
@@ -262,7 +340,8 @@ class NatalInterwarTests(unittest.TestCase):
         event = object_block("events/sb_natal_interwar_events.txt", "sb_natal_interwar.040")
         for province in ("xE1E455", "xE882CE", "x1A084B", "xBFA16B", "x41C070"):
             self.assertIn(province, effects)
-        self.assertIn("add_infamy = 2.5", effects)
+        self.assertIn("change_infamy = 2.5", effects)
+        self.assertNotIn("add_infamy", effects)
         self.assertIn("country = c:NAL value = -15", effects)
         self.assertIn("country = c:GBR value = -5", effects)
         self.assertIn("article = military_assistance", effects)
@@ -270,9 +349,30 @@ class NatalInterwarTests(unittest.TestCase):
         self.assertIn("goods = g:small_arms", effects)
         self.assertIn("quantity = 10", effects)
         self.assertIn("years = 5", effects)
+        self.assertIn("article = military_assistance", trigger)
+        self.assertNotIn("article = goods_transfer", trigger)
+        self.assertNotIn("inputs =", trigger)
         self.assertIn("base = 60", event)
         for value in ("add = 20", "add = 15", "add = -30", "add = -20"):
             self.assertIn(value, event)
+
+    def test_civil_rights_event_trigger_uses_boolean_script(self):
+        event = object_block("events/sb_natal_interwar_events.txt", "sb_natal_interwar.010")
+        trigger = object_block_from_source(event, "trigger")
+        self.assertIn("OR = {", trigger)
+        self.assertNotIn("if = {", trigger)
+
+    def test_launch_sensitive_new_scripts_use_utf8_bom(self):
+        for path in (
+            "common/scripted_triggers/sb_natal_interwar_triggers.txt",
+            "common/scripted_effects/sb_natal_interwar_effects.txt",
+            "common/static_modifiers/sb_natal_interwar_modifiers.txt",
+            "common/ideologies/sb_natal_interwar_ideologies.txt",
+            "common/political_movements/sb_natal_interwar_movements.txt",
+            "events/sb_pink_map_events.txt",
+            "common/history/ai/zz_sb_portuguese_kongo_secret_goal.txt",
+        ):
+            self.assertTrue((ROOT / path).read_bytes().startswith(b"\xef\xbb\xbf"), path)
 
 
 if __name__ == "__main__":

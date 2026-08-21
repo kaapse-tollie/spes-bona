@@ -23,6 +23,21 @@ sb_apply_responsible_colony_subject_type_from_overlord = {
 		change_subject_type = subject_type_sb_responsible_colony
 	}
 
+	if = {
+		limit = {
+			country_definition = cd:NAL
+			is_subject_of = c:GBR
+			NOT = { has_variable = sb_natal_responsible_government_homeland_granted_var }
+		}
+		set_variable = sb_natal_responsible_government_homeland_granted_var
+		s:STATE_NATAL = {
+			if = {
+				limit = { NOT = { is_homeland = cu:anglo_african } }
+				add_homeland = cu:anglo_african
+			}
+		}
+	}
+
 	# Responsible ministries replace the two explicitly dependency-oriented laws.
 	# Every other citizenship and economic law is deliberately preserved.
 	if = {

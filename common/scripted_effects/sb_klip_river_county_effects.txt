@@ -93,7 +93,7 @@ sb_klip_river_create_county = {
 		limit = { NOT = { exists = c:KLR } }
 		# Stage the rebel muster before partitioning Natal so the requested share
 		# is calculated from the colony's complete Boer population.
-		s:STATE_ZULULAND.region_state:NAL ?= {
+		s:STATE_NATAL.region_state:NAL ?= {
 			save_temporary_scope_as = sb_klip_river_boer_muster_source
 		}
 		if = {
@@ -145,7 +145,7 @@ sb_klip_river_create_county = {
 			province = p:xDE0EDE
 		}
 	}
-	s:STATE_ZULULAND = {
+	s:STATE_NATAL = {
 		set_owner_of_provinces = {
 			country = c:KLR
 			provinces = { xBBCA32 xDE0EDE x552449 }
@@ -163,7 +163,7 @@ sb_klip_river_create_county = {
 		activate_law = law_type:law_discrete_inboekstelsel
 		every_interest_group = { remove_ruling_interest_group = yes }
 		ig:ig_landowners ?= { add_ruling_interest_group = yes }
-		s:STATE_ZULULAND.region_state:KLR = {
+		s:STATE_NATAL.region_state:KLR = {
 			create_building = {
 				building = building_maize_farm
 				add_ownership = {
@@ -171,7 +171,7 @@ sb_klip_river_create_county = {
 						type = building_manor_house
 						country = c:KLR
 						levels = 1
-						region = "STATE_ZULULAND"
+						region = "STATE_NATAL"
 					}
 				}
 				reserves = 1
@@ -179,8 +179,8 @@ sb_klip_river_create_county = {
 			}
 		}
 		if = {
-			limit = { NOT = { has_claim = s:STATE_ZULULAND } }
-			s:STATE_ZULULAND = { add_claim = c:KLR }
+			limit = { NOT = { has_claim = s:STATE_NATAL } }
+			s:STATE_NATAL = { add_claim = c:KLR }
 		}
 		if = {
 			limit = {
@@ -201,9 +201,9 @@ sb_klip_river_create_county = {
 			limit = {
 				exists = scope:sb_klip_river_servicemen_staging
 				exists = scope:sb_klip_river_officers_staging
-				exists = s:STATE_ZULULAND.region_state:KLR
+				exists = s:STATE_NATAL.region_state:KLR
 			}
-			s:STATE_ZULULAND.region_state:KLR = {
+			s:STATE_NATAL.region_state:KLR = {
 				save_temporary_scope_as = sb_klip_river_muster_target
 			}
 			scope:sb_klip_river_servicemen_staging = {
@@ -240,12 +240,12 @@ sb_klip_river_create_county = {
 				name = klip_river_commando
 				combat_unit = {
 					type = unit_type:combat_unit_type_dragoons
-					state_region = s:STATE_ZULULAND
+					state_region = s:STATE_NATAL
 					count = 1
 				}
 				combat_unit = {
 					type = unit_type:combat_unit_type_irregular_infantry
-					state_region = s:STATE_ZULULAND
+					state_region = s:STATE_NATAL
 					count = 1
 				}
 			}
@@ -413,8 +413,8 @@ sb_klip_river_start_punitive_play = {
 	c:ZUL ?= {
 		set_variable = sb_klip_river_punitive_active_var
 		if = {
-			limit = { NOT = { has_claim = s:STATE_ZULULAND } }
-			s:STATE_ZULULAND = { add_claim = c:ZUL }
+			limit = { NOT = { has_claim = s:STATE_NATAL } }
+			s:STATE_NATAL = { add_claim = c:ZUL }
 		}
 	}
 	create_diplomatic_play = {
@@ -432,13 +432,13 @@ sb_klip_river_start_punitive_play = {
 			holder = c:ZUL
 			target_country = root
 			type = return_state
-			target_state = s:STATE_ZULULAND.region_state:NAL
+			target_state = s:STATE_NATAL.region_state:NAL
 		}
 	}
 }
 
 sb_klip_river_accept_zulu_cession = {
-	s:STATE_ZULULAND = {
+	s:STATE_NATAL = {
 		set_owner_of_provinces = {
 			country = root
 			provinces = { xBBCA32 }
@@ -458,17 +458,27 @@ sb_klip_river_finalize_reduced_natalia = {
 		limit = { c:NAL ?= { is_country_alive = yes } }
 		annex = c:NAL
 	}
-	s:STATE_ZULULAND = {
+	s:STATE_NATAL = {
 		set_owner_of_provinces = {
 			country = c:ZUL
 			provinces = {
-				x279045 xBE6FEE x1A084B xBFA16B x9E9742 x88FAD4 x904EBE x41C070 xE882CE
+				x279045
 				x5B124F xFF0EF1 xE0EB02 x85695F x7ACC38 xB1F868 x3CED3D x11A090 xCD31DB
 			}
 		}
 		set_owner_of_provinces = {
 			country = c:KLR
-			provinces = { xBBCA32 xDE0EDE x552449 xE1E455 }
+			provinces = { xBBCA32 xDE0EDE x552449 }
+		}
+	}
+	s:STATE_ZULULAND = {
+		set_owner_of_provinces = {
+			country = c:ZUL
+			provinces = { xBE6FEE x1A084B xBFA16B x9E9742 x88FAD4 x904EBE x41C070 xE882CE }
+		}
+		set_owner_of_provinces = {
+			country = c:KLR
+			provinces = { xE1E455 }
 		}
 	}
 	random_scope_character = {
@@ -489,6 +499,9 @@ sb_klip_river_finalize_reduced_natalia = {
 	set_variable = sb_natal_path_resolved_var
 	set_variable = sb_klip_river_county_resolved_var
 	c:GBR ?= { set_variable = sb_british_natal_ultimatum_var }
+	# The normal county never partitions Zululand. This cleanup is exclusive to
+	# the reduced-Natalia victory, whose explicit xE1E455 award is the one
+	# surviving cross-state exception.
 	s:STATE_ZULULAND.region_state:ZUL ?= {
 		every_scope_pop = {
 			limit = { culture = cu:boer }

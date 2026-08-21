@@ -20,6 +20,27 @@ sb_create_natalia_republic_if_missing = {
 		limit = {
 			NOT = { exists = c:NAL }
 		}
+		# Country creation generates its default political cast from the seed state.
+		# Stage the Boer founders there before NAL exists so their appearance follows
+		# the republic's actual settler population rather than the Zulu majority.
+		p:x5B124F.state = {
+			save_temporary_scope_as = sb_natalia_boer_founder_seed_state
+		}
+		hidden_effect = {
+			s:STATE_CAPE_COLONY = {
+				region_state:CAP ?= {
+					every_scope_pop = {
+						limit = {
+							culture = cu:boer
+						}
+						move_partial_pop = {
+							state = scope:sb_natalia_boer_founder_seed_state
+							population_ratio = 0.05
+						}
+					}
+				}
+			}
+		}
 		create_country = {
 			tag = NAL
 			origin = root
@@ -29,71 +50,41 @@ sb_create_natalia_republic_if_missing = {
 }
 
 sb_assign_natalia_republic_territory = {
-	s:STATE_ZULULAND = {
+	s:STATE_NATAL = {
 		set_owner_of_provinces = {
 			country = c:NAL
-			provinces = {
-				x5B124F xFF0EF1 x552449 xE0EB02 x85695F xDE0EDE
-				x7ACC38 xB1F868 x3CED3D x11A090 xCD31DB
-			}
+			provinces = { x5B124F }
 		}
 		add_claim = c:NAL
 	}
-	sb_transfer_ora_boer_founders_to_natalia = yes
 }
 
-# Province transfer divides existing state pops evenly. Restore the 1836
-# north/south Zulu ratio after a Boer victory: 268,000 ZUL to 84,945 QWA.
-sb_restore_zululand_population_split_after_zulu_defeat = {
-	if = {
+# Blood River must not hand Zulu levy infrastructure to the new republic.
+# Removing the inherited conscription center also removes any attached levy
+# units before Natalia receives the standard two-unit Boer commando.
+sb_apply_natalia_blood_river_military_setup = {
+	every_scope_state = {
 		limit = {
-			c:NAL ?= { is_country_alive = yes }
-			c:ZUL ?= { is_country_alive = yes }
-			exists = s:STATE_ZULULAND.region_state:NAL
-			exists = s:STATE_ZULULAND.region_state:ZUL
-		}
-		s:STATE_ZULULAND.region_state:NAL = {
-			every_scope_pop = {
-				limit = { culture = cu:zulu }
-				move_partial_pop = {
-					state = s:STATE_ZULULAND.region_state:ZUL
-					population_ratio = 0.6
-				}
-			}
-			every_scope_pop = {
-				limit = { culture = cu:tsonga }
-				move_partial_pop = {
-					state = s:STATE_ZULULAND.region_state:ZUL
-					population_ratio = 1
-				}
+			state_region = s:STATE_NATAL
+			any_scope_building = {
+				is_building_type = building_conscription_center
 			}
 		}
+		remove_building = building_conscription_center
 	}
-}
-
-sb_transfer_ora_boer_founders_to_natalia = {
-	if = {
-		limit = {
-			c:NAL ?= {
-				is_country_alive = yes
-				NOT = { has_variable = sb_natalia_ora_boer_founders_transferred_var }
-			}
+	create_military_formation = {
+		type = army
+		hq_region = sr:region_southern_africa
+		name = natalia_commando
+		combat_unit = {
+			type = unit_type:combat_unit_type_irregular_infantry
+			state_region = s:STATE_NATAL
+			count = 1
 		}
-		s:STATE_CAPE_COLONY = {
-			region_state:CAP ?= {
-				every_scope_pop = {
-					limit = {
-						culture = cu:boer
-					}
-					move_partial_pop = {
-						state = c:NAL.capital
-						population_ratio = 0.05
-					}
-				}
-			}
-		}
-		c:NAL ?= {
-			set_variable = sb_natalia_ora_boer_founders_transferred_var
+		combat_unit = {
+			type = unit_type:combat_unit_type_dragoons
+			state_region = s:STATE_NATAL
+			count = 1
 		}
 	}
 }
@@ -152,7 +143,6 @@ sb_apply_natalia_boer_republic_setup = {
 		}
 		remove_primary_culture = cu:anglo_african
 	}
-	# Generate the republic's political cast only after Boer identity is active.
 	effect_starting_politics_conservative = yes
 	sb_apply_boer_commandant_general_baseline = yes
 	activate_law = law_type:law_national_supremacy
@@ -163,7 +153,11 @@ sb_apply_natalia_boer_republic_setup = {
 	activate_law = law_type:law_homesteading
 	activate_law = law_type:law_national_militia
 	activate_law = law_type:law_discrete_inboekstelsel
-	activate_law = law_type:law_no_colonial_affairs
+	activate_law = law_type:law_frontier_colonization
+	add_modifier = {
+		name = sb_trek_frontier_drive
+		months = 120
+	}
 	sb_apply_boer_republic_interest_group_identity = yes
 	if = {
 		limit = {
@@ -189,11 +183,11 @@ sb_apply_natalia_boer_republic_setup = {
 	ig:ig_armed_forces ?= { add_ruling_interest_group = yes }
 	ig:ig_landowners ?= { add_ruling_interest_group = yes }
 	ig:ig_rural_folk ?= { add_ruling_interest_group = yes }
-		ig:ig_devout ?= { add_ruling_interest_group = yes }
-		sb_refresh_boer_commandant_general_government = yes
-		sb_ensure_commandant_general_ruler_command = yes
-		sb_ensure_boer_anti_british_lobby = yes
-	}
+	ig:ig_devout ?= { add_ruling_interest_group = yes }
+	sb_refresh_boer_commandant_general_government = yes
+	sb_ensure_commandant_general_ruler_command = yes
+	sb_ensure_boer_anti_british_lobby = yes
+}
 
 # Late-game counterpart to the founding setup. Restore republican Natalia after
 # a Boer corridor victory without replaying starting tech, an 1840 election,
@@ -245,7 +239,11 @@ sb_restore_natalia_after_boer_corridor_victory = {
 	activate_law = law_type:law_homesteading
 	activate_law = law_type:law_national_militia
 	activate_law = law_type:law_discrete_inboekstelsel
-	activate_law = law_type:law_no_colonial_affairs
+	activate_law = law_type:law_frontier_colonization
+	add_modifier = {
+		name = sb_trek_frontier_drive
+		months = 120
+	}
 	sb_apply_boer_republic_interest_group_identity = yes
 	active_law:lawgroup_army_model ?= {
 		if = {
@@ -535,6 +533,7 @@ sb_join_trn_to_active_natal_war = {
 }
 
 sb_found_natalia_peacefully = {
+	save_scope_as = sb_natalia_peaceful_founder_scope
 	random_scope_character = {
 		limit = {
 			has_template = ORA_piet_retief
@@ -594,21 +593,35 @@ sb_found_natalia_peacefully = {
 				months = 120
 			}
 		}
-		create_military_formation = {
-			type = army
-			hq_region = sr:region_southern_africa
-			name = natalia_commando
-			combat_unit = {
-				type = unit_type:combat_unit_type_line_infantry
-				state_region = s:STATE_ZULULAND
-				count = 2
+		if = {
+			limit = {
+				scope:sb_natalia_peaceful_founder_scope ?= {
+					has_variable = sb_natalia_blood_river_military_setup_pending_var
+				}
 			}
-			combat_unit = {
-				type = unit_type:combat_unit_type_dragoons
-				state_region = s:STATE_ZULULAND
-				count = 1
+			sb_apply_natalia_blood_river_military_setup = yes
+		}
+		else = {
+			create_military_formation = {
+				type = army
+				hq_region = sr:region_southern_africa
+				name = natalia_commando
+				combat_unit = {
+					type = unit_type:combat_unit_type_line_infantry
+					state_region = s:STATE_NATAL
+					count = 2
+				}
+				combat_unit = {
+					type = unit_type:combat_unit_type_dragoons
+					state_region = s:STATE_NATAL
+					count = 1
+				}
 			}
 		}
+	}
+	if = {
+		limit = { has_variable = sb_natalia_blood_river_military_setup_pending_var }
+		remove_variable = sb_natalia_blood_river_military_setup_pending_var
 	}
 	c:NAL ?= { sb_ensure_boer_republic_compacts_for_root = yes }
 	c:NAL ?= { trigger_event = { id = sb_boer_republics.121 days = 1 popup = no } }
@@ -619,51 +632,52 @@ sb_found_natalia_peacefully = {
 sb_found_natalia_after_blood_river = {
 	sb_create_natalia_republic_if_missing = yes
 	sb_assign_natalia_republic_territory = yes
-	sb_restore_zululand_population_split_after_zulu_defeat = yes
 	# If TRN already exists when Natalia is founded, Natalia should inherit
 	# Andries while Marthinus takes over the inland republic. This now covers
 	# both older compatibility saves and the live V2 "TRN formed before NAL"
 	# branch.
-	if = {
-		limit = {
+	hidden_effect = {
+		if = {
+			limit = {
+				c:TRN ?= {
+					is_country_alive = yes
+					any_scope_character = {
+						has_template = TRN_andries_pretorius
+						is_character_alive = yes
+					}
+				}
+			}
 			c:TRN ?= {
-				is_country_alive = yes
-				any_scope_character = {
-					has_template = TRN_andries_pretorius
-					is_character_alive = yes
+				sb_martinus_ensure_trn_pretorius_cast = yes
+				random_scope_character = {
+					limit = {
+						has_template = TRN_andries_pretorius
+					}
+					save_scope_as = andries_pretorius_scope
+				}
+				random_scope_character = {
+					limit = {
+						has_template = TRN_marthinus_wessel_pretorius
+					}
+					set_character_as_ruler = yes
+					set_interest_group = c:TRN.ig:ig_landowners
 				}
 			}
-		}
-		c:TRN ?= {
-			sb_martinus_ensure_trn_pretorius_cast = yes
-			random_scope_character = {
-				limit = {
-					has_template = TRN_andries_pretorius
-				}
-				save_scope_as = andries_pretorius_scope
-			}
-			random_scope_character = {
-				limit = {
-					has_template = TRN_marthinus_wessel_pretorius
-				}
+			scope:andries_pretorius_scope ?= {
+				transfer_character = c:NAL
 				set_character_as_ruler = yes
-				set_interest_group = c:TRN.ig:ig_landowners
+				add_character_role = politician
+				set_interest_group = c:NAL.ig:ig_landowners
 			}
-		}
-		scope:andries_pretorius_scope ?= {
-			transfer_character = c:NAL
-			set_character_as_ruler = yes
-			add_character_role = politician
-			set_interest_group = c:NAL.ig:ig_landowners
-		}
-		c:TRN ?= {
-			if = {
-				limit = {
-					is_player = yes
-					NOT = { has_variable = sb_natalia_trn_player_handoff_offered_var }
+			c:TRN ?= {
+				if = {
+					limit = {
+						is_player = yes
+						NOT = { has_variable = sb_natalia_trn_player_handoff_offered_var }
+					}
+					set_variable = sb_natalia_trn_player_handoff_offered_var
+					trigger_event = { id = sb_natal_crisis.071 days = 1 popup = yes }
 				}
-				set_variable = sb_natalia_trn_player_handoff_offered_var
-				trigger_event = { id = sb_natal_crisis.071 days = 1 popup = yes }
 			}
 		}
 	}
@@ -691,21 +705,7 @@ sb_found_natalia_after_blood_river = {
 			country = root
 			value = 60
 		}
-		create_military_formation = {
-			type = army
-			hq_region = sr:region_southern_africa
-			name = natalia_commando
-			combat_unit = {
-				type = unit_type:combat_unit_type_line_infantry
-				state_region = s:STATE_ZULULAND
-				count = 2
-			}
-			combat_unit = {
-				type = unit_type:combat_unit_type_dragoons
-				state_region = s:STATE_ZULULAND
-				count = 1
-			}
-		}
+		sb_apply_natalia_blood_river_military_setup = yes
 		create_bidirectional_truce = {
 			country = c:ZUL
 			months = 120
@@ -736,8 +736,12 @@ sb_found_natalia_after_blood_river = {
 # A variant of the war-victory settlement where Retief survives to lead Natalia
 # and Pretorius remains in Transvaal.
 sb_found_natalia_after_guns_bargain_rejection = {
+	set_variable = sb_natalia_blood_river_military_setup_pending_var
 	sb_found_natalia_peacefully = yes
-	sb_restore_zululand_population_split_after_zulu_defeat = yes
+	if = {
+		limit = { has_variable = sb_natalia_blood_river_military_setup_pending_var }
+		remove_variable = sb_natalia_blood_river_military_setup_pending_var
+	}
 	if = {
 		limit = { has_variable = sb_natal_guns_bargain_war_var }
 		remove_variable = sb_natal_guns_bargain_war_var

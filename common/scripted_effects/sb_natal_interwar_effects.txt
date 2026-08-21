@@ -1,4 +1,4 @@
-# Natal interwar, Indian indenture, and post-annexation Zululand settlement.
+﻿# Natal interwar, Indian indenture, and post-annexation Zululand settlement.
 
 sb_natal_archive_zulu_firearms = {
 	if = {
@@ -97,7 +97,7 @@ sb_natal_restore_archived_zulu_firearms = {
 }
 
 sb_natal_select_indenture_origin_and_create_migration = {
-	s:STATE_ZULULAND.region_state:NAL ?= {
+	s:STATE_NATAL.region_state:NAL ?= {
 		if = {
 			limit = { state_is_eligible_as_mass_migration_target = yes }
 			save_scope_as = sb_natal_indenture_target_scope
@@ -598,33 +598,6 @@ sb_natal_install_restored_zulu_ruler = {
 	}
 }
 
-sb_natal_normalize_restored_zululand_population = {
-	if = {
-		limit = {
-			exists = s:STATE_ZULULAND.region_state:NAL
-			exists = s:STATE_ZULULAND.region_state:ZUL
-		}
-		s:STATE_ZULULAND.region_state:NAL = {
-			every_scope_pop = {
-				limit = { culture = cu:zulu }
-				move_partial_pop = {
-					state = s:STATE_ZULULAND.region_state:ZUL
-					population_ratio = 0.30
-				}
-			}
-		}
-		s:STATE_ZULULAND.region_state:ZUL = {
-			every_scope_pop = {
-				limit = { NOT = { culture = cu:zulu } }
-				move_partial_pop = {
-					state = s:STATE_ZULULAND.region_state:NAL
-					population_ratio = 1
-				}
-			}
-		}
-	}
-}
-
 sb_natal_restore_zululand_as_puppet = {
 	if = {
 		limit = {
@@ -652,7 +625,6 @@ sb_natal_restore_zululand_as_puppet = {
 			type = puppet
 		}
 		c:ZUL = { add_liberty_desire = 75 }
-		sb_natal_normalize_restored_zululand_population = yes
 		c:ZUL = { sb_natal_restore_archived_zulu_firearms = yes }
 		sb_natal_install_restored_zulu_ruler = yes
 	}
@@ -720,7 +692,7 @@ sb_natal_create_trn_zulu_arms_treaty = {
 				provinces = { xE1E455 xE882CE x1A084B xBFA16B x41C070 }
 			}
 		}
-		add_infamy = 2.5
+		change_infamy = 2.5
 		change_relations = { country = c:NAL value = -15 }
 		change_relations = { country = c:GBR value = -5 }
 		create_treaty = {
@@ -927,7 +899,7 @@ sb_natal_interwar_monthly_housekeeping = {
 			NOT = { has_variable = sb_natal_indenture_completed_var }
 			NOT = { has_variable = sb_natal_indenture_pending_var }
 			sb_natal_british_network_has_indenture_origin = yes
-			s:STATE_ZULULAND.region_state:NAL ?= {
+			s:STATE_NATAL.region_state:NAL ?= {
 				state_is_eligible_as_mass_migration_target = yes
 			}
 		}

@@ -335,7 +335,7 @@ struggle_for_the_highveld.3 = {
 
 		any_scope_state = {
 			any_neighbouring_state = {
-				state_region = s:STATE_ZULULAND
+				state_region = s:STATE_NATAL
 				owner = {
 					c:ZUL ?= this
 					is_at_war = no
@@ -356,7 +356,7 @@ struggle_for_the_highveld.3 = {
 				save_scope_as = dingane
 			}
 		}
-		s:STATE_ZULULAND = {
+		s:STATE_NATAL = {
 			save_scope_as = zululand_region
 		}
 		if = {
@@ -489,7 +489,7 @@ struggle_for_the_highveld.4 = {
 		custom_tooltip = {
 			text = struggle_for_the_highveld.4.b.tt
 		}
-		s:STATE_ZULULAND = {
+		s:STATE_NATAL = {
 			add_claim = scope:oranje
 		}
 
@@ -514,11 +514,11 @@ struggle_for_the_highveld.4 = {
 	option = {
 		name = struggle_for_the_highveld.4.c
 
-		s:STATE_ZULULAND = {
-			set_owner_of_provinces = {
-				country = scope:oranje
-				provinces = { x5B124F xFF0EF1 x552449 xE0EB02 x85695F xDE0EDE x279045 x7ACC38 xB1F868 x3CED3D x11A090 xCD31DB }
-			}
+		scope:oranje = {
+			sb_found_natalia_peacefully = yes
+		}
+		s:STATE_NATAL = {
+			remove_claim = c:ZUL
 		}
 
 		every_country = {
@@ -573,7 +573,7 @@ struggle_for_the_highveld.5 = {
 	}
 
 	immediate = {
-		s:STATE_ZULULAND = {
+		s:STATE_NATAL = {
 			save_scope_as = zululand_region
 		}
 		save_scope_as = zulu
@@ -652,55 +652,25 @@ struggle_for_the_highveld.5 = {
 			}
 		}
 
-		create_country = {
-			tag = NAL
-			origin = scope:natalia_progenitor
-			province = p:x279045
-			on_created = {
-				set_country_type = unrecognized
-				save_temporary_scope_as = natalia_republic
-				s:STATE_ZULULAND = {
-					set_owner_of_provinces = {
-						country = c:NAL
-						provinces = { x5B124F xFF0EF1 x552449 xE0EB02 x85695F xDE0EDE x7ACC38 xB1F868 x3CED3D x11A090 xCD31DB }
-					}
-				}
-
-				every_country = {
-					limit = {
-						OR = {
-							has_journal_entry = je_struggle_for_the_highveld
-							any_subject_or_below = {
-								has_journal_entry = je_struggle_for_the_highveld
-							}
-						}
-					}
-					post_notification = blood_river_mpande_rules_natalia_founded
-				}
-
-				add_journal_entry = { type = je_struggle_for_the_highveld }
-			}
+		scope:natalia_progenitor ?= {
+			sb_found_natalia_after_blood_river = yes
 		}
 
-		hidden_effect = {
-			s:STATE_ZULULAND = {
-				random_scope_state = {
-					limit = {
-						NOT = { owner = c:ZUL }
-					}
-					every_scope_pop = {
-						limit = {
-							culture = cu:zulu
-							NOT = { is_pop_type = peasants }
-						}
-						move_pop = s:STATE_ZULULAND.region_state:ZUL
-					}
-					create_pop = {
-						culture = boer
-						religion = protestant
-						size = 3000
+		every_country = {
+			limit = {
+				OR = {
+					has_journal_entry = je_struggle_for_the_highveld
+					any_subject_or_below = {
+						has_journal_entry = je_struggle_for_the_highveld
 					}
 				}
+			}
+			post_notification = blood_river_mpande_rules_natalia_founded
+		}
+		c:NAL ?= {
+			if = {
+				limit = { NOT = { has_journal_entry = je_struggle_for_the_highveld } }
+				add_journal_entry = { type = je_struggle_for_the_highveld }
 			}
 		}
 
@@ -884,11 +854,11 @@ struggle_for_the_highveld.6 = {
 		if = {
 			limit = {
 				NOR = {
-					owns_entire_state_region = STATE_ZULULAND
-					has_claim = s:STATE_ZULULAND
+					owns_entire_state_region = STATE_NATAL
+					has_claim = s:STATE_NATAL
 				}
 			}
-			s:STATE_ZULULAND = { add_claim = scope:highveld_winner }
+			s:STATE_NATAL = { add_claim = scope:highveld_winner }
 		}
 	}
 }
@@ -965,8 +935,8 @@ struggle_for_the_highveld.7 = {
 			s:STATE_TRANSVAAL = { remove_claim = scope:highveld_loser }
 		}
 		if = {
-			limit = { has_claim = s:STATE_ZULULAND }
-			s:STATE_ZULULAND = { remove_claim = scope:highveld_loser }
+			limit = { has_claim = s:STATE_NATAL }
+			s:STATE_NATAL = { remove_claim = scope:highveld_loser }
 		}
 	}
 }
