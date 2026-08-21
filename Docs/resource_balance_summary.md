@@ -15,7 +15,7 @@ The live state file remains authoritative. Research outputs are advisory wheneve
 - **Griqualand West and Bechuanaland:** these new states were created after the original 14-state workbook surface. Griqualand West carries `5` arable land and the initial iron slot, with later iron unlocked by technology; Bechuanaland carries `6` arable land and no capped mine resource.
 - **West and East Transvaal:** the live logging additions support the split Highveld economy and AI buildout. The archived undiscovered-gold rows are not currently applied.
 - **Vrystaat/Transorangia:** the live logging slot is an accepted gameplay correction after the state and economy revisions.
-- **Namaqualand:** `4` arable land supersedes the archived `2` after starvation testing in SAN, Oorlam, Herero, and Rehoboth fragments.
+- **Namaqualand:** `5` arable land supersedes the archived `2` after starvation testing in SAN, Oorlam, Herero, and Rehoboth fragments.
 
 These differences are deliberate and should not be treated as accidental data drift. The archived test command therefore exits nonzero while the accepted live-cap mismatch remains; it must not print an unconditional success result.
 

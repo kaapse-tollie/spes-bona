@@ -6,7 +6,7 @@ Spes Bona is a Victoria 3 regional flavor mod for greater Southern Africa built 
 
 - `CAP` replaces start-date `SAF`
 - `XHO` remains unified; the 7th, 8th, and 9th Xhosa Wars model separate frontier phases
-- `ORA`, `TRN`, `NAL`, `ZUL`, `SWZ`, `GZA`, `BST`, `ORL`, `ABY`, and the frontier minors all have custom startup work
+- `ORA`, `TRN`, `NAL`, `ZUL`, `SWZ`, `GZA`, `BST`, `ORL`, and the frontier minors all have custom startup work; `ABY` is an emergent mid-game tag (Albany secession) with lifecycle scripting rather than startup work
 - the live build covers the Cape constitutional struggle, the Great Trek, the Natal question, the MTB pressure lane, and the firearms-modernization lane for selected kingdoms
 
 ## Live Feature Set
@@ -16,9 +16,9 @@ Spes Bona is a Victoria 3 regional flavor mod for greater Southern Africa built 
 - Boer republics:
   two-stage Great Trek JE, trek migration pull, MTB war opener, post-Vegkop frontier reward, custom Boer government setup
 - Natal / Zululand:
-  Retief diplomacy, Retief-killed revenge branch, Blood River branch, ZUL guns-for-land bargain branch, British ultimatum and annex-war follow-through
+  Retief diplomacy, Retief-killed revenge branch, Blood River branch, ZUL guns-for-land bargain branch, British ultimatum and protectorate-play follow-through
 - Firearms modernization:
-  day-0 JE for `ZUL`, `SWZ`, and `GZA`, with monthly malus decay through imports or domestic arms production
+  day-0 JE for `ZUL`, `SWZ`, `GZA`, `BST`, and `NGN`, with monthly malus decay through imports or domestic arms production
 - Startup setup:
   custom pop, state, country, military formation, and building history for the Phase 1 Southern Africa scope
 

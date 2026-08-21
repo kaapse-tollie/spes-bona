@@ -124,3 +124,53 @@ Method: four parallel read-only audit tracks (script integrity, engineering/cons
 - Localisation numeric spot-checks: 16 sampled tooltips match their scripted values; the only mismatch is FA-07.
 
 Register refresh corrections applied in this edit: baseline/date updated to `de97d34` / 2026-08-21, and the Validation Contract counts corrected (139 tests, 13/13 categories, 103 keyed overrides, 18 state-region blocks). `RB-05`'s historical "82 complete blocks" predates the current count of 84; the row is preserved in the archive.
+
+### FA Round Outcomes (worked 2026-08-21, after DP review)
+
+| ID | Outcome |
+|---|---|
+| `FA-01` | **Withdrawn — finding was wrong.** Recheck found the mechanism already exists in `sb_mineral_discoveries_on_actions.txt`: Griqualand West starts with 1 iron cap and gains staged potential on nitroglycerin (+4), dynamite (+5; dynamite requires nitroglycerin, so an owner at dynamite sits at 1+4+5 = 10) and pneumatic tools (+10). Matches DP's in-game observation. |
+| `FA-02` | **Fixed.** README now lists ABY as an emergent mid-game tag with lifecycle scripting, not startup work. |
+| `FA-03` | **Fixed.** README now says "protectorate-play follow-through". |
+| `FA-04` | **Fixed.** README firearms scope now reads ZUL/SWZ/GZA/BST/NGN. |
+| `FA-05` | **Fixed.** Metadata short_description now says 22 journal entries, 250+ events, deep content for the major powers. |
+| `FA-06` | **Fixed.** resource_balance_summary Namaqualand arable corrected to 5. |
+| `FA-07` | **Fixed.** Trigger raised from 68 to 71 provinces (80.7% of the current 88 passable), so the "at least 80%" tooltip is true under the present impassable mask; re-review still owed when the mask leaves WIP. |
+| `FA-08` | **Fixed.** Comments updated to match code (Cape JE timeout 1885; favour-liberals comment now names Intelligentsia +10% / Rural Folk -1 approval). |
+| `FA-09` | **Elaborated.** See note below the table. |
+| `FA-10` | **Fixed.** Dropped-WIP chain removed end to end: JE definition, its five localisation keys, the `set_variable` block in `sb_kimberley_discover_diamonds`, both `remove_variable` cleanups, and the `resolved_var` set in `sb_griqualand_west_mark_resolved`. No references remain. |
+| `FA-11` | **Fixed + flagged.** Phantom `sb_boer_republics.122` removed from the lifecycle manifest. New follow-up TODO recorded below: content tags currently lack on-start events. |
+| `FA-12` | **Fixed.** All 13 orphaned option keys deleted, including `sb_boer_conventions.150.b` per DP. Variant events' deliberate reuse of `.041.a/.b` untouched. |
+| `FA-13` | **Fixed.** Legacy scripted GUI deleted together with its unused-symbol allowlist entry (the validator rejects stale entries, so they go as a pair). |
+| `FA-14` | **Open (backlog).** Extending `check_override_inventory.py` to classify additive `zz_` files and localization `replace/` files is engineering work for a maintenance pass. |
+| `FA-15` | **Fixed.** AGENTS.md versioning policy rewritten to DP's rule: major only on DP's say-so; minor for significant thematic content or engineering work; patch for tweaks/elaboration within an existing thematic bloc plus fixes/balance/localisation/maintenance; related commit batches may share one bump applied before push. |
+| `FA-16` | **Fixed.** Stale worktree `.claude/worktrees/adoring-poincare-a12afa` deleted (git-ignored; no history impact). |
+| `FA-17` | **Open (backlog).** Smoke-contract tests for the 8 uncovered event namespaces and untested data domains remain future work. |
+| `FA-18` | **Fixed.** BOM added to the two `sb_` files. `map_data/province_terrains.txt` verified against installed vanilla: vanilla is also BOM-less, so the SB override intentionally matches upstream convention; content differs by design and stays hash-pinned. |
+| `FA-19` | **Deferred.** Several whitespace-flagged files are hash-pinned overrides (`zz_sb_armed_forces_override.txt`, `00_relations.txt`); stripping them requires coordinated inventory-hash regeneration, so it waits for a dedicated maintenance pass. |
+| `FA-20` | **Deferred.** Same pinning complication as FA-19 — the space-indented outliers are overrides whose bytes are pinned upstream. |
+| `FA-21` | **Fixed.** Both backup binaries moved out of the repo to `../References/spline_network_backups/`. |
+| `FA-22` | **Fixed.** CP-07 artifact path corrected to `common/laws/02_sb_inboekstelsel_slavery.txt`; empty `gui/` directory removed. Naming-convention test suite idea noted as optional follow-up. |
+| `FA-23` | **Research delivered — decision pending DP.** `../References/natal_1836_polities_research_brief.md`: the region was a raid-sphere of Zululand, not an administered possession; recommendation is one tag renamed away from "Qwabe" (e.g. Thuli / Southern Nguni Chiefdoms), zulu-culture decentralized, ZUL claim/homeland framing instead of subject type. |
+| `FA-24` | **Research delivered — decision pending DP.** `../References/mtb_territory_proposal.md`: Ndebele rule was the Marico core plus a tribute belt; tiered trim proposal (26-province full trim or 9-province minimal trim) preserving every Vegkop event input province. |
+| `FA-25` | **Dropped per DP.** Mechanically driven over date driven; quoted dates are historical flavour. |
+| `FA-26` | **Dropped per DP.** Tech-gated progression makes an early discovery unlikely; no date floor wanted. |
+| `FA-27` | **Fixed.** 9th Xhosa War gate moved to `game_date >= 1875.1.1` per DP. |
+| `FA-28` | **Fixed.** Göring birth corrected to 1839.10.31; Godlonton SAF override to 1794.9.24; Sobhuza II comment corrected to Sobhuza I. Gqugqu kept `historical = yes` per DP's recollection of a purged half-brother (standard son-lists omit him; treat prose carefully). Fairbairn's placeholder 1794.1.1 remains a known minor. |
+| `FA-29` | **Partially fixed.** Natal whaling cap reduced 4 → 2 (vanilla global mode is 2–4; Natal shore whaling was small and transient). "Truimph" typo fixed. GZA capital abstraction documented in-file. KLR display-name question deferred — the naming reaches loc, flags, file names and tests, and DP has not asked for the rename. |
+| `FA-30` | **Mixed.** Character backlog written to `../References/character_todo_register.md` (Faku, Maharero, Tjamuaha, Nicolaas Waterboer, Cape governor succession — each with evidence and suggestions) for a later pass. ORA-BST annexation-war anchor moved to the historical 1858.3.1. Walvis Bay part dropped (already CAP-owned). Namibia early-window part dropped per DP (colonisation mechanic needs the window). |
+
+**FA-09 elaboration.** `common/history/diplomacy/00_relations.txt` is an exact-path shadow of
+Vanilla's relations file. Its manifest entry claims only ORA→TRN was removed (TRN does not
+exist at start, so the upstream row would target an invalid country). That same logic applies
+to rows the file still carries: line 348 sets a relation *to* `c:TRN`, and lines 371–373 keep
+an entire `c:TRN ?= { ... }` block that can never run, for the same reason. Inside that dead
+block SWZ receives two contradictory `set_relations` calls (`-25`, then `-10`), the second
+silently overwriting the first — evidence the block was edited without being re-read. The code
+is inert rather than harmful; the fix is either to prune the dead rows in the next rebase of
+this shadow (preferred — it shrinks the reviewed diff surface) or to document them as
+deliberately retained.
+
+**New follow-up TODO (from FA-11).** Content tags currently have no on-start events; if DP
+wants each content tag to open with a flavour/setup event, add one per tag in a future minor
+pass (candidates: BST, NGN, SWZ, GZA, ORL, ABY-on-emergence).
