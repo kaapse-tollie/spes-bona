@@ -741,11 +741,17 @@ def check_release_invariants() -> Check:
     for token in (
         "sb_bechuanaland_project_corridor_journal = {",
         "je:je_sb_bechuanaland_corridor ?= {",
-        "com_remove_situation_left_title = yes",
-        "com_remove_situation_right_title = yes",
     ):
         if token not in corridor_effects:
             errors.append(f"Bechuanaland singleton JE projection is missing: {token}")
+    for token in (
+        "com_remove_situation_left_title = yes",
+        "com_remove_situation_right_title = yes",
+        "com_situation_left_title_var",
+        "com_situation_right_title_var",
+    ):
+        if token in corridor_effects:
+            errors.append(f"Bechuanaland singleton JE projection retains obsolete title plumbing: {token}")
     progress_bars = (ROOT / "common/scripted_progress_bars/sb_progress_bars.txt").read_text(
         encoding="utf-8-sig"
     )
