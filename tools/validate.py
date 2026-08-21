@@ -763,11 +763,15 @@ def check_release_invariants() -> Check:
         errors.append(
             "Bechuanaland influence bar must read all 14 cached source variables"
         )
-    if (
-        "owner = {" in bar
-        or "scope:journal_entry = {" in bar
-        or "container_exists = sb_bechuanaland_corridor_state" in bar
+    if "c:GBR ?= {" not in bar:
+        errors.append("Bechuanaland contextless influence bar lacks a stable country scope")
+    container_guard = "container_exists = sb_bechuanaland_corridor_state"
+    container_scope = "container:sb_bechuanaland_corridor_state = {"
+    if container_guard not in bar or (
+        container_scope in bar and bar.index(container_guard) > bar.index(container_scope)
     ):
+        errors.append("Bechuanaland influence bar reads its container without an existence guard")
+    if "owner = {" in bar or "scope:journal_entry = {" in bar:
         errors.append("Bechuanaland contextless influence bar enters an invalid trigger scope")
     for path in (ROOT / "gui").glob("journal*.gui") if (ROOT / "gui").exists() else ():
         errors.append(f"obsolete journal GUI override remains: {path.relative_to(ROOT)}")

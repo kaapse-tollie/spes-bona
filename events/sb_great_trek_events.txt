@@ -4,7 +4,7 @@
 # Spes Bona - Great Trek Events
 # =============================================================================
 # Ownership: ORA-first trek spine, MTB opener, Potchefstroom split trigger, JE rewards, and trek completion.
-# TOC: 001 MTB opener, 002 Ndebele retreat, 006 Potchefstroom, 030-044 JE rewards, 101 Boer Natalia normalization.
+# TOC: 001 MTB opener, 002 Ndebele retreat, 003 ORA opening situation, 006 Potchefstroom, 030-044 JE rewards, 101 Boer Natalia normalization.
 # Cross-ref: common/journal_entries/1-02_sb_great_trek.txt, common/scripted_effects/sb_trek_migration.txt
 # =============================================================================
 
@@ -179,6 +179,42 @@ sb_great_trek.002 = {
 
 		ai_chance = {
 			base = 100
+		}
+	}
+}
+
+sb_great_trek.003 = {
+	type = country_event
+	placement = root
+
+	title = sb_great_trek.003.t
+	desc = sb_great_trek.003.d
+	flavor = sb_great_trek.003.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:ORA
+		has_journal_entry = je_sb_great_trek
+		NOT = { has_variable = sb_great_trek_intro_completed_var }
+	}
+
+	option = {
+		name = sb_great_trek.003.a
+		default_option = yes
+		set_variable = sb_great_trek_intro_completed_var
+		if = {
+			limit = { NOT = { has_modifier = sb_trek_frontier_drive } }
+			add_modifier = {
+				name = sb_trek_frontier_drive
+				months = 120
+			}
 		}
 	}
 }

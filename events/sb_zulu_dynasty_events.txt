@@ -4,10 +4,56 @@
 # Spes Bona - Zulu Dynastic Events
 # =============================================================================
 # Ownership: ZUL dynastic collapse and succession resolution only.
-# TOC: 090-093 dynastic break, pretender resolution, and succession settlement.
+# TOC: 001 opening situation; 090-093 dynastic break, pretender resolution, and succession settlement.
 # Cross-ref: common/journal_entries/1-03_sb_zulu_kingdom.txt,
 # common/scripted_effects/sb_zulu_dynasty_succession_effects.txt
 # =============================================================================
+
+sb_zulu_dynasty.001 = {
+	type = country_event
+	placement = root
+
+	title = sb_zulu_dynasty.001.t
+	desc = sb_zulu_dynasty.001.d
+	flavor = sb_zulu_dynasty.001.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_soldiers_breaking_protest.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_military.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:ZUL
+		has_journal_entry = je_sb_zulu_kingdom
+		NOT = { has_variable = sb_zulu_intro_completed_var }
+		any_scope_character = {
+			has_template = ZUL_dingane
+			is_character_alive = yes
+		}
+	}
+
+	option = {
+		name = sb_zulu_dynasty.001.a
+		default_option = yes
+		set_variable = sb_zulu_intro_completed_var
+		random_scope_character = {
+			limit = {
+				has_template = ZUL_dingane
+				is_character_alive = yes
+			}
+			if = {
+				limit = { NOT = { has_modifier = sb_zulu_dynastic_crisis } }
+				add_modifier = {
+					name = sb_zulu_dynastic_crisis
+					months = -1
+				}
+			}
+		}
+	}
+}
 
 sb_zulu_dynasty.090 = {
 	type = country_event

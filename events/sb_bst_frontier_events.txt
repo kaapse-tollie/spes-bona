@@ -5,6 +5,49 @@
 
 namespace = sb_bst_frontier
 
+sb_bst_frontier.001 = {
+	type = country_event
+	placement = root
+
+	title = sb_bst_frontier.001.t
+	desc = sb_bst_frontier.001.d
+	flavor = sb_bst_frontier.001.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:BST
+		has_journal_entry = je_sb_bst_ora_frontier
+		NOT = { has_variable = sb_bst_intro_completed_var }
+		any_scope_character = {
+			has_template = BST_Moshoeshoe
+			is_character_alive = yes
+		}
+	}
+
+	option = {
+		name = sb_bst_frontier.001.a
+		default_option = yes
+		set_variable = sb_bst_intro_completed_var
+		random_scope_character = {
+			limit = {
+				has_template = BST_Moshoeshoe
+				is_character_alive = yes
+			}
+			if = {
+				limit = { NOT = { has_trait = sb_moshoeshoe_lifeline } }
+				add_trait = sb_moshoeshoe_lifeline
+			}
+		}
+	}
+}
+
 sb_bst_frontier.010 = {
 	type = country_event
 	placement = root
