@@ -191,6 +191,45 @@ class DataDomainSmokeTests(unittest.TestCase):
                 self.assertEqual(0, depth, f"{path}: unbalanced braces")
         self.assertEqual([], problems)
 
+    def test_every_script_file_has_balanced_braces(self):
+        """Cold-launch guard: an unbalanced file poisons every definition after it in
+        the game database while static checks stay green (FA-19/20 regression class).
+        Comment- and string-aware brace scan over all script files."""
+        problems = []
+
+        def scan(source: str, label: str):
+            depth = 0
+            in_string = False
+            in_comment = False
+            prev = ""
+            for ch in source:
+                if in_comment:
+                    if ch == "\n":
+                        in_comment = False
+                elif in_string:
+                    if ch == '"' and prev != "\\":
+                        in_string = False
+                elif ch == '"':
+                    in_string = True
+                elif ch == "#":
+                    in_comment = True
+                elif ch == "{":
+                    depth += 1
+                elif ch == "}":
+                    depth -= 1
+                    if depth < 0:
+                        problems.append(f"{label}: unbalanced braces (extra closing)")
+                        return
+                prev = ch
+            if depth != 0:
+                problems.append(f"{label}: unbalanced braces (depth {depth} at EOF)")
+
+        for base in ("common", "events"):
+            for path in sorted((ROOT / base).rglob("*.txt")):
+                scan(path.read_text(encoding="utf-8-sig"),
+                     path.relative_to(ROOT).as_posix())
+        self.assertEqual([], problems)
+
     def test_buildings_reference_known_building_groups(self):
         group_sources = [p.read_text(encoding="utf-8-sig") for p in sorted((ROOT / "common/building_groups").rglob("*.txt"))]
         if GAME_ROOT is not None:
