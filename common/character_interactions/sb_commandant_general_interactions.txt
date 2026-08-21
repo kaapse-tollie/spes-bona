@@ -1,0 +1,35 @@
+﻿# Mirrors vanilla's opt-in agitator command interaction. Historical characters
+# who should always hold command must still receive the role in their own setup.
+
+sb_grant_command_to_interest_group_leader = {
+	icon = "gfx/interface/character_panel/grant_command.dds"
+	clicksound = "event:/SFX/UI/Military/command_grant"
+
+	potential = {
+		is_interest_group_leader = yes
+		is_ruler_of_own_country = no
+		NOR = {
+			has_role_of_type = general
+			has_role_of_type = admiral
+		}
+		owner ?= scope:actor
+		owner ?= {
+			has_law = law_type:law_sb_commandant_general_republic
+		}
+	}
+
+	possible = {
+		is_adult = yes
+		exists = owner.capital.land_hq
+	}
+
+	effect = {
+		add_character_role = general
+	}
+
+	cooldown = { days = normal_modifier_time }
+
+	ai_chance = {
+		value = 0
+	}
+}
