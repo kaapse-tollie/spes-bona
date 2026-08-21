@@ -79,6 +79,7 @@ class CapeImperialIdeologyTests(unittest.TestCase):
             "country_sb_aristocrats_armed_forces_attraction_add = {",
             modifier_type,
         )
+        self.assertIn("script_only = yes", modifier_type)
         self.assertIn(
             'country_sb_aristocrats_armed_forces_attraction_add:0 "$aristocrats$ Attraction to the $ig_armed_forces$"',
             text("localization/english/sb_l_english.yml"),
