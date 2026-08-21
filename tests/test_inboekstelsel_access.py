@@ -59,6 +59,21 @@ class InboekstelselAccessTests(unittest.TestCase):
         self.assertIn("sb_is_boer_inboekstelsel_country = yes", amendment)
         self.assertNotIn("sb_is_inboekstelsel_eligible_country", amendment)
 
+    def test_relaxation_returns_freed_slaves_as_peasants(self):
+        effect = object_block(
+            "common/scripted_effects/sb_inboekstelsel_effects.txt",
+            "sb_inboekstelsel_relax",
+        )
+        localization = text("localization/english/sb_great_trek_l_english.yml")
+
+        self.assertIn("change_poptype = pop_type:peasants", effect)
+        self.assertIn("is_pop_type = peasants", effect)
+        self.assertNotIn("pop_type:laborers", effect)
+        self.assertRegex(
+            localization,
+            r"sb_inboekstelsel_relax_effect_tt:0 .*GetPopType\('peasants'\)",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
