@@ -45,7 +45,6 @@ Closed FA findings are recorded in the completed register. What remains:
 
 | ID | State | What closes it |
 |---|---|---|
-| `FA-17` | Backlog | Smoke-contract tests for the 8 uncovered event namespaces (`sb_boer_compacts`, `sb_frontier_ai_wars`, `sb_gaza`, `sb_griqualand_east`, `sb_griqualand_west`, `sb_swazi_border`, `sb_swazi_frontier`, `sb_zulu_court`) and untested `common/` data domains. |
 | `FA-19` / `FA-20` | Deferred maintenance | Whitespace/indent normalisation inside hash-pinned overrides; must run together with an inventory-hash regeneration pass. |
 | `FA-23` | Awaiting DP decision | QWA reframing. Research delivered: `../References/natal_1836_polities_research_brief.md` (recommendation: one tag renamed away from "Qwabe"; ZUL raid-sphere framing). |
 | `FA-24` | Awaiting DP decision | MTB territory trim. Research delivered: `../References/mtb_territory_proposal.md` (tiered proposal; preserves every Vegkop event input province). |
