@@ -24,10 +24,10 @@ def text(path: str) -> str:
 class RebaseTests(unittest.TestCase):
     def test_release_metadata_targets_1_13_11_and_cmf_1_63_x(self):
         self.assertIn('supported_version="1.13.11"', text("descriptor.mod"))
-        self.assertIn('version="0.19.7"', text("descriptor.mod"))
+        self.assertIn('version="0.19.8"', text("descriptor.mod"))
         metadata = json.loads(text(".metadata/metadata.json"))
         self.assertEqual("1.13.11", metadata["supported_game_version"])
-        self.assertEqual("0.19.7", metadata["version"])
+        self.assertEqual("0.19.8", metadata["version"])
         relationships = [item for item in metadata["relationships"] if item["id"] == CMF_ID]
         self.assertEqual(["1.63.*"], [item["version"] for item in relationships])
 

@@ -2,17 +2,13 @@
 # Rebased to Community Mod Framework 1.63.0 / Vanilla 1.13.11. zzz_ preserves
 # CMF integrations while applying only the documented CAP creation exclusions
 # and Anglo-African utilitarian eligibility.
-
 REPLACE:movement_utilitarian = {
 	category = movement_category_ideological
-
 	active_law_radicalism_multiplier = 0.5
-
 	ideology = ideology_utilitarian_movement
 	character_ideologies = {
 		ideology_utilitarian_leader
 	}
-
 	creation_trigger = {
 		OR = {
 			country_has_primary_culture = cu:british
@@ -51,7 +47,6 @@ REPLACE:movement_utilitarian = {
 	on_created = {
 		add_movement_enthusiasm_modifier = yes
 	}
-
 	character_support_trigger = {
 		OR = {
 			AND = {
@@ -76,7 +71,6 @@ REPLACE:movement_utilitarian = {
 			}
 		}
 	}
-
 	pop_support_trigger = {
 		OR = {
 			AND = {
@@ -100,7 +94,6 @@ REPLACE:movement_utilitarian = {
 			is_pop_type = slaves
 		}
 	}
-
 	pop_support_factors = {
 		movement_support_colonial_rule
 		movement_support_high_acceptance
@@ -109,7 +102,6 @@ REPLACE:movement_utilitarian = {
 		movement_support_officers
 		movement_support_clerks
 	}
-
 	pop_support_weight = {
 		if = {
 			limit = {
@@ -147,12 +139,10 @@ REPLACE:movement_utilitarian = {
 				}
 			}
 		}
-
 		add = {
 			value = 1
 			desc = "POP_BASE_SUPPORT"
 		}
-
 		if = {
 			limit = {
 				owner = {
@@ -173,7 +163,6 @@ REPLACE:movement_utilitarian = {
 				}
 			}
 		}
-
 		if = {
 			limit = {
 				is_pop_type = bureaucrats
@@ -219,29 +208,24 @@ REPLACE:movement_utilitarian = {
 				value = 3
 			}
 		}
-
 		multiply = { # Illiterate pops participate at 1/10 the rate of fully literate pops
 			desc = "POP_LITERACY"
 			value = literacy_rate
 			add = 0.10
 		}
-
 		multiply = {
 			desc = "POP_ACCEPTANCE"
 			value = pop_acceptance
 			divide = 75
 		}
 	}
-
 	revolution = {
 		possible = {
 			political_movement_support >= 0.05
 		}
-
 		weight = {
 			value = 100
 		}
-
 		state_weight = {
 			value = 1
 			if = {
@@ -275,17 +259,14 @@ REPLACE:movement_utilitarian = {
 			}
 		}
 	}
-
 	secession = {
 		possible = {
 			political_movement_support >= 0.05
 			scope:clout <= 0
 		}
-
 		weight = {
 			value = 1000
 		}
-
 		state_weight = {
 			value = 1
 			if = {
@@ -319,12 +300,10 @@ REPLACE:movement_utilitarian = {
 			}
 		}
 	}
-
 	additional_radicalism_factors = {
 		owner = {
 			if = {
 				limit = { has_institution = institution_schools }
-
 				add = {
 					value = 3
 					subtract = "institution_investment_level(institution_schools)"
@@ -373,10 +352,8 @@ REPLACE:movement_utilitarian = {
 		}
 	}
 }
-
 REPLACE:movement_liberal = {
 	category = movement_category_ideological
-
 	ideology = ideology_liberal_movement
 	character_ideologies = {
 		ideology_market_liberal
@@ -392,7 +369,6 @@ REPLACE:movement_liberal = {
 		ideology_moh_kmt # MoH Kuomintang Nationalist
 		ideology_anz_atsi_pluralist_character #anzfp
 	}
-
 	creation_trigger = {
 		has_technology_researched = democracy
 		country_should_exclusively_focus_on_modernization = no
@@ -431,16 +407,16 @@ REPLACE:movement_liberal = {
 				value = 2
 			}
 		}
-        if = {
-            limit = {
-                c:JAP ?= this
-                has_law = law_type:law_bakufu
-                country_has_pending_meiji_restoration = yes
-            }
-            multiply = {
-                value = 0.01
-            }
-        }
+		if = {
+			limit = {
+				c:JAP ?= this
+				has_law = law_type:law_bakufu
+				country_has_pending_meiji_restoration = yes
+			}
+			multiply = {
+				value = 0.01
+			}
+		}
 	}
 	on_created = {
 		add_movement_enthusiasm_modifier = yes
@@ -453,7 +429,6 @@ REPLACE:movement_liberal = {
 			set_core_ideology = ideology_liberal_republican_movement
 		}
 	}
-
 	character_support_trigger = {
 		OR = {
 			character_is_pro_liberal_movement = yes #Compatibility Trigger
@@ -531,14 +506,12 @@ REPLACE:movement_liberal = {
 			value = usfp_movement_liberal_character_support_weight_mult
 		}
 	}
-
 	pop_support_trigger = {
 		NOT = {
 			is_pop_type = slaves
 		}
 		mog_plp_movement_mainland_general_pop_support_trigger = yes    # Grey_PLP
 	}
-
 	pop_support_factors = {
 		movement_support_je_hungarian_revolution
 		movement_support_high_urbanization
@@ -550,7 +523,6 @@ REPLACE:movement_liberal = {
 		movement_support_bureaucrats
 		movement_support_clerks
 	}
-
 	pop_support_weight = {
 		if = {
 			limit = {
@@ -588,18 +560,15 @@ REPLACE:movement_liberal = {
 				}
 			}
 		}
-
 		add = {
 			value = 3
 			desc = "POP_BASE_SUPPORT"
 		}
-
 		add = {
 			desc = "URBAN_STATE"
 			value = 10
 			multiply = state.state_urbanization_rate
 		}
-
 		if = {
 			limit = {
 				strata = upper
@@ -710,73 +679,60 @@ REPLACE:movement_liberal = {
 				}
 			}
 		}
-
 		multiply = { # Illiterate pops participate at 1/10 the rate of fully literate pops
 			desc = "POP_LITERACY"
 			value = literacy_rate
 			add = 0.10
 		}
-
 		# Grey_PLP
 		multiply = {
 			value = mog_plp_movement_mainland_general_pop_support_weight_incorporation_percent_mult
 		}
-
 		# Vic1877
 		multiply = {
 			value = vic1877_movement_liberal_pop_support_weight_mult
 		}
 	}
-
 	revolution = {
 		possible = {
 			political_movement_support >= 0.05
 		}
-
 		weight = {
 			value = 100
 		}
-
 		state_weight = {
 			value = state_urbanization_rate
-            add = scope:clout
-            add = { value = this.turmoil divide = 2 }
-            subtract = this.loyalists
-
+			add = scope:clout
+			add = { value = this.turmoil divide = 2 }
+			subtract = this.loyalists
 			# Grey_PLP - always put last
 			multiply = {
 				value = mog_plp_movement_all_general_state_weight_mult
 			}
 		}
 	}
-
 	secession = {
 		possible = {
 			political_movement_support >= 0.05
 			scope:clout <= 0
 		}
-
 		weight = {
 			value = 1000
 		}
-
 		state_weight = {
 			value = state_urbanization_rate
-            add = { value = this.turmoil divide = 2 }
-            subtract = this.loyalists
-
+			add = { value = this.turmoil divide = 2 }
+			subtract = this.loyalists
 			# Grey_PLP - always put last
 			multiply = {
 				value = mog_plp_movement_all_general_state_weight_mult
 			}
 		}
 	}
-
 	additional_radicalism_factors = {
 		owner = {
 			if = {
 				limit = { has_institution = institution_schools }
-
 				add = {
 					value = 3
 					subtract = "institution_investment_level(institution_schools)"
@@ -800,7 +756,6 @@ REPLACE:movement_liberal = {
 				desc = "je_devorismo"
 			}
 		}
-
 		if = {
 			limit = {
 				owner ?= {
@@ -819,7 +774,6 @@ REPLACE:movement_liberal = {
 				desc = "low_electoral_confidence"
 			}
 		}
-
 		if = {
 			limit = {
 				owner = {
@@ -839,25 +793,23 @@ REPLACE:movement_liberal = {
 				value = 0.15
 			}
 		}
-        if = {
-            limit = {
-                this.days_since_movement_defeated <= very_long_modifier_time
-            }
-            add = { # (x-y)/y - ([1, 7300]-7300)/7300
-                desc = "movement_suppressed_after_civil_war"
-                value = this.days_since_movement_defeated
-                subtract = very_long_modifier_time
-                divide = {
-                    value = very_long_modifier_time
-                }
-            }
-        }
+		if = {
+			limit = {
+				this.days_since_movement_defeated <= very_long_modifier_time
+			}
+			add = { # (x-y)/y - ([1, 7300]-7300)/7300
+				desc = "movement_suppressed_after_civil_war"
+				value = this.days_since_movement_defeated
+				subtract = very_long_modifier_time
+				divide = {
+					value = very_long_modifier_time
+				}
+			}
+		}
 	}
 }
-
 REPLACE:movement_radical = {
 	category = movement_category_ideological
-
 	ideology = ideology_radical_movement
 	character_ideologies = {
 		ideology_radical
@@ -865,7 +817,6 @@ REPLACE:movement_radical = {
 		ideology_moh_revolutionary # MoH Revolutionary
 		ideology_moh_kmt # MoH Kuomintang Nationalist
 	}
-
 	creation_trigger = {
 		has_technology_researched = egalitarianism
 		NOT = {
@@ -958,7 +909,6 @@ REPLACE:movement_radical = {
 	on_created = {
 		add_movement_enthusiasm_modifier = yes
 	}
-
 	character_support_trigger = {
 		OR = {
 			character_is_pro_radical_movement = yes #Compatibility Trigger
@@ -1008,7 +958,6 @@ REPLACE:movement_radical = {
 			}
 		}
 	}
-
 	pop_support_trigger = {
 		NOR = {
 			is_pop_type = aristocrats
@@ -1020,7 +969,6 @@ REPLACE:movement_radical = {
 		}
 		mog_plp_movement_mainland_general_pop_support_trigger = yes    # Grey_PLP
 	}
-
 	pop_support_factors = {
 		movement_support_country_is_autocratic
 		movement_support_high_urbanization
@@ -1034,7 +982,6 @@ REPLACE:movement_radical = {
 		movement_support_machinists
 		movement_support_peasants
 	}
-
 	pop_support_weight = {
 		if = {
 			limit = {
@@ -1072,13 +1019,11 @@ REPLACE:movement_radical = {
 				}
 			}
 		}
-
 		add = {
 			desc = "URBAN_STATE"
 			value = 10
 			multiply = state.state_urbanization_rate
 		}
-
 		if = {
 			limit = {
 				strata = upper
@@ -1184,7 +1129,6 @@ REPLACE:movement_radical = {
 				}
 			}
 		}
-
 		if = {
 			limit = {
 				owner ?= {
@@ -1210,74 +1154,61 @@ REPLACE:movement_radical = {
 				desc = "COUNTRY_IS_DEMOCRATIC"
 			}
 		}
-
 		multiply = { # Illiterate pops participate at 1/10 the rate of fully literate pops
 			desc = "POP_LITERACY"
 			value = literacy_rate
 			add = 0.10
 		}
-
 		multiply = { # Multiplied by 2x max
 			desc = "POP_RADICALS"
 			value = pop_radical_fraction
 			add = 1
 		}
-
 		# Grey_PLP
 		multiply = {
 			value = mog_plp_movement_mainland_general_pop_support_weight_incorporation_percent_mult
 		}
 	}
-
 	revolution = {
 		possible = {
 			political_movement_support >= 0.05
 		}
-
 		weight = {
 			value = 100
 		}
-
 		state_weight = { # State urbanisation rate + clout + 0.5*turmoil - loyalists
-            value = state_urbanization_rate
-            add = scope:clout
-            add = { value = this.turmoil divide = 2 }
-            subtract = this.loyalists
-
+			value = state_urbanization_rate
+			add = scope:clout
+			add = { value = this.turmoil divide = 2 }
+			subtract = this.loyalists
 			# Grey_PLP - always put last
 			multiply = {
 				value = mog_plp_movement_all_general_state_weight_mult
 			}
 		}
 	}
-
 	secession = {
 		possible = {
 			political_movement_support >= 0.05
 			scope:clout <= 0
 		}
-
 		weight = {
 			value = 1000
 		}
-
 		state_weight = {
 			value = state_urbanization_rate
-            add = { value = this.turmoil divide = 2 }
-            subtract = this.loyalists
-
+			add = { value = this.turmoil divide = 2 }
+			subtract = this.loyalists
 			# Grey_PLP - always put last
 			multiply = {
 				value = mog_plp_movement_all_general_state_weight_mult
 			}
 		}
 	}
-
 	additional_radicalism_factors = {
 		owner = {
 			if = {
 				limit = { has_institution = institution_schools }
-
 				add = {
 					value = 3
 					subtract = "institution_investment_level(institution_schools)"
@@ -1291,10 +1222,8 @@ REPLACE:movement_radical = {
 					desc = "NO_INSTITUTION_schools"
 				}
 			}
-
 			if = {
 				limit = { has_institution = institution_police }
-
 				add = {
 					value = "institution_investment_level(institution_police)"
 					subtract = 2
@@ -1320,7 +1249,6 @@ REPLACE:movement_radical = {
 				}
 			}
 		}
-
 		if = {
 			limit = {
 				owner ?= {
@@ -1335,7 +1263,6 @@ REPLACE:movement_radical = {
 				desc = "low_electoral_confidence"
 			}
 		}
-
 		if = {
 			limit = {
 				owner = {
@@ -1355,18 +1282,18 @@ REPLACE:movement_radical = {
 				value = 0.15
 			}
 		}
-        if = {
-            limit = {
-                this.days_since_movement_defeated <= very_long_modifier_time
-            }
-            add = { # (x-y)/y - ([1, 7300]-7300)/7300
-                desc = "movement_suppressed_after_civil_war"
-                value = this.days_since_movement_defeated
-                subtract = very_long_modifier_time
-                divide = {
-                    value = very_long_modifier_time
-                }
-            }
-        }
+		if = {
+			limit = {
+				this.days_since_movement_defeated <= very_long_modifier_time
+			}
+			add = { # (x-y)/y - ([1, 7300]-7300)/7300
+				desc = "movement_suppressed_after_civil_war"
+				value = this.days_since_movement_defeated
+				subtract = very_long_modifier_time
+				divide = {
+					value = very_long_modifier_time
+				}
+			}
+		}
 	}
 }
