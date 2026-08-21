@@ -15,6 +15,14 @@ REPLACE:assign_state_name_region_southern_africa = {
     if = {
         limit = {
             state_region = {
+                s:STATE_NATAL ?= this
+            }
+        }
+        STATE_NATAL_state_name_assign = yes
+    }
+    if = {
+        limit = {
+            state_region = {
                 s:STATE_ZULULAND ?= this
             }
         }
@@ -78,6 +86,67 @@ REPLACE:assign_state_name_region_southern_africa = {
     }
 	}
 
+STATE_NATAL_state_name_assign = {
+    if = {
+        limit = {
+            owner = {
+                country_has_primary_culture = cu:zulu
+            }
+        }
+        set_state_name = STATE_NATAL_zulu
+        set_hub_names = zulu
+    }
+    else_if = {
+        limit = {
+            owner = {
+                any_primary_culture = {
+                    has_discrimination_trait = heritage_southern_bantu
+                }
+            }
+        }
+        set_state_name = STATE_NATAL_southern_bantu
+        set_hub_names = southern_bantu
+    }
+    else_if = {
+        limit = {
+            owner = {
+                NOR = {
+                    country_has_primary_culture = cu:british
+                    country_has_primary_culture = cu:anglo_african
+                }
+                any_primary_culture = {
+                    has_discrimination_trait = language_dutch
+                }
+            }
+        }
+        set_state_name = STATE_NATAL_boer
+        set_hub_names = boer
+    }
+    else_if = {
+        limit = {
+            owner = {
+                OR = {
+                    c:GBR ?= this
+                    c:SAF ?= this
+                    country_has_primary_culture = cu:british
+                    country_has_primary_culture = cu:anglo_african
+                    AND = {
+                        exists = c:GBR
+                        exists = top_overlord
+                        top_overlord = c:GBR
+                    }
+                }
+            }
+        }
+        set_state_name = STATE_NATAL_british
+        set_hub_names = british
+    }
+    else = {
+        reset_state_name = yes
+        reset_hub_names = yes
+    }
+}
+
 REPLACE:STATE_ZULULAND_state_name_assign = {
     if = {
         limit = {
@@ -86,7 +155,7 @@ REPLACE:STATE_ZULULAND_state_name_assign = {
             }
         }
         set_state_name = STATE_ZULULAND_zulu
-        reset_hub_names = yes
+        set_hub_names = zulu
     }
     else_if = {
         limit = {
@@ -97,7 +166,7 @@ REPLACE:STATE_ZULULAND_state_name_assign = {
             }
         }
         set_state_name = STATE_ZULULAND_southern_bantu
-        reset_hub_names = yes
+        set_hub_names = southern_bantu
     }
     else_if = {
         limit = {
@@ -120,6 +189,8 @@ REPLACE:STATE_ZULULAND_state_name_assign = {
                 OR = {
                     c:GBR ?= this
                     c:SAF ?= this
+                    country_has_primary_culture = cu:british
+                    country_has_primary_culture = cu:anglo_african
                     AND = {
                         exists = c:GBR
                         exists = top_overlord
