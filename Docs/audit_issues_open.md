@@ -45,7 +45,6 @@ Closed FA findings are recorded in the completed register. What remains:
 
 | ID | State | What closes it |
 |---|---|---|
-| `FA-23` | Awaiting DP decision | QWA reframing. Research delivered: `../References/natal_1836_polities_research_brief.md` (recommendation: one tag renamed away from "Qwabe"; ZUL raid-sphere framing). |
 | `FA-24` | Awaiting DP decision | MTB territory trim. Research delivered: `../References/mtb_territory_proposal.md` (tiered proposal; preserves every Vegkop event input province). |
 
 

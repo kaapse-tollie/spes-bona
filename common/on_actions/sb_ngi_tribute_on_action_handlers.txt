@@ -1,0 +1,41 @@
+# Spes Bona - Nguni Chiefdoms tribute pulse.
+# NGI side: carry the visible marker and send the payment north. ZUL side: carry the
+# matching receipt marker; both clear automatically if the other tag disappears.
+
+sb_on_ngi_tribute_monthly_pulse_country = {
+	effect = {
+		if = {
+			limit = {
+				country_definition = cd:NGI
+				exists = c:ZUL
+			}
+			if = {
+				limit = { NOT = { has_modifier = sb_tribute_to_zul } }
+				add_modifier = { name = sb_tribute_to_zul }
+			}
+			add_treasury = sb_ngi_tribute_payment_neg
+			c:ZUL = {
+				if = {
+					limit = { NOT = { has_modifier = sb_tribute_from_nguni } }
+					add_modifier = { name = sb_tribute_from_nguni }
+				}
+				add_treasury = sb_ngi_tribute_payment
+			}
+		}
+		else_if = {
+			limit = {
+				country_definition = cd:ZUL
+				has_modifier = sb_tribute_from_nguni
+				NOT = { exists = c:NGI }
+			}
+			remove_modifier = sb_tribute_from_nguni
+		}
+		else_if = {
+			limit = {
+				country_definition = cd:NGI
+				has_modifier = sb_tribute_to_zul
+			}
+			remove_modifier = sb_tribute_to_zul
+		}
+	}
+}

@@ -160,6 +160,7 @@ class MediumLowRemediationTests(unittest.TestCase):
                 "sb_on_eastern_sphere_monthly_pulse_country",
                 "sb_on_natal_colony_monthly_pulse_country",
                 "sb_on_frontier_force_monthly_pulse_country",
+                "sb_on_ngi_tribute_monthly_pulse_country",
             ),
             "on_yearly_pulse_country": (
                 "sb_on_cape_yearly_pulse_country",

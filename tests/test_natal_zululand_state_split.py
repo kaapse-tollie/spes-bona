@@ -236,7 +236,7 @@ class NatalZululandStateSplitTests(unittest.TestCase):
         zululand = scoped_block(states_path, "s:STATE_ZULULAND")
         self.assertEqual(
             {
-                "QWA": NATAL_QWA_PROVINCES,
+                "NGI": NATAL_QWA_PROVINCES,
                 "CAP": {"x279045"},
                 "ZUL": {"xBBCA32"},
             },
@@ -260,7 +260,7 @@ class NatalZululandStateSplitTests(unittest.TestCase):
             ["84945"],
             re.findall(
                 r"\bsize\s*=\s*(\d+)",
-                scoped_block_from_source(natal_pops, "region_state:QWA"),
+                scoped_block_from_source(natal_pops, "region_state:NGI"),
             ),
         )
         self.assertEqual(
@@ -286,12 +286,12 @@ class NatalZululandStateSplitTests(unittest.TestCase):
         buildings_path = "common/history/buildings/04_subsaharan_africa.txt"
         natal_buildings = scoped_block(buildings_path, "s:STATE_NATAL")
         zulu_buildings = scoped_block(buildings_path, "s:STATE_ZULULAND")
-        self.assertIn("region_state:QWA", natal_buildings)
+        self.assertIn("region_state:NGI", natal_buildings)
         self.assertIn("region_state:CAP", natal_buildings)
         self.assertNotIn("region_state:ZUL", natal_buildings)
         self.assertIn('region="STATE_NATAL"', natal_buildings)
         self.assertIn("region_state:ZUL", zulu_buildings)
-        self.assertNotIn("region_state:QWA", zulu_buildings)
+        self.assertNotIn("region_state:NGI", zulu_buildings)
         self.assertNotIn("region_state:CAP", zulu_buildings)
         self.assertEqual(1, zulu_buildings.count('building="building_logging_camp"'))
         self.assertEqual(1, zulu_buildings.count('building="building_livestock_ranch"'))
@@ -315,7 +315,7 @@ class NatalZululandStateSplitTests(unittest.TestCase):
         countries = text("common/country_definitions/sb_countries.txt") + text(
             "common/country_definitions/zz_sb_southern_africa_country_definition_overrides.txt"
         )
-        for country in ("QWA", "KLR", "REPLACE:NAL"):
+        for country in ("NGI", "KLR", "REPLACE:NAL"):
             self.assertIn("capital = STATE_NATAL", scoped_block_from_source(countries, country))
         for country in ("NGN", "REPLACE:ZUL"):
             self.assertIn("capital = STATE_ZULULAND", scoped_block_from_source(countries, country))
