@@ -55,6 +55,11 @@ Closed FA findings are recorded in the completed register. What remains:
 > **FA-09 update (DP, 2026-08-21):** the dead `c:SAF ?= { ... }` relations block (which contained the stray `c:TRN` rows and the duplicated SWZ pair) has been commented out in `common/history/diplomacy/00_relations.txt`; inventory hash regenerated. The manifest wording still says "removes only ORA→TRN" and should be reworded at the next touch of that file.
 
 ### Content backlogs spun out of the FA round
+- **Formed-TRN opening relations (from DP note in `00_relations.txt`):** nothing sets
+  TRN↔SWZ/GZA relations when Transvaal forms, so it starts at 0. Decide whether the trek
+  finalization should inject mild hostility toward SWZ (border friction) and GZA, or leave
+  neutral and let plays drive relations.
+
 
 - **Characters for a later pass:** Faku, Maharero kaTjamuaha, Tjamuaha, Nicolaas Waterboer,
   Cape governor succession 1838–61 — evidence and suggestions per figure in

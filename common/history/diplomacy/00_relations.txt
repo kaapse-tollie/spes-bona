@@ -356,7 +356,6 @@
 	# }
 
 	c:ORA ?= {
-		# SB: TRN forms later, so no valid TRN country exists during startup history.
 		set_relations = { country = c:BST value = 25 }
 		set_relations = { country = c:ZUL value = 10 }
 		set_relations = { country = c:WBL value = 20 }
@@ -369,9 +368,21 @@
 		set_relations = { country = c:GZA value = -25 }
 	}
 
-	c:TRN ?= {
-		set_relations = { country = c:SWZ value = -25 }
-		set_relations = { country = c:SWZ value = -10 }
-		set_relations = { country = c:GZA value = -25 }
-	}
+	# DP Note: SWZ, GZA todo or whats the story here? Also sb_relations vs 00_relations. Shouldn't this file also be REPLACE? 
+	# SB answer: (1) This file stays an exact-path shadow, not REPLACE — vanilla ships
+	# common/history/diplomacy/00_relations.txt, and REPLACE is for keyed objects inside
+	# differently-named files. It is hash-pinned in the override inventory as a shadow.
+	# (2) Division of labour: 00_relations.txt = vanilla baseline, targeted edits only;
+	# sb_relations.txt = SB's additive 1836-start relation design.
+	# (3) The commented TRN rows were dead at start (TRN does not exist yet) and nothing
+	# sets relations for a formed TRN anywhere, so it currently starts at 0 with SWZ/GZA.
+	# If formed-Transvaal should open hostile to Swazi/Gaza, that belongs in the trek
+	# finalization effect, not here — logged in audit_issues_open.md as a content TODO.
+
+	# SB: TRN forms later, so no valid TRN country exists during startup history.
+	# c:TRN ?= {
+	# 	set_relations = { country = c:SWZ value = -25 }
+	# 	set_relations = { country = c:SWZ value = -10 }
+	# 	set_relations = { country = c:GZA value = -25 }
+	# }
 }
