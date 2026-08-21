@@ -56,10 +56,12 @@ je_sb_bst_ora_frontier = {
 	complete = {
 		custom_tooltip = {
 			text = je_sb_bst_ora_frontier_oranje_victory_goal
-			any_country = {
-				sb_bst_oranje_frontier_actor = yes
-				owns_entire_state_region = STATE_VRYSTAAT
-				owns_entire_state_region = STATE_DRAKENSBERG
+			sb_bst_any_oranje_frontier_land_holder_exists = yes
+			NOT = {
+				c:BST ?= {
+					is_country_alive = yes
+					sb_bst_holds_frontier_land = yes
+				}
 			}
 		}
 	}
@@ -69,18 +71,17 @@ je_sb_bst_ora_frontier = {
 	on_complete = {
 		random_country = {
 			limit = {
-				sb_bst_oranje_frontier_actor = yes
-				owns_entire_state_region = STATE_VRYSTAAT
-				owns_entire_state_region = STATE_DRAKENSBERG
+				sb_bst_oranje_frontier_land_holder = yes
 			}
 			if = {
 				limit = {
 					is_country_alive = yes
-					owns_entire_state_region = STATE_DRAKENSBERG
-					NOT = { has_variable = sb_ora_annexed_bst_var }
 					NOT = { has_variable = sb_settled_drakensberg_var }
 				}
-				set_variable = sb_ora_annexed_bst_var
+				if = {
+					limit = { NOT = { has_variable = sb_ora_annexed_bst_var } }
+					set_variable = sb_ora_annexed_bst_var
+				}
 				trigger_event = { id = sb_bst_frontier.300 days = 1 popup = yes }
 			}
 		}
@@ -93,9 +94,10 @@ je_sb_bst_ora_frontier = {
 			text = je_sb_bst_ora_frontier_basotho_victory_goal
 			c:BST ?= {
 				is_country_alive = yes
+				is_subject = no
 				sb_bst_holds_frontier_land = yes
 			}
-			NOT = { sb_bst_any_oranje_frontier_actor_exists = yes }
+			NOT = { sb_bst_any_oranje_frontier_land_holder_exists = yes }
 		}
 	}
 
@@ -107,10 +109,12 @@ je_sb_bst_ora_frontier = {
 				limit = {
 					is_country_alive = yes
 					is_subject = no
-					owns_entire_state_region = STATE_VRYSTAAT
+					sb_bst_holds_frontier_land = yes
+					NOT = { sb_bst_any_oranje_frontier_land_holder_exists = yes }
 				}
 				if = {
 					limit = {
+						owns_entire_state_region = STATE_VRYSTAAT
 						NOT = { has_journal_entry = je_sb_sotho_tswana_nation }
 						NOT = { has_variable = sb_sotho_tswana_nation_completed_var }
 					}
@@ -139,22 +143,18 @@ je_sb_bst_ora_frontier = {
 	}
 
 	invalid = {
-		AND = {
-			NOT = {
-				any_country = {
-					sb_bst_oranje_frontier_actor = yes
-					owns_entire_state_region = STATE_VRYSTAAT
-					owns_entire_state_region = STATE_DRAKENSBERG
-				}
+		OR = {
+			c:BST ?= {
+				is_subject = yes
 			}
-			OR = {
-				c:BST ?= {
-					is_country_alive = yes
-					NOT = { sb_bst_holds_frontier_land = yes }
+			AND = {
+				NOT = {
+					c:BST ?= {
+						is_country_alive = yes
+						sb_bst_holds_frontier_land = yes
+					}
 				}
-				c:BST ?= {
-					is_subject = yes
-				}
+				NOT = { sb_bst_any_oranje_frontier_land_holder_exists = yes }
 			}
 		}
 	}

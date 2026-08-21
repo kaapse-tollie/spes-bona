@@ -41,6 +41,22 @@ sb_bst_any_oranje_frontier_actor_exists = {
 	}
 }
 
+sb_bst_oranje_frontier_land_holder = {
+	is_country_alive = yes
+	OR = {
+		country_has_primary_culture = cu:boer
+		country_has_primary_culture = cu:anglo_african
+	}
+	NOT = { country_definition = cd:BST }
+	sb_bst_holds_frontier_land = yes
+}
+
+sb_bst_any_oranje_frontier_land_holder_exists = {
+	any_country = {
+		sb_bst_oranje_frontier_land_holder = yes
+	}
+}
+
 sb_bst_controls_only_drakensberg = {
 	owns_entire_state_region = STATE_DRAKENSBERG
 	NOT = {
@@ -52,15 +68,17 @@ sb_bst_controls_only_drakensberg = {
 	}
 }
 
+sb_bst_oranje_frontier_actor_can_be_raided = {
+	sb_bst_oranje_frontier_actor = yes
+	NOT = { has_war_with = c:BST }
+	NOT = { is_diplomatic_play_participant_with = c:BST }
+	NOT = { has_truce_with = c:BST }
+}
+
 sb_bst_frontier_raid_valid = {
-	is_at_war = no
-	is_active_in_diplomatic_play = no
+	country_definition = cd:BST
 	any_country = {
-		sb_bst_oranje_frontier_actor = yes
-		is_at_war = no
-		is_active_in_diplomatic_play = no
-		NOT = { has_war_with = root }
-		NOT = { has_truce_with = root }
+		sb_bst_oranje_frontier_actor_can_be_raided = yes
 	}
 }
 

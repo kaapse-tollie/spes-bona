@@ -49,51 +49,48 @@ sb_bst_apply_gun_war_ai_defence = {
 }
 
 sb_bst_execute_oranje_raid = {
-	hidden_effect = {
-		set_variable = {
-			name = sb_bst_oranje_raid_cooldown_var
-			days = 365
+	if = {
+		limit = {
+			sb_bst_frontier_raid_valid = yes
 		}
-	}
+		hidden_effect = {
+			set_variable = {
+				name = sb_bst_oranje_raid_cooldown_var
+				days = 365
+			}
+		}
 
 		random_country = {
 			limit = {
-				sb_bst_oranje_frontier_actor = yes
-				ROOT = {
-					is_at_war = no
-					is_active_in_diplomatic_play = no
-				}
-				is_at_war = no
-				is_active_in_diplomatic_play = no
-				NOT = { has_war_with = root }
-				NOT = { has_truce_with = root }
+				sb_bst_oranje_frontier_actor_can_be_raided = yes
 			}
-		custom_tooltip = sb_bst_raid_ora_tt
-		hidden_effect = {
-			trigger_event = { id = sb_bst_frontier.010 days = 1 popup = yes }
+			custom_tooltip = sb_bst_raid_ora_tt
+			hidden_effect = {
+				trigger_event = { id = sb_bst_frontier.010 days = 1 popup = yes }
+			}
 		}
-	}
 
-	add_treasury = 1000
-	random_scope_state = {
-		limit = {
-			OR = {
-				state_region = s:STATE_VRYSTAAT
-				state_region = s:STATE_DRAKENSBERG
+		add_treasury = 1000
+		random_scope_state = {
+			limit = {
+				OR = {
+					state_region = s:STATE_VRYSTAAT
+					state_region = s:STATE_DRAKENSBERG
+				}
+			}
+			kill_population_in_state = {
+				value = 25
 			}
 		}
-		kill_population_in_state = {
-			value = 25
-		}
-	}
-	if = {
-		limit = {
-			has_journal_entry = je_sb_adopt_firearms
-			NOT = { has_variable = sb_firearms_modernized_var }
-		}
-		custom_tooltip = sb_bst_raid_firearms_progress_tt
-		hidden_effect = {
-			sb_boost_firearms_progress_raid = yes
+		if = {
+			limit = {
+				has_journal_entry = je_sb_adopt_firearms
+				NOT = { has_variable = sb_firearms_modernized_var }
+			}
+			custom_tooltip = sb_bst_raid_firearms_progress_tt
+			hidden_effect = {
+				sb_boost_firearms_progress_raid = yes
+			}
 		}
 	}
 }
