@@ -1,4 +1,4 @@
-# Spes Bona Audit Issues — Completed
+﻿# Spes Bona Audit Issues — Completed
 
 Closed tickets from every audit round, newest first. Nothing here requires action; it is kept
 as provenance for what was found and how each item was resolved. Open work lives in
@@ -181,3 +181,24 @@ Static tests cover creation shape, parent/tags, container-owned shared state, va
 | `RB-04` | SB does not shadow or duplicate Vanilla's new treaty-port inheritance on-action. Historical treaty ownership remains an exact-path reviewed surface. | The validator pins `on_treaty_ports_inherited` and rejects any SB use of that hook or `renege_treaty_ports_with`; engine outcomes remain `RV-05`. |
 | `RB-05` | Scripted war-goal blocks and subject-transfer packages were structurally audited. Bechuanaland participant lists and enforced-goal state now live in one container. | Validation requires holder, type, and target for every scripted war-goal block and currently finds 82 complete blocks; runtime combinations remain `RV-03`. |
 | `RB-06` | Both military-formation exact-path files were reviewed against the unchanged 1.13.11 source baseline without altering intended SB force counts. | Source hashes are pinned; naval recruitment, transport, invasion, retrofit, repair, and rerouting remain `RV-09`. |
+
+
+---
+
+## Playtest / Log Round 2026-08-21
+
+### LOG-01 — Low / resolved / runtime-script — Cape negotiation quests errored when no law was being enacted
+
+**Resolution.** `sb_cape.120`, `sb_cape.121` and `sb_cape.122` called Vanilla's
+`promise_quest` unconditionally. That effect's tail (`improve_law_stance`,
+`04_negotiation_scripted_effects.txt`) dereferences
+`owner.currently_enacting_law.type`, so every run where CAP was not mid-enactment
+logged "InterestGroup's country is not enacting any law". All three call sites now
+guard the quest behind `limit = { currently_enacting_law = { always = yes } }`
+(Vanilla's own idiom for probing that link); the surrounding journal-entry
+bookkeeping is unchanged.
+
+**Evidence.** Found in `logs/error.log` of the 2026-08-21 22:42-23:08 session with
+the trace `events/sb_cape_events.txt:725`. Full unit suite (166 tests) and the
+integrated validator pass at 0.18.4; a cold-launch re-check of `error.log` remains
+part of the release checklist.

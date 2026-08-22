@@ -56,17 +56,34 @@ class StartupStoryPatchTests(unittest.TestCase):
             nguni_formation,
         )
 
-    def test_day_one_intro_events_have_one_effectful_option(self):
+    def test_day_one_intro_events_are_scheduled_after_lobby(self):
+        # PLAN-zul-ngi-playtest-fixes: setup-phase scheduled popups were silently
+        # discarded; all four intro events must be scheduled from the after-lobby
+        # on_action and no longer from the history files.
+        after_lobby = object_block(
+            "common/on_actions/sb_startup_on_action_handlers.txt",
+            "sb_on_game_started_after_lobby",
+        )
         schedules = {
+            "c:ZUL": "sb_zulu_dynasty.001",
+            "c:ORA": "sb_great_trek.003",
+            "c:BST": "sb_bst_frontier.001",
+            "c:GZA": "sb_gaza.001",
+        }
+        for country, event_id in schedules.items():
+            pattern = (
+                rf"{country} \?=\s*\{{\s*"
+                rf"trigger_event = \{{ id = {event_id} days = 1 popup = yes \}}\s*\}}"
+            )
+            self.assertRegex(after_lobby, pattern)
+
+        for rel, event_id in {
             "common/history/countries/zul - zulu.txt": "sb_zulu_dynasty.001",
             "common/history/countries/ora - oranje.txt": "sb_great_trek.003",
             "common/history/countries/bst - basuto.txt": "sb_bst_frontier.001",
-        }
-        for path, event_id in schedules.items():
-            self.assertIn(
-                f"trigger_event = {{ id = {event_id} days = 1 popup = yes }}",
-                text(path),
-            )
+            "common/history/countries/gza - gaza.txt": "sb_gaza.001",
+        }.items():
+            self.assertNotIn(f"trigger_event = {{ id = {event_id}", text(rel))
 
         zulu = object_block("events/sb_zulu_dynasty_events.txt", "sb_zulu_dynasty.001")
         self.assertEqual(1, zulu.count("\n\toption = {"))

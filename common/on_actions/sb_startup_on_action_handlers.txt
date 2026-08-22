@@ -351,6 +351,23 @@ sb_on_game_started = {
 
 sb_on_game_started_after_lobby = {
 	effect = {
+		# Day-one intro popups are scheduled HERE rather than from history setup:
+		# events fired from the setup phase were silently discarded whenever their
+		# trigger failed at that early moment (PLAN-zul-ngi-playtest-fixes). From
+		# this on_action the game state is settled and the triggers evaluate live.
+		c:ZUL ?= {
+			trigger_event = { id = sb_zulu_dynasty.001 days = 1 popup = yes }
+		}
+		c:BST ?= {
+			trigger_event = { id = sb_bst_frontier.001 days = 1 popup = yes }
+		}
+		c:GZA ?= {
+			trigger_event = { id = sb_gaza.001 days = 1 popup = yes }
+		}
+		c:ORA ?= {
+			trigger_event = { id = sb_great_trek.003 days = 1 popup = yes }
+		}
+
 		sb_refresh_british_cape_boer_restraint = yes
 
 		# Startup treaties are now history-authored in the local
