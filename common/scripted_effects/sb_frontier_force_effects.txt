@@ -1,6 +1,6 @@
-﻿# Restores the intended levy floor without replacing later unit upgrades or
-# creating duplicate formations. The AI strategy prevents repeated trimming;
-# this effect handles old saves and the first AI tick after a play begins.
+﻿# Restores historical frontier force structures without replacing later unit
+# upgrades. Play-scoped routing selects Frontier AI History for AI-AI wars and
+# Player Challenge against a committed player opponent.
 
 sb_save_frontier_recruitment_state = {
 	if = {
@@ -43,7 +43,16 @@ sb_save_frontier_recruitment_state = {
 			save_temporary_scope_as = sb_frontier_recruitment_state
 		}
 	}
-
+	else_if = {
+		limit = {
+			country_definition = cd:XHO
+			any_scope_state = { state_region = s:STATE_EASTERN_CAPE }
+		}
+		random_scope_state = {
+			limit = { state_region = s:STATE_EASTERN_CAPE }
+			save_temporary_scope_as = sb_frontier_recruitment_state
+		}
+	}
 	if = {
 		limit = { NOT = { exists = scope:sb_frontier_recruitment_state } }
 		capital = { save_temporary_scope_as = sb_frontier_recruitment_state }
@@ -52,7 +61,21 @@ sb_save_frontier_recruitment_state = {
 
 sb_restore_ai_frontier_force_floor = {
 	if = {
-		limit = { sb_frontier_ai_force_floor_eligible = yes }
+		limit = {
+			is_ai = yes
+			is_country_alive = yes
+			OR = {
+				country_definition = cd:ZUL
+				country_definition = cd:SWZ
+				country_definition = cd:GZA
+				country_definition = cd:BST
+				country_definition = cd:XHO
+			}
+			OR = {
+				is_active_in_diplomatic_play = yes
+				is_at_war = yes
+			}
+		}
 		save_temporary_scope_as = sb_frontier_force_country
 		sb_save_frontier_recruitment_state = yes
 
@@ -82,85 +105,61 @@ sb_restore_ai_frontier_force_floor = {
 				}
 			}
 		}
-
-		if = {
-			limit = { has_modifier = sb_frontier_levy_reconstitution }
-			remove_modifier = sb_frontier_levy_reconstitution
-		}
-		if = {
-			limit = { has_modifier = sb_amabutho_levy_reconstitution }
-			remove_modifier = sb_amabutho_levy_reconstitution
-		}
-		if = {
-			limit = {
-				OR = {
-					country_definition = cd:ZUL
-					country_definition = cd:SWZ
-					country_definition = cd:GZA
-				}
-			}
-			add_modifier = {
-				name = sb_amabutho_levy_reconstitution
-				months = 3
-			}
-		}
-		else = {
-			add_modifier = {
-				name = sb_frontier_levy_reconstitution
-				months = 3
-			}
-		}
-	}
-	else = {
-		sb_cleanup_ai_frontier_force_support = yes
 	}
 }
 
 sb_restore_ai_frontier_force_floors_for_play = {
 	if = {
-		limit = { any_scope_play_involved = { country_definition = cd:ZUL } }
+		limit = {
+			sb_frontier_play_artificial_assistance_enabled = { RECIPIENT = c:ZUL }
+		}
 		c:ZUL ?= { sb_restore_ai_frontier_force_floor = yes }
 	}
 	if = {
-		limit = { any_scope_play_involved = { country_definition = cd:SWZ } }
+		limit = {
+			sb_frontier_play_artificial_assistance_enabled = { RECIPIENT = c:SWZ }
+		}
 		c:SWZ ?= { sb_restore_ai_frontier_force_floor = yes }
 	}
 	if = {
-		limit = { any_scope_play_involved = { country_definition = cd:GZA } }
+		limit = {
+			sb_frontier_play_artificial_assistance_enabled = { RECIPIENT = c:GZA }
+		}
 		c:GZA ?= { sb_restore_ai_frontier_force_floor = yes }
 	}
 	if = {
-		limit = { any_scope_play_involved = { country_definition = cd:BST } }
+		limit = {
+			sb_frontier_play_artificial_assistance_enabled = { RECIPIENT = c:BST }
+		}
 		c:BST ?= { sb_restore_ai_frontier_force_floor = yes }
 	}
-}
-
-sb_cleanup_ai_frontier_force_support = {
 	if = {
 		limit = {
-			has_modifier = sb_frontier_levy_reconstitution
-			NOR = {
-				is_active_in_diplomatic_play = yes
-				is_at_war = yes
-			}
+			sb_frontier_play_artificial_assistance_enabled = { RECIPIENT = c:XHO }
 		}
-		remove_modifier = sb_frontier_levy_reconstitution
-	}
-	if = {
-		limit = {
-			has_modifier = sb_amabutho_levy_reconstitution
-			NOR = {
-				is_active_in_diplomatic_play = yes
-				is_at_war = yes
-			}
-		}
-		remove_modifier = sb_amabutho_levy_reconstitution
+		c:XHO ?= { sb_restore_ai_frontier_force_floor = yes }
 	}
 }
 
-sb_cleanup_ai_frontier_force_support_for_play = {
-	c:ZUL ?= { sb_cleanup_ai_frontier_force_support = yes }
-	c:SWZ ?= { sb_cleanup_ai_frontier_force_support = yes }
-	c:GZA ?= { sb_cleanup_ai_frontier_force_support = yes }
-	c:BST ?= { sb_cleanup_ai_frontier_force_support = yes }
+sb_mobilize_ai_frontier_historical_formation = {
+	if = {
+		limit = {
+			country_definition = cd:XHO
+			is_country_alive = yes
+			is_ai = yes
+		}
+		every_military_formation = {
+			limit = { is_army = yes }
+			fully_mobilize_army = yes
+		}
+	}
+}
+
+sb_mobilize_ai_frontier_historical_formations_for_play = {
+	if = {
+		limit = {
+			sb_frontier_play_artificial_assistance_enabled = { RECIPIENT = c:XHO }
+		}
+		c:XHO ?= { sb_mobilize_ai_frontier_historical_formation = yes }
+	}
 }

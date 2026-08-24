@@ -54,30 +54,6 @@ sb_on_spes_bona_diplomatic_play_started = {
 			limit = {
 				is_diplomatic_play_type = dp_sb_natal_crisis
 			}
-			if = {
-				limit = {
-					c:ZUL ?= {
-						is_country_alive = yes
-						is_player = yes
-					}
-					c:ORA ?= {
-						is_country_alive = yes
-						is_ai = yes
-					}
-					OR = {
-						NOT = { exists = c:TRN }
-						c:TRN ?= {
-							is_ai = yes
-						}
-					}
-				}
-				c:ORA ?= {
-					set_variable = {
-						name = sb_ora_blood_river_player_zul_extra_force_var
-						months = 24
-					}
-				}
-			}
 			# Resolve Blood River balance at DP start so the support / no-support
 			# outcome is deterministic before war and cannot reroll on later joins.
 			c:ZUL ?= {
@@ -86,45 +62,12 @@ sb_on_spes_bona_diplomatic_play_started = {
 						trigger_event = { id = sb_natal_crisis.019 }
 				}
 			}
-			sb_raise_blood_river_ai_boer_relief_forces = yes
 			sb_join_trn_to_active_natal_war = yes
+			sb_reconcile_blood_river_assistance_for_play = yes
 		}
 		sb_handle_natalia_player_support_join = yes
-			if = {
-				limit = {
-					OR = {
-						scope:target ?= { country_definition = cd:SWZ }
-						root = {
-							any_scope_play_involved = {
-								c:SWZ ?= THIS
-								is_diplomatic_play_target = yes
-							}
-						}
-					}
-					c:SWZ ?= {
-						is_country_alive = yes
-					}
-				}
-				c:SWZ ?= {
-					if = {
-						limit = {
-							root = {
-								any_scope_play_involved = {
-									is_player = yes
-									is_diplomatic_play_enemy_of = c:SWZ
-								}
-							}
-						}
-						sb_swazi_raise_defensive_muster_vs_player = yes
-					}
-					else_if = {
-						limit = {
-							NOT = { has_variable = sb_zulu_swazi_war_active_var }
-						}
-						sb_swazi_raise_defensive_muster = yes
-					}
-				}
-			}
+		sb_route_swazi_defensive_muster_for_play = yes
+		sb_reconcile_bst_gun_war_defence_for_play = yes
 	}
 }
 
@@ -135,55 +78,38 @@ sb_on_spes_bona_diplo_play_join_side = {
 		sb_restore_ai_frontier_force_floors_for_play = yes
 		sb_refresh_british_cape_boer_restraint = yes
 		sb_handle_natalia_player_support_join = yes
-		if = {
-			limit = {
-				OR = {
-					scope:target ?= { country_definition = cd:SWZ }
-					root = {
-						any_scope_play_involved = {
-							c:SWZ ?= THIS
-							is_diplomatic_play_target = yes
-						}
-					}
-				}
-				c:SWZ ?= {
-					is_country_alive = yes
-				}
-			}
-			c:SWZ ?= {
-				if = {
-					limit = {
-						root = {
-							any_scope_play_involved = {
-								is_player = yes
-								is_diplomatic_play_enemy_of = c:SWZ
-							}
-						}
-					}
-					sb_swazi_raise_defensive_muster_vs_player = yes
-				}
-				else_if = {
-					limit = {
-						NOT = { has_variable = sb_zulu_swazi_war_active_var }
-					}
-					sb_swazi_raise_defensive_muster = yes
-				}
-			}
-		}
+		sb_reconcile_blood_river_assistance_for_play = yes
+		sb_route_swazi_defensive_muster_for_play = yes
+		sb_reconcile_bst_gun_war_defence_for_play = yes
+	}
+}
+
+sb_on_spes_bona_diplo_play_abandon_side = {
+	effect = {
+		# Membership has changed but the play still exists. Re-evaluate only the
+		# packages whose owner rule depends on the current committed sides.
+		sb_reconcile_blood_river_assistance_for_play = yes
+		sb_route_swazi_defensive_muster_for_play = yes
+		sb_reconcile_bst_gun_war_defence_for_play = yes
+		sb_cleanup_trn_frontier_deployment_train_for_play = yes
 	}
 }
 
 sb_on_spes_bona_diplo_play_war_start = {
 	effect = {
 		sb_restore_ai_frontier_force_floors_for_play = yes
+		sb_mobilize_ai_frontier_historical_formations_for_play = yes
 		sb_schedule_trn_frontier_deployment_for_play = yes
+		sb_reconcile_blood_river_assistance_for_play = yes
+		sb_route_swazi_defensive_muster_for_play = yes
+		sb_reconcile_bst_gun_war_defence_for_play = yes
 		if = {
 			limit = {
 				is_diplomatic_play_type = dp_sb_natal_crisis
+				sb_frontier_play_artificial_assistance_enabled = { RECIPIENT = c:ORA }
 				c:ORA ?= {
 					is_country_alive = yes
 					is_ai = yes
-					sb_frontier_ai_behavior_dynamic_historical = yes
 					has_variable = sb_natal_war_active_var
 				}
 			}
@@ -235,7 +161,9 @@ sb_on_spes_bona_diplo_play_back_down = {
 	effect = {
 		sb_refresh_british_cape_boer_restraint = yes
 		sb_cleanup_trn_frontier_deployment_train_for_play = yes
-		sb_cleanup_ai_frontier_force_support_for_play = yes
+		sb_cleanup_blood_river_assistance_for_play = yes
+		sb_cleanup_swazi_defensive_muster_for_play = yes
+		sb_cleanup_bst_gun_war_defence_for_play = yes
 		sb_klip_river_handle_backdown = yes
 		sb_bechuanaland_handle_crisis_backdown = yes
 		sb_natal_handle_zulu_restoration_backdown = yes
@@ -475,17 +403,13 @@ sb_on_spes_bona_diplo_play_back_down = {
 	}
 }
 
-sb_on_spes_bona_diplo_play_abandon_side = {
-	effect = {
-		sb_cleanup_ai_frontier_force_support_for_play = yes
-	}
-}
-
 sb_on_spes_bona_war_end = {
 	effect = {
 		sb_refresh_british_cape_boer_restraint = yes
 		sb_cleanup_trn_frontier_deployment_train_for_play = yes
-		sb_cleanup_ai_frontier_force_support_for_play = yes
+		sb_cleanup_blood_river_assistance_for_play = yes
+		sb_cleanup_swazi_defensive_muster_for_play = yes
+		sb_cleanup_bst_gun_war_defence_for_play = yes
 		sb_klip_river_handle_war_end = yes
 		sb_bechuanaland_resolve_crisis_war_at_end = yes
 		sb_natal_handle_zulu_restoration_war_end = yes
@@ -918,6 +842,40 @@ sb_on_spes_bona_wargoal_enforced = {
 				}
 			}
 			trigger_event = { id = sb_anglo_zulu.030 days = 3 popup = yes }
+		}
+
+		if = {
+			limit = {
+				OR = {
+					country_definition = cd:CAP
+					country_definition = cd:ABY
+				}
+				scope:target ?= {
+					country_definition = cd:XHO
+					is_country_alive = yes
+				}
+				scope:diplomatic_play ?= {
+					is_diplomatic_play_type = dp_sb_xhosa_war_7
+				}
+			}
+			scope:target = { sb_xhosa_set_native_conscription_tier_9 = yes }
+		}
+
+		if = {
+			limit = {
+				OR = {
+					country_definition = cd:CAP
+					country_definition = cd:ABY
+				}
+				scope:target ?= {
+					country_definition = cd:XHO
+					is_country_alive = yes
+				}
+				scope:diplomatic_play ?= {
+					is_diplomatic_play_type = dp_sb_xhosa_war_8
+				}
+			}
+			scope:target = { sb_xhosa_set_native_conscription_tier_12 = yes }
 		}
 
 		if = {

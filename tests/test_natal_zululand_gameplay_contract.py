@@ -102,7 +102,7 @@ class NatalZululandGameplayContractTests(unittest.TestCase):
         self.assertNotIn("xBBCA32", core)
         self.assertNotIn("owns_entire_state_region", core)
 
-    def test_natalia_stages_founders_then_creates_and_claims_only_its_seed(self):
+    def test_natalia_stages_founders_then_receives_the_former_ngi_interior(self):
         path = "common/scripted_effects/sb_natalia_effects.txt"
         creation = object_block(path, "sb_create_natalia_republic_if_missing")
         assignment = object_block(path, "sb_assign_natalia_republic_territory")
@@ -117,7 +117,7 @@ class NatalZululandGameplayContractTests(unittest.TestCase):
         self.assertIn("province = p:x5B124F", country)
 
         natal = object_block_from_source(assignment, "s:STATE_NATAL", path)
-        self.assertEqual({"x5B124F"}, validate.object_values(natal, "provinces"))
+        self.assertEqual(NATALIA_CORE, validate.object_values(natal, "provinces"))
         self.assertIn("add_claim = c:NAL", natal)
         self.assertNotIn("STATE_ZULULAND", assignment)
         self.assertIn("activate_law = law_type:law_frontier_colonization", setup)
@@ -225,7 +225,8 @@ class NatalZululandGameplayContractTests(unittest.TestCase):
             reduced, "s:STATE_ZULULAND", effects_path
         )
         self.assertEqual(KLR_NATAL_PROVINCES, owner_provinces(reduced_natal, "KLR"))
-        self.assertEqual({"xE1E455"}, owner_provinces(reduced_zululand, "KLR"))
+        self.assertIn("xE1E455", owner_provinces(reduced_zululand, "ZUL"))
+        self.assertNotIn("country = c:KLR", reduced_zululand)
 
     def test_great_trek_adds_the_nal_boer_homeland_to_natal_only(self):
         finalize = object_block(

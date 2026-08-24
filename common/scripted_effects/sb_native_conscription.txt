@@ -1,0 +1,62 @@
+﻿# Country-history counterpart to Vanilla's effect_native_conscription_* helpers.
+# The after-lobby watchdog repeats this sync once game-rule/controller state is
+# fully settled. This is MTB's sole artificial assistance package.
+
+sb_effect_native_conscription_MTB = {
+	if = {
+		limit = {
+			is_country_type = decentralized
+			sb_mtb_native_host_assistance_enabled = yes
+			NOT = { has_modifier = sb_native_conscription_MTB }
+		}
+		add_modifier = {
+			name = sb_native_conscription_MTB
+			months = -1
+		}
+	}
+	else_if = {
+		limit = { has_modifier = sb_native_conscription_MTB }
+		remove_modifier = sb_native_conscription_MTB
+	}
+}
+
+sb_xhosa_set_native_conscription_tier_9 = {
+	if = {
+		limit = {
+			is_country_type = decentralized
+			NOT = { has_modifier = native_conscription_12 }
+		}
+		if = {
+			limit = { has_modifier = native_conscription_6 }
+			remove_modifier = native_conscription_6
+		}
+		if = {
+			limit = { NOT = { has_modifier = native_conscription_9 } }
+			add_modifier = {
+				name = native_conscription_9
+				months = -1
+			}
+		}
+	}
+}
+
+sb_xhosa_set_native_conscription_tier_12 = {
+	if = {
+		limit = { is_country_type = decentralized }
+		if = {
+			limit = { has_modifier = native_conscription_6 }
+			remove_modifier = native_conscription_6
+		}
+		if = {
+			limit = { has_modifier = native_conscription_9 }
+			remove_modifier = native_conscription_9
+		}
+		if = {
+			limit = { NOT = { has_modifier = native_conscription_12 } }
+			add_modifier = {
+				name = native_conscription_12
+				months = -1
+			}
+		}
+	}
+}

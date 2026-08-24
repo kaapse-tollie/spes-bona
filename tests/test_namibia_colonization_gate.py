@@ -69,6 +69,12 @@ class NamibiaColonizationGateTests(unittest.TestCase):
             r"country\s*=\s*c:CAP[\s\S]*?owned_provinces\s*=\s*\{[\s\S]*?x8031D0",
         )
 
+    def test_namaqualand_port_locator_is_localized_as_walvis_bay(self):
+        generic_hubs = text("localization/english/replace/sb_hub_names_l_english.yml")
+        dynamic_hubs = text("localization/english/replace/dynamic_state_and_hub_names_l_english.yml")
+        self.assertIn('HUB_NAME_STATE_NAMAQUALAND_port:0 "Walvis Bay"', generic_hubs)
+        self.assertIn('HUB_NAME_STATE_NAMAQUALAND_port_german:0 "Walvis Bay"', dynamic_hubs)
+
     def test_scripted_access_still_requires_both_public_technologies(self):
         trigger = object_block(
             "common/scripted_triggers/sb_namibia_triggers.txt",

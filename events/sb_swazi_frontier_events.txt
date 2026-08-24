@@ -70,14 +70,19 @@ sb_swazi_frontier.094 = {
 		name = sb_swazi_frontier.094.a
 		default_option = yes
 		hidden_effect = {
-				if = {
-					limit = {
-						is_ai = yes
-						sb_frontier_ai_scripting_enabled = yes
-						c:SWZ ?= {
-							is_country_alive = yes
-							is_ai = yes
-						}
+			if = {
+				limit = {
+					is_ai = yes
+					sb_frontier_ai_behavior_strict_historical = yes
+					c:SWZ ?= { is_country_alive = yes is_ai = yes }
+				}
+				sb_zulu_face_swazi_defensive_muster = yes
+			}
+			else_if = {
+				limit = {
+					is_ai = yes
+					sb_frontier_ai_behavior_dynamic_historical = yes
+					c:SWZ ?= { is_country_alive = yes is_ai = yes }
 				}
 				if = {
 					limit = { has_variable = sb_zulu_swazi_ai_won_blood_river_var }
@@ -122,8 +127,40 @@ sb_swazi_frontier.094 = {
 			target_country = c:SWZ
 			target_state = s:STATE_EAST_TRANSVAAL.region_state:SWZ
 		}
+		# The AI-history roll above stores only an intent marker. If play creation
+		# fails, clear the campaign markers immediately and leave no orphan muster.
+		if = {
+			limit = {
+				NOT = {
+					any_diplomatic_play = {
+						initiator = root
+						target = c:SWZ
+						is_diplomatic_play_type = dp_conquer_state
+					}
+				}
+			}
+			remove_variable = sb_zulu_swazi_war_active_var
+			c:SWZ ?= {
+				if = {
+					limit = { has_variable = sb_zulu_swazi_war_active_var }
+					remove_variable = sb_zulu_swazi_war_active_var
+				}
+				if = {
+					limit = { has_variable = sb_swazi_ai_history_muster_selected_var }
+					remove_variable = sb_swazi_ai_history_muster_selected_var
+				}
+			}
+		}
 		ai_chance = {
 			base = 50
+			modifier = {
+				trigger = {
+					is_ai = yes
+					sb_frontier_ai_behavior_strict_historical = yes
+					c:SWZ ?= { is_country_alive = yes is_ai = yes }
+				}
+				add = 1000
+			}
 			modifier = {
 				factor = 0.4
 				has_variable = sb_zulu_swazi_ai_honour_deal_var
@@ -148,6 +185,14 @@ sb_swazi_frontier.094 = {
 		}
 		ai_chance = {
 			base = 50
+			modifier = {
+				trigger = {
+					is_ai = yes
+					sb_frontier_ai_behavior_strict_historical = yes
+					c:SWZ ?= { is_country_alive = yes is_ai = yes }
+				}
+				add = -1000
+			}
 			modifier = {
 				factor = 1.6
 				has_variable = sb_zulu_swazi_ai_honour_deal_var

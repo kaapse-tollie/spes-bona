@@ -545,6 +545,7 @@ sb_join_natalia_against_britain = {
 			NOT = {
 				any_scope_play_involved = {
 					scope:natalia_supporter ?= THIS
+					is_diplomatic_play_committed_participant = yes
 				}
 			}
 		}
@@ -570,6 +571,7 @@ sb_add_natalia_liberate_cape_goal_if_oranje_supports = {
 		limit = {
 			any_scope_play_involved = {
 				c:ORA ?= THIS
+				is_diplomatic_play_committed_participant = yes
 				is_diplomatic_play_enemy_of = c:GBR
 			}
 			c:NAL ?= {
@@ -594,10 +596,11 @@ sb_handle_natalia_player_support_join = {
 	if = {
 		limit = {
 			is_diplomatic_play_type = dp_make_protectorate
-			any_scope_play_involved = { c:GBR ?= THIS }
-			any_scope_play_involved = { c:NAL ?= THIS }
+			initiator = c:GBR
+			target = c:NAL
 			any_scope_play_involved = {
 				is_player = yes
+				is_diplomatic_play_committed_participant = yes
 				is_diplomatic_play_enemy_of = c:GBR
 				OR = {
 					country_definition = cd:ORA

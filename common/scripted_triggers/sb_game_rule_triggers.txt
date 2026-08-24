@@ -14,12 +14,126 @@ sb_frontier_ai_scripting_enabled = {
 	NOT = { has_game_rule = sb_frontier_ai_behavior_off }
 }
 
+sb_frontier_player_challenge_enabled = {
+	has_game_rule = sb_frontier_player_challenge_enabled
+}
+
+sb_frontier_player_challenge_disabled = {
+	has_game_rule = sb_frontier_player_challenge_disabled
+}
+
+# Diplomatic-play scope. Merely being "involved" exposes interested countries
+# that have not joined either side, so both the recipient and its player enemy
+# must be committed participants in this specific play.
+sb_frontier_play_has_committed_player_enemy = {
+	any_scope_play_involved = {
+		is_player = yes
+		is_diplomatic_play_committed_participant = yes
+		is_diplomatic_play_enemy_of = $RECIPIENT$
+	}
+}
+
+# Diplomatic-play scope. Player-facing routing takes precedence and has no
+# AI-History fallback when Player Challenge is disabled.
+sb_frontier_play_artificial_assistance_enabled = {
+	$RECIPIENT$ ?= {
+		is_ai = yes
+		is_country_alive = yes
+	}
+	any_scope_play_involved = {
+		this = $RECIPIENT$
+		is_diplomatic_play_committed_participant = yes
+	}
+	OR = {
+		AND = {
+			sb_frontier_play_has_committed_player_enemy = { RECIPIENT = $RECIPIENT$ }
+			sb_frontier_player_challenge_enabled = yes
+		}
+		AND = {
+			NOT = {
+				sb_frontier_play_has_committed_player_enemy = { RECIPIENT = $RECIPIENT$ }
+			}
+			sb_frontier_ai_scripting_enabled = yes
+		}
+	}
+}
+
+# Country scope watchdog for permanent force floors and mobilization retries.
+# It succeeds when at least one play in which ROOT is a committed participant
+# independently qualifies under the two-rule matrix.
+sb_frontier_artificial_assistance_enabled = {
+	is_ai = yes
+	any_diplomatic_play = {
+		sb_frontier_play_artificial_assistance_enabled = { RECIPIENT = ROOT }
+	}
+}
+
+# Country scope. Mzilikazi's Host is retained as the sole MTB assistance
+# package for this testing round. Its values are unified across AI-AI and
+# player-facing games, but the applicable rule must still enable the package.
+sb_mtb_native_host_assistance_enabled = {
+	country_definition = cd:MTB
+	is_country_alive = yes
+	is_ai = yes
+	c:ORA ?= { is_country_alive = yes }
+	OR = {
+		AND = {
+			c:ORA ?= { is_country_alive = yes is_player = yes }
+			sb_frontier_player_challenge_enabled = yes
+		}
+		AND = {
+			c:ORA ?= { is_country_alive = yes is_ai = yes }
+			sb_frontier_ai_scripting_enabled = yes
+		}
+	}
+}
+
+# Country scope for the secession coalition before its diplomatic play exists.
+# NAL and GBR are the known opposing side, so they can be routed explicitly.
+sb_klip_river_coalition_assistance_enabled = {
+	is_ai = yes
+	OR = {
+		AND = {
+			OR = {
+				c:NAL ?= { is_country_alive = yes is_player = yes }
+				c:GBR ?= { is_country_alive = yes is_player = yes }
+			}
+			sb_frontier_player_challenge_enabled = yes
+		}
+		AND = {
+			c:NAL ?= { is_country_alive = yes is_ai = yes }
+			c:GBR ?= { is_country_alive = yes is_ai = yes }
+			sb_frontier_ai_scripting_enabled = yes
+		}
+	}
+}
+
+# Country scope for the punitive expedition before its diplomatic play exists.
+sb_klip_river_punitive_assistance_enabled = {
+	is_ai = yes
+	OR = {
+		AND = {
+			OR = {
+				c:NAL ?= { is_country_alive = yes is_player = yes }
+				c:GBR ?= { is_country_alive = yes is_player = yes }
+			}
+			sb_frontier_player_challenge_enabled = yes
+		}
+		AND = {
+			c:NAL ?= { is_country_alive = yes is_ai = yes }
+			c:GBR ?= { is_country_alive = yes is_ai = yes }
+			sb_frontier_ai_scripting_enabled = yes
+		}
+	}
+}
+
 sb_frontier_ai_force_floor_eligible = {
 	OR = {
 		country_definition = cd:ZUL
 		country_definition = cd:SWZ
 		country_definition = cd:GZA
 		country_definition = cd:BST
+		country_definition = cd:XHO
 	}
 	is_ai = yes
 	is_country_alive = yes
@@ -27,7 +141,7 @@ sb_frontier_ai_force_floor_eligible = {
 		is_active_in_diplomatic_play = yes
 		is_at_war = yes
 	}
-	sb_frontier_ai_scripting_enabled = yes
+	sb_frontier_artificial_assistance_enabled = yes
 }
 
 sb_ai_economy_helpers_enabled = {

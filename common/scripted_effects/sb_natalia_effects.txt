@@ -53,7 +53,12 @@ sb_assign_natalia_republic_territory = {
 	s:STATE_NATAL = {
 		set_owner_of_provinces = {
 			country = c:NAL
-			provinces = { x5B124F }
+			# Restore the full former-NGI interior after the Blood River settlement.
+			# Port Natal remains with CAP and xBBCA32 remains with ZUL.
+			provinces = {
+				x5B124F xFF0EF1 x552449 xE0EB02 x85695F xDE0EDE
+				x7ACC38 xB1F868 x3CED3D x11A090 xCD31DB
+			}
 		}
 		add_claim = c:NAL
 	}
@@ -316,167 +321,203 @@ sb_ensure_ora_ai_natal_front_commitment = {
 	}
 }
 
-sb_raise_ora_blood_river_relief_force = {
-	# The positive AI Zulu roll withholds ORA's laager edge; force repairs remain
-	# the responsibility of the shared frontier levy system.
+sb_apply_ora_blood_river_laager = {
 	if = {
 		limit = {
 			country_definition = cd:ORA
 			is_ai = yes
-			NOT = { has_variable = sb_ora_blood_river_relief_force_var }
+			NOT = { has_modifier = sb_laager_defence }
+		}
+		add_modifier = {
+			name = sb_laager_defence
+			months = 15
 		}
 		set_variable = {
-			name = sb_ora_blood_river_relief_force_var
-			months = 24
+			name = sb_ora_blood_river_laager_active_var
+			months = 15
 		}
-		if = {
-			limit = {
-				c:ZUL ?= {
-					NOT = { has_variable = sb_zul_blood_river_positive_roll_var }
-				}
-			}
-			add_modifier = {
-				name = sb_laager_defence
-				months = 15
-			}
-		}
-		if = {
-			limit = {
-				NOT = { has_variable = sb_ora_blood_river_underbuilt_dragoon_var }
-				any_scope_state = {
-					state_region = s:STATE_VRYSTAAT
-					has_building = building_barrack
-					b:building_barrack.level == 1
-				}
-			}
-			set_variable = {
-				name = sb_ora_blood_river_underbuilt_dragoon_var
-				months = 24
-			}
-			create_military_formation = {
-				type = army
-				hq_region = sr:region_southern_africa
-				name = ora_blood_river_commando
+	}
+}
 
-				combat_unit = {
-					type = unit_type:combat_unit_type_dragoons
-					state_region = s:STATE_VRYSTAAT
-					count = 1
-				}
-			}
-		}
+sb_clear_ora_blood_river_laager = {
+	if = {
+		limit = { has_variable = sb_ora_blood_river_laager_active_var }
+		remove_variable = sb_ora_blood_river_laager_active_var
 		if = {
-			limit = {
-				has_variable = sb_ora_blood_river_player_zul_extra_force_var
-				c:ZUL ?= {
-					is_player = yes
-				}
-			}
+			limit = { has_modifier = sb_laager_defence }
+			remove_modifier = sb_laager_defence
+		}
+	}
+}
+
+# Diplomatic-play scope. Only committed participants in this Blood River play
+# affect routing. The original AI-AI roll is preserved across later joins.
+sb_reconcile_blood_river_assistance_for_play = {
+	if = {
+		limit = { is_diplomatic_play_type = dp_sb_natal_crisis }
+		c:ORA ?= {
 			if = {
 				limit = {
-					any_scope_state = {
-						state_region = s:STATE_VRYSTAAT
-						any_scope_building = {
-							is_building_type = building_barrack
+					is_ai = yes
+					root = {
+						sb_frontier_play_has_committed_player_enemy = { RECIPIENT = c:ORA }
+						sb_frontier_player_challenge_enabled = yes
+					}
+				}
+				sb_apply_ora_blood_river_laager = yes
+			}
+			else_if = {
+				limit = {
+					is_ai = yes
+					c:ZUL ?= {
+						is_country_alive = yes
+						is_ai = yes
+						NOT = { has_variable = sb_zul_blood_river_positive_roll_var }
+					}
+					root = {
+						sb_frontier_ai_scripting_enabled = yes
+						NOT = {
+							sb_frontier_play_has_committed_player_enemy = { RECIPIENT = c:ORA }
+						}
+						NOT = {
+							sb_frontier_play_has_committed_player_enemy = { RECIPIENT = c:ZUL }
 						}
 					}
 				}
-				random_scope_state = {
-					limit = {
-						state_region = s:STATE_VRYSTAAT
-						any_scope_building = {
-							is_building_type = building_barrack
-						}
-					}
-					save_scope_as = ora_blood_river_relief_state
-				}
+				sb_apply_ora_blood_river_laager = yes
 			}
 			else = {
-				random_scope_state = {
-					limit = {
-						state_region = s:STATE_VRYSTAAT
-					}
-					save_scope_as = ora_blood_river_relief_state
-				}
+				sb_clear_ora_blood_river_laager = yes
 			}
-			scope:ora_blood_river_relief_state = {
-				create_pop = {
-					pop_type = officers
-					culture = boer
-					religion = protestant
-					size = 500
-				}
-				create_pop = {
-					pop_type = soldiers
-					culture = boer
-					religion = protestant
-					size = 5500
-				}
-				create_pop = {
-					pop_type = slaves
-					culture = sotho
-					religion = animist
-					size = 15000
+		}
+		c:ZUL ?= {
+			if = {
+				limit = {
+					is_ai = yes
+					root = {
+						sb_frontier_play_has_committed_player_enemy = { RECIPIENT = c:ZUL }
+					}
 				}
 				if = {
 					limit = {
-						NOT = { has_building = building_barrack }
+						root = { sb_frontier_player_challenge_enabled = yes }
 					}
-					create_building = {
-						building = building_barrack
-						level = 5
-						reserves = 1
+					if = {
+						limit = { has_modifier = sb_blood_river_zulu_no_relief }
+						remove_modifier = sb_blood_river_zulu_no_relief
+					}
+					if = {
+						limit = { has_modifier = sb_blood_river_zulu_limited_support }
+						remove_modifier = sb_blood_river_zulu_limited_support
+					}
+					sb_apply_zul_blood_river_readiness = yes
+				}
+				else = {
+					if = {
+						limit = { has_modifier = sb_blood_river_zulu_no_relief }
+						remove_modifier = sb_blood_river_zulu_no_relief
+					}
+					if = {
+						limit = { has_modifier = sb_blood_river_zulu_limited_support }
+						remove_modifier = sb_blood_river_zulu_limited_support
+					}
+					if = {
+						limit = { has_modifier = sb_blood_river_zulu_relief_mobilization }
+						remove_modifier = sb_blood_river_zulu_relief_mobilization
 					}
 				}
-				else_if = {
-					limit = { b:building_barrack.level == 1 }
-					create_building = {
-						building = building_barrack
-						level = 4
-						reserves = 1
+			}
+			else_if = {
+				limit = {
+					is_ai = yes
+					has_variable = sb_zul_blood_river_positive_roll_var
+					root = { sb_frontier_ai_scripting_enabled = yes }
+				}
+				if = {
+					limit = { has_modifier = sb_blood_river_zulu_no_relief }
+					remove_modifier = sb_blood_river_zulu_no_relief
+				}
+				if = {
+					limit = { NOT = { has_modifier = sb_blood_river_zulu_limited_support } }
+					add_modifier = {
+						name = sb_blood_river_zulu_limited_support
+						months = 15
 					}
 				}
-				else_if = {
-					limit = { b:building_barrack.level == 2 }
-					create_building = {
-						building = building_barrack
-						level = 3
-						reserves = 1
+				if = {
+					limit = { has_modifier = sb_blood_river_zulu_relief_mobilization }
+					remove_modifier = sb_blood_river_zulu_relief_mobilization
+				}
+			}
+			else_if = {
+				limit = {
+					is_ai = yes
+					has_variable = sb_zul_blood_river_no_relief_roll_var
+					root = { sb_frontier_ai_scripting_enabled = yes }
+				}
+				if = {
+					limit = { has_modifier = sb_blood_river_zulu_limited_support }
+					remove_modifier = sb_blood_river_zulu_limited_support
+				}
+				if = {
+					limit = { has_modifier = sb_blood_river_zulu_relief_mobilization }
+					remove_modifier = sb_blood_river_zulu_relief_mobilization
+				}
+				if = {
+					limit = { NOT = { has_modifier = sb_blood_river_zulu_no_relief } }
+					if = {
+						limit = { root = { sb_frontier_ai_behavior_strict_historical = yes } }
+						add_modifier = {
+							name = sb_blood_river_zulu_no_relief
+							months = 15
+						}
+					}
+					else = {
+						add_modifier = {
+							name = sb_blood_river_zulu_no_relief
+							months = 9
+						}
 					}
 				}
-				else_if = {
-					limit = { b:building_barrack.level == 3 }
-					create_building = {
-						building = building_barrack
-						level = 2
-						reserves = 1
-					}
+			}
+			else_if = {
+				limit = { is_ai = yes }
+				if = {
+					limit = { has_modifier = sb_blood_river_zulu_no_relief }
+					remove_modifier = sb_blood_river_zulu_no_relief
 				}
-				else_if = {
-					limit = { b:building_barrack.level == 4 }
-					create_building = {
-						building = building_barrack
-						level = 1
-						reserves = 1
-					}
+				if = {
+					limit = { has_modifier = sb_blood_river_zulu_limited_support }
+					remove_modifier = sb_blood_river_zulu_limited_support
+				}
+				if = {
+					limit = { has_modifier = sb_blood_river_zulu_relief_mobilization }
+					remove_modifier = sb_blood_river_zulu_relief_mobilization
 				}
 			}
 		}
 	}
 }
 
-# This effect runs in diplomatic-play scope when the Natal crisis starts.
-sb_raise_blood_river_ai_boer_relief_forces = {
-	# Live V2 path: ORA always receives deterministic baseline relief here.
+# Diplomatic-play scope. Blood River-specific packages do not outlive the play;
+# the ORA source marker prevents cleanup from removing another Laager source.
+sb_cleanup_blood_river_assistance_for_play = {
 	if = {
-		limit = {
-			c:ORA ?= {
-				is_country_alive = yes
-				has_variable = sb_natal_war_active_var
+		limit = { is_diplomatic_play_type = dp_sb_natal_crisis }
+		c:ORA ?= { sb_clear_ora_blood_river_laager = yes }
+		c:ZUL ?= {
+			if = {
+				limit = { has_modifier = sb_blood_river_zulu_no_relief }
+				remove_modifier = sb_blood_river_zulu_no_relief
 			}
-		}
-		c:ORA ?= {
-			sb_raise_ora_blood_river_relief_force = yes
+			if = {
+				limit = { has_modifier = sb_blood_river_zulu_limited_support }
+				remove_modifier = sb_blood_river_zulu_limited_support
+			}
+			if = {
+				limit = { has_modifier = sb_blood_river_zulu_relief_mobilization }
+				remove_modifier = sb_blood_river_zulu_relief_mobilization
+			}
 		}
 	}
 }
@@ -524,6 +565,7 @@ sb_join_trn_to_active_natal_war = {
 				NOT = {
 					any_scope_play_involved = {
 						c:TRN ?= THIS
+						is_diplomatic_play_committed_participant = yes
 					}
 				}
 			}

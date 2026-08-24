@@ -101,6 +101,7 @@ sb_natal_crisis.019 = {
 			if = {
 				limit = {
 					is_ai = yes
+					sb_frontier_player_challenge_enabled = yes
 					OR = {
 						c:ORA ?= {
 							is_country_alive = yes
@@ -116,27 +117,6 @@ sb_natal_crisis.019 = {
 			}
 			else_if = {
 				limit = {
-					is_player = yes
-					c:ORA ?= {
-						is_country_alive = yes
-						is_ai = yes
-					}
-					OR = {
-						NOT = { exists = c:TRN }
-						c:TRN ?= {
-							is_ai = yes
-						}
-					}
-				}
-				c:ORA ?= {
-					set_variable = {
-						name = sb_ora_blood_river_player_zul_extra_force_var
-						months = 24
-					}
-				}
-			}
-			else_if = {
-				limit = {
 					is_ai = yes
 					c:ORA ?= {
 						is_country_alive = yes
@@ -149,30 +129,32 @@ sb_natal_crisis.019 = {
 						}
 					}
 					sb_frontier_ai_behavior_dynamic_historical = yes
-				}	# dynamic script for bloedrivier
-					random_list = {
-						30 = { # support zul
-							set_variable = {
-								name = sb_zul_blood_river_positive_roll_var
-								months = 24
-							}
-							c:ORA ?= {
-								if = {
-									limit = { has_modifier = sb_laager_defence }
-									remove_modifier = sb_laager_defence
-								}
-							}
-							sb_zulu_add_dynastic_stability_20 = yes
-							sb_boost_firearms_progress_10 = yes
+				}
+				random_list = { # Dynamic-Historical Blood River result
+					30 = { # support ZUL
+						set_variable = {
+							name = sb_zul_blood_river_positive_roll_var
+							months = 24
 						}
-						70 = { # they die
-							add_modifier = {
-								name = sb_blood_river_zulu_no_relief
-								months = 9
-							}
+						add_modifier = {
+							name = sb_blood_river_zulu_limited_support
+							months = 15
+						}
+						sb_zulu_add_dynastic_stability_20 = yes
+						sb_boost_firearms_progress_10 = yes
+					}
+					70 = { # the relief force is destroyed
+						set_variable = {
+							name = sb_zul_blood_river_no_relief_roll_var
+							months = 24
+						}
+						add_modifier = {
+							name = sb_blood_river_zulu_no_relief
+							months = 9
 						}
 					}
 				}
+			}
 			else_if = {
 				limit = {
 					is_ai = yes
@@ -187,14 +169,18 @@ sb_natal_crisis.019 = {
 						}
 					}
 					sb_frontier_ai_behavior_strict_historical = yes
-					}
-					add_modifier = {
-						name = sb_blood_river_zulu_no_relief
-						months = 15
-					}
+				}
+				set_variable = {
+					name = sb_zul_blood_river_no_relief_roll_var
+					months = 24
+				}
+				add_modifier = {
+					name = sb_blood_river_zulu_no_relief
+					months = 15
 				}
 			}
 		}
+	}
 }
 
 sb_natal_crisis.020 = {

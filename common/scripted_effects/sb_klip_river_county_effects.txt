@@ -257,28 +257,52 @@ sb_klip_river_create_county = {
 }
 
 sb_klip_river_roll_coalition_boost = {
-	c:KLR ?= {
-		if = {
-			limit = { NOT = { has_variable = sb_klip_river_coalition_boost_rolled_var } }
-			set_variable = sb_klip_river_coalition_boost_rolled_var
-			if = {
-				limit = { c:ZUL ?= { sb_klip_river_zulu_war_advantage = yes } }
-				random_list = {
-					70 = {
-						add_modifier = { name = sb_laager_defence months = 12 }
-						c:ZUL ?= { add_modifier = { name = sb_klip_river_zulu_muster months = 12 } }
-					}
-					30 = { }
-				}
+	if = {
+		limit = {
+			c:KLR ?= { NOT = { has_variable = sb_klip_river_coalition_boost_rolled_var } }
+			OR = {
+				c:KLR ?= { sb_klip_river_coalition_assistance_enabled = yes }
+				c:ZUL ?= { sb_klip_river_coalition_assistance_enabled = yes }
 			}
-			else = {
-				random_list = {
-					30 = {
-						add_modifier = { name = sb_laager_defence months = 12 }
-						c:ZUL ?= { add_modifier = { name = sb_klip_river_zulu_muster months = 12 } }
+		}
+		c:KLR ?= { set_variable = sb_klip_river_coalition_boost_rolled_var }
+		if = {
+			limit = { c:ZUL ?= { sb_klip_river_zulu_war_advantage = yes } }
+			random_list = {
+				70 = {
+					c:KLR ?= {
+						if = {
+							limit = { sb_klip_river_coalition_assistance_enabled = yes }
+							add_modifier = { name = sb_laager_defence months = 15 }
+						}
 					}
-					70 = { }
+					c:ZUL ?= {
+						if = {
+							limit = { sb_klip_river_coalition_assistance_enabled = yes }
+							add_modifier = { name = sb_klip_river_zulu_muster months = 12 }
+						}
+					}
 				}
+				30 = { }
+			}
+		}
+		else = {
+			random_list = {
+				30 = {
+					c:KLR ?= {
+						if = {
+							limit = { sb_klip_river_coalition_assistance_enabled = yes }
+							add_modifier = { name = sb_laager_defence months = 15 }
+						}
+					}
+					c:ZUL ?= {
+						if = {
+							limit = { sb_klip_river_coalition_assistance_enabled = yes }
+							add_modifier = { name = sb_klip_river_zulu_muster months = 12 }
+						}
+					}
+				}
+				70 = { }
 			}
 		}
 	}
@@ -287,7 +311,10 @@ sb_klip_river_roll_coalition_boost = {
 sb_klip_river_roll_punitive_zulu_boost = {
 	c:ZUL ?= {
 		if = {
-			limit = { NOT = { has_variable = sb_klip_river_punitive_boost_rolled_var } }
+			limit = {
+				NOT = { has_variable = sb_klip_river_punitive_boost_rolled_var }
+				sb_klip_river_punitive_assistance_enabled = yes
+			}
 			set_variable = sb_klip_river_punitive_boost_rolled_var
 			if = {
 				limit = { sb_klip_river_zulu_war_advantage = yes }
@@ -474,11 +501,7 @@ sb_klip_river_finalize_reduced_natalia = {
 	s:STATE_ZULULAND = {
 		set_owner_of_provinces = {
 			country = c:ZUL
-			provinces = { xBE6FEE x1A084B xBFA16B x9E9742 x88FAD4 x904EBE x41C070 xE882CE }
-		}
-		set_owner_of_provinces = {
-			country = c:KLR
-			provinces = { xE1E455 }
+			provinces = { xBE6FEE x1A084B xBFA16B x9E9742 x88FAD4 x904EBE x41C070 xE882CE xE1E455 }
 		}
 	}
 	random_scope_character = {
@@ -499,34 +522,6 @@ sb_klip_river_finalize_reduced_natalia = {
 	set_variable = sb_natal_path_resolved_var
 	set_variable = sb_klip_river_county_resolved_var
 	c:GBR ?= { set_variable = sb_british_natal_ultimatum_var }
-	# The normal county never partitions Zululand. This cleanup is exclusive to
-	# the reduced-Natalia victory, whose explicit xE1E455 award is the one
-	# surviving cross-state exception.
-	s:STATE_ZULULAND.region_state:ZUL ?= {
-		every_scope_pop = {
-			limit = { culture = cu:boer }
-			move_partial_pop = {
-				state = c:NAL.capital
-				population_ratio = 1
-			}
-		}
-	}
-	s:STATE_ZULULAND.region_state:NAL ?= {
-		every_scope_pop = {
-			limit = { culture = cu:tsonga }
-			move_partial_pop = {
-				state = s:STATE_ZULULAND.region_state:ZUL
-				population_ratio = 1
-			}
-		}
-		every_scope_pop = {
-			limit = { culture = cu:zulu }
-			move_partial_pop = {
-				state = s:STATE_ZULULAND.region_state:ZUL
-				population_ratio = 0.4
-			}
-		}
-	}
 	every_scope_character = {
 		limit = { has_variable = sb_klip_river_deferred_exile_var }
 		remove_variable = sb_klip_river_deferred_exile_var

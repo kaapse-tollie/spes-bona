@@ -357,16 +357,6 @@ sb_swazi_frontier_muster = {
 
 }
 
-sb_swazi_frontier_muster_vs_player = {
-	icon = "gfx/interface/icons/timed_modifier_icons/modifier_rifle_positive.dds"
-	military_formation_organization_gain_add = 0.5
-	unit_army_defense_mult = 0.75
-	unit_army_offense_mult = 0.2
-	unit_recovery_rate_add = 1
-	building_training_rate_mult = 1
-
-}
-
 sb_zulu_swazi_frontier_disarray = {
 	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_negative.dds"
 	unit_offense_mult = -0.5
@@ -376,12 +366,17 @@ sb_zulu_swazi_frontier_disarray = {
 
 sb_laager_defence = {
 	icon = gfx/interface/icons/timed_modifier_icons/modifier_rifle_positive.dds
-	building_training_rate_add = 1000
-	battle_casualties_mult = -1
 	unit_recovery_rate_add = 0.75
-	unit_kill_rate_add = 1.25
-	unit_supply_consumption_mult = -1
-	military_formation_organization_gain_add = 0.5
+	unit_kill_rate_add = 0.50
+	unit_defense_mult = 0.10
+}
+
+# First-round native-warband package: capacity and mobilization speed without
+# an additional battlefield-strength modifier.
+sb_native_conscription_MTB = {
+	icon = gfx/interface/icons/timed_modifier_icons/modifier_rifle_positive.dds
+	state_conscription_rate_add = 0.50
+	building_training_rate_add = 1000
 }
 
 sb_klip_river_zulu_muster = {
@@ -447,17 +442,16 @@ sb_trek_frontier_drive_zpb = {
 	country_tension_decay_mult = -0.50
 }
 
-# Parked for possible future TRN/MTB tuning; not currently applied.
-sb_potgieter_relief = {
-	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_positive.dds"
-	building_training_rate_mult = 0.25
-	military_formation_mobilization_speed_mult = 0.15
-}
-
 sb_blood_river_zulu_no_relief = {
 	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_negative.dds"
 	unit_offense_mult = -0.35
 	unit_defense_mult = -0.35
+}
+
+sb_blood_river_zulu_limited_support = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_rifle_positive.dds"
+	unit_offense_mult = 0.05
+	unit_defense_mult = 0.05
 }
 
 sb_blood_river_zulu_relief_mobilization = {
@@ -492,20 +486,15 @@ sb_bst_gun_war_defensive_muster = {
 	unit_defense_mult = 0.25
 }
 
-sb_bst_gun_war_defensive_muster_vs_player = {
-	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_positive.dds"
-	unit_defense_mult = 0.50
-}
-
-sb_ora_scripted_frontier_edge = {
-	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_positive.dds"
-	unit_offense_mult = 0.05
-	unit_defense_mult = 0.05
-}
-
 sb_ora_scripted_annex_war_overreach = {
 	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_negative.dds"
 	unit_offense_mult = -0.1
+}
+
+sb_ora_bst_surprise_disarray = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_negative.dds"
+	unit_offense_mult = -0.10
+	unit_defense_mult = -0.10
 }
 
 sb_bst_scripted_frontier_major_edge = {
@@ -517,22 +506,6 @@ sb_bst_scripted_frontier_major_edge = {
 sb_bst_scripted_thaba_bosiu= {
 	icon = "gfx/interface/icons/timed_modifier_icons/modifier_rifle_positive.dds"
 	unit_supply_consumption_mult = -0.90
-}
-
-# Parked for possible future MTB tuning; not currently applied.
-sb_iron_age_weaponry = {
-	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_negative.dds"
-	unit_offense_mult = -0.50
-	unit_defense_mult = -0.50
-}
-
-# Active MTB tuning hook: native warbands remain dangerous in the opening war,
-# but their looser battlefield cohesion should translate into heavier losses.
-sb_iron_age_natives = {
-	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_negative.dds"
-	battle_casualties_mult = 0.50
-	unit_kill_rate_add = -0.50
-
 }
 
 sb_zulu_natal_triumph = {
@@ -730,11 +703,6 @@ sb_zulu_dynastic_stability_decile_19 = {
 	unit_morale_loss_mult = 0.025
 }
 
-sb_trek_ai_mobilization = {
-	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_positive.dds"
-	state_conscription_rate_mult = 0.25
-}
-
 sb_boer_principality_status = {
 	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_positive.dds"
 	country_prestige_add = 10
@@ -881,16 +849,14 @@ sb_scramble_for_africa_colonial_growth = {
 
 ########################## NGUNI CHIEFDOMS TRIBUTE ########################################
 
-# Standing marker on the Nguni Chiefdoms (NGI) while they pay tribute to the Zulu kingdom.
-# The cash transfer itself happens in sb_on_qwa_tribute_monthly_pulse_country
-# (common/scripted_effects/sb_qwa_tribute_effects.txt); this modifier is the visible marker.
+# Paired weekly budget modifiers. The monthly pulse only maintains or clears the
+# link; the budget ledger itself displays the £100 weekly payment and receipt.
 sb_tribute_to_zul = {
 	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_negative.dds"
+	country_tax_income_add = -100
 }
 
-# ZUL side of the Nguni Chiefdoms tribute - visible receipt marker on the Zulu kingdom.
-# The cash arrives via sb_on_ngi_tribute_monthly_pulse_country; this marker clears
-# automatically if NGI disappears (annexed or destroyed).
 sb_tribute_from_nguni = {
 	icon = "gfx/interface/icons/timed_modifier_icons/modifier_flag_positive.dds"
+	country_tax_income_add = 100
 }

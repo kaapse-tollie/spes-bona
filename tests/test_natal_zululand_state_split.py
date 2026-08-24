@@ -2,6 +2,7 @@ from pathlib import Path
 import hashlib
 import json
 import re
+import struct
 import unittest
 
 from tools import validate
@@ -51,6 +52,19 @@ EXPECTED_HUBS = {
         "wood": "xBE6FEE",
     },
 }
+SPLINE_PRE_SPLIT_SHA256 = "b96c927167595c0430c21ad471508d79585fa6a84a440c6230e8896193099715"
+SPLINE_NATAL_REINDEX_SHA256 = "74cebc60ca7155f598f03924b725de0b3f0e060ca37af8dc356a4b120cb36274"
+SPLINE_ANCHOR_ID_PATCHES = (
+    (0x0097DE, 25703, 121303),
+    (0x009800, 25704, 121304),
+    (0x128E30, 25703, 121303),
+    (0x1660F6, 25704, 121304),
+    (0x167928, 25703, 121303),
+    (0x16793A, 25704, 121304),
+    (0x168146, 25704, 121304),
+)
+
+
 def text(path: str) -> str:
     return (ROOT / path).read_text(encoding="utf-8-sig")
 
@@ -204,9 +218,85 @@ class NatalZululandStateSplitTests(unittest.TestCase):
             self.assertIn(257, instances, kind)
             self.assertIn(1213, instances, kind)
 
-    def test_spline_asset_is_pinned_but_runtime_validation_is_deferred(self):
+    def test_spline_anchor_reindex_is_semantically_locked_and_pinned(self):
         spline_path = "gfx/map/spline_network/spline_network.splnet"
-        digest = hashlib.sha256((ROOT / spline_path).read_bytes()).hexdigest()
+        spline = (ROOT / spline_path).read_bytes()
+        digest = hashlib.sha256(spline).hexdigest()
+        self.assertEqual(SPLINE_NATAL_REINDEX_SHA256, digest)
+
+        reconstructed = bytearray(spline)
+        for offset, old_id, new_id in SPLINE_ANCHOR_ID_PATCHES:
+            self.assertEqual(struct.pack("<I", new_id), spline[offset : offset + 4])
+            reconstructed[offset : offset + 4] = struct.pack("<I", old_id)
+
+        changed_bytes = {
+            index
+            for index, (current, previous) in enumerate(zip(spline, reconstructed))
+            if current != previous
+        }
+        self.assertEqual(
+            {
+                offset + byte
+                for offset, _, _ in SPLINE_ANCHOR_ID_PATCHES
+                for byte in range(3)
+            },
+            changed_bytes,
+        )
+        self.assertEqual(21, len(changed_bytes))
+        self.assertEqual(
+            SPLINE_PRE_SPLIT_SHA256,
+            hashlib.sha256(reconstructed).hexdigest(),
+        )
+
+        for old_id in (25703, 25704):
+            self.assertEqual(0, spline.count(b"\x14\x00" + struct.pack("<I", old_id)))
+        self.assertEqual(3, spline.count(b"\x14\x00" + struct.pack("<I", 121303)))
+        self.assertEqual(4, spline.count(b"\x14\x00" + struct.pack("<I", 121304)))
+
+        expected_anchors = {
+            121303: (4797.912109, 804.828796),
+            121304: (4785.460938, 816.476562),
+        }
+        for anchor_id, expected_position in expected_anchors.items():
+            marker = (
+                b"\x14\x00"
+                + struct.pack("<I", anchor_id)
+                + b"\x4c\x00\x01\x00\x03\x00\x0d\x00"
+            )
+            start = spline.index(marker) + len(marker)
+            position = (
+                struct.unpack_from("<f", spline, start)[0],
+                struct.unpack_from("<f", spline, start + 6)[0],
+            )
+            self.assertEqual(b"\x0d\x00", spline[start + 4 : start + 6])
+            for actual, expected in zip(position, expected_position):
+                self.assertAlmostEqual(expected, actual, places=5)
+
+        strips = []
+        strip_pattern = re.compile(
+            rb"\xf7\x05\x01\x00\x03\x00((?:\x14\x00.{4})+?)"
+            rb"\x04\x00\x04\x00\x03\x00\x0b\x00\x01\x00",
+            re.DOTALL,
+        )
+        for match in strip_pattern.finditer(spline):
+            values = match.group(1)
+            ids = [
+                struct.unpack_from("<I", values, offset + 2)[0]
+                for offset in range(0, len(values), 6)
+            ]
+            if ids[0] in (121303, 121304) or ids[-1] in (121303, 121304):
+                strips.append((ids[0], ids[-1], len(ids)))
+        self.assertEqual(4282, len(list(strip_pattern.finditer(spline))))
+        self.assertCountEqual(
+            [
+                (121303, 26003, 16),
+                (121304, 25804, 12),
+                (121303, 121304, 4),
+                (25700, 121304, 9),
+            ],
+            strips,
+        )
+
         connectivity = json.loads(text("tools/map_connectivity_manifest.json"))
         inventory = json.loads(text("Docs/compatibility/override_inventory.json"))
         gates = {

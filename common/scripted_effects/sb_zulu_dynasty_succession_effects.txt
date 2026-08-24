@@ -22,33 +22,36 @@ sb_zulu_kill_current_heir = {
 }
 
 sb_zulu_assign_new_heir_scope = {
-	scope:new_heir_scope ?= {
-		if = {
-			limit = {
+	set_heir = scope:new_heir_scope
+	if = {
+		limit = {
+			scope:new_heir_scope ?= {
 				is_in_void = yes
 			}
-			hidden_effect = {
+		}
+		hidden_effect = {
+			scope:new_heir_scope ?= {
 				free_character_from_void = yes
 				transfer_character = prev
 			}
 		}
-		if = {
-			limit = {
+	}
+	if = {
+		limit = {
+			scope:new_heir_scope ?= {
 				is_in_exile_pool = yes
 			}
+		}
+		scope:new_heir_scope ?= {
 			transfer_character = prev
 			set_variable = exile_to_ruler_var
-			add_career_length = {
-				months = 60
-			}
+			add_career_length = { months = 60 }
 			hidden_effect = {
 				free_from_exile_effect = yes
 			}
 		}
 	}
-	set_heir = scope:new_heir_scope
 	scope:new_heir_scope ?= {
-		replace_character_roles = { add = { heir } remove_all = yes }
 		set_interest_group = c:ZUL.ig:ig_landowners
 	}
 }

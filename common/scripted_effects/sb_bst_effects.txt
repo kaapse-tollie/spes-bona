@@ -18,32 +18,127 @@ sb_bst_kill_non_moshoeshoe_ai_generals = {
 	}
 }
 
-sb_bst_apply_gun_war_ai_defence = {
+sb_bst_add_gun_war_defensive_muster = {
 	if = {
 		limit = {
 			is_ai = yes
-			sb_frontier_ai_scripting_enabled = yes
-			c:CAP ?= { is_player = yes }
+			NOT = { has_modifier = sb_bst_gun_war_defensive_muster }
 		}
 		add_modifier = {
-			name = sb_bst_gun_war_defensive_muster_vs_player
+			name = sb_bst_gun_war_defensive_muster
+			months = 24
+		}
+		set_variable = {
+			name = sb_bst_gun_war_muster_active_var
 			months = 24
 		}
 	}
-	else_if = {
-		limit = {
-			is_ai = yes
-			sb_frontier_ai_scripting_enabled = yes
-			c:CAP ?= { is_ai = yes }
+}
+
+sb_bst_remove_gun_war_defensive_muster = {
+	if = {
+		limit = { has_variable = sb_bst_gun_war_muster_active_var }
+		remove_variable = sb_bst_gun_war_muster_active_var
+		if = {
+			limit = { has_modifier = sb_bst_gun_war_defensive_muster }
+			remove_modifier = sb_bst_gun_war_defensive_muster
 		}
-		random_list = {
-			66 = {
-				add_modifier = {
-					name = sb_bst_gun_war_defensive_muster
+	}
+}
+
+# Diplomatic-play scope. Roll once after the Gun War play exists so only its
+# committed sides decide whether Rule A or Rule B owns the package.
+sb_initialize_bst_gun_war_defence_for_play = {
+	if = {
+		limit = {
+			is_diplomatic_play_type = dp_sb_basotho_gun_war
+			scope:target ?= { country_definition = cd:BST is_country_alive = yes is_ai = yes }
+		}
+		if = {
+			limit = {
+				sb_frontier_play_has_committed_player_enemy = { RECIPIENT = c:BST }
+			}
+			if = {
+				limit = { sb_frontier_player_challenge_enabled = yes }
+				c:BST ?= { sb_bst_add_gun_war_defensive_muster = yes }
+			}
+			else = {
+				c:BST ?= { sb_bst_remove_gun_war_defensive_muster = yes }
+			}
+		}
+		else_if = {
+			limit = { sb_frontier_ai_behavior_strict_historical = yes }
+			c:BST ?= {
+				set_variable = {
+					name = sb_bst_gun_war_ai_history_muster_var
 					months = 24
 				}
+				sb_bst_add_gun_war_defensive_muster = yes
 			}
-			33 = {}
+		}
+		else_if = {
+			limit = { sb_frontier_ai_behavior_dynamic_historical = yes }
+			random_list = {
+				66 = {
+					c:BST ?= {
+						set_variable = {
+							name = sb_bst_gun_war_ai_history_muster_var
+							months = 24
+						}
+						sb_bst_add_gun_war_defensive_muster = yes
+					}
+				}
+				33 = {}
+			}
+		}
+	}
+}
+
+# Diplomatic-play scope. Restore the stored AI-History result after a player
+# leaves; never reroll the 66/33 branch.
+sb_reconcile_bst_gun_war_defence_for_play = {
+	if = {
+		limit = {
+			is_diplomatic_play_type = dp_sb_basotho_gun_war
+			scope:target ?= { country_definition = cd:BST is_country_alive = yes is_ai = yes }
+		}
+		if = {
+			limit = {
+				sb_frontier_play_has_committed_player_enemy = { RECIPIENT = c:BST }
+			}
+			if = {
+				limit = { sb_frontier_player_challenge_enabled = yes }
+				c:BST ?= { sb_bst_add_gun_war_defensive_muster = yes }
+			}
+			else = {
+				c:BST ?= { sb_bst_remove_gun_war_defensive_muster = yes }
+			}
+		}
+		else_if = {
+			limit = {
+				sb_frontier_ai_scripting_enabled = yes
+				c:BST ?= { has_variable = sb_bst_gun_war_ai_history_muster_var }
+			}
+			c:BST ?= { sb_bst_add_gun_war_defensive_muster = yes }
+		}
+		else = {
+			c:BST ?= { sb_bst_remove_gun_war_defensive_muster = yes }
+		}
+	}
+}
+
+sb_cleanup_bst_gun_war_defence_for_play = {
+	if = {
+		limit = {
+			is_diplomatic_play_type = dp_sb_basotho_gun_war
+			scope:target ?= { country_definition = cd:BST }
+		}
+		c:BST ?= {
+			sb_bst_remove_gun_war_defensive_muster = yes
+			if = {
+				limit = { has_variable = sb_bst_gun_war_ai_history_muster_var }
+				remove_variable = sb_bst_gun_war_ai_history_muster_var
+			}
 		}
 	}
 }

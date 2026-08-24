@@ -230,7 +230,20 @@ sb_bst_frontier.020 = {
 			months = 60
 		}
 		if = {
-			limit = { is_ai = yes }
+			limit = {
+				is_ai = yes
+				exists = scope:sb_bst_current_oranje_actor
+				OR = {
+					AND = {
+						scope:sb_bst_current_oranje_actor = { is_player = yes }
+						sb_frontier_player_challenge_enabled = yes
+					}
+					AND = {
+						scope:sb_bst_current_oranje_actor = { is_ai = yes }
+						sb_frontier_ai_scripting_enabled = yes
+					}
+				}
+			}
 			hidden_effect = {
 				s:STATE_DRAKENSBERG = {
 					region_state:BST ?= {
@@ -395,9 +408,7 @@ sb_bst_frontier.220 = {
 				target = c:BST
 				is_diplomatic_play_type = dp_sb_basotho_gun_war
 			}
-			c:BST ?= {
-				sb_bst_apply_gun_war_ai_defence = yes
-			}
+			sb_initialize_bst_gun_war_defence_for_play = yes
 			if = {
 				limit = {
 					c:BST ?= {
@@ -415,6 +426,14 @@ sb_bst_frontier.220 = {
 		}
 		ai_chance = {
 			base = 75
+			modifier = {
+				trigger = {
+					is_ai = yes
+					sb_frontier_ai_behavior_strict_historical = yes
+					c:BST ?= { is_country_alive = yes is_ai = yes }
+				}
+				add = 1000
+			}
 		}
 	}
 
@@ -425,6 +444,14 @@ sb_bst_frontier.220 = {
 		}
 		ai_chance = {
 			base = 25
+			modifier = {
+				trigger = {
+					is_ai = yes
+					sb_frontier_ai_behavior_strict_historical = yes
+					c:BST ?= { is_country_alive = yes is_ai = yes }
+				}
+				add = -1000
+			}
 		}
 	}
 }

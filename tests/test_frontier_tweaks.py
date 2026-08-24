@@ -88,15 +88,7 @@ class FrontierTweaksTests(unittest.TestCase):
         )
         self.assertIn("pm_sb_customary_muster_conscription", group)
 
-    def test_frontier_reconstitution_modifiers_are_training_only(self):
-        frontier = object_block(
-            "common/static_modifiers/sb_conscription_modifiers.txt",
-            "sb_frontier_levy_reconstitution",
-        )
-        amabutho = object_block(
-            "common/static_modifiers/sb_conscription_modifiers.txt",
-            "sb_amabutho_levy_reconstitution",
-        )
+    def test_frontier_floors_do_not_add_reconstitution_training(self):
         effects = object_block(
             "common/scripted_effects/sb_frontier_force_effects.txt",
             "sb_restore_ai_frontier_force_floor",
@@ -105,12 +97,49 @@ class FrontierTweaksTests(unittest.TestCase):
             "common/scripted_triggers/sb_game_rule_triggers.txt",
             "sb_frontier_ai_force_floor_eligible",
         )
-        self.assertIn("building_training_rate_add = 1000", frontier)
-        self.assertIn("building_training_rate_add = 2500", amabutho)
-        self.assertNotIn("state_conscription_rate_add", frontier)
-        self.assertNotIn("state_conscription_rate_add", amabutho)
+        amabutho_law = object_block(
+            "common/laws/03_sb_amabutho_system.txt", "law_sb_amabutho_system"
+        )
+        self.assertFalse(
+            (ROOT / "common/static_modifiers/sb_conscription_modifiers.txt").exists()
+        )
+        self.assertNotIn("building_training_rate", effects)
+        self.assertNotIn("sb_native_conscription_MTB", effects)
+        self.assertNotIn("building_training_rate_mult", amabutho_law)
         self.assertIn("is_ai = yes", eligibility)
-        self.assertEqual(2, effects.count("months = 3"))
+        self.assertIn("sb_frontier_artificial_assistance_enabled = yes", eligibility)
+        self.assertIn("cd:XHO", eligibility)
+        self.assertNotIn("cd:MTB", eligibility)
+
+    def test_uthumbu_heir_assignment_matches_the_vanilla_lifecycle_order(self):
+        path = "common/scripted_effects/sb_zulu_dynasty_succession_effects.txt"
+        assign = object_block(path, "sb_zulu_assign_new_heir_scope")
+        prepare = object_block(path, "sb_zulu_prepare_uthumbu_heir")
+        secured = object_block(path, "sb_resolve_zulu_dynasty_secured")
+
+        self.assertLess(
+            assign.index("set_heir = scope:new_heir_scope"),
+            assign.index("free_character_from_void = yes"),
+        )
+        self.assertNotIn("replace_character_roles", assign)
+        self.assertIn("template = ZUL_uthumbu_claimed_son", prepare)
+        self.assertIn("sb_zulu_assign_new_heir_scope = yes", prepare)
+        self.assertIn("sb_zulu_prepare_uthumbu_heir = yes", secured)
+
+    def test_potgieter_has_rank_one_colonial_administrator(self):
+        history = text("common/history/characters/ora - oranje.txt")
+        characters = [
+            validate.extract_braced(history, match.start())
+            for match in re.finditer(r"^\s*create_character\s*=\s*\{", history, re.MULTILINE)
+        ]
+        potgieter = next(
+            candidate
+            for candidate in characters
+            if "template = ORA_hendrik_potgieter" in candidate
+        )
+        self.assertIn("add_trait = basic_colonial_administrator", potgieter)
+        self.assertNotIn("add_trait = experienced_colonial_administrator", potgieter)
+        self.assertNotIn("add_trait = expert_colonial_administrator", potgieter)
 
     def test_ndebele_vegkop_frontier_transfers_to_oranje(self):
         vrystaat = object_block(

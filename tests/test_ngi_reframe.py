@@ -22,16 +22,38 @@ class NgiReframeTests(unittest.TestCase):
         mods = text("common/static_modifiers/sb_modifiers.txt")
         self.assertIn("sb_tribute_to_zul = {", mods)
         self.assertIn("sb_tribute_from_nguni = {", mods)
-        values = text("common/script_values/sb_ngi_tribute_values.txt")
-        for token in ("sb_ngi_tribute_payment", "sb_ngi_tribute_payment_neg"):
-            self.assertIn(token, values)
+        self.assertIn("country_tax_income_add = -100", mods)
+        self.assertIn("country_tax_income_add = 100", mods)
+        self.assertFalse((ROOT / "common/script_values/sb_ngi_tribute_values.txt").exists())
+        ngi_history = text("common/history/countries/ngi - nguni chiefdoms.txt")
+        zul_history = text("common/history/countries/zul - zulu.txt")
+        self.assertIn("add_modifier = { name = sb_tribute_to_zul }", ngi_history)
+        self.assertIn("add_modifier = { name = sb_tribute_from_nguni }", zul_history)
         handlers = text("common/on_actions/sb_ngi_tribute_on_action_handlers.txt")
-        for token in ("sb_on_ngi_tribute_monthly_pulse_country",
-                      "add_treasury = sb_ngi_tribute_payment_neg",
-                      "sb_tribute_from_nguni"):
+        for token in (
+            "sb_on_ngi_tribute_monthly_pulse_country",
+            "sb_on_ngi_tribute_state_owner_change",
+            "sb_tribute_to_zul",
+            "sb_tribute_from_nguni",
+            "is_country_alive = yes",
+            "sb_ngi_zul_tribute_link_ended_global_var",
+            "set_global_variable = sb_ngi_zul_tribute_link_ended_global_var",
+        ):
             self.assertIn(token, handlers)
+        self.assertNotIn("add_treasury", handlers)
+        state_handler = handlers[handlers.index("sb_on_ngi_tribute_state_owner_change = {"):]
+        for token in (
+            "c:NGI ?= { has_modifier = sb_tribute_to_zul }",
+            "c:ZUL ?= { has_modifier = sb_tribute_from_nguni }",
+            "NOT = { c:NGI ?= { is_country_alive = yes } }",
+            "NOT = { c:ZUL ?= { is_country_alive = yes } }",
+            "remove_modifier = sb_tribute_to_zul",
+            "remove_modifier = sb_tribute_from_nguni",
+        ):
+            self.assertIn(token, state_handler)
         wiring = text("common/on_actions/sb_on_actions.txt")
         self.assertIn("sb_on_ngi_tribute_monthly_pulse_country", wiring)
+        self.assertIn("sb_on_ngi_tribute_state_owner_change", wiring)
 
     def test_fodo_kanombewu_leads_the_tag(self):
         tpl = text("common/character_templates/sb_nguni_chiefdoms_characters.txt")

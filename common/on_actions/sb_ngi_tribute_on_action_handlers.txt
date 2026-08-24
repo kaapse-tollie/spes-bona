@@ -1,41 +1,113 @@
-﻿# Spes Bona - Nguni Chiefdoms tribute pulse.
-# NGI side: carry the visible marker and send the payment north. ZUL side: carry the
-# matching receipt marker; both clear automatically if the other tag disappears.
+﻿# Spes Bona - Nguni Chiefdoms tribute-link maintenance.
+# The paired modifiers debit and credit £100 each week. This pulse only creates
+# the link while both countries live and clears the surviving half when it ends.
 
 sb_on_ngi_tribute_monthly_pulse_country = {
 	effect = {
 		if = {
 			limit = {
 				country_definition = cd:NGI
-				exists = c:ZUL
+				is_country_alive = yes
+				NOT = { has_global_variable = sb_ngi_zul_tribute_link_ended_global_var }
+				NOT = { has_variable = sb_ngi_zul_tribute_link_ended_var }
+				c:ZUL ?= { is_country_alive = yes }
+				c:ZUL ?= { NOT = { has_variable = sb_ngi_zul_tribute_link_ended_var } }
 			}
 			if = {
 				limit = { NOT = { has_modifier = sb_tribute_to_zul } }
 				add_modifier = { name = sb_tribute_to_zul }
 			}
-			add_treasury = sb_ngi_tribute_payment_neg
 			c:ZUL = {
 				if = {
 					limit = { NOT = { has_modifier = sb_tribute_from_nguni } }
 					add_modifier = { name = sb_tribute_from_nguni }
 				}
-				add_treasury = sb_ngi_tribute_payment
 			}
 		}
 		else_if = {
 			limit = {
 				country_definition = cd:ZUL
 				has_modifier = sb_tribute_from_nguni
-				NOT = { exists = c:NGI }
+				NOT = { c:NGI ?= { is_country_alive = yes } }
 			}
+			set_global_variable = sb_ngi_zul_tribute_link_ended_global_var
+			set_variable = sb_ngi_zul_tribute_link_ended_var
 			remove_modifier = sb_tribute_from_nguni
 		}
 		else_if = {
 			limit = {
 				country_definition = cd:NGI
 				has_modifier = sb_tribute_to_zul
+				NOT = { c:ZUL ?= { is_country_alive = yes } }
 			}
+			set_global_variable = sb_ngi_zul_tribute_link_ended_global_var
+			set_variable = sb_ngi_zul_tribute_link_ended_var
 			remove_modifier = sb_tribute_to_zul
+		}
+		# A restored tag does not recreate a political link that ended with the
+		# destruction of either original party.
+		if = {
+			limit = {
+				OR = {
+					country_definition = cd:NGI
+					country_definition = cd:ZUL
+				}
+				OR = {
+					has_global_variable = sb_ngi_zul_tribute_link_ended_global_var
+					has_variable = sb_ngi_zul_tribute_link_ended_var
+					c:ZUL ?= { has_variable = sb_ngi_zul_tribute_link_ended_var }
+				}
+			}
+			if = {
+				limit = {
+					NOT = { has_global_variable = sb_ngi_zul_tribute_link_ended_global_var }
+				}
+				set_global_variable = sb_ngi_zul_tribute_link_ended_global_var
+			}
+			if = {
+				limit = { has_modifier = sb_tribute_to_zul }
+				remove_modifier = sb_tribute_to_zul
+			}
+			c:ZUL ?= {
+				if = {
+					limit = { has_modifier = sb_tribute_from_nguni }
+					remove_modifier = sb_tribute_from_nguni
+				}
+			}
+		}
+	}
+}
+
+# State scope. A country losing its final state ends the political link during
+# that ownership transition; the global tombstone also survives both tags being
+# destroyed and later restored.
+sb_on_ngi_tribute_state_owner_change = {
+	trigger = {
+		NOT = { has_global_variable = sb_ngi_zul_tribute_link_ended_global_var }
+		OR = {
+			c:NGI ?= { has_modifier = sb_tribute_to_zul }
+			c:ZUL ?= { has_modifier = sb_tribute_from_nguni }
+		}
+		OR = {
+			NOT = { c:NGI ?= { is_country_alive = yes } }
+			NOT = { c:ZUL ?= { is_country_alive = yes } }
+		}
+	}
+	effect = {
+		set_global_variable = sb_ngi_zul_tribute_link_ended_global_var
+		c:NGI ?= {
+			set_variable = sb_ngi_zul_tribute_link_ended_var
+			if = {
+				limit = { has_modifier = sb_tribute_to_zul }
+				remove_modifier = sb_tribute_to_zul
+			}
+		}
+		c:ZUL ?= {
+			set_variable = sb_ngi_zul_tribute_link_ended_var
+			if = {
+				limit = { has_modifier = sb_tribute_from_nguni }
+				remove_modifier = sb_tribute_from_nguni
+			}
 		}
 	}
 }

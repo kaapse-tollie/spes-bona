@@ -27,37 +27,132 @@ sb_swazi_raise_defensive_muster = {
 	}
 }
 
-sb_zulu_face_swazi_defensive_muster = {
+sb_swazi_clear_defensive_muster = {
 	if = {
-		limit = {
-			c:SWZ ?= {
-				is_country_alive = yes
-				NOT = { has_variable = sb_swazi_defensive_muster_var }
-			}
+		limit = { has_variable = sb_swazi_defensive_muster_var }
+		remove_variable = sb_swazi_defensive_muster_var
+		# Reverse the one-off artificial grant when a late player join routes the
+		# play to a disabled Player Challenge package.
+		add_treasury = -10000
+		if = {
+			limit = { has_modifier = sb_swazi_frontier_muster }
+			remove_modifier = sb_swazi_frontier_muster
 		}
-		add_modifier = {
-			name = sb_zulu_swazi_frontier_disarray
-			months = 12
-		}
-		c:SWZ ?= { sb_swazi_raise_defensive_muster = yes }
 	}
 }
 
-sb_swazi_raise_defensive_muster_vs_player = {
+sb_swazi_end_defensive_muster = {
 	if = {
-		limit = {
-			NOT = { has_variable = sb_swazi_defensive_muster_vs_player_var }
+		limit = { has_variable = sb_swazi_defensive_muster_var }
+		remove_variable = sb_swazi_defensive_muster_var
+		if = {
+			limit = { has_modifier = sb_swazi_frontier_muster }
+			remove_modifier = sb_swazi_frontier_muster
 		}
+	}
+}
+
+# Pre-play AI-history roll marker. The visible assistance is not applied until
+# the diplomatic-play start hook confirms that SWZ is the primary defender.
+sb_zulu_face_swazi_defensive_muster = {
+	c:SWZ ?= {
 		set_variable = {
-			name = sb_swazi_defensive_muster_vs_player_var
+			name = sb_swazi_ai_history_muster_selected_var
 			months = 24
 		}
-		add_treasury = 10000
+	}
+}
+
+sb_apply_swazi_defensive_muster_for_play = {
+	c:SWZ ?= { sb_swazi_raise_defensive_muster = yes }
+	scope:initiator ?= {
 		if = {
-			limit = { NOT = { has_modifier = sb_swazi_frontier_muster_vs_player } }
+			limit = {
+				country_definition = cd:ZUL
+				is_diplomatic_play_enemy_of = c:SWZ
+				NOT = { has_modifier = sb_zulu_swazi_frontier_disarray }
+			}
 			add_modifier = {
-				name = sb_swazi_frontier_muster_vs_player
-				months = 24
+				name = sb_zulu_swazi_frontier_disarray
+				months = 12
+			}
+			set_variable = {
+				name = sb_zulu_swazi_disarray_from_muster_var
+				months = 12
+			}
+		}
+	}
+}
+
+sb_clear_swazi_defensive_muster_for_play = {
+	c:SWZ ?= { sb_swazi_clear_defensive_muster = yes }
+	scope:initiator ?= {
+		if = {
+			limit = { has_variable = sb_zulu_swazi_disarray_from_muster_var }
+			remove_variable = sb_zulu_swazi_disarray_from_muster_var
+			if = {
+				limit = { has_modifier = sb_zulu_swazi_frontier_disarray }
+				remove_modifier = sb_zulu_swazi_frontier_disarray
+			}
+		}
+	}
+}
+
+# Diplomatic-play scope. SWZ must be the primary defender; interested countries
+# and secondary backers never qualify. A player must be a committed enemy in
+# this same play before Player Challenge can replace the AI-History route.
+sb_route_swazi_defensive_muster_for_play = {
+	if = {
+		limit = {
+			scope:target ?= {
+				country_definition = cd:SWZ
+				is_country_alive = yes
+				is_ai = yes
+			}
+		}
+		if = {
+			limit = {
+				sb_frontier_play_has_committed_player_enemy = { RECIPIENT = c:SWZ }
+			}
+			if = {
+				limit = { sb_frontier_player_challenge_enabled = yes }
+				sb_apply_swazi_defensive_muster_for_play = yes
+			}
+			else = {
+				sb_clear_swazi_defensive_muster_for_play = yes
+			}
+		}
+		else_if = {
+			limit = {
+				sb_frontier_ai_scripting_enabled = yes
+				c:SWZ ?= { has_variable = sb_swazi_ai_history_muster_selected_var }
+			}
+			sb_apply_swazi_defensive_muster_for_play = yes
+		}
+		else = {
+			sb_clear_swazi_defensive_muster_for_play = yes
+		}
+	}
+}
+
+sb_cleanup_swazi_defensive_muster_for_play = {
+	if = {
+		limit = { scope:target ?= { country_definition = cd:SWZ } }
+		c:SWZ ?= {
+			sb_swazi_end_defensive_muster = yes
+			if = {
+				limit = { has_variable = sb_swazi_ai_history_muster_selected_var }
+				remove_variable = sb_swazi_ai_history_muster_selected_var
+			}
+		}
+		scope:initiator ?= {
+			if = {
+				limit = { has_variable = sb_zulu_swazi_disarray_from_muster_var }
+				remove_variable = sb_zulu_swazi_disarray_from_muster_var
+				if = {
+					limit = { has_modifier = sb_zulu_swazi_frontier_disarray }
+					remove_modifier = sb_zulu_swazi_frontier_disarray
+				}
 			}
 		}
 	}

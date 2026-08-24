@@ -71,32 +71,16 @@ sb_schedule_trn_frontier_deployment_for_play = {
 	if = {
 		limit = {
 			NOT = { has_variable = sb_trn_frontier_deployment_train_active_var }
-			c:TRN ?= {
-				is_country_alive = yes
-				is_ai = yes
-			}
-			OR = {
-				AND = {
-					any_scope_play_involved = { c:ORA ?= THIS }
-					OR = {
-						any_scope_play_involved = { c:PHL ?= THIS }
-						any_scope_play_involved = { c:BST ?= THIS }
-						any_scope_play_involved = { c:SWZ ?= THIS }
-						any_scope_play_involved = { c:ZUL ?= THIS }
-					}
+			sb_frontier_play_artificial_assistance_enabled = { RECIPIENT = c:TRN }
+			any_scope_play_involved = {
+				OR = {
+					country_definition = cd:PHL
+					country_definition = cd:BST
+					country_definition = cd:SWZ
+					country_definition = cd:ZUL
 				}
-				AND = {
-					any_scope_play_involved = { c:TRN ?= THIS }
-					any_scope_play_involved = {
-						OR = {
-							country_definition = cd:PHL
-							country_definition = cd:BST
-							country_definition = cd:SWZ
-							country_definition = cd:ZUL
-						}
-						is_diplomatic_play_enemy_of = c:TRN
-					}
-				}
+				is_diplomatic_play_committed_participant = yes
+				is_diplomatic_play_enemy_of = c:TRN
 			}
 		}
 		set_variable = sb_trn_frontier_deployment_train_active_var

@@ -6,6 +6,10 @@ from tools import validate
 
 
 ROOT = Path(__file__).resolve().parents[1]
+NATALIA_CORE = {
+    "x5B124F", "xFF0EF1", "x552449", "xE0EB02", "x85695F", "xDE0EDE",
+    "x7ACC38", "xB1F868", "x3CED3D", "x11A090", "xCD31DB",
+}
 
 
 def text(path: str) -> str:
@@ -144,7 +148,7 @@ class NatalInterwarTests(unittest.TestCase):
             path, "sb_found_natalia_after_guns_bargain_rejection"
         )
         self.assertIn("s:STATE_NATAL", assignment)
-        self.assertIn("provinces = { x5B124F }", assignment)
+        self.assertEqual(NATALIA_CORE, validate.object_values(assignment, "provinces"))
         self.assertNotIn("STATE_ZULULAND", assignment)
         self.assertNotIn("sb_relocate_inherited_natalia_buildings_to_zul", source)
         self.assertNotIn("sb_natalia_blood_river_building_transfer_pending_var", source)

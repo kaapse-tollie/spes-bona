@@ -141,9 +141,11 @@ class MediumLowRemediationTests(unittest.TestCase):
             "on_game_started_after_lobby": ("sb_on_game_started_after_lobby",),
             "on_diplomatic_play_started": ("sb_on_spes_bona_diplomatic_play_started",),
             "on_diplo_play_join_side": ("sb_on_spes_bona_diplo_play_join_side",),
+            "on_diplo_play_abandon_side": (
+                "sb_on_spes_bona_diplo_play_abandon_side",
+            ),
             "on_diplo_play_war_start": ("sb_on_spes_bona_diplo_play_war_start",),
             "on_diplo_play_back_down": ("sb_on_spes_bona_diplo_play_back_down",),
-            "on_diplo_play_abandon_side": ("sb_on_spes_bona_diplo_play_abandon_side",),
             "on_become_subject": (
                 "sb_on_natalia_become_british_subject",
                 "sb_on_bechuanaland_subject_status_changed",
@@ -167,7 +169,10 @@ class MediumLowRemediationTests(unittest.TestCase):
                 "sb_on_modifier_cache_yearly_repair",
                 "sb_on_boer_restraint_yearly_repair",
             ),
-            "on_state_owner_change": ("sb_on_namibia_consolidation_state_owner_change",),
+            "on_state_owner_change": (
+                "sb_on_namibia_consolidation_state_owner_change",
+                "sb_on_ngi_tribute_state_owner_change",
+            ),
             "on_acquired_technology": ("sb_on_spes_bona_acquired_technology",),
             "on_election_campaign_end": ("sb_on_martinus_union_election_end",),
             "on_colony_created": ("sb_on_spes_bona_colony_created",),
