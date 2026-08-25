@@ -68,43 +68,39 @@ sb_frontier_artificial_assistance_enabled = {
 	}
 }
 
-# Country scope. Mzilikazi's Host is retained as the sole MTB assistance
-# package for this testing round. Its values are unified across AI-AI and
-# player-facing games, but the applicable rule must still enable the package.
+# Country scope. Mzilikazi's Host is retained only for a player-controlled ORA.
+# It is independent of both frontier-assistance rules and is withheld when ORA
+# is AI-controlled.
 sb_mtb_native_host_assistance_enabled = {
 	country_definition = cd:MTB
 	is_country_alive = yes
 	is_ai = yes
-	c:ORA ?= { is_country_alive = yes }
-	OR = {
-		AND = {
-			c:ORA ?= { is_country_alive = yes is_player = yes }
-			sb_frontier_player_challenge_enabled = yes
-		}
-		AND = {
-			c:ORA ?= { is_country_alive = yes is_ai = yes }
-			sb_frontier_ai_scripting_enabled = yes
-		}
-	}
+	c:ORA ?= { is_country_alive = yes is_player = yes }
 }
 
 # Country scope for the secession coalition before its diplomatic play exists.
-# NAL and GBR are the known opposing side, so they can be routed explicitly.
-sb_klip_river_coalition_assistance_enabled = {
+# NAL and GBR are the known opposing side, so the two assistance rules can be
+# routed explicitly before a diplomatic-play scope is available.
+sb_klip_river_coalition_player_challenge_enabled = {
 	is_ai = yes
 	OR = {
-		AND = {
-			OR = {
-				c:NAL ?= { is_country_alive = yes is_player = yes }
-				c:GBR ?= { is_country_alive = yes is_player = yes }
-			}
-			sb_frontier_player_challenge_enabled = yes
-		}
-		AND = {
-			c:NAL ?= { is_country_alive = yes is_ai = yes }
-			c:GBR ?= { is_country_alive = yes is_ai = yes }
-			sb_frontier_ai_scripting_enabled = yes
-		}
+		c:NAL ?= { is_country_alive = yes is_player = yes }
+		c:GBR ?= { is_country_alive = yes is_player = yes }
+	}
+	sb_frontier_player_challenge_enabled = yes
+}
+
+sb_klip_river_coalition_ai_history_enabled = {
+	is_ai = yes
+	c:NAL ?= { is_country_alive = yes is_ai = yes }
+	c:GBR ?= { is_country_alive = yes is_ai = yes }
+	sb_frontier_ai_scripting_enabled = yes
+}
+
+sb_klip_river_coalition_assistance_enabled = {
+	OR = {
+		sb_klip_river_coalition_player_challenge_enabled = yes
+		sb_klip_river_coalition_ai_history_enabled = yes
 	}
 }
 

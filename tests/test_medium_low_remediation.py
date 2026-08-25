@@ -161,6 +161,7 @@ class MediumLowRemediationTests(unittest.TestCase):
                 "sb_on_namibia_monthly_pulse_country",
                 "sb_on_eastern_sphere_monthly_pulse_country",
                 "sb_on_natal_colony_monthly_pulse_country",
+                "sb_on_port_natal_monthly_pulse_country",
                 "sb_on_frontier_force_monthly_pulse_country",
                 "sb_on_ngi_tribute_monthly_pulse_country",
             ),
@@ -172,6 +173,7 @@ class MediumLowRemediationTests(unittest.TestCase):
             "on_state_owner_change": (
                 "sb_on_namibia_consolidation_state_owner_change",
                 "sb_on_ngi_tribute_state_owner_change",
+                "sb_on_port_natal_state_owner_change",
             ),
             "on_acquired_technology": ("sb_on_spes_bona_acquired_technology",),
             "on_election_campaign_end": ("sb_on_martinus_union_election_end",),
@@ -182,7 +184,10 @@ class MediumLowRemediationTests(unittest.TestCase):
             "on_revolution_end": ("sb_on_cape_secession_end",),
             "on_wargoal_enforced": ("sb_on_spes_bona_wargoal_enforced",),
             "on_war_end": ("sb_on_spes_bona_war_end",),
-            "on_law_activated": ("sb_on_boer_convention_law_activated",),
+            "on_law_activated": (
+                "sb_on_boer_convention_law_activated",
+                "sb_on_natal_interwar_law_activated",
+            ),
             "on_company_established": ("sb_on_de_beers_company_established",),
             "on_company_disbanded": (
                 "sb_on_mozambique_company_disbanded",

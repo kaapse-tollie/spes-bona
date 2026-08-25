@@ -49,6 +49,17 @@ sb_place_natalia_under_british_protectorate = {
 	}
 }
 
+sb_disable_natalia_great_trek_for_british_colony = {
+	set_variable = sb_natalia_great_trek_disabled_var
+	if = {
+		limit = { has_variable = sb_trek_stage2_pending_var }
+		remove_variable = sb_trek_stage2_pending_var
+	}
+	every_scope_state = {
+		remove_modifier = sb_trek_migration_pull
+	}
+}
+
 sb_convert_natalia_to_british_crown_colony = {
 	if = {
 		limit = {
@@ -123,6 +134,7 @@ sb_ensure_british_natal_loyalist_lobby = {
 }
 
 sb_apply_british_natal_colony_setup = {
+	sb_disable_natalia_great_trek_for_british_colony = yes
 	sb_convert_natalia_to_british_crown_colony = yes
 	if = {
 		limit = {
@@ -226,6 +238,16 @@ sb_apply_british_natal_colony_setup = {
 		}
 	}
 	sb_install_british_natal_governor = yes
+	set_global_variable = sb_british_natal_ever_formed_global_var
+	s:STATE_NATAL = {
+		every_scope_state = {
+			if = {
+				limit = { has_modifier = sb_port_natal_migration_deterrent }
+				remove_modifier = sb_port_natal_migration_deterrent
+			}
+		}
+	}
+	sb_natal_schedule_shepstone_system = yes
 }
 
 sb_select_natalia_refugee_receiver = {
@@ -443,25 +465,6 @@ sb_install_british_natal_governor = {
 	}
 }
 
-sb_ensure_british_natal_colony_governor = {
-	if = {
-		limit = {
-			country_definition = cd:NAL
-			has_variable = sb_natalia_british_colony_resolved_var
-			OR = {
-				NOT = { exists = ruler }
-				ruler = {
-					NOR = {
-						culture = cu:british
-						culture = cu:anglo_african
-					}
-				}
-			}
-		}
-		sb_install_british_natal_governor = yes
-	}
-}
-
 sb_finalize_british_natal_colony = {
 	if = {
 		limit = { has_variable = sb_natalia_ultimatum_truce_var }
@@ -477,6 +480,7 @@ sb_finalize_british_natal_colony = {
 		remove_variable = sb_natalia_ultimatum_truce_var
 	}
 	sb_mark_natalia_boer_leadership_for_deferred_exile = yes
+	sb_exile_natalia_boer_leadership = yes
 	sb_apply_british_natal_colony_setup = yes
 	sb_annul_natalia_boer_treaties = yes
 	if = {

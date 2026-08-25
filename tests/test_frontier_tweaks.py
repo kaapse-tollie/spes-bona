@@ -65,8 +65,8 @@ class FrontierTweaksTests(unittest.TestCase):
             "officers = 1",
             "law_sb_amabutho_system",
             "law_sb_chiefly_levy",
-            "building_training_rate_add = 50",
-            "building_training_rate_add = 10",
+            "building_training_rate_add = 100",
+            "building_training_rate_add = 20",
         ):
             self.assertIn(token, muster)
 
@@ -126,7 +126,7 @@ class FrontierTweaksTests(unittest.TestCase):
         self.assertIn("sb_zulu_assign_new_heir_scope = yes", prepare)
         self.assertIn("sb_zulu_prepare_uthumbu_heir = yes", secured)
 
-    def test_potgieter_has_rank_one_colonial_administrator(self):
+    def test_potgieter_has_no_colonial_administrator_trait(self):
         history = text("common/history/characters/ora - oranje.txt")
         characters = [
             validate.extract_braced(history, match.start())
@@ -137,7 +137,7 @@ class FrontierTweaksTests(unittest.TestCase):
             for candidate in characters
             if "template = ORA_hendrik_potgieter" in candidate
         )
-        self.assertIn("add_trait = basic_colonial_administrator", potgieter)
+        self.assertNotIn("add_trait = basic_colonial_administrator", potgieter)
         self.assertNotIn("add_trait = experienced_colonial_administrator", potgieter)
         self.assertNotIn("add_trait = expert_colonial_administrator", potgieter)
 
@@ -208,23 +208,74 @@ class FrontierTweaksTests(unittest.TestCase):
             r"hidden_effect\s*=\s*\{\s*activate_law\s*=\s*law_type:law_agrarianism",
         )
 
-    def test_grondwet_normalization_waits_three_months_after_great_trek(self):
+    def test_grondwet_normalization_is_shared_after_ten_days(self):
         finalizer = object_block(
             "common/scripted_effects/sb_trek_migration.txt",
             "sb_great_trek_finalize_republic",
         )
         self.assertIn(
-            "trigger_event = { id = sb_boer_republics.130 days = 90 popup = yes }",
+            "trigger_event = { id = sb_boer_republics.130 days = 10 popup = yes }",
             finalizer,
         )
-        self.assertNotIn(
-            "trigger_event = { id = sb_boer_republics.130 days = 7 popup = yes }",
-            finalizer,
+        for tag in ("TRN", "ORA", "ZPB", "LYD", "NAL", "KLR", "SGO"):
+            self.assertIn(f"country_definition = cd:{tag}", finalizer)
+
+        event = object_block("events/sb_boer_republics_events.txt", "sb_boer_republics.130")
+        for tag in ("TRN", "ORA", "ZPB", "LYD", "NAL", "SGO"):
+            self.assertIn(f"country_definition = cd:{tag}", event)
+        self.assertEqual(2, event.count("\n\toption = {"))
+        self.assertEqual(2, event.count("set_variable = sb_great_trek_normalized_var"))
+
+        sources = "\n".join(
+            text(path)
+            for path in (
+                "common/scripted_effects/sb_trek_migration.txt",
+                "common/on_actions/sb_boer_story_on_action_handlers.txt",
+                "events/sb_great_trek_events.txt",
+            )
         )
+        self.assertNotIn("sb_great_trek.101", sources)
+
+    def test_great_trek_stages_are_sequential_and_natal_is_the_nal_or_klr_target(self):
+        journal = object_block(
+            "common/journal_entries/1-02_sb_great_trek.txt", "je_sb_great_trek"
+        )
+        self.assertRegex(
+            journal,
+            r"STAGE 2:[\s\S]*?else_if\s*=\s*\{[\s\S]*?country_definition\s*=\s*cd:NAL"
+            r"[\s\S]*?country_definition\s*=\s*cd:KLR"
+            r"[\s\S]*?owns_entire_state_region\s*=\s*STATE_NATAL"
+            r"[\s\S]*?id\s*=\s*sb_great_trek\.043",
+        )
+        self.assertNotIn("sb_controls_natalia_core", journal)
         self.assertIn(
-            "trigger_event = { id = sb_great_trek.101 days = 7 popup = yes }",
-            finalizer,
+            'sb_great_trek_stage2_completion_nal:0 "Natal"',
+            text("localization/english/sb_l_english.yml"),
         )
+
+    def test_natalia_uses_its_specific_stage_one_event_text(self):
+        journal = object_block(
+            "common/journal_entries/1-02_sb_great_trek.txt", "je_sb_great_trek"
+        )
+        event = object_block("events/sb_great_trek_events.txt", "sb_great_trek.032")
+        localization = text("localization/english/sb_great_trek_l_english.yml")
+
+        self.assertRegex(
+            journal,
+            r"STAGE 1:[\s\S]*?country_definition\s*=\s*cd:NAL"
+            r"[\s\S]*?id\s*=\s*sb_great_trek\.032[\s\S]*?STAGE 2:",
+        )
+        for token in (
+            "title = sb_great_trek.032.t",
+            "desc = sb_great_trek.032.d",
+            "flavor = sb_great_trek.032.f",
+            "name = sb_great_trek.032.a",
+            "sb_great_trek_stage_item_boer_slice_reward = yes",
+        ):
+            self.assertIn(token, event)
+        for suffix in ("t", "d", "f", "a"):
+            self.assertIn(f"sb_great_trek.032.{suffix}:0", localization)
+        self.assertNotIn("sb_great_trek.033.", localization)
 
     def test_caledon_raid_only_blocks_shared_conflicts_and_truces(self):
         target = object_block(
@@ -365,7 +416,39 @@ class FrontierTweaksTests(unittest.TestCase):
         prime_land = re.search(r"prime_land\s*=\s*\{([^}]*)\}", namaqualand)
         self.assertIsNotNone(prime_land)
         self.assertIn('"x8031D0"', prime_land.group(1))
-        self.assertIn("arable_land = 5", namaqualand)
+        self.assertIn("arable_land = 4", namaqualand)
+
+    def test_maseko_starts_with_ngoni_not_shangaan_population(self):
+        zambezia = object_block(
+            "common/history/pops/04_subsaharan_africa.txt",
+            "s:STATE_ZAMBEZIA",
+        )
+        maseko = object_block_from_source(zambezia, "region_state:MSK")
+        self.assertIn("culture = nguni", maseko)
+        self.assertIn("culture = chewa", maseko)
+        self.assertNotIn("culture = shangaan", maseko)
+
+    def test_vanilla_nguni_key_is_presented_as_distinct_ngoni_culture(self):
+        ngoni = object_block(
+            "common/cultures/sb_culture_overrides.txt", "REPLACE:nguni"
+        )
+        for token in (
+            "heritage = heritage_southern_bantu",
+            "language = language_nguni",
+            "Mputa",
+            "Zwangendaba",
+            "Maseko",
+            "Jere",
+        ):
+            self.assertIn(token, ngoni)
+
+        localization = text("localization/english/sb_cultures_l_english.yml")
+        self.assertIn('nguni:0 "Ngoni"', localization)
+        self.assertNotIn('nguni:0 "Nguni"', localization)
+
+        states = text("common/history/states/00_states.txt")
+        zambezia = object_block_from_source(states, "s:STATE_ZAMBEZIA")
+        self.assertNotIn("add_homeland = cu:nguni", zambezia)
 
     def test_commandant_general_law_uses_opt_in_interest_group_commands(self):
         law = object_block(

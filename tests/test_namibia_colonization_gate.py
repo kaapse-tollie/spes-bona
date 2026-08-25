@@ -21,6 +21,16 @@ def object_block(path: str, name: str) -> str:
 
 
 class NamibiaColonizationGateTests(unittest.TestCase):
+    def test_namaqualand_uses_the_settled_three_slot_whaling_cap(self):
+        namaqualand = object_block(
+            "map_data/state_regions/04_subsaharan_africa.txt", "STATE_NAMAQUALAND"
+        )
+        hereroland = object_block(
+            "map_data/state_regions/04_subsaharan_africa.txt", "STATE_HEREROLAND"
+        )
+        self.assertIn("building_whaling_station = 3", namaqualand)
+        self.assertNotIn("building_whaling_station", hereroland)
+
     def test_rehoboth_formation_installs_baster_ruler_and_migration(self):
         event = object_block("events/sb_namibia_events.txt", "sb_nam.020")
         ruler_effects = object_block(

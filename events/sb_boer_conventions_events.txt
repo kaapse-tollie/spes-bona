@@ -493,6 +493,40 @@ sb_boer_conventions.142 = {
 					target_country = scope:highveld_target
 					type = make_protectorate
 				}
+				add_war_goal = {
+					holder = scope:highveld_target
+					target_country = root
+					type = humiliation
+					primary_demand = yes
+				}
+				if = {
+					limit = {
+						c:CAP ?= {
+							is_country_alive = yes
+							is_direct_subject_of = root
+						}
+					}
+					add_war_goal = {
+						holder = scope:highveld_target
+						target_country = c:CAP
+						type = liberate_subject
+					}
+				}
+				if = {
+					limit = {
+						scope:highveld_target ?= {
+							sb_boer_convention_nal_is_british_colony = yes
+						}
+						c:NAL ?= {
+							is_direct_subject_of = root
+						}
+					}
+					add_war_goal = {
+						holder = scope:highveld_target
+						target_country = c:NAL
+						type = liberate_subject
+					}
+				}
 			}
 		}
 		else_if = {

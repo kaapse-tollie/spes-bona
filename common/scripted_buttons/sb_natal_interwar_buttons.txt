@@ -1,0 +1,40 @@
+﻿# Natal Indian indenture recruitment.
+
+je_sb_natal_recruit_indian_workers_button = {
+	name = "je_sb_natal_recruit_indian_workers_button"
+	desc = "je_sb_natal_recruit_indian_workers_button_desc"
+
+	visible = {
+		has_journal_entry = je_sb_natal_indenture_program
+	}
+
+	possible = {
+		custom_tooltip = {
+			text = sb_natal_indenture_cooldown_tt
+			NOT = { has_variable = sb_natal_indenture_recruitment_cooldown_var }
+		}
+		custom_tooltip = {
+			text = sb_natal_indenture_capacity_tt
+			var:sb_natal_indenture_recruitment_count_var < 10
+		}
+		custom_tooltip = {
+			text = sb_natal_indenture_natal_borders_tt
+			NOT = { has_law = law_type:law_closed_borders }
+		}
+		custom_tooltip = {
+			text = sb_natal_indenture_source_country_tt
+			sb_natal_bic_has_indenture_origin = yes
+		}
+		custom_tooltip = {
+			text = sb_natal_indenture_source_pop_tt
+			sb_natal_bic_has_next_indenture_cohort = yes
+		}
+	}
+
+	effect = {
+		custom_tooltip = sb_natal_indenture_recruitment_tt
+		hidden_effect = { sb_natal_recruit_next_indenture_cohort = yes }
+	}
+
+	ai_chance = { value = 1000 }
+}

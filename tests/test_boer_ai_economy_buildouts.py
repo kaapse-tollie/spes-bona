@@ -38,6 +38,37 @@ def called_effects(segment: str) -> tuple[str, ...]:
 
 
 class BoerAIEconomyBuildoutTests(unittest.TestCase):
+    def test_managed_ai_countries_cannot_build_construction_sectors_before_1850(self):
+        guard = (ROOT / "common/buildings/sb_construction_sector_guard.txt").read_text(
+            encoding="utf-8-sig"
+        )
+        injection = re.search(
+            r"^INJECT:building_construction_sector\s*=\s*\{",
+            guard,
+            re.MULTILINE,
+        )
+        self.assertIsNotNone(injection)
+        block = validate.extract_braced(guard, injection.start())
+        self.assertIn("possible = {", block)
+        self.assertIn("owner ?= {", block)
+        self.assertIn("is_ai = no", block)
+        self.assertIn("game_date >= 1850.1.1", block)
+        self.assertEqual(
+            {
+                "CAP",
+                "ORA",
+                "TRN",
+                "ZPB",
+                "LYD",
+                "NAL",
+                "PHL",
+                "WBL",
+                "BST",
+                "ZUL",
+            },
+            set(re.findall(r"country_definition\s*=\s*cd:([A-Z0-9_]+)", block)),
+        )
+
     def test_oranje_schedule(self):
         block = effect_block("sb_boer_ai_economy_ora_yearly_pulse")
         expected = {

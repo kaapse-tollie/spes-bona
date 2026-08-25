@@ -62,7 +62,7 @@
       "path": "common/history/characters/ora - oranje.txt",
       "upstream_version": "1.13.11",
       "upstream_sha256": "05a2ca64a6b2ba5dfe7600c5bd58131e6b0eb5b7431dd77b245fba9109ebcd62",
-      "mod_sha256": "43d6285c88b5ea764d7872b0f43092f2630165caefa1ea3a93d59abdff644013",
+      "mod_sha256": "2d1cc1c9bdb2816861f02418a2fe5727e75ada4a4506d0a4839fca93bb2b9c2e",
       "comparison": "text-hash-pair",
       "scope": "country:ORA",
       "intent": "Replace the Vanilla ORA startup character history with the SB roster and lifecycle.",
@@ -146,7 +146,7 @@
       "path": "common/history/countries/bst - basuto.txt",
       "upstream_version": "1.13.11",
       "upstream_sha256": "94fd19138c780c5d3b8bd15a2dc759ea330abe4114213dee4158861959725eba",
-      "mod_sha256": "0ab5ecc27ce8d6039763e096571934d10b63e63dafc2556c0ad39f230ef7a68a",
+      "mod_sha256": "2e99a90f8a51040cb4b762aa551e56e11440b2021b91c1620aad20c216f7dede",
       "comparison": "text-hash-pair",
       "scope": "country:BST",
       "intent": "Replace the Vanilla BST startup country history with the SB setup, including the Chiefly Levy army-model variant.",
@@ -326,10 +326,10 @@
       "path": "common/history/pops/04_subsaharan_africa.txt",
       "upstream_version": "1.13.11",
       "upstream_sha256": "e0e6a15a8d752dedcb1b10aca7bbf7275fa2a9d624554b0ee96596bcca064a31",
-      "mod_sha256": "f34dde031e0feafecbc428623d27bdb9274a3e3981ab5e46c25f150ab5b7a2ee",
+      "mod_sha256": "adac3894c1ba54bcbef664169987c70f6dd718be1c570d553d417e9cb4309c8b",
       "comparison": "text-hash-pair",
       "scope": "Southern African touched state scopes",
-      "intent": "Replace startup population rows in SB-touched state partitions, including the ZUL-owned Natal fragment, while retaining the rebased regional baseline.",
+      "intent": "Replace startup population rows in SB-touched state partitions, including the ZUL-owned Natal fragment and the Maseko Ngoni culture correction, while retaining the rebased regional baseline.",
       "load_order": "exact-path shadow; higher-priority owner wins",
       "owner": "Spes Bona maintainers",
       "rebase_date": "2026-08-20"
@@ -470,13 +470,13 @@
       "path": "map_data/state_regions/04_subsaharan_africa.txt",
       "upstream_version": "1.13.11",
       "upstream_sha256": "99ac6e11396735e0eb070d31c15325aa4166316f3f980285ffaf72c8fe4a6151",
-      "mod_sha256": "2fe33093b5ad9950840d9bf9141ad7f0c296e6a564a46e05192956f23c73af2b",
+      "mod_sha256": "a46210c1a1871d9bec9470ef6f6a384b897833879b903d3167e003961b3f832b",
       "comparison": "text-hash-pair",
       "scope": "18 declared Southern African state-region blocks",
-      "intent": "Replace/add the declared SB state-region blocks, including the researched Natal-Zululand split and localized whaling-cap review, while retaining the rebased Sub-Saharan baseline.",
+      "intent": "Replace/add the declared SB state-region blocks, including the researched Natal-Zululand split and the implemented 17-state resource audit plus declared gameplay overrides, while retaining the rebased Sub-Saharan baseline.",
       "load_order": "exact-path shadow; higher-priority owner wins",
       "owner": "Spes Bona maintainers",
-      "rebase_date": "2026-08-24"
+      "rebase_date": "2026-08-25"
     }
   ],
   "keyed_overrides": [
@@ -1433,6 +1433,23 @@
       }
     },
     {
+      "mod_path": "common/cultures/sb_culture_overrides.txt",
+      "directive": "REPLACE",
+      "key": "nguni",
+      "mod_object_sha256": "d867d3b7cf7fcd04b1515e82028273e7aa330d4fc2dec2fe013737c10ca969b1",
+      "scope": "Ngoni culture",
+      "intent": "Retain Vanilla's internal nguni key while presenting the Maseko and Jere migrants as the distinct Central African Ngoni culture with a dedicated historical name pool.",
+      "load_order": "keyed replacement; last effective REPLACE wins",
+      "owner": "Spes Bona maintainers",
+      "rebase_date": "2026-08-24",
+      "upstream": {
+        "path": "common/cultures/00_cultures.txt",
+        "key": "nguni",
+        "file_sha256": "30c8a1085257fb130634d3e5cc187d2eef7717a07db5fa7b390846dd319e5baa",
+        "object_sha256": "634bc4917ef642751164090d893c5550efe4ab07063be7d30f9d51556780aa97"
+      }
+    },
+    {
       "mod_path": "common/decisions/zz_sb_pink_map_override.txt",
       "directive": "REPLACE",
       "key": "pink_map",
@@ -1639,6 +1656,23 @@
     {
       "mod_path": "common/geographic_regions/sb_geographic_regions.txt",
       "directive": "REPLACE",
+      "key": "geographic_region_krakatoa_tsunami_zone",
+      "mod_object_sha256": "589dcd839a6d9bf63b2807b56ea770271c2dcea7376309b43f01979735c30304",
+      "scope": "Krakatoa tsunami geographic-region membership",
+      "intent": "Preserve Vanilla 1.13.11 tsunami-zone membership while adding coastal STATE_NATAL created by the SB Natal-Zululand split.",
+      "load_order": "keyed replacement; last effective REPLACE wins",
+      "owner": "Spes Bona maintainers",
+      "rebase_date": "2026-08-24",
+      "upstream": {
+        "path": "common/geographic_regions/05_geographic_regions_content.txt",
+        "key": "geographic_region_krakatoa_tsunami_zone",
+        "file_sha256": "5a5cd5ffe3ae5c910b31046b76be446c21f581b9f2dd62fadaa639ebb0acce78",
+        "object_sha256": "9d749960dfa2caaa87e437401e6ce3ac0ec3ff2b8270da37f82e73905d86d67c"
+      }
+    },
+    {
+      "mod_path": "common/geographic_regions/sb_geographic_regions.txt",
+      "directive": "REPLACE",
       "key": "geographic_region_south_africa",
       "mod_object_sha256": "de82bae846800ff2efa65ac016ba769e63fc8b949da33420925514910a18b5e8",
       "scope": "Southern Africa geographic region",
@@ -1651,6 +1685,23 @@
         "key": "geographic_region_south_africa",
         "file_sha256": "82005a2e57194899645578b4a5d059fc592972ac791dd4eb303c95bcf3f3eab6",
         "object_sha256": "a444114f3a3d309d7ecd551694fb4f659ae517a3564a23f4aefd2d526cb922a3"
+      }
+    },
+    {
+      "mod_path": "common/geographic_regions/sb_geographic_regions.txt",
+      "directive": "REPLACE",
+      "key": "geographic_region_southern_africa_old",
+      "mod_object_sha256": "9b32aedac20a57040aaf8be86124efb4dcfe99bee7ccaead164ba1bca85e945e",
+      "scope": "Legacy Southern Africa dynamic-name routing region",
+      "intent": "Keep SB split states inside Vanilla's legacy geographic-region gate so state and hub dynamic names are evaluated.",
+      "load_order": "keyed replacement; last effective REPLACE wins",
+      "owner": "Spes Bona maintainers",
+      "rebase_date": "2026-08-24",
+      "upstream": {
+        "path": "common/geographic_regions/06_old_strategic_regions.txt",
+        "key": "geographic_region_southern_africa_old",
+        "file_sha256": "a0509ab41386c13b9c910b38321610a5a47af6e9c8124a84e57db7af3839062c",
+        "object_sha256": "409d34d4010185382227269b01f6f1aaa0910dc6f993987fc205981d8b15d05d"
       }
     },
     {

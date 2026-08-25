@@ -4,7 +4,7 @@
 # Spes Bona - Great Trek Events
 # =============================================================================
 # Ownership: ORA-first trek spine, MTB opener, Potchefstroom split trigger, JE rewards, and trek completion.
-# TOC: 001 MTB opener, 002 Ndebele retreat, 003 ORA opening situation, 006 Potchefstroom, 030-044 JE rewards, 101 Boer Natalia normalization.
+# TOC: 001 MTB opener, 002 Ndebele retreat, 003 ORA opening situation, 006 Potchefstroom, 030-044 JE rewards.
 # Cross-ref: common/journal_entries/1-02_sb_great_trek.txt, common/scripted_effects/sb_trek_migration.txt
 # =============================================================================
 
@@ -286,7 +286,17 @@ sb_great_trek.030 = {
 	icon = "gfx/interface/icons/event_icons/event_default.dds"
 	duration = 3
 
-	trigger = { }
+	trigger = {
+		has_journal_entry = je_sb_great_trek
+		NOT = { has_variable = sb_natalia_great_trek_disabled_var }
+	}
+
+	cancellation_trigger = {
+		OR = {
+			NOT = { has_journal_entry = je_sb_great_trek }
+			has_variable = sb_natalia_great_trek_disabled_var
+		}
+	}
 
 	immediate = {
 		c:CAP ?= {
@@ -306,6 +316,9 @@ sb_great_trek.030 = {
 		option = {
 			name = sb_great_trek.030.a
 			default_option = yes
+			trigger = {
+				NOT = { has_variable = sb_natalia_great_trek_disabled_var }
+			}
 			sb_great_trek_stage_item_boer_slice_reward = yes
 		}
 	}
@@ -349,6 +362,60 @@ sb_great_trek.031 = {
 				sb_great_trek_stage_item_boer_slice_reward = yes
 		}
 	}
+
+sb_great_trek.032 = {
+	type = country_event
+	placement = root
+
+	title = sb_great_trek.032.t
+	desc = sb_great_trek.032.d
+	flavor = sb_great_trek.032.f
+
+	event_image = {
+		video = "gfx/event_pictures/africa_construction_colony.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:NAL
+		has_journal_entry = je_sb_great_trek
+		NOT = { has_variable = sb_natalia_great_trek_disabled_var }
+	}
+
+	cancellation_trigger = {
+		OR = {
+			NOT = { has_journal_entry = je_sb_great_trek }
+			has_variable = sb_natalia_great_trek_disabled_var
+		}
+	}
+
+	immediate = {
+		c:CAP ?= {
+			save_scope_as = migration_source
+		}
+		cu:boer = {
+			save_scope_as = migration_culture
+		}
+		ordered_scope_state = {
+			order_by = migration_pull
+			position = 0
+			check_range_bounds = no
+			save_scope_as = migration_target
+		}
+	}
+
+	option = {
+		name = sb_great_trek.032.a
+		default_option = yes
+		trigger = {
+			NOT = { has_variable = sb_natalia_great_trek_disabled_var }
+		}
+		sb_great_trek_stage_item_boer_slice_reward = yes
+	}
+}
 
 sb_great_trek.040 = {
 	type = country_event
@@ -486,7 +553,23 @@ sb_great_trek.043 = {
 	icon = "gfx/interface/icons/event_icons/event_default.dds"
 	duration = 3
 
-	trigger = { }
+	trigger = {
+		has_journal_entry = je_sb_great_trek
+		NOT = { has_variable = sb_natalia_great_trek_disabled_var }
+		country_has_primary_culture = cu:boer
+		OR = {
+			country_definition = cd:NAL
+			country_definition = cd:KLR
+		}
+	}
+
+	cancellation_trigger = {
+		OR = {
+			NOT = { has_journal_entry = je_sb_great_trek }
+			has_variable = sb_natalia_great_trek_disabled_var
+			NOT = { country_has_primary_culture = cu:boer }
+		}
+	}
 
 	immediate = {
 		c:CAP ?= {
@@ -506,6 +589,9 @@ sb_great_trek.043 = {
 		option = {
 			name = sb_great_trek.043.a
 			default_option = yes
+			trigger = {
+				NOT = { has_variable = sb_natalia_great_trek_disabled_var }
+			}
 			sb_great_trek_finalize_republic = yes
 	}
 }
@@ -587,45 +673,5 @@ sb_great_trek.045 = {
 		name = sb_great_trek.045.a
 		default_option = yes
 		sb_great_trek_finalize_republic = yes
-	}
-}
-
-sb_great_trek.101 = {
-	type = country_event
-	placement = root
-
-	title = sb_great_trek.101.t
-	desc = sb_great_trek.101.d
-	flavor = sb_great_trek.101.f
-
-	event_image = {
-		video = "gfx/event_pictures/africa_construction_colony.bk2"
-	}
-
-	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-	icon = "gfx/interface/icons/event_icons/event_default.dds"
-	duration = 3
-
-	trigger = {
-		country_definition = cd:NAL
-		country_has_primary_culture = cu:boer
-		NOT = { has_variable = sb_natalia_trek_normalized_var }
-	}
-
-	option = {
-		name = sb_great_trek.101.a
-		default_option = yes
-		set_variable = sb_natalia_trek_normalized_var
-		if = {
-			limit = { has_variable = sb_commandant_general_visible_var }
-			remove_variable = sb_commandant_general_visible_var
-		}
-		activate_law = law_type:law_presidential_republic
-		activate_law = law_type:law_interventionism
-		activate_law = law_type:law_landed_voting
-		sb_refresh_boer_commandant_general_government = yes
-		ai_chance = {
-			base = 100
-		}
 	}
 }

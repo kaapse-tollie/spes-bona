@@ -122,6 +122,21 @@ class NatalZululandGameplayContractTests(unittest.TestCase):
         self.assertNotIn("STATE_ZULULAND", assignment)
         self.assertIn("activate_law = law_type:law_frontier_colonization", setup)
         self.assertIn("name = sb_trek_frontier_drive", setup)
+        frontier_drive = object_block(
+            "common/static_modifiers/sb_modifiers.txt", "sb_trek_frontier_drive"
+        )
+        self.assertIn("state_non_homeland_colony_growth_speed_mult = 0.75", frontier_drive)
+        maize_match = re.search(
+            r"^\s*s:STATE_NATAL\.region_state:NAL\s*\?=\s*\{",
+            setup,
+            re.MULTILINE,
+        )
+        self.assertIsNotNone(maize_match)
+        maize = validate.extract_braced(setup, maize_match.start())
+        self.assertIn("building = building_maize_farm", maize)
+        self.assertIn('"pm_simple_farming"', maize)
+        self.assertIn('"pm_no_secondary"', maize)
+        self.assertIn('"pm_tools_disabled"', maize)
 
     def test_peaceful_highveld_option_delegates_to_the_canonical_founder(self):
         path = "events/iberia_events/struggle_for_the_highveld_events.txt"
@@ -146,7 +161,7 @@ class NatalZululandGameplayContractTests(unittest.TestCase):
             self.assertIn("STATE_NATAL", highveld_outcome)
             self.assertNotIn("STATE_ZULULAND", highveld_outcome)
 
-    def test_core_ultimatum_is_delayed_but_port_natal_starts_it_immediately(self):
+    def test_ultimatum_requires_a_natalia_harbour_and_raid_starts_it_immediately(self):
         monthly = object_block(
             "common/on_actions/sb_boer_story_on_action_handlers.txt",
             "sb_on_trek_monthly_pulse_country",
@@ -163,12 +178,21 @@ class NatalZululandGameplayContractTests(unittest.TestCase):
         self.assertEqual(set(range(90, 721, 90)), delays)
         self.assertIn("country_definition = cd:GBR", delayed)
         self.assertIn("sb_controls_natalia_core = yes", delayed)
+        self.assertIn("sb_natalia_has_harbour = yes", delayed)
+        self.assertNotIn("p:x279045.state.owner = c:NAL", delayed)
         self.assertIn("NOT = { has_variable = sb_british_natal_ultimatum_var }", delayed)
         self.assertIn(
             "NOT = { has_variable = sb_british_natal_ultimatum_pending_var }",
             delayed,
         )
         self.assertIn("NOT = { has_variable = sb_natalia_british_colony_resolved_var }", delayed)
+
+        harbour = object_block(
+            "common/scripted_triggers/sb_great_trek_triggers.txt",
+            "sb_natalia_has_harbour",
+        )
+        self.assertIn("state_region = s:STATE_NATAL", harbour)
+        self.assertIn("has_building = building_port", harbour)
 
         decision = object_block(
             "common/decisions/sb_zulu_decisions.txt", "natalia_raid_port_natal"
@@ -186,8 +210,28 @@ class NatalZululandGameplayContractTests(unittest.TestCase):
         ultimatum = object_block("events/sb_natal_crisis_events.txt", "sb_natal_crisis.100")
         trigger = object_block_from_source(ultimatum, "trigger", "sb_natal_crisis.100")
         immediate = object_block_from_source(ultimatum, "immediate", "sb_natal_crisis.100")
+        send = named_option(ultimatum, "sb_natal_crisis.100.a")
+        wait = named_option(ultimatum, "sb_natal_crisis.100.b")
         self.assertIn("NOT = { has_variable = sb_british_natal_ultimatum_var }", trigger)
+        self.assertIn("sb_natalia_has_harbour = yes", trigger)
+        self.assertNotIn("p:x279045.state.owner = c:NAL", trigger)
         self.assertIn("remove_variable = sb_british_natal_ultimatum_pending_var", immediate)
+        self.assertNotIn("set_variable = sb_british_natal_ultimatum_var", immediate)
+        self.assertIn("set_variable = sb_british_natal_ultimatum_var", send)
+        self.assertNotIn("sb_british_natal_ultimatum_var", wait)
+
+        events_path = "events/sb_natal_crisis_events.txt"
+        relay = object_block(events_path, "sb_natal_crisis.108")
+        message = object_block(events_path, "sb_natal_crisis.109")
+        final = object_block(events_path, "sb_natal_crisis.110")
+        self.assertIn("sb_natalia_has_harbour = yes", relay)
+        self.assertGreaterEqual(message.count("sb_natalia_has_harbour = yes"), 2)
+        self.assertIn("sb_natalia_has_harbour = yes", final)
+        defy = named_option(final, "sb_natal_crisis.110.b")
+        natal = object_block_from_source(defy, "s:STATE_NATAL", "sb_natal_crisis.110.b")
+        self.assertEqual({"x279045"}, validate.object_values(natal, "provinces"))
+        loc = text("localization/english/sb_natal_crisis_l_english.yml")
+        self.assertIn('sb_natal_crisis.110.b:0 "Seize Port Natal and call for aid."', loc)
 
     def test_klip_river_county_and_reduced_natalia_keep_explicit_boundaries(self):
         effects_path = "common/scripted_effects/sb_klip_river_county_effects.txt"
@@ -227,8 +271,27 @@ class NatalZululandGameplayContractTests(unittest.TestCase):
         self.assertEqual(KLR_NATAL_PROVINCES, owner_provinces(reduced_natal, "KLR"))
         self.assertIn("xE1E455", owner_provinces(reduced_zululand, "ZUL"))
         self.assertNotIn("country = c:KLR", reduced_zululand)
+        self.assertNotIn("change_tag = NAL", reduced)
+        self.assertNotIn("sb_british_natal_ultimatum_var", reduced)
+        self.assertIn("sb_apply_natalia_boer_republic_setup = yes", reduced)
+        self.assertIn("country = c:KLR", reduced)
+        self.assertNotIn("country = c:NAL", reduced)
 
-    def test_great_trek_adds_the_nal_boer_homeland_to_natal_only(self):
+        loc = text("localization/english/sb_natal_crisis_l_english.yml")
+        self.assertIn('KLR:0 "Klip River Republic"', loc)
+        self.assertNotIn('KLR:0 "Klip River County"', loc)
+
+    def test_klr_becomes_natalia_only_after_completing_natal_great_trek(self):
+        journal = object_block(
+            "common/journal_entries/1-02_sb_great_trek.txt", "je_sb_great_trek"
+        )
+        self.assertIn("country_definition = cd:KLR", journal)
+        natal_stage = shortest_named_block_containing(
+            journal, "else_if", "owns_entire_state_region = STATE_NATAL"
+        )
+        self.assertIn("country_definition = cd:NAL", natal_stage)
+        self.assertIn("country_definition = cd:KLR", natal_stage)
+
         finalize = object_block(
             "common/scripted_effects/sb_trek_migration.txt",
             "sb_great_trek_finalize_republic",
@@ -237,7 +300,13 @@ class NatalZululandGameplayContractTests(unittest.TestCase):
             finalize, "if", "country_definition = cd:NAL"
         )
         self.assertIn("s:STATE_NATAL = { add_homeland = cu:boer }", natalia)
+        self.assertIn("country_definition = cd:KLR", natalia)
         self.assertNotIn("STATE_ZULULAND", natalia)
+        klr_conversion = shortest_named_block_containing(
+            finalize, "if", "change_tag = NAL"
+        )
+        self.assertIn("country_definition = cd:KLR", klr_conversion)
+        self.assertEqual(1, finalize.count("change_tag = NAL"))
 
     def test_british_handoff_can_span_both_states_but_homeland_cannot(self):
         colony_path = "common/scripted_effects/sb_natalia_colony_effects.txt"
@@ -284,7 +353,7 @@ class NatalZululandGameplayContractTests(unittest.TestCase):
         natal_blocks = (
             object_block(
                 "common/scripted_effects/sb_natal_interwar_effects.txt",
-                "sb_natal_select_indenture_origin_and_create_migration",
+                "sb_natal_transfer_indenture_cohort",
             ),
             object_block(
                 "common/scripted_effects/sb_boer_ai_economy_effects.txt",

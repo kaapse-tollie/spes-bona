@@ -113,6 +113,9 @@ class NatalZululandStateSplitTests(unittest.TestCase):
         self.assertEqual(257, int(validate.STATE_ID_RE.search(zululand).group(1)))
         self.assertNotIn("state_trait_malaria", natal)
         self.assertIn('traits = { "state_trait_malaria" }', zululand)
+        self.assertEqual(
+            {"x279045", "xBBCA32"}, validate.object_values(natal, "prime_land")
+        )
         self.assertEqual(1, natal.count("naval_exit_id = 3106"))
         self.assertEqual(1, zululand.count("naval_exit_id = 3106"))
 
@@ -143,15 +146,15 @@ class NatalZululandStateSplitTests(unittest.TestCase):
                     "building_coffee_plantation",
                 },
                 "capped": {
-                    "building_coal_mine": 1,
+                    "building_coal_mine": 2,
                     "building_fishing_wharf": 1,
-                    "building_iron_mine": 1,
+                    "building_iron_mine": 2,
                     "building_whaling_station": 4,
-                    "building_logging_camp": 12,
+                    "building_logging_camp": 4,
                 },
             },
             "STATE_ZULULAND": {
-                "arable": 13,
+                "arable": 12,
                 "crops": {
                     "building_livestock_ranch",
                     "building_tea_plantation",
@@ -161,9 +164,9 @@ class NatalZululandStateSplitTests(unittest.TestCase):
                     "building_cotton_plantation",
                 },
                 "capped": {
-                    "building_coal_mine": 2,
+                    "building_coal_mine": 4,
                     "building_fishing_wharf": 1,
-                    "building_logging_camp": 5,
+                    "building_logging_camp": 4,
                 },
             },
         }
@@ -452,6 +455,62 @@ class NatalZululandStateSplitTests(unittest.TestCase):
             "STATE_ZULULAND_british",
         ):
             self.assertIn(key, zululand_names)
+
+    def test_split_states_reach_dynamic_name_router_and_mashishing_is_african(self):
+        legacy_region = scoped_block(
+            "common/geographic_regions/sb_geographic_regions.txt",
+            "REPLACE:geographic_region_southern_africa_old",
+        )
+        names_path = "common/scripted_effects/zz_sb_dynamic_state_names_southern_africa.txt"
+        dispatch = scoped_block(names_path, "REPLACE:assign_state_name_region_southern_africa")
+        dispatched_states = set(
+            re.findall(r"\b(STATE_[A-Z0-9_]+)_state_name_assign\s*=\s*yes", dispatch)
+        )
+        for state in dispatched_states:
+            self.assertIn(state, legacy_region)
+
+        east_transvaal = scoped_block(
+            names_path, "STATE_EAST_TRANSVAAL_state_name_assign"
+        )
+        self.assertIn(
+            "has_discrimination_trait_group = heritage_group_african",
+            east_transvaal,
+        )
+        self.assertIn("set_hub_names = southern_bantu", east_transvaal)
+        self.assertIn("set_hub_names = boer", east_transvaal)
+        self.assertIn("set_hub_names = british", east_transvaal)
+
+        dynamic = text(
+            "localization/english/replace/dynamic_state_and_hub_names_l_english.yml"
+        )
+        base = text("localization/english/sb_l_english.yml")
+        self.assertIn(
+            'HUB_NAME_STATE_EAST_TRANSVAAL_city_southern_bantu:0 "Mashishing"',
+            dynamic,
+        )
+        self.assertIn(
+            'HUB_NAME_STATE_EAST_TRANSVAAL_city_boer:0 "Lydenburg"', dynamic
+        )
+        self.assertIn(
+            'HUB_NAME_STATE_EAST_TRANSVAAL_city_british:0 "Lydenburg"', dynamic
+        )
+        self.assertIn('HUB_NAME_STATE_EAST_TRANSVAAL_city:0 "Lydenburg"', base)
+
+    def test_krakatoa_tsunami_zone_includes_both_coastal_split_states(self):
+        zone = scoped_block(
+            "common/geographic_regions/sb_geographic_regions.txt",
+            "REPLACE:geographic_region_krakatoa_tsunami_zone",
+        )
+        self.assertIn('short_key = "krakatoa_tsunami_zone"', zone)
+        self.assertEqual(1, zone.count("STATE_NATAL"))
+        self.assertEqual(1, zone.count("STATE_ZULULAND"))
+        for preserved_region in (
+            "STATE_WEST_JAVA",
+            "STATE_MOCAMBIQUE",
+            "STATE_EASTERN_CAPE",
+            "STATE_MADRAS",
+        ):
+            self.assertIn(preserved_region, zone)
 
 
 def scoped_block_from_source(source: str, name: str) -> str:

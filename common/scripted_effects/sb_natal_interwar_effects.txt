@@ -96,100 +96,346 @@ sb_natal_restore_archived_zulu_firearms = {
 	}
 }
 
-sb_natal_select_indenture_origin_and_create_migration = {
-	s:STATE_NATAL.region_state:NAL ?= {
+sb_natal_make_fully_accepted_pops_radical_10 = {
+	every_scope_culture = {
+		limit = {
+			root = {
+				cultural_acceptance_base = {
+					target = prev
+					value >= acceptance_status_5
+				}
+			}
+		}
+		prev = { add_radicals = { culture = prev value = 0.10 } }
+	}
+}
+
+sb_natal_make_fully_accepted_pops_loyalist_10 = {
+	every_scope_culture = {
+		limit = {
+			root = {
+				cultural_acceptance_base = {
+					target = prev
+					value >= acceptance_status_5
+				}
+			}
+		}
+		prev = { add_loyalists = { culture = prev value = 0.10 } }
+	}
+}
+
+sb_natal_schedule_shepstone_system = {
+	if = {
+		limit = {
+			sb_natal_is_british_colony = yes
+			NOT = { sb_natal_has_responsible_government = yes }
+			NOT = { has_variable = sb_natal_shepstone_pending_var }
+			NOT = { has_variable = sb_natal_shepstone_resolved_var }
+		}
+		set_variable = {
+			name = sb_natal_shepstone_pending_var
+			days = 75
+		}
+		trigger_event = { id = sb_natal_interwar.050 days = 60 popup = yes }
+	}
+}
+
+sb_natal_schedule_indenture_program = {
+	if = {
+		limit = {
+			NOT = { has_variable = sb_natal_indenture_pending_var }
+			NOT = { has_variable = sb_natal_indenture_completed_var }
+			NOT = { has_variable = sb_natal_indenture_lapsed_var }
+		}
+		set_variable = sb_natal_indenture_pending_var
+		set_variable = { name = sb_natal_indenture_retry_count_var value = 0 }
+		# A uniform whole-year draw in [10, 20).
+		random_list = {
+			1 = { set_variable = { name = sb_natal_indenture_wait_var days = 3650 } }
+			1 = { set_variable = { name = sb_natal_indenture_wait_var days = 4015 } }
+			1 = { set_variable = { name = sb_natal_indenture_wait_var days = 4380 } }
+			1 = { set_variable = { name = sb_natal_indenture_wait_var days = 4745 } }
+			1 = { set_variable = { name = sb_natal_indenture_wait_var days = 5110 } }
+			1 = { set_variable = { name = sb_natal_indenture_wait_var days = 5475 } }
+			1 = { set_variable = { name = sb_natal_indenture_wait_var days = 5840 } }
+			1 = { set_variable = { name = sb_natal_indenture_wait_var days = 6205 } }
+			1 = { set_variable = { name = sb_natal_indenture_wait_var days = 6570 } }
+			1 = { set_variable = { name = sb_natal_indenture_wait_var days = 6935 } }
+		}
+	}
+}
+
+sb_natal_cancel_pending_indenture_program = {
+	if = {
+		limit = { has_variable = sb_natal_indenture_pending_var }
+		remove_variable = sb_natal_indenture_pending_var
+	}
+	if = {
+		limit = { has_variable = sb_natal_indenture_wait_var }
+		remove_variable = sb_natal_indenture_wait_var
+	}
+	if = {
+		limit = { has_variable = sb_natal_indenture_retry_count_var }
+		remove_variable = sb_natal_indenture_retry_count_var
+	}
+	if = {
+		limit = { has_variable = sb_natal_indenture_opening_event_pending_var }
+		remove_variable = sb_natal_indenture_opening_event_pending_var
+	}
+	set_variable = sb_natal_indenture_lapsed_var
+}
+
+sb_natal_update_pending_indenture_program = {
+	if = {
+		limit = { has_variable = sb_natal_indenture_pending_var }
 		if = {
-			limit = { state_is_eligible_as_mass_migration_target = yes }
-			save_scope_as = sb_natal_indenture_target_scope
+			limit = {
+				OR = {
+					NOT = { sb_natal_is_british_colony = yes }
+					has_law = law_type:law_closed_borders
+				}
+			}
+			sb_natal_cancel_pending_indenture_program = yes
+		}
+		else_if = {
+			limit = {
+				NOT = { has_variable = sb_natal_indenture_wait_var }
+				NOT = { has_variable = sb_natal_indenture_opening_event_pending_var }
+			}
+			if = {
+				limit = { sb_natal_bic_has_indenture_opening_cohort = yes }
+				set_variable = {
+					name = sb_natal_indenture_opening_event_pending_var
+					days = 30
+				}
+				trigger_event = { id = sb_natal_interwar.001 days = 1 popup = yes }
+			}
+			else_if = {
+				limit = { var:sb_natal_indenture_retry_count_var < 5 }
+				change_variable = { name = sb_natal_indenture_retry_count_var add = 1 }
+				set_variable = { name = sb_natal_indenture_wait_var days = 365 }
+			}
+			else = { sb_natal_cancel_pending_indenture_program = yes }
 		}
 	}
-	random_list = {
-		35 = {
-			trigger = {
-				c:GBR = {
-					any_subject_or_below = {
-						sb_natal_country_is_indian = yes
-						any_scope_state = { any_scope_pop = { culture = cu:tamil } }
-					}
-				}
-			}
-			cu:tamil = { save_scope_as = sb_natal_indenture_culture_scope }
-		}
-		25 = {
-			trigger = {
-				c:GBR = {
-					any_subject_or_below = {
-						sb_natal_country_is_indian = yes
-						any_scope_state = { any_scope_pop = { culture = cu:telegu } }
-					}
-				}
-			}
-			cu:telegu = { save_scope_as = sb_natal_indenture_culture_scope }
-		}
-		20 = {
-			trigger = {
-				c:GBR = {
-					any_subject_or_below = {
-						sb_natal_country_is_indian = yes
-						any_scope_state = { any_scope_pop = { culture = cu:hindustani } }
-					}
-				}
-			}
-			cu:hindustani = { save_scope_as = sb_natal_indenture_culture_scope }
-		}
-		15 = {
-			trigger = {
-				c:GBR = {
-					any_subject_or_below = {
-						sb_natal_country_is_indian = yes
-						any_scope_state = { any_scope_pop = { culture = cu:bihari } }
-					}
-				}
-			}
-			cu:bihari = { save_scope_as = sb_natal_indenture_culture_scope }
-		}
-		5 = {
-			trigger = {
-				c:GBR = {
-					any_subject_or_below = {
-						sb_natal_country_is_indian = yes
-						any_scope_state = { any_scope_pop = { culture = cu:gujarati } }
-					}
-				}
-			}
-			cu:gujarati = { save_scope_as = sb_natal_indenture_culture_scope }
-		}
+}
+
+sb_natal_transfer_indenture_cohort = {
+	s:STATE_NATAL.region_state:NAL ?= {
+		save_temporary_scope_as = sb_natal_indenture_target_scope
 	}
-	if = {
-		limit = {
-			exists = scope:sb_natal_indenture_target_scope
-			exists = scope:sb_natal_indenture_culture_scope
-		}
-		c:GBR = {
-			random_subject_or_below = {
+	c:BIC ?= {
+		ordered_scope_state = {
+			limit = {
+				any_scope_pop = {
+					culture = $CULTURE$
+					is_pop_type = peasants
+					total_size >= $SIZE$
+				}
+			}
+			order_by = state_population
+			position = 0
+			check_range_bounds = no
+			ordered_scope_pop = {
 				limit = {
-					sb_natal_country_is_indian = yes
-					any_scope_state = {
-						any_scope_pop = { culture = scope:sb_natal_indenture_culture_scope }
-					}
+					culture = $CULTURE$
+					is_pop_type = peasants
+					total_size >= $SIZE$
 				}
-				save_scope_as = sb_natal_indenture_origin_scope
+				order_by = total_size
+				position = 0
+				check_range_bounds = no
+				move_partial_pop = {
+					state = scope:sb_natal_indenture_target_scope
+					population = $SIZE$
+				}
 			}
 		}
 	}
+}
+
+sb_natal_open_indenture_program = {
 	if = {
 		limit = {
-			exists = scope:sb_natal_indenture_target_scope
-			exists = scope:sb_natal_indenture_culture_scope
-			exists = scope:sb_natal_indenture_origin_scope
+			has_variable = sb_natal_indenture_pending_var
+			sb_natal_is_british_colony = yes
+			NOT = { has_law = law_type:law_closed_borders }
+			sb_natal_bic_has_indenture_opening_cohort = yes
 		}
-		scope:sb_natal_indenture_target_scope = {
-			create_mass_migration = {
-				origin = scope:sb_natal_indenture_origin_scope
-				culture = scope:sb_natal_indenture_culture_scope
-			}
+		remove_variable = sb_natal_indenture_pending_var
+		if = {
+			limit = { has_variable = sb_natal_indenture_retry_count_var }
+			remove_variable = sb_natal_indenture_retry_count_var
+		}
+		if = {
+			limit = { has_variable = sb_natal_indenture_opening_event_pending_var }
+			remove_variable = sb_natal_indenture_opening_event_pending_var
 		}
 		set_variable = sb_natal_indenture_completed_var
+		set_variable = sb_natal_indian_status_granted_var
+		set_variable = { name = sb_natal_indenture_recruitment_count_var value = 0 }
+		active_law:lawgroup_citizenship ?= {
+			if = {
+				limit = {
+					NOT = {
+						has_amendment = amendment_type:amendment_sb_natal_indian_indenture_status
+					}
+				}
+				add_amendment = {
+					type = amendment_sb_natal_indian_indenture_status
+					sponsor = PREV.ig:ig_armed_forces
+				}
+			}
+		}
+		sb_natal_transfer_indenture_cohort = { CULTURE = cu:tamil SIZE = 342 }
+		if = {
+			limit = { NOT = { has_journal_entry = je_sb_natal_indenture_program } }
+			add_journal_entry = { type = je_sb_natal_indenture_program }
+		}
+	}
+}
+
+sb_natal_recruit_next_indenture_cohort = {
+	if = {
+		limit = {
+			has_journal_entry = je_sb_natal_indenture_program
+			var:sb_natal_indenture_recruitment_count_var < 10
+			sb_natal_bic_has_next_indenture_cohort = yes
+		}
+		if = {
+			limit = { var:sb_natal_indenture_recruitment_count_var = 0 }
+			sb_natal_transfer_indenture_cohort = { CULTURE = cu:telegu SIZE = 2000 }
+		}
+		else_if = {
+			limit = { var:sb_natal_indenture_recruitment_count_var = 1 }
+			sb_natal_transfer_indenture_cohort = { CULTURE = cu:tamil SIZE = 2000 }
+		}
+		else_if = {
+			limit = { var:sb_natal_indenture_recruitment_count_var = 2 }
+			sb_natal_transfer_indenture_cohort = { CULTURE = cu:bihari SIZE = 2000 }
+		}
+		else_if = {
+			limit = { var:sb_natal_indenture_recruitment_count_var = 3 }
+			sb_natal_transfer_indenture_cohort = { CULTURE = cu:telegu SIZE = 2000 }
+		}
+		else_if = {
+			limit = { var:sb_natal_indenture_recruitment_count_var = 4 }
+			sb_natal_transfer_indenture_cohort = { CULTURE = cu:tamil SIZE = 2000 }
+		}
+		else_if = {
+			limit = { var:sb_natal_indenture_recruitment_count_var = 5 }
+			sb_natal_transfer_indenture_cohort = { CULTURE = cu:hindustani SIZE = 2000 }
+		}
+		else_if = {
+			limit = { var:sb_natal_indenture_recruitment_count_var = 6 }
+			sb_natal_transfer_indenture_cohort = { CULTURE = cu:telegu SIZE = 2000 }
+		}
+		else_if = {
+			limit = { var:sb_natal_indenture_recruitment_count_var = 7 }
+			sb_natal_transfer_indenture_cohort = { CULTURE = cu:tamil SIZE = 2000 }
+		}
+		else_if = {
+			limit = { var:sb_natal_indenture_recruitment_count_var = 8 }
+			sb_natal_transfer_indenture_cohort = { CULTURE = cu:bihari SIZE = 2000 }
+		}
+		else_if = {
+			limit = { var:sb_natal_indenture_recruitment_count_var = 9 }
+			sb_natal_transfer_indenture_cohort = { CULTURE = cu:gujarati SIZE = 2000 }
+		}
+		change_variable = { name = sb_natal_indenture_recruitment_count_var add = 1 }
+		set_variable = {
+			name = sb_natal_indenture_recruitment_cooldown_var
+			months = 24
+		}
+	}
+}
+
+sb_natal_replace_indenture_status_with_civic_rights = {
+	active_law:lawgroup_citizenship ?= {
+		every_scope_amendment = {
+			limit = {
+				type = amendment_type:amendment_sb_natal_indian_indenture_status
+			}
+			remove_amendment = yes
+		}
+		if = {
+			limit = {
+				NOT = {
+					has_amendment = amendment_type:amendment_sb_natal_indian_civic_rights
+				}
+			}
+			add_amendment = {
+				type = amendment_sb_natal_indian_civic_rights
+				sponsor = PREV.ig:ig_intelligentsia
+			}
+		}
+	}
+}
+
+sb_natal_apply_shepstone_system = {
+	set_variable = sb_natal_shepstone_accepted_var
+	active_law:lawgroup_land_reform ?= {
+		add_amendment = {
+			type = amendment_sb_shepstone_system
+			sponsor = PREV.ig:ig_armed_forces
+		}
+	}
+	s:STATE_NATAL.region_state:NAL ?= {
+		every_scope_pop = {
+			limit = {
+				culture = cu:zulu
+				NOT = { is_pop_type = peasants }
+			}
+			random_list = {
+				90 = { change_poptype = pop_type:peasants }
+				10 = { }
+			}
+		}
+	}
+	sb_natal_make_fully_accepted_pops_radical_10 = yes
+	add_loyalists = { value = 0.20 culture = cu:zulu }
+	ig:ig_armed_forces ?= {
+		add_modifier = { name = sb_shepstone_colonial_garrison_approval days = 1825 }
+	}
+	ig:ig_industrialists ?= {
+		add_modifier = { name = sb_shepstone_industrialists_opposition days = 1825 }
+	}
+	sb_natal_schedule_indenture_program = yes
+}
+
+sb_natal_decline_shepstone_system = {
+	change_relations = { country = c:GBR value = -10 }
+	add_radicals = { value = 0.35 culture = cu:zulu }
+	sb_natal_make_fully_accepted_pops_loyalist_10 = yes
+	ig:ig_armed_forces ?= {
+		add_modifier = { name = sb_shepstone_colonial_garrison_opposition days = 1825 }
+	}
+	ig:ig_industrialists ?= {
+		add_modifier = { name = sb_shepstone_industrialists_approval days = 1825 }
+	}
+}
+
+sb_natal_refresh_port_natal_migration_deterrent = {
+	s:STATE_NATAL = {
+		every_scope_state = {
+			if = {
+				limit = {
+					owner = c:CAP
+					p:x279045.state.owner = c:CAP
+					NOT = { has_global_variable = sb_british_natal_ever_formed_global_var }
+				}
+				if = {
+					limit = {
+						NOT = { has_modifier = sb_port_natal_migration_deterrent }
+					}
+					add_modifier = { name = sb_port_natal_migration_deterrent }
+				}
+			}
+			else_if = {
+				limit = { has_modifier = sb_port_natal_migration_deterrent }
+				remove_modifier = sb_port_natal_migration_deterrent
+			}
+		}
 	}
 }
 
@@ -269,76 +515,85 @@ sb_natal_ensure_civil_rights_movement = {
 	}
 }
 
-sb_natal_ensure_gandhi_for_civil_rights = {
+sb_natal_prepare_gandhi_for_civil_rights = {
 	if = {
 		limit = {
-			game_date >= 1893.1.1
-			sb_natal_has_civil_rights_movement = yes
-			NOT = { has_variable = sb_natal_civil_rights_resolved_var }
-		}
-		if = {
-			limit = {
-				any_country = {
-					NOT = { sb_natal_country_is_indian = yes }
-					any_scope_character = {
-						has_template = BIC_mohandas_karamchand_gandhi
-						is_character_alive = yes
-					}
-				}
-				NOT = {
-					any_scope_character = {
-						has_template = BIC_mohandas_karamchand_gandhi
-						is_character_alive = yes
-					}
-				}
-			}
-			random_country = {
-				limit = {
-					NOT = { sb_natal_country_is_indian = yes }
-					any_scope_character = {
-						has_template = BIC_mohandas_karamchand_gandhi
-						is_character_alive = yes
-					}
-				}
-				random_scope_character = {
-					limit = {
-						has_template = BIC_mohandas_karamchand_gandhi
-						is_character_alive = yes
-					}
-					transfer_character = ROOT
-				}
+			any_scope_character = {
+				has_template = BIC_mohandas_karamchand_gandhi
+				is_character_alive = yes
 			}
 		}
-		else_if = {
+		random_scope_character = {
 			limit = {
-				any_character_in_exile_pool = {
+				has_template = BIC_mohandas_karamchand_gandhi
+				is_character_alive = yes
+			}
+			save_scope_as = gandhi_scope
+		}
+	}
+	else_if = {
+		limit = {
+			any_country = {
+				any_scope_character = {
 					has_template = BIC_mohandas_karamchand_gandhi
 					is_character_alive = yes
 				}
 			}
-			random_character_in_exile_pool = {
+		}
+		random_country = {
+			limit = {
+				any_scope_character = {
+					has_template = BIC_mohandas_karamchand_gandhi
+					is_character_alive = yes
+				}
+			}
+			random_scope_character = {
 				limit = {
 					has_template = BIC_mohandas_karamchand_gandhi
 					is_character_alive = yes
 				}
+				save_scope_as = gandhi_scope
 				transfer_character = ROOT
 			}
 		}
-		else_if = {
-			limit = {
-				NOT = { has_global_variable = gandhi_spawn }
-				NOT = {
-					any_country = {
-						any_scope_character = {
-							has_template = BIC_mohandas_karamchand_gandhi
-							is_character_alive = yes
-						}
-					}
-				}
+	}
+	else_if = {
+		limit = {
+			any_character_in_exile_pool = {
+				has_template = BIC_mohandas_karamchand_gandhi
+				is_character_alive = yes
 			}
-			set_global_variable = gandhi_spawn
-			create_character = { template = BIC_mohandas_karamchand_gandhi }
 		}
+		random_character_in_exile_pool = {
+			limit = {
+				has_template = BIC_mohandas_karamchand_gandhi
+				is_character_alive = yes
+			}
+			save_scope_as = gandhi_scope
+			transfer_character = ROOT
+		}
+	}
+	else_if = {
+		limit = { NOT = { has_global_variable = gandhi_spawn } }
+		set_global_variable = gandhi_spawn
+		create_character = {
+			template = BIC_mohandas_karamchand_gandhi
+			save_scope_as = gandhi_scope
+		}
+	}
+}
+
+sb_natal_ensure_gandhi_for_civil_rights = {
+	if = {
+		limit = {
+			has_dlc_feature = ip2_content
+			game_date >= 1893.1.1
+			sb_natal_has_civil_rights_movement = yes
+			NOT = { has_variable = sb_natal_civil_rights_resolved_var }
+			NOT = { has_variable = sb_natal_gandhi_catalyst_resolved_var }
+			sb_natal_gandhi_catalyst_available = yes
+		}
+		trigger_event = { id = sb_natal_interwar.060 popup = yes }
 	}
 }
 
@@ -359,15 +614,6 @@ sb_natal_schedule_civil_rights_petition = {
 			name = sb_natal_civil_rights_petition_pending_var
 			days = 120
 		}
-		if = {
-			limit = {
-				any_scope_character = {
-					has_template = BIC_mohandas_karamchand_gandhi
-					is_character_alive = yes
-				}
-			}
-			set_variable = sb_natal_civil_rights_petition_requires_gandhi_var
-		}
 		trigger_event = { id = sb_natal_interwar.010 days = 90 popup = yes }
 	}
 }
@@ -378,23 +624,11 @@ sb_natal_cancel_invalid_civil_rights_petition = {
 			has_variable = sb_natal_civil_rights_petition_pending_var
 			OR = {
 				NOT = { sb_natal_has_responsible_government = yes }
+				NOT = { has_law = law_type:law_racial_segregation }
 				NOT = { sb_natal_has_civil_rights_movement = yes }
-				AND = {
-					has_variable = sb_natal_civil_rights_petition_requires_gandhi_var
-					NOT = {
-						any_scope_character = {
-							has_template = BIC_mohandas_karamchand_gandhi
-							is_character_alive = yes
-						}
-					}
-				}
 			}
 		}
 		remove_variable = sb_natal_civil_rights_petition_pending_var
-		if = {
-			limit = { has_variable = sb_natal_civil_rights_petition_requires_gandhi_var }
-			remove_variable = sb_natal_civil_rights_petition_requires_gandhi_var
-		}
 	}
 }
 
@@ -894,26 +1128,15 @@ sb_natal_handle_zulu_restoration_war_end = {
 sb_natal_interwar_monthly_housekeeping = {
 	if = {
 		limit = {
-			sb_natal_is_british_colony = yes
-			has_variable = sb_klip_river_county_resolved_var
-			NOT = { has_variable = sb_natal_indenture_completed_var }
-			NOT = { has_variable = sb_natal_indenture_pending_var }
-			sb_natal_british_network_has_indenture_origin = yes
-			s:STATE_NATAL.region_state:NAL ?= {
-				state_is_eligible_as_mass_migration_target = yes
+			has_variable = sb_natal_shepstone_pending_var
+			OR = {
+				NOT = { sb_natal_is_british_colony = yes }
+				sb_natal_has_responsible_government = yes
 			}
 		}
-		random_list = {
-			1 = {
-				set_variable = {
-					name = sb_natal_indenture_pending_var
-					days = 30
-				}
-				trigger_event = { id = sb_natal_interwar.001 days = 1 popup = yes }
-			}
-			99 = { }
-		}
+		remove_variable = sb_natal_shepstone_pending_var
 	}
+	sb_natal_update_pending_indenture_program = yes
 	if = {
 		limit = {
 			sb_natal_is_british_colony = yes

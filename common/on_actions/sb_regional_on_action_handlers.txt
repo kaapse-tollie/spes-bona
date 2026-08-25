@@ -35,9 +35,35 @@ sb_on_mozambique_company_disbanded = {
 sb_on_natal_colony_monthly_pulse_country = {
 	trigger = { country_definition = cd:NAL }
 	effect = {
-		sb_ensure_british_natal_colony_governor = yes
 		sb_klip_river_county_monthly_housekeeping = yes
 		sb_natal_interwar_monthly_housekeeping = yes
+	}
+}
+
+sb_on_port_natal_monthly_pulse_country = {
+	trigger = { country_definition = cd:CAP }
+	effect = { sb_natal_refresh_port_natal_migration_deterrent = yes }
+}
+
+sb_on_port_natal_state_owner_change = {
+	trigger = { state_region = s:STATE_NATAL }
+	effect = { sb_natal_refresh_port_natal_migration_deterrent = yes }
+}
+
+sb_on_natal_interwar_law_activated = {
+	trigger = {
+		owner = {
+			country_definition = cd:NAL
+			has_law = law_type:law_closed_borders
+		}
+	}
+	effect = {
+		owner = {
+			if = {
+				limit = { has_variable = sb_natal_indenture_pending_var }
+				sb_natal_cancel_pending_indenture_program = yes
+			}
+		}
 	}
 }
 

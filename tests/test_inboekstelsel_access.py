@@ -21,6 +21,50 @@ def object_block(path: str, name: str) -> str:
 
 
 class InboekstelselAccessTests(unittest.TestCase):
+    def test_convention_refusal_play_gives_boers_the_requested_counter_demands(self):
+        response = object_block(
+            "events/sb_boer_conventions_events.txt", "sb_boer_conventions.142"
+        )
+        play_match = re.search(r"^\s*random_diplomatic_play\s*=\s*\{", response, re.MULTILINE)
+        self.assertIsNotNone(play_match)
+        play = validate.extract_braced(response, play_match.start())
+        goals = [
+            validate.extract_braced(play, match.start())
+            for match in re.finditer(r"^\s*add_war_goal\s*=\s*\{", play, re.MULTILINE)
+        ]
+
+        humiliation = next(goal for goal in goals if "type = humiliation" in goal)
+        self.assertIn("holder = scope:highveld_target", humiliation)
+        self.assertIn("target_country = root", humiliation)
+        self.assertIn("primary_demand = yes", humiliation)
+
+        cape_liberation = next(
+            goal
+            for goal in goals
+            if "type = liberate_subject" in goal and "target_country = c:CAP" in goal
+        )
+        natal_liberation = next(
+            goal
+            for goal in goals
+            if "type = liberate_subject" in goal and "target_country = c:NAL" in goal
+        )
+        for liberation in (cape_liberation, natal_liberation):
+            self.assertIn("holder = scope:highveld_target", liberation)
+            self.assertNotIn("primary_demand", liberation)
+
+        self.assertEqual(1, play.count("primary_demand = yes"))
+        self.assertRegex(
+            play,
+            r"c:CAP\s*\?=\s*\{[\s\S]*?is_direct_subject_of\s*=\s*root"
+            r"[\s\S]*?target_country\s*=\s*c:CAP",
+        )
+        self.assertRegex(
+            play,
+            r"sb_boer_convention_nal_is_british_colony\s*=\s*yes"
+            r"[\s\S]*?is_direct_subject_of\s*=\s*root"
+            r"[\s\S]*?target_country\s*=\s*c:NAL",
+        )
+
     def test_law_does_not_require_an_existing_slavery_law(self):
         law = object_block(
             "common/laws/02_sb_inboekstelsel_slavery.txt",

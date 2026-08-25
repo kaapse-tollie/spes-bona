@@ -48,8 +48,8 @@ je_sb_great_trek = {
 		country_has_primary_culture = cu:boer
 	}
 
-	# Only active for Boer trek republics, and only while independent. In V2 this
-	# means ORA starts with the JE while TRN/ZPB/LYD/NAL receive it fresh on spawn.
+	# Active for Boer trek republics. Most must be independent; KLR and SGO keep
+	# the journal under their story-specific protectorate arrangements.
 	possible = {
 		OR = {
 			country_definition = cd:TRN
@@ -57,11 +57,14 @@ je_sb_great_trek = {
 			country_definition = cd:ZPB
 			country_definition = cd:LYD
 			country_definition = cd:NAL
+			country_definition = cd:KLR
 			country_definition = cd:SGO
 		}
 		country_has_primary_culture = cu:boer
+		NOT = { has_variable = sb_natalia_great_trek_disabled_var }
 		OR = {
 			is_subject = no
+			country_definition = cd:KLR
 			country_definition = cd:SGO
 		}
 	}
@@ -127,6 +130,7 @@ je_sb_great_trek = {
 				# 25k GDP represents a fledgling economy after the v0.12 pop rebalance.
 				if = {
 					limit = {
+						NOT = { has_variable = sb_natalia_great_trek_disabled_var }
 						NOT = { has_variable = sb_trek_stage1_complete }
 						root.gdp >= 25000
 					}
@@ -143,6 +147,10 @@ je_sb_great_trek = {
 						limit = { country_definition = cd:TRN }
 						trigger_event = { id = sb_great_trek.031 popup = yes }
 					}
+					else_if = {
+						limit = { country_definition = cd:NAL }
+						trigger_event = { id = sb_great_trek.032 popup = yes }
+					}
 					else = {
 						trigger_event = { id = sb_great_trek.030 popup = yes }
 					}
@@ -151,8 +159,9 @@ je_sb_great_trek = {
 			# ==================================================================
 			# STAGE 2: Territory control — secure the homeland
 			# ==================================================================
-			if = {
+			else_if = {
 				limit = {
+					NOT = { has_variable = sb_natalia_great_trek_disabled_var }
 					has_variable = sb_trek_stage1_complete
 					NOT = { has_variable = sb_trek_stage2_complete }
 					NOT = { has_variable = sb_trek_stage2_pending_var }
@@ -194,8 +203,11 @@ je_sb_great_trek = {
 				}
 				else_if = {
 					limit = {
-						country_definition = cd:NAL
-						sb_controls_natalia_core = yes
+						OR = {
+							country_definition = cd:NAL
+							country_definition = cd:KLR
+						}
+						owns_entire_state_region = STATE_NATAL
 					}
 					set_variable = sb_trek_stage2_pending_var
 					trigger_event = { id = sb_great_trek.043 popup = yes }
@@ -221,9 +233,12 @@ je_sb_great_trek = {
 	# Invalidates if the republic becomes a subject (e.g., annexed by Britain).
 	# A subjected Boer republic can't conduct an independent trek.
 	invalid = {
-		AND = {
-			is_subject = yes
-			NOT = { country_definition = cd:SGO }
+		OR = {
+			has_variable = sb_natalia_great_trek_disabled_var
+			AND = {
+				is_subject = yes
+				NOT = { country_definition = cd:SGO }
+			}
 		}
 	}
 

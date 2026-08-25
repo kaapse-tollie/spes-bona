@@ -159,6 +159,25 @@ sb_apply_natalia_boer_republic_setup = {
 	activate_law = law_type:law_national_militia
 	activate_law = law_type:law_discrete_inboekstelsel
 	activate_law = law_type:law_frontier_colonization
+	s:STATE_NATAL.region_state:NAL ?= {
+		if = {
+			limit = { NOT = { has_building = building_maize_farm } }
+			create_building = {
+				building = building_maize_farm
+				level = 1
+				add_ownership = {
+					building = {
+						type = building_manor_house
+						country = c:NAL
+						levels = 1
+						region = "STATE_NATAL"
+					}
+				}
+				reserves = 1
+				activate_production_methods = { "pm_simple_farming" "pm_no_secondary" "pm_tools_disabled" }
+			}
+		}
+	}
 	add_modifier = {
 		name = sb_trek_frontier_drive
 		months = 120
@@ -312,6 +331,25 @@ sb_ensure_ora_ai_natal_front_commitment = {
 			has_variable = sb_natal_war_active_var
 			is_at_war = yes
 		}
+		if = {
+			limit = { NOT = { has_variable = sb_ora_blood_river_force_floor_created_var } }
+			set_variable = sb_ora_blood_river_force_floor_created_var
+			create_military_formation = {
+				type = army
+				hq_region = sr:region_southern_africa
+				name = ora_blood_river_commando
+				combat_unit = {
+					type = unit_type:combat_unit_type_dragoons
+					state_region = s:STATE_VRYSTAAT
+					count = 1
+				}
+				combat_unit = {
+					type = unit_type:combat_unit_type_line_infantry
+					state_region = s:STATE_VRYSTAAT
+					count = 1
+				}
+			}
+		}
 		every_military_formation = {
 			limit = {
 				is_army = yes
@@ -321,20 +359,58 @@ sb_ensure_ora_ai_natal_front_commitment = {
 	}
 }
 
-sb_apply_ora_blood_river_laager = {
+sb_apply_ora_blood_river_player_laager = {
 	if = {
 		limit = {
 			country_definition = cd:ORA
 			is_ai = yes
-			NOT = { has_modifier = sb_laager_defence }
 		}
-		add_modifier = {
-			name = sb_laager_defence
-			months = 15
+		if = {
+			limit = {
+				has_variable = sb_ora_blood_river_laager_active_var
+				has_modifier = sb_laager_defence_ai
+			}
+			remove_modifier = sb_laager_defence_ai
+			remove_variable = sb_ora_blood_river_laager_active_var
 		}
-		set_variable = {
-			name = sb_ora_blood_river_laager_active_var
-			months = 15
+		if = {
+			limit = { NOT = { has_modifier = sb_laager_defence } }
+			add_modifier = {
+				name = sb_laager_defence
+				months = 15
+			}
+			set_variable = {
+				name = sb_ora_blood_river_laager_active_var
+				months = 15
+			}
+		}
+	}
+}
+
+sb_apply_ora_blood_river_ai_laager = {
+	if = {
+		limit = {
+			country_definition = cd:ORA
+			is_ai = yes
+		}
+		if = {
+			limit = {
+				has_variable = sb_ora_blood_river_laager_active_var
+				has_modifier = sb_laager_defence
+			}
+			remove_modifier = sb_laager_defence
+			remove_variable = sb_ora_blood_river_laager_active_var
+		}
+		if = {
+			limit = { NOT = { has_modifier = sb_laager_defence_ai } }
+			add_modifier = {
+				name = sb_laager_defence_ai
+				months = 15
+			}
+			set_variable = {
+				name = sb_ora_blood_river_laager_active_var
+				months = 15
+			}
 		}
 	}
 }
@@ -346,6 +422,10 @@ sb_clear_ora_blood_river_laager = {
 		if = {
 			limit = { has_modifier = sb_laager_defence }
 			remove_modifier = sb_laager_defence
+		}
+		if = {
+			limit = { has_modifier = sb_laager_defence_ai }
+			remove_modifier = sb_laager_defence_ai
 		}
 	}
 }
@@ -360,11 +440,20 @@ sb_reconcile_blood_river_assistance_for_play = {
 				limit = {
 					is_ai = yes
 					root = {
+						sb_frontier_play_artificial_assistance_enabled = { RECIPIENT = c:ORA }
+					}
+				}
+				sb_ensure_ora_ai_natal_front_commitment = yes
+			}
+			if = {
+				limit = {
+					is_ai = yes
+					root = {
 						sb_frontier_play_has_committed_player_enemy = { RECIPIENT = c:ORA }
 						sb_frontier_player_challenge_enabled = yes
 					}
 				}
-				sb_apply_ora_blood_river_laager = yes
+				sb_apply_ora_blood_river_player_laager = yes
 			}
 			else_if = {
 				limit = {
@@ -384,7 +473,7 @@ sb_reconcile_blood_river_assistance_for_play = {
 						}
 					}
 				}
-				sb_apply_ora_blood_river_laager = yes
+				sb_apply_ora_blood_river_ai_laager = yes
 			}
 			else = {
 				sb_clear_ora_blood_river_laager = yes
@@ -839,6 +928,7 @@ sb_natalia_try_finish_player_consultation = {
 		if = {
 			limit = {
 				is_country_alive = yes
+				sb_natalia_has_harbour = yes
 				is_subject = no
 				is_at_war = no
 				is_active_in_diplomatic_play = no

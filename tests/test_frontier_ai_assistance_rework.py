@@ -78,10 +78,12 @@ class FrontierAiAssistanceReworkTests(unittest.TestCase):
         self.assertIn('rule_sb_frontier_player_challenge:0 "SB Frontier Player Challenge"', loc)
         self.assertIn("Player-facing assistance replaces the AI-History route", loc)
 
-    def test_laager_is_one_exact_package_and_always_fifteen_months(self):
+    def test_laager_variants_have_exact_packages_same_loc_and_fifteen_months(self):
         modifiers = text("common/static_modifiers/sb_modifiers.txt")
         laager = block_from_source(modifiers, "sb_laager_defence", "modifiers")
+        ai_laager = block_from_source(modifiers, "sb_laager_defence_ai", "modifiers")
         self.assertEqual(1, modifiers.count("sb_laager_defence = {"))
+        self.assertEqual(1, modifiers.count("sb_laager_defence_ai = {"))
         for token in (
             "unit_kill_rate_add = 0.50",
             "unit_recovery_rate_add = 0.75",
@@ -96,13 +98,42 @@ class FrontierAiAssistanceReworkTests(unittest.TestCase):
         ):
             self.assertNotIn(forbidden, laager)
 
-        additions: list[str] = []
+        for token in (
+            "building_training_rate_add = 1000",
+            "battle_casualties_mult = -1",
+            "unit_recovery_rate_add = 0.75",
+            "unit_kill_rate_add = 1.25",
+            "unit_supply_consumption_mult = -1",
+            "military_formation_organization_gain_add = 0.5",
+        ):
+            self.assertIn(token, ai_laager)
+        self.assertNotIn("unit_defense_mult", ai_laager)
+
+        loc = text("localization/english/sb_l_english.yml")
+        desc = text("localization/english/sb_mtb_modifiers_l_english.yml")
+        self.assertIn('sb_laager_defence:0 "Laager Defensive System"', loc)
+        self.assertIn('sb_laager_defence_ai:0 "Laager Defensive System"', loc)
+        normal_desc = re.search(r'^\s*sb_laager_defence_desc:0\s+"([^"]+)"', desc, re.MULTILINE)
+        ai_desc = re.search(r'^\s*sb_laager_defence_ai_desc:0\s+"([^"]+)"', desc, re.MULTILINE)
+        self.assertIsNotNone(normal_desc)
+        self.assertIsNotNone(ai_desc)
+        self.assertEqual(normal_desc.group(1), ai_desc.group(1))
+
+        additions = {modifier: [] for modifier in ("sb_laager_defence", "sb_laager_defence_ai")}
         for base in (ROOT / "common", ROOT / "events"):
             for path in base.rglob("*.txt"):
-                additions.extend(modifier_additions(text(str(path.relative_to(ROOT))), "sb_laager_defence"))
-        self.assertGreaterEqual(len(additions), 9)
-        for addition in additions:
-            self.assertRegex(addition, r"\bmonths\s*=\s*15\b")
+                source = text(str(path.relative_to(ROOT)))
+                for modifier in additions:
+                    additions[modifier].extend(modifier_additions(source, modifier))
+        self.assertGreaterEqual(len(additions["sb_laager_defence"]), 2)
+        self.assertGreaterEqual(len(additions["sb_laager_defence_ai"]), 9)
+        for modifier_adds in additions.values():
+            for addition in modifier_adds:
+                self.assertRegex(addition, r"\bmonths\s*=\s*15\b")
+
+        ai_events = text("events/sb_frontier_ai_wars_events.txt")
+        self.assertIn("name = sb_laager_defence_ai", ai_events)
+        self.assertNotRegex(ai_events, r"name\s*=\s*sb_laager_defence\s")
 
     def test_removed_assistance_symbols_are_gone(self):
         removed = {
@@ -154,6 +185,11 @@ class FrontierAiAssistanceReworkTests(unittest.TestCase):
         mobilize = block_from_source(
             effects, "sb_mobilize_ai_frontier_historical_formation", "force effects"
         )
+        mobilize_for_play = block_from_source(
+            effects,
+            "sb_mobilize_ai_frontier_historical_formations_for_play",
+            "force effects",
+        )
         self.assertNotIn("building_training_rate", restore)
         self.assertNotIn("sb_native_conscription_MTB", restore)
         self.assertNotIn("cd:MTB", state_selection)
@@ -178,11 +214,14 @@ class FrontierAiAssistanceReworkTests(unittest.TestCase):
             "country_definition = cd:MTB",
             "is_ai = yes",
             "c:ORA ?= { is_country_alive = yes is_player = yes }",
-            "sb_frontier_player_challenge_enabled = yes",
-            "c:ORA ?= { is_country_alive = yes is_ai = yes }",
-            "sb_frontier_ai_scripting_enabled = yes",
         ):
             self.assertIn(token, mtb_gate)
+        for forbidden in (
+            "sb_frontier_player_challenge_enabled",
+            "sb_frontier_ai_scripting_enabled",
+            "c:ORA ?= { is_country_alive = yes is_ai = yes }",
+        ):
+            self.assertNotIn(forbidden, mtb_gate)
 
         mtb_levy = block_from_source(
             text("common/static_modifiers/sb_modifiers.txt"),
@@ -204,8 +243,14 @@ class FrontierAiAssistanceReworkTests(unittest.TestCase):
         self.assertIn(' sb_native_conscription_MTB:0 "Mzilikazi\'s Host"', mtb_loc)
         self.assertIn(" sb_native_conscription_MTB_desc:0 ", mtb_loc)
         self.assertIn("fully_mobilize_army = yes", mobilize)
-        self.assertIn("cd:XHO", mobilize)
+        for tag in ("ZUL", "SWZ", "GZA", "BST", "XHO"):
+            self.assertIn(f"cd:{tag}", mobilize)
+            self.assertIn(
+                f"sb_frontier_play_artificial_assistance_enabled = {{ RECIPIENT = c:{tag} }}",
+                mobilize_for_play,
+            )
         self.assertNotIn("cd:MTB", mobilize)
+        self.assertNotIn("c:MTB", mobilize_for_play)
 
         xho_history = text("common/history/countries/xho - xhosa.txt")
         self.assertIn("effect_native_conscription_6 = yes", xho_history)
@@ -329,7 +374,9 @@ class FrontierAiAssistanceReworkTests(unittest.TestCase):
         for token in (
             "sb_frontier_play_has_committed_player_enemy = { RECIPIENT = c:ORA }",
             "sb_frontier_play_has_committed_player_enemy = { RECIPIENT = c:ZUL }",
-            "sb_apply_ora_blood_river_laager = yes",
+            "sb_apply_ora_blood_river_player_laager = yes",
+            "sb_apply_ora_blood_river_ai_laager = yes",
+            "sb_ensure_ora_ai_natal_front_commitment = yes",
             "sb_clear_ora_blood_river_laager = yes",
             "remove_modifier = sb_blood_river_zulu_no_relief",
             "remove_modifier = sb_blood_river_zulu_limited_support",
@@ -339,17 +386,35 @@ class FrontierAiAssistanceReworkTests(unittest.TestCase):
             "has_variable = sb_zul_blood_river_no_relief_roll_var",
         ):
             self.assertIn(token, reconcile)
-        apply_laager = block(
+        player_laager = block(
             "common/scripted_effects/sb_natalia_effects.txt",
-            "sb_apply_ora_blood_river_laager",
+            "sb_apply_ora_blood_river_player_laager",
+        )
+        ai_laager = block(
+            "common/scripted_effects/sb_natalia_effects.txt",
+            "sb_apply_ora_blood_river_ai_laager",
         )
         clear_laager = block(
             "common/scripted_effects/sb_natalia_effects.txt",
             "sb_clear_ora_blood_river_laager",
         )
-        self.assertIn("sb_ora_blood_river_laager_active_var", apply_laager)
+        self.assertIn("name = sb_laager_defence", player_laager)
+        self.assertIn("name = sb_laager_defence_ai", ai_laager)
+        self.assertIn("sb_ora_blood_river_laager_active_var", player_laager)
+        self.assertIn("sb_ora_blood_river_laager_active_var", ai_laager)
         self.assertIn("sb_ora_blood_river_laager_active_var", clear_laager)
         self.assertIn("remove_modifier = sb_laager_defence", clear_laager)
+        self.assertIn("remove_modifier = sb_laager_defence_ai", clear_laager)
+
+        floor = block(
+            "common/scripted_effects/sb_natalia_effects.txt",
+            "sb_ensure_ora_ai_natal_front_commitment",
+        )
+        self.assertEqual(1, floor.count("combat_unit_type_dragoons"))
+        self.assertEqual(1, floor.count("combat_unit_type_line_infantry"))
+        self.assertEqual(2, floor.count("count = 1"))
+        self.assertNotIn("create_pop", floor)
+        self.assertNotIn("create_building", floor)
         handlers = text("common/on_actions/sb_diplomatic_play_on_action_handlers.txt")
         self.assertGreaterEqual(
             handlers.count("sb_reconcile_blood_river_assistance_for_play = yes"), 3
@@ -492,10 +557,16 @@ class FrontierAiAssistanceReworkTests(unittest.TestCase):
         self.assertNotIn("sb_frontier_player_challenge_enabled", creation)
 
         coalition = block(effects_path, "sb_klip_river_roll_coalition_boost")
+        coalition_laager = block(effects_path, "sb_klip_river_apply_coalition_laager")
         punitive = block(effects_path, "sb_klip_river_roll_punitive_zulu_boost")
         self.assertIn("sb_klip_river_coalition_assistance_enabled = yes", coalition)
+        self.assertIn("sb_klip_river_apply_coalition_laager = yes", coalition)
         self.assertIn("70 = {", coalition)
         self.assertIn("30 = {", coalition)
+        self.assertIn("sb_klip_river_coalition_player_challenge_enabled = yes", coalition_laager)
+        self.assertIn("name = sb_laager_defence months = 15", coalition_laager)
+        self.assertIn("sb_klip_river_coalition_ai_history_enabled = yes", coalition_laager)
+        self.assertIn("name = sb_laager_defence_ai months = 15", coalition_laager)
         self.assertIn("sb_klip_river_punitive_assistance_enabled = yes", punitive)
         self.assertIn("60 = {", punitive)
 

@@ -256,6 +256,17 @@ sb_klip_river_create_county = {
 	c:ZUL ?= { set_variable = sb_klip_river_secession_active_var }
 }
 
+sb_klip_river_apply_coalition_laager = {
+	if = {
+		limit = { sb_klip_river_coalition_player_challenge_enabled = yes }
+		add_modifier = { name = sb_laager_defence months = 15 }
+	}
+	else_if = {
+		limit = { sb_klip_river_coalition_ai_history_enabled = yes }
+		add_modifier = { name = sb_laager_defence_ai months = 15 }
+	}
+}
+
 sb_klip_river_roll_coalition_boost = {
 	if = {
 		limit = {
@@ -273,7 +284,7 @@ sb_klip_river_roll_coalition_boost = {
 					c:KLR ?= {
 						if = {
 							limit = { sb_klip_river_coalition_assistance_enabled = yes }
-							add_modifier = { name = sb_laager_defence months = 15 }
+							sb_klip_river_apply_coalition_laager = yes
 						}
 					}
 					c:ZUL ?= {
@@ -292,7 +303,7 @@ sb_klip_river_roll_coalition_boost = {
 					c:KLR ?= {
 						if = {
 							limit = { sb_klip_river_coalition_assistance_enabled = yes }
-							add_modifier = { name = sb_laager_defence months = 15 }
+							sb_klip_river_apply_coalition_laager = yes
 						}
 					}
 					c:ZUL ?= {
@@ -508,7 +519,6 @@ sb_klip_river_finalize_reduced_natalia = {
 		limit = { has_variable = sb_martin_west_var }
 		transfer_character = c:GBR
 	}
-	change_tag = NAL
 	sb_apply_natalia_boer_republic_setup = yes
 	if = {
 		limit = { has_truce_with = c:ZUL }
@@ -518,10 +528,8 @@ sb_klip_river_finalize_reduced_natalia = {
 		country = c:ZUL
 		months = 120
 	}
-	set_variable = sb_british_natal_ultimatum_var
 	set_variable = sb_natal_path_resolved_var
 	set_variable = sb_klip_river_county_resolved_var
-	c:GBR ?= { set_variable = sb_british_natal_ultimatum_var }
 	every_scope_character = {
 		limit = { has_variable = sb_klip_river_deferred_exile_var }
 		remove_variable = sb_klip_river_deferred_exile_var
@@ -533,11 +541,11 @@ sb_klip_river_finalize_reduced_natalia = {
 				is_country_alive = yes
 				is_subject = no
 			}
-			c:NAL ?= { NOT = { is_subject_of = c:ORA } }
+			NOT = { is_subject_of = c:ORA }
 		}
 		c:ORA = {
 			create_diplomatic_pact = {
-				country = c:NAL
+				country = c:KLR
 				type = protectorate
 			}
 		}

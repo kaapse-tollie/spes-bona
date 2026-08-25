@@ -14,9 +14,13 @@ def text(path: str) -> str:
 
 def object_block(path: str, name: str) -> str:
     source = text(path)
-    match = re.search(rf"^{re.escape(name)}\s*=\s*\{{", source, re.MULTILINE)
+    return object_block_from_source(source, name, path)
+
+
+def object_block_from_source(source: str, name: str, context: str = "source") -> str:
+    match = re.search(rf"^\s*{re.escape(name)}\s*=\s*\{{", source, re.MULTILINE)
     if match is None:
-        raise AssertionError(f"missing {name} in {path}")
+        raise AssertionError(f"missing {name} in {context}")
     return validate.extract_braced(source, match.start())
 
 
@@ -93,7 +97,7 @@ class CapeImperialIdeologyTests(unittest.TestCase):
             armed_forces,
         )
 
-    def test_cap_and_natal_replace_only_jingoist(self):
+    def test_cap_natal_and_bsa_colonial_forces_receive_colonialist(self):
         identities = text("common/scripted_effects/sb_interest_group_identity_effects.txt")
         for name in (
             "sb_apply_cap_interest_group_identity",
@@ -105,10 +109,17 @@ class CapeImperialIdeologyTests(unittest.TestCase):
             )
             self.assertIn("remove_ideology = ideology_jingoist", effect)
             self.assertIn("add_ideology = ideology_sb_imperialist", effect)
+            self.assertIn("add_ideology = ideology_colonialist", effect)
             self.assertIn("add_ideology = ideology_patriotic", effect)
             self.assertIn("add_ideology = ideology_loyalist", effect)
         self.assertIn("set_interest_group_name = ig_sb_imperial_establishment", identities)
         self.assertIn("set_interest_group_name = ig_sb_colonial_garrison", identities)
+
+        bsa = object_block(
+            "common/scripted_effects/sb_rhodesian_venture_effects.txt",
+            "sb_rhodesian_venture_apply_chartered_company_package",
+        )
+        self.assertIn("sb_apply_british_natal_interest_group_identity = yes", bsa)
 
     def test_imperialist_stances_are_bounded_to_five_law_groups(self):
         for name in ("ideology_sb_imperialist", "ideology_sb_imperialist_leader"):
@@ -118,10 +129,9 @@ class CapeImperialIdeologyTests(unittest.TestCase):
                 'icon = "gfx/interface/icons/ideology_icons/royalist.dds"'
                 if name == "ideology_sb_imperialist"
                 else 'icon = "gfx/interface/icons/ideology_icons/ideology_leader/ideology_leader_royalist.dds"',
-                "law_colonial_administration = strongly_approve",
+                "law_monarchy = strongly_approve",
                 "law_subjecthood = strongly_approve",
                 "law_hereditary_bureaucrats = strongly_approve",
-                "law_colonial_exploitation = strongly_approve",
                 "law_professional_army = strongly_approve",
                 "law_elected_bureaucrats = strongly_disapprove",
                 "law_multicultural = strongly_disapprove",
@@ -129,6 +139,39 @@ class CapeImperialIdeologyTests(unittest.TestCase):
             ):
                 self.assertIn(token, ideology)
             self.assertNotIn("law_sb_imperial_administration =", ideology)
+            self.assertNotIn("law_colonial_administration =", ideology)
+            self.assertNotIn("lawgroup_colonization", ideology)
+
+            distribution = object_block_from_source(
+                ideology, "lawgroup_distribution_of_power"
+            )
+            expected = {
+                "law_autocracy": "strongly_approve",
+                "law_oligarchy": "approve",
+                "law_landed_voting": "neutral",
+                "law_technocracy": "neutral",
+                "law_wealth_voting": "disapprove",
+                "law_census_voting": "disapprove",
+                "law_universal_suffrage": "strongly_disapprove",
+                "law_anarchy": "strongly_disapprove",
+                "law_single_party_state": "strongly_disapprove",
+            }
+            self.assertEqual(
+                expected,
+                dict(
+                    re.findall(
+                        r"^\s*(law_[a-z0-9_]+)\s*=\s*([a-z_]+)",
+                        distribution,
+                        re.MULTILINE,
+                    )
+                ),
+            )
+
+        ideology_sources = "\n".join(
+            path.read_text(encoding="utf-8-sig")
+            for path in (ROOT / "common/ideologies").glob("*.txt")
+        )
+        self.assertNotIn("law_colonial_administration =", ideology_sources)
 
         leader = object_block(
             "common/ideologies/sb_ideologies.txt", "ideology_sb_imperialist_leader"

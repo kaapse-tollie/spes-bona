@@ -49,47 +49,6 @@ sb_natal_pop_is_indian = {
 	}
 }
 
-# BIC is British-primary, so territorial administration in India must count as
-# well as an Indian primary culture.
-sb_natal_country_is_indian = {
-	OR = {
-		any_scope_state = { state_is_homeland_of_indian_cultures = yes }
-		any_primary_culture = {
-			OR = {
-				this = cu:kho
-				this = cu:assamese
-				this = cu:bengali
-				this = cu:bihari
-				this = cu:manipuri
-				this = cu:nepali
-				this = cu:oriya
-				this = cu:sinhala
-				this = cu:avadhi
-				this = cu:panjabi
-				this = cu:kashmiri
-				this = cu:gujarati
-				this = cu:marathi
-				this = cu:sindi
-				this = cu:rajput
-				this = cu:kannada
-				this = cu:malayalam
-				this = cu:tamil
-				this = cu:telegu
-				this = cu:hindustani
-				this = cu:lushai
-				this = cu:bundeli
-				this = cu:pahari
-				this = cu:gondi
-				this = cu:bageli
-				this = cu:chhattisgarhi
-				this = cu:naga
-				this = cu:deccani
-				this = cu:pathan
-			}
-		}
-	}
-}
-
 sb_natal_has_indian_pops = {
 	any_scope_state = {
 		state_region = s:STATE_NATAL
@@ -97,22 +56,90 @@ sb_natal_has_indian_pops = {
 	}
 }
 
-sb_natal_british_network_has_indenture_origin = {
-	c:GBR ?= {
+sb_natal_bic_has_indenture_origin = {
+	c:BIC ?= {
 		is_country_alive = yes
-		any_subject_or_below = {
-			sb_natal_country_is_indian = yes
-			any_scope_state = {
-				any_scope_pop = {
-					OR = {
-						culture = cu:tamil
-						culture = cu:telegu
-						culture = cu:hindustani
-						culture = cu:bihari
-						culture = cu:gujarati
-					}
-				}
+		is_subject_of = c:GBR
+	}
+}
+
+sb_natal_bic_has_indenture_cohort = {
+	sb_natal_bic_has_indenture_origin = yes
+	c:BIC ?= {
+		any_scope_state = {
+			any_scope_pop = {
+				culture = $CULTURE$
+				is_pop_type = peasants
+				total_size >= $SIZE$
 			}
+		}
+	}
+}
+
+sb_natal_bic_has_indenture_opening_cohort = {
+	sb_natal_bic_has_indenture_cohort = {
+		CULTURE = cu:tamil
+		SIZE = 342
+	}
+}
+
+sb_natal_bic_has_next_indenture_cohort = {
+	OR = {
+		AND = {
+			var:sb_natal_indenture_recruitment_count_var = 0
+			sb_natal_bic_has_indenture_cohort = { CULTURE = cu:telegu SIZE = 2000 }
+		}
+		AND = {
+			var:sb_natal_indenture_recruitment_count_var = 1
+			sb_natal_bic_has_indenture_cohort = { CULTURE = cu:tamil SIZE = 2000 }
+		}
+		AND = {
+			var:sb_natal_indenture_recruitment_count_var = 2
+			sb_natal_bic_has_indenture_cohort = { CULTURE = cu:bihari SIZE = 2000 }
+		}
+		AND = {
+			var:sb_natal_indenture_recruitment_count_var = 3
+			sb_natal_bic_has_indenture_cohort = { CULTURE = cu:telegu SIZE = 2000 }
+		}
+		AND = {
+			var:sb_natal_indenture_recruitment_count_var = 4
+			sb_natal_bic_has_indenture_cohort = { CULTURE = cu:tamil SIZE = 2000 }
+		}
+		AND = {
+			var:sb_natal_indenture_recruitment_count_var = 5
+			sb_natal_bic_has_indenture_cohort = { CULTURE = cu:hindustani SIZE = 2000 }
+		}
+		AND = {
+			var:sb_natal_indenture_recruitment_count_var = 6
+			sb_natal_bic_has_indenture_cohort = { CULTURE = cu:telegu SIZE = 2000 }
+		}
+		AND = {
+			var:sb_natal_indenture_recruitment_count_var = 7
+			sb_natal_bic_has_indenture_cohort = { CULTURE = cu:tamil SIZE = 2000 }
+		}
+		AND = {
+			var:sb_natal_indenture_recruitment_count_var = 8
+			sb_natal_bic_has_indenture_cohort = { CULTURE = cu:bihari SIZE = 2000 }
+		}
+		AND = {
+			var:sb_natal_indenture_recruitment_count_var = 9
+			sb_natal_bic_has_indenture_cohort = { CULTURE = cu:gujarati SIZE = 2000 }
+		}
+	}
+}
+
+sb_natal_gandhi_catalyst_available = {
+	OR = {
+		NOT = { has_global_variable = gandhi_spawn }
+		any_country = {
+			any_scope_character = {
+				has_template = BIC_mohandas_karamchand_gandhi
+				is_character_alive = yes
+			}
+		}
+		any_character_in_exile_pool = {
+			has_template = BIC_mohandas_karamchand_gandhi
+			is_character_alive = yes
 		}
 	}
 }

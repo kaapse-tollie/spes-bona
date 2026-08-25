@@ -22,8 +22,8 @@ On Depro's development machine, the canonical path is `/Users/depro/Documents/Pa
 
 The current lock covers:
 
-- `36` exact-path files;
-- `103` keyed `REPLACE`, `TRY_REPLACE`, or `REPLACE_OR_CREATE` objects;
+- `37` exact-path files;
+- `105` keyed `REPLACE`, `TRY_REPLACE`, or `REPLACE_OR_CREATE` objects;
 - `18` intentionally changed state-region blocks; and
 - no approved `replace_path` directives.
 
@@ -66,6 +66,8 @@ The Armed Forces definition is a keyed Vanilla `1.13.11` rebase. Its only SB del
 
 The Colonial Racialism amendment is a keyed Vanilla `1.13.11` rebase. Its only SB delta permits Rural Folk carrying Settler Colonialist to sponsor the amendment; Vanilla's approval gate and existing Armed Forces and Industrialist sponsors remain unchanged.
 
+Vanilla's internal `nguni` culture key is retained for compatibility but narrowed to the Central African Ngoni represented by Maseko. SB's separate Zulu, Swazi, Ndebele, and Shangaan cultures make the former generic label unnecessary; Ngoni keeps Southern Bantu heritage and the Nguni language family, receives its own historical name pool, and gains no state-wide Zambezia homeland.
+
 The `pink_map` decision is pinned to its Vanilla 1.13.11 object. Its DLC, independence, Portuguese Colonialism, and one-use gates remain unchanged; SB adds only colonial/company-subject colonization eligibility and routing through the durable Bechuanaland terminal outcome. The Vanilla Pink Map JE, presentation, modifiers, and favour transaction remain authoritative.
 
 ## CMF 1.63 Integration
@@ -90,6 +92,8 @@ SB does not shadow `common/production_methods/04_plantations.txt` or `events/tec
 The changed state regions are `STATE_BECHUANALAND`, `STATE_BOTSWANA`, `STATE_CAPE_COLONY`, `STATE_DRAKENSBERG`, `STATE_EASTERN_CAPE`, `STATE_EAST_TRANSVAAL`, `STATE_GRIQUALAND_WEST`, `STATE_HEREROLAND`, `STATE_LOURENCO_MARQUES`, `STATE_NAMAQUALAND`, `STATE_NATAL`, `STATE_NORTHERN_CAPE`, `STATE_NORTHERN_TRANSVAAL`, `STATE_TRANSVAAL`, `STATE_VRYSTAAT`, `STATE_ZAMBEZI`, `STATE_ZAMBEZIA`, and `STATE_ZULULAND`.
 
 `STATE_NATAL` is a new ID `1213` state split from the former combined Zululand block. Its hub locators are separately keyed from reduced `STATE_ZULULAND`; the province raster, terrain, adjacency overrides, spline control points, and strip topology remain unchanged. The existing port and wood anchors already located in Natal are reindexed from `25703` and `25704` to `121303` and `121304`, changing only their logical state ownership.
+
+The legacy `geographic_region_southern_africa_old` mirror is also extended with the SB split states because Vanilla's dynamic state-and-hub naming dispatcher still uses that legacy region as its routing gate. The Vanilla 1.13.11 `geographic_region_krakatoa_tsunami_zone` list is preserved with `STATE_NATAL` added beside reduced `STATE_ZULULAND`, ensuring Krakatoa's coastal-state filter reaches both halves of the split.
 
 Additive definitions use `sb_<feature>_*`. Intentional late keyed replacements use `zz_sb_*` or `zzz_sb_*`. Stable event and public script keys are not renamed during cleanup.
 

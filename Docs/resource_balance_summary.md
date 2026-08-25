@@ -1,24 +1,32 @@
 # Resource Balance Executive Summary
 
-SB's Southern African resource caps begin with a reproducible research model, then apply explicit state-split and gameplay corrections. The complete workbook, evidence tables, scripts, and audit reports are archived outside the mod at `../References/Resource rework/resources/` so release validation does not depend on a large research package.
+SB's live Southern African resource allocation now uses the completed 17-state audit
+as its evidence baseline and a separately recorded gameplay layer as its final design.
+The evidence ranges remain unchanged; balance selections are not presented as new
+historical estimates.
 
-## Method
+The authoritative design record is
+[resource_gameplay_overrides.md](resource_gameplay_overrides.md). It contains every
+state-level override, rejected alternative, configured-horizon total, and technology
+gate rule. The complete notebooks, source register, uncertainty bands, and state
+tables remain under
+`References/Resource rework/sb_full_resource_audit_2026-08-24/` outside the release
+payload.
 
-The archive combines historical production anchors, modern geological and agricultural comparators, state-footprint mappings, chronology gates, and documented exceptions. Arable land, forestry, rubber, and quantity resources use separate calibrated paths rather than one universal denominator. Every published row records whether it is formula-driven, quantitatively adjusted, constrained to zero, or retained as an explicit exception.
+## Live rules
 
-The live state file remains authoritative. Research outputs are advisory whenever later map splits or observed gameplay require a documented balance adjustment.
+- Static caps implement the final 17-state design.
+- Gold and oil technology stages add undiscovered potential; engine discovery still
+  controls when usable capacity appears and supplies the standard discovery toast.
+- Technology-gated diamond, iron, and coal additions become usable immediately and
+  post a one-time owner notification.
+- The gate system includes technology-acquisition, game-start, and state-owner-change
+  paths and uses one geographical flag per stage.
+- Natal coffee, Zululand cotton, and Lourenço Marques cotton remain deliberate crop
+  abstractions. Griqualand West and Bechuanaland receive the two approved one-grain
+  corrections.
+- A fresh campaign is required for validation because state-region data is static.
 
-## Accepted Live Differences
-
-- **Cape Colony:** `42` arable land and `12` fishing reflect the reduced post-split Western Cape footprint and a conservative coastal balance pass rather than the archived `44/15` recommendation.
-- **Northern Cape:** `6` arable land, `3` fishing, and `8` lead represent the narrowed coastal/base-metal remainder. Kimberley, the iron belt, and their associated capacity moved out with the Griqualand West and Bechuanaland splits.
-- **Griqualand West and Bechuanaland:** these new states were created after the original 14-state workbook surface. Griqualand West carries `5` arable land and the initial iron slot, with later iron unlocked by technology; Bechuanaland carries `6` arable land and no capped mine resource.
-- **West and East Transvaal:** the live logging additions support the split Highveld economy and AI buildout. The archived undiscovered-gold rows are not currently applied.
-- **Vrystaat/Transorangia:** the live logging slot is an accepted gameplay correction after the state and economy revisions.
-- **Namaqualand:** `5` arable land supersedes the archived `2` after starvation testing in SAN, Oorlam, Herero, and Rehoboth fragments.
-
-These differences are deliberate and should not be treated as accidental data drift. The archived test command therefore exits nonzero while the accepted live-cap mismatch remains; it must not print an unconditional success result.
-
-## Deferred Research
-
-Only the Transvaal and Orangia gold allocation remains an unresolved resource-design item. Reassess those undiscovered-gold caps during the next relevant content block, when discovery timing and regional event mechanics can be evaluated together. No other accepted live difference requires reopening the resource model.
+Configured-horizon totals are **380 arable, 65 wood, 149 coal, 33 fishing, 46 iron,
+20 lead, 1 sulfur, 17 whaling, 92 gold potential, 115 diamonds, 32 rubber, and 6 oil
+potential**.

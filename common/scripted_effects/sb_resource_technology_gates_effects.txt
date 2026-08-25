@@ -1,0 +1,360 @@
+﻿# Spes Bona - technology-gated resource potential
+#
+# Gold and oil stages add undiscovered potential and deliberately leave discovery
+# to the standard engine. Other stages add usable capacity immediately and post a
+# one-time owner notification. Global flags make each geographical stage idempotent.
+
+sb_apply_resource_technology_gates = {
+	# Nitroglycerin
+	if = {
+		limit = {
+			has_technology_researched = nitroglycerin
+			any_scope_state = { state_region = s:STATE_BECHUANALAND }
+			NOT = { has_global_variable = sb_resource_bechuanaland_gold_nitroglycerin_added_var }
+		}
+		set_global_variable = sb_resource_bechuanaland_gold_nitroglycerin_added_var
+		s:STATE_BECHUANALAND = {
+			change_resource_potential = {
+				type = building_gold_field
+				amount = 2
+			}
+		}
+	}
+	if = {
+		limit = {
+			has_technology_researched = nitroglycerin
+			any_scope_state = { state_region = s:STATE_NORTHERN_TRANSVAAL }
+			NOT = { has_global_variable = sb_resource_northern_transvaal_gold_nitroglycerin_added_var }
+		}
+		set_global_variable = sb_resource_northern_transvaal_gold_nitroglycerin_added_var
+		s:STATE_NORTHERN_TRANSVAAL = {
+			change_resource_potential = {
+				type = building_gold_field
+				amount = 1
+			}
+		}
+	}
+	if = {
+		limit = {
+			has_technology_researched = nitroglycerin
+			any_scope_state = { state_region = s:STATE_GRIQUALAND_WEST }
+			NOT = { has_global_variable = sb_griqualand_west_iron_nitroglycerin_seeded_var }
+		}
+		set_global_variable = sb_griqualand_west_iron_nitroglycerin_seeded_var
+		s:STATE_GRIQUALAND_WEST = {
+			change_resource_potential = {
+				type = building_iron_mine
+				amount = 4
+			}
+		}
+		post_notification = sb_resource_griqualand_west_iron_nitroglycerin
+	}
+
+	# Dynamite
+	if = {
+		limit = {
+			has_technology_researched = dynamite
+			any_scope_state = { state_region = s:STATE_TRANSVAAL }
+			NOT = { has_global_variable = sb_resource_transvaal_gold_dynamite_added_var }
+		}
+		set_global_variable = sb_resource_transvaal_gold_dynamite_added_var
+		s:STATE_TRANSVAAL = {
+			change_resource_potential = {
+				type = building_gold_field
+				amount = 25
+			}
+		}
+	}
+	if = {
+		limit = {
+			has_technology_researched = dynamite
+			any_scope_state = { state_region = s:STATE_EAST_TRANSVAAL }
+			NOT = { has_global_variable = sb_resource_east_transvaal_gold_dynamite_added_var }
+		}
+		set_global_variable = sb_resource_east_transvaal_gold_dynamite_added_var
+		s:STATE_EAST_TRANSVAAL = {
+			change_resource_potential = {
+				type = building_gold_field
+				amount = 4
+			}
+		}
+	}
+	if = {
+		limit = {
+			has_technology_researched = dynamite
+			any_scope_state = { state_region = s:STATE_VRYSTAAT }
+			NOT = { has_global_variable = sb_resource_vrystaat_diamonds_dynamite_added_var }
+		}
+		set_global_variable = sb_resource_vrystaat_diamonds_dynamite_added_var
+		s:STATE_VRYSTAAT = {
+			add_resource_potential = building_diamond_mine
+			change_resource_potential = {
+				type = building_diamond_mine
+				amount = 4
+			}
+		}
+		post_notification = sb_resource_vrystaat_diamonds_dynamite
+	}
+	if = {
+		limit = {
+			has_technology_researched = dynamite
+			any_scope_state = { state_region = s:STATE_GRIQUALAND_WEST }
+			NOT = { has_global_variable = sb_griqualand_west_iron_dynamite_seeded_var }
+		}
+		set_global_variable = sb_griqualand_west_iron_dynamite_seeded_var
+		s:STATE_GRIQUALAND_WEST = {
+			change_resource_potential = {
+				type = building_iron_mine
+				amount = 5
+			}
+		}
+		post_notification = sb_resource_griqualand_west_iron_dynamite
+	}
+
+	# Pumpjacks
+	if = {
+		limit = {
+			has_technology_researched = pumpjacks
+			any_scope_state = { state_region = s:STATE_TRANSVAAL }
+			NOT = { has_global_variable = sb_resource_transvaal_gold_pumpjacks_added_var }
+		}
+		set_global_variable = sb_resource_transvaal_gold_pumpjacks_added_var
+		s:STATE_TRANSVAAL = {
+			change_resource_potential = {
+				type = building_gold_field
+				amount = 50
+			}
+		}
+	}
+	if = {
+		limit = {
+			has_technology_researched = pumpjacks
+			any_scope_state = { state_region = s:STATE_ZAMBEZI }
+			NOT = { has_global_variable = sb_resource_zambezi_gold_pumpjacks_added_var }
+		}
+		set_global_variable = sb_resource_zambezi_gold_pumpjacks_added_var
+		s:STATE_ZAMBEZI = {
+			change_resource_potential = {
+				type = building_gold_field
+				amount = 4
+			}
+		}
+	}
+	if = {
+		limit = {
+			has_technology_researched = pumpjacks
+			any_scope_state = { state_region = s:STATE_LOURENCO_MARQUES }
+			NOT = { has_global_variable = sb_resource_lourenco_marques_oil_pumpjacks_added_var }
+		}
+		set_global_variable = sb_resource_lourenco_marques_oil_pumpjacks_added_var
+		s:STATE_LOURENCO_MARQUES = {
+			change_resource_potential = {
+				type = building_oil_rig
+				amount = 6
+			}
+		}
+	}
+	if = {
+		limit = {
+			has_technology_researched = pumpjacks
+			any_scope_state = { state_region = s:STATE_NORTHERN_CAPE }
+			NOT = { has_global_variable = sb_resource_northern_cape_diamonds_pumpjacks_added_var }
+		}
+		set_global_variable = sb_resource_northern_cape_diamonds_pumpjacks_added_var
+		s:STATE_NORTHERN_CAPE = {
+			add_resource_potential = building_diamond_mine
+			change_resource_potential = {
+				type = building_diamond_mine
+				amount = 3
+			}
+		}
+		post_notification = sb_resource_northern_cape_diamonds_pumpjacks
+	}
+	if = {
+		limit = {
+			has_technology_researched = pumpjacks
+			any_scope_state = { state_region = s:STATE_TRANSVAAL }
+			NOT = { has_global_variable = sb_resource_transvaal_diamonds_pumpjacks_added_var }
+		}
+		set_global_variable = sb_resource_transvaal_diamonds_pumpjacks_added_var
+		s:STATE_TRANSVAAL = {
+			add_resource_potential = building_diamond_mine
+			change_resource_potential = {
+				type = building_diamond_mine
+				amount = 19
+			}
+		}
+		post_notification = sb_resource_transvaal_diamonds_pumpjacks
+	}
+	if = {
+		limit = {
+			has_technology_researched = pumpjacks
+			any_scope_state = { state_region = s:STATE_NAMAQUALAND }
+			NOT = { has_global_variable = sb_resource_namaqualand_diamonds_pumpjacks_added_var }
+		}
+		set_global_variable = sb_resource_namaqualand_diamonds_pumpjacks_added_var
+		s:STATE_NAMAQUALAND = {
+			add_resource_potential = building_diamond_mine
+			change_resource_potential = {
+				type = building_diamond_mine
+				amount = 13
+			}
+		}
+		post_notification = sb_resource_namaqualand_diamonds_pumpjacks
+	}
+
+	# Pneumatic tools
+	if = {
+		limit = {
+			has_technology_researched = pneumatic_tools
+			any_scope_state = { state_region = s:STATE_VRYSTAAT }
+			NOT = { has_global_variable = sb_vrystaat_gold_potential_seeded_var }
+		}
+		set_global_variable = sb_vrystaat_gold_potential_seeded_var
+		s:STATE_VRYSTAAT = {
+			change_resource_potential = {
+				type = building_gold_field
+				amount = 4
+			}
+		}
+	}
+	if = {
+		limit = {
+			has_technology_researched = pneumatic_tools
+			any_scope_state = { state_region = s:STATE_GRIQUALAND_WEST }
+			NOT = { has_global_variable = sb_griqualand_west_iron_pneumatic_tools_seeded_var }
+		}
+		set_global_variable = sb_griqualand_west_iron_pneumatic_tools_seeded_var
+		s:STATE_GRIQUALAND_WEST = {
+			change_resource_potential = {
+				type = building_iron_mine
+				amount = 10
+			}
+		}
+		post_notification = sb_resource_griqualand_west_iron_pneumatic_tools
+	}
+	if = {
+		limit = {
+			has_technology_researched = pneumatic_tools
+			any_scope_state = { state_region = s:STATE_NORTHERN_TRANSVAAL }
+			NOT = { has_global_variable = sb_resource_northern_transvaal_diamonds_pneumatic_tools_added_var }
+		}
+		set_global_variable = sb_resource_northern_transvaal_diamonds_pneumatic_tools_added_var
+		s:STATE_NORTHERN_TRANSVAAL = {
+			add_resource_potential = building_diamond_mine
+			change_resource_potential = {
+				type = building_diamond_mine
+				amount = 5
+			}
+		}
+		post_notification = sb_resource_northern_transvaal_diamonds_pneumatic_tools
+	}
+	if = {
+		limit = {
+			has_technology_researched = pneumatic_tools
+			any_scope_state = { state_region = s:STATE_VRYSTAAT }
+			NOT = { has_global_variable = sb_resource_vrystaat_coal_pneumatic_tools_added_var }
+		}
+		set_global_variable = sb_resource_vrystaat_coal_pneumatic_tools_added_var
+		s:STATE_VRYSTAAT = {
+			change_resource_potential = {
+				type = building_coal_mine
+				amount = 3
+			}
+		}
+		post_notification = sb_resource_vrystaat_coal_pneumatic_tools
+	}
+	if = {
+		limit = {
+			has_technology_researched = pneumatic_tools
+			any_scope_state = { state_region = s:STATE_DRAKENSBERG }
+			NOT = { has_global_variable = sb_resource_drakensberg_diamonds_pneumatic_tools_added_var }
+		}
+		set_global_variable = sb_resource_drakensberg_diamonds_pneumatic_tools_added_var
+		s:STATE_DRAKENSBERG = {
+			add_resource_potential = building_diamond_mine
+			change_resource_potential = {
+				type = building_diamond_mine
+				amount = 5
+			}
+		}
+		post_notification = sb_resource_drakensberg_diamonds_pneumatic_tools
+	}
+	if = {
+		limit = {
+			has_technology_researched = pneumatic_tools
+			any_scope_state = { state_region = s:STATE_BOTSWANA }
+			NOT = { has_global_variable = sb_resource_botswana_coal_pneumatic_tools_added_var }
+		}
+		set_global_variable = sb_resource_botswana_coal_pneumatic_tools_added_var
+		s:STATE_BOTSWANA = {
+			change_resource_potential = {
+				type = building_coal_mine
+				amount = 9
+			}
+		}
+		post_notification = sb_resource_botswana_coal_pneumatic_tools
+	}
+	if = {
+		limit = {
+			has_technology_researched = pneumatic_tools
+			any_scope_state = { state_region = s:STATE_BOTSWANA }
+			NOT = { has_global_variable = sb_resource_botswana_diamonds_pneumatic_tools_added_var }
+		}
+		set_global_variable = sb_resource_botswana_diamonds_pneumatic_tools_added_var
+		s:STATE_BOTSWANA = {
+			add_resource_potential = building_diamond_mine
+			change_resource_potential = {
+				type = building_diamond_mine
+				amount = 29
+			}
+		}
+		post_notification = sb_resource_botswana_diamonds_pneumatic_tools
+	}
+	if = {
+		limit = {
+			has_technology_researched = pneumatic_tools
+			any_scope_state = { state_region = s:STATE_ZAMBEZI }
+			NOT = { has_global_variable = sb_resource_zambezi_iron_pneumatic_tools_added_var }
+		}
+		set_global_variable = sb_resource_zambezi_iron_pneumatic_tools_added_var
+		s:STATE_ZAMBEZI = {
+			change_resource_potential = {
+				type = building_iron_mine
+				amount = 8
+			}
+		}
+		post_notification = sb_resource_zambezi_iron_pneumatic_tools
+	}
+	if = {
+		limit = {
+			has_technology_researched = pneumatic_tools
+			any_scope_state = { state_region = s:STATE_ZAMBEZI }
+			NOT = { has_global_variable = sb_resource_zambezi_coal_pneumatic_tools_added_var }
+		}
+		set_global_variable = sb_resource_zambezi_coal_pneumatic_tools_added_var
+		s:STATE_ZAMBEZI = {
+			change_resource_potential = {
+				type = building_coal_mine
+				amount = 5
+			}
+		}
+		post_notification = sb_resource_zambezi_coal_pneumatic_tools
+	}
+	if = {
+		limit = {
+			has_technology_researched = pneumatic_tools
+			any_scope_state = { state_region = s:STATE_ZAMBEZI }
+			NOT = { has_global_variable = sb_resource_zambezi_diamonds_pneumatic_tools_added_var }
+		}
+		set_global_variable = sb_resource_zambezi_diamonds_pneumatic_tools_added_var
+		s:STATE_ZAMBEZI = {
+			add_resource_potential = building_diamond_mine
+			change_resource_potential = {
+				type = building_diamond_mine
+				amount = 9
+			}
+		}
+		post_notification = sb_resource_zambezi_diamonds_pneumatic_tools
+	}
+}

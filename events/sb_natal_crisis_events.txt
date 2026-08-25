@@ -271,6 +271,13 @@ sb_natal_crisis.020 = {
 		}
 		scope:boer_republic = {
 			remove_variable = sb_retief_petition_var
+			random_scope_character = {
+				limit = {
+					has_template = ORA_piet_retief
+					is_character_alive = yes
+				}
+				kill_character = { hidden = yes }
+			}
 			trigger_event = { id = sb_natal_crisis.050 days = 21 }
 		}
 		ai_chance = {
@@ -873,6 +880,7 @@ sb_natal_crisis.100 = {
 		NOT = { has_variable = sb_british_natal_ultimatum_var }
 		c:NAL ?= {
 			is_country_alive = yes
+			sb_natalia_has_harbour = yes
 			is_active_in_diplomatic_play = no
 			NOT = { has_war_with = c:GBR }
 			NOT = { has_diplomatic_pact = { who = c:GBR type = colony } }
@@ -885,7 +893,6 @@ sb_natal_crisis.100 = {
 			limit = { has_variable = sb_british_natal_ultimatum_pending_var }
 			remove_variable = sb_british_natal_ultimatum_pending_var
 		}
-		set_variable = sb_british_natal_ultimatum_var
 		c:NAL ?= {
 			save_scope_as = natalia
 		}
@@ -894,6 +901,7 @@ sb_natal_crisis.100 = {
 	option = {
 		name = sb_natal_crisis.100.a
 		default_option = yes
+		set_variable = sb_british_natal_ultimatum_var
 		scope:natalia ?= {
 			set_variable = sb_british_natal_ultimatum_var
 			trigger_event = { id = sb_natal_crisis.109 days = sb_travel_london_southern_africa_message_days popup = no }
@@ -937,6 +945,7 @@ sb_natal_crisis.108 = {
 			limit = {
 				c:NAL ?= {
 					is_country_alive = yes
+					sb_natalia_has_harbour = yes
 					is_subject = no
 					is_at_war = no
 					is_active_in_diplomatic_play = no
@@ -995,12 +1004,14 @@ sb_natal_crisis.109 = {
 	trigger = {
 		country_definition = cd:NAL
 		has_variable = sb_british_natal_ultimatum_var
+		sb_natalia_has_harbour = yes
 	}
 
 	immediate = {
 		if = {
 			limit = {
 				is_country_alive = yes
+				sb_natalia_has_harbour = yes
 				is_subject = no
 				is_at_war = no
 				is_active_in_diplomatic_play = no
@@ -1068,6 +1079,7 @@ sb_natal_crisis.110 = {
 	trigger = {
 		country_definition = cd:NAL
 		is_subject = no
+		sb_natalia_has_harbour = yes
 		c:GBR ?= {
 			is_country_alive = yes
 		}

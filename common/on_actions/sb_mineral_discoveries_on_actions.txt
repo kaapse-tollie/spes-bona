@@ -17,88 +17,52 @@ on_yearly_pulse = {
 	}
 }
 
+on_game_started_after_lobby = {
+	on_actions = { sb_on_mineral_discoveries_game_started }
+}
+
 on_acquired_technology = {
 	on_actions = { sb_on_mineral_discoveries_acquired_technology }
 }
 
+on_state_owner_change = {
+	on_actions = { sb_on_mineral_discoveries_state_owner_change }
+}
+
+sb_on_mineral_discoveries_game_started = {
+	effect = {
+		every_country = {
+			limit = { is_country_alive = yes }
+			sb_apply_resource_technology_gates = yes
+		}
+	}
+}
+
 sb_on_mineral_discoveries_acquired_technology = {
 	effect = {
-		if = {
-			limit = {
-				has_technology_researched = pneumatic_tools
-				NOT = { has_global_variable = sb_vrystaat_gold_potential_seeded_var }
-			}
-			set_global_variable = sb_vrystaat_gold_potential_seeded_var
-			s:STATE_VRYSTAAT = {
-				change_resource_potential = {
-					type = building_gold_field
-					amount = 4
-				}
-			}
+		sb_apply_resource_technology_gates = yes
+	}
+}
+
+sb_on_mineral_discoveries_state_owner_change = {
+	trigger = {
+		OR = {
+			state_region = s:STATE_NORTHERN_CAPE
+			state_region = s:STATE_GRIQUALAND_WEST
+			state_region = s:STATE_BECHUANALAND
+			state_region = s:STATE_TRANSVAAL
+			state_region = s:STATE_EAST_TRANSVAAL
+			state_region = s:STATE_NORTHERN_TRANSVAAL
+			state_region = s:STATE_VRYSTAAT
+			state_region = s:STATE_DRAKENSBERG
+			state_region = s:STATE_BOTSWANA
+			state_region = s:STATE_LOURENCO_MARQUES
+			state_region = s:STATE_ZAMBEZI
+			state_region = s:STATE_NAMAQUALAND
 		}
-		if = {
-			limit = {
-				has_technology_researched = dynamite
-				# Gauteng is the localized name for STATE_TRANSVAAL.
-				any_scope_state = { state_region = s:STATE_TRANSVAAL }
-				NOT = { has_global_variable = sb_transvaal_gold_potential_seeded_var }
-			}
-			set_global_variable = sb_transvaal_gold_potential_seeded_var
-			s:STATE_TRANSVAAL = {
-				change_resource_potential = {
-					type = building_gold_field
-					amount = 94
-				}
-			}
-			s:STATE_EAST_TRANSVAAL = {
-				change_resource_potential = {
-					type = building_gold_field
-					amount = 4
-				}
-			}
-		}
-		if = {
-			limit = {
-				has_technology_researched = nitroglycerin
-				any_scope_state = { state_region = s:STATE_GRIQUALAND_WEST }
-				NOT = { has_global_variable = sb_griqualand_west_iron_nitroglycerin_seeded_var }
-			}
-			set_global_variable = sb_griqualand_west_iron_nitroglycerin_seeded_var
-			s:STATE_GRIQUALAND_WEST = {
-				change_resource_potential = {
-					type = building_iron_mine
-					amount = 4
-				}
-			}
-		}
-		if = {
-			limit = {
-				has_technology_researched = dynamite
-				any_scope_state = { state_region = s:STATE_GRIQUALAND_WEST }
-				NOT = { has_global_variable = sb_griqualand_west_iron_dynamite_seeded_var }
-			}
-			set_global_variable = sb_griqualand_west_iron_dynamite_seeded_var
-			s:STATE_GRIQUALAND_WEST = {
-				change_resource_potential = {
-					type = building_iron_mine
-					amount = 5
-				}
-			}
-		}
-		if = {
-			limit = {
-				has_technology_researched = pneumatic_tools
-				any_scope_state = { state_region = s:STATE_GRIQUALAND_WEST }
-				NOT = { has_global_variable = sb_griqualand_west_iron_pneumatic_tools_seeded_var }
-			}
-			set_global_variable = sb_griqualand_west_iron_pneumatic_tools_seeded_var
-			s:STATE_GRIQUALAND_WEST = {
-				change_resource_potential = {
-					type = building_iron_mine
-					amount = 10
-				}
-			}
-		}
+	}
+	effect = {
+		owner ?= { sb_apply_resource_technology_gates = yes }
 	}
 }
 

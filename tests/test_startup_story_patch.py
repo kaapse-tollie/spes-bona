@@ -42,9 +42,16 @@ class StartupStoryPatchTests(unittest.TestCase):
             for journal in journals:
                 self.assertIn(f"add_journal_entry = {{ type = {journal} }}", history)
 
-        self.assertIn(
+        self.assertNotIn(
             "add_contextless_journal_entry = je_sb_bst_ora_frontier",
             text("common/history/countries/bst - basuto.txt"),
+        )
+        global_history = object_block(
+            "common/history/global/sb_contextless_journal_entries.txt", "GLOBAL"
+        )
+        self.assertIn(
+            "add_contextless_journal_entry = je_sb_bst_ora_frontier",
+            global_history,
         )
 
         nguni_formation = object_block(
