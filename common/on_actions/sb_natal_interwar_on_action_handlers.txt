@@ -1,0 +1,50 @@
+﻿# Zulu restoration uses the engine's cultural-minority secession. These hooks
+# add only the story-specific Boer arms appeal and lifecycle cleanup.
+
+sb_on_natal_zulu_secession_start = {
+	effect = {
+		if = {
+			limit = {
+				country_definition = cd:NAL
+				is_country_alive = yes
+				sb_natal_is_british_colony = yes
+				NOT = { has_variable = sb_natal_zulu_restoration_resolved_var }
+				scope:target ?= {
+					country_definition = cd:ZUL
+					is_country_alive = yes
+					is_secessionist = yes
+				}
+			}
+			sb_natal_remove_zulu_chiefdom_settlement = yes
+			set_variable = sb_natal_zulu_settlement_resolved_var
+			if = {
+				limit = { has_variable = sb_natal_zulu_settlement_pending_var }
+				remove_variable = sb_natal_zulu_settlement_pending_var
+			}
+			set_variable = sb_natal_zulu_restoration_active_var
+			scope:target = {
+				set_variable = sb_natal_zulu_restoration_active_var
+				trigger_event = { id = sb_natal_interwar.035 days = 1 popup = yes }
+			}
+		}
+	}
+}
+
+sb_on_natal_zulu_secession_end = {
+	effect = {
+		if = {
+			limit = {
+				country_definition = cd:NAL
+				OR = {
+					has_variable = sb_natal_zulu_restoration_active_var
+					scope:target ?= {
+						country_definition = cd:ZUL
+						has_variable = sb_natal_zulu_restoration_active_var
+					}
+				}
+			}
+			set_variable = sb_natal_zulu_restoration_resolved_var
+			sb_natal_clear_zulu_restoration_runtime = yes
+		}
+	}
+}

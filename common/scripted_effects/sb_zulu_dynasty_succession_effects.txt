@@ -173,33 +173,36 @@ sb_zulu_prepare_mbuyazi_heir = {
 }
 
 sb_zulu_prepare_dinuzulu_heir = {
-	set_global_variable = sb_dinuzulu_ever_created_global_var
 	if = {
-		limit = {
-			NOT = {
-				any_scope_character = {
-					has_template = ZUL_dinuzulu_heir
-					is_character_alive = yes
+		limit = { NOT = { has_global_variable = sb_zulu_mbuyazi_succession_global_var } }
+		set_global_variable = sb_dinuzulu_ever_created_global_var
+		if = {
+			limit = {
+				NOT = {
+					any_scope_character = {
+						has_template = ZUL_dinuzulu_heir
+						is_character_alive = yes
+					}
+				}
+			}
+			create_character = {
+				template = ZUL_dinuzulu_heir
+				on_created = {
+					save_scope_as = new_heir_scope
 				}
 			}
 		}
-		create_character = {
-			template = ZUL_dinuzulu_heir
-			on_created = {
+		else = {
+			random_scope_character = {
+				limit = {
+					has_template = ZUL_dinuzulu_heir
+					is_character_alive = yes
+				}
 				save_scope_as = new_heir_scope
 			}
 		}
+		sb_zulu_assign_new_heir_scope = yes
 	}
-	else = {
-		random_scope_character = {
-			limit = {
-				has_template = ZUL_dinuzulu_heir
-				is_character_alive = yes
-			}
-			save_scope_as = new_heir_scope
-		}
-	}
-	sb_zulu_assign_new_heir_scope = yes
 }
 
 
@@ -353,6 +356,17 @@ sb_zulu_apply_swazi_campaign_defeat = {
 }
 
 sb_zulu_monthly_dynasty_housekeeping = {
+	if = {
+		limit = { has_variable = sb_zulu_mpande_mbuyazi_heir_var }
+		set_global_variable = sb_zulu_mbuyazi_succession_global_var
+	}
+	else_if = {
+		limit = {
+			has_variable = sb_zulu_mpande_cetshwayo_heir_var
+			has_global_variable = sb_zulu_mbuyazi_succession_global_var
+		}
+		remove_global_variable = sb_zulu_mbuyazi_succession_global_var
+	}
 	sb_zulu_update_dynastic_stability_modifiers = yes
 	sb_zulu_maybe_open_swazi_question = yes
 	if = {
@@ -571,6 +585,7 @@ sb_resolve_zulu_dynasty_secured_mbuyazi = {
 	set_variable = sb_zulu_dynasty_secured_var
 	set_variable = sb_zulu_mpande_succession_secured_var
 	set_variable = sb_zulu_mpande_mbuyazi_heir_var
+	set_global_variable = sb_zulu_mbuyazi_succession_global_var
 	if = {
 		limit = {
 			has_variable = sb_zulu_mpande_cetshwayo_heir_var
@@ -609,6 +624,10 @@ sb_resolve_zulu_dynasty_secured_cetshwayo_for_mpande = {
 	sb_resolve_zulu_dynasty_secured = yes
 	set_variable = sb_zulu_mpande_succession_secured_var
 	set_variable = sb_zulu_mpande_cetshwayo_heir_var
+	if = {
+		limit = { has_global_variable = sb_zulu_mbuyazi_succession_global_var }
+		remove_global_variable = sb_zulu_mbuyazi_succession_global_var
+	}
 	if = {
 		limit = {
 			has_variable = sb_zulu_mpande_mbuyazi_heir_var

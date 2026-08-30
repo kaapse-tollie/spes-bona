@@ -15,7 +15,20 @@ sb_natal_has_responsible_government = {
 	}
 }
 
-sb_natal_pop_is_indian = {
+sb_natal_has_shepstone_system = {
+	active_law:lawgroup_land_reform ?= {
+		has_amendment = amendment_type:amendment_sb_shepstone_system
+	}
+}
+
+sb_natal_indenture_program_is_valid = {
+	sb_natal_is_british_colony = yes
+	sb_natal_bic_has_indenture_origin = yes
+	sb_natal_has_shepstone_system = yes
+	NOT = { has_law = law_type:law_closed_borders }
+}
+
+sb_natal_pop_is_indian_origin = {
 	OR = {
 		culture = cu:kho
 		culture = cu:assamese
@@ -46,6 +59,16 @@ sb_natal_pop_is_indian = {
 		culture = cu:naga
 		culture = cu:deccani
 		culture = cu:pathan
+	}
+}
+
+sb_natal_pop_is_indian = {
+	OR = {
+		sb_natal_pop_is_indian_origin = yes
+		AND = {
+			has_global_variable = sb_natal_indian_ethnogenesis_completed_global_var
+			culture = cu:natal_indian
+		}
 	}
 }
 
@@ -86,44 +109,28 @@ sb_natal_bic_has_indenture_opening_cohort = {
 sb_natal_bic_has_next_indenture_cohort = {
 	OR = {
 		AND = {
-			var:sb_natal_indenture_recruitment_count_var = 0
-			sb_natal_bic_has_indenture_cohort = { CULTURE = cu:telegu SIZE = 2000 }
+			var:sb_natal_indenture_cycle_index_var = 0
+			sb_natal_bic_has_indenture_cohort = { CULTURE = cu:telegu SIZE = 400 }
 		}
 		AND = {
-			var:sb_natal_indenture_recruitment_count_var = 1
-			sb_natal_bic_has_indenture_cohort = { CULTURE = cu:tamil SIZE = 2000 }
+			var:sb_natal_indenture_cycle_index_var = 1
+			sb_natal_bic_has_indenture_cohort = { CULTURE = cu:tamil SIZE = 400 }
 		}
 		AND = {
-			var:sb_natal_indenture_recruitment_count_var = 2
-			sb_natal_bic_has_indenture_cohort = { CULTURE = cu:bihari SIZE = 2000 }
+			var:sb_natal_indenture_cycle_index_var = 2
+			sb_natal_bic_has_indenture_cohort = { CULTURE = cu:bihari SIZE = 400 }
 		}
 		AND = {
-			var:sb_natal_indenture_recruitment_count_var = 3
-			sb_natal_bic_has_indenture_cohort = { CULTURE = cu:telegu SIZE = 2000 }
+			var:sb_natal_indenture_cycle_index_var = 3
+			sb_natal_bic_has_indenture_cohort = { CULTURE = cu:telegu SIZE = 400 }
 		}
 		AND = {
-			var:sb_natal_indenture_recruitment_count_var = 4
-			sb_natal_bic_has_indenture_cohort = { CULTURE = cu:tamil SIZE = 2000 }
+			var:sb_natal_indenture_cycle_index_var = 4
+			sb_natal_bic_has_indenture_cohort = { CULTURE = cu:tamil SIZE = 400 }
 		}
 		AND = {
-			var:sb_natal_indenture_recruitment_count_var = 5
-			sb_natal_bic_has_indenture_cohort = { CULTURE = cu:hindustani SIZE = 2000 }
-		}
-		AND = {
-			var:sb_natal_indenture_recruitment_count_var = 6
-			sb_natal_bic_has_indenture_cohort = { CULTURE = cu:telegu SIZE = 2000 }
-		}
-		AND = {
-			var:sb_natal_indenture_recruitment_count_var = 7
-			sb_natal_bic_has_indenture_cohort = { CULTURE = cu:tamil SIZE = 2000 }
-		}
-		AND = {
-			var:sb_natal_indenture_recruitment_count_var = 8
-			sb_natal_bic_has_indenture_cohort = { CULTURE = cu:bihari SIZE = 2000 }
-		}
-		AND = {
-			var:sb_natal_indenture_recruitment_count_var = 9
-			sb_natal_bic_has_indenture_cohort = { CULTURE = cu:gujarati SIZE = 2000 }
+			var:sb_natal_indenture_cycle_index_var = 5
+			sb_natal_bic_has_indenture_cohort = { CULTURE = cu:hindustani SIZE = 400 }
 		}
 	}
 }
@@ -167,9 +174,10 @@ sb_natal_zulu_settlement_ready = {
 	}
 }
 
-sb_natal_has_zulu_restoration_movement = {
+sb_natal_has_zulu_national_movement = {
 	any_political_movement = {
-		is_political_movement_type = movement_sb_zulu_restoration
+		is_political_movement_type = movement_cultural_minority
+		culture = cu:zulu
 	}
 }
 
@@ -182,7 +190,11 @@ sb_natal_has_civil_rights_movement = {
 sb_natal_trn_arms_treaty_possible = {
 	country_definition = cd:TRN
 	is_country_alive = yes
-	c:ZUL ?= { is_country_alive = yes }
+	c:ZUL ?= {
+		is_country_alive = yes
+		is_secessionist = yes
+		has_variable = sb_natal_zulu_restoration_active_var
+	}
 	c:GBR ?= {
 		NOT = { any_subject_or_below = { this = ROOT } }
 	}
@@ -198,20 +210,6 @@ sb_natal_trn_arms_treaty_possible = {
 				target_country = c:ZUL
 			}
 		}
-	}
-}
-
-sb_natal_zulu_restoration_play_can_launch = {
-	country_definition = cd:NAL
-	is_country_alive = yes
-	is_at_war = no
-	is_active_in_diplomatic_play = no
-	aggressive_diplomatic_plays_permitted = yes
-	c:ZUL ?= {
-		is_country_alive = yes
-		is_direct_subject_of = ROOT
-		is_at_war = no
-		is_active_in_diplomatic_play = no
 	}
 }
 

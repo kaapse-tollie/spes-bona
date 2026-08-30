@@ -224,9 +224,6 @@ sb_natal_crisis.020 = {
 				add_trait = honorable
 			}
 		}
-		s:STATE_NATAL = {
-			remove_claim = c:ZUL
-		}
 		scope:boer_republic = {
 			remove_variable = sb_retief_petition_var
 			trigger_event = { id = sb_natal_crisis.030 days = 21 }
@@ -363,9 +360,6 @@ sb_natal_crisis.025 = {
 		name = sb_natal_crisis.025.a
 		default_option = yes
 		sb_found_natalia_peacefully = yes
-		s:STATE_NATAL = {
-			remove_claim = c:ZUL
-		}
 		sb_create_ora_zul_firearms_treaty = yes
 		scope:zulu_kingdom ?= {
 			sb_zulu_mark_swazi_question_after_guns_south = yes
@@ -373,6 +367,23 @@ sb_natal_crisis.025 = {
 		}
 		ai_chance = {
 			base = 40
+		}
+	}
+
+	option = {
+		name = sb_natal_crisis.025.c
+		trigger = {
+			is_player = yes
+		}
+		sb_found_natalia_peacefully = yes
+		sb_create_ora_zul_firearms_treaty = yes
+		scope:zulu_kingdom ?= {
+			sb_zulu_mark_swazi_question_after_guns_south = yes
+			sb_zulu_maybe_open_swazi_question = yes
+		}
+		play_as = c:NAL
+		ai_chance = {
+			base = 0
 		}
 	}
 
@@ -878,6 +889,7 @@ sb_natal_crisis.100 = {
 	trigger = {
 		country_definition = cd:GBR
 		NOT = { has_variable = sb_british_natal_ultimatum_var }
+		NOT = { has_variable = sb_british_natal_nonintervention_var }
 		c:NAL ?= {
 			is_country_alive = yes
 			sb_natalia_has_harbour = yes
@@ -912,11 +924,88 @@ sb_natal_crisis.100 = {
 				trigger = { sb_frontier_ai_behavior_strict_historical = yes }
 				add = 10
 			}
+			modifier = {
+				trigger = {
+					sb_frontier_ai_behavior_strict_historical = no
+					scope:natalia ?= { relations:root >= relations_threshold:cordial }
+				}
+				add = -10
+			}
+			modifier = {
+				trigger = {
+					sb_frontier_ai_behavior_strict_historical = no
+					scope:natalia ?= { relations:root >= relations_threshold:amicable }
+				}
+				add = -10
+			}
+			modifier = {
+				trigger = {
+					sb_frontier_ai_behavior_strict_historical = no
+					scope:natalia ?= { relations:root >= relations_threshold:friendly }
+				}
+				add = -10
+			}
+			modifier = {
+				trigger = {
+					sb_frontier_ai_behavior_strict_historical = no
+					scope:natalia ?= { is_in_same_power_bloc = root }
+				}
+				add = -25
+			}
+			modifier = {
+				trigger = {
+					sb_frontier_ai_behavior_strict_historical = no
+					scope:natalia ?= {
+						any_scope_treaty = {
+							binds = root
+							any_scope_article = {
+								has_type = trade_privilege
+								source_country = scope:natalia
+								target_country = root
+							}
+						}
+					}
+				}
+				add = -10
+			}
+			modifier = {
+				trigger = {
+					sb_frontier_ai_behavior_strict_historical = no
+					scope:natalia ?= {
+						any_scope_treaty = {
+							binds = root
+							any_scope_article = {
+								has_type = foreign_investment_rights
+								source_country = scope:natalia
+								target_country = root
+							}
+						}
+					}
+				}
+				add = -10
+			}
+			modifier = {
+				trigger = {
+					sb_frontier_ai_behavior_strict_historical = no
+					scope:natalia ?= {
+						any_scope_treaty = {
+							binds = root
+							any_scope_article = {
+								has_type = host_power_bloc_embassy
+								source_country = scope:natalia
+								target_country = root
+							}
+						}
+					}
+				}
+				add = -5
+			}
 		}
 	}
 
 	option = {
 		name = sb_natal_crisis.100.b
+		set_variable = sb_british_natal_nonintervention_var
 		add_modifier = {
 			name = sb_prestige_loss_natal_hesitation
 			months = 120
@@ -926,6 +1015,82 @@ sb_natal_crisis.100 = {
 			modifier = {
 				trigger = { sb_frontier_ai_behavior_strict_historical = yes }
 				add = -10
+			}
+			modifier = {
+				trigger = {
+					sb_frontier_ai_behavior_strict_historical = no
+					scope:natalia ?= { relations:root >= relations_threshold:cordial }
+				}
+				add = 10
+			}
+			modifier = {
+				trigger = {
+					sb_frontier_ai_behavior_strict_historical = no
+					scope:natalia ?= { relations:root >= relations_threshold:amicable }
+				}
+				add = 10
+			}
+			modifier = {
+				trigger = {
+					sb_frontier_ai_behavior_strict_historical = no
+					scope:natalia ?= { relations:root >= relations_threshold:friendly }
+				}
+				add = 10
+			}
+			modifier = {
+				trigger = {
+					sb_frontier_ai_behavior_strict_historical = no
+					scope:natalia ?= { is_in_same_power_bloc = root }
+				}
+				add = 25
+			}
+			modifier = {
+				trigger = {
+					sb_frontier_ai_behavior_strict_historical = no
+					scope:natalia ?= {
+						any_scope_treaty = {
+							binds = root
+							any_scope_article = {
+								has_type = trade_privilege
+								source_country = scope:natalia
+								target_country = root
+							}
+						}
+					}
+				}
+				add = 10
+			}
+			modifier = {
+				trigger = {
+					sb_frontier_ai_behavior_strict_historical = no
+					scope:natalia ?= {
+						any_scope_treaty = {
+							binds = root
+							any_scope_article = {
+								has_type = foreign_investment_rights
+								source_country = scope:natalia
+								target_country = root
+							}
+						}
+					}
+				}
+				add = 10
+			}
+			modifier = {
+				trigger = {
+					sb_frontier_ai_behavior_strict_historical = no
+					scope:natalia ?= {
+						any_scope_treaty = {
+							binds = root
+							any_scope_article = {
+								has_type = host_power_bloc_embassy
+								source_country = scope:natalia
+								target_country = root
+							}
+						}
+					}
+				}
+				add = 5
 			}
 		}
 	}
@@ -1136,12 +1301,6 @@ sb_natal_crisis.110 = {
 				months = 9
 			}
 		}
-		s:STATE_NATAL = {
-			set_owner_of_provinces = {
-				country = root
-				provinces = { x279045 }
-			}
-		}
 		c:ORA ?= {
 			if = {
 				limit = {
@@ -1230,7 +1389,7 @@ sb_natal_crisis.111 = {
 	flavor = sb_natal_crisis.111.f
 
 	event_image = {
-		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
+		video = "gfx/event_pictures/unspecific_signed_contract.bk2"
 	}
 
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
@@ -1257,6 +1416,7 @@ sb_natal_crisis.111 = {
 
 	option = {
 		name = sb_natal_crisis.111.a
+		custom_tooltip = sb_natal_crisis_111_a_tt
 		default_option = yes
 		change_relations = {
 			country = scope:natalia
@@ -1317,7 +1477,7 @@ sb_natal_crisis.112 = {
 	flavor = sb_natal_crisis.112.f
 
 	event_image = {
-		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
+		video = "gfx/event_pictures/unspecific_signed_contract.bk2"
 	}
 
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
@@ -1340,6 +1500,7 @@ sb_natal_crisis.112 = {
 	option = {
 		name = sb_natal_crisis.112.a
 		default_option = yes
+		custom_tooltip = sb_natal_crisis_112_a_tt
 		sb_support_natalia_against_britain = yes
 		change_relations = {
 			country = scope:natalia
@@ -1405,7 +1566,7 @@ sb_natal_crisis.113 = {
 	flavor = sb_natal_crisis.113.f
 
 	event_image = {
-		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
+		video = "gfx/event_pictures/unspecific_signed_contract.bk2"
 	}
 
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
@@ -1425,6 +1586,7 @@ sb_natal_crisis.113 = {
 	option = {
 		name = sb_natal_crisis.113.a
 		default_option = yes
+		custom_tooltip = sb_natal_crisis_113_a_tt
 		sb_support_natalia_against_britain = yes
 		change_relations = {
 			country = scope:natalia
@@ -1508,58 +1670,37 @@ sb_natal_crisis.114 = {
 					NOT = { has_diplomatic_pact = { who = c:GBR type = colony } }
 					NOT = { has_variable = sb_natalia_british_colony_resolved_var }
 				}
-			}
-		scope:natalia = {
-			if = {
-				limit = {
-					has_variable = sb_natalia_ultimatum_truce_var
-					has_truce_with = root
-				}
-				end_truce = root
-			}
-			if = {
-				limit = { has_variable = sb_natalia_ultimatum_truce_var }
-				remove_variable = sb_natalia_ultimatum_truce_var
-			}
-			set_variable = sb_natalia_ultimatum_truce_consumed_var
-		}
-		if = {
-			limit = {
-				scope:natalia ?= {
-					has_variable = sb_natalia_player_boer_support_pledged_var
-				}
 				c:CAP ?= {
 					is_country_alive = yes
 					is_subject_of = root
-				}
-			}
-			create_diplomatic_play = {
-				type = dp_make_protectorate
-				target_country = scope:natalia
-				add_war_goal = {
-					holder = scope:natalia
-					type = liberate_subject
-					target_country = c:CAP
+					p:x279045.state.owner = this
 				}
 			}
 			scope:natalia = {
-				set_variable = {
-					name = sb_natalia_liberate_cape_goal_added_var
-					months = 24
+				if = {
+					limit = {
+						has_variable = sb_natalia_ultimatum_truce_var
+						has_truce_with = root
+					}
+					end_truce = root
 				}
+				if = {
+					limit = { has_variable = sb_natalia_ultimatum_truce_var }
+					remove_variable = sb_natalia_ultimatum_truce_var
+				}
+				set_variable = sb_natalia_ultimatum_truce_consumed_var
 			}
-		}
-		else = {
 			create_diplomatic_play = {
 				type = dp_make_protectorate
 				target_country = scope:natalia
 				add_war_goal = {
 					holder = scope:natalia
-					type = humiliation
-					target_country = root
+					type = return_state
+					target_country = c:CAP
+					target_state = s:STATE_NATAL.region_state:CAP
+					primary_demand = yes
 				}
 			}
-		}
 		if = {
 			limit = {
 				scope:natalia ?= {
@@ -1610,14 +1751,17 @@ sb_natal_crisis.114 = {
 						type = make_protectorate
 					}
 				}
-				if = {
-					limit = { has_variable = sb_natalia_player_support_pledged_var }
-					remove_variable = sb_natalia_player_support_pledged_var
+					if = {
+						limit = { has_variable = sb_natalia_player_support_pledged_var }
+						remove_variable = sb_natalia_player_support_pledged_var
+					}
 				}
-			}
-			scope:natalia = {
-				remove_variable = sb_natalia_player_boer_support_pledged_var
-			}
+				scope:natalia_british_play = {
+					sb_add_natalia_liberate_cape_goal_if_oranje_supports = yes
+				}
+				scope:natalia = {
+					remove_variable = sb_natalia_player_boer_support_pledged_var
+				}
 		}
 		}
 		else = {

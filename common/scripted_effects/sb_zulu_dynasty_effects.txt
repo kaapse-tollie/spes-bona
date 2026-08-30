@@ -484,23 +484,16 @@ sb_zulu_update_dynastic_stability_modifiers = {
 	}
 	if = {
 		limit = { NOT = { has_variable = sb_zulu_dynastic_stability_applied_tier_var } }
-		set_variable = {
-			name = sb_zulu_dynastic_stability_applied_tier_var
-			value = -1
+		set_variable = sb_zulu_dynastic_stability_refresh_needed_var
+	}
+	else_if = {
+		limit = {
+			NOT = { var:sb_zulu_dynastic_stability_applied_tier_var = var:sb_zulu_dynastic_stability_target_tier_var }
 		}
-	}
-	set_variable = {
-		name = sb_zulu_dynastic_stability_tier_delta_var
-		value = var:sb_zulu_dynastic_stability_applied_tier_var
-	}
-	change_variable = {
-		name = sb_zulu_dynastic_stability_tier_delta_var
-		subtract = var:sb_zulu_dynastic_stability_target_tier_var
+		set_variable = sb_zulu_dynastic_stability_refresh_needed_var
 	}
 	if = {
-		limit = {
-			NOT = { var:sb_zulu_dynastic_stability_tier_delta_var = 0 }
-		}
+		limit = { has_variable = sb_zulu_dynastic_stability_refresh_needed_var }
 		sb_zulu_clear_dynastic_stability_modifiers = yes
 	if = {
 		limit = {
@@ -727,6 +720,6 @@ sb_zulu_update_dynastic_stability_modifiers = {
 			value = var:sb_zulu_dynastic_stability_target_tier_var
 		}
 	}
-	remove_variable = sb_zulu_dynastic_stability_tier_delta_var
+	remove_variable = sb_zulu_dynastic_stability_refresh_needed_var
 	remove_variable = sb_zulu_dynastic_stability_target_tier_var
 }

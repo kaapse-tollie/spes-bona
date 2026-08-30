@@ -1,100 +1,107 @@
-﻿# Natal's fixed twenty-year Indian indenture programme.
+﻿# Natal's automatic Indian indenture programme.
 
 je_sb_natal_indenture_program = {
 	group = je_group_historical_content
 
 	icon = "gfx/interface/icons/law_icons/no_migration_controls.dds"
 
-	scripted_button = je_sb_natal_recruit_indian_workers_button
-
-	possible = {
-		country_definition = cd:NAL
-		has_variable = sb_natal_indenture_completed_var
-		sb_natal_is_british_colony = yes
-		NOT = { has_law = law_type:law_closed_borders }
-	}
-
-	status_desc = {
-		first_valid = {
-			triggered_desc = {
-				desc = je_sb_natal_indenture_program_status_telegu
-				trigger = { var:sb_natal_indenture_recruitment_count_var = 0 }
-			}
-			triggered_desc = {
-				desc = je_sb_natal_indenture_program_status_tamil
-				trigger = { var:sb_natal_indenture_recruitment_count_var = 1 }
-			}
-			triggered_desc = {
-				desc = je_sb_natal_indenture_program_status_bihari
-				trigger = { var:sb_natal_indenture_recruitment_count_var = 2 }
-			}
-			triggered_desc = {
-				desc = je_sb_natal_indenture_program_status_telegu
-				trigger = { var:sb_natal_indenture_recruitment_count_var = 3 }
-			}
-			triggered_desc = {
-				desc = je_sb_natal_indenture_program_status_tamil
-				trigger = { var:sb_natal_indenture_recruitment_count_var = 4 }
-			}
-			triggered_desc = {
-				desc = je_sb_natal_indenture_program_status_hindustani
-				trigger = { var:sb_natal_indenture_recruitment_count_var = 5 }
-			}
-			triggered_desc = {
-				desc = je_sb_natal_indenture_program_status_telegu
-				trigger = { var:sb_natal_indenture_recruitment_count_var = 6 }
-			}
-			triggered_desc = {
-				desc = je_sb_natal_indenture_program_status_tamil
-				trigger = { var:sb_natal_indenture_recruitment_count_var = 7 }
-			}
-			triggered_desc = {
-				desc = je_sb_natal_indenture_program_status_bihari
-				trigger = { var:sb_natal_indenture_recruitment_count_var = 8 }
-			}
-			triggered_desc = {
-				desc = je_sb_natal_indenture_program_status_gujarati
-				trigger = { var:sb_natal_indenture_recruitment_count_var = 9 }
-			}
-			triggered_desc = {
-				desc = je_sb_natal_indenture_program_status_complete
-				trigger = { always = yes }
-			}
-		}
-	}
-
-	complete = { always = no }
+	possible = { always = no }
 
 	invalid = {
 		OR = {
-			NOT = { sb_natal_is_british_colony = yes }
-			has_law = law_type:law_closed_borders
+			has_journal_entry = je_sb_natal_indenture_program_v2
+			NOT = { sb_natal_indenture_program_is_valid = yes }
 		}
 	}
 
 	on_invalid = {
 		if = {
-			limit = { has_variable = sb_natal_indenture_recruitment_cooldown_var }
-			remove_variable = sb_natal_indenture_recruitment_cooldown_var
+			limit = { NOT = { has_journal_entry = je_sb_natal_indenture_program_v2 } }
+			sb_natal_cleanup_indenture_program = yes
 		}
 	}
 
-	timeout = 7300
+	weight = 1000
+	should_be_pinned_by_default_uninvolved_or_context = yes
+	transferable = no
+}
 
-	on_timeout = {
-		if = {
-			limit = { has_variable = sb_natal_indenture_recruitment_cooldown_var }
-			remove_variable = sb_natal_indenture_recruitment_cooldown_var
+je_sb_natal_indenture_program_v2 = {
+	group = je_group_historical_content
+
+	icon = "gfx/interface/icons/law_icons/no_migration_controls.dds"
+
+	scripted_button = je_sb_natal_suspend_indenture_program_button
+	scripted_button = je_sb_natal_resume_indenture_program_button
+	scripted_button = je_sb_natal_intensify_indenture_program_button
+
+	possible = {
+		country_definition = cd:NAL
+		has_variable = sb_natal_indenture_completed_var
+		sb_natal_indenture_program_is_valid = yes
+	}
+
+	status_desc = {
+		first_valid = {
+			triggered_desc = {
+				desc = je_sb_natal_indenture_program_status_suspended
+				trigger = { has_variable = sb_natal_indenture_suspended_var }
+			}
+			triggered_desc = {
+				desc = je_sb_natal_indenture_program_status_intensified
+				trigger = { has_variable = sb_natal_indenture_intensified_var }
+			}
+			triggered_desc = {
+				desc = je_sb_natal_indenture_program_status_active
+				trigger = { always = yes }
+			}
 		}
+	}
+
+	complete = {
+		custom_tooltip = {
+			text = je_sb_natal_indenture_program_completion_tt
+			hidden_trigger = {
+				has_variable = sb_natal_indian_origin_population_var
+				var:sb_natal_indian_origin_population_var >= 100000
+			}
+		}
+	}
+
+	invalid = {
+		NOT = { sb_natal_indenture_program_is_valid = yes }
+	}
+
+	on_complete = {
+		sb_natal_complete_indenture_program = yes
+	}
+
+	event_outcome_completed_desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { always = yes }
+				desc = sb_natal_indian_ethnogenesis_tt
+			}
+		}
+	}
+
+	on_invalid = {
+		sb_natal_cleanup_indenture_program = yes
 	}
 
 	current_value = {
-		value = root.var:sb_natal_indenture_recruitment_count_var
+		value = 0
+		if = {
+			limit = { has_variable = sb_natal_indian_origin_population_var }
+			add = root.var:sb_natal_indian_origin_population_var
+		}
 	}
 
-	goal_add_value = { add = 10 }
+	goal_add_value = { value = 100000 }
 
 	progressbar = yes
+	progress_desc = je_sb_natal_indenture_program_progress
+
 	weight = 1000
 	should_be_pinned_by_default_uninvolved_or_context = yes
 	transferable = no

@@ -1,40 +1,65 @@
-﻿# Natal Indian indenture recruitment.
+﻿# Natal Indian indenture programme controls.
 
-je_sb_natal_recruit_indian_workers_button = {
-	name = "je_sb_natal_recruit_indian_workers_button"
-	desc = "je_sb_natal_recruit_indian_workers_button_desc"
+je_sb_natal_suspend_indenture_program_button = {
+	name = "je_sb_natal_suspend_indenture_program_button"
+	desc = "je_sb_natal_suspend_indenture_program_button_desc"
 
 	visible = {
-		has_journal_entry = je_sb_natal_indenture_program
+		has_journal_entry = je_sb_natal_indenture_program_v2
+		NOT = { has_variable = sb_natal_indenture_suspended_var }
 	}
 
 	possible = {
+		has_journal_entry = je_sb_natal_indenture_program_v2
+		NOT = { has_variable = sb_natal_indenture_suspended_var }
+	}
+
+	effect = { sb_natal_suspend_indenture_program = yes }
+
+	ai_chance = { value = 0 }
+}
+
+je_sb_natal_resume_indenture_program_button = {
+	name = "je_sb_natal_resume_indenture_program_button"
+	desc = "je_sb_natal_resume_indenture_program_button_desc"
+
+	visible = {
+		has_journal_entry = je_sb_natal_indenture_program_v2
+		has_variable = sb_natal_indenture_suspended_var
+	}
+
+	possible = {
+		has_journal_entry = je_sb_natal_indenture_program_v2
+		has_variable = sb_natal_indenture_suspended_var
+		sb_natal_indenture_program_is_valid = yes
+	}
+
+	effect = { sb_natal_resume_indenture_program = yes }
+
+	ai_chance = { value = 0 }
+}
+
+je_sb_natal_intensify_indenture_program_button = {
+	name = "je_sb_natal_intensify_indenture_program_button"
+	desc = "je_sb_natal_intensify_indenture_program_button_desc"
+
+	visible = {
+		has_journal_entry = je_sb_natal_indenture_program_v2
+	}
+
+	possible = {
+		has_journal_entry = je_sb_natal_indenture_program_v2
 		custom_tooltip = {
-			text = sb_natal_indenture_cooldown_tt
-			NOT = { has_variable = sb_natal_indenture_recruitment_cooldown_var }
-		}
-		custom_tooltip = {
-			text = sb_natal_indenture_capacity_tt
-			var:sb_natal_indenture_recruitment_count_var < 10
-		}
-		custom_tooltip = {
-			text = sb_natal_indenture_natal_borders_tt
-			NOT = { has_law = law_type:law_closed_borders }
-		}
-		custom_tooltip = {
-			text = sb_natal_indenture_source_country_tt
-			sb_natal_bic_has_indenture_origin = yes
-		}
-		custom_tooltip = {
-			text = sb_natal_indenture_source_pop_tt
-			sb_natal_bic_has_next_indenture_cohort = yes
+			text = sb_natal_indenture_intensity_requires_active_tt
+			NOT = { has_variable = sb_natal_indenture_suspended_var }
 		}
 	}
 
-	effect = {
-		custom_tooltip = sb_natal_indenture_recruitment_tt
-		hidden_effect = { sb_natal_recruit_next_indenture_cohort = yes }
+	selected = {
+		has_variable = sb_natal_indenture_intensified_var
 	}
 
-	ai_chance = { value = 1000 }
+	effect = { sb_natal_intensify_indenture_program = yes }
+
+	ai_chance = { value = 0 }
 }

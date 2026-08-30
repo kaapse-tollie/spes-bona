@@ -15,17 +15,15 @@ sb_natal_interwar.001 = {
 
 	trigger = {
 		has_variable = sb_natal_indenture_pending_var
-		sb_natal_is_british_colony = yes
+		sb_natal_indenture_program_is_valid = yes
 		NOT = { has_variable = sb_natal_indenture_completed_var }
-		NOT = { has_law = law_type:law_closed_borders }
 		sb_natal_bic_has_indenture_opening_cohort = yes
 	}
 
 	cancellation_trigger = {
 		OR = {
-			NOT = { sb_natal_is_british_colony = yes }
+			NOT = { sb_natal_indenture_program_is_valid = yes }
 			has_variable = sb_natal_indenture_completed_var
-			has_law = law_type:law_closed_borders
 			NOT = { sb_natal_bic_has_indenture_opening_cohort = yes }
 		}
 	}
@@ -41,9 +39,41 @@ sb_natal_interwar.001 = {
 		name = sb_natal_interwar.001.a
 		default_option = yes
 		custom_tooltip = sb_natal_indenture_migration_tt
-		hidden_effect = {
-			sb_natal_open_indenture_program = yes
-		}
+		#hidden_effect = {
+		sb_natal_open_indenture_program = yes
+		#}
+	}
+}
+
+sb_natal_interwar.002 = {
+	type = country_event
+	hidden = yes
+
+	immediate = { sb_natal_process_indenture_cycle = yes }
+}
+
+sb_natal_interwar.005 = {
+	type = country_event
+	placement = root
+
+	title = sb_natal_interwar.005.t
+	desc = sb_natal_interwar.005.d
+	flavor = sb_natal_interwar.005.f
+
+	event_image = { video = "gfx/event_pictures/ip4_colonial_exploitation_going_well.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_portrait.dds"
+	duration = 3
+
+	trigger = { has_variable = sb_natal_indian_ethnogenesis_event_pending_var }
+
+	option = {
+		name = sb_natal_interwar.005.a
+		default_option = yes
+		custom_tooltip = sb_natal_indian_ethnogenesis_tt
+		custom_tooltip = sb_natal_indian_homeland_tt
+
+		hidden_effect = { sb_natal_establish_natal_indian_community = yes }
 	}
 }
 
@@ -164,7 +194,7 @@ sb_natal_interwar.030 = {
 		add_radicals = { value = 0.25 culture = cu:zulu }
 		hidden_effect = {
 			set_variable = sb_natal_zulu_settlement_resolved_var
-			sb_natal_create_zulu_restoration_movement = yes
+			sb_natal_create_zulu_national_movement = yes
 		}
 		ai_chance = {
 			base = 20
@@ -182,7 +212,7 @@ sb_natal_interwar.030 = {
 		hidden_effect = {
 			set_variable = sb_natal_zulu_settlement_resolved_var
 			sb_natal_apply_zulu_chiefdom_settlement = yes
-			sb_natal_create_zulu_restoration_movement = yes
+			sb_natal_create_zulu_national_movement = yes
 		}
 		ai_chance = {
 			base = 60
@@ -210,6 +240,86 @@ sb_natal_interwar.030 = {
 	}
 }
 
+sb_natal_interwar.031 = {
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		country_definition = cd:NAL
+		has_variable = sb_natal_restored_zululand_setup_pending_var
+	}
+
+	immediate = {
+		sb_natal_finalize_restored_zululand_as_puppet = yes
+	}
+}
+
+sb_natal_interwar.035 = {
+	type = country_event
+	placement = root
+
+	title = sb_natal_interwar.035.t
+	desc = sb_natal_interwar.035.d
+	flavor = sb_natal_interwar.035.f
+
+	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:ZUL
+		is_country_alive = yes
+		is_secessionist = yes
+		has_variable = sb_natal_zulu_restoration_active_var
+		c:NAL ?= {
+			is_country_alive = yes
+			has_variable = sb_natal_zulu_restoration_active_var
+		}
+	}
+
+	cancellation_trigger = {
+		OR = {
+			is_secessionist = no
+			NOT = { has_variable = sb_natal_zulu_restoration_active_var }
+			NOT = {
+				c:NAL ?= {
+					is_country_alive = yes
+					has_variable = sb_natal_zulu_restoration_active_var
+				}
+			}
+		}
+	}
+
+	immediate = {
+		c:NAL = { save_scope_as = sb_natal_arms_appeal_natal_scope }
+	}
+
+	option = {
+		name = sb_natal_interwar.035.a
+		default_option = yes
+		trigger = { c:TRN ?= { is_country_alive = yes } }
+		custom_tooltip = sb_natal_zulu_appeals_to_transvaal_tt
+		hidden_effect = {
+			c:NAL = {
+				set_variable = sb_natal_zulu_arms_appeal_sent_var
+				set_variable = {
+					name = sb_natal_zulu_arms_appeal_wait_var
+					days = 30
+				}
+			}
+			c:TRN = { trigger_event = { id = sb_natal_interwar.040 days = 5 popup = yes } }
+		}
+		ai_chance = { base = 100 }
+	}
+
+	option = {
+		name = sb_natal_interwar.035.b
+		hidden_effect = { sb_natal_resolve_zulu_arms_appeal = yes }
+		ai_chance = { base = 0 }
+	}
+}
+
 sb_natal_interwar.040 = {
 	type = country_event
 	placement = root
@@ -228,20 +338,33 @@ sb_natal_interwar.040 = {
 		is_country_alive = yes
 		c:NAL ?= {
 			is_country_alive = yes
+			has_variable = sb_natal_zulu_restoration_active_var
 			has_variable = sb_natal_zulu_arms_appeal_sent_var
 			has_variable = sb_natal_zulu_arms_appeal_wait_var
 			NOT = { has_variable = sb_natal_zulu_arms_appeal_resolved_var }
 		}
 		c:ZUL ?= {
 			is_country_alive = yes
-			is_direct_subject_of = c:NAL
+			is_secessionist = yes
+			has_variable = sb_natal_zulu_restoration_active_var
 		}
 	}
 
 	cancellation_trigger = {
 		OR = {
-			NOT = { c:NAL ?= { is_country_alive = yes } }
-			NOT = { c:ZUL ?= { is_country_alive = yes is_direct_subject_of = c:NAL } }
+			NOT = {
+				c:NAL ?= {
+					is_country_alive = yes
+					has_variable = sb_natal_zulu_restoration_active_var
+				}
+			}
+			NOT = {
+				c:ZUL ?= {
+					is_country_alive = yes
+					is_secessionist = yes
+					has_variable = sb_natal_zulu_restoration_active_var
+				}
+			}
 			c:NAL ?= { has_variable = sb_natal_zulu_arms_appeal_resolved_var }
 		}
 	}
@@ -348,28 +471,92 @@ sb_natal_interwar.050 = {
 		OR = {
 			NOT = { sb_natal_is_british_colony = yes }
 			sb_natal_has_responsible_government = yes
-			has_variable = sb_natal_shepstone_resolved_var
 		}
 	}
 
 	immediate = {
 		remove_variable = sb_natal_shepstone_pending_var
 		set_variable = sb_natal_shepstone_resolved_var
+		set_variable = {
+			name = sb_natal_shepstone_event_open_var
+			days = 120
+		}
 	}
 
 	option = {
 		name = sb_natal_interwar.050.a
 		default_option = yes
 		custom_tooltip = sb_natal_shepstone_accept_tt
-		hidden_effect = { sb_natal_apply_shepstone_system = yes }
-		ai_chance = { base = 100 }
+		sb_natal_apply_shepstone_system = yes
+		hidden_effect = {
+			sb_natal_apply_shepstone_hidden_mechanics = yes
+		}
+		remove_variable = sb_natal_shepstone_event_open_var
+		ai_chance = {
+			base = 80
+			modifier = {
+				trigger = { sb_frontier_ai_behavior_strict_historical = yes }
+				add = 1000
+			}
+		}
 	}
 
 	option = {
 		name = sb_natal_interwar.050.b
-		custom_tooltip = sb_natal_shepstone_decline_tt
-		hidden_effect = { sb_natal_decline_shepstone_system = yes }
-		ai_chance = { base = 0 }
+		#custom_tooltip = sb_natal_shepstone_decline_tt
+		remove_variable = sb_natal_shepstone_event_open_var
+		sb_natal_decline_shepstone_system = yes
+
+		ai_chance = {
+			base = 20
+			modifier = {
+				trigger = { sb_frontier_ai_behavior_strict_historical = yes }
+				add = -1000
+			}
+		}
+	}
+}
+
+sb_natal_interwar.055 = {
+	type = country_event
+	placement = root
+
+	title = sb_natal_interwar.055.t
+	desc = sb_natal_interwar.055.d
+	flavor = sb_natal_interwar.055.f
+
+	event_image = { video = "gfx/event_pictures/africa_public_protest.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_protest.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:NAL
+		has_variable = sb_natal_shepstone_accepted_var
+		has_variable = sb_natal_shepstone_repeal_response_pending_var
+	}
+
+	immediate = {
+		remove_variable = sb_natal_shepstone_repeal_response_pending_var
+		set_variable = sb_natal_shepstone_repeal_response_resolved_var
+	}
+
+	option = {
+		name = sb_natal_interwar.055.a
+		default_option = yes
+		sb_natal_apply_repealed_shepstone_consequences = yes
+		ai_chance = {
+			base = 100
+		}
+	}
+
+	option = {
+		name = sb_natal_interwar.055.b
+		custom_tooltip = sb_natal_shepstone_accept_tt
+		sb_natal_restore_shepstone_system = yes
+		ai_chance = {
+			base = 0
+		}
 	}
 }
 

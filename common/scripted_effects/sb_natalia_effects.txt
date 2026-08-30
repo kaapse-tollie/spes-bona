@@ -43,8 +43,42 @@ sb_create_natalia_republic_if_missing = {
 		}
 		create_country = {
 			tag = NAL
-			origin = root
+			origin = c:ORA
 			province = p:x5B124F
+		}
+	}
+}
+
+# The honour and firearms settlements begin as a two-district frontier republic.
+# Natalia must establish the remainder of the former NGI interior through normal
+# frontier colonization rather than receiving the whole state at creation.
+sb_create_natalia_frontier_republic_if_missing = {
+	if = {
+		limit = {
+			NOT = { exists = c:NAL }
+		}
+		p:x552449.state = {
+			save_temporary_scope_as = sb_natalia_boer_founder_seed_state
+		}
+		hidden_effect = {
+			s:STATE_CAPE_COLONY = {
+				region_state:CAP ?= {
+					every_scope_pop = {
+						limit = {
+							culture = cu:boer
+						}
+						move_partial_pop = {
+							state = scope:sb_natalia_boer_founder_seed_state
+							population_ratio = 0.05
+						}
+					}
+				}
+			}
+		}
+		create_country = {
+			tag = NAL
+			origin = c:ORA
+			province = p:x552449
 		}
 	}
 }
@@ -59,6 +93,28 @@ sb_assign_natalia_republic_territory = {
 				x5B124F xFF0EF1 x552449 xE0EB02 x85695F xDE0EDE
 				x7ACC38 xB1F868 x3CED3D x11A090 xCD31DB
 			}
+		}
+		add_claim = c:NAL
+	}
+}
+
+sb_assign_natalia_frontier_territory = {
+	s:STATE_NATAL = {
+		hidden_effect = {
+			if = {
+				limit = { exists = c:NGI }
+				set_owner_of_provinces = {
+					country = c:NGI
+					provinces = {
+						x5B124F xFF0EF1 xE0EB02 x85695F x7ACC38
+						xB1F868 x3CED3D x11A090 xCD31DB
+					}
+				}
+			}
+		}
+		set_owner_of_provinces = {
+			country = c:NAL
+			provinces = { x552449 xDE0EDE }
 		}
 		add_claim = c:NAL
 	}
@@ -81,6 +137,7 @@ sb_apply_natalia_blood_river_military_setup = {
 		type = army
 		hq_region = sr:region_southern_africa
 		name = natalia_commando
+		save_scope_as = sb_natalia_commando_scope
 		combat_unit = {
 			type = unit_type:combat_unit_type_irregular_infantry
 			state_region = s:STATE_NATAL
@@ -91,6 +148,9 @@ sb_apply_natalia_blood_river_military_setup = {
 			state_region = s:STATE_NATAL
 			count = 1
 		}
+	}
+	ruler ?= {
+		transfer_to_formation = scope:sb_natalia_commando_scope
 	}
 }
 
@@ -126,8 +186,6 @@ sb_apply_natalia_boer_republic_setup = {
 		}
 		set_variable = sb_natalia_ultimatum_truce_var
 	}
-	effect_starting_technology_tier_3_tech = yes
-	add_technology_researched = napoleonic_warfare
 	set_country_type = unrecognized
 	set_next_election_date = 1840.1.1
 	if = {
@@ -164,7 +222,6 @@ sb_apply_natalia_boer_republic_setup = {
 			limit = { NOT = { has_building = building_maize_farm } }
 			create_building = {
 				building = building_maize_farm
-				level = 1
 				add_ownership = {
 					building = {
 						type = building_manor_house
@@ -175,6 +232,22 @@ sb_apply_natalia_boer_republic_setup = {
 				}
 				reserves = 1
 				activate_production_methods = { "pm_simple_farming" "pm_no_secondary" "pm_tools_disabled" }
+			}
+		}
+		if = {
+			limit = { NOT = { has_building = building_livestock_ranch } }
+			create_building = {
+				building = building_livestock_ranch
+				add_ownership = {
+					building = {
+						type = building_manor_house
+						country = c:NAL
+						levels = 1
+						region = "STATE_NATAL"
+					}
+				}
+				reserves = 1
+				activate_production_methods = { "pm_open_air_stockyards" "pm_simple_ranch" "pm_standard_fences" "pm_unrefrigerated" }
 			}
 		}
 	}
@@ -295,14 +368,13 @@ sb_create_british_natal_colony_if_missing = {
 		}
 		create_country = {
 			tag = NAL
-			origin = root
+			origin = c:CAP
 			province = p:x279045
 		}
 	}
 }
 
 sb_seed_british_natal_colony_shell = {
-	effect_starting_technology_tier_2_tech = yes
 	if = {
 		limit = { NOT = { country_has_primary_culture = cu:anglo_african } }
 		add_primary_culture = cu:anglo_african
@@ -671,8 +743,8 @@ sb_found_natalia_peacefully = {
 		}
 		save_scope_as = retief_scope
 	}
-	sb_create_natalia_republic_if_missing = yes
-	sb_assign_natalia_republic_territory = yes
+	sb_create_natalia_frontier_republic_if_missing = yes
+	sb_assign_natalia_frontier_territory = yes
 	c:NAL ?= {
 		sb_apply_natalia_boer_republic_setup = yes
 		change_relations = {
@@ -737,6 +809,7 @@ sb_found_natalia_peacefully = {
 				type = army
 				hq_region = sr:region_southern_africa
 				name = natalia_commando
+				save_scope_as = sb_natalia_commando_scope
 				combat_unit = {
 					type = unit_type:combat_unit_type_line_infantry
 					state_region = s:STATE_NATAL
@@ -747,6 +820,9 @@ sb_found_natalia_peacefully = {
 					state_region = s:STATE_NATAL
 					count = 1
 				}
+			}
+			ruler ?= {
+				transfer_to_formation = scope:sb_natalia_commando_scope
 			}
 		}
 	}

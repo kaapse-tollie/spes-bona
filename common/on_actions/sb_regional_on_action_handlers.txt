@@ -1,5 +1,22 @@
 ﻿# Eastern Sphere, Natal, British-office, and frontier support handlers.
 
+# TODO: Decide whether Mpande's balance-of-power strategy should be explicitly cleared when his reign ends.
+sb_on_zulu_mpande_new_ruler = {
+	trigger = {
+		has_template = ZUL_mpande_zulu
+		owner = {
+			country_definition = cd:ZUL
+			is_ai = yes
+			is_subject = no
+		}
+	}
+	effect = {
+		owner = {
+			set_strategy = ai_strategy_maintain_power_balance
+		}
+	}
+}
+
 sb_on_eastern_sphere_monthly_pulse_country = {
 	trigger = {
 		OR = {
@@ -40,6 +57,34 @@ sb_on_natal_colony_monthly_pulse_country = {
 	}
 }
 
+sb_on_natal_shepstone_yearly_pulse_country = {
+	trigger = {
+		country_definition = cd:NAL
+		is_country_alive = yes
+		active_law:lawgroup_land_reform ?= {
+			has_amendment = amendment_type:amendment_sb_shepstone_system
+		}
+	}
+	effect = {
+		sb_natal_convert_non_zulu_peasant_share_to_laborers = yes
+	}
+}
+
+sb_on_natal_indian_consolidation_yearly_pulse_country = {
+	trigger = {
+		has_global_variable = sb_natal_indian_ethnogenesis_completed_global_var
+		has_variable = sb_natal_indian_community_established_var
+		is_country_alive = yes
+		any_scope_state = { state_region = s:STATE_NATAL }
+	}
+	effect = {
+		every_scope_state = {
+			limit = { state_region = s:STATE_NATAL }
+			sb_natal_convert_indian_population_to_natal_indian = yes
+		}
+	}
+}
+
 sb_on_port_natal_monthly_pulse_country = {
 	trigger = { country_definition = cd:CAP }
 	effect = { sb_natal_refresh_port_natal_migration_deterrent = yes }
@@ -54,7 +99,10 @@ sb_on_natal_interwar_law_activated = {
 	trigger = {
 		owner = {
 			country_definition = cd:NAL
-			has_law = law_type:law_closed_borders
+			OR = {
+				has_law = law_type:law_closed_borders
+				NOT = { sb_natal_has_shepstone_system = yes }
+			}
 		}
 	}
 	effect = {

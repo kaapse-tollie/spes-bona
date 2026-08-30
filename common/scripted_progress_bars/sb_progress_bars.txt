@@ -32,8 +32,12 @@
 #     +0.4  Intelligentsia in government
 #	  +0.2 Devout in government
 #     +0.1 Petty Bourgeoisie in government
+#     +0.1 Elected Bureaucrats law active
+#     +0.2 Guaranteed Liberties law active
 #
 #   Settler direction (negative values, bar moves toward 0):
+#     -0.1 Imperial Administration law active
+#     -0.2 Secret Police law active
 #     -0.2  Landed voting law active
 #     -0.1 Landed voting being enacted
 #     -0.3 Oligarchy law active
@@ -179,6 +183,38 @@ sb_cape_balance_bar = {
 			subtract = {
 				desc = "sb_cape_racial_segregation_enacting"
 				value = 0.05
+			}
+		}
+
+		# Bureaucracy drift. Appointed Bureaucrats are neutral.
+		if = {
+			limit = { has_law = law_type:law_sb_imperial_administration }
+			subtract = {
+				desc = "sb_cape_imperial_administration_law"
+				value = 0.1
+			}
+		}
+		else_if = {
+			limit = { has_law = law_type:law_elected_bureaucrats }
+			add = {
+				desc = "sb_cape_elected_bureaucrats_law"
+				value = 0.1
+			}
+		}
+
+		# Internal-security drift. No Home Affairs and National Guard are neutral.
+		if = {
+			limit = { has_law = law_type:law_secret_police }
+			subtract = {
+				desc = "sb_cape_secret_police_law"
+				value = 0.2
+			}
+		}
+		else_if = {
+			limit = { has_law = law_type:law_guaranteed_liberties }
+			add = {
+				desc = "sb_cape_guaranteed_liberties_law"
+				value = 0.2
 			}
 		}
 

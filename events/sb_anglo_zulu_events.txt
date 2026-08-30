@@ -159,8 +159,18 @@ sb_anglo_zulu.040 = {
 			is_subject_of = root
 			has_variable = sb_natalia_british_colony_resolved_var
 		}
-		any_scope_state = {
-			state_region = s:STATE_ZULULAND
+		OR = {
+			any_scope_state = {
+				state_region = s:STATE_ZULULAND
+			}
+			c:CAP ?= {
+				is_country_alive = yes
+				is_ai = yes
+				is_subject_of = root
+				any_scope_state = {
+					state_region = s:STATE_ZULULAND
+				}
+			}
 		}
 	}
 
@@ -183,6 +193,24 @@ sb_anglo_zulu.040 = {
 					}
 				}
 				set_state_owner = c:NAL
+			}
+			c:CAP ?= {
+				if = {
+					limit = {
+						is_country_alive = yes
+						is_ai = yes
+						is_subject_of = c:GBR
+					}
+					every_scope_state = {
+						limit = {
+							OR = {
+								state_region = s:STATE_NATAL
+								state_region = s:STATE_ZULULAND
+							}
+						}
+						set_state_owner = c:NAL
+					}
+				}
 			}
 			c:NAL ?= {
 				set_variable = sb_anglo_zulu_pressure_resolved_var
