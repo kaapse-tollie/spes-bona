@@ -899,22 +899,18 @@ sb_nam_sync_consolidation_modifiers = {
 		limit = { global_var:sb_nam_rule_harshness_current_var < 10 }
 		set_variable = { name = sb_nam_consolidation_target_tier_var value = 3 }
 	}
-	set_variable = { name = sb_nam_consolidation_tier_delta_var value = 1 }
 	if = {
-		limit = { has_variable = sb_nam_consolidation_applied_tier_var }
-		set_variable = {
-			name = sb_nam_consolidation_tier_delta_var
-			value = var:sb_nam_consolidation_applied_tier_var
+		limit = { NOT = { has_variable = sb_nam_consolidation_applied_tier_var } }
+		set_variable = sb_nam_consolidation_refresh_needed_var
+	}
+	else_if = {
+		limit = {
+			NOT = { var:sb_nam_consolidation_applied_tier_var = var:sb_nam_consolidation_target_tier_var }
 		}
-		change_variable = {
-			name = sb_nam_consolidation_tier_delta_var
-			subtract = var:sb_nam_consolidation_target_tier_var
-		}
+		set_variable = sb_nam_consolidation_refresh_needed_var
 	}
 	if = {
-		limit = {
-			NOT = { var:sb_nam_consolidation_tier_delta_var = 0 }
-		}
+		limit = { has_variable = sb_nam_consolidation_refresh_needed_var }
 		sb_nam_clear_consolidation_modifiers = yes
 	if = {
 		limit = {
@@ -967,7 +963,7 @@ sb_nam_sync_consolidation_modifiers = {
 			value = var:sb_nam_consolidation_target_tier_var
 		}
 	}
-	remove_variable = sb_nam_consolidation_tier_delta_var
+	remove_variable = sb_nam_consolidation_refresh_needed_var
 	remove_variable = sb_nam_consolidation_target_tier_var
 }
 

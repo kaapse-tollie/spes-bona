@@ -464,7 +464,7 @@ sb_spawn_transvaal_republic_v2 = {
 				limit = { p:xD0A010.state.owner = root }
 				create_country = {
 					tag = TRN
-					origin = root
+					origin = c:ORA
 					province = p:xD0A010
 				}
 			}
@@ -472,7 +472,7 @@ sb_spawn_transvaal_republic_v2 = {
 				limit = { p:x8BDC4D.state.owner = root }
 				create_country = {
 					tag = TRN
-					origin = root
+					origin = c:ORA
 					province = p:x8BDC4D
 				}
 			}
@@ -480,7 +480,7 @@ sb_spawn_transvaal_republic_v2 = {
 				limit = { p:xA22DC2.state.owner = root }
 				create_country = {
 					tag = TRN
-					origin = root
+					origin = c:ORA
 					province = p:xA22DC2
 				}
 			}
@@ -488,7 +488,7 @@ sb_spawn_transvaal_republic_v2 = {
 				limit = { p:xD02190.state.owner = root }
 				create_country = {
 					tag = TRN
-					origin = root
+					origin = c:ORA
 					province = p:xD02190
 				}
 			}
@@ -496,14 +496,14 @@ sb_spawn_transvaal_republic_v2 = {
 				limit = { p:x6C1786.state.owner = root }
 				create_country = {
 					tag = TRN
-					origin = root
+					origin = c:ORA
 					province = p:x6C1786
 				}
 			}
 			else = {
 				create_country = {
 					tag = TRN
-					origin = root
+					origin = c:ORA
 					province = p:x9A137B
 				}
 			}
@@ -560,7 +560,6 @@ sb_spawn_transvaal_republic_v2 = {
 		set_variable = sb_commandant_general_visible_var
 		set_variable = sb_early_republic_var
 		set_next_election_date = 1839.10.12
-		effect_starting_technology_tier_3_tech = yes
 		effect_starting_politics_conservative = yes
 		sb_apply_boer_republic_spawn_setup = yes
 		activate_law = law_type:law_national_supremacy
@@ -710,7 +709,7 @@ sb_found_zoutpansberg_republic = {
 		}
 		create_country = {
 			tag = ZPB
-			origin = root
+			origin = c:ORA
 			province = p:x4760DD
 		}
 	}
@@ -799,7 +798,13 @@ sb_found_zoutpansberg_republic = {
 					interest_group = ig_armed_forces
 				}
 			}
-			ruler = {
+			if = {
+				limit = { exists = scope:sb_boer_starting_commando_scope }
+				ruler ?= {
+					transfer_to_formation = scope:sb_boer_starting_commando_scope
+				}
+			}
+				ruler = {
 				if = {
 					limit = {
 						NOT = { has_trait = expert_colonial_administrator }
@@ -878,7 +883,7 @@ sb_found_zoutpansberg_republic = {
 		}
 		create_country = {
 			tag = LYD
-			origin = root
+			origin = c:TRN
 			province = p:x91CA59
 		}
 	}
@@ -975,6 +980,7 @@ sb_found_zoutpansberg_republic = {
 					type = army
 					hq_region = sr:region_southern_africa
 					name = lydenburg_commando
+					save_scope_as = sb_boer_starting_commando_scope
 
 					combat_unit = {
 						type = unit_type:combat_unit_type_irregular_infantry
@@ -1018,6 +1024,12 @@ sb_found_zoutpansberg_republic = {
 					is_general = yes
 					ig_leader = yes
 					interest_group = ig_armed_forces
+				}
+			}
+			if = {
+				limit = { exists = scope:sb_boer_starting_commando_scope }
+				ruler ?= {
+					transfer_to_formation = scope:sb_boer_starting_commando_scope
 				}
 			}
 				change_relations = {

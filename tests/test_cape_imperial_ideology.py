@@ -63,6 +63,7 @@ class CapeImperialIdeologyTests(unittest.TestCase):
             "state_bureaucracy_population_base_cost_factor_mult = -0.25",
             "country_aristocrats_pol_str_mult = 0.10",
             "country_sb_aristocrats_armed_forces_attraction_add = 50",
+            "country_liberty_desire_add = -0.10",
             "country_definition = cd:CAP",
             "country_definition = cd:NAL",
             "sb_natalia_british_colony_resolved_var",
@@ -135,9 +136,9 @@ class CapeImperialIdeologyTests(unittest.TestCase):
                 "law_professional_army = strongly_approve",
                 "law_elected_bureaucrats = strongly_disapprove",
                 "law_multicultural = strongly_disapprove",
-                "law_sb_non_racialism = strongly_disapprove",
             ):
                 self.assertIn(token, ideology)
+            self.assertNotIn("law_sb_non_racialism =", ideology)
             self.assertNotIn("law_sb_imperial_administration =", ideology)
             self.assertNotIn("law_colonial_administration =", ideology)
             self.assertNotIn("lawgroup_colonization", ideology)
@@ -204,6 +205,74 @@ class CapeImperialIdeologyTests(unittest.TestCase):
                 rf'desc = "{re.escape(desc)}"\s+value = {re.escape(value)}',
             )
             self.assertEqual(1, bar.count(f'desc = "{desc}"'))
+
+    def test_cape_movement_ideologies_cover_bureaucracy_and_internal_security(self):
+        ideologies = {
+            "ideology_sb_settler_separatist": {
+                "lawgroup_bureaucracy": {
+                    "law_hereditary_bureaucrats": "approve",
+                    "law_appointed_bureaucrats": "neutral",
+                    "law_elected_bureaucrats": "disapprove",
+                },
+                "lawgroup_internal_security": {
+                    "law_no_home_affairs": "neutral",
+                    "law_secret_police": "strongly_approve",
+                    "law_national_guard": "approve",
+                    "law_guaranteed_liberties": "disapprove",
+                },
+            },
+            "ideology_sb_cape_liberal": {
+                "lawgroup_bureaucracy": {
+                    "law_hereditary_bureaucrats": "strongly_disapprove",
+                    "law_appointed_bureaucrats": "neutral",
+                    "law_elected_bureaucrats": "strongly_approve",
+                },
+                "lawgroup_internal_security": {
+                    "law_no_home_affairs": "disapprove",
+                    "law_secret_police": "strongly_disapprove",
+                    "law_national_guard": "approve",
+                    "law_guaranteed_liberties": "strongly_approve",
+                },
+            },
+        }
+        for ideology_name, expected_groups in ideologies.items():
+            ideology = object_block("common/ideologies/sb_ideologies.txt", ideology_name)
+            for group_name, expected in expected_groups.items():
+                group = object_block_from_source(ideology, group_name)
+                self.assertEqual(
+                    expected,
+                    dict(
+                        re.findall(
+                            r"^\s*(law_[a-z0-9_]+)\s*=\s*([a-z_]+)",
+                            group,
+                            re.MULTILINE,
+                        )
+                    ),
+                )
+
+    def test_cape_balance_tracks_bureaucracy_and_internal_security_laws(self):
+        bar = object_block(
+            "common/scripted_progress_bars/sb_progress_bars.txt",
+            "sb_cape_balance_bar",
+        )
+        expected = {
+            "sb_cape_imperial_administration_law": "0.1",
+            "sb_cape_elected_bureaucrats_law": "0.1",
+            "sb_cape_secret_police_law": "0.2",
+            "sb_cape_guaranteed_liberties_law": "0.2",
+        }
+        for desc, value in expected.items():
+            self.assertRegex(
+                bar,
+                rf'desc = "{re.escape(desc)}"\s+value = {re.escape(value)}',
+            )
+            self.assertEqual(1, bar.count(f'desc = "{desc}"'))
+        for neutral_law in (
+            "law_appointed_bureaucrats",
+            "law_no_home_affairs",
+            "law_national_guard",
+        ):
+            self.assertNotIn(neutral_law, bar)
 
     def test_rhodes_changes_ideology_only_after_bsac_appointment(self):
         rhodes = object_block(

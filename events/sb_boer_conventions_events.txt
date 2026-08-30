@@ -4,7 +4,7 @@
 # Spes Bona - Boer Convention Events
 # =============================================================================
 # Ownership: Bloemfontein and Sand River conventions, British anti-slavery response, and TRN-ZPB frontier compact crisis.
-# TOC: 140/161 Sand River, 141 Bloemfontein, 142 British slavery response, 143 crackdown/frontier compact, 145-146 ZPB compact fallout.
+# TOC: 140/161 Sand River, 141 Bloemfontein, 142 British slavery response, 160/162 subject abolition, 143 crackdown/frontier compact, 145-146 ZPB compact fallout.
 # Cross-ref: common/scripted_effects/sb_treaty_effects.txt, common/journal_entries/1-05_sb_transvaal_unity.txt
 # =============================================================================
 
@@ -596,6 +596,36 @@ sb_boer_conventions.160 = {
 			country = c:GBR
 			value = 10
 		}
+	}
+}
+
+sb_boer_conventions.162 = {
+	type = country_event
+	placement = root
+
+	title = sb_boer_conventions.162.t
+	desc = sb_boer_conventions.162.d
+	flavor = sb_boer_conventions.162.f
+
+	event_image = {
+		video = "gfx/event_pictures/southamerica_slave_chains.bk2"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		is_country_alive = yes
+		country_has_primary_culture = cu:boer
+		is_subject_of = c:GBR
+		sb_has_any_slavery_law = yes
+	}
+
+	option = {
+		name = sb_boer_conventions.162.a
+		default_option = yes
+		activate_law = law_type:law_slavery_banned
 	}
 }
 

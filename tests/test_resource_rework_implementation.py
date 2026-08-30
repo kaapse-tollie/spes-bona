@@ -12,6 +12,9 @@ GATE_PATH = ROOT / "common/scripted_effects/sb_resource_technology_gates_effects
 ON_ACTION_PATH = ROOT / "common/on_actions/sb_mineral_discoveries_on_actions.txt"
 KIMBERLEY_PATH = ROOT / "common/scripted_effects/sb_griqualand_west_effects.txt"
 MESSAGE_PATH = ROOT / "common/messages/sb_resource_gate_messages.txt"
+GUIDE_PATH = ROOT / "Docs/resource_update_guide.md"
+DESIGN_PATH = ROOT / "Docs/resource_gameplay_overrides.md"
+SUMMARY_PATH = ROOT / "Docs/resource_balance_summary.md"
 
 ARABLE = "arable_land"
 WOOD = "building_logging_camp"
@@ -43,16 +46,16 @@ EXPECTED_CONFIGURED = {
     "STATE_VRYSTAAT": {ARABLE: 56, WOOD: 8, COAL: 5, IRON: 1, GOLD: 4, DIAMOND: 5},
     "STATE_NATAL": {ARABLE: 24, WOOD: 4, COAL: 2, FISH: 1, IRON: 2, WHALE: 4},
     "STATE_ZULULAND": {ARABLE: 12, WOOD: 4, COAL: 4, FISH: 1},
-    "STATE_DRAKENSBERG": {ARABLE: 6, WOOD: 1, COAL: 1, DIAMOND: 6},
+    "STATE_DRAKENSBERG": {ARABLE: 8, WOOD: 1, COAL: 1, DIAMOND: 6},
     "STATE_BOTSWANA": {ARABLE: 8, WOOD: 5, COAL: 10, GOLD: 1, DIAMOND: 30},
     "STATE_LOURENCO_MARQUES": {ARABLE: 32, WOOD: 10, FISH: 2, WHALE: 4, RUBBER: 16, OIL: 6},
     "STATE_ZAMBEZI": {ARABLE: 60, WOOD: 11, COAL: 7, IRON: 9, SULFUR: 1, GOLD: 5, DIAMOND: 10, RUBBER: 16},
     "STATE_HEREROLAND": {ARABLE: 18, WOOD: 2, FISH: 6, LEAD: 10},
-    "STATE_NAMAQUALAND": {ARABLE: 4, FISH: 7, LEAD: 2, WHALE: 3, DIAMOND: 14},
+    "STATE_NAMAQUALAND": {ARABLE: 5, FISH: 7, LEAD: 2, WHALE: 3, DIAMOND: 14},
 }
 
 EXPECTED_TOTALS = {
-    ARABLE: 380,
+    ARABLE: 383,
     WOOD: 65,
     COAL: 149,
     FISH: 33,
@@ -64,6 +67,21 @@ EXPECTED_TOTALS = {
     DIAMOND: 115,
     RUBBER: 32,
     OIL: 6,
+}
+
+DOCUMENTED_RESOURCE_NAMES = {
+    ARABLE: "Arable",
+    WOOD: "Wood",
+    COAL: "Coal",
+    FISH: "Fishing",
+    IRON: "Iron",
+    LEAD: "Lead",
+    SULFUR: "Sulfur",
+    WHALE: "Whaling",
+    GOLD: "Gold potential",
+    DIAMOND: "Diamonds",
+    RUBBER: "Rubber",
+    OIL: "Oil potential",
 }
 
 
@@ -193,6 +211,24 @@ class ResourceReworkImplementationTests(unittest.TestCase):
             ("STATE_LOURENCO_MARQUES", "building_cotton_plantation"),
         ):
             self.assertIn(f'"{retained}"', self.states[state])
+
+    def test_live_documentation_matches_the_executable_totals(self):
+        guide = GUIDE_PATH.read_text(encoding="utf-8-sig").lower()
+        summary = SUMMARY_PATH.read_text(encoding="utf-8-sig").lower()
+        design = DESIGN_PATH.read_text(encoding="utf-8-sig")
+        for resource, value in EXPECTED_TOTALS.items():
+            label = DOCUMENTED_RESOURCE_NAMES[resource]
+            label_pattern = r"\s+".join(map(re.escape, label.lower().split()))
+            prose_pattern = rf"\b{value}\s+{label_pattern}\b"
+            self.assertRegex(guide, prose_pattern)
+            self.assertRegex(summary, prose_pattern)
+            self.assertRegex(
+                design,
+                rf"(?m)^\| {re.escape(label)} \|.*\| \*\*{value}\*\* \|",
+            )
+        self.assertIn("## Active playtesting checks", design)
+        self.assertIn("Drakensberg `8`", design)
+        self.assertIn("Namaqualand `5`", design)
 
 
 if __name__ == "__main__":

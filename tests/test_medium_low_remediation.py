@@ -134,11 +134,42 @@ class MediumLowRemediationTests(unittest.TestCase):
             self.assertEqual(1, block.count("sb_bechuanaland_initialize_crisis_queue = yes"))
             self.assertEqual(1, block.count("sb_bechuanaland_refresh_crisis_launch_participants = yes"))
 
+    def test_british_subjecthood_forces_boer_slavery_abolition(self):
+        router = object_block("common/on_actions/sb_on_actions.txt", "on_become_subject")
+        handler = object_block(
+            "common/on_actions/sb_diplomatic_play_on_action_handlers.txt",
+            "sb_on_british_boer_subject_slavery_moratorium",
+        )
+        event = object_block(
+            "events/sb_boer_conventions_events.txt", "sb_boer_conventions.162"
+        )
+
+        self.assertIn("sb_on_british_boer_subject_slavery_moratorium", router)
+        for token in (
+            "country_has_primary_culture = cu:boer",
+            "is_subject_of = c:GBR",
+            "sb_has_any_slavery_law = yes",
+        ):
+            self.assertIn(token, handler)
+            self.assertIn(token, event)
+        self.assertIn(
+            "trigger_event = { id = sb_boer_conventions.162 days = 1 popup = yes }",
+            handler,
+        )
+        self.assertEqual(1, event.count("option = {"))
+        self.assertIn("activate_law = law_type:law_slavery_banned", event)
+        localization = text("localization/english/sb_boer_conventions_l_english.yml")
+        self.assertIn(
+            '# ### REVIEWED ###\nsb_boer_conventions.162.t:0 "Westminster\'s Condition"',
+            localization,
+        )
+
     def test_central_router_preserves_handler_order(self):
         router = text("common/on_actions/sb_on_actions.txt")
         expected = {
             "on_game_started": ("sb_on_game_started",),
             "on_game_started_after_lobby": ("sb_on_game_started_after_lobby",),
+            "on_new_ruler": ("sb_on_zulu_mpande_new_ruler",),
             "on_diplomatic_play_started": ("sb_on_spes_bona_diplomatic_play_started",),
             "on_diplo_play_join_side": ("sb_on_spes_bona_diplo_play_join_side",),
             "on_diplo_play_abandon_side": (
@@ -148,6 +179,7 @@ class MediumLowRemediationTests(unittest.TestCase):
             "on_diplo_play_back_down": ("sb_on_spes_bona_diplo_play_back_down",),
             "on_become_subject": (
                 "sb_on_natalia_become_british_subject",
+                "sb_on_british_boer_subject_slavery_moratorium",
                 "sb_on_bechuanaland_subject_status_changed",
             ),
             "on_monthly_pulse_country": (
@@ -169,6 +201,8 @@ class MediumLowRemediationTests(unittest.TestCase):
                 "sb_on_cape_yearly_pulse_country",
                 "sb_on_modifier_cache_yearly_repair",
                 "sb_on_boer_restraint_yearly_repair",
+                "sb_on_natal_shepstone_yearly_pulse_country",
+                "sb_on_natal_indian_consolidation_yearly_pulse_country",
             ),
             "on_state_owner_change": (
                 "sb_on_namibia_consolidation_state_owner_change",
@@ -178,9 +212,15 @@ class MediumLowRemediationTests(unittest.TestCase):
             "on_acquired_technology": ("sb_on_spes_bona_acquired_technology",),
             "on_election_campaign_end": ("sb_on_martinus_union_election_end",),
             "on_colony_created": ("sb_on_spes_bona_colony_created",),
-            "on_secession_start": ("sb_on_cape_secession_start",),
+            "on_secession_start": (
+                "sb_on_cape_secession_start",
+                "sb_on_natal_zulu_secession_start",
+            ),
             "on_revolution_start": ("sb_on_cape_secession_start",),
-            "on_secession_end": ("sb_on_cape_secession_end",),
+            "on_secession_end": (
+                "sb_on_cape_secession_end",
+                "sb_on_natal_zulu_secession_end",
+            ),
             "on_revolution_end": ("sb_on_cape_secession_end",),
             "on_wargoal_enforced": ("sb_on_spes_bona_wargoal_enforced",),
             "on_war_end": ("sb_on_spes_bona_war_end",),

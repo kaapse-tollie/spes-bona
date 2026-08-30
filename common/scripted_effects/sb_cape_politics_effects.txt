@@ -31,22 +31,18 @@ sb_cape_sync_balance_band = {
 		limit = { var:sb_cape_balance_current <= -30 }
 		set_variable = { name = sb_cape_balance_target_band_var value = -1 }
 	}
-	set_variable = { name = sb_cape_balance_band_delta_var value = 1 }
 	if = {
-		limit = { has_variable = sb_cape_balance_applied_band_var }
-		set_variable = {
-			name = sb_cape_balance_band_delta_var
-			value = var:sb_cape_balance_applied_band_var
+		limit = { NOT = { has_variable = sb_cape_balance_applied_band_var } }
+		set_variable = sb_cape_balance_refresh_needed_var
+	}
+	else_if = {
+		limit = {
+			NOT = { var:sb_cape_balance_applied_band_var = var:sb_cape_balance_target_band_var }
 		}
-		change_variable = {
-			name = sb_cape_balance_band_delta_var
-			subtract = var:sb_cape_balance_target_band_var
-		}
+		set_variable = sb_cape_balance_refresh_needed_var
 	}
 	if = {
-		limit = {
-			NOT = { var:sb_cape_balance_band_delta_var = 0 }
-		}
+		limit = { has_variable = sb_cape_balance_refresh_needed_var }
 		sb_cape_clear_balance_band = yes
 		je:je_sb_cape_politics ?= {
 			if = {
@@ -71,7 +67,7 @@ sb_cape_sync_balance_band = {
 			value = var:sb_cape_balance_target_band_var
 		}
 	}
-	remove_variable = sb_cape_balance_band_delta_var
+	remove_variable = sb_cape_balance_refresh_needed_var
 	remove_variable = sb_cape_balance_target_band_var
 }
 

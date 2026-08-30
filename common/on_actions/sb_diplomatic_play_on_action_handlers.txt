@@ -141,6 +141,18 @@ sb_on_natalia_become_british_subject = {
 	}
 }
 
+sb_on_british_boer_subject_slavery_moratorium = {
+	trigger = {
+		is_country_alive = yes
+		country_has_primary_culture = cu:boer
+		is_subject_of = c:GBR
+		sb_has_any_slavery_law = yes
+	}
+	effect = {
+		trigger_event = { id = sb_boer_conventions.162 days = 1 popup = yes }
+	}
+}
+
 sb_on_bechuanaland_subject_status_changed = {
 	effect = {
 		if = {
@@ -166,7 +178,6 @@ sb_on_spes_bona_diplo_play_back_down = {
 		sb_cleanup_bst_gun_war_defence_for_play = yes
 		sb_klip_river_handle_backdown = yes
 		sb_bechuanaland_handle_crisis_backdown = yes
-		sb_natal_handle_zulu_restoration_backdown = yes
 		if = {
 			limit = {
 				root = { is_diplomatic_play_type = dp_sb_trn_zpb_crackdown_locked }
@@ -412,7 +423,6 @@ sb_on_spes_bona_war_end = {
 		sb_cleanup_bst_gun_war_defence_for_play = yes
 		sb_klip_river_handle_war_end = yes
 		sb_bechuanaland_resolve_crisis_war_at_end = yes
-		sb_natal_handle_zulu_restoration_war_end = yes
 		if = {
 			limit = {
 				root = { is_diplomatic_play_type = dp_sb_trn_zpb_crackdown_locked }
@@ -648,7 +658,6 @@ sb_on_spes_bona_wargoal_enforced = {
 			}
 			sb_klip_river_handle_wargoal_enforced = yes
 			sb_bechuanaland_track_crisis_wargoal_enforcement = yes
-			sb_natal_handle_zulu_restoration_wargoal_enforced = yes
 			if = {
 				limit = {
 					country_definition = cd:TRN
@@ -1080,10 +1089,17 @@ sb_on_spes_bona_wargoal_enforced = {
 		}
 
 		# If British Natal already exists, any Zululand acquired directly by
-		# Britain in a victorious war is handed to the established colony.
+		# Britain or its AI Cape colony is handed to the established colony.
 		if = {
 			limit = {
-				country_definition = cd:GBR
+				OR = {
+					country_definition = cd:GBR
+					AND = {
+						country_definition = cd:CAP
+						is_ai = yes
+						is_subject_of = c:GBR
+					}
+				}
 				scope:target ?= {
 					country_definition = cd:ZUL
 				}
@@ -1098,8 +1114,17 @@ sb_on_spes_bona_wargoal_enforced = {
 					is_subject_of = c:GBR
 					has_variable = sb_natalia_british_colony_resolved_var
 				}
-				any_scope_state = {
-					state_region = s:STATE_ZULULAND
+				OR = {
+					any_scope_state = {
+						state_region = s:STATE_ZULULAND
+					}
+					c:CAP ?= {
+						is_ai = yes
+						is_subject_of = c:GBR
+						any_scope_state = {
+							state_region = s:STATE_ZULULAND
+						}
+					}
 				}
 			}
 			scope:target = {
@@ -1112,7 +1137,9 @@ sb_on_spes_bona_wargoal_enforced = {
 					remove_variable = sb_port_natal_raid_var
 				}
 			}
-			trigger_event = { id = sb_anglo_zulu.040 days = 3 popup = yes }
+			c:GBR = {
+				trigger_event = { id = sb_anglo_zulu.040 days = 3 popup = yes }
+			}
 		}
 
 		# A surviving victory over the British should feel exceptional.

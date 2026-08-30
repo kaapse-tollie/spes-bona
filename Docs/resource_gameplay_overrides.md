@@ -4,7 +4,10 @@
 
 **Status:** implemented; fresh campaign required
 
-**Evidence baseline:** `References/Resource rework/sb_full_resource_audit_2026-08-24/`
+**Playtest status:** Drakensberg and Walvis Bay checks pending
+
+**Evidence baseline:** [full resource audit, 24 August 2026](../../References/Resource%20rework/sb_full_resource_audit_2026-08-24/README.md)
+**Implementation guide:** [Resource Update: Contributor and Maintainer Guide](resource_update_guide.md)
 
 ## Decision rule
 
@@ -40,7 +43,7 @@ notification when their technology gate resolves.
 | Natal | Iron | 1 [1–2] | **2** | Use the upper bound as a small abstraction. |
 | Zululand | Arable | 10 [9–13] | **12** | Raise the split-state allocation without returning to the full upper bound. |
 | Zululand | Wood | 3 [1–5] | **4** | Within-range uplift for the separate state economy. |
-| Drakensberg | Arable | 4 [2–6] | **6** | Use the upper bound because the small state has few alternative development paths. |
+| Drakensberg | Arable | 4 [2–6] | **8** | Conservative playtesting exception above the evidence band: add two levels after the six-level trial produced immediate starvation and poor growth. |
 | Drakensberg | Coal | 0 [0–1] | **1** | Retain the prior one-level gameplay token. |
 | Drakensberg | Diamonds | 5 [5–12] | **6** | Explicit balance exception above the previously approved lower-bound rule; remains gated by pneumatic tools. |
 | Lourenço Marques | Arable | 24 [16–33] | **32** | Near-upper allocation for the broad south-of-Pungwe footprint. |
@@ -51,6 +54,7 @@ notification when their technology gate resolves.
 | Hereroland | Wood | 1 [0–2] | **2** | Use the historical upper bound. |
 | Hereroland | Fishing | 7 [5–8] | **6** | Match the Vanilla allowance. |
 | Hereroland | Lead | 9 [7–12] | **10** | Small within-range increase for the Tsumeb mining identity. |
+| Namaqualand | Arable | 4 [raw evidence 1] | **5** | Conservative one-level playtesting increase. This is a split-state allocation diagnostic, not a claim that Walvis Bay is already guaranteed an arable level. |
 | Namaqualand | Fishing | 5 [4–7] | **7** | Use the upper bound and match Vanilla. |
 | Namaqualand | Lead | 1 [0–2] | **2** | Use the upper bound as a small base-metal abstraction. |
 
@@ -70,13 +74,26 @@ research-proposal values.
   instead of wheat, and Bechuanaland uses maize instead of millet. Every state still
   exposes only one grain building.
 
+## Active playtesting checks
+
+- **Drakensberg `8`:** start a fresh campaign as Basutoland and confirm that
+  starvation does not begin immediately and that the population can sustain positive
+  growth. If it still fails, record local grain and meat prices, standard of living,
+  market access, and subsistence-farm staffing before raising the cap again; the
+  failure may be an income or market problem rather than exhausted land.
+- **Namaqualand `5`:** start a fresh campaign and inspect the Cape-owned Walvis Bay
+  fragment directly. Success requires at least one effective arable level there. The
+  previous four-level cap apportioned `0 / 3 / 1` to Cape / Nama / San, and the current
+  province-weight reconstruction predicts that five may still apportion `0 / 3 / 2`.
+  Treat a zero at Walvis as a failed check, even though `x8031D0` is marked prime land.
+
 ## Configured-horizon totals
 
 Vanilla counts each unsplit parent state once. Old SB includes its scripted additions.
 
 | Resource | Old SB | Unique-parent Vanilla | Research proposal | Live design | Δ vs old SB | Δ vs Vanilla |
 |---|---:|---:|---:|---:|---:|---:|
-| Arable | 383 | 540 | 379 | **380** | −3 | −160 |
+| Arable | 383 | 540 | 379 | **383** | 0 | −157 |
 | Wood | 51 | 73 | 57 | **65** | +14 | −8 |
 | Coal | 128 | 496 | 146 | **149** | +21 | −347 |
 | Fishing | 32 | 44 | 32 | **33** | +1 | −11 |
@@ -92,12 +109,12 @@ Vanilla counts each unsplit parent state once. Old SB includes its scripted addi
 ## Implementation contract
 
 - Static caps and crop slots live in
-  `map_data/state_regions/04_subsaharan_africa.txt`.
+  [`map_data/state_regions/04_subsaharan_africa.txt`](../map_data/state_regions/04_subsaharan_africa.txt).
 - Technology stages live in
-  `common/scripted_effects/sb_resource_technology_gates_effects.txt`.
+  [`common/scripted_effects/sb_resource_technology_gates_effects.txt`](../common/scripted_effects/sb_resource_technology_gates_effects.txt).
 - Technology acquisition, starting-technology catch-up, and later ownership changes
   all call the same idempotent gate effect through
-  `common/on_actions/sb_mineral_discoveries_on_actions.txt`.
+  [`common/on_actions/sb_mineral_discoveries_on_actions.txt`](../common/on_actions/sb_mineral_discoveries_on_actions.txt).
 - Seven gold stages and the Lourenço Marques oil stage never force discovery. Their
   later discovery uses the standard Vanilla resource toast.
 - Fifteen direct diamond/iron/coal stages use one-time custom notifications naming
@@ -106,6 +123,7 @@ Vanilla counts each unsplit parent state once. Old SB includes its scripted addi
 - Static-map changes require a fresh campaign; filewatcher reload and existing saves
   are not valid balance tests for this revision.
 
-The executable contract is locked by `tests/test_resource_rework_implementation.py`,
+The executable contract is locked by
+[`tests/test_resource_rework_implementation.py`](../tests/test_resource_rework_implementation.py),
 which reconstructs every configured state value and the regional totals from the live
 state file, gate stages, and Kimberley event.

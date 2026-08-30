@@ -310,31 +310,40 @@ sb_update_firearms_progress = {
 		name = sb_firearms_progress_months_var
 		value = 0
 	}
-	set_variable = {
-		name = sb_firearms_progress_source_delta_var
-		value = var:sb_firearms_treaty_progress_months_var
-	}
-	change_variable = {
-		name = sb_firearms_progress_source_delta_var
-		subtract = var:sb_firearms_industry_progress_months_var
-	}
-
 	if = {
-		limit = {
-			var:sb_firearms_progress_source_delta_var >= 0
+		limit = { has_variable = sb_firearms_treaty_progress_months_var }
+		if = {
+			limit = { has_variable = sb_firearms_industry_progress_months_var }
+			if = {
+				limit = {
+					var:sb_firearms_treaty_progress_months_var >= var:sb_firearms_industry_progress_months_var
+				}
+				set_variable = {
+					name = sb_firearms_progress_months_var
+					value = var:sb_firearms_treaty_progress_months_var
+				}
+			}
+			else = {
+				set_variable = {
+					name = sb_firearms_progress_months_var
+					value = var:sb_firearms_industry_progress_months_var
+				}
+			}
 		}
-		set_variable = {
-			name = sb_firearms_progress_months_var
-			value = var:sb_firearms_treaty_progress_months_var
+		else = {
+			set_variable = {
+				name = sb_firearms_progress_months_var
+				value = var:sb_firearms_treaty_progress_months_var
+			}
 		}
 	}
-	else = {
+	else_if = {
+		limit = { has_variable = sb_firearms_industry_progress_months_var }
 		set_variable = {
 			name = sb_firearms_progress_months_var
 			value = var:sb_firearms_industry_progress_months_var
 		}
 	}
-	remove_variable = sb_firearms_progress_source_delta_var
 
 	change_variable = {
 		name = sb_firearms_progress_months_var
@@ -359,20 +368,8 @@ sb_sync_iron_age_weapons_penalty = {
 	}
 	else_if = {
 		limit = { has_variable = sb_firearms_progress_months_var }
-		set_variable = { name = sb_firearms_tier_delta_var value = 1 }
 		if = {
-			limit = { has_variable = sb_firearms_applied_tier_var }
-			set_variable = {
-				name = sb_firearms_tier_delta_var
-				value = var:sb_firearms_applied_tier_var
-			}
-			change_variable = {
-				name = sb_firearms_tier_delta_var
-				subtract = var:sb_firearms_progress_months_var
-			}
-		}
-		if = {
-			limit = { NOT = { var:sb_firearms_tier_delta_var = 0 } }
+			limit = { NOT = { has_variable = sb_firearms_applied_tier_var } }
 			sb_remove_iron_age_weapons_modifiers = yes
 			sb_apply_iron_age_weapons_penalty_for_current_progress = yes
 			set_variable = {
@@ -380,7 +377,17 @@ sb_sync_iron_age_weapons_penalty = {
 				value = var:sb_firearms_progress_months_var
 			}
 		}
-		remove_variable = sb_firearms_tier_delta_var
+		else_if = {
+			limit = {
+				NOT = { var:sb_firearms_applied_tier_var = var:sb_firearms_progress_months_var }
+			}
+			sb_remove_iron_age_weapons_modifiers = yes
+			sb_apply_iron_age_weapons_penalty_for_current_progress = yes
+			set_variable = {
+				name = sb_firearms_applied_tier_var
+				value = var:sb_firearms_progress_months_var
+			}
+		}
 	}
 }
 

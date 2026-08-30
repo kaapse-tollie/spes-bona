@@ -5,13 +5,14 @@ as its evidence baseline and a separately recorded gameplay layer as its final d
 The evidence ranges remain unchanged; balance selections are not presented as new
 historical estimates.
 
-The authoritative design record is
-[resource_gameplay_overrides.md](resource_gameplay_overrides.md). It contains every
+Start with the third-party-facing
+[Resource Update: Contributor and Maintainer Guide](resource_update_guide.md). The
+authoritative design record is
+[resource_gameplay_overrides.md](resource_gameplay_overrides.md); it contains every
 state-level override, rejected alternative, configured-horizon total, and technology
 gate rule. The complete notebooks, source register, uncertainty bands, and state
-tables remain under
-`References/Resource rework/sb_full_resource_audit_2026-08-24/` outside the release
-payload.
+tables are indexed in the external
+[resource-rework evidence directory](../../References/Resource%20rework/README.md).
 
 ## Live rules
 
@@ -25,8 +26,11 @@ payload.
 - Natal coffee, Zululand cotton, and Lourenço Marques cotton remain deliberate crop
   abstractions. Griqualand West and Bechuanaland receive the two approved one-grain
   corrections.
+- Drakensberg 8 and Namaqualand 5 are conservative arable playtesting values. A fresh
+  start must verify Drakensberg population viability and whether split-state rounding
+  actually gives Cape-owned Walvis Bay an arable level.
 - A fresh campaign is required for validation because state-region data is static.
 
-Configured-horizon totals are **380 arable, 65 wood, 149 coal, 33 fishing, 46 iron,
+Configured-horizon totals are **383 arable, 65 wood, 149 coal, 33 fishing, 46 iron,
 20 lead, 1 sulfur, 17 whaling, 92 gold potential, 115 diamonds, 32 rubber, and 6 oil
 potential**.

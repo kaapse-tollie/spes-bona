@@ -18,6 +18,12 @@ je_sb_bechuanaland_corridor = {
 		container = "com_custom_widget_container_scripted_progress_bars"
 	}
 
+	widget = {
+		gui = "gui/com_journal_injects/com_shared_widgets.gui"
+		name = "com_journal_scripted_buttons"
+		container = "custom_widget_container_2"
+	}
+
 	immediate = {
 		scope:journal_entry = {
 			com_set_situation_illustration_background_effect = {
@@ -111,6 +117,15 @@ je_sb_bechuanaland_corridor = {
 		sb_bechuanaland_queue_british_settlement_once = yes
 	}
 
+	event_outcome_completed_desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { always = yes }
+				desc = event_effects_sb_bechuanaland_corridor.040_tt
+			}
+		}
+	}
+
 	custom_failure_header = je_sb_bechuanaland_corridor_boer_swa_victory_header
 
 	fail = {
@@ -145,6 +160,27 @@ je_sb_bechuanaland_corridor = {
 
 	on_fail = {
 		sb_bechuanaland_queue_boer_swa_settlement_event = yes
+	}
+
+	event_outcome_failed_desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_influence_score_var > 0
+				}
+				desc = event_effects_sb_bechuanaland_corridor.041_boer_tt
+			}
+			triggered_desc = {
+				trigger = {
+					container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_influence_score_var < 0
+				}
+				desc = event_effects_sb_bechuanaland_corridor.041_swa_tt
+			}
+			triggered_desc = {
+				trigger = { always = yes }
+				desc = event_effects_sb_bechuanaland_corridor.041_tied_tt
+			}
+		}
 	}
 
 	invalid = {

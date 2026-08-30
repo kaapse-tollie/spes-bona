@@ -21,6 +21,17 @@ def object_block(path: str, name: str) -> str:
 
 
 class FrontierSettlerIdeologyTests(unittest.TestCase):
+    def test_commando_system_halves_attrition_without_negative_risk(self):
+        amendment = object_block(
+            "common/amendments/sb_amendments.txt",
+            "amendment_sb_commando_corps",
+        )
+        self.assertIn(
+            "military_formation_attrition_risk_mult = -0.50",
+            amendment,
+        )
+        self.assertNotIn("military_formation_attrition_risk_add", amendment)
+
     def test_cap_and_boer_rural_folk_share_the_fixed_package(self):
         identities = "common/scripted_effects/sb_interest_group_identity_effects.txt"
         for effect_name, display_name in (
@@ -62,7 +73,6 @@ class FrontierSettlerIdeologyTests(unittest.TestCase):
             "law_subjecthood = neutral",
             "law_cultural_exclusion = disapprove",
             "law_multicultural = strongly_disapprove",
-            "law_sb_non_racialism = strongly_disapprove",
             "law_census_voting = strongly_approve",
             "law_landed_voting = approve",
             "law_wealth_voting = neutral",
@@ -71,13 +81,14 @@ class FrontierSettlerIdeologyTests(unittest.TestCase):
             "law_oligarchy = strongly_disapprove",
             "law_autocracy = strongly_disapprove",
             "law_technocracy = strongly_disapprove",
-            "law_discrete_inboekstelsel = strongly_approve",
+            "law_legacy_slavery = strongly_approve",
             "law_slave_trade = neutral",
         ):
             self.assertIn(token, ideology)
         for token in (
             "law_anarchy",
-            "law_legacy_slavery",
+            "law_sb_non_racialism",
+            "law_discrete_inboekstelsel",
             "law_slavery_banned",
         ):
             self.assertNotIn(token, ideology)

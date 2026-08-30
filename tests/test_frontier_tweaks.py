@@ -21,6 +21,26 @@ def object_block(path: str, name: str) -> str:
 
 
 class FrontierTweaksTests(unittest.TestCase):
+    def test_blood_river_firearms_progress_avoids_zero_delta_variables(self):
+        path = "common/scripted_effects/sb_firearms_effects.txt"
+        progress = object_block(path, "sb_update_firearms_progress")
+        penalty = object_block(path, "sb_sync_iron_age_weapons_penalty")
+        for temporary in (
+            "sb_firearms_progress_source_delta_var",
+            "sb_firearms_tier_delta_var",
+        ):
+            self.assertNotIn(temporary, progress + penalty)
+        self.assertIn(
+            "var:sb_firearms_treaty_progress_months_var >= "
+            "var:sb_firearms_industry_progress_months_var",
+            progress,
+        )
+        self.assertIn(
+            "var:sb_firearms_applied_tier_var = "
+            "var:sb_firearms_progress_months_var",
+            penalty,
+        )
+
     def test_bst_starts_with_partial_firearms_progress(self):
         seed = object_block(
             "common/scripted_effects/sb_firearms_effects.txt",
@@ -125,6 +145,29 @@ class FrontierTweaksTests(unittest.TestCase):
         self.assertIn("template = ZUL_uthumbu_claimed_son", prepare)
         self.assertIn("sb_zulu_assign_new_heir_scope = yes", prepare)
         self.assertIn("sb_zulu_prepare_uthumbu_heir = yes", secured)
+
+    def test_mbuyazi_succession_excludes_dinuzulu(self):
+        path = "common/scripted_effects/sb_zulu_dynasty_succession_effects.txt"
+        effects = text(path)
+        mbuyazi = object_block(path, "sb_resolve_zulu_dynasty_secured_mbuyazi")
+        cetshwayo = object_block(
+            path, "sb_resolve_zulu_dynasty_secured_cetshwayo_for_mpande"
+        )
+        dinuzulu = object_block(path, "sb_zulu_prepare_dinuzulu_heir")
+
+        self.assertIn(
+            "set_global_variable = sb_zulu_mbuyazi_succession_global_var",
+            mbuyazi,
+        )
+        self.assertIn(
+            "remove_global_variable = sb_zulu_mbuyazi_succession_global_var",
+            cetshwayo,
+        )
+        self.assertIn(
+            "NOT = { has_global_variable = sb_zulu_mbuyazi_succession_global_var }",
+            dinuzulu,
+        )
+        self.assertIn("sb_zulu_mbuyazi_succession_global_var", effects)
 
     def test_potgieter_has_no_colonial_administrator_trait(self):
         history = text("common/history/characters/ora - oranje.txt")
@@ -235,6 +278,65 @@ class FrontierTweaksTests(unittest.TestCase):
             )
         )
         self.assertNotIn("sb_great_trek.101", sources)
+
+    def test_vaal_republic_popup_lock_persists_until_an_option_resolves_it(self):
+        monthly = object_block(
+            "common/on_actions/sb_boer_story_on_action_handlers.txt",
+            "sb_on_trek_monthly_pulse_country",
+        )
+        colony = object_block(
+            "common/on_actions/sb_startup_on_action_handlers.txt",
+            "sb_on_spes_bona_colony_created",
+        )
+        event = object_block("events/sb_great_trek_events.txt", "sb_great_trek.006")
+        spawn = object_block(
+            "common/scripted_effects/sb_trek_migration.txt",
+            "sb_spawn_transvaal_republic_v2",
+        )
+
+        for scheduler in (monthly, colony):
+            self.assertIn("set_variable = sb_trn_v2_spawn_pending_var", scheduler)
+            self.assertNotRegex(
+                scheduler,
+                r"name\s*=\s*sb_trn_v2_spawn_pending_var[\s\S]{0,80}days\s*=",
+            )
+        self.assertIn("has_variable = sb_trn_v2_spawn_pending_var", event)
+        self.assertEqual(2, event.count("sb_spawn_transvaal_republic_v2 = yes"))
+        self.assertLess(
+            spawn.index("remove_variable = sb_trn_v2_spawn_pending_var"),
+            spawn.index("set_variable = sb_trn_v2_spawned_var"),
+        )
+
+    def test_spawned_boer_commandants_take_their_scripted_commandos(self):
+        starter = object_block(
+            "common/scripted_effects/sb_boer_commandant_effects.txt",
+            "sb_ensure_boer_republic_starting_commando",
+        )
+        trek_path = "common/scripted_effects/sb_trek_migration.txt"
+        zoutpansberg = object_block(trek_path, "sb_found_zoutpansberg_republic")
+        lydenburg = object_block(trek_path, "sb_found_lydenburg_republic")
+        transvaal = object_block(trek_path, "sb_seed_trn_v2_start_package")
+
+        self.assertEqual(2, starter.count("save_scope_as = sb_boer_starting_commando_scope"))
+        self.assertNotIn("transfer_to_formation", starter)
+        for founder in (zoutpansberg, lydenburg):
+            self.assertIn("sb_apply_boer_republic_spawn_setup = yes", founder)
+            self.assertIn("set_character_as_ruler = yes", founder)
+            self.assertIn(
+                "transfer_to_formation = scope:sb_boer_starting_commando_scope",
+                founder,
+            )
+            self.assertLess(
+                founder.index("set_character_as_ruler = yes"),
+                founder.index(
+                    "transfer_to_formation = scope:sb_boer_starting_commando_scope"
+                ),
+            )
+
+        self.assertIn("save_scope_as = trn_pretorius_commando_scope", transvaal)
+        self.assertIn(
+            "transfer_to_formation = scope:trn_pretorius_commando_scope", transvaal
+        )
 
     def test_great_trek_stages_are_sequential_and_natal_is_the_nal_or_klr_target(self):
         journal = object_block(
@@ -348,6 +450,24 @@ class FrontierTweaksTests(unittest.TestCase):
         self.assertIn("has_variable = sb_ora_annexed_bst_var", oranje_trigger)
         self.assertNotIn("owns_entire_state_region", basotho_result)
 
+    def test_drakensberg_settlement_invalidates_without_a_foothold(self):
+        journal = object_block(
+            "common/journal_entries/1-07_sb_bst_frontier.txt",
+            "je_sb_settle_drakensberg",
+        )
+        possible = object_block_from_source(journal, "possible")
+        invalid = object_block_from_source(journal, "invalid")
+        monthly = text("common/on_actions/sb_bst_on_actions.txt")
+
+        self.assertIn("sb_bst_holds_drakensberg = yes", possible)
+        self.assertIn("NOT = { sb_bst_holds_drakensberg = yes }", invalid)
+        self.assertRegex(
+            monthly,
+            r"has_variable = sb_ora_annexed_bst_var\s+"
+            r"sb_bst_holds_drakensberg = yes\s+"
+            r"NOT = \{ has_journal_entry = je_sb_settle_drakensberg \}",
+        )
+
     def test_ovambo_fragment_and_lourenco_region_are_restored(self):
         pops = object_block(
             "common/history/pops/04_subsaharan_africa.txt", "s:STATE_SOUTH_ANGOLA"
@@ -408,7 +528,7 @@ class FrontierTweaksTests(unittest.TestCase):
         self.assertIn("country_definition = cd:ZPB", monthly)
         self.assertIn("sb_zpb_assume_transvaal_after_crackdown_victory = yes", monthly)
 
-    def test_walvis_bay_receives_prime_land_and_extra_arable(self):
+    def test_walvis_bay_has_prime_weight_and_namaqualand_trial_cap(self):
         namaqualand = object_block(
             "map_data/state_regions/04_subsaharan_africa.txt",
             "STATE_NAMAQUALAND",
@@ -416,7 +536,7 @@ class FrontierTweaksTests(unittest.TestCase):
         prime_land = re.search(r"prime_land\s*=\s*\{([^}]*)\}", namaqualand)
         self.assertIsNotNone(prime_land)
         self.assertIn('"x8031D0"', prime_land.group(1))
-        self.assertIn("arable_land = 4", namaqualand)
+        self.assertIn("arable_land = 5", namaqualand)
 
     def test_maseko_starts_with_ngoni_not_shangaan_population(self):
         zambezia = object_block(
@@ -442,9 +562,15 @@ class FrontierTweaksTests(unittest.TestCase):
         ):
             self.assertIn(token, ngoni)
 
-        localization = text("localization/english/sb_cultures_l_english.yml")
+        localization = text(
+            "localization/english/replace/sb_culture_overrides_l_english.yml"
+        )
         self.assertIn('nguni:0 "Ngoni"', localization)
         self.assertNotIn('nguni:0 "Nguni"', localization)
+        self.assertNotIn(
+            "nguni:0",
+            text("localization/english/sb_cultures_l_english.yml"),
+        )
 
         states = text("common/history/states/00_states.txt")
         zambezia = object_block_from_source(states, "s:STATE_ZAMBEZIA")

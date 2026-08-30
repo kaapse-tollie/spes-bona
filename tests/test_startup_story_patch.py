@@ -21,6 +21,20 @@ def object_block(path: str, name: str) -> str:
 
 
 class StartupStoryPatchTests(unittest.TestCase):
+    def test_mpande_uses_vanilla_balance_of_power_strategy_on_accession(self):
+        router = object_block("common/on_actions/sb_on_actions.txt", "on_new_ruler")
+        handler = object_block(
+            "common/on_actions/sb_regional_on_action_handlers.txt",
+            "sb_on_zulu_mpande_new_ruler",
+        )
+
+        self.assertIn("sb_on_zulu_mpande_new_ruler", router)
+        self.assertIn("has_template = ZUL_mpande_zulu", handler)
+        self.assertIn("country_definition = cd:ZUL", handler)
+        self.assertIn("is_ai = yes", handler)
+        self.assertIn("is_subject = no", handler)
+        self.assertIn("set_strategy = ai_strategy_maintain_power_balance", handler)
+
     def test_starting_journal_entries_are_history_authored(self):
         expected = {
             "common/history/countries/zul - zulu.txt": (
@@ -131,7 +145,15 @@ class StartupStoryPatchTests(unittest.TestCase):
             self.assertIn(term, zulu)
 
         oranje = text("localization/english/sb_great_trek_l_english.yml")
-        for term in ("Voortrekker", "British", "republic", "Swazi"):
+        for term in (
+            "Boer families",
+            "British",
+            "republic",
+            "trekkers",
+            "Ndebele",
+            "Basotho",
+            "Zulu",
+        ):
             self.assertIn(term, oranje)
 
         basutoland = text("localization/english/sb_bst_l_english.yml")
@@ -162,41 +184,32 @@ class StartupStoryPatchTests(unittest.TestCase):
         for path, journal in journal_entries.items():
             self.assertNotIn("is_shown_when_inactive", object_block(path, journal))
 
-    def test_dynastic_modifier_cache_seeds_its_comparison_operand(self):
+    def test_dynastic_modifier_cache_guards_its_comparison_operand(self):
         effect = object_block(
             "common/scripted_effects/sb_zulu_dynasty_effects.txt",
             "sb_zulu_update_dynastic_stability_modifiers",
         )
-        seed = (
+        missing_guard = (
             "limit = { NOT = { has_variable = "
             "sb_zulu_dynastic_stability_applied_tier_var } }"
         )
-        self.assertIn(seed, effect)
-        self.assertIn(
-            "name = sb_zulu_dynastic_stability_applied_tier_var\n"
-            "\t\t\tvalue = -1",
-            effect,
-        )
-        self.assertIn(
-            "name = sb_zulu_dynastic_stability_tier_delta_var\n"
-            "\t\tvalue = var:sb_zulu_dynastic_stability_applied_tier_var",
-            effect,
-        )
-        self.assertIn(
-            "name = sb_zulu_dynastic_stability_tier_delta_var\n"
-            "\t\tsubtract = var:sb_zulu_dynastic_stability_target_tier_var",
-            effect,
-        )
+        self.assertIn(missing_guard, effect)
         comparison = (
-            "NOT = { var:sb_zulu_dynastic_stability_tier_delta_var = 0 }"
+            "NOT = { var:sb_zulu_dynastic_stability_applied_tier_var = "
+            "var:sb_zulu_dynastic_stability_target_tier_var }"
         )
         self.assertIn(comparison, effect)
-        self.assertNotIn(
-            "var:sb_zulu_dynastic_stability_applied_tier_var = "
-            "var:sb_zulu_dynastic_stability_target_tier_var",
+        self.assertIn(
+            "limit = { has_variable = "
+            "sb_zulu_dynastic_stability_refresh_needed_var }",
             effect,
         )
-        self.assertLess(effect.index(seed), effect.index(comparison))
+        self.assertIn(
+            "remove_variable = sb_zulu_dynastic_stability_refresh_needed_var",
+            effect,
+        )
+        self.assertNotIn("sb_zulu_dynastic_stability_tier_delta_var", effect)
+        self.assertLess(effect.index(missing_guard), effect.index(comparison))
 
 
 if __name__ == "__main__":
