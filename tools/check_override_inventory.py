@@ -19,9 +19,9 @@ TOP_LEVEL_RE = re.compile(r"^([A-Za-z0-9_]+)\s*=\s*\{", re.MULTILINE)
 SKIP_TOP_LEVEL = {".git", ".claude", ".prime"}
 SUPPORTED_TARGETS = {"1.13.11": "24799966"}
 CMF_NAME = "Community Mod Framework"
-CMF_VERSION = "1.63.0"
-CMF_COMMIT = "bd92022"
-CMF_DEPENDENCY_RANGE = "1.63.*"
+CMF_VERSION = "1.65.0"
+CMF_COMMIT = "d832d15"
+CMF_DEPENDENCY_RANGE = "1.65.*"
 
 
 def sha256_bytes(data: bytes) -> str:

@@ -76,14 +76,17 @@ class RepositoryValidatorTests(unittest.TestCase):
             )
             (effects / "fixture.txt").write_text(
                 "bad_effect = {\n"
-                " if = { limit = { var:left = var:right } }\n"
-                " # var:commented = var:comparison\n"
+                " set_variable = { name = zeroable_delta_var value = var:left }\n"
+                " change_variable = { name = zeroable_delta_var subtract = var:right }\n"
+                " if = { limit = { var:zeroable_delta_var = 0 } }\n"
+                " remove_variable = zeroable_delta_var\n"
+                " # change_variable = { name = commented_delta_var subtract = 1 }\n"
                 " set_variable = { name = leaked_delta_var value = 1 }\n"
                 "}\n"
             )
 
             errors = validate.runtime_script_hazards(root)
-            self.assertTrue(any("variable-to-variable" in error for error in errors))
+            self.assertTrue(any("collapse to an unset zero" in error for error in errors))
             self.assertTrue(any("must use add_contextless" in error for error in errors))
             self.assertTrue(any("created twice at startup" in error for error in errors))
             self.assertTrue(any("country journal" in error for error in errors))
@@ -111,9 +114,10 @@ class RepositoryValidatorTests(unittest.TestCase):
             )
             (effects / "fixture.txt").write_text(
                 "safe_effect = {\n"
-                " set_variable = { name = safe_delta_var value = 0 }\n"
-                " if = { limit = { var:safe_delta_var = 0 } }\n"
-                " remove_variable = safe_delta_var\n"
+                " if = {\n"
+                "  limit = { has_variable = left has_variable = right }\n"
+                "  if = { limit = { var:left = var:right } }\n"
+                " }\n"
                 "}\n"
             )
 

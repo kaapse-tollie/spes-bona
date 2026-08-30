@@ -21,7 +21,7 @@ import zlib
 
 ROOT = Path(__file__).resolve().parents[1]
 CMF_ID = "com.github.Victoria-3-Modding-Co-op.Community-Mod-Framework"
-CMF_PINNED_VERSION = "1.63.0"
+CMF_PINNED_VERSION = "1.65.0"
 DEFAULT_CMF_ROOT = ROOT.parent / "Community Mod Framework"
 TEXT_ROOTS = ("common", "events", "localization", "map_data")
 TRIGGER_EVENT_RE = re.compile(r"\btrigger_event\s*=\s*\{")
@@ -52,15 +52,11 @@ SB_DEFINITION_RE = re.compile(
     r"^(?:(?:REPLACE|TRY_REPLACE|REPLACE_OR_CREATE):)?(sb_[A-Za-z0-9_]+)\s*=\s*\{",
     re.MULTILINE,
 )
-VARIABLE_VALUE_RE = r"(?:[A-Za-z0-9_.:]+\.)?(?:var|global_var):[A-Za-z0-9_]+"
-VARIABLE_COMPARISON_RE = re.compile(
-    rf"(?<![A-Za-z0-9_]){VARIABLE_VALUE_RE}\s*(?:<=|>=|!=|=|<|>)\s*{VARIABLE_VALUE_RE}"
-)
 ADD_JOURNAL_ENTRY_RE = re.compile(r"\badd_journal_entry\s*=\s*\{")
 ADD_CONTEXTLESS_JOURNAL_ENTRY_RE = re.compile(
     r"\badd_contextless_journal_entry\s*=\s*([A-Za-z0-9_.:-]+)"
 )
-EXPECTED_DEFERRED_GATES = {"BC-20", "BC-22", "CP-07", "SUP-05", "QUAL-09", "CONTENT-01"}
+EXPECTED_DEFERRED_GATES = {"BC-20", "BC-22", "CP-07", "SUP-05", "QUAL-09"}
 
 
 @dataclass
@@ -170,13 +166,6 @@ def runtime_script_hazards(root: Path = ROOT) -> list[str]:
             source = path.read_text(encoding="utf-8-sig", errors="ignore")
             masked = mask_script_comments(source)
             relative = path.relative_to(root).as_posix()
-            for match in VARIABLE_COMPARISON_RE.finditer(masked):
-                line = masked.count("\n", 0, match.start()) + 1
-                errors.append(
-                    f"{relative}:{line}: variable-to-variable trigger comparison "
-                    f"is rejected by Victoria 3 ({match.group(0).strip()})"
-                )
-
             if relative.startswith("common/scripted_effects/"):
                 for object_match in TOP_LEVEL_OBJECT_RE.finditer(masked):
                     block = extract_braced(masked, object_match.start())
@@ -184,6 +173,29 @@ def runtime_script_hazards(root: Path = ROOT) -> list[str]:
                         re.findall(r"\bname\s*=\s*([A-Za-z0-9_]+_delta_var)\b", block)
                     )
                     for variable in sorted(delta_variables):
+                        changed = False
+                        for change_match in re.finditer(
+                            r"\bchange_variable\s*=\s*\{", block
+                        ):
+                            change_block = extract_braced(block, change_match.start())
+                            if re.search(
+                                rf"\bname\s*=\s*{re.escape(variable)}\b",
+                                change_block,
+                            ):
+                                changed = True
+                                break
+                        compares_with_zero = re.search(
+                            rf"(?<![A-Za-z0-9_])(?:[A-Za-z0-9_.:]+\.)?"
+                            rf"var:{re.escape(variable)}\s*(?:<=|>=|!=|=|<|>)\s*"
+                            r"0(?:\.0+)?\b",
+                            block,
+                        )
+                        if changed and compares_with_zero:
+                            line = masked.count("\n", 0, object_match.start()) + 1
+                            errors.append(
+                                f"{relative}:{line}: arithmetic delta variable {variable} "
+                                "is compared after it can collapse to an unset zero value"
+                            )
                         if not re.search(
                             rf"\bremove_variable\s*=\s*{re.escape(variable)}\b",
                             block,
@@ -868,7 +880,7 @@ def check_release_invariants() -> Check:
         "sb_bechuanaland_project_corridor_journal = yes",
     ):
         if token not in journal:
-            errors.append(f"Bechuanaland JE is missing its CMF 1.63 journal projection: {token}")
+            errors.append(f"Bechuanaland JE is missing its CMF 1.65 journal projection: {token}")
     for token in (
         "com_set_situation_left_title =",
         "com_set_situation_right_title =",

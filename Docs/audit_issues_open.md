@@ -6,7 +6,7 @@ Repository baseline: `de97d34cb1776bfbe804bf524d8d9815ef55b2d7`
 
 Target: Victoria 3 `1.13.11`, Steam build `24799966`, Vanilla checksum `a47f`
 
-Dependency baseline: Community Mod Framework `1.63.0`, commit `bd92022`
+Dependency baseline: Community Mod Framework `1.65.0`, commit `d832d15`
 
 ## Status
 

@@ -2,7 +2,7 @@
 
 Target game version: `1.13.11` (Steam build `24799966`, checksum `a47f`)
 
-Minimum tested dependency: Community Mod Framework `1.63.0`, commit `bd92022`. The launcher relationship is `1.63.*`, accepting patch releases while requiring an explicit rebase before a later CMF minor line is permitted.
+Minimum tested dependency: Community Mod Framework `1.65.0`, commit `d832d15`. The launcher relationship is `1.65.*`, accepting patch releases while requiring an explicit rebase before a later CMF minor line is permitted.
 
 The canonical machine-readable inventory is `Docs/compatibility/override_inventory.json`. It records every exact-path collision and keyed override with ownership, intended delta, load-order semantics, review date, and pinned source hashes.
 
@@ -53,7 +53,7 @@ The checker fails on any unregistered `zz_` override-style file or any unregiste
 
 ## Dependency Rebases
 
-The five retained political-movement replacements are pinned to CMF `1.63.0` and reviewed against Vanilla `1.13.11`. Cultural Supremacy retains the upstream unowned-homeland and neighbouring-movement scope fixes; the only SB-specific delta is CAP creation/disband exclusion. The other retained movement deltas remain the documented CAP exclusion or Anglo-African utilitarian eligibility.
+The five retained political-movement replacements are pinned to CMF `1.65.0` and reviewed against Vanilla `1.13.11`. Their CMF source files and object hashes are unchanged from 1.63.0. Cultural Supremacy retains the upstream unowned-homeland and neighbouring-movement scope fixes; the only SB-specific delta is CAP creation/disband exclusion. The other retained movement deltas remain the documented CAP exclusion or Anglo-African utilitarian eligibility.
 
 The company replacements are intentionally narrow:
 
@@ -62,7 +62,7 @@ The company replacements are intentionally narrow:
 
 Vanilla's additive `on_company_disbanded` handler remains untouched. SB registers exactly one separate Mozambique cleanup handler.
 
-The Armed Forces definition is a keyed Vanilla `1.13.11` rebase. Its only SB delta consumes Imperial Administration's displayed flat `+50` Aristocrat attraction modifier; CMF `1.63.0` does not replace this object. The upstream source and object hashes are pinned so later military-interest-group changes require an explicit rebase.
+The Armed Forces definition is a keyed Vanilla `1.13.11` rebase. Its only SB delta consumes Imperial Administration's displayed flat `+50` Aristocrat attraction modifier; CMF `1.65.0` does not replace this object. The upstream source and object hashes are pinned so later military-interest-group changes require an explicit rebase.
 
 The Colonial Racialism amendment is a keyed Vanilla `1.13.11` rebase. Its only SB delta permits Rural Folk carrying Settler Colonialist to sponsor the amendment; Vanilla's approval gate and existing Armed Forces and Industrialist sponsors remain unchanged.
 
@@ -70,14 +70,14 @@ Vanilla's internal `nguni` culture key is retained for compatibility but narrowe
 
 The `pink_map` decision is pinned to its Vanilla 1.13.11 object. Its DLC, independence, Portuguese Colonialism, and one-use gates remain unchanged; SB adds only colonial/company-subject colonization eligibility and routing through the durable Bechuanaland terminal outcome. The Vanilla Pink Map JE, presentation, modifiers, and favour transaction remain authoritative.
 
-## CMF 1.63 Integration
+## CMF 1.65 Integration
 
-The Bechuanaland Corridor uses CMF 1.63.0's journal-scope and International Situation interfaces:
+The Bechuanaland Corridor uses CMF 1.65.0's journal-scope and International Situation interfaces:
 
 - the CMF title setters project both titles for the situation widgets; and
 - `com_container` is the supported test-time inspector.
 
-The engine exposes the corridor as one contextless JE shared by its involved countries, so SB addresses that singleton through the standard `je:` link and projects its container-backed actor scopes and score directly. Its launcher dependency is pinned to `1.63.*`, so an older CMF build is intentionally unsupported rather than maintained through duplicate inline implementations.
+The engine exposes the corridor as one contextless JE shared by its involved countries, so SB addresses that singleton through the standard `je:` link and projects its container-backed actor scopes and score directly. Its launcher dependency is pinned to `1.65.*`, so an older CMF build is intentionally unsupported rather than maintained through duplicate inline implementations.
 
 One named container, `sb_bechuanaland_corridor_state`, owns all shared active-crisis state. SB ships no journal GUI replacement and no container debug UI.
 

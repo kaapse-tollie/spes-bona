@@ -2,7 +2,7 @@
 
 Target game version: `1.13.11`
 
-Required framework: Community Mod Framework `1.63.x`. The launcher dependency is pinned to `1.63.*`, and release validation is pinned to `1.63.0` commit `bd92022`.
+Required framework: Community Mod Framework `1.65.x`. The launcher dependency is pinned to `1.65.*`, and release validation is pinned to `1.65.0` commit `d832d15`.
 
 Spes Bona is a Southern Africa map, population, and flavor overhaul. It is not a light overlay.
 
@@ -32,13 +32,13 @@ The three intentional isolated passable Bechuanaland pockets are allowlisted by 
 
 SB does not use a treaty-history `replace_path`. Its exact-path `00_historical_treaties.txt` shadows Vanilla and changes the Southern African startup rows; uniquely named treaty files remain additive. Another mod changing the same Vanilla filename requires a merged patch.
 
-SB does not override Vanilla 1.13.11's treaty-port inheritance on-action. It also relies on CMF 1.63.0's standard and double-sided journal widgets and ships no competing journal GUI copy.
+SB does not override Vanilla 1.13.11's treaty-port inheritance on-action. It also relies on CMF 1.65.0's standard and double-sided journal widgets and ships no competing journal GUI copy.
 
 ## Global Keyed Overrides
 
 Some definitions are global keyed replacements despite a Southern African design goal: dominion actions/types, Stake Colonial Claim, Abolish Monarchy, commander retirement, Frontier Colonization and Legacy Slavery, selected ideologies and technologies, state traits, companies, and political movements. The inventory identifies every object and pins its Vanilla or CMF source.
 
-The Cultural Supremacy override is rebased to CMF 1.63.0 and reviewed against Vanilla 1.13.11, while retaining only SB's CAP exclusion.
+The Cultural Supremacy override is rebased to CMF 1.65.0 and reviewed against Vanilla 1.13.11, while retaining only SB's CAP exclusion.
 
 ## Hail Columbia
 

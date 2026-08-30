@@ -150,7 +150,7 @@ It owns actors, influence, cached drift, route and phase state, leases, victory 
 
 Only the permanent eligibility, story-open, terminal-resolution, and Pink Map terminal-outcome envelope remains global. Country-local cooldowns and temporary modifiers remain country-local. Score changes perform one clamped mutation and one participant broadcast; the singleton monthly pulse calculates drift once.
 
-The corridor is one contextless JE shared by all involved countries. SB projects the container's actor scopes and influence state directly onto that singleton JE, while CMF 1.63's title setters and International Situation widgets provide its presentation. The `1.63.*` launcher dependency makes this API contract explicit. The repository contains no SB journal GUI replacement, no gameplay `every_container` scan, no debug UI, and no release canary. CMF's `com_container` manager is the supported runtime inspector.
+The corridor is one contextless JE shared by all involved countries. SB projects the container's actor scopes and influence state directly onto that singleton JE, while CMF 1.65's title setters and International Situation widgets provide its presentation. The `1.65.*` launcher dependency makes this API contract explicit. The repository contains no SB journal GUI replacement, no gameplay `every_container` scan, no debug UI, and no release canary. CMF's `com_container` manager is the supported runtime inspector.
 
 Static tests cover creation shape, parent/tags, container-owned shared state, variable lists, singleton-JE projection without global display scopes, and removal of obsolete migration variables. Save/reload and terminal destruction remain `RV-02`.
 
@@ -167,7 +167,7 @@ Static tests cover creation shape, parent/tags, container-owned shared state, va
 - POR/IBE colonial and charter-company subjects, including MZQ, can satisfy the decision's colonization requirement. Pink Map claims remain on POR/IBE; the obsolete MZQ Zambezi-claim redirect is removed.
 - A bounded POR/IBE strategy adds six desired naval units, 120 desired supply ships, `1.5` naval construction weight, and Kongo-specific pressure while Kongo retains Northern Angola and either Portuguese Colonialism or the Pink Map remains unresolved.
 
-**Evidence.** `tests/test_pink_map_bechuanaland_integration.py` covers all decision routes, exact-zero handling, claim ownership, MZQ eligibility, arbitration bands, missing arbiters, and temporary hostility. The keyed decision object is pinned to Vanilla 1.13.11 in the override inventory. The complete validator targets Vanilla 1.13.11 and CMF 1.63.0. Engine-only arbitration, held-event, tag-change, and save/reload combinations remain part of the runtime matrix rather than being claimed by static analysis.
+**Evidence.** `tests/test_pink_map_bechuanaland_integration.py` covers all decision routes, exact-zero handling, claim ownership, MZQ eligibility, arbitration bands, missing arbiters, and temporary hostility. The keyed decision object is pinned to Vanilla 1.13.11 in the override inventory. The complete validator targets Vanilla 1.13.11 and CMF 1.65.0. Engine-only arbitration, held-event, tag-change, and save/reload combinations remain part of the runtime matrix rather than being claimed by static analysis.
 
 ---
 
@@ -175,8 +175,8 @@ Static tests cover creation shape, parent/tags, container-owned shared state, va
 
 | ID | Resolution | Evidence |
 |---|---|---|
-| `RB-01` | Cultural Supremacy is rebased from CMF 1.63.0 and reviewed against Vanilla 1.13.11 while retaining only CAP's exclusion. | CMF and Vanilla object hashes are pinned in the override inventory; regression tests cover the retained container/metadata contract. |
-| `RB-02` | Descriptor, metadata, build, source paths, hashes, law/movement baselines, and compatibility documents now target 1.13.11 and CMF 1.63.0. The launcher relationship is pinned to `1.63.*`. | `check_override_inventory.py` rejects any target other than 1.13.11/build 24799966, CMF 1.63.0/`bd92022`, or the `1.63.*` launcher dependency range. |
+| `RB-01` | Cultural Supremacy is rebased from CMF 1.65.0 and reviewed against Vanilla 1.13.11 while retaining only CAP's exclusion. | CMF and Vanilla object hashes are pinned in the override inventory; regression tests cover the retained container/metadata contract. |
+| `RB-02` | Descriptor, metadata, build, source paths, hashes, law/movement baselines, and compatibility documents now target 1.13.11 and CMF 1.65.0. The launcher relationship is pinned to `1.65.*`. | `check_override_inventory.py` rejects any target other than 1.13.11/build 24799966, CMF 1.65.0/`d832d15`, or the `1.65.*` launcher dependency range. |
 | `RB-03` | Mozambique and De Beers were reviewed against their Vanilla 1.13.11 objects. Player requirements remain Vanilla; only the documented AI incorporation/weight and diamond deltas remain. | Inventory intent and hashes are explicit; SB registers one Mozambique disband handler and leaves Vanilla's prestige-good restoration hook intact. |
 | `RB-04` | SB does not shadow or duplicate Vanilla's new treaty-port inheritance on-action. Historical treaty ownership remains an exact-path reviewed surface. | The validator pins `on_treaty_ports_inherited` and rejects any SB use of that hook or `renege_treaty_ports_with`; engine outcomes remain `RV-05`. |
 | `RB-05` | Scripted war-goal blocks and subject-transfer packages were structurally audited. Bechuanaland participant lists and enforced-goal state now live in one container. | Validation requires holder, type, and target for every scripted war-goal block and currently finds 82 complete blocks; runtime combinations remain `RV-03`. |

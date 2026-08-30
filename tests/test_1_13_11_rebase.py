@@ -22,14 +22,14 @@ def text(path: str) -> str:
 
 
 class RebaseTests(unittest.TestCase):
-    def test_release_metadata_targets_1_13_11_and_cmf_1_63_x(self):
+    def test_release_metadata_targets_1_13_11_and_cmf_1_65_x(self):
         self.assertIn('supported_version="1.13.11"', text("descriptor.mod"))
         self.assertIn('version="0.18.6"', text("descriptor.mod"))
         metadata = json.loads(text(".metadata/metadata.json"))
         self.assertEqual("1.13.11", metadata["supported_game_version"])
         self.assertEqual("0.18.6", metadata["version"])
         relationships = [item for item in metadata["relationships"] if item["id"] == CMF_ID]
-        self.assertEqual(["1.63.*"], [item["version"] for item in relationships])
+        self.assertEqual(["1.65.*"], [item["version"] for item in relationships])
 
     def test_1_13_11_hotfix_files_remain_vanilla_owned(self):
         self.assertFalse((ROOT / "common/production_methods/04_plantations.txt").exists())
@@ -149,10 +149,30 @@ class RebaseTests(unittest.TestCase):
             self.assertNotIn(key, localization)
 
     def test_corridor_ui_uses_journal_projection_not_global_display_scopes(self):
+        journal = text("common/journal_entries/1-11_sb_bechuanaland_corridor.txt")
+        effects = text("common/scripted_effects/sb_bechuanaland_corridor_effects.txt")
         localization = text("localization/english/sb_bechuanaland_corridor_l_english.yml")
+        self.assertIn('name = "com_journal_scripted_buttons"', journal)
+        self.assertIn('container = "custom_widget_container_2"', journal)
+        self.assertIn("set_variable = com_hide_scripted_buttons", effects)
         self.assertNotIn("GetGlobalVariable('sb_bechuanaland", localization)
         self.assertIn("JournalEntry.MakeScope.Var('sb_bechuanaland_boer_actor_scope')", localization)
         self.assertIn("JournalEntry.MakeScope.Var('sb_bechuanaland_swa_overlord_scope')", localization)
+
+    def test_corridor_subject_predicate_and_dynamic_hubs_are_log_safe(self):
+        triggers = text("common/scripted_triggers/sb_bechuanaland_corridor_triggers.txt")
+        predicate = triggers.split(
+            "sb_bechuanaland_cap_is_swa_overlord_subject = {", 1
+        )[1].split("\n}", 1)[0]
+        hubs = text(
+            "localization/english/replace/dynamic_state_and_hub_names_l_english.yml"
+        )
+
+        self.assertNotIn("any_country", predicate)
+        self.assertNotIn("is_direct_subject_of = PREV", predicate)
+        self.assertIn("sb_bechuanaland_swa_overlord_scope", predicate)
+        self.assertIn("HUB_NAME_STATE_BECHUANALAND_port_european:0", hubs)
+        self.assertIn("HUB_NAME_STATE_ZAMBEZI_port_european:0", hubs)
 
     def test_mozambique_company_keeps_player_gate_and_ai_asset_floor(self):
         company = text("common/company_types/zz_sb_mozambique_company_override.txt")
