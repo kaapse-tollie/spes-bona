@@ -133,6 +133,10 @@ sb_great_trek_finalize_republic = {
 		s:STATE_BECHUANALAND = { add_homeland = cu:boer }
 	}
 	if = {
+		limit = { country_definition = cd:NRP }
+		s:STATE_ZULULAND = { add_homeland = cu:boer }
+	}
+	if = {
 		limit = {
 			NOT = { has_modifier = sb_boer_principality_status }
 		}
@@ -153,8 +157,9 @@ sb_great_trek_finalize_republic = {
 				country_definition = cd:ORA
 				country_definition = cd:ZPB
 				country_definition = cd:LYD
-				country_definition = cd:NAL
-				country_definition = cd:SGO
+					country_definition = cd:NAL
+					country_definition = cd:SGO
+					country_definition = cd:NRP
 			}
 			country_has_primary_culture = cu:boer
 		}
@@ -556,6 +561,10 @@ sb_spawn_transvaal_republic_v2 = {
 	c:TRN ?= {
 		# TRN starts as an early frontier republic again, with its own delayed
 		# Great Trek / Lydenburg / ZPB lane instead of inheriting a day-1 shell.
+		if = {
+			limit = { c:ZUL ?= { is_country_alive = yes } }
+			set_relations = { country = c:ZUL value = -30 }
+		}
 		set_country_type = unrecognized
 		set_variable = sb_commandant_general_visible_var
 		set_variable = sb_early_republic_var

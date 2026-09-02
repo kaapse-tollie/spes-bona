@@ -1,0 +1,2282 @@
+﻿# Spes Bona - postwar Zululand settlement and Nieuwe Republiek effects
+#
+# The shared Chiefdoms story owns its runtime state in one named container.
+# Country variables are limited to route markers, button toggles, and delayed
+# event leases that must survive JE projection.
+
+# -----------------------------------------------------------------------------
+# British victory handoff
+# -----------------------------------------------------------------------------
+
+sb_zululand_queue_british_handoff = {
+	if = {
+		limit = {
+			country_definition = cd:GBR
+			NOT = { has_variable = sb_zululand_postwar_handoff_resolved_var }
+			NOT = { has_variable = sb_zululand_postwar_handoff_pending_var }
+		}
+		set_variable = sb_zululand_postwar_handoff_pending_var
+		set_variable = { name = sb_zululand_postwar_handoff_not_before_var days = 7 }
+	}
+}
+
+# Preserve the actual crown before annexation destroys ZUL. Character-valued
+# variables keep the exact ruler and heir without removing either from office
+# during the diplomatic play.
+sb_zululand_archive_preannexation_royal_house = {
+	if = {
+		limit = {
+			country_definition = cd:ZUL
+			is_country_alive = yes
+			c:NAL ?= {
+				is_country_alive = yes
+			}
+		}
+		sb_zulu_reconcile_secured_mpande_heir = yes
+		c:NAL = { set_variable = sb_zululand_preannexation_royal_house_archived_var }
+		c:NAL = {
+			if = {
+				limit = { has_variable = sb_zululand_preannexation_mbuyazi_line_var }
+				remove_variable = sb_zululand_preannexation_mbuyazi_line_var
+			}
+			if = {
+				limit = { has_variable = sb_zululand_preannexation_cetshwayo_line_var }
+				remove_variable = sb_zululand_preannexation_cetshwayo_line_var
+			}
+		}
+		if = {
+			limit = {
+				OR = {
+					has_variable = sb_zulu_mpande_mbuyazi_heir_var
+					has_global_variable = sb_zulu_mbuyazi_succession_global_var
+					ruler ?= { has_template = ZUL_mbuyazi_heir }
+					heir ?= { has_template = ZUL_mbuyazi_heir }
+				}
+			}
+			c:NAL = { set_variable = sb_zululand_preannexation_mbuyazi_line_var }
+		}
+		else = {
+			c:NAL = { set_variable = sb_zululand_preannexation_cetshwayo_line_var }
+		}
+		if = {
+			limit = {
+				exists = ruler
+				ruler = { is_character_alive = yes }
+			}
+			ruler = { save_scope_as = sb_zululand_preannexation_ruler_scope }
+			c:NAL = {
+				set_variable = {
+					name = sb_zululand_preannexation_ruler_scope_var
+					value = scope:sb_zululand_preannexation_ruler_scope
+				}
+			}
+		}
+		if = {
+			limit = {
+				exists = heir
+				heir = { is_character_alive = yes }
+			}
+			heir = { save_scope_as = sb_zululand_preannexation_heir_scope }
+			c:NAL = {
+				set_variable = {
+					name = sb_zululand_preannexation_heir_scope_var
+					value = scope:sb_zululand_preannexation_heir_scope
+				}
+			}
+		}
+	}
+}
+
+# ROOT = live ZUL. Discard an annexation snapshot without mutating a royal
+# succession that changed legitimately while the diplomatic play was open.
+sb_zululand_discard_preannexation_royal_house_archive = {
+	c:NAL ?= {
+		if = {
+			limit = { exists = var:sb_zululand_preannexation_ruler_scope_var }
+			remove_variable = sb_zululand_preannexation_ruler_scope_var
+		}
+		if = {
+			limit = { exists = var:sb_zululand_preannexation_heir_scope_var }
+			remove_variable = sb_zululand_preannexation_heir_scope_var
+		}
+		if = {
+			limit = { has_variable = sb_zululand_preannexation_royal_house_archived_var }
+			remove_variable = sb_zululand_preannexation_royal_house_archived_var
+		}
+		if = {
+			limit = { has_variable = sb_zululand_preannexation_mbuyazi_line_var }
+			remove_variable = sb_zululand_preannexation_mbuyazi_line_var
+		}
+		if = {
+			limit = { has_variable = sb_zululand_preannexation_cetshwayo_line_var }
+			remove_variable = sb_zululand_preannexation_cetshwayo_line_var
+		}
+	}
+}
+
+# ROOT = the live or newly restored ZUL. Reinstall the precise ruler and heir
+# cached above; this deliberately does not depend on historical templates.
+sb_zululand_restore_preannexation_royal_house = {
+	if = {
+		limit = {
+			country_definition = cd:ZUL
+			c:NAL ?= {
+				exists = var:sb_zululand_preannexation_ruler_scope_var
+				var:sb_zululand_preannexation_ruler_scope_var ?= {
+					is_character_alive = yes
+				}
+			}
+		}
+		c:NAL = {
+			var:sb_zululand_preannexation_ruler_scope_var ?= {
+				save_scope_as = summoned_character_scope
+			}
+		}
+		scope:summoned_character_scope ?= {
+			if = {
+				limit = {
+					NOT = { is_in_void = yes }
+					NOT = { is_in_exile_pool = yes }
+					NOT = { owner ?= PREV }
+				}
+				transfer_character = PREV
+			}
+		}
+		sb_zulu_install_summoned_claimant_as_ruler = yes
+	}
+	if = {
+		limit = {
+			country_definition = cd:ZUL
+			c:NAL ?= {
+				exists = var:sb_zululand_preannexation_heir_scope_var
+				var:sb_zululand_preannexation_heir_scope_var ?= {
+					is_character_alive = yes
+				}
+			}
+		}
+		c:NAL = {
+			var:sb_zululand_preannexation_heir_scope_var ?= {
+				save_scope_as = new_heir_scope
+			}
+		}
+		scope:new_heir_scope ?= {
+			if = {
+				limit = {
+					NOT = { is_in_void = yes }
+					NOT = { is_in_exile_pool = yes }
+					NOT = { owner ?= PREV }
+				}
+				transfer_character = PREV
+			}
+		}
+		sb_zulu_assign_new_heir_scope = yes
+	}
+	c:NAL ?= {
+		if = {
+			limit = { exists = var:sb_zululand_preannexation_ruler_scope_var }
+			remove_variable = sb_zululand_preannexation_ruler_scope_var
+		}
+		if = {
+			limit = { exists = var:sb_zululand_preannexation_heir_scope_var }
+			remove_variable = sb_zululand_preannexation_heir_scope_var
+		}
+		if = {
+			limit = { has_variable = sb_zululand_preannexation_royal_house_archived_var }
+			remove_variable = sb_zululand_preannexation_royal_house_archived_var
+		}
+		if = {
+			limit = { has_variable = sb_zululand_preannexation_mbuyazi_line_var }
+			remove_variable = sb_zululand_preannexation_mbuyazi_line_var
+		}
+		if = {
+			limit = { has_variable = sb_zululand_preannexation_cetshwayo_line_var }
+			remove_variable = sb_zululand_preannexation_cetshwayo_line_var
+		}
+	}
+}
+
+# ROOT = the engine-created ZUL secession. Restore a named historical ruler or
+# heir before falling back to the chosen Mpande line's named successor. If no
+# named candidate can be restored, the engine-generated monarch remains.
+sb_zululand_restore_secession_dynasty = {
+	if = {
+		limit = {
+			country_definition = cd:ZUL
+			c:NAL ?= {
+				exists = var:sb_zululand_preannexation_ruler_scope_var
+				var:sb_zululand_preannexation_ruler_scope_var ?= {
+					is_character_alive = yes
+					OR = {
+						has_template = ZUL_dingane
+						has_template = ZUL_mpande_zulu
+						has_template = ZUL_gqugqu_claimant
+						has_template = ZUL_cetshwayo_heir
+						has_template = ZUL_mbuyazi_heir
+						has_template = ZUL_dinuzulu_heir
+						has_template = ZUL_solomon_heir
+					}
+				}
+			}
+		}
+		c:NAL = {
+			var:sb_zululand_preannexation_ruler_scope_var ?= {
+				save_scope_as = summoned_character_scope
+			}
+		}
+		scope:summoned_character_scope ?= {
+			if = {
+				limit = {
+					NOT = { is_in_void = yes }
+					NOT = { is_in_exile_pool = yes }
+					NOT = { owner ?= PREV }
+				}
+				transfer_character = PREV
+			}
+		}
+		sb_zulu_install_summoned_claimant_as_ruler = yes
+		set_variable = sb_zululand_secession_named_ruler_restored_var
+	}
+	else_if = {
+		limit = {
+			country_definition = cd:ZUL
+			c:NAL ?= {
+				exists = var:sb_zululand_preannexation_heir_scope_var
+				var:sb_zululand_preannexation_heir_scope_var ?= {
+					is_character_alive = yes
+					OR = {
+						has_template = ZUL_mpande_zulu
+						has_template = ZUL_gqugqu_claimant
+						has_template = ZUL_cetshwayo_heir
+						has_template = ZUL_mbuyazi_heir
+						has_template = ZUL_dinuzulu_heir
+						has_template = ZUL_solomon_heir
+					}
+				}
+			}
+		}
+		c:NAL = {
+			var:sb_zululand_preannexation_heir_scope_var ?= {
+				save_scope_as = summoned_character_scope
+			}
+		}
+		scope:summoned_character_scope ?= {
+			if = {
+				limit = {
+					NOT = { is_in_void = yes }
+					NOT = { is_in_exile_pool = yes }
+					NOT = { owner ?= PREV }
+				}
+				transfer_character = PREV
+			}
+		}
+		sb_zulu_install_summoned_claimant_as_ruler = yes
+		set_variable = sb_zululand_secession_named_ruler_restored_var
+	}
+	if = {
+		limit = {
+			NOT = { has_variable = sb_zululand_secession_named_ruler_restored_var }
+			c:NAL ?= { has_variable = sb_zululand_preannexation_mbuyazi_line_var }
+		}
+		if = {
+			limit = {
+				any_country = {
+					any_scope_character = {
+						has_template = ZUL_mbuyazi_successor
+						is_character_alive = yes
+					}
+				}
+			}
+			random_country = {
+				limit = { any_scope_character = { has_template = ZUL_mbuyazi_successor is_character_alive = yes } }
+				random_scope_character = {
+					limit = { has_template = ZUL_mbuyazi_successor is_character_alive = yes }
+					save_scope_as = summoned_character_scope
+				}
+			}
+		}
+		else_if = {
+			limit = { any_character_in_exile_pool = { has_template = ZUL_mbuyazi_successor is_character_alive = yes } }
+			random_character_in_exile_pool = {
+				limit = { has_template = ZUL_mbuyazi_successor is_character_alive = yes }
+				save_scope_as = summoned_character_scope
+			}
+		}
+		else_if = {
+			limit = {
+				NOT = { is_template_used = ZUL_mbuyazi_successor }
+				game_date >= 1852.1.1
+			}
+			create_character = {
+				template = ZUL_mbuyazi_successor
+				on_created = { save_scope_as = summoned_character_scope }
+			}
+		}
+	}
+	else_if = {
+		limit = {
+			NOT = { has_variable = sb_zululand_secession_named_ruler_restored_var }
+			c:NAL ?= { has_variable = sb_zululand_preannexation_cetshwayo_line_var }
+		}
+		if = {
+			limit = {
+				any_country = {
+					any_scope_character = {
+						has_template = ZUL_dinuzulu_heir
+						is_character_alive = yes
+					}
+				}
+			}
+			random_country = {
+				limit = { any_scope_character = { has_template = ZUL_dinuzulu_heir is_character_alive = yes } }
+				random_scope_character = {
+					limit = { has_template = ZUL_dinuzulu_heir is_character_alive = yes }
+					save_scope_as = summoned_character_scope
+				}
+			}
+		}
+		else_if = {
+			limit = { any_character_in_exile_pool = { has_template = ZUL_dinuzulu_heir is_character_alive = yes } }
+			random_character_in_exile_pool = {
+				limit = { has_template = ZUL_dinuzulu_heir is_character_alive = yes }
+				save_scope_as = summoned_character_scope
+			}
+		}
+		else_if = {
+			limit = {
+				NOT = { is_template_used = ZUL_dinuzulu_heir }
+				game_date >= 1868.1.1
+			}
+			create_character = {
+				template = ZUL_dinuzulu_heir
+				on_created = { save_scope_as = summoned_character_scope }
+			}
+		}
+	}
+	if = {
+		limit = {
+			NOT = { has_variable = sb_zululand_secession_named_ruler_restored_var }
+			exists = scope:summoned_character_scope
+		}
+		scope:summoned_character_scope ?= {
+			if = {
+				limit = {
+					NOT = { is_in_void = yes }
+					NOT = { is_in_exile_pool = yes }
+					NOT = { owner ?= PREV }
+				}
+				transfer_character = PREV
+			}
+		}
+		sb_zulu_install_summoned_claimant_as_ruler = yes
+		set_variable = sb_zululand_secession_named_ruler_restored_var
+	}
+	if = {
+		limit = { has_variable = sb_zululand_secession_named_ruler_restored_var }
+		remove_variable = sb_zululand_secession_named_ruler_restored_var
+	}
+	c:NAL ?= {
+		if = { limit = { exists = var:sb_zululand_preannexation_ruler_scope_var } remove_variable = sb_zululand_preannexation_ruler_scope_var }
+		if = { limit = { exists = var:sb_zululand_preannexation_heir_scope_var } remove_variable = sb_zululand_preannexation_heir_scope_var }
+		if = { limit = { has_variable = sb_zululand_preannexation_royal_house_archived_var } remove_variable = sb_zululand_preannexation_royal_house_archived_var }
+		if = { limit = { has_variable = sb_zululand_preannexation_mbuyazi_line_var } remove_variable = sb_zululand_preannexation_mbuyazi_line_var }
+		if = { limit = { has_variable = sb_zululand_preannexation_cetshwayo_line_var } remove_variable = sb_zululand_preannexation_cetshwayo_line_var }
+	}
+}
+
+sb_zululand_normalize_live_subject_for_natal = {
+	if = {
+		limit = {
+			c:ZUL ?= {
+				is_country_alive = yes
+				is_subject = yes
+				NOT = { is_direct_subject_of = c:NAL }
+			}
+		}
+		c:NAL ?= { transfer_subject = c:ZUL }
+	}
+	else_if = {
+		limit = {
+			c:ZUL ?= {
+				is_country_alive = yes
+				is_subject = no
+			}
+		}
+		c:NAL ?= {
+			create_diplomatic_pact = {
+				country = c:ZUL
+				type = protectorate
+			}
+		}
+	}
+	if = {
+		limit = {
+			c:ZUL ?= {
+				is_country_alive = yes
+				is_direct_subject_of = c:NAL
+				NOT = { is_subject_type = subject_type_protectorate }
+			}
+		}
+		c:ZUL = { change_subject_type = subject_type_protectorate }
+	}
+	c:ZUL ?= { sb_natal_restore_archived_zulu_firearms = yes }
+	c:NAL ?= { sb_natal_schedule_zulu_settlement = yes }
+}
+
+sb_zululand_restore_protectorate_for_natal = {
+	# Ordinary Release Country uses the same ZUL country-creation footprint, but
+	# is a UI action and cannot carry this postwar branch's bespoke setup. Create
+	# the complete owner state atomically, as in Vanilla and Gates country splits.
+	p:xBE6FEE.state = { save_scope_as = sb_zululand_restoration_state }
+	p:xBE6FEE.state.owner = {
+		create_country = {
+			tag = ZUL
+			origin = c:GBR
+			state = scope:sb_zululand_restoration_state
+			on_created = { sb_natal_apply_restored_zulu_baseline = yes }
+		}
+	}
+	sb_zululand_normalize_live_subject_for_natal = yes
+}
+
+sb_zululand_handoff_to_natal = {
+	if = {
+		limit = { c:ZUL ?= { is_country_alive = yes } }
+		sb_zululand_normalize_live_subject_for_natal = yes
+	}
+	else = { sb_zululand_restore_protectorate_for_natal = yes }
+	if = {
+		limit = { c:NAL ?= { sb_zululand_normalized_nal_protectorate = yes } }
+		set_variable = sb_zululand_postwar_handoff_resolved_var
+		if = { limit = { has_variable = sb_zululand_postwar_handoff_pending_var } remove_variable = sb_zululand_postwar_handoff_pending_var }
+		if = { limit = { has_variable = sb_zululand_postwar_handoff_not_before_var } remove_variable = sb_zululand_postwar_handoff_not_before_var }
+		if = { limit = { has_variable = sb_zululand_postwar_handoff_event_open_var } remove_variable = sb_zululand_postwar_handoff_event_open_var }
+		set_variable = sb_anglo_zulu_pressure_resolved_var
+	}
+}
+
+sb_zululand_apply_direct_british_administration = {
+	if = {
+		limit = { c:ZUL ?= { is_country_alive = yes } }
+		if = {
+			limit = {
+				c:ZUL ?= {
+					is_subject = yes
+					NOT = { is_direct_subject_of = ROOT }
+				}
+			}
+			transfer_subject = c:ZUL
+		}
+		annex = c:ZUL
+	}
+	s:STATE_ZULULAND = {
+		set_owner_of_provinces = {
+			country = c:GBR
+			provinces = {
+				xBE6FEE x1A084B xBFA16B x9E9742 x88FAD4
+				x904EBE x41C070 xE882CE xE1E455
+			}
+		}
+	}
+	add_radicals = { value = 0.25 culture = cu:zulu }
+	sb_natal_create_zulu_national_movement = yes
+	set_variable = sb_zululand_postwar_handoff_resolved_var
+	set_variable = sb_zululand_direct_british_administration_var
+	if = { limit = { has_variable = sb_zululand_postwar_handoff_pending_var } remove_variable = sb_zululand_postwar_handoff_pending_var }
+	if = { limit = { has_variable = sb_zululand_postwar_handoff_not_before_var } remove_variable = sb_zululand_postwar_handoff_not_before_var }
+	if = { limit = { has_variable = sb_zululand_postwar_handoff_event_open_var } remove_variable = sb_zululand_postwar_handoff_event_open_var }
+	set_variable = sb_anglo_zulu_pressure_resolved_var
+}
+
+sb_zululand_postwar_monthly_housekeeping = {
+	if = {
+		limit = {
+			country_definition = cd:GBR
+			NOT = { has_variable = sb_zululand_postwar_handoff_resolved_var }
+			NOT = { has_variable = sb_zululand_postwar_handoff_pending_var }
+			sb_zululand_under_british_postwar_control = yes
+		}
+		sb_zululand_queue_british_handoff = yes
+	}
+	if = {
+		limit = {
+			country_definition = cd:GBR
+			has_variable = sb_zululand_postwar_handoff_pending_var
+			NOT = { has_variable = sb_zululand_postwar_handoff_not_before_var }
+			NOT = { has_variable = sb_zululand_postwar_handoff_event_open_var }
+			sb_zululand_under_british_postwar_control = yes
+		}
+		set_variable = { name = sb_zululand_postwar_handoff_event_open_var days = 120 }
+		trigger_event = { id = sb_zululand_settlement.001 days = 1 popup = yes }
+	}
+	if = {
+		limit = {
+			country_definition = cd:NRP
+			is_country_alive = yes
+		}
+		sb_nrp_monthly_housekeeping = yes
+	}
+}
+
+# -----------------------------------------------------------------------------
+# Top-level Natal settlement branches
+# -----------------------------------------------------------------------------
+
+sb_zululand_begin_natal_incorporation = {
+	if = {
+		limit = {
+			country_definition = cd:NAL
+			s:STATE_ZULULAND.region_state:NAL ?= { is_incorporated = no }
+		}
+		set_variable = sb_zululand_incorporation_requested_var
+	}
+}
+
+sb_zululand_choose_direct_natal_administration = {
+	if = {
+		limit = { c:ZUL ?= { is_country_alive = yes is_direct_subject_of = ROOT } }
+		c:ZUL = { sb_zululand_archive_preannexation_royal_house = yes }
+		annex = c:ZUL
+	}
+	if = { limit = { has_variable = sb_natal_zulu_settlement_event_open_var } remove_variable = sb_natal_zulu_settlement_event_open_var }
+	set_variable = sb_zululand_direct_natal_administration_var
+	set_variable = sb_natal_zulu_settlement_resolved_var
+	add_radicals = { value = 0.25 culture = cu:zulu }
+	sb_natal_create_zulu_national_movement = yes
+	sb_zululand_begin_natal_incorporation = yes
+}
+
+sb_zululand_mark_and_exile_royal_house = {
+	if = {
+		limit = {
+			c:ZUL ?= {
+				OR = {
+					ruler ?= { has_template = ZUL_uthumbu_claimed_son }
+					heir ?= { has_template = ZUL_uthumbu_claimed_son }
+				}
+			}
+		}
+		set_variable = sb_zululand_uthumbu_line_var
+	}
+	if = {
+		limit = {
+			OR = {
+				has_global_variable = sb_zulu_mbuyazi_succession_global_var
+				c:ZUL ?= {
+					OR = {
+						ruler ?= { has_template = ZUL_mbuyazi_heir }
+						heir ?= { has_template = ZUL_mbuyazi_heir }
+					}
+				}
+			}
+		}
+		set_variable = sb_zululand_mbuyazi_line_var
+	}
+	c:ZUL ?= {
+		ruler ?= {
+			set_variable = sb_zululand_exiled_claimant_var
+			exile_character_with_role_cleanup = yes
+		}
+		heir ?= {
+			set_variable = sb_zululand_exiled_successor_var
+			exile_character_with_role_cleanup = yes
+		}
+		create_character = {
+			template = ZUL_zibhebhu_ka_mapitha
+			on_created = { save_scope_as = summoned_character_scope }
+		}
+		sb_zulu_install_summoned_claimant_as_ruler = yes
+	}
+}
+
+sb_zululand_apply_full_hut_tax = {
+	c:ZUL ?= {
+		if = { limit = { has_modifier = sb_zululand_relaxed_hut_tax_transfer } remove_modifier = sb_zululand_relaxed_hut_tax_transfer }
+	}
+}
+
+sb_zululand_relax_hut_tax = {
+	c:ZUL ?= {
+		if = { limit = { NOT = { has_modifier = sb_zululand_relaxed_hut_tax_transfer } } add_modifier = { name = sb_zululand_relaxed_hut_tax_transfer } }
+	}
+}
+
+sb_zululand_remove_hut_tax = {
+	c:ZUL ?= {
+		if = { limit = { has_modifier = sb_zululand_relaxed_hut_tax_transfer } remove_modifier = sb_zululand_relaxed_hut_tax_transfer }
+	}
+}
+
+sb_zululand_choose_thirteen_chiefdoms = {
+	if = { limit = { has_variable = sb_natal_zulu_settlement_event_open_var } remove_variable = sb_natal_zulu_settlement_event_open_var }
+	set_variable = sb_zululand_thirteen_chiefdoms_route_var
+	set_variable = sb_natal_zulu_settlement_resolved_var
+	c:ZUL ?= {
+		if = {
+			limit = { NOT = { is_subject_type = subject_type_sb_zulu_chiefdoms } }
+			change_subject_type = subject_type_sb_zulu_chiefdoms
+		}
+		if = { limit = { NOT = { has_modifier = sb_zululand_chiefdoms_subject_dependence } } add_modifier = { name = sb_zululand_chiefdoms_subject_dependence } }
+		add_radicals = { value = 0.05 culture = cu:zulu }
+	}
+	add_radicals = { value = 0.05 culture = cu:zulu }
+	s:STATE_ZULULAND.region_state:ZUL ?= {
+		add_modifier = { name = sb_zululand_chiefdom_reserves }
+	}
+	sb_zululand_mark_and_exile_royal_house = yes
+	sb_zululand_apply_full_hut_tax = yes
+	sb_zululand_open_chiefdoms_situation = yes
+}
+
+sb_zululand_choose_subordinate_crown = {
+	if = { limit = { has_variable = sb_natal_zulu_settlement_event_open_var } remove_variable = sb_natal_zulu_settlement_event_open_var }
+	set_variable = sb_zululand_crown_led_route_var
+	set_variable = sb_natal_gradual_zulu_restoration_var
+	set_variable = sb_natal_zulu_settlement_resolved_var
+	c:ZUL ?= {
+		sb_zululand_restore_preannexation_royal_house = yes
+		if = {
+			limit = { NOT = { is_subject_type = subject_type_protectorate } }
+			change_subject_type = subject_type_protectorate
+		}
+		add_loyalists = { value = 0.10 culture = cu:zulu }
+	}
+	add_loyalists = { value = 0.10 culture = cu:zulu }
+}
+
+# -----------------------------------------------------------------------------
+# Thirteen Chiefdoms International Situation
+# -----------------------------------------------------------------------------
+
+sb_zululand_create_chiefdoms_container = {
+	if = {
+		limit = {
+			NOT = { container_exists = sb_zululand_chiefdoms_state }
+			c:NAL ?= { is_country_alive = yes }
+		}
+		create_container = {
+			name = sb_zululand_chiefdoms_state
+			tags = { sb_story sb_zululand_chiefdoms }
+			parent = c:NAL
+			on_created = {
+				set_variable = { name = sb_zululand_balance_var value = 60 }
+				set_variable = { name = sb_zululand_boer_commitment_var value = 0 }
+				set_variable = { name = sb_zululand_situation_months_var value = 0 }
+				set_variable = { name = sb_zululand_nal_scope value = c:NAL }
+				set_variable = { name = sb_zululand_zul_scope value = c:ZUL }
+				if = {
+					limit = { c:GBR ?= { is_country_alive = yes } }
+					set_variable = { name = sb_zululand_gbr_scope value = c:GBR }
+				}
+			}
+		}
+	}
+}
+
+# ROOT = contextless JE.
+sb_zululand_project_chiefdoms_journal = {
+	if = {
+		limit = { NOT = { has_variable = com_hide_scripted_buttons } }
+		set_variable = com_hide_scripted_buttons
+	}
+	if = {
+		limit = {
+			container_exists = sb_zululand_chiefdoms_state
+			container:sb_zululand_chiefdoms_state = {
+				has_variable = sb_zululand_balance_var
+				has_variable = sb_zululand_boer_commitment_var
+			}
+		}
+		set_variable = {
+			name = sb_zululand_balance_var
+			value = container:sb_zululand_chiefdoms_state.var:sb_zululand_balance_var
+		}
+		set_variable = {
+			name = sb_zululand_boer_commitment_var
+			value = container:sb_zululand_chiefdoms_state.var:sb_zululand_boer_commitment_var
+		}
+		set_bar_progress = {
+			name = sb_zululand_chiefdom_balance_bar
+			value = container:sb_zululand_chiefdoms_state.var:sb_zululand_balance_var
+		}
+		set_bar_progress = {
+			name = sb_zululand_boer_commitment_bar
+			value = container:sb_zululand_chiefdoms_state.var:sb_zululand_boer_commitment_var
+		}
+	}
+}
+
+sb_zululand_apply_chiefdoms_progress_to_all = {
+	c:NAL ?= {
+		if = {
+			limit = { has_journal_entry = je_sb_zululand_chiefdoms }
+			je:je_sb_zululand_chiefdoms ?= { sb_zululand_project_chiefdoms_journal = yes }
+		}
+	}
+	c:ZUL ?= {
+		if = {
+			limit = { has_journal_entry = je_sb_zululand_chiefdoms }
+			je:je_sb_zululand_chiefdoms ?= { sb_zululand_project_chiefdoms_journal = yes }
+		}
+	}
+	c:TRN ?= {
+		if = {
+			limit = { has_journal_entry = je_sb_zululand_chiefdoms }
+			je:je_sb_zululand_chiefdoms ?= { sb_zululand_project_chiefdoms_journal = yes }
+		}
+	}
+	c:GBR ?= {
+		if = {
+			limit = { has_journal_entry = je_sb_zululand_chiefdoms }
+			je:je_sb_zululand_chiefdoms ?= { sb_zululand_project_chiefdoms_journal = yes }
+		}
+	}
+}
+
+sb_zululand_refresh_chiefdoms_participants = {
+	if = {
+		limit = { sb_zululand_chiefdoms_situation_active = yes }
+		c:NAL ?= {
+			if = {
+				limit = { NOT = { has_journal_entry = je_sb_zululand_chiefdoms } }
+				add_contextless_journal_entry = je_sb_zululand_chiefdoms
+			}
+		}
+		c:ZUL ?= {
+			if = {
+				limit = { NOT = { has_journal_entry = je_sb_zululand_chiefdoms } }
+				add_contextless_journal_entry = je_sb_zululand_chiefdoms
+			}
+		}
+		c:GBR ?= {
+			if = {
+				limit = { NOT = { has_journal_entry = je_sb_zululand_chiefdoms } }
+				add_contextless_journal_entry = je_sb_zululand_chiefdoms
+			}
+		}
+		c:TRN ?= {
+			if = {
+				limit = {
+					sb_zululand_trn_is_eligible_participant = yes
+					NOT = { has_journal_entry = je_sb_zululand_chiefdoms }
+				}
+				add_contextless_journal_entry = je_sb_zululand_chiefdoms
+			}
+		}
+		sb_zululand_apply_chiefdoms_progress_to_all = yes
+	}
+}
+
+sb_zululand_set_initial_incident_wait = {
+	random_list = {
+		25 = { set_variable = { name = sb_zululand_next_incident_wait_var days = 90 } }
+		25 = { set_variable = { name = sb_zululand_next_incident_wait_var days = 120 } }
+		25 = { set_variable = { name = sb_zululand_next_incident_wait_var days = 150 } }
+		25 = { set_variable = { name = sb_zululand_next_incident_wait_var days = 180 } }
+	}
+}
+
+sb_zululand_set_followup_incident_wait = {
+	set_variable = { name = sb_zululand_event_spacing_var days = 60 }
+	random_list = {
+		25 = { set_variable = { name = sb_zululand_next_incident_wait_var days = 61 } }
+		25 = { set_variable = { name = sb_zululand_next_incident_wait_var days = 90 } }
+		25 = { set_variable = { name = sb_zululand_next_incident_wait_var days = 120 } }
+		25 = { set_variable = { name = sb_zululand_next_incident_wait_var days = 150 } }
+	}
+}
+
+sb_zululand_open_chiefdoms_situation = {
+	if = {
+		limit = { NOT = { has_global_variable = sb_zululand_chiefdoms_open_global_var } }
+		set_global_variable = sb_zululand_chiefdoms_open_global_var
+		if = { limit = { has_global_variable = sb_zululand_chiefdoms_resolved_global_var } remove_global_variable = sb_zululand_chiefdoms_resolved_global_var }
+		sb_zululand_create_chiefdoms_container = yes
+		sb_zululand_set_initial_incident_wait = yes
+		sb_zululand_refresh_chiefdoms_participants = yes
+	}
+}
+
+sb_zululand_shift_balance_zibhebhu_5 = {
+	container:sb_zululand_chiefdoms_state ?= {
+		change_variable = { name = sb_zululand_balance_var add = 5 }
+		clamp_variable = { name = sb_zululand_balance_var min = 0 max = 100 }
+	}
+	sb_zululand_apply_chiefdoms_progress_to_all = yes
+}
+
+sb_zululand_shift_balance_usuthu_5 = {
+	container:sb_zululand_chiefdoms_state ?= {
+		change_variable = { name = sb_zululand_balance_var subtract = 5 }
+		clamp_variable = { name = sb_zululand_balance_var min = 0 max = 100 }
+	}
+	sb_zululand_apply_chiefdoms_progress_to_all = yes
+}
+
+sb_zululand_update_economic_dependence_drift = {
+	container:sb_zululand_chiefdoms_state ?= {
+		set_variable = {
+			name = sb_zululand_economic_drift_var
+			value = "c:ZUL.economic_dependence(c:NAL)"
+		}
+		change_variable = { name = sb_zululand_economic_drift_var subtract = 1 }
+		clamp_variable = { name = sb_zululand_economic_drift_var min = -1 max = 1 }
+		change_variable = { name = sb_zululand_economic_drift_var multiply = 0.5 }
+		change_variable = {
+			name = sb_zululand_balance_var
+			add = var:sb_zululand_economic_drift_var
+		}
+		remove_variable = sb_zululand_economic_drift_var
+	}
+}
+
+sb_zululand_update_bureaucracy_drift = {
+	container:sb_zululand_chiefdoms_state ?= {
+		set_variable = { name = sb_zululand_bureaucracy_x_var value = c:NAL.relative_bureaucracy }
+		if = {
+			limit = { var:sb_zululand_bureaucracy_x_var < 0 }
+			change_variable = { name = sb_zululand_bureaucracy_x_var multiply = -1 }
+			set_variable = { name = sb_zululand_bureaucracy_sign_var value = -1 }
+		}
+		else_if = {
+			limit = { var:sb_zululand_bureaucracy_x_var > 0 }
+			set_variable = { name = sb_zululand_bureaucracy_sign_var value = 1 }
+		}
+		else = { set_variable = { name = sb_zululand_bureaucracy_sign_var value = 0 } }
+		clamp_variable = { name = sb_zululand_bureaucracy_x_var min = 0 max = 1 }
+		set_variable = { name = sb_zululand_bureaucracy_square_var value = var:sb_zululand_bureaucracy_x_var }
+		change_variable = { name = sb_zululand_bureaucracy_square_var multiply = var:sb_zululand_bureaucracy_x_var }
+		set_variable = { name = sb_zululand_bureaucracy_drift_var value = var:sb_zululand_bureaucracy_x_var }
+		change_variable = { name = sb_zululand_bureaucracy_drift_var multiply = 2 }
+		change_variable = { name = sb_zululand_bureaucracy_drift_var subtract = var:sb_zululand_bureaucracy_square_var }
+		change_variable = { name = sb_zululand_bureaucracy_drift_var multiply = 0.9 }
+		if = {
+			limit = { var:sb_zululand_bureaucracy_sign_var != 0 }
+			change_variable = { name = sb_zululand_bureaucracy_drift_var add = 0.1 }
+			change_variable = { name = sb_zululand_bureaucracy_drift_var multiply = var:sb_zululand_bureaucracy_sign_var }
+			change_variable = { name = sb_zululand_balance_var add = var:sb_zululand_bureaucracy_drift_var }
+		}
+		remove_variable = sb_zululand_bureaucracy_x_var
+		remove_variable = sb_zululand_bureaucracy_square_var
+		remove_variable = sb_zululand_bureaucracy_sign_var
+		remove_variable = sb_zululand_bureaucracy_drift_var
+	}
+}
+
+sb_zululand_start_policing = {
+	set_variable = sb_zululand_policing_active_var
+	add_modifier = { name = sb_zululand_policing_cost }
+}
+
+sb_zululand_stop_policing = {
+	if = { limit = { has_variable = sb_zululand_policing_active_var } remove_variable = sb_zululand_policing_active_var }
+	if = { limit = { has_modifier = sb_zululand_policing_cost } remove_modifier = sb_zululand_policing_cost }
+}
+
+sb_zululand_start_usuthu_sponsorship = {
+	set_variable = sb_zululand_usuthu_sponsorship_active_var
+	add_modifier = { name = sb_zululand_usuthu_sponsorship_cost }
+}
+
+sb_zululand_stop_usuthu_sponsorship = {
+	if = { limit = { has_variable = sb_zululand_usuthu_sponsorship_active_var } remove_variable = sb_zululand_usuthu_sponsorship_active_var }
+	if = { limit = { has_modifier = sb_zululand_usuthu_sponsorship_cost } remove_modifier = sb_zululand_usuthu_sponsorship_cost }
+}
+
+sb_zululand_start_boer_volunteers = {
+	set_variable = sb_zululand_boer_volunteers_active_var
+	every_scope_state = {
+		if = { limit = { NOT = { has_modifier = sb_zululand_boer_volunteer_mortality } } add_modifier = { name = sb_zululand_boer_volunteer_mortality } }
+	}
+}
+
+sb_zululand_stop_boer_volunteers = {
+	if = { limit = { has_variable = sb_zululand_boer_volunteers_active_var } remove_variable = sb_zululand_boer_volunteers_active_var }
+	every_scope_state = {
+		if = { limit = { has_modifier = sb_zululand_boer_volunteer_mortality } remove_modifier = sb_zululand_boer_volunteer_mortality }
+	}
+}
+
+sb_zululand_unload_zulu_refugees = {
+	if = {
+		limit = { sb_zululand_can_unload_refugees = yes }
+		set_variable = sb_zululand_refugees_unloaded_var
+		s:STATE_NATAL.region_state:NAL ?= {
+			every_scope_pop = {
+				limit = {
+					culture = cu:zulu
+					is_pop_type = peasants
+				}
+				move_partial_pop = {
+					state = s:STATE_ZULULAND.region_state:ZUL
+					population_ratio = 0.05
+				}
+			}
+		}
+		# This route owns the repeal consequences and deliberately suppresses .055.
+		set_variable = sb_natal_shepstone_repeal_response_resolved_var
+		active_law:lawgroup_land_reform ?= {
+			every_scope_amendment = {
+				limit = { type = amendment_type:amendment_sb_shepstone_system }
+				remove_amendment = yes
+			}
+		}
+		sb_natal_apply_repealed_shepstone_consequences = yes
+		sb_zululand_shift_balance_usuthu_5 = yes
+	}
+}
+
+sb_zululand_return_exiled_claimant = {
+	if = {
+		limit = { any_character_in_exile_pool = { has_variable = sb_zululand_exiled_claimant_var is_character_alive = yes } }
+		random_character_in_exile_pool = {
+			limit = { has_variable = sb_zululand_exiled_claimant_var is_character_alive = yes }
+			transfer_character = c:ZUL
+		}
+	}
+	if = {
+		limit = {
+			NOT = {
+				c:ZUL ?= {
+					any_scope_character = {
+						has_variable = sb_zululand_exiled_claimant_var
+						is_character_alive = yes
+					}
+				}
+			}
+		}
+		c:ZUL ?= {
+			if = {
+				limit = { c:NAL ?= { has_variable = sb_zululand_uthumbu_line_var } }
+				create_character = {
+					template = ZUL_uthumbu_successor
+					on_created = { set_variable = sb_zululand_exiled_claimant_var }
+				}
+			}
+			else_if = {
+				limit = {
+					OR = {
+						c:NAL ?= { has_variable = sb_zululand_mbuyazi_line_var }
+						has_global_variable = sb_zulu_mbuyazi_succession_global_var
+					}
+				}
+				create_character = {
+					template = ZUL_mbuyazi_heir
+					on_created = { set_variable = sb_zululand_exiled_claimant_var }
+				}
+			}
+			else = {
+				create_character = {
+					template = ZUL_cetshwayo_heir
+					on_created = { set_variable = sb_zululand_exiled_claimant_var }
+				}
+			}
+		}
+	}
+	if = {
+		limit = {
+			c:ZUL ?= {
+				any_scope_character = {
+					has_variable = sb_zululand_exiled_claimant_var
+					has_template = ZUL_uthumbu_claimed_son
+				}
+			}
+		}
+		set_variable = sb_zululand_uthumbu_line_var
+	}
+	if = {
+		limit = {
+			c:ZUL ?= {
+				any_scope_character = {
+					has_variable = sb_zululand_exiled_claimant_var
+					has_template = ZUL_mbuyazi_heir
+				}
+			}
+		}
+		set_variable = sb_zululand_mbuyazi_line_var
+	}
+	set_variable = sb_zululand_claimant_returned_var
+	set_variable = { name = sb_zululand_claimant_fate_not_before_var days = 180 }
+	add_loyalists = { value = 0.20 culture = cu:zulu }
+}
+
+sb_zululand_prepare_crown_successor = {
+	if = {
+		limit = { has_variable = sb_zululand_uthumbu_line_var }
+		if = {
+			limit = {
+				any_country = {
+					any_scope_character = {
+						has_template = ZUL_uthumbu_successor
+						is_character_alive = yes
+					}
+				}
+			}
+			random_country = {
+				limit = { any_scope_character = { has_template = ZUL_uthumbu_successor is_character_alive = yes } }
+				random_scope_character = {
+					limit = { has_template = ZUL_uthumbu_successor is_character_alive = yes }
+					transfer_character = c:ZUL
+				}
+			}
+		}
+		else_if = {
+			limit = { any_character_in_exile_pool = { has_template = ZUL_uthumbu_successor is_character_alive = yes } }
+			random_character_in_exile_pool = {
+				limit = { has_template = ZUL_uthumbu_successor is_character_alive = yes }
+				transfer_character = c:ZUL
+			}
+		}
+		else = { c:ZUL ?= { create_character = { template = ZUL_uthumbu_successor } } }
+		c:ZUL ?= {
+			random_scope_character = {
+				limit = { has_template = ZUL_uthumbu_successor is_character_alive = yes }
+				set_variable = sb_zululand_crown_successor_var
+			}
+		}
+	}
+	else_if = {
+		limit = {
+			OR = {
+				has_variable = sb_zululand_mbuyazi_line_var
+				has_global_variable = sb_zulu_mbuyazi_succession_global_var
+			}
+		}
+		c:ZUL ?= {
+			if = {
+				limit = { NOT = { any_scope_character = { has_template = ZUL_mbuyazi_successor is_character_alive = yes } } }
+				create_character = {
+					template = ZUL_mbuyazi_successor
+					on_created = { set_variable = sb_zululand_crown_successor_var }
+				}
+			}
+			else = {
+				random_scope_character = {
+					limit = { has_template = ZUL_mbuyazi_successor is_character_alive = yes }
+					set_variable = sb_zululand_crown_successor_var
+				}
+			}
+		}
+	}
+	else = {
+		if = {
+			limit = {
+				any_country = {
+					any_scope_character = {
+						has_template = ZUL_dinuzulu_heir
+						is_character_alive = yes
+					}
+				}
+			}
+			random_country = {
+				limit = { any_scope_character = { has_template = ZUL_dinuzulu_heir is_character_alive = yes } }
+				random_scope_character = {
+					limit = { has_template = ZUL_dinuzulu_heir is_character_alive = yes }
+					transfer_character = c:ZUL
+				}
+			}
+		}
+		else_if = {
+			limit = { any_character_in_exile_pool = { has_template = ZUL_dinuzulu_heir is_character_alive = yes } }
+			random_character_in_exile_pool = {
+				limit = { has_template = ZUL_dinuzulu_heir is_character_alive = yes }
+				transfer_character = c:ZUL
+			}
+		}
+		else = {
+			c:ZUL ?= { create_character = { template = ZUL_dinuzulu_heir } }
+		}
+		c:ZUL ?= {
+			random_scope_character = {
+				limit = { has_template = ZUL_dinuzulu_heir is_character_alive = yes }
+				set_variable = sb_zululand_crown_successor_var
+			}
+		}
+	}
+}
+
+sb_zululand_claimant_survives = {
+	set_variable = sb_zululand_claimant_fate_resolved_var
+	container:sb_zululand_chiefdoms_state ?= {
+		change_variable = { name = sb_zululand_balance_var subtract = 7 }
+		clamp_variable = { name = sb_zululand_balance_var min = 0 max = 100 }
+	}
+	sb_zululand_apply_chiefdoms_progress_to_all = yes
+}
+
+sb_zululand_claimant_is_killed = {
+	set_variable = sb_zululand_claimant_fate_resolved_var
+	set_variable = sb_zululand_claimant_killed_var
+	c:ZUL ?= {
+		random_scope_character = {
+			limit = {
+				has_variable = sb_zululand_exiled_claimant_var
+				is_character_alive = yes
+			}
+			kill_character = { hidden = yes }
+		}
+	}
+	sb_zululand_prepare_crown_successor = yes
+	container:sb_zululand_chiefdoms_state ?= {
+		change_variable = { name = sb_zululand_balance_var add = 10 }
+		clamp_variable = { name = sb_zululand_balance_var min = 0 max = 100 }
+	}
+	sb_zululand_apply_chiefdoms_progress_to_all = yes
+	if = {
+		limit = { c:TRN ?= { sb_zululand_trn_is_eligible_participant = yes } }
+		set_variable = sb_zululand_boer_appeal_pending_var
+	}
+}
+
+sb_zululand_move_boer_volunteers_to_zululand = {
+	if = {
+		limit = {
+			country_definition = cd:TRN
+			c:ZUL ?= { is_country_alive = yes }
+			any_scope_pop = { is_pop_type = soldiers total_size >= 500 }
+		}
+		c:ZUL = { capital = { save_temporary_scope_as = sb_zululand_volunteer_target } }
+		ordered_scope_pop = {
+			limit = { is_pop_type = soldiers total_size >= 500 }
+			order_by = total_size
+			position = 0
+			check_range_bounds = no
+			move_partial_pop = {
+				state = scope:sb_zululand_volunteer_target
+				population = 500
+			}
+		}
+	}
+}
+
+sb_zululand_accept_boer_appeal = {
+	sb_zululand_move_boer_volunteers_to_zululand = yes
+	container:sb_zululand_chiefdoms_state ?= {
+		change_variable = { name = sb_zululand_boer_commitment_var add = 20 }
+		change_variable = { name = sb_zululand_balance_var subtract = 7 }
+		clamp_variable = { name = sb_zululand_boer_commitment_var min = 0 max = 100 }
+		clamp_variable = { name = sb_zululand_balance_var min = 0 max = 100 }
+		set_variable = sb_zululand_boer_aid_delivered_var
+		set_variable = { name = sb_zululand_boer_patron_scope value = c:TRN }
+	}
+	sb_zululand_apply_chiefdoms_progress_to_all = yes
+}
+
+sb_zululand_finish_situation_event = {
+	if = { limit = { has_variable = sb_zululand_incident_pending_var } remove_variable = sb_zululand_incident_pending_var }
+	if = { limit = { has_variable = sb_zululand_claimant_fate_pending_var } remove_variable = sb_zululand_claimant_fate_pending_var }
+	sb_zululand_set_followup_incident_wait = yes
+}
+
+sb_zululand_schedule_next_incident = {
+	if = {
+		limit = {
+			NOT = { has_variable = sb_zululand_next_incident_wait_var }
+			NOT = { has_variable = sb_zululand_event_spacing_var }
+			NOT = { has_variable = sb_zululand_incident_pending_var }
+			NOT = {
+				AND = {
+					has_variable = sb_zululand_skirmish_fired_var
+					has_variable = sb_zululand_hut_tax_fired_var
+					has_variable = sb_zululand_defection_fired_var
+				}
+			}
+		}
+		set_variable = sb_zululand_incident_pending_var
+		random_list = {
+			100 = {
+				trigger = { NOT = { has_variable = sb_zululand_skirmish_fired_var } }
+				set_variable = sb_zululand_skirmish_fired_var
+				trigger_event = { id = sb_zululand_settlement.110 days = 1 popup = yes }
+			}
+			100 = {
+				trigger = { NOT = { has_variable = sb_zululand_hut_tax_fired_var } }
+				set_variable = sb_zululand_hut_tax_fired_var
+				trigger_event = { id = sb_zululand_settlement.111 days = 1 popup = yes }
+			}
+			100 = {
+				trigger = { NOT = { has_variable = sb_zululand_defection_fired_var } }
+				set_variable = sb_zululand_defection_fired_var
+				trigger_event = { id = sb_zululand_settlement.112 days = 1 popup = yes }
+			}
+		}
+	}
+}
+
+sb_zululand_schedule_claimant_fate = {
+	if = {
+		limit = {
+			has_variable = sb_zululand_claimant_returned_var
+			NOT = { has_variable = sb_zululand_claimant_fate_not_before_var }
+			NOT = { has_variable = sb_zululand_claimant_fate_resolved_var }
+			NOT = { has_variable = sb_zululand_claimant_fate_pending_var }
+			NOT = { has_variable = sb_zululand_event_spacing_var }
+			NOT = { has_variable = sb_zululand_incident_pending_var }
+		}
+		set_variable = sb_zululand_claimant_fate_pending_var
+		trigger_event = { id = sb_zululand_settlement.113 days = 1 popup = yes }
+	}
+}
+
+sb_zululand_schedule_boer_appeal = {
+	if = {
+		limit = {
+			has_variable = sb_zululand_boer_appeal_pending_var
+			NOT = { has_variable = sb_zululand_event_spacing_var }
+			NOT = { has_variable = sb_zululand_incident_pending_var }
+		}
+		remove_variable = sb_zululand_boer_appeal_pending_var
+		if = {
+			limit = { c:TRN ?= { sb_zululand_trn_is_eligible_participant = yes } }
+			set_variable = sb_zululand_incident_pending_var
+			c:TRN = { trigger_event = { id = sb_zululand_settlement.115 days = 1 popup = yes } }
+		}
+		else = { sb_zululand_set_followup_incident_wait = yes }
+	}
+}
+
+sb_zululand_ai_manage_usuthu_sponsorship = {
+	c:TRN ?= {
+		if = {
+			limit = {
+				is_ai = yes
+				sb_zululand_trn_is_eligible_participant = yes
+				has_variable = sb_zululand_usuthu_sponsorship_active_var
+				net_fixed_income < 0
+				OR = {
+					gold_reserves < 0
+					scaled_debt > 0
+				}
+			}
+			sb_zululand_stop_usuthu_sponsorship = yes
+		}
+		else_if = {
+			limit = {
+				is_ai = yes
+				sb_zululand_trn_is_eligible_participant = yes
+				NOT = { has_variable = sb_zululand_usuthu_sponsorship_active_var }
+				NOT = { in_default = yes }
+				NOT = { has_modifier = declared_bankruptcy }
+				OR = {
+					gold_reserves > 0
+					net_fixed_income >= 500
+				}
+			}
+			sb_zululand_start_usuthu_sponsorship = yes
+		}
+	}
+}
+
+sb_zululand_apply_monthly_action_drift = {
+	container:sb_zululand_chiefdoms_state ?= {
+		if = {
+			limit = { c:NAL ?= { has_variable = sb_zululand_policing_active_var } }
+			change_variable = { name = sb_zululand_balance_var add = 0.5 }
+		}
+		if = {
+			limit = { c:NAL ?= { has_variable = sb_zululand_claimant_returned_var } }
+			change_variable = { name = sb_zululand_balance_var subtract = 0.5 }
+		}
+		if = {
+			limit = { c:TRN ?= { has_variable = sb_zululand_usuthu_sponsorship_active_var } }
+			change_variable = { name = sb_zululand_balance_var subtract = 0.25 }
+			change_variable = { name = sb_zululand_boer_commitment_var add = 2 }
+		}
+		if = {
+			limit = { c:TRN ?= { has_variable = sb_zululand_boer_volunteers_active_var } }
+			change_variable = { name = sb_zululand_balance_var subtract = 0.5 }
+			change_variable = { name = sb_zululand_boer_commitment_var add = 3 }
+		}
+		clamp_variable = { name = sb_zululand_balance_var min = 0 max = 100 }
+		clamp_variable = { name = sb_zululand_boer_commitment_var min = 0 max = 100 }
+		if = {
+			limit = {
+				var:sb_zululand_boer_commitment_var >= 100
+				NOT = { has_variable = sb_zululand_boer_committed_var }
+			}
+			set_variable = sb_zululand_boer_committed_var
+			if = {
+				limit = { c:TRN ?= { is_country_alive = yes } }
+				set_variable = { name = sb_zululand_boer_patron_scope value = c:TRN }
+			}
+			c:TRN ?= {
+				sb_zululand_stop_usuthu_sponsorship = yes
+				sb_zululand_stop_boer_volunteers = yes
+			}
+		}
+	}
+}
+
+sb_zululand_queue_terminal_outcome = {
+	if = {
+		limit = {
+			NOT = { has_variable = sb_zululand_terminal_event_pending_var }
+			NOT = { has_variable = sb_zululand_event_spacing_var }
+			NOT = { has_variable = sb_zululand_incident_pending_var }
+			NOT = { has_variable = sb_zululand_claimant_fate_pending_var }
+			NOT = { has_variable = sb_zululand_boer_appeal_pending_var }
+			OR = {
+				NOT = { has_variable = sb_zululand_claimant_returned_var }
+				has_variable = sb_zululand_claimant_fate_resolved_var
+			}
+			container:sb_zululand_chiefdoms_state.var:sb_zululand_situation_months_var >= 18
+			container:sb_zululand_chiefdoms_state.var:sb_zululand_balance_var <= 0
+			has_variable = sb_zululand_skirmish_fired_var
+			has_variable = sb_zululand_hut_tax_fired_var
+			has_variable = sb_zululand_defection_fired_var
+		}
+		set_variable = sb_zululand_terminal_event_pending_var
+		trigger_event = { id = sb_zululand_settlement.121 days = 1 popup = yes }
+	}
+	else_if = {
+		limit = {
+			NOT = { has_variable = sb_zululand_terminal_event_pending_var }
+			NOT = { has_variable = sb_zululand_event_spacing_var }
+			NOT = { has_variable = sb_zululand_incident_pending_var }
+			NOT = { has_variable = sb_zululand_claimant_fate_pending_var }
+			NOT = { has_variable = sb_zululand_boer_appeal_pending_var }
+			OR = {
+				NOT = { has_variable = sb_zululand_claimant_returned_var }
+				has_variable = sb_zululand_claimant_fate_resolved_var
+			}
+			container:sb_zululand_chiefdoms_state.var:sb_zululand_situation_months_var >= 18
+			container:sb_zululand_chiefdoms_state.var:sb_zululand_balance_var >= 100
+			has_variable = sb_zululand_skirmish_fired_var
+			has_variable = sb_zululand_hut_tax_fired_var
+			has_variable = sb_zululand_defection_fired_var
+		}
+		set_variable = sb_zululand_terminal_event_pending_var
+		trigger_event = { id = sb_zululand_settlement.120 days = 1 popup = yes }
+	}
+	else_if = {
+		limit = {
+			NOT = { has_variable = sb_zululand_terminal_event_pending_var }
+			NOT = { has_variable = sb_zululand_event_spacing_var }
+			NOT = { has_variable = sb_zululand_incident_pending_var }
+			NOT = { has_variable = sb_zululand_claimant_fate_pending_var }
+			container:sb_zululand_chiefdoms_state.var:sb_zululand_situation_months_var >= 60
+		}
+		set_variable = sb_zululand_terminal_event_pending_var
+		if = {
+			limit = { container:sb_zululand_chiefdoms_state.var:sb_zululand_balance_var > 50 }
+			trigger_event = { id = sb_zululand_settlement.120 days = 1 popup = yes }
+		}
+		else = {
+			# Parity at the hard timeout restores the Crown.
+			trigger_event = { id = sb_zululand_settlement.121 days = 1 popup = yes }
+		}
+	}
+}
+
+sb_zululand_chiefdoms_monthly_housekeeping = {
+	if = {
+		limit = { sb_zululand_chiefdoms_runtime_valid = yes }
+		container:sb_zululand_chiefdoms_state = {
+			change_variable = { name = sb_zululand_situation_months_var add = 1 }
+		}
+		sb_zululand_refresh_chiefdoms_participants = yes
+		sb_zululand_ai_manage_usuthu_sponsorship = yes
+		sb_zululand_update_economic_dependence_drift = yes
+		sb_zululand_update_bureaucracy_drift = yes
+		sb_zululand_apply_monthly_action_drift = yes
+		sb_zululand_apply_chiefdoms_progress_to_all = yes
+		sb_zululand_queue_terminal_outcome = yes
+		if = {
+			limit = { NOT = { has_variable = sb_zululand_terminal_event_pending_var } }
+			sb_zululand_schedule_boer_appeal = yes
+			sb_zululand_schedule_claimant_fate = yes
+			sb_zululand_schedule_next_incident = yes
+		}
+	}
+	else_if = {
+		limit = {
+			country_definition = cd:NAL
+			sb_zululand_chiefdoms_situation_active = yes
+		}
+		sb_zululand_cleanup_situation = yes
+	}
+}
+
+sb_zululand_restore_dynastic_ruler = {
+	if = {
+		limit = {
+			NOT = {
+				c:ZUL ?= {
+					any_scope_character = {
+						has_variable = sb_zululand_exiled_claimant_var
+						is_character_alive = yes
+					}
+				}
+			}
+			any_character_in_exile_pool = {
+				has_variable = sb_zululand_exiled_claimant_var
+				is_character_alive = yes
+			}
+		}
+		random_character_in_exile_pool = {
+			limit = { has_variable = sb_zululand_exiled_claimant_var is_character_alive = yes }
+			transfer_character = c:ZUL
+		}
+	}
+	if = {
+		limit = {
+			c:ZUL ?= {
+				NOT = {
+					any_scope_character = {
+						OR = {
+							has_variable = sb_zululand_exiled_claimant_var
+							has_variable = sb_zululand_crown_successor_var
+						}
+						is_character_alive = yes
+					}
+				}
+			}
+		}
+		sb_zululand_prepare_crown_successor = yes
+	}
+	c:ZUL ?= {
+		if = {
+			limit = {
+				any_scope_character = {
+					has_variable = sb_zululand_exiled_claimant_var
+					is_character_alive = yes
+				}
+			}
+			random_scope_character = {
+				limit = { has_variable = sb_zululand_exiled_claimant_var is_character_alive = yes }
+				save_scope_as = summoned_character_scope
+			}
+			sb_zulu_install_summoned_claimant_as_ruler = yes
+		}
+		else_if = {
+			limit = {
+				any_scope_character = {
+					has_variable = sb_zululand_crown_successor_var
+					is_character_alive = yes
+				}
+			}
+			random_scope_character = {
+				limit = { has_variable = sb_zululand_crown_successor_var is_character_alive = yes }
+				save_scope_as = summoned_character_scope
+			}
+			sb_zulu_install_summoned_claimant_as_ruler = yes
+		}
+	}
+}
+
+sb_zululand_cleanup_situation = {
+	c:NAL ?= {
+		sb_zululand_stop_policing = yes
+		if = { limit = { has_variable = sb_zululand_terminal_event_pending_var } remove_variable = sb_zululand_terminal_event_pending_var }
+		if = { limit = { has_variable = sb_zululand_incident_pending_var } remove_variable = sb_zululand_incident_pending_var }
+		if = { limit = { has_variable = sb_zululand_claimant_fate_pending_var } remove_variable = sb_zululand_claimant_fate_pending_var }
+		if = { limit = { has_variable = sb_zululand_next_incident_wait_var } remove_variable = sb_zululand_next_incident_wait_var }
+		if = { limit = { has_variable = sb_zululand_event_spacing_var } remove_variable = sb_zululand_event_spacing_var }
+	}
+	c:TRN ?= {
+		sb_zululand_stop_usuthu_sponsorship = yes
+		sb_zululand_stop_boer_volunteers = yes
+	}
+	if = { limit = { has_global_variable = sb_zululand_chiefdoms_open_global_var } remove_global_variable = sb_zululand_chiefdoms_open_global_var }
+	set_global_variable = sb_zululand_chiefdoms_resolved_global_var
+	container:sb_zululand_chiefdoms_state ?= { destroy_container = yes }
+}
+
+sb_zululand_apply_zibhebhu_victory = {
+	set_variable = sb_zululand_zibhebhu_victory_var
+	set_variable = sb_zululand_post_annex_incorporation_pending_var
+	c:ZUL ?= {
+		if = { limit = { has_modifier = sb_zululand_chiefdoms_subject_dependence } remove_modifier = sb_zululand_chiefdoms_subject_dependence }
+		if = { limit = { has_modifier = sb_zululand_crown_restored_autonomy } remove_modifier = sb_zululand_crown_restored_autonomy }
+		if = { limit = { NOT = { has_modifier = sb_zululand_zibhebhu_subject_dependence } } add_modifier = { name = sb_zululand_zibhebhu_subject_dependence } }
+		if = { limit = { NOT = { is_subject_type = subject_type_puppet } } change_subject_type = subject_type_puppet }
+		add_radicals = { value = 0.10 culture = cu:zulu }
+	}
+	add_radicals = { value = 0.10 culture = cu:zulu }
+	sb_zululand_cleanup_situation = yes
+}
+
+sb_zululand_apply_crown_victory = {
+	set_variable = sb_zululand_crown_restored_victory_var
+	set_variable = sb_zululand_post_annex_incorporation_pending_var
+	if = {
+		limit = { container:sb_zululand_chiefdoms_state ?= { has_variable = sb_zululand_boer_committed_var } }
+		set_variable = sb_zululand_nrp_creation_entitled_var
+	}
+	sb_zululand_restore_dynastic_ruler = yes
+	c:ZUL ?= {
+		if = { limit = { has_modifier = sb_zululand_chiefdoms_subject_dependence } remove_modifier = sb_zululand_chiefdoms_subject_dependence }
+		if = { limit = { has_modifier = sb_zululand_zibhebhu_subject_dependence } remove_modifier = sb_zululand_zibhebhu_subject_dependence }
+		if = { limit = { NOT = { has_modifier = sb_zululand_crown_restored_autonomy } } add_modifier = { name = sb_zululand_crown_restored_autonomy } }
+		if = { limit = { NOT = { is_subject_type = subject_type_puppet } } change_subject_type = subject_type_puppet }
+		add_loyalists = { value = 0.10 culture = cu:zulu }
+	}
+	add_loyalists = { value = 0.10 culture = cu:zulu }
+	s:STATE_ZULULAND.region_state:ZUL ?= {
+		if = { limit = { has_modifier = sb_zululand_chiefdom_reserves } remove_modifier = sb_zululand_chiefdom_reserves }
+	}
+	sb_zululand_remove_hut_tax = yes
+	sb_zululand_cleanup_situation = yes
+	if = {
+		limit = { has_variable = sb_zululand_nrp_creation_entitled_var }
+		sb_nrp_create_greater_republic = yes
+	}
+}
+
+sb_zululand_apply_post_annex_incorporation = {
+	if = {
+		limit = {
+			country_definition = cd:NAL
+			has_variable = sb_zululand_post_annex_incorporation_pending_var
+			exists = s:STATE_ZULULAND.region_state:NAL
+		}
+		s:STATE_ZULULAND.region_state:NAL ?= {
+			if = {
+				limit = { c:NAL ?= { has_variable = sb_zululand_zibhebhu_victory_var } }
+				add_modifier = { name = sb_zululand_zibhebhu_incorporation_legacy months = 120 }
+			}
+			else_if = {
+				limit = { c:NAL ?= { has_variable = sb_zululand_crown_restored_victory_var } }
+				add_modifier = { name = sb_zululand_crown_incorporation_legacy months = 120 }
+			}
+		}
+		sb_zululand_begin_natal_incorporation = yes
+		remove_variable = sb_zululand_post_annex_incorporation_pending_var
+	}
+}
+
+sb_zululand_check_natal_incorporation = {
+	if = {
+		limit = {
+			country_definition = cd:NAL
+			has_variable = sb_zululand_incorporation_requested_var
+			s:STATE_ZULULAND.region_state:NAL ?= {
+				is_incorporated = no
+				incorporation_progress > 0
+			}
+		}
+		remove_variable = sb_zululand_incorporation_requested_var
+		set_variable = sb_zululand_incorporation_started_var
+	}
+	if = {
+		limit = {
+			country_definition = cd:NAL
+			OR = {
+				has_variable = sb_zululand_incorporation_requested_var
+				has_variable = sb_zululand_incorporation_started_var
+				has_variable = sb_zululand_direct_natal_administration_var
+				has_variable = sb_zululand_zibhebhu_victory_var
+				has_variable = sb_zululand_crown_restored_victory_var
+			}
+			NOT = { has_variable = sb_zululand_incorporation_complete_var }
+			NOT = { has_variable = sb_zululand_incorporation_complete_pending_var }
+			s:STATE_ZULULAND.region_state:NAL ?= { is_incorporated = yes }
+		}
+		set_variable = sb_zululand_incorporation_complete_pending_var
+		trigger_event = { id = sb_zululand_settlement.130 days = 1 popup = yes }
+	}
+}
+
+# -----------------------------------------------------------------------------
+# Nieuwe Republiek creation, boundary confrontation, and Transvaal union
+# -----------------------------------------------------------------------------
+
+sb_nrp_seed_livestock_ranch = {
+	s:STATE_ZULULAND.region_state:NRP ?= {
+		if = {
+			limit = { NOT = { has_building = building_livestock_ranch } }
+			create_building = {
+				building = building_livestock_ranch
+				add_ownership = {
+					building = {
+						type = building_manor_house
+						country = c:NRP
+						levels = 1
+						region = "STATE_ZULULAND"
+					}
+				}
+				reserves = 1
+				activate_production_methods = {
+					"pm_open_air_stockyards"
+					"pm_simple_ranch"
+					"pm_standard_fences"
+					"pm_unrefrigerated"
+				}
+			}
+		}
+	}
+}
+
+# BUILDING = a literal building type. Province-level state partitioning assigns
+# the existing economy to the larger NRP fragment, so merge each inherited
+# level back into surviving ZUL before NRP receives its own starter economy.
+sb_nrp_return_building_type_to_zul = {
+	s:STATE_ZULULAND.region_state:NRP = {
+		if = {
+			limit = { has_building = $BUILDING$ }
+			every_scope_building = {
+				limit = { is_building_type = $BUILDING$ }
+				ROOT = {
+					set_variable = {
+						name = sb_nrp_relocated_building_levels_var
+						value = PREV.level
+					}
+				}
+			}
+			s:STATE_ZULULAND.region_state:ZUL = {
+				if = {
+					limit = { has_building = $BUILDING$ }
+					every_scope_building = {
+						limit = { is_building_type = $BUILDING$ }
+						ROOT = {
+							change_variable = {
+								name = sb_nrp_relocated_building_levels_var
+								add = PREV.level
+							}
+						}
+					}
+					remove_building = $BUILDING$
+				}
+			}
+			remove_building = $BUILDING$
+			s:STATE_ZULULAND.region_state:ZUL = {
+				create_building = {
+					building = $BUILDING$
+					level = ROOT.var:sb_nrp_relocated_building_levels_var
+					reserves = 1
+				}
+			}
+			ROOT = { remove_variable = sb_nrp_relocated_building_levels_var }
+		}
+	}
+}
+
+# Auto-placed buildings remain engine-managed. Every ordinary buildable type
+# is handled explicitly because building effects require compile-time types.
+sb_nrp_return_inherited_buildings_to_zul = {
+	if = {
+		limit = {
+			c:NRP ?= { is_country_alive = yes }
+			c:ZUL ?= { is_country_alive = yes }
+			exists = s:STATE_ZULULAND.region_state:NRP
+			exists = s:STATE_ZULULAND.region_state:ZUL
+		}
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_food_industry }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_textile_mill }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_furniture_manufactory }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_glassworks }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_tooling_workshop }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_paper_mill }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_chemical_plant }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_explosives_factory }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_synthetics_plant }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_steel_mill }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_motor_industry }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_shipyard }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_automotive_industry }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_electrics_industry }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_arms_industry }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_artillery_foundry }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_munition_plant }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_rye_farm }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_wheat_farm }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_rice_farm }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_maize_farm }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_millet_farm }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_livestock_ranch }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_vineyard }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_coal_mine }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_iron_mine }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_lead_mine }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_sulfur_mine }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_gold_mine }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_coffee_plantation }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_cotton_plantation }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_dye_plantation }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_opium_plantation }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_tea_plantation }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_tobacco_plantation }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_sugar_plantation }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_banana_plantation }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_silk_plantation }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_barrack }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_naval_fortification }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_naval_administration }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_art_academy }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_power_plant }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_government_administration }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_university }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_skyscraper }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_logging_camp }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_rubber_plantation }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_fishing_wharf }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_whaling_station }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_oil_rig }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_port }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_railway }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_trade_center }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_construction_sector }
+		sb_nrp_return_building_type_to_zul = { BUILDING = building_diamond_mine }
+	}
+}
+
+sb_nrp_apply_boer_republic_setup = {
+	set_country_type = unrecognized
+	set_variable = sb_commandant_general_visible_var
+	set_variable = sb_early_republic_var
+	set_variable = sb_nrp_scripted_frontier_setup_var
+	set_variable = sb_boer_preserve_inherited_peripheral_laws_var
+	sb_apply_boer_republic_spawn_setup = yes
+	remove_variable = sb_boer_preserve_inherited_peripheral_laws_var
+	activate_law = law_type:law_national_supremacy
+	activate_law = law_type:law_agrarianism
+	activate_law = law_type:law_national_militia
+	add_modifier = { name = sb_trek_frontier_drive months = 120 }
+	if = {
+		limit = { NOT = { has_journal_entry = je_sb_great_trek } }
+		add_journal_entry = { type = je_sb_great_trek }
+	}
+	sb_ensure_boer_republic_compacts_for_root = yes
+}
+
+sb_nrp_create_greater_republic = {
+	if = {
+		limit = {
+			country_definition = cd:NAL
+			c:TRN ?= { is_country_alive = yes }
+			c:ZUL ?= { is_country_alive = yes }
+			NOT = { c:NRP ?= { is_country_alive = yes } }
+			p:xE1E455.state.owner = c:ZUL
+		}
+		set_variable = sb_nrp_setup_pending_var
+		c:ZUL = {
+			create_country = {
+				tag = NRP
+				origin = c:TRN
+				province = p:xE1E455
+				on_created = {
+					c:NAL = { sb_nrp_finalize_greater_republic = yes }
+				}
+			}
+		}
+		# Independent lease cleanup: normally the on_created callback resolves
+		# immediately; this fallback finalizes a live NRP or clears a failed setup.
+		trigger_event = { id = sb_zululand_settlement.201 days = 1 popup = no }
+	}
+}
+
+sb_nrp_finalize_greater_republic = {
+	if = {
+		limit = {
+			country_definition = cd:NAL
+			has_variable = sb_nrp_setup_pending_var
+			c:NRP ?= { is_country_alive = yes }
+			OR = {
+				c:ZUL ?= { is_country_alive = yes }
+				AND = {
+					has_variable = sb_nrp_direct_annexation_rebellion_pending_var
+					is_country_alive = yes
+					exists = s:STATE_ZULULAND.region_state:NAL
+				}
+			}
+		}
+		remove_variable = sb_nrp_setup_pending_var
+		# Restore ZUL's inherited buildable levels in its residual state. The split
+		# assigns the objects to NRP, so the helper rebuilds those levels for ZUL;
+		# NRP then receives only the agreed one-ranch starter economy.
+		s:STATE_ZULULAND = {
+			set_owner_of_provinces = {
+				country = c:NRP
+				provinces = { xE1E455 xE882CE xBE6FEE x904EBE x9E9742 }
+			}
+			add_claim = c:NRP
+			region_state:NRP ?= { set_state_type = incorporated }
+		}
+		sb_nrp_return_inherited_buildings_to_zul = yes
+		c:NRP = {
+			sb_nrp_apply_boer_republic_setup = yes
+			set_variable = sb_nrp_greater_concession_var
+				if = {
+					limit = { c:NAL ?= { has_variable = sb_nrp_direct_annexation_rebellion_pending_var } }
+					set_variable = sb_nrp_direct_annexation_rebellion_var
+					if = {
+						limit = { NOT = { c:ZUL ?= { is_country_alive = yes } } }
+						set_variable = sb_nrp_boundary_pending_var
+						set_variable = { name = sb_nrp_boundary_not_before_var days = 30 }
+						trigger_event = { id = sb_zululand_settlement.209 days = 30 popup = no }
+					}
+				}
+			else = {
+				set_variable = sb_nrp_boundary_pending_var
+				set_variable = { name = sb_nrp_boundary_not_before_var days = 30 }
+				trigger_event = { id = sb_zululand_settlement.209 days = 30 popup = no }
+			}
+		}
+		if = {
+			limit = { has_variable = sb_nrp_direct_annexation_rebellion_pending_var }
+			remove_variable = sb_nrp_direct_annexation_rebellion_pending_var
+		}
+		sb_nrp_seed_livestock_ranch = yes
+		c:TRN ?= {
+			if = {
+				limit = { is_player = yes }
+				trigger_event = { id = sb_zululand_settlement.200 days = 1 popup = yes }
+			}
+		}
+	}
+	else_if = {
+		limit = { has_variable = sb_nrp_setup_pending_var }
+		remove_variable = sb_nrp_setup_pending_var
+		if = {
+			limit = { has_variable = sb_nrp_direct_annexation_rebellion_pending_var }
+			remove_variable = sb_nrp_direct_annexation_rebellion_pending_var
+		}
+	}
+}
+
+sb_nrp_select_boundary_initiator = {
+	if = {
+		limit = {
+			c:NAL ?= {
+				sb_zululand_nal_is_self_governing = yes
+				is_active_in_diplomatic_play = no
+				NOT = { has_truce_with = c:NRP }
+			}
+		}
+		set_variable = { name = sb_nrp_boundary_initiator_scope value = c:NAL }
+	}
+	else_if = {
+		limit = {
+			c:NAL ?= {
+				is_country_alive = yes
+				NOT = { sb_zululand_nal_is_self_governing = yes }
+			}
+			c:GBR ?= {
+				is_country_alive = yes
+				is_active_in_diplomatic_play = no
+				NOT = { has_truce_with = c:NRP }
+			}
+		}
+		set_variable = { name = sb_nrp_boundary_initiator_scope value = c:GBR }
+	}
+}
+
+sb_nrp_open_boundary_demand = {
+	if = {
+		limit = { sb_nrp_boundary_demand_can_open = yes }
+		sb_nrp_select_boundary_initiator = yes
+		if = {
+			limit = { has_variable = sb_nrp_boundary_initiator_scope }
+			set_variable = { name = sb_nrp_boundary_event_open_var days = 120 }
+			if = {
+				limit = { has_variable = sb_nrp_direct_annexation_rebellion_var }
+				trigger_event = { id = sb_zululand_settlement.230 popup = yes }
+			}
+			else = { trigger_event = { id = sb_zululand_settlement.210 popup = yes } }
+		}
+	}
+}
+
+sb_nrp_calculate_boundary_strength = {
+	set_variable = { name = sb_nrp_boer_strength_var value = 0 }
+	set_variable = { name = sb_nrp_opposition_strength_var value = 0 }
+	if = {
+		limit = { c:TRN ?= { is_country_alive = yes } }
+		change_variable = { name = sb_nrp_boer_strength_var add = c:TRN.army_power_projection }
+	}
+	if = {
+		limit = {
+			c:ORA ?= {
+				is_country_alive = yes
+				is_direct_subject_of = c:TRN
+				is_subject_type = subject_type_sb_boer_confederal_partner
+			}
+		}
+		change_variable = { name = sb_nrp_boer_strength_var add = c:ORA.army_power_projection }
+	}
+	if = {
+		limit = { c:NAL ?= { is_country_alive = yes } }
+		change_variable = { name = sb_nrp_opposition_strength_var add = c:NAL.army_power_projection }
+	}
+	if = {
+		limit = { c:ZUL ?= { is_country_alive = yes } }
+		change_variable = { name = sb_nrp_opposition_strength_var add = c:ZUL.army_power_projection }
+	}
+	if = {
+		limit = { NOT = { c:NAL ?= { sb_zululand_nal_is_self_governing = yes } } }
+		if = {
+			limit = {
+				c:CAP ?= {
+					is_country_alive = yes
+					is_subject_of = c:GBR
+				}
+			}
+			change_variable = { name = sb_nrp_opposition_strength_var add = c:CAP.army_power_projection }
+		}
+		if = {
+			limit = { c:GBR ?= { is_country_alive = yes } }
+			set_variable = { name = sb_nrp_british_fraction_var value = c:GBR.army_power_projection }
+			change_variable = { name = sb_nrp_british_fraction_var multiply = 0.10 }
+			change_variable = { name = sb_nrp_opposition_strength_var add = var:sb_nrp_british_fraction_var }
+			remove_variable = sb_nrp_british_fraction_var
+		}
+	}
+	set_variable = { name = sb_nrp_strength_ratio_var value = var:sb_nrp_boer_strength_var }
+	if = {
+		limit = { var:sb_nrp_opposition_strength_var > 0 }
+		change_variable = { name = sb_nrp_strength_ratio_var divide = var:sb_nrp_opposition_strength_var }
+	}
+	else = { set_variable = { name = sb_nrp_strength_ratio_var value = 2 } }
+	if = {
+		limit = { var:sb_nrp_strength_ratio_var < 0.50 }
+		set_variable = { name = sb_nrp_refusal_chance_var value = 5 }
+	}
+	else_if = {
+		limit = { var:sb_nrp_strength_ratio_var < 0.75 }
+		set_variable = { name = sb_nrp_refusal_chance_var value = 15 }
+	}
+	else_if = {
+		limit = { var:sb_nrp_strength_ratio_var < 1 }
+		set_variable = { name = sb_nrp_refusal_chance_var value = 35 }
+	}
+	else_if = {
+		limit = { var:sb_nrp_strength_ratio_var < 1.50 }
+		set_variable = { name = sb_nrp_refusal_chance_var value = 60 }
+	}
+	else = { set_variable = { name = sb_nrp_refusal_chance_var value = 80 } }
+	if = {
+		limit = { c:TRN ?= { is_player = yes } }
+		change_variable = { name = sb_nrp_refusal_chance_var add = 10 }
+		clamp_variable = { name = sb_nrp_refusal_chance_var min = 0 max = 95 }
+	}
+}
+
+sb_nrp_roll_refusal_from_chance = {
+	if = {
+		limit = { var:sb_nrp_refusal_chance_var <= 5 }
+		random_list = { 5 = { set_variable = sb_nrp_should_refuse_boundary_var } 95 = {} }
+	}
+	else_if = {
+		limit = { var:sb_nrp_refusal_chance_var <= 15 }
+		random_list = { 15 = { set_variable = sb_nrp_should_refuse_boundary_var } 85 = {} }
+	}
+	else_if = {
+		limit = { var:sb_nrp_refusal_chance_var <= 25 }
+		random_list = { 25 = { set_variable = sb_nrp_should_refuse_boundary_var } 75 = {} }
+	}
+	else_if = {
+		limit = { var:sb_nrp_refusal_chance_var <= 35 }
+		random_list = { 35 = { set_variable = sb_nrp_should_refuse_boundary_var } 65 = {} }
+	}
+	else_if = {
+		limit = { var:sb_nrp_refusal_chance_var <= 45 }
+		random_list = { 45 = { set_variable = sb_nrp_should_refuse_boundary_var } 55 = {} }
+	}
+	else_if = {
+		limit = { var:sb_nrp_refusal_chance_var <= 60 }
+		random_list = { 60 = { set_variable = sb_nrp_should_refuse_boundary_var } 40 = {} }
+	}
+	else_if = {
+		limit = { var:sb_nrp_refusal_chance_var <= 70 }
+		random_list = { 70 = { set_variable = sb_nrp_should_refuse_boundary_var } 30 = {} }
+	}
+	else_if = {
+		limit = { var:sb_nrp_refusal_chance_var <= 80 }
+		random_list = { 80 = { set_variable = sb_nrp_should_refuse_boundary_var } 20 = {} }
+	}
+	else = { random_list = { 90 = { set_variable = sb_nrp_should_refuse_boundary_var } 10 = {} } }
+}
+
+sb_nrp_roll_boundary_response = {
+	if = { limit = { has_variable = sb_nrp_should_refuse_boundary_var } remove_variable = sb_nrp_should_refuse_boundary_var }
+	if = {
+		limit = { NOT = { sb_nrp_subject_hard_safety = yes } }
+		if = {
+			limit = { sb_frontier_ai_behavior_off = yes }
+			random_list = { 50 = { set_variable = sb_nrp_should_refuse_boundary_var } 50 = {} }
+		}
+		else_if = {
+			limit = {
+				sb_frontier_ai_behavior_dynamic_historical = yes
+				NOT = { sb_nrp_dynamic_hard_safety = yes }
+			}
+			sb_nrp_calculate_boundary_strength = yes
+			sb_nrp_roll_refusal_from_chance = yes
+		}
+		# Strict Historical and Dynamic hard-safety cases deliberately leave the
+		# refusal marker unset.
+	}
+	if = {
+		limit = {
+			has_variable = sb_nrp_should_refuse_boundary_var
+			c:TRN ?= { is_country_alive = yes is_ai = yes is_subject = no }
+		}
+		c:TRN = { set_variable = sb_nrp_shared_refusal_commitment_var }
+	}
+}
+
+sb_nrp_accept_boundary_cutback = {
+	if = {
+		limit = {
+			country_definition = cd:NRP
+			OR = {
+				AND = {
+					has_variable = sb_nrp_direct_annexation_rebellion_var
+					c:NAL ?= { is_country_alive = yes }
+				}
+				c:ZUL ?= { is_country_alive = yes }
+			}
+		}
+		if = {
+			limit = { has_variable = sb_nrp_direct_annexation_rebellion_var }
+			s:STATE_ZULULAND = {
+				set_owner_of_provinces = {
+					country = c:NAL
+					provinces = { xE1E455 x904EBE x9E9742 }
+				}
+			}
+		}
+		else = {
+			s:STATE_ZULULAND = {
+				set_owner_of_provinces = {
+					country = c:ZUL
+					provinces = { xE1E455 x904EBE x9E9742 }
+				}
+			}
+		}
+		if = { limit = { has_variable = sb_nrp_boundary_pending_var } remove_variable = sb_nrp_boundary_pending_var }
+		if = { limit = { has_variable = sb_nrp_boundary_event_open_var } remove_variable = sb_nrp_boundary_event_open_var }
+		if = { limit = { has_variable = sb_nrp_should_refuse_boundary_var } remove_variable = sb_nrp_should_refuse_boundary_var }
+		if = { limit = { has_variable = sb_nrp_boundary_initiator_scope } remove_variable = sb_nrp_boundary_initiator_scope }
+		if = { limit = { has_variable = sb_nrp_boundary_cutback_notification_pending_var } remove_variable = sb_nrp_boundary_cutback_notification_pending_var }
+		sb_nrp_seed_livestock_ranch = yes
+		set_variable = sb_nrp_boundary_cutback_accepted_var
+		set_variable = { name = sb_nrp_union_wait_var months = 24 }
+	}
+}
+
+# ROOT = NRP. Route the accepted boundary through Natal so its player receives
+# the settlement and the visible notification is also the action that executes it.
+sb_nrp_notify_natal_of_boundary_cutback = {
+	set_variable = sb_nrp_boundary_cutback_notification_pending_var
+	if = {
+		limit = { c:NAL ?= { is_country_alive = yes } }
+		c:NAL = { trigger_event = { id = sb_zululand_settlement.231 popup = yes } }
+	}
+	else = {
+		remove_variable = sb_nrp_boundary_cutback_notification_pending_var
+		sb_nrp_accept_boundary_cutback = yes
+	}
+}
+
+sb_nrp_add_boundary_war_goals = {
+	s:STATE_ZULULAND.region_state:NRP ?= { save_temporary_scope_as = sb_nrp_boundary_nrp_state }
+	if = {
+		limit = { has_variable = sb_nrp_direct_annexation_rebellion_var }
+		s:STATE_ZULULAND.region_state:NAL ?= { save_temporary_scope_as = sb_nrp_boundary_natal_state }
+		scope:sb_nrp_boundary_play ?= {
+			remove_war_goal = {
+				who = initiator
+				type = humiliation
+			}
+			if = {
+				limit = {
+					c:NAL ?= {
+						is_country_alive = yes
+						NOT = { this = scope:sb_nrp_boundary_initiator }
+					}
+				}
+				add_initiator_backers = { c:NAL }
+			}
+			add_war_goal = {
+				holder = c:NAL
+				type = annex_country
+				target_country = c:NRP
+				primary_demand = yes
+			}
+			add_war_goal = {
+				holder = c:NRP
+				type = return_state
+				target_country = c:NAL
+				target_state = scope:sb_nrp_boundary_natal_state
+				primary_demand = yes
+			}
+		}
+	}
+	else = {
+		s:STATE_ZULULAND.region_state:ZUL ?= { save_temporary_scope_as = sb_nrp_boundary_zul_state }
+		scope:sb_nrp_boundary_play ?= {
+			remove_war_goal = {
+				who = initiator
+				type = humiliation
+			}
+			add_initiator_backers = { c:ZUL }
+			if = {
+				limit = {
+					c:NAL ?= {
+						is_country_alive = yes
+						NOT = { this = scope:sb_nrp_boundary_initiator }
+					}
+				}
+				add_initiator_backers = { c:NAL }
+			}
+			add_war_goal = {
+				holder = c:ZUL
+				type = return_state
+				target_country = c:NRP
+				target_state = scope:sb_nrp_boundary_nrp_state
+				primary_demand = yes
+			}
+			add_war_goal = {
+				holder = c:NRP
+				type = return_state
+				target_country = c:ZUL
+				target_state = scope:sb_nrp_boundary_zul_state
+				primary_demand = yes
+			}
+		}
+	}
+}
+
+sb_nrp_launch_boundary_confrontation = {
+	if = {
+		limit = {
+			country_definition = cd:NRP
+			has_variable = sb_nrp_boundary_initiator_scope
+			OR = {
+				c:ZUL ?= { is_country_alive = yes }
+				AND = {
+					has_variable = sb_nrp_direct_annexation_rebellion_var
+					c:NAL ?= { is_country_alive = yes }
+				}
+			}
+		}
+		var:sb_nrp_boundary_initiator_scope = { save_temporary_scope_as = sb_nrp_boundary_initiator }
+		set_variable = sb_nrp_boundary_confrontation_active_var
+		if = {
+			limit = {
+				c:NRP ?= {
+					is_country_alive = yes
+					is_direct_subject_of = c:TRN
+					is_subject_type = subject_type_sb_boer_confederal_partner
+				}
+			}
+			scope:sb_nrp_boundary_initiator = {
+				create_diplomatic_play = {
+					type = dp_sb_nrp_boundary_confrontation
+					target_country = c:TRN
+					add_target_backers = { c:NRP }
+				}
+			}
+		}
+		else = {
+			scope:sb_nrp_boundary_initiator = {
+				create_diplomatic_play = {
+					type = dp_sb_nrp_boundary_confrontation
+					target_country = c:NRP
+				}
+			}
+		}
+		random_diplomatic_play = {
+			limit = {
+				initiator = scope:sb_nrp_boundary_initiator
+				is_diplomatic_play_type = dp_sb_nrp_boundary_confrontation
+			}
+			save_temporary_scope_as = sb_nrp_boundary_play
+		}
+		if = {
+			limit = { exists = scope:sb_nrp_boundary_play }
+			sb_nrp_add_boundary_war_goals = yes
+		}
+		if = { limit = { has_variable = sb_nrp_boundary_initiator_scope } remove_variable = sb_nrp_boundary_initiator_scope }
+	}
+}
+
+sb_nrp_refuse_boundary_demand = {
+	if = { limit = { has_variable = sb_nrp_boundary_pending_var } remove_variable = sb_nrp_boundary_pending_var }
+	if = { limit = { has_variable = sb_nrp_boundary_event_open_var } remove_variable = sb_nrp_boundary_event_open_var }
+	set_variable = sb_nrp_boundary_refused_var
+	if = {
+		limit = { c:TRN ?= { is_country_alive = yes is_subject = no } }
+		c:TRN = { trigger_event = { id = sb_zululand_settlement.211 days = 1 popup = yes } }
+	}
+	else = { sb_nrp_launch_boundary_confrontation = yes }
+}
+
+sb_nrp_accept_defence_request = {
+	if = { limit = { has_variable = sb_nrp_shared_refusal_commitment_var } remove_variable = sb_nrp_shared_refusal_commitment_var }
+	if = {
+		limit = { c:NRP ?= { is_country_alive = yes is_subject = no } }
+		end_truce = c:NRP
+		create_diplomatic_pact = {
+			country = c:NRP
+			type = sb_boer_confederal_partner
+		}
+	}
+	c:NRP ?= { sb_nrp_launch_boundary_confrontation = yes }
+}
+
+sb_nrp_decline_defence_request = {
+	if = { limit = { has_variable = sb_nrp_shared_refusal_commitment_var } remove_variable = sb_nrp_shared_refusal_commitment_var }
+	change_relations = { country = c:NRP value = -50 }
+	c:NRP ?= {
+		every_scope_treaty = {
+			limit = {
+				binds = c:TRN
+				any_scope_article = { has_type = defensive_pact }
+			}
+			withdraw = { country = c:NRP }
+		}
+		sb_nrp_launch_boundary_confrontation = yes
+	}
+}
+
+sb_nrp_monthly_housekeeping = {
+	if = {
+		limit = {
+			country_definition = cd:NRP
+			has_variable = sb_nrp_boundary_pending_var
+			NOT = { has_variable = sb_nrp_boundary_not_before_var }
+			NOT = { has_variable = sb_nrp_boundary_event_open_var }
+		}
+		if = {
+			limit = { sb_nrp_boundary_demand_can_open = yes }
+			sb_nrp_open_boundary_demand = yes
+		}
+		else_if = {
+			limit = {
+				OR = {
+					NOT = { sb_nrp_is_greater_republic = yes }
+					AND = {
+						NOT = { has_variable = sb_nrp_direct_annexation_rebellion_var }
+						OR = {
+							NOT = { c:ZUL ?= { is_country_alive = yes } }
+							NOT = { exists = s:STATE_ZULULAND.region_state:ZUL }
+						}
+					}
+					AND = {
+						has_variable = sb_nrp_direct_annexation_rebellion_var
+						NOT = { exists = s:STATE_ZULULAND.region_state:NAL }
+					}
+					NOT = {
+						OR = {
+							c:NAL ?= { is_country_alive = yes }
+							c:GBR ?= { is_country_alive = yes }
+						}
+					}
+				}
+			}
+			remove_variable = sb_nrp_boundary_pending_var
+			set_variable = sb_nrp_boundary_demand_lapsed_var
+		}
+	}
+	if = {
+		limit = {
+			has_variable = sb_nrp_boundary_cutback_accepted_var
+			NOT = { has_variable = sb_nrp_union_wait_var }
+			NOT = { has_variable = sb_nrp_union_petition_pending_var }
+			sb_nrp_is_reduced_republic = yes
+		}
+		set_variable = sb_nrp_union_petition_pending_var
+		trigger_event = { id = sb_zululand_settlement.220 days = 1 popup = yes }
+	}
+}

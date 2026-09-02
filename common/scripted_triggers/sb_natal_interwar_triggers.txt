@@ -151,27 +151,9 @@ sb_natal_gandhi_catalyst_available = {
 	}
 }
 
-sb_natal_owns_complete_northern_zulu_core = {
-	p:xBE6FEE.state.owner = ROOT
-	p:x1A084B.state.owner = ROOT
-	p:xBFA16B.state.owner = ROOT
-	p:x9E9742.state.owner = ROOT
-	p:x88FAD4.state.owner = ROOT
-	p:x904EBE.state.owner = ROOT
-	p:x41C070.state.owner = ROOT
-	p:xE882CE.state.owner = ROOT
-	p:xE1E455.state.owner = ROOT
-}
-
 sb_natal_zulu_settlement_ready = {
-	sb_natal_is_british_colony = yes
-	sb_natal_owns_complete_northern_zulu_core = yes
+	sb_zululand_normalized_nal_protectorate = yes
 	NOT = { has_variable = sb_natal_zulu_settlement_resolved_var }
-	NOT = {
-		c:ZUL ?= {
-			any_scope_state = { always = yes }
-		}
-	}
 }
 
 sb_natal_has_zulu_national_movement = {
@@ -187,9 +169,19 @@ sb_natal_has_civil_rights_movement = {
 	}
 }
 
+sb_natal_zulu_secession_controls_full_zululand = {
+	country_definition = cd:ZUL
+	is_country_alive = yes
+	is_secessionist = yes
+	has_variable = sb_natal_zulu_restoration_active_var
+	owns_entire_state_region = STATE_ZULULAND
+	NOT = { c:NRP ?= { is_country_alive = yes } }
+}
+
 sb_natal_trn_arms_treaty_possible = {
 	country_definition = cd:TRN
 	is_country_alive = yes
+	NOT = { c:NRP ?= { is_country_alive = yes } }
 	c:ZUL ?= {
 		is_country_alive = yes
 		is_secessionist = yes
@@ -197,35 +189,6 @@ sb_natal_trn_arms_treaty_possible = {
 	}
 	c:GBR ?= {
 		NOT = { any_subject_or_below = { this = ROOT } }
-	}
-	can_create_treaty = {
-		first_country = ROOT
-		second_country = c:ZUL
-		is_draft = no
-		binding_period = { years = 5 }
-		articles_to_create = {
-			{
-				article = military_assistance
-				source_country = ROOT
-				target_country = c:ZUL
-			}
-		}
-	}
-}
-
-sb_natal_can_integrate_restored_zululand = {
-	country_definition = cd:NAL
-	is_country_alive = yes
-	has_variable = sb_natal_gradual_zulu_restoration_var
-	is_at_war = no
-	is_active_in_diplomatic_play = no
-	c:ZUL ?= {
-		is_country_alive = yes
-		is_direct_subject_of = ROOT
-		is_subject_type = subject_type_puppet
-		liberty_desire <= 0
-		is_at_war = no
-		is_active_in_diplomatic_play = no
 	}
 }
 

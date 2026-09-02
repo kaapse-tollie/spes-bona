@@ -23,7 +23,7 @@ On Depro's development machine, the canonical path is `/Users/depro/Documents/Pa
 The current lock covers:
 
 - `37` exact-path files;
-- `105` keyed `REPLACE`, `TRY_REPLACE`, or `REPLACE_OR_CREATE` objects;
+- `107` keyed `REPLACE`, `TRY_REPLACE`, or `REPLACE_OR_CREATE` objects;
 - `18` intentionally changed state-region blocks; and
 - no approved `replace_path` directives.
 
@@ -63,6 +63,12 @@ The company replacements are intentionally narrow:
 Vanilla's additive `on_company_disbanded` handler remains untouched. SB registers exactly one separate Mozambique cleanup handler.
 
 The Armed Forces definition is a keyed Vanilla `1.13.11` rebase. Its only SB delta consumes Imperial Administration's displayed flat `+50` Aristocrat attraction modifier; CMF `1.65.0` does not replace this object. The upstream source and object hashes are pinned so later military-interest-group changes require an explicit rebase.
+
+Vanilla's two AI state-incorporation triggers are retained verbatim except for one narrow
+postwar exception. AI Natal may incorporate `STATE_ZULULAND` when the selected settlement
+has explicitly requested ordinary incorporation. This override is necessary because the
+engine exposes incorporation as an AI/player interaction but provides no script effect that
+starts the interaction; it does not relax incorporation policy for any other state or country.
 
 The Colonial Racialism amendment is a keyed Vanilla `1.13.11` rebase. Its only SB delta permits Rural Folk carrying Settler Colonialist to sponsor the amendment; Vanilla's approval gate and existing Armed Forces and Industrialist sponsors remain unchanged.
 

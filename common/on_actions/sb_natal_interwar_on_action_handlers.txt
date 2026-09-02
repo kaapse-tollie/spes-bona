@@ -8,6 +8,7 @@ sb_on_natal_zulu_secession_start = {
 				country_definition = cd:NAL
 				is_country_alive = yes
 				sb_natal_is_british_colony = yes
+				has_variable = sb_zululand_direct_natal_administration_var
 				NOT = { has_variable = sb_natal_zulu_restoration_resolved_var }
 				scope:target ?= {
 					country_definition = cd:ZUL
@@ -15,16 +16,21 @@ sb_on_natal_zulu_secession_start = {
 					is_secessionist = yes
 				}
 			}
-			sb_natal_remove_zulu_chiefdom_settlement = yes
 			set_variable = sb_natal_zulu_settlement_resolved_var
 			if = {
 				limit = { has_variable = sb_natal_zulu_settlement_pending_var }
 				remove_variable = sb_natal_zulu_settlement_pending_var
 			}
+			if = {
+				limit = { has_variable = sb_natal_zulu_settlement_event_open_var }
+				remove_variable = sb_natal_zulu_settlement_event_open_var
+			}
 			set_variable = sb_natal_zulu_restoration_active_var
 			scope:target = {
 				set_variable = sb_natal_zulu_restoration_active_var
-				trigger_event = { id = sb_natal_interwar.035 days = 1 popup = yes }
+				# Let the engine finish constructing the secession government before the
+				# royal restoration replaces its inherited colonial constitution.
+				trigger_event = { id = sb_natal_interwar.039 days = 3 popup = yes }
 			}
 		}
 	}
@@ -40,6 +46,34 @@ sb_on_natal_zulu_secession_end = {
 					scope:target ?= {
 						country_definition = cd:ZUL
 						has_variable = sb_natal_zulu_restoration_active_var
+					}
+				}
+			}
+			if = {
+				limit = {
+					c:NRP ?= {
+						is_country_alive = yes
+						has_variable = sb_nrp_direct_annexation_rebellion_var
+					}
+				}
+				if = {
+					limit = { c:ZUL ?= { is_country_alive = yes } }
+					c:NRP = {
+						remove_variable = sb_nrp_direct_annexation_rebellion_var
+						set_variable = sb_nrp_zulu_victory_honored_var
+						if = { limit = { has_variable = sb_nrp_boundary_pending_var } remove_variable = sb_nrp_boundary_pending_var }
+						if = { limit = { has_variable = sb_nrp_boundary_not_before_var } remove_variable = sb_nrp_boundary_not_before_var }
+					}
+				}
+				else_if = {
+					limit = {
+						is_country_alive = yes
+						exists = s:STATE_ZULULAND.region_state:NAL
+					}
+					c:NRP = {
+						set_variable = sb_nrp_boundary_pending_var
+						set_variable = { name = sb_nrp_boundary_not_before_var days = 30 }
+						trigger_event = { id = sb_zululand_settlement.209 days = 30 popup = no }
 					}
 				}
 			}

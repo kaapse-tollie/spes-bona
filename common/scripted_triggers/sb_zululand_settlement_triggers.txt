@@ -1,0 +1,231 @@
+﻿# Spes Bona - postwar Zululand settlement and Nieuwe Republiek triggers
+
+sb_zululand_british_postwar_owner = {
+	OR = {
+		this = c:GBR
+		AND = {
+			is_ai = yes
+			is_subject_of = c:GBR
+		}
+	}
+}
+
+sb_zululand_under_british_postwar_control = {
+	country_definition = cd:GBR
+	c:NAL ?= {
+		is_country_alive = yes
+		is_subject_of = c:GBR
+		has_variable = sb_natalia_british_colony_resolved_var
+	}
+	OR = {
+		c:ZUL ?= {
+			is_country_alive = yes
+			sb_zululand_british_postwar_owner = yes
+			owns_entire_state_region = STATE_ZULULAND
+		}
+		AND = {
+			NOT = { c:ZUL ?= { is_country_alive = yes } }
+			p:xBE6FEE.state.owner = {
+				sb_zululand_british_postwar_owner = yes
+				owns_entire_state_region = STATE_ZULULAND
+			}
+		}
+	}
+	NOT = {
+		c:ZUL ?= {
+			is_country_alive = yes
+			is_direct_subject_of = c:NAL
+		}
+	}
+}
+
+sb_zululand_normalized_nal_protectorate = {
+	country_definition = cd:NAL
+	is_country_alive = yes
+	c:ZUL ?= {
+		is_country_alive = yes
+		is_direct_subject_of = c:NAL
+		is_subject_type = subject_type_protectorate
+		owns_entire_state_region = STATE_ZULULAND
+	}
+}
+
+sb_zululand_chiefdoms_situation_active = {
+	has_global_variable = sb_zululand_chiefdoms_open_global_var
+	NOT = { has_global_variable = sb_zululand_chiefdoms_resolved_global_var }
+	container_exists = sb_zululand_chiefdoms_state
+}
+
+sb_zululand_chiefdoms_runtime_valid = {
+	country_definition = cd:NAL
+	is_country_alive = yes
+	sb_zululand_chiefdoms_situation_active = yes
+	c:ZUL ?= {
+		is_country_alive = yes
+		is_direct_subject_of = c:NAL
+		is_subject_type = subject_type_sb_zulu_chiefdoms
+	}
+}
+
+sb_zululand_chiefdoms_involved_actor = {
+	sb_zululand_chiefdoms_situation_active = yes
+	OR = {
+		country_definition = cd:NAL
+		country_definition = cd:ZUL
+		country_definition = cd:GBR
+		AND = {
+			country_definition = cd:TRN
+			any_scope_state = { state_region = s:STATE_EAST_TRANSVAAL }
+		}
+	}
+}
+
+sb_zululand_can_unload_refugees = {
+	country_definition = cd:NAL
+	sb_zululand_chiefdoms_situation_active = yes
+	NOT = { has_variable = sb_zululand_refugees_unloaded_var }
+	NOT = { has_variable = sb_natal_shepstone_repeal_locked_var }
+	sb_natal_has_shepstone_system = yes
+	c:ZUL ?= {
+		is_country_alive = yes
+		owns_entire_state_region = STATE_ZULULAND
+	}
+}
+
+sb_zululand_can_return_claimant = {
+	country_definition = cd:NAL
+	sb_zululand_chiefdoms_situation_active = yes
+	NOT = { has_variable = sb_zululand_claimant_returned_var }
+	c:ZUL ?= {
+		is_country_alive = yes
+		is_direct_subject_of = c:NAL
+	}
+}
+
+sb_zululand_trn_is_eligible_participant = {
+	country_definition = cd:TRN
+	is_country_alive = yes
+	any_scope_state = { state_region = s:STATE_EAST_TRANSVAAL }
+	sb_zululand_chiefdoms_situation_active = yes
+	c:NAL ?= { sb_zululand_chiefdoms_runtime_valid = yes }
+}
+
+sb_zululand_defection_favors_zibhebhu = {
+	c:NAL ?= {
+		country_average_cultural_acceptance = {
+			target = cu:zulu
+			value >= 50
+		}
+	}
+	"c:NAL.average_sol_for_culture(cu:zulu)" >= "c:ZUL.average_sol_for_culture(cu:zulu)"
+}
+
+sb_zululand_nal_is_self_governing = {
+	country_definition = cd:NAL
+	is_country_alive = yes
+	OR = {
+		is_subject = no
+		is_subject_type = subject_type_dominion
+		is_subject_type = subject_type_sb_dominion
+		is_subject_type = subject_type_sb_responsible_colony
+		is_subject_type = subject_type_sb_responsible_colony_monarchy
+		sb_natal_has_responsible_government = yes
+	}
+}
+
+sb_nrp_subject_hard_safety = {
+	OR = {
+		is_subject = yes
+		c:TRN ?= { is_subject = yes }
+	}
+}
+
+sb_nrp_dynamic_hard_safety = {
+	c:TRN ?= {
+		OR = {
+			in_default = yes
+			has_modifier = declared_bankruptcy
+			is_at_war = yes
+		}
+	}
+}
+
+sb_nrp_boundary_demand_can_open = {
+	country_definition = cd:NRP
+	is_country_alive = yes
+	is_at_war = no
+	is_active_in_diplomatic_play = no
+	has_variable = sb_nrp_boundary_pending_var
+	NOT = { has_variable = sb_nrp_boundary_not_before_var }
+	NOT = { has_variable = sb_nrp_boundary_event_open_var }
+	sb_nrp_is_greater_republic = yes
+	OR = {
+		AND = {
+			NOT = { has_variable = sb_nrp_direct_annexation_rebellion_var }
+			exists = s:STATE_ZULULAND.region_state:ZUL
+			c:ZUL ?= {
+				is_country_alive = yes
+				is_at_war = no
+				is_active_in_diplomatic_play = no
+			}
+		}
+		AND = {
+			has_variable = sb_nrp_direct_annexation_rebellion_var
+			NOT = { c:ZUL ?= { is_country_alive = yes } }
+			exists = s:STATE_ZULULAND.region_state:NAL
+		}
+	}
+	OR = {
+		c:NAL ?= {
+			sb_zululand_nal_is_self_governing = yes
+			is_active_in_diplomatic_play = no
+			NOT = { has_truce_with = c:NRP }
+		}
+		AND = {
+			c:NAL ?= {
+				is_country_alive = yes
+				NOT = { sb_zululand_nal_is_self_governing = yes }
+			}
+			c:GBR ?= {
+				is_country_alive = yes
+				is_active_in_diplomatic_play = no
+				NOT = { has_truce_with = c:NRP }
+			}
+		}
+	}
+}
+
+sb_nrp_is_greater_republic = {
+	p:xE1E455.state.owner = ROOT
+	p:xE882CE.state.owner = ROOT
+	p:xBE6FEE.state.owner = ROOT
+	p:x904EBE.state.owner = ROOT
+	p:x9E9742.state.owner = ROOT
+}
+
+sb_nrp_is_reduced_republic = {
+	p:xBE6FEE.state.owner = ROOT
+	p:xE882CE.state.owner = ROOT
+	p:xE1E455.state.owner = { NOT = { this = ROOT } }
+	p:x904EBE.state.owner = { NOT = { this = ROOT } }
+	p:x9E9742.state.owner = { NOT = { this = ROOT } }
+}
+
+sb_zululand_nal_can_annex_subject = {
+	country_definition = cd:NAL
+	is_country_alive = yes
+	is_at_war = no
+	is_active_in_diplomatic_play = no
+	NOT = { sb_zululand_chiefdoms_situation_active = yes }
+	c:ZUL ?= {
+		is_country_alive = yes
+		is_direct_subject_of = c:NAL
+		OR = {
+			is_subject_type = subject_type_puppet
+			is_subject_type = subject_type_vassal
+		}
+		liberty_desire <= 0
+		is_at_war = no
+		is_active_in_diplomatic_play = no
+	}
+}

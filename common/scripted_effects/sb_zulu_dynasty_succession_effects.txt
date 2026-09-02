@@ -355,6 +355,119 @@ sb_zulu_apply_swazi_campaign_defeat = {
 	sb_zulu_apply_dingane_swazi_popularity_loss = yes
 }
 
+# The dynasty JE chooses Mpande's immediate heir, but Vanilla resumes generic
+# heir generation after that character dies. Preserve the selected line once:
+# Mbuyazi's counterfactual line passes to its defined fictional successor,
+# while Cetshwayo's line passes to Dinuzulu. Template-use checks distinguish a
+# dead claimant from an initial assignment failure and prevent resurrection.
+sb_zulu_reconcile_secured_mpande_line = {
+	if = {
+		limit = {
+			OR = {
+				NOT = { exists = heir }
+				heir ?= {
+					NOR = {
+						has_template = $HEIR$
+						has_template = $SUCCESSOR$
+					}
+				}
+			}
+		}
+		if = {
+			limit = {
+				OR = {
+					any_scope_character = {
+						has_template = $HEIR$
+						is_character_alive = yes
+					}
+					NOT = { is_template_used = $HEIR$ }
+				}
+			}
+			sb_zulu_kill_current_heir = yes
+			country_summon_heir_effect = { TEMPLATE = $HEIR$ }
+		}
+		else_if = {
+			limit = {
+				any_scope_character = {
+					has_template = $SUCCESSOR$
+					is_character_alive = yes
+				}
+			}
+			sb_zulu_kill_current_heir = yes
+			country_summon_heir_effect = { TEMPLATE = $SUCCESSOR$ }
+			set_variable = { name = $SUCCESSOR_MARKER$ }
+		}
+		else_if = {
+			limit = {
+				NOT = { has_variable = $SUCCESSOR_MARKER$ }
+				NOT = { is_template_used = $SUCCESSOR$ }
+				game_date >= $SUCCESSOR_BIRTH_DATE$
+			}
+			sb_zulu_kill_current_heir = yes
+			country_summon_heir_effect = { TEMPLATE = $SUCCESSOR$ }
+			if = {
+				limit = {
+					exists = heir
+					heir = { has_template = $SUCCESSOR$ }
+				}
+				set_variable = { name = $SUCCESSOR_MARKER$ }
+			}
+		}
+		else_if = {
+			limit = { is_template_used = $SUCCESSOR$ }
+			set_variable = { name = $SUCCESSOR_MARKER$ }
+		}
+	}
+	if = {
+		limit = {
+			NOT = { has_variable = $SUCCESSOR_MARKER$ }
+			exists = heir
+			heir = { has_template = $SUCCESSOR$ }
+		}
+		set_variable = { name = $SUCCESSOR_MARKER$ }
+	}
+}
+
+sb_zulu_reconcile_secured_mpande_heir = {
+	if = {
+		limit = {
+			country_definition = cd:ZUL
+			is_country_alive = yes
+			has_variable = sb_zulu_dynasty_secured_var
+			has_variable = sb_zulu_mpande_mbuyazi_heir_var
+			ruler = { has_template = ZUL_mpande_zulu }
+		}
+		sb_zulu_reconcile_secured_mpande_line = {
+			HEIR = ZUL_mbuyazi_heir
+			SUCCESSOR = ZUL_mbuyazi_successor
+			SUCCESSOR_BIRTH_DATE = 1852.1.1
+			SUCCESSOR_MARKER = sb_zulu_mbuyazi_successor_installed_var
+		}
+	}
+	else_if = {
+		limit = {
+			country_definition = cd:ZUL
+			is_country_alive = yes
+			has_variable = sb_zulu_dynasty_secured_var
+			has_variable = sb_zulu_mpande_cetshwayo_heir_var
+			NOT = { has_variable = sb_zulu_mpande_mbuyazi_heir_var }
+			ruler = { has_template = ZUL_mpande_zulu }
+		}
+		sb_zulu_reconcile_secured_mpande_line = {
+			HEIR = ZUL_cetshwayo_heir
+			SUCCESSOR = ZUL_dinuzulu_heir
+			SUCCESSOR_BIRTH_DATE = 1868.1.1
+			SUCCESSOR_MARKER = sb_zulu_cetshwayo_successor_installed_var
+		}
+		if = {
+			limit = {
+				heir ?= { has_template = ZUL_dinuzulu_heir }
+			}
+			set_global_variable = sb_dinuzulu_ever_created_global_var
+		}
+	}
+}
+
 sb_zulu_monthly_dynasty_housekeeping = {
 	if = {
 		limit = { has_variable = sb_zulu_mpande_mbuyazi_heir_var }

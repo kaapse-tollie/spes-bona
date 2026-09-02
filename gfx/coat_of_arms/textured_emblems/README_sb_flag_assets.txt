@@ -19,4 +19,7 @@ Stellaland-Goshen:
 - te_sgo_initial_flag.tga: live frontier-republic flag.
 - te_sgo_united_flag.tga: intentionally retained staged asset for a future united presentation; do not remove as dead art.
 
+Nieuwe Republiek:
+- te_nrp_nieuwe_republiek_flag.tga: live NRP flag, generated from gfx/flags/source/Flag_of_Nieuwe_Republiek.svg.
+
 Flag selection lives in common/flag_definitions/sb_flag_definitions.txt. Coat-of-arms composition lives in common/coat_of_arms/coat_of_arms/sb_countries.txt.

@@ -56,14 +56,11 @@
 #     -0.4  Rural Folk in government
 #     -0.2 Landowners in government
 #     -0.1 Armed Forces in government
-#     -0.2 Xhosa frontier threat active (state_trait_sb_xhosa_resistance)
 #     +0.1 favour liberals campaign active
 #     -0.1 favour settlers campaign active
 #
-# DESIGN NOTE: settler side has slightly more total drift potential (especially
-#   with the Xhosa frontier threat), reflecting the historical reality that
-#   the frontier settler faction had structural advantages in the early Cape.
-#   The liberal side needs to actively pass laws and get IGs into government.
+# DESIGN NOTE: Xhosa frontier resistance remains part of the war and movement
+#   content, but no longer supplies automatic settler drift to this bar.
 #
 # CROSS-REFERENCES:
 #   - Parent JE: common/journal_entries/1-01_sb_cape_politics.txt
@@ -662,18 +659,6 @@ sb_cape_balance_bar = {
 		}
 
 			if = {
-				limit = {
-					any_scope_state = {
-						has_state_trait = state_trait_sb_xhosa_resistance
-					}
-				}
-				subtract = {
-					desc = "sb_cape_xhosa_frontier_pressure"
-					value = 0.2
-				}
-			}
-
-			if = {
 				limit = { has_modifier = sb_cape_favour_settlers }
 				subtract = {
 					desc = "sb_cape_favour_settlers_drift"
@@ -814,6 +799,16 @@ sb_zulu_dynastic_stability_bar = {
 			}
 			add = {
 				desc = "sb_zulu_drift_honorable"
+				value = 1
+			}
+		}
+
+		if = {
+			limit = {
+				ruler = { has_trait = brave }
+			}
+			add = {
+				desc = "sb_zulu_drift_brave"
 				value = 1
 			}
 		}
@@ -1018,7 +1013,7 @@ sb_imperial_confederation_sea_access_bar = {
 	second_desc = "sb_imperial_confederation_sea_access_bar_danger"
 	start_value = 0
 	min_value = 0
-	max_value = 36
+	max_value = 60
 	default = yes
 }
 
@@ -1054,6 +1049,26 @@ sb_bechuanaland_boer_swa_influence_bar = {
 			}
 		}
 	}
+}
+
+sb_zululand_chiefdom_balance_bar = {
+	name = "sb_zululand_chiefdom_balance_bar"
+	desc = "sb_zululand_chiefdom_balance_bar_usuthu"
+	second_desc = "sb_zululand_chiefdom_balance_bar_zibhebhu"
+	start_value = 60
+	min_value = 0
+	max_value = 100
+	double_sided_bad = yes
+}
+
+sb_zululand_boer_commitment_bar = {
+	name = "sb_zululand_boer_commitment_bar"
+	desc = "sb_zululand_boer_commitment_bar_low"
+	second_desc = "sb_zululand_boer_commitment_bar_high"
+	start_value = 0
+	min_value = 0
+	max_value = 100
+	default_green = yes
 }
 
 

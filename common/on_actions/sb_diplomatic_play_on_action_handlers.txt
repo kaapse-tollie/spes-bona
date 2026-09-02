@@ -6,6 +6,21 @@ sb_on_spes_bona_diplomatic_play_started = {
 		sb_restore_ai_frontier_force_floors_for_play = yes
 		sb_refresh_british_cape_boer_restraint = yes
 		if = {
+			limit = {
+				is_diplomatic_play_type = dp_annex_war
+				scope:actor ?= { sb_zululand_british_postwar_owner = yes }
+				scope:target ?= {
+					country_definition = cd:ZUL
+					is_country_alive = yes
+				}
+				c:NAL ?= {
+					is_country_alive = yes
+					has_variable = sb_natalia_british_colony_resolved_var
+				}
+			}
+			scope:target = { sb_zululand_archive_preannexation_royal_house = yes }
+		}
+		if = {
 			limit = { is_diplomatic_play_type = dp_sb_xhosa_war_7 }
 			scope:target ?= {
 				if = {
@@ -410,6 +425,25 @@ sb_on_spes_bona_diplo_play_back_down = {
 			sb_kimberley_finalize_wbl_diamond_mines_route = yes
 		}
 
+		# Britain backing down from the scheduled annexation counts as a Zulu
+		# victory; Zulu backing down is resolved by the enforced annexation goal.
+		if = {
+			limit = {
+				root = { is_diplomatic_play_type = dp_annex_war }
+				scope:actor ?= {
+					country_definition = cd:GBR
+					has_variable = sb_anglo_zulu_pressure_active_var
+				}
+				scope:target ?= {
+					country_definition = cd:ZUL
+					has_variable = sb_anglo_zulu_pressure_active_var
+				}
+			}
+			scope:target = {
+				sb_zululand_discard_preannexation_royal_house_archive = yes
+				trigger_event = { id = sb_anglo_zulu.020 days = 3 popup = yes }
+			}
+		}
 
 	}
 }
@@ -423,6 +457,20 @@ sb_on_spes_bona_war_end = {
 		sb_cleanup_bst_gun_war_defence_for_play = yes
 		sb_klip_river_handle_war_end = yes
 		sb_bechuanaland_resolve_crisis_war_at_end = yes
+		# A failed or negotiated British annexation leaves live ZUL untouched and
+		# discards only the snapshot created for this annexation play.
+		if = {
+			limit = {
+				root = { is_diplomatic_play_type = dp_annex_war }
+				scope:actor ?= { sb_zululand_british_postwar_owner = yes }
+				c:NAL ?= { has_variable = sb_zululand_preannexation_royal_house_archived_var }
+				scope:target ?= {
+					country_definition = cd:ZUL
+					is_country_alive = yes
+				}
+			}
+			scope:target = { sb_zululand_discard_preannexation_royal_house_archive = yes }
+		}
 		if = {
 			limit = {
 				root = { is_diplomatic_play_type = dp_sb_trn_zpb_crackdown_locked }
@@ -456,18 +504,13 @@ sb_on_spes_bona_war_end = {
 
 		if = {
 			limit = {
+				root = { is_diplomatic_play_type = dp_annex_war }
 				scope:actor ?= {
-					OR = {
-						country_definition = cd:NAL
-						country_definition = cd:ZUL
-					}
+					country_definition = cd:GBR
 					has_variable = sb_anglo_zulu_pressure_active_var
 				}
 				scope:target ?= {
-					OR = {
-						country_definition = cd:NAL
-						country_definition = cd:ZUL
-					}
+					country_definition = cd:ZUL
 					has_variable = sb_anglo_zulu_pressure_active_var
 				}
 			}
@@ -476,6 +519,12 @@ sb_on_spes_bona_war_end = {
 			}
 			scope:target = {
 				remove_variable = sb_anglo_zulu_pressure_active_var
+			}
+			c:NAL ?= {
+				if = {
+					limit = { has_variable = sb_anglo_zulu_pressure_active_var }
+					remove_variable = sb_anglo_zulu_pressure_active_var
+				}
 			}
 		}
 
@@ -654,7 +703,18 @@ sb_on_spes_bona_wargoal_enforced = {
 						has_variable = sb_natalia_british_colony_resolved_var
 					}
 				}
-				scope:target = { sb_natal_archive_zulu_firearms = yes }
+				scope:target = {
+					sb_natal_archive_zulu_firearms = yes
+					if = {
+						limit = {
+							ROOT = { sb_zululand_british_postwar_owner = yes }
+							scope:diplomatic_play ?= {
+								is_diplomatic_play_type = dp_annex_war
+							}
+						}
+						sb_zululand_archive_preannexation_royal_house = yes
+					}
+				}
 			}
 			sb_klip_river_handle_wargoal_enforced = yes
 			sb_bechuanaland_track_crisis_wargoal_enforcement = yes
@@ -836,21 +896,16 @@ sb_on_spes_bona_wargoal_enforced = {
 		if = {
 			limit = {
 				country_definition = cd:ZUL
+				has_variable = sb_anglo_zulu_pressure_active_var
+				scope:target ?= {
+					country_definition = cd:GBR
+					has_variable = sb_anglo_zulu_pressure_active_var
+				}
 				scope:diplomatic_play ?= {
-					is_diplomatic_play_type = dp_sb_anglo_zulu_return_state_locked
+					is_diplomatic_play_type = dp_annex_war
 				}
 			}
 			trigger_event = { id = sb_anglo_zulu.020 days = 3 popup = yes }
-		}
-
-		if = {
-			limit = {
-				country_definition = cd:NAL
-				scope:diplomatic_play ?= {
-					is_diplomatic_play_type = dp_sb_anglo_zulu_return_state_locked
-				}
-			}
-			trigger_event = { id = sb_anglo_zulu.030 days = 3 popup = yes }
 		}
 
 		if = {
@@ -912,9 +967,7 @@ sb_on_spes_bona_wargoal_enforced = {
 						country_definition = cd:SWZ
 					}
 				}
-				scope:diplomatic_play ?= {
-					NOT = { is_diplomatic_play_type = dp_sb_anglo_zulu_return_state_locked }
-				}
+				NOT = { has_variable = sb_anglo_zulu_pressure_active_var }
 				NOT = { has_variable = sb_zulu_generic_war_resolution_recent_var }
 				NOT = { has_variable = sb_natal_war_active_var }
 				NOT = { has_variable = sb_port_natal_british_war_var }
@@ -930,13 +983,11 @@ sb_on_spes_bona_wargoal_enforced = {
 				}
 				scope:target ?= {
 					country_definition = cd:ZUL
+					NOT = { has_variable = sb_anglo_zulu_pressure_active_var }
 					NOT = { has_variable = sb_zulu_generic_war_resolution_recent_var }
 					NOT = { has_variable = sb_natal_war_active_var }
 					NOT = { has_variable = sb_port_natal_british_war_var }
 					NOT = { has_variable = sb_zulu_swazi_war_active_var }
-				}
-				scope:diplomatic_play ?= {
-					NOT = { is_diplomatic_play_type = dp_sb_anglo_zulu_return_state_locked }
 				}
 			}
 			scope:target = {
@@ -1088,8 +1139,8 @@ sb_on_spes_bona_wargoal_enforced = {
 			trigger_event = { id = sb_zulu_dynasty.091 days = 7 popup = yes }
 		}
 
-		# If British Natal already exists, any Zululand acquired directly by
-		# Britain or its AI Cape colony is handed to the established colony.
+		# With British Natal already established, clear the direct-conquest route
+		# markers here; the resulting territory is handed over by decision.
 		if = {
 			limit = {
 				OR = {
@@ -1100,9 +1151,7 @@ sb_on_spes_bona_wargoal_enforced = {
 						is_subject_of = c:GBR
 					}
 				}
-				scope:target ?= {
-					country_definition = cd:ZUL
-				}
+				scope:target ?= { country_definition = cd:ZUL }
 				scope:diplomatic_play ?= {
 					OR = {
 						is_diplomatic_play_type = dp_annex_war
@@ -1114,18 +1163,6 @@ sb_on_spes_bona_wargoal_enforced = {
 					is_subject_of = c:GBR
 					has_variable = sb_natalia_british_colony_resolved_var
 				}
-				OR = {
-					any_scope_state = {
-						state_region = s:STATE_ZULULAND
-					}
-					c:CAP ?= {
-						is_ai = yes
-						is_subject_of = c:GBR
-						any_scope_state = {
-							state_region = s:STATE_ZULULAND
-						}
-					}
-				}
 			}
 			scope:target = {
 				if = {
@@ -1136,9 +1173,6 @@ sb_on_spes_bona_wargoal_enforced = {
 					limit = { has_variable = sb_port_natal_raid_var }
 					remove_variable = sb_port_natal_raid_var
 				}
-			}
-			c:GBR = {
-				trigger_event = { id = sb_anglo_zulu.040 days = 3 popup = yes }
 			}
 		}
 

@@ -284,6 +284,11 @@ sb_apply_natalia_boer_republic_setup = {
 	sb_refresh_boer_commandant_general_government = yes
 	sb_ensure_commandant_general_ruler_command = yes
 	sb_ensure_boer_anti_british_lobby = yes
+	if = {
+		limit = { NOT = { has_variable = sb_natal_zulu_movement_seeded_var } }
+		set_variable = sb_natal_zulu_movement_seeded_var
+		sb_natal_create_zulu_national_movement = yes
+	}
 }
 
 # Late-game counterpart to the founding setup. Restore republican Natalia after
@@ -748,7 +753,7 @@ sb_found_natalia_peacefully = {
 	c:NAL ?= {
 		sb_apply_natalia_boer_republic_setup = yes
 		change_relations = {
-			country = root
+			country = scope:sb_natalia_peaceful_founder_scope
 			value = 50
 		}
 		scope:retief_scope ?= {
@@ -945,6 +950,9 @@ sb_found_natalia_after_blood_river = {
 sb_found_natalia_after_guns_bargain_rejection = {
 	set_variable = sb_natalia_blood_river_military_setup_pending_var
 	sb_found_natalia_peacefully = yes
+	# ZUL absorbed the southern chiefdoms when it chose war. A Boer victory
+	# therefore receives the complete former-NGI interior, as at Blood River.
+	sb_assign_natalia_republic_territory = yes
 	if = {
 		limit = { has_variable = sb_natalia_blood_river_military_setup_pending_var }
 		remove_variable = sb_natalia_blood_river_military_setup_pending_var

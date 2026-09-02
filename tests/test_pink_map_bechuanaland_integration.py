@@ -14,9 +14,15 @@ def text(path: str) -> str:
 
 def object_block(path: str, name: str) -> str:
     source = text(path)
-    match = re.search(rf"^(?:REPLACE:)?{re.escape(name)}\s*=\s*\{{", source, re.MULTILINE)
+    return object_block_from_source(source, name, path)
+
+
+def object_block_from_source(source: str, name: str, context: str = "source") -> str:
+    match = re.search(
+        rf"^\s*(?:REPLACE:)?{re.escape(name)}\s*=\s*\{{", source, re.MULTILINE
+    )
     if match is None:
-        raise AssertionError(f"missing {name} in {path}")
+        raise AssertionError(f"missing {name} in {context}")
     return validate.extract_braced(source, match.start())
 
 
@@ -109,6 +115,149 @@ class PinkMapBechuanalandIntegrationTests(unittest.TestCase):
             r"NOT = \{ sb_pink_map_precedes_bechuanaland = yes \}\s*"
             r"\}\s*s:STATE_ZAMBIA = \{ add_claim = c:GBR \}",
         )
+
+    def test_british_botswana_claim_tracks_swa_mission_and_corridor_lifecycle(self):
+        effects_path = "common/scripted_effects/sb_bechuanaland_corridor_effects.txt"
+        grant = object_block(
+            effects_path,
+            "sb_bechuanaland_grant_british_botswana_claim_after_swa_mission",
+        )
+        revoke = object_block(
+            effects_path,
+            "sb_bechuanaland_remove_british_botswana_claim",
+        )
+        cleanup = object_block(
+            effects_path,
+            "sb_bechuanaland_cleanup_corridor_crisis",
+        )
+        monthly = object_block(
+            "common/on_actions/sb_mineral_discoveries_on_actions.txt",
+            "sb_on_bechuanaland_corridor_monthly_pulse",
+        )
+        journal = object_block(
+            "common/journal_entries/1-11_sb_bechuanaland_corridor.txt",
+            "je_sb_bechuanaland_corridor",
+        )
+
+        self.assertIn("any_country = {", grant)
+        self.assertIn("has_variable = sb_nam_consolidation_resolved_var", grant)
+        self.assertIn("is_subject_of = c:GBR", grant)
+        self.assertIn(
+            "NOT = { has_global_variable = sb_bechuanaland_corridor_open_global_var }",
+            grant,
+        )
+        self.assertIn(
+            "NOT = { has_global_variable = sb_bechuanaland_corridor_resolved_global_var }",
+            grant,
+        )
+        self.assertIn("s:STATE_BOTSWANA = { add_claim = c:GBR }", grant)
+        self.assertIn("s:STATE_BOTSWANA = { remove_claim = c:GBR }", revoke)
+        self.assertIn(
+            "sb_bechuanaland_remove_british_botswana_claim = yes", cleanup
+        )
+        self.assertIn(
+            "sb_bechuanaland_grant_british_botswana_claim_after_swa_mission = yes",
+            monthly,
+        )
+
+        for lifecycle in ("on_complete", "on_fail", "on_invalid"):
+            block = object_block_from_source(journal, lifecycle, lifecycle)
+            self.assertIn(
+                "sb_bechuanaland_remove_british_botswana_claim = yes", block
+            )
+
+    def test_bypassed_corridor_clears_the_arid_interior_trait(self):
+        effects_path = "common/scripted_effects/sb_bechuanaland_corridor_effects.txt"
+        clear_trait = object_block(
+            effects_path, "sb_bechuanaland_clear_arid_corridor_modifier"
+        )
+        invalid_terminal = object_block(
+            effects_path, "sb_bechuanaland_record_invalid_terminal_outcome"
+        )
+        open_corridor = object_block(
+            effects_path, "sb_bechuanaland_open_corridor_is"
+        )
+        british_namibia = object_block(
+            "common/scripted_triggers/sb_bechuanaland_corridor_triggers.txt",
+            "sb_bechuanaland_british_namibia_precludes_corridor",
+        )
+        can_open = object_block(
+            "common/scripted_triggers/sb_bechuanaland_corridor_triggers.txt",
+            "sb_bechuanaland_corridor_can_open",
+        )
+        monthly = object_block(
+            "common/on_actions/sb_mineral_discoveries_on_actions.txt",
+            "sb_on_bechuanaland_corridor_monthly_pulse",
+        )
+        skip_blocks = [
+            validate.extract_braced(monthly, match.start())
+            for match in re.finditer(r"^\s*if\s*=\s*\{", monthly, re.MULTILINE)
+            if "sb_bechuanaland_skip_corridor_crisis = yes"
+            in validate.extract_braced(monthly, match.start())
+        ]
+        self.assertEqual(1, len(skip_blocks))
+        skip = skip_blocks[0]
+
+        self.assertIn(
+            "remove_state_trait = state_trait_sb_arid_interior_corridor",
+            clear_trait,
+        )
+        self.assertIn(
+            "sb_bechuanaland_clear_arid_corridor_modifier = yes",
+            invalid_terminal,
+        )
+        self.assertIn(
+            "sb_bechuanaland_clear_arid_corridor_modifier = yes",
+            open_corridor,
+        )
+        self.assertIn(
+            "sb_bechuanaland_clear_arid_corridor_modifier = yes",
+            monthly,
+        )
+        for country in ("GBR", "CAP"):
+            self.assertRegex(
+                british_namibia,
+                rf"c:{country}\s*\?=\s*\{{\s*"
+                r"has_variable\s*=\s*sb_nam_consolidation_resolved_var\s*\}",
+            )
+        self.assertIn(
+            "NOT = { sb_bechuanaland_british_namibia_precludes_corridor = yes }",
+            can_open,
+        )
+        self.assertIn(
+            "sb_bechuanaland_british_namibia_precludes_corridor = yes",
+            skip,
+        )
+
+    def test_corridor_escalation_buttons_remain_visible_while_reserved(self):
+        path = "common/scripted_buttons/sb_bechuanaland_corridor_buttons.txt"
+        for button_name in (
+            "je_sb_bechuanaland_send_warren_expedition_button",
+            "je_sb_bechuanaland_gbr_direct_warren_button",
+            "je_sb_bechuanaland_demand_caprivi_button",
+        ):
+            button = object_block(path, button_name)
+            visible = object_block_from_source(button, "visible", button_name)
+            possible = object_block_from_source(button, "possible", button_name)
+            self.assertNotIn(
+                "sb_bechuanaland_crisis_escalation_available = yes", visible
+            )
+            self.assertIn(
+                "sb_bechuanaland_crisis_escalation_available = yes", possible
+            )
+
+    def test_missing_swa_sponsor_cannot_dereference_an_unset_scope(self):
+        trigger = object_block(
+            "common/scripted_triggers/sb_bechuanaland_corridor_triggers.txt",
+            "sb_bechuanaland_cap_is_swa_overlord_subject",
+        )
+        self.assertIn("trigger_if = {", trigger)
+        self.assertIn("trigger_else = { always = no }", trigger)
+        guard = trigger.index("has_variable = sb_bechuanaland_swa_overlord_scope")
+        dereference = trigger.index(
+            "container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_swa_overlord_scope"
+        )
+        self.assertLess(guard, dereference)
 
     def test_arbitration_uses_saved_arbiter_and_three_vanilla_choices(self):
         event = object_block("events/sb_pink_map_events.txt", "sb_pink_map.010")

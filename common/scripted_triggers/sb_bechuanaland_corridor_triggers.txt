@@ -50,17 +50,25 @@ sb_bechuanaland_swa_active_sponsor = {
 }
 
 sb_bechuanaland_cap_is_swa_overlord_subject = {
-	container_exists = sb_bechuanaland_corridor_state
-	container:sb_bechuanaland_corridor_state = {
-		has_variable = sb_bechuanaland_swa_overlord_scope
+	trigger_if = {
+		limit = { container_exists = sb_bechuanaland_corridor_state }
+		trigger_if = {
+			limit = {
+				container:sb_bechuanaland_corridor_state = {
+					has_variable = sb_bechuanaland_swa_overlord_scope
+				}
+			}
+			container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_swa_overlord_scope = {
+				sb_bechuanaland_swa_direct_overlord = yes
+			}
+			c:CAP ?= {
+				is_country_alive = yes
+				is_direct_subject_of = container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_swa_overlord_scope
+			}
+		}
+		trigger_else = { always = no }
 	}
-	container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_swa_overlord_scope = {
-		sb_bechuanaland_swa_direct_overlord = yes
-	}
-	c:CAP ?= {
-		is_country_alive = yes
-		is_direct_subject_of = container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_swa_overlord_scope
-	}
+	trigger_else = { always = no }
 }
 
 # Root-agnostic: either GBR directly owns SWA or its current direct overlord
@@ -813,10 +821,22 @@ sb_bechuanaland_corridor_ready_after_kimberley = {
 	}
 }
 
+sb_bechuanaland_british_namibia_precludes_corridor = {
+	OR = {
+		c:GBR ?= {
+			has_variable = sb_nam_consolidation_resolved_var
+		}
+		c:CAP ?= {
+			has_variable = sb_nam_consolidation_resolved_var
+		}
+	}
+}
+
 sb_bechuanaland_corridor_can_open = {
 	sb_bechuanaland_corridor_ready_after_kimberley = yes
 	NOT = { has_global_variable = sb_bechuanaland_corridor_open_global_var }
 	NOT = { has_global_variable = sb_bechuanaland_corridor_resolved_global_var }
+	NOT = { sb_bechuanaland_british_namibia_precludes_corridor = yes }
 	c:SWA ?= { is_country_alive = yes }
 	any_country = { sb_bechuanaland_swa_overlord_candidate = yes }
 	sb_cap_has_northern_cape_foothold = yes

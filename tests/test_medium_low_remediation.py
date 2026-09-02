@@ -36,6 +36,15 @@ class MediumLowRemediationTests(unittest.TestCase):
         self.assertEqual(expected, tuple(re.findall(r"province\s*=\s*p:x([0-9A-F]+)", effect)))
         self.assertIn("NOT = { c:SGO ?= { is_country_alive = yes } }", effect)
 
+    def test_sgo_starts_with_frontier_drive_not_the_great_trek_reward(self):
+        setup = object_block(
+            "common/scripted_effects/sb_bechuanaland_corridor_effects.txt",
+            "sb_bechuanaland_setup_sgo_frontier_drive",
+        )
+        self.assertIn("name = sb_trek_frontier_drive", setup)
+        self.assertNotIn("name = sb_trek_frontier_republic", setup)
+        self.assertNotIn("remove_modifier = sb_trek_frontier_drive", setup)
+
     def test_basotho_retreat_reuses_one_actor_scope(self):
         event = object_block("events/sb_bst_frontier_events.txt", "sb_bst_frontier.020")
         self.assertIn("total_size >= 5000", event)
@@ -71,6 +80,37 @@ class MediumLowRemediationTests(unittest.TestCase):
         self.assertIn("NOT = { exists = c:SAF }", journal)
         self.assertIn("add_involved_country = c:GBR", recovery)
         self.assertIn("sb_imperial_confederation_recover_terminal_je = yes", effects)
+
+    def test_imperial_confederation_sea_access_window_is_five_years(self):
+        effects_path = "common/scripted_effects/sb_eastern_sphere_effects.txt"
+        warning = object_block(
+            effects_path,
+            "sb_imperial_confederation_start_sea_access_warning_if_needed",
+        )
+        counter = object_block(
+            effects_path,
+            "sb_imperial_confederation_update_sea_access_counter",
+        )
+        progress_bars = object_block(
+            "common/scripted_progress_bars/sb_progress_bars.txt",
+            "sb_imperial_confederation_sea_access_bar",
+        )
+        localization = text("localization/english/sb_eastern_sphere_l_english.yml")
+        self.assertIn("months = 60", warning)
+        self.assertNotIn("months = 36", warning)
+        self.assertIn(
+            "global_var:sb_imperial_confederation_sea_access_months_var < 60",
+            counter,
+        )
+        self.assertNotIn("sea_access_months_var < 36", counter)
+        self.assertIn("max_value = 60", progress_bars)
+        self.assertNotIn("max_value = 36", progress_bars)
+        for expected in (
+            'je_sb_imperial_confederation_failure_sea_access_tt:0 "Boer republics have maintained durable non-British sea access for five years."',
+            'sb_imperial_confederation_sea_access_bar_danger:0 "Five years of sea access"',
+            'sb_imperial_confederation.050.d:0 "A Boer republic has secured access to a non-British sea route. Britain has five years to reverse the corridor, restore imperial leverage, or accept that the confederation scheme is losing its main instrument of pressure."',
+        ):
+            self.assertIn(expected, localization)
 
     def test_delagoa_gateway_handles_network_and_market_owner(self):
         gateway = object_block(
@@ -201,6 +241,7 @@ class MediumLowRemediationTests(unittest.TestCase):
                 "sb_on_cape_yearly_pulse_country",
                 "sb_on_modifier_cache_yearly_repair",
                 "sb_on_boer_restraint_yearly_repair",
+                "sb_on_zulu_secured_succession_yearly_pulse_country",
                 "sb_on_natal_shepstone_yearly_pulse_country",
                 "sb_on_natal_indian_consolidation_yearly_pulse_country",
             ),

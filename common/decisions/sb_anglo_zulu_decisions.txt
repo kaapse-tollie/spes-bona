@@ -1,42 +1,27 @@
-﻿decision_sb_anglo_zulu_ultimatum = {
+﻿decision_sb_transfer_zululand_to_natal_colony = {
 	is_shown = {
-		country_definition = cd:NAL
-		is_ai = yes
-		is_subject = yes
-		has_technology_researched = civilizing_mission
-		NOT = { has_variable = sb_anglo_zulu_pressure_resolved_var }
-		c:ZUL ?= {
-			is_country_alive = yes
-		}
-		s:STATE_ZULULAND = {
-			any_scope_state = {
-				owner = c:ZUL
-			}
-		}
+		country_definition = cd:GBR
+		sb_zululand_under_british_postwar_control = yes
+		NOT = { has_variable = sb_zululand_postwar_handoff_resolved_var }
 	}
 
 	possible = {
-		is_at_war = no
-		is_active_in_diplomatic_play = no
-		c:ZUL ?= {
-			is_at_war = no
-			is_active_in_diplomatic_play = no
-		}
-		aggressive_diplomatic_plays_permitted = yes
+		country_definition = cd:GBR
+		sb_zululand_under_british_postwar_control = yes
+		NOT = { has_variable = sb_zululand_postwar_handoff_pending_var }
 	}
 
 	when_taken = {
-		trigger_event = { id = sb_anglo_zulu.010 popup = yes }
+		custom_tooltip = decision_sb_transfer_zululand_to_natal_colony_tt
+		hidden_effect = {
+			sb_zululand_queue_british_handoff = yes
+			if = { limit = { has_variable = sb_zululand_postwar_handoff_not_before_var } remove_variable = sb_zululand_postwar_handoff_not_before_var }
+			set_variable = { name = sb_zululand_postwar_handoff_event_open_var days = 120 }
+			trigger_event = { id = sb_zululand_settlement.001 days = 1 popup = yes }
+		}
 	}
 
 	ai_chance = {
-		value = 0
-		if = {
-			limit = {
-				is_ai = yes
-				has_variable = sb_nal_anglo_zulu_accelerated_var
-			}
-			value = 100
-		}
+		value = 100
 	}
 }

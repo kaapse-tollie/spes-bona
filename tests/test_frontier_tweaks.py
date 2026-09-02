@@ -169,6 +169,54 @@ class FrontierTweaksTests(unittest.TestCase):
         )
         self.assertIn("sb_zulu_mbuyazi_succession_global_var", effects)
 
+    def test_closed_mpande_succession_keeps_the_selected_dynastic_line(self):
+        effects_path = "common/scripted_effects/sb_zulu_dynasty_succession_effects.txt"
+        reconcile = object_block(
+            effects_path, "sb_zulu_reconcile_secured_mpande_heir"
+        )
+        line = object_block(
+            effects_path, "sb_zulu_reconcile_secured_mpande_line"
+        )
+        regional = object_block(
+            "common/on_actions/sb_regional_on_action_handlers.txt",
+            "sb_on_zulu_secured_succession_yearly_pulse_country",
+        )
+        router = object_block(
+            "common/on_actions/sb_on_actions.txt", "on_yearly_pulse_country"
+        )
+        archive = object_block(
+            "common/scripted_effects/sb_zululand_settlement_effects.txt",
+            "sb_zululand_archive_preannexation_royal_house",
+        )
+
+        for token in (
+            "sb_zulu_mpande_mbuyazi_heir_var",
+            "ZUL_mbuyazi_heir",
+            "ZUL_mbuyazi_successor",
+            "sb_zulu_mbuyazi_successor_installed_var",
+            "sb_zulu_mpande_cetshwayo_heir_var",
+            "ZUL_cetshwayo_heir",
+            "ZUL_dinuzulu_heir",
+            "sb_zulu_cetshwayo_successor_installed_var",
+        ):
+            self.assertIn(token, reconcile)
+        self.assertIn("country_summon_heir_effect = { TEMPLATE = $HEIR$ }", line)
+        self.assertIn("country_summon_heir_effect = { TEMPLATE = $SUCCESSOR$ }", line)
+        self.assertIn("NOT = { is_template_used = $HEIR$ }", line)
+        self.assertIn("NOT = { is_template_used = $SUCCESSOR$ }", line)
+        self.assertIn("game_date >= $SUCCESSOR_BIRTH_DATE$", line)
+        self.assertIn("SUCCESSOR_BIRTH_DATE = 1852.1.1", reconcile)
+        self.assertIn("SUCCESSOR_BIRTH_DATE = 1868.1.1", reconcile)
+        self.assertIn("country_definition = cd:ZUL", regional)
+        self.assertIn("sb_zulu_reconcile_secured_mpande_heir = yes", regional)
+        self.assertIn(
+            "sb_on_zulu_secured_succession_yearly_pulse_country", router
+        )
+        self.assertLess(
+            archive.index("sb_zulu_reconcile_secured_mpande_heir = yes"),
+            archive.index("ruler = { save_scope_as = sb_zululand_preannexation_ruler_scope }"),
+        )
+
     def test_potgieter_has_no_colonial_administrator_trait(self):
         history = text("common/history/characters/ora - oranje.txt")
         characters = [

@@ -423,17 +423,70 @@ sb_natal_crisis.026 = {
 	option = {
 		name = sb_natal_crisis.026.a
 		default_option = yes
-		s:STATE_NATAL = {
-			set_owner_of_provinces = {
-				country = c:ZUL
-				provinces = { x5B124F }
+		custom_tooltip = sb_natalia_chiefdoms_absorbed_tt
+		custom_tooltip = sb_zulu_dynasty_gain_stability_10
+		hidden_effect = {
+			sb_zulu_add_dynastic_stability_10 = yes
+			if = {
+				limit = { exists = c:NGI }
+				annex = c:NGI
 			}
 		}
-		c:ORA ?= {
-			trigger_event = { id = sb_natal_crisis.051 days = 7 }
+		random_scope_character = {
+			limit = {
+				has_template = ZUL_dingane
+				is_character_alive = yes
+			}
+			if = {
+				limit = { NOT = { has_trait = brave } }
+				add_trait = brave
+			}
+		}
+		set_variable = sb_natal_war_active_var
+		c:ORA ?= { set_variable = sb_natal_war_active_var }
+		create_diplomatic_play = {
+			type = dp_sb_natal_crisis
+			target_country = c:ORA
+			add_war_goal = {
+				holder = c:ORA
+				type = humiliation
+				target_country = root
+			}
 		}
 		ai_chance = {
 			base = 100
+		}
+	}
+
+	option = {
+		name = sb_natal_crisis.026.b
+		custom_tooltip = sb_zulu_dynasty_lose_stability_5
+		hidden_effect = {
+			sb_zulu_remove_dynastic_stability_5 = yes
+		}
+		random_scope_character = {
+			limit = {
+				has_template = ZUL_dingane
+				is_character_alive = yes
+			}
+			if = {
+				limit = { NOT = { has_trait = compliant } }
+				add_trait = compliant
+			}
+		}
+		c:ORA ?= {
+			sb_found_natalia_peacefully = yes
+			if = {
+				limit = { has_variable = sb_natal_guns_bargain_war_var }
+				remove_variable = sb_natal_guns_bargain_war_var
+			}
+		}
+		if = {
+			limit = { has_variable = sb_natal_guns_bargain_war_var }
+			remove_variable = sb_natal_guns_bargain_war_var
+		}
+		ai_chance = {
+			base = 0
 		}
 	}
 }
@@ -525,77 +578,6 @@ sb_natal_crisis.050 = {
 
 	option = {
 		name = sb_natal_crisis.050.b
-		default_option = yes
-		set_variable = sb_natal_war_active_var
-		scope:zulu_kingdom = { set_variable = sb_natal_war_active_var }
-		scope:zulu_kingdom = {
-			create_diplomatic_play = {
-				type = dp_sb_natal_crisis
-				target_country = root
-				add_war_goal = {
-					holder = root
-					type = humiliation
-					target_country = scope:zulu_kingdom
-				}
-			}
-		}
-		ai_chance = {
-			base = 100
-		}
-	}
-}
-
-sb_natal_crisis.051 = {
-	type = country_event
-	placement = root
-
-	title = sb_natal_crisis.051.t
-	desc = sb_natal_crisis.051.d
-	flavor = sb_natal_crisis.051.f
-
-	event_image = {
-		video = "gfx/event_pictures/africa_soldiers_breaking_protest.bk2"
-	}
-
-	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-	icon = "gfx/interface/icons/event_icons/event_default.dds"
-	duration = 3
-
-	trigger = {
-		country_definition = cd:ORA
-	}
-
-	immediate = {
-		c:ZUL ?= {
-			save_scope_as = zulu_kingdom
-		}
-	}
-
-	option = {
-		name = sb_natal_crisis.051.a
-		set_variable = sb_natal_path_resolved_var
-		remove_variable = sb_natal_diplomacy_started_var
-		if = {
-			limit = { has_variable = sb_natal_guns_bargain_war_var }
-			remove_variable = sb_natal_guns_bargain_war_var
-		}
-		scope:zulu_kingdom ?= {
-			if = {
-				limit = { has_variable = sb_natal_guns_bargain_war_var }
-				remove_variable = sb_natal_guns_bargain_war_var
-			}
-		}
-		add_modifier = {
-			name = sb_prestige_loss_small
-			months = 120
-		}
-		ai_chance = {
-			base = 0
-		}
-	}
-
-	option = {
-		name = sb_natal_crisis.051.b
 		default_option = yes
 		set_variable = sb_natal_war_active_var
 		scope:zulu_kingdom = { set_variable = sb_natal_war_active_var }

@@ -332,6 +332,8 @@ class NatalInterwarTests(unittest.TestCase):
             "law_commercialized_agriculture",
         ):
             self.assertIn(law, amendment)
+        self.assertIn("tax_land_add = 0.03", amendment)
+        self.assertNotIn("country_tax_income_add", amendment)
         self.assertIn("building_subsistence_output_mult = 0.30", amendment)
         self.assertIn(
             "building_minimum_incorporated_subsistence_employment_add = 0.80",
@@ -341,6 +343,7 @@ class NatalInterwarTests(unittest.TestCase):
             "state_minimum_incorporated_subsistence_arable_land_add = 0.15",
             amendment,
         )
+        self.assertIn("state_migration_pull_mult = -0.35", amendment)
         self.assertNotIn("standard_of_living", amendment)
         self.assertIn("sponsor = PREV.ig:ig_armed_forces", accept)
         self.assertIn("set_variable = sb_natal_shepstone_declined_var", decline)
@@ -529,9 +532,6 @@ class NatalInterwarTests(unittest.TestCase):
         garrison_modifier = object_block(
             modifiers_path, "sb_shepstone_repeal_colonial_garrison_opposition"
         )
-        industrialists_modifier = object_block(
-            modifiers_path, "sb_shepstone_repeal_industrialists_approval"
-        )
         monthly = object_block(effects_path, "sb_natal_interwar_monthly_housekeeping")
         movement_creation = object_block(
             effects_path, "sb_natal_create_zulu_national_movement"
@@ -586,12 +586,10 @@ class NatalInterwarTests(unittest.TestCase):
             consequences,
         )
         self.assertIn("sb_shepstone_repeal_colonial_garrison_opposition", consequences)
-        self.assertIn("sb_shepstone_repeal_industrialists_approval", consequences)
-        self.assertEqual(2, consequences.count("days = 1825"))
+        self.assertEqual(1, consequences.count("days = 1825"))
         self.assertIn("value = 0.05", loyalists)
         self.assertNotIn("value = 0.10", loyalists)
         self.assertIn("interest_group_approval_add = -1", garrison_modifier)
-        self.assertIn("interest_group_approval_add = 0.5", industrialists_modifier)
 
         self.assertIn("sb_natal_shepstone_repeal_response_pending_var", trigger)
         self.assertIn(
@@ -638,7 +636,6 @@ class NatalInterwarTests(unittest.TestCase):
             "sb_shepstone_repeal_zulu_movement_attraction",
             "sb_shepstone_repeal_zulu_movement_attraction_desc",
             "sb_shepstone_repeal_colonial_garrison_opposition",
-            "sb_shepstone_repeal_industrialists_approval",
             "sb_natal_shepstone_make_fully_accepted_loyalist_5_tt",
             "sb_natal_shepstone_repeal_zulu_movement_attraction_tt",
         ):
@@ -885,7 +882,10 @@ class NatalInterwarTests(unittest.TestCase):
             localization,
         )
         self.assertIn("monthly recruitment and all programme costs are doubled", localization)
-        self.assertIn("changing intensity during active recruitment begins a fresh full-month cycle", localization)
+        self.assertIn(
+            "changing intensity during active recruitment begins a fresh full-month cycle",
+            localization.casefold(),
+        )
         self.assertIn("#v 400#!", localization)
         self.assertIn(
             "desc = je_sb_natal_indenture_program_status_intensified", journal
@@ -910,6 +910,8 @@ class NatalInterwarTests(unittest.TestCase):
             "common/journal_entries/1-13_sb_natal_interwar.txt",
             "je_sb_natal_indenture_program_v2",
         )
+        on_complete = object_block_from_source(journal, "on_complete")
+        on_invalid = object_block_from_source(journal, "on_invalid")
         amendment = object_block(
             "common/amendments/sb_amendments.txt",
             "amendment_sb_natal_indian_indenture_status",
@@ -932,7 +934,8 @@ class NatalInterwarTests(unittest.TestCase):
         self.assertIn("sb_natal_cancel_pending_indenture_program = yes", pending)
         self.assertIn("set_variable = sb_natal_indenture_lapsed_var", cancel)
         self.assertIn("NOT = { sb_natal_indenture_program_is_valid = yes }", journal)
-        self.assertIn("sb_natal_cleanup_indenture_program = yes", journal)
+        self.assertIn("sb_natal_complete_indenture_program = yes", on_complete)
+        self.assertIn("sb_natal_cleanup_indenture_program = yes", on_invalid)
         for condition in (
             "scaled_debt >= 0.50",
             "bureaucracy >= 0",
@@ -946,6 +949,14 @@ class NatalInterwarTests(unittest.TestCase):
         self.assertIn("Baseline calibration: AI Natal recruits at the normal rate", update)
         self.assertIn("sb_natal_remove_indenture_program_costs = yes", cleanup)
         self.assertIn("sb_natal_clear_indenture_cycle = yes", cleanup)
+        self.assertIn(
+            "type = amendment_type:amendment_sb_natal_indian_indenture_status",
+            cleanup,
+        )
+        self.assertIn("remove_amendment = yes", cleanup)
+        self.assertIn(
+            "remove_variable = sb_natal_indian_status_granted_var", cleanup
+        )
         self.assertIn("law_subjecthood", amendment)
         self.assertIn("law_racial_segregation", amendment)
         self.assertEqual(6, amendment.count("cultural_acceptance_add = 50"))
@@ -1005,32 +1016,32 @@ class NatalInterwarTests(unittest.TestCase):
         self.assertIn("add_homeland = cu:natal_indian", completion)
         self.assertIn("target = cu:natal_indian", completion)
         self.assertIn("value = 0.25", completion)
-        self.assertIn("add_primary_culture = cu:natal_indian", completion)
-        self.assertIn("remove_primary_culture = cu:natal_indian", completion)
-        self.assertLess(
-            completion.index("add_primary_culture = cu:natal_indian"),
-            completion.index("change_pop_culture ="),
+        self.assertIn("exists = cu:natal_indian", completion)
+        self.assertNotIn("add_primary_culture = cu:natal_indian", completion)
+        self.assertNotIn("remove_primary_culture = cu:natal_indian", completion)
+        conversion_index = completion.index("change_pop_culture =")
+        pop_postcheck_index = completion.index(
+            "any_scope_pop = { culture = cu:natal_indian }", conversion_index
         )
-        self.assertLess(
-            completion.index("change_pop_culture ="),
-            completion.index("add_homeland = cu:natal_indian"),
+        conversion_marker_index = completion.index(
+            "set_variable = sb_natal_indian_ethnogenesis_conversion_applied_var"
         )
-        self.assertLess(
-            completion.index("change_pop_culture ="),
-            completion.index(
-                "set_variable = sb_natal_indian_ethnogenesis_conversion_applied_var"
-            ),
+        homeland_index = completion.index("add_homeland = cu:natal_indian")
+        community_marker_index = completion.index(
+            "set_variable = sb_natal_indian_community_established_var"
         )
-        self.assertLess(
-            completion.index(
-                "set_variable = sb_natal_indian_ethnogenesis_conversion_applied_var"
-            ),
-            completion.index("add_homeland = cu:natal_indian"),
+        global_marker_index = completion.index(
+            "set_global_variable = sb_natal_indian_ethnogenesis_completed_global_var"
         )
-        self.assertLess(
-            completion.index("add_homeland = cu:natal_indian"),
-            completion.index("remove_primary_culture = cu:natal_indian"),
+        pending_cleanup_index = completion.index(
+            "remove_variable = sb_natal_indian_ethnogenesis_event_pending_var"
         )
+        self.assertLess(conversion_index, pop_postcheck_index)
+        self.assertLess(pop_postcheck_index, conversion_marker_index)
+        self.assertLess(conversion_marker_index, homeland_index)
+        self.assertLess(homeland_index, community_marker_index)
+        self.assertLess(community_marker_index, global_marker_index)
+        self.assertLess(global_marker_index, pending_cleanup_index)
         self.assertIn(
             "NOT = { has_variable = sb_natal_indian_community_established_var }",
             completion,
@@ -1038,6 +1049,9 @@ class NatalInterwarTests(unittest.TestCase):
         self.assertIn("any_scope_pop = { culture = cu:natal_indian }", completion)
         self.assertNotIn("random", completion)
         self.assertIn("set_global_variable = sb_natal_indian_ethnogenesis_completed_global_var", completion)
+        self.assertIn("remove_global_variable = sb_natal_indian_ethnogenesis_completed_global_var", completion)
+        self.assertIn("remove_variable = sb_natal_indian_ethnogenesis_conversion_applied_var", completion)
+        self.assertIn("remove_variable = sb_natal_indian_ethnogenesis_event_pending_var", completion)
         self.assertIn("target = cu:natal_indian", consolidation)
         self.assertIn("value = 0.02", consolidation)
         self.assertNotIn("random", consolidation)
@@ -1304,25 +1318,44 @@ class NatalInterwarTests(unittest.TestCase):
         self.assertIn("modifier_natal_indian_congress", gandhi)
         self.assertIn("add_trait = scarred", gandhi)
 
-    def test_anglo_zulu_ai_decision_has_no_player_deferral(self):
-        decision = object_block(
-            "common/decisions/sb_anglo_zulu_decisions.txt",
-            "decision_sb_anglo_zulu_ultimatum",
+    def test_anglo_zulu_ai_scheduler_is_independent_of_natal_controller(self):
+        monthly = object_block(
+            "common/scripted_effects/sb_eastern_sphere_effects.txt",
+            "sb_eastern_sphere_monthly_housekeeping",
         )
-        event = object_block("events/sb_anglo_zulu_events.txt", "sb_anglo_zulu.010")
-        self.assertIn("is_ai = yes", decision)
-        self.assertIn("is_ai = yes", event)
-        self.assertNotIn("cooldown", decision)
-        self.assertNotIn("sb_anglo_zulu.010.b", event)
+        scheduler = min(
+            (
+                validate.extract_braced(monthly, match.start())
+                for match in re.finditer(r"^\s*if\s*=\s*\{", monthly, re.MULTILINE)
+                if "target_country = c:ZUL"
+                in validate.extract_braced(monthly, match.start())
+            ),
+            key=len,
+        )
+        nal_match = re.search(r"c:NAL\s*\?=\s*\{", scheduler)
+        self.assertIsNotNone(nal_match)
+        nal = validate.extract_braced(scheduler, nal_match.start())
+
+        self.assertIn("country_definition = cd:GBR", scheduler)
+        self.assertIn("is_ai = yes", scheduler)
+        self.assertNotIn("is_ai = yes", nal)
+        self.assertIn("is_subject_of = c:GBR", nal)
+        self.assertIn("type = dp_annex_war", scheduler)
+        self.assertNotIn(
+            "decision_sb_anglo_zulu_ultimatum",
+            text("common/decisions/sb_anglo_zulu_decisions.txt"),
+        )
+        self.assertNotIn("sb_anglo_zulu.010", text("events/sb_anglo_zulu_events.txt"))
 
     def test_zululand_settlement_has_all_three_terminal_choices(self):
         event = object_block("events/sb_natal_interwar_events.txt", "sb_natal_interwar.030")
+        effects = text("common/scripted_effects/sb_zululand_settlement_effects.txt")
         trigger = object_block(
-            "common/scripted_triggers/sb_natal_interwar_triggers.txt",
-            "sb_natal_owns_complete_northern_zulu_core",
+            "common/scripted_triggers/sb_zululand_settlement_triggers.txt",
+            "sb_zululand_normalized_nal_protectorate",
         )
-        self.assertEqual(9, len(re.findall(r"p:x[0-9A-F]+\.state\.owner = ROOT", trigger)))
-        self.assertNotIn("add_homeland = cu:anglo_african", event)
+        self.assertIn("owns_entire_state_region = STATE_ZULULAND", trigger)
+        self.assertNotIn("add_homeland = cu:anglo_african", event + effects)
         responsible = object_block(
             "common/scripted_effects/sb_subject_autonomy_effects.txt",
             "sb_apply_responsible_colony_subject_type_from_overlord",
@@ -1330,101 +1363,161 @@ class NatalInterwarTests(unittest.TestCase):
         self.assertIn("s:STATE_NATAL", responsible)
         self.assertIn("add_homeland = cu:anglo_african", responsible)
         self.assertNotIn("STATE_ZULULAND", responsible)
-        self.assertIn("add_radicals = { value = 0.25 culture = cu:zulu }", event)
-        self.assertIn("add_radicals = { value = -0.05 culture = cu:zulu }", event)
-        self.assertIn("sb_natal_apply_zulu_chiefdom_settlement = yes", event)
-        self.assertEqual(2, event.count("sb_natal_create_zulu_national_movement = yes"))
-        self.assertIn("sb_natal_gradual_zulu_restoration_var", event)
-        self.assertIn("sb_natal_restore_zululand_as_puppet = yes", event)
+        for branch in (
+            "sb_zululand_choose_direct_natal_administration = yes",
+            "sb_zululand_choose_thirteen_chiefdoms = yes",
+            "sb_zululand_choose_subordinate_crown = yes",
+        ):
+            self.assertIn(branch, event)
+        self.assertIn("add_radicals = { value = 0.25 culture = cu:zulu }", effects)
+        self.assertIn("add_radicals = { value = 0.05 culture = cu:zulu }", effects)
+        self.assertIn("sb_natal_create_zulu_national_movement = yes", effects)
+        self.assertIn("sb_natal_gradual_zulu_restoration_var", effects)
         self.assertEqual(2, event.count("add = -1000"))
         self.assertEqual(1, event.count("add = 1000"))
 
-    def test_chiefdom_amendment_and_decision_lock_bureaucracy(self):
-        amendment = object_block(
-            "common/amendments/sb_amendments.txt",
-            "amendment_sb_zulu_chiefdom_settlement",
+    def test_chiefdom_subject_is_locked_until_the_shared_situation_resolves(self):
+        subject = object_block(
+            "common/subject_types/sb_subject_types.txt",
+            "subject_type_sb_zulu_chiefdoms",
         )
-        modifier = object_block(
-            "common/static_modifiers/sb_natal_interwar_modifiers.txt",
-            "sb_zulu_chiefdom_administration",
+        action = object_block(
+            "common/diplomatic_actions/sb_subject_relationships.txt",
+            "sb_zulu_chiefdoms",
         )
-        decision = object_block(
-            "common/decisions/sb_natal_interwar_decisions.txt",
-            "decision_sb_dismantle_zulu_chiefdom_settlement",
+        choice = object_block(
+            "common/scripted_effects/sb_zululand_settlement_effects.txt",
+            "sb_zululand_choose_thirteen_chiefdoms",
         )
-        law_hook = object_block(
-            "common/on_actions/sb_cape_law_on_actions.txt",
-            "sb_on_natal_law_enactment_started",
-        )
-        self.assertIn("parent = law_sb_imperial_administration", amendment)
-        self.assertIn("days = 1825", amendment)
-        self.assertIn("can_repeal = { always = no }", amendment)
-        self.assertIn("state_pop_qualifications_mult = -0.25", modifier)
-        self.assertIn("state_food_security_add = 0.10", modifier)
-        self.assertIn("sb_natal_zulu_chiefdom_dismantle_cooldown_var", decision)
-        self.assertIn("add_radicals = { value = 0.10 culture = cu:zulu }", decision)
-        self.assertIn("cancel_enactment = yes", law_hook)
+        self.assertIn("autonomy_level = 1", subject)
+        self.assertNotIn("higher_autonomy_subject_type_alternatives", subject)
+        self.assertNotIn("lower_autonomy_subject_type_alternatives", subject)
+        self.assertIn("actor_can_break = { always = no }", action)
+        self.assertIn("target_can_break = { always = no }", action)
+        self.assertIn("change_subject_type = subject_type_sb_zulu_chiefdoms", choice)
+        self.assertIn("sb_zululand_open_chiefdoms_situation = yes", choice)
 
-    def test_zulu_restoration_uses_engine_secession_and_story_appeal_only(self):
+    def test_zulu_restoration_normalizes_the_engine_secession_and_appeals_directly(self):
         effects_path = "common/scripted_effects/sb_natal_interwar_effects.txt"
         effects = text(effects_path)
-        restore = object_block(effects_path, "sb_natal_restore_zululand_as_puppet")
-        finalize = object_block(
-            effects_path, "sb_natal_finalize_restored_zululand_as_puppet"
-        )
         movement = object_block(effects_path, "sb_natal_create_zulu_national_movement")
-        agitator = object_block(
-            effects_path, "sb_natal_ensure_zulu_restoration_agitator"
-        )
-        dinuzulu_cleanup = object_block_from_source(
-            agitator, "every_scope_character"
+        settlement_effects = text(
+            "common/scripted_effects/sb_zululand_settlement_effects.txt"
         )
         handlers = text("common/on_actions/sb_natal_interwar_on_action_handlers.txt")
+        secession = object_block(
+            effects_path, "sb_natal_prepare_zulu_restoration_secession"
+        )
+        war_goal = object_block(
+            effects_path, "sb_natal_add_zulu_secession_war_goal"
+        )
         appeal = object_block(
-            "events/sb_natal_interwar_events.txt", "sb_natal_interwar.035"
+            "events/sb_natal_interwar_events.txt", "sb_natal_interwar.040"
         )
         plays = text("common/diplomatic_plays/sb_diplomatic_plays.txt")
         movements = text("common/political_movements/sb_natal_interwar_movements.txt")
         hooks = text("common/on_actions/sb_diplomatic_play_on_action_handlers.txt")
-        self.assertIn("type = puppet", finalize)
-        self.assertIn("add_liberty_desire = 75", finalize)
-        self.assertIn("s:STATE_ZULULAND", finalize)
-        self.assertIn("province = p:xBE6FEE", restore)
-        for province in (
-            "xBE6FEE", "x1A084B", "xBFA16B", "x9E9742", "x88FAD4",
-            "x904EBE", "x41C070", "xE882CE", "xE1E455",
-        ):
-            self.assertIn(province, finalize)
-        self.assertNotIn("STATE_NATAL", restore + finalize)
-        self.assertNotIn("population_ratio", restore + finalize)
         self.assertNotIn("sb_natal_normalize_restored_zululand_population", effects)
         self.assertNotIn("sb_restore_zululand_population_split_after_zulu_defeat", effects)
 
         self.assertIn("type = movement_cultural_minority", movement)
         self.assertIn("culture = cu:zulu", movement)
-        self.assertIn("ZUL_dinuzulu_heir", agitator)
-        self.assertIn("ZUL_mbuyazi_heir", agitator)
-        self.assertIn("sb_zulu_mbuyazi_succession_global_var", agitator)
-        self.assertIn("has_role_of_type = agitator", dinuzulu_cleanup)
-        self.assertNotIn("is_agitator = yes", dinuzulu_cleanup)
-        self.assertIn("remove_character_role = agitator", agitator)
-        self.assertIn("set_ideology = ideology:ideology_sovereignist_leader", agitator)
+        self.assertIn("add_movement_enthusiasm_modifier = yes", movement)
+        self.assertNotIn("is_agitator = yes", settlement_effects)
+        self.assertNotIn("sb_natal_ensure_zulu_restoration_agitator", effects)
         self.assertIn("sb_on_natal_zulu_secession_start", handlers)
         self.assertIn("country_definition = cd:NAL", handlers)
         self.assertIn("sb_natal_is_british_colony = yes", handlers)
         self.assertIn("country_definition = cd:ZUL", handlers)
         self.assertIn("is_secessionist = yes", handlers)
+        self.assertIn("sb_zululand_direct_natal_administration_var", handlers)
         self.assertIn("set_variable = sb_natal_zulu_settlement_resolved_var", handlers)
         self.assertIn("remove_variable = sb_natal_zulu_settlement_pending_var", handlers)
-        self.assertIn("id = sb_natal_interwar.035 days = 1 popup = yes", handlers)
+        self.assertIn("id = sb_natal_interwar.039 days = 3 popup = yes", handlers)
+        self.assertNotIn("id = sb_natal_interwar.040", handlers)
         self.assertIn("sb_on_natal_zulu_secession_end", handlers)
         self.assertIn("sb_natal_zulu_restoration_resolved_var", handlers)
         self.assertIn("sb_natal_clear_zulu_restoration_runtime = yes", handlers)
-        self.assertIn("id = sb_natal_interwar.040 days = 5 popup = yes", appeal)
-        self.assertIn("sb_natal_interwar.035.a", appeal)
-        self.assertIn("sb_natal_interwar.035.b", appeal)
-        self.assertIn("base = 100", appeal)
-        self.assertIn("base = 0", appeal)
+
+        self.assertIn("set_country_type = unrecognized", secession)
+        self.assertIn("activate_law = law_type:law_monarchy", secession)
+        self.assertIn("activate_law = law_type:law_autocracy", secession)
+        self.assertIn("activate_law = law_type:law_sb_amabutho_system", secession)
+        self.assertIn("sb_zululand_restore_secession_dynasty = yes", secession)
+        self.assertIn("sb_natal_add_zulu_secession_war_goal = yes", secession)
+        self.assertLess(
+            secession.index("activate_law = law_type:law_monarchy"),
+            secession.index("sb_zululand_restore_secession_dynasty = yes"),
+        )
+        self.assertNotIn("effect_starting_politics_traditional", secession)
+        self.assertNotIn("effect_starting_technology", secession)
+        self.assertIn("type = return_state", war_goal)
+        self.assertIn("target_country = c:NAL", war_goal)
+        self.assertIn("target_state = s:STATE_NATAL.region_state:NAL", war_goal)
+        self.assertIn("exists = s:STATE_NATAL.region_state:NAL", war_goal)
+        self.assertIn("initiator = ROOT", war_goal)
+        self.assertIn("target = ROOT", war_goal)
+        self.assertNotIn("primary_demand = yes", war_goal)
+
+        normalization = object_block(
+            "events/sb_natal_interwar_events.txt", "sb_natal_interwar.039"
+        )
+        normalization_option = object_block_from_source(normalization, "option")
+        localization = text("localization/english/sb_natal_interwar_l_english.yml")
+        self.assertIn("country_definition = cd:ZUL", normalization)
+        self.assertIn("is_secessionist = yes", normalization)
+        self.assertIn("sb_natal_zulu_restoration_active_var", normalization)
+        self.assertNotIn("hidden = yes", normalization)
+        self.assertIn("placement = root", normalization)
+        self.assertIn("title = sb_natal_interwar.039.t", normalization)
+        self.assertIn("desc = sb_natal_interwar.039.d", normalization)
+        self.assertIn("flavor = sb_natal_interwar.039.f", normalization)
+        self.assertIn("name = sb_natal_interwar.039.a", normalization_option)
+        self.assertIn("default_option = yes", normalization_option)
+        self.assertIn(
+            "custom_tooltip = sb_natal_interwar.039.a.tt", normalization_option
+        )
+        self.assertIn(
+            "sb_natal_prepare_zulu_restoration_secession = yes",
+            normalization_option,
+        )
+        self.assertIn(
+            "sb_natal_zulu_secession_controls_full_zululand = yes",
+            normalization_option,
+        )
+        self.assertLess(
+            normalization_option.index("sb_natal_prepare_zulu_restoration_secession = yes"),
+            normalization_option.index("sb_natal_zulu_secession_controls_full_zululand = yes"),
+        )
+        self.assertIn("set_variable = sb_natal_zulu_arms_appeal_sent_var", normalization_option)
+        self.assertIn("name = sb_natal_zulu_arms_appeal_wait_var", normalization_option)
+        self.assertIn(
+            "id = sb_natal_interwar.040 days = 2 popup = yes",
+            normalization_option,
+        )
+        self.assertNotIn(
+            "sb_natal_prepare_zulu_restoration_secession = yes",
+            object_block_from_source(normalization, "trigger"),
+        )
+        self.assertIn(
+            "# ### TO REVIEW ###\n sb_natal_interwar.039.t:0",
+            localization,
+        )
+        for key in (
+            "sb_natal_interwar.039.t",
+            "sb_natal_interwar.039.d",
+            "sb_natal_interwar.039.f",
+            "sb_natal_interwar.039.a",
+            "sb_natal_interwar.039.a.tt",
+        ):
+            self.assertIn(f" {key}:0", localization)
+
+        self.assertIn("sb_frontier_ai_behavior_strict_historical = yes", appeal)
+        self.assertIn("sb_frontier_ai_behavior_dynamic_historical = yes", appeal)
+        self.assertIn("sb_frontier_ai_behavior_off = yes", appeal)
+        self.assertIn("sb_bechuanaland_ai_in_default_or_bankrupt = yes", appeal)
+        self.assertIn("factor = 0", appeal)
+        self.assertNotIn("sb_natal_interwar.035 =", text("events/sb_natal_interwar_events.txt"))
 
         self.assertNotIn("movement_sb_zulu_restoration", movements)
         self.assertNotIn("dp_sb_zulu_restoration_secession", plays)
@@ -1436,40 +1529,30 @@ class NatalInterwarTests(unittest.TestCase):
         ):
             self.assertNotIn(f"{handler} = yes", hooks)
 
-    def test_restored_zululand_defers_country_tag_links_until_the_next_day(self):
-        effects_path = "common/scripted_effects/sb_natal_interwar_effects.txt"
-        restore = object_block(effects_path, "sb_natal_restore_zululand_as_puppet")
-        finalize = object_block(
-            effects_path, "sb_natal_finalize_restored_zululand_as_puppet"
-        )
-        followup = object_block(
-            "events/sb_natal_interwar_events.txt", "sb_natal_interwar.031"
-        )
-        trigger = object_block_from_source(followup, "trigger")
-        immediate = object_block_from_source(followup, "immediate")
+    def test_british_handoff_restores_zululand_atomically_before_natal_event(self):
+        effects_path = "common/scripted_effects/sb_zululand_settlement_effects.txt"
+        restore = object_block(effects_path, "sb_zululand_restore_protectorate_for_natal")
+        normalize = object_block(effects_path, "sb_zululand_normalize_live_subject_for_natal")
+        handoff = object_block(effects_path, "sb_zululand_handoff_to_natal")
+        events = text("events/sb_zululand_settlement_events.txt")
 
-        self.assertIn("sb_natal_restored_zululand_setup_pending_var", restore)
-        self.assertIn("id = sb_natal_interwar.031 days = 1 popup = no", restore)
-        self.assertNotIn("c:ZUL =", restore)
-        self.assertNotIn("country = c:ZUL", restore)
-        self.assertIn(
-            "has_variable = sb_natal_restored_zululand_setup_pending_var", trigger
-        )
-        self.assertNotIn("c:ZUL", trigger)
-        self.assertIn(
-            "sb_natal_finalize_restored_zululand_as_puppet = yes", immediate
-        )
-        self.assertIn(
-            "remove_variable = sb_natal_restored_zululand_setup_pending_var", finalize
-        )
-        self.assertIn("c:ZUL ?= { is_country_alive = yes }", finalize)
-        self.assertIn("country = c:ZUL", finalize)
-        self.assertIn("c:ZUL = { add_liberty_desire = 75 }", finalize)
-        self.assertIn(
-            "c:ZUL = { sb_natal_restore_archived_zulu_firearms = yes }", finalize
-        )
+        self.assertIn("save_scope_as = sb_zululand_restoration_state", restore)
+        self.assertIn("state = scope:sb_zululand_restoration_state", restore)
+        self.assertIn("on_created = { sb_natal_apply_restored_zulu_baseline = yes }", restore)
+        self.assertIn("sb_zululand_normalize_live_subject_for_natal = yes", restore)
+        self.assertNotIn("province =", restore)
+        self.assertNotIn("set_owner_of_provinces", restore)
+        self.assertNotIn("subject_shell", effects_path + restore)
+        self.assertNotIn("sb_zululand_settlement.002", events)
 
-    def test_transvaal_appeal_creates_exact_treaty_and_territorial_payment(self):
+        self.assertIn("country = c:ZUL", normalize)
+        self.assertIn("type = protectorate", normalize)
+        self.assertIn("sb_natal_restore_archived_zulu_firearms = yes", normalize)
+        self.assertIn("sb_natal_schedule_zulu_settlement = yes", normalize)
+        self.assertIn("sb_zululand_restore_protectorate_for_natal = yes", handoff)
+        self.assertIn("sb_zululand_normalized_nal_protectorate = yes", handoff)
+
+    def test_transvaal_appeal_creates_nrp_and_the_exact_three_year_aid_package(self):
         trigger = object_block(
             "common/scripted_triggers/sb_natal_interwar_triggers.txt",
             "sb_natal_trn_arms_treaty_possible",
@@ -1478,25 +1561,58 @@ class NatalInterwarTests(unittest.TestCase):
             "common/scripted_effects/sb_natal_interwar_effects.txt",
             "sb_natal_create_trn_zulu_arms_treaty",
         )
+        accept = object_block(
+            "common/scripted_effects/sb_natal_interwar_effects.txt",
+            "sb_natal_accept_trn_zulu_aid",
+        )
+        volunteers = object_block(
+            "common/scripted_effects/sb_natal_interwar_effects.txt",
+            "sb_natal_move_trn_servicemen_to_zululand",
+        )
+        expiry = object_block(
+            "common/scripted_effects/sb_natal_interwar_effects.txt",
+            "sb_natal_expire_trn_zulu_aid_treaty",
+        )
         event = object_block("events/sb_natal_interwar_events.txt", "sb_natal_interwar.040")
-        for province in ("xE1E455", "xE882CE", "x1A084B", "xBFA16B", "x41C070"):
-            self.assertIn(province, effects)
-        self.assertIn("change_infamy = 2.5", effects)
-        self.assertNotIn("add_infamy", effects)
-        self.assertIn("country = c:NAL value = -15", effects)
-        self.assertIn("country = c:GBR value = -5", effects)
+        for forbidden in ("set_owner_of_provinces", "change_infamy", "add_infamy"):
+            self.assertNotIn(forbidden, effects + accept)
+        self.assertIn("c:NAL ?= { sb_nrp_create_greater_republic = yes }", accept)
+        self.assertIn("add_treasury = -10000", accept)
+        self.assertIn("add_treasury = 10000", accept)
+        self.assertIn("country = c:NAL value = -15", accept)
+        self.assertIn("country = c:GBR value = -5", accept)
+        self.assertIn("sb_natal_move_trn_servicemen_to_zululand = yes", accept)
+        self.assertIn("combat_unit_type_dragoons", accept)
+        self.assertNotIn("combat_unit_type_shrapnel_artillery", accept)
+
+        self.assertIn("culture = cu:boer", volunteers)
+        self.assertIn("is_pop_type = soldiers", volunteers)
+        self.assertIn("value = 1000", volunteers)
+        self.assertIn("population_ratio", volunteers)
+        self.assertNotIn("create_pop", volunteers)
+        self.assertNotIn("change_poptype", volunteers)
+
         self.assertIn("article = military_assistance", effects)
-        self.assertIn("article = goods_transfer", effects)
-        self.assertIn("goods = g:small_arms", effects)
-        self.assertIn("quantity = 10", effects)
-        self.assertIn("years = 5", effects)
-        self.assertIn("article = military_assistance", trigger)
-        self.assertIn("is_secessionist = yes", trigger)
-        self.assertIn("sb_natal_zulu_restoration_active_var", trigger)
+        self.assertEqual(2, effects.count("article = goods_transfer"))
+        for good in ("g:grain", "g:small_arms"):
+            self.assertIn(f"goods = {good}", effects)
+        self.assertNotIn("goods = g:artillery", effects)
+        self.assertEqual(2, effects.count("quantity = 10"))
+        self.assertIn("years = 3", effects)
+        self.assertIn("id = sb_natal_interwar.045 months = 36 popup = no", accept)
+        self.assertIn("c:ZUL ?= { is_country_alive = yes }", expiry)
+        self.assertIn("has_type = military_assistance", expiry)
+        self.assertIn("has_type = goods_transfer", expiry)
+        self.assertIn("withdraw = { country = root }", expiry)
+        self.assertNotIn("can_create_treaty", trigger)
         self.assertNotIn("article = goods_transfer", trigger)
         self.assertNotIn("inputs =", trigger)
+        self.assertIn("is_secessionist = yes", trigger)
+        self.assertIn("sb_natal_zulu_restoration_active_var", trigger)
+        self.assertIn("c:NRP ?= { is_country_alive = yes }", trigger)
         self.assertNotIn("is_direct_subject_of = c:NAL", event)
-        self.assertIn("base = 60", event)
+        self.assertIn("sb_natal_accept_trn_zulu_aid = yes", event)
+        self.assertIn("sb_natal_refuse_trn_zulu_aid = yes", event)
         for value in ("add = 20", "add = 15", "add = -30", "add = -20"):
             self.assertIn(value, event)
 

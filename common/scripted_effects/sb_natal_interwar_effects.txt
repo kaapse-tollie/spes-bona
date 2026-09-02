@@ -680,6 +680,18 @@ sb_natal_intensify_indenture_program = {
 sb_natal_cleanup_indenture_program = {
 	sb_natal_remove_indenture_program_costs = yes
 	sb_natal_clear_indenture_cycle = yes
+	active_law:lawgroup_citizenship ?= {
+		every_scope_amendment = {
+			limit = {
+				type = amendment_type:amendment_sb_natal_indian_indenture_status
+			}
+			remove_amendment = yes
+		}
+	}
+	if = {
+		limit = { has_variable = sb_natal_indian_status_granted_var }
+		remove_variable = sb_natal_indian_status_granted_var
+	}
 	if = {
 		limit = { has_variable = sb_natal_indenture_suspended_var }
 		remove_variable = sb_natal_indenture_suspended_var
@@ -708,55 +720,91 @@ sb_natal_complete_indenture_program = {
 }
 
 sb_natal_establish_natal_indian_community = {
-	# Culture-genesis effects in vanilla activate the new culture before using it
-	# as a conversion target or homeland. The primary status is removed below.
-	add_primary_culture = cu:natal_indian
+	# Culture objects are serialized when a campaign is created. The guard keeps
+	# checkpoints from before Natal Indian was defined from reporting false success.
 	if = {
-		limit = {
-			has_variable = sb_natal_indian_ethnogenesis_event_pending_var
-			sb_natal_bic_has_indenture_cohort = { CULTURE = cu:gujarati SIZE = 1500 }
+		limit = { exists = cu:natal_indian }
+		if = {
+			limit = {
+				has_variable = sb_natal_indian_ethnogenesis_event_pending_var
+				sb_natal_bic_has_indenture_cohort = { CULTURE = cu:gujarati SIZE = 1500 }
+			}
+			sb_natal_transfer_indenture_cohort = {
+				CULTURE = cu:gujarati
+				SIZE = 1500
+				DESTINATION_POP_TYPE = pop_type:shopkeepers
+			}
 		}
-		sb_natal_transfer_indenture_cohort = {
-			CULTURE = cu:gujarati
-			SIZE = 1500
-			DESTINATION_POP_TYPE = pop_type:shopkeepers
-		}
-	}
-	if = {
-		limit = { NOT = { has_variable = sb_natal_indian_community_established_var } }
-		s:STATE_NATAL.region_state:NAL ?= {
-			every_scope_pop = {
-				limit = { sb_natal_pop_is_indian_origin = yes }
-				change_pop_culture = {
-					target = cu:natal_indian
-					value = 0.25
+		if = {
+			limit = {
+				NOT = { has_variable = sb_natal_indian_community_established_var }
+				NOT = {
+					s:STATE_NATAL.region_state:NAL ?= {
+						any_scope_pop = { culture = cu:natal_indian }
+					}
+				}
+			}
+			s:STATE_NATAL.region_state:NAL ?= {
+				every_scope_pop = {
+					limit = { sb_natal_pop_is_indian_origin = yes }
+					change_pop_culture = {
+						target = cu:natal_indian
+						value = 0.25
+					}
 				}
 			}
 		}
-		set_variable = sb_natal_indian_ethnogenesis_conversion_applied_var
-	}
-	if = {
-		limit = {
-			has_variable = sb_natal_indian_ethnogenesis_conversion_applied_var
-			s:STATE_NATAL = { NOT = { is_homeland = cu:natal_indian } }
+		if = {
+			limit = {
+				s:STATE_NATAL.region_state:NAL ?= {
+					any_scope_pop = { culture = cu:natal_indian }
+				}
+				NOT = { has_variable = sb_natal_indian_ethnogenesis_conversion_applied_var }
+			}
+			set_variable = sb_natal_indian_ethnogenesis_conversion_applied_var
 		}
-		s:STATE_NATAL = { add_homeland = cu:natal_indian }
-	}
-	if = {
-		limit = {
-			has_variable = sb_natal_indian_ethnogenesis_conversion_applied_var
-			s:STATE_NATAL = { is_homeland = cu:natal_indian }
-			s:STATE_NATAL.region_state:NAL ?= {
-				any_scope_pop = { culture = cu:natal_indian }
+		if = {
+			limit = {
+				has_variable = sb_natal_indian_ethnogenesis_conversion_applied_var
+				s:STATE_NATAL = { NOT = { is_homeland = cu:natal_indian } }
+			}
+			s:STATE_NATAL = { add_homeland = cu:natal_indian }
+		}
+		if = {
+			limit = {
+				has_variable = sb_natal_indian_ethnogenesis_conversion_applied_var
+				s:STATE_NATAL = { is_homeland = cu:natal_indian }
+				s:STATE_NATAL.region_state:NAL ?= {
+					any_scope_pop = { culture = cu:natal_indian }
+				}
+			}
+			set_variable = sb_natal_indian_community_established_var
+			set_global_variable = sb_natal_indian_ethnogenesis_completed_global_var
+			if = {
+				limit = { has_variable = sb_natal_indian_ethnogenesis_event_pending_var }
+				remove_variable = sb_natal_indian_ethnogenesis_event_pending_var
 			}
 		}
-		set_variable = sb_natal_indian_community_established_var
 	}
-	remove_primary_culture = cu:natal_indian
-	set_global_variable = sb_natal_indian_ethnogenesis_completed_global_var
-	if = {
-		limit = { has_variable = sb_natal_indian_ethnogenesis_event_pending_var }
-		remove_variable = sb_natal_indian_ethnogenesis_event_pending_var
+	else = {
+		# Older checkpoints cannot acquire a culture missing from their serialized
+		# registry. Clear the former false-success markers and stop monthly retries.
+		if = {
+			limit = { has_global_variable = sb_natal_indian_ethnogenesis_completed_global_var }
+			remove_global_variable = sb_natal_indian_ethnogenesis_completed_global_var
+		}
+		if = {
+			limit = { has_variable = sb_natal_indian_ethnogenesis_conversion_applied_var }
+			remove_variable = sb_natal_indian_ethnogenesis_conversion_applied_var
+		}
+		if = {
+			limit = { has_variable = sb_natal_indian_community_established_var }
+			remove_variable = sb_natal_indian_community_established_var
+		}
+		if = {
+			limit = { has_variable = sb_natal_indian_ethnogenesis_event_pending_var }
+			remove_variable = sb_natal_indian_ethnogenesis_event_pending_var
+		}
 	}
 }
 
@@ -865,6 +913,10 @@ sb_natal_replace_indenture_status_with_civic_rights = {
 
 sb_natal_apply_shepstone_system = {
 	set_variable = sb_natal_shepstone_accepted_var
+	set_variable = {
+		name = sb_natal_shepstone_repeal_locked_var
+		months = 300
+	}
 	add_loyalists = { value = 0.25 culture = cu:zulu }
 	cu:zulu = {
 		add_fervor = -10
@@ -1021,6 +1073,10 @@ sb_natal_apply_shepstone_hidden_mechanics = {
 }
 
 sb_natal_restore_shepstone_system = {
+	set_variable = {
+		name = sb_natal_shepstone_repeal_locked_var
+		months = 300
+	}
 	active_law:lawgroup_land_reform ?= {
 		if = {
 			limit = {
@@ -1127,9 +1183,6 @@ sb_natal_apply_repealed_shepstone_consequences = {
 	custom_tooltip = sb_natal_shepstone_repeal_zulu_movement_attraction_tt
 	ig:ig_armed_forces ?= {
 		add_modifier = { name = sb_shepstone_repeal_colonial_garrison_opposition days = 1825 }
-	}
-	ig:ig_industrialists ?= {
-		add_modifier = { name = sb_shepstone_repeal_industrialists_approval days = 1825 }
 	}
 }
 
@@ -1374,12 +1427,14 @@ sb_natal_schedule_zulu_settlement = {
 		limit = {
 			sb_natal_zulu_settlement_ready = yes
 			NOT = { has_variable = sb_natal_zulu_settlement_pending_var }
+			NOT = { has_variable = sb_natal_zulu_settlement_event_open_var }
 		}
 		set_variable = {
 			name = sb_natal_zulu_settlement_pending_var
-			days = 60
+			days = 30
 		}
-		trigger_event = { id = sb_natal_interwar.030 days = 30 popup = yes }
+		set_variable = { name = sb_natal_zulu_settlement_event_open_var days = 120 }
+		trigger_event = { id = sb_natal_interwar.030 days = 3 popup = yes }
 	}
 }
 
@@ -1391,184 +1446,20 @@ sb_natal_create_zulu_national_movement = {
 			culture = cu:zulu
 		}
 	}
+	if = {
+		limit = { NOT = { has_variable = sb_zulu_national_movement_initial_enthusiasm_var } }
+		every_political_movement = {
+			limit = {
+				is_political_movement_type = movement_cultural_minority
+				culture = cu:zulu
+				NOT = { has_modifier = initial_movement_enthusiasm }
+			}
+			add_movement_enthusiasm_modifier = yes
+		}
+		set_variable = sb_zulu_national_movement_initial_enthusiasm_var
+	}
 	sb_natal_sync_declined_shepstone_zulu_movement_attraction = yes
 	sb_natal_sync_repealed_shepstone_zulu_movement_attraction = yes
-	sb_natal_ensure_zulu_restoration_agitator = yes
-}
-
-sb_natal_ensure_zulu_restoration_agitator = {
-	if = {
-		limit = { has_global_variable = sb_zulu_mbuyazi_succession_global_var }
-			every_scope_character = {
-				limit = {
-					has_template = ZUL_dinuzulu_heir
-					has_role_of_type = agitator
-				}
-			remove_character_role = agitator
-		}
-		if = {
-			limit = {
-				NOT = {
-					any_scope_character = {
-						has_template = ZUL_mbuyazi_heir
-						is_character_alive = yes
-					}
-				}
-				any_country = {
-					NOT = { this = ROOT }
-					any_scope_character = {
-						has_template = ZUL_mbuyazi_heir
-						is_character_alive = yes
-						NOT = { is_ruler_of_own_country = yes }
-					}
-				}
-			}
-			random_country = {
-				limit = {
-					NOT = { this = ROOT }
-					any_scope_character = {
-						has_template = ZUL_mbuyazi_heir
-						is_character_alive = yes
-						NOT = { is_ruler_of_own_country = yes }
-					}
-				}
-				random_scope_character = {
-					limit = {
-						has_template = ZUL_mbuyazi_heir
-						is_character_alive = yes
-						NOT = { is_ruler_of_own_country = yes }
-					}
-					transfer_character = ROOT
-				}
-			}
-		}
-		if = {
-			limit = {
-				any_scope_character = {
-					has_template = ZUL_mbuyazi_heir
-					is_character_alive = yes
-					NOT = { is_ruler_of_own_country = yes }
-				}
-			}
-			random_scope_character = {
-				limit = {
-					has_template = ZUL_mbuyazi_heir
-					is_character_alive = yes
-					NOT = { is_ruler_of_own_country = yes }
-				}
-				set_ideology = ideology:ideology_sovereignist_leader
-				replace_character_roles = { add = { agitator } remove_all = yes }
-			}
-		}
-	}
-	else = {
-		if = {
-			limit = {
-				game_date >= 1884.1.1
-				NOT = {
-					any_scope_character = {
-						has_template = ZUL_dinuzulu_heir
-						is_character_alive = yes
-					}
-				}
-			}
-			if = {
-				limit = {
-					any_country = {
-						NOT = { this = ROOT }
-						any_scope_character = {
-							has_template = ZUL_dinuzulu_heir
-							is_character_alive = yes
-							NOT = { is_ruler_of_own_country = yes }
-						}
-					}
-				}
-				set_global_variable = sb_dinuzulu_ever_created_global_var
-				random_country = {
-					limit = {
-						NOT = { this = ROOT }
-						any_scope_character = {
-							has_template = ZUL_dinuzulu_heir
-							is_character_alive = yes
-							NOT = { is_ruler_of_own_country = yes }
-						}
-					}
-					random_scope_character = {
-						limit = {
-							has_template = ZUL_dinuzulu_heir
-							is_character_alive = yes
-							NOT = { is_ruler_of_own_country = yes }
-						}
-						transfer_character = ROOT
-					}
-				}
-			}
-			else_if = {
-				limit = { NOT = { has_global_variable = sb_dinuzulu_ever_created_global_var } }
-				set_global_variable = sb_dinuzulu_ever_created_global_var
-				create_character = {
-					template = ZUL_dinuzulu_heir
-					on_created = {
-						set_ideology = ideology:ideology_sovereignist_leader
-						replace_character_roles = { add = { agitator } remove_all = yes }
-					}
-				}
-			}
-		}
-		if = {
-			limit = {
-				any_scope_character = {
-					has_template = ZUL_dinuzulu_heir
-					is_character_alive = yes
-					NOT = { is_ruler_of_own_country = yes }
-				}
-			}
-			random_scope_character = {
-				limit = {
-					has_template = ZUL_dinuzulu_heir
-					is_character_alive = yes
-					NOT = { is_ruler_of_own_country = yes }
-				}
-				set_ideology = ideology:ideology_sovereignist_leader
-				replace_character_roles = { add = { agitator } remove_all = yes }
-			}
-		}
-	}
-	if = {
-		limit = {
-			NOT = { any_scope_character = { has_variable = sb_natal_generated_zulu_restoration_leader_var is_character_alive = yes } }
-			OR = {
-				AND = {
-					has_global_variable = sb_zulu_mbuyazi_succession_global_var
-					NOT = {
-						any_scope_character = {
-							has_template = ZUL_mbuyazi_heir
-							is_character_alive = yes
-						}
-					}
-				}
-				AND = {
-					NOT = { has_global_variable = sb_zulu_mbuyazi_succession_global_var }
-					NOT = {
-						any_scope_character = {
-							has_template = ZUL_dinuzulu_heir
-							is_character_alive = yes
-						}
-					}
-				}
-			}
-		}
-		create_character = {
-			culture = cu:zulu
-			religion = rel:animist
-			age = 30
-			is_agitator = yes
-			interest_group = ig_landowners
-			ideology = ideology_sovereignist_leader
-			traits = { ambitious inspirational_orator }
-			on_created = { set_variable = sb_natal_generated_zulu_restoration_leader_var }
-		}
-	}
 }
 
 sb_natal_apply_restored_zulu_baseline = {
@@ -1590,229 +1481,120 @@ sb_natal_apply_restored_zulu_baseline = {
 		limit = { NOT = { has_claim = s:STATE_ZULULAND } }
 		s:STATE_ZULULAND = { add_claim = ROOT }
 	}
+	sb_zululand_restore_preannexation_royal_house = yes
 }
 
-sb_natal_install_restored_zulu_ruler = {
+sb_natal_add_zulu_secession_war_goal = {
 	if = {
-		limit = {
-			has_global_variable = sb_zulu_mbuyazi_succession_global_var
-			any_country = {
-				any_scope_character = {
-					has_template = ZUL_mbuyazi_heir
-					is_character_alive = yes
-				}
-			}
-		}
-		random_country = {
+		limit = { NOT = { has_claim = s:STATE_NATAL } }
+		s:STATE_NATAL = { add_claim = ROOT }
+	}
+	if = {
+		limit = { exists = s:STATE_NATAL.region_state:NAL }
+		random_diplomatic_play = {
 			limit = {
-				any_scope_character = {
-					has_template = ZUL_mbuyazi_heir
-					is_character_alive = yes
+				OR = {
+					AND = {
+						initiator = ROOT
+						target = c:NAL
+					}
+					AND = {
+						initiator = c:NAL
+						target = ROOT
+					}
 				}
 			}
-			random_scope_character = {
-				limit = {
-					has_template = ZUL_mbuyazi_heir
-					is_character_alive = yes
-				}
-				transfer_character = c:ZUL
+			add_war_goal = {
+				holder = ROOT
+				type = return_state
+				target_country = c:NAL
+				target_state = s:STATE_NATAL.region_state:NAL
 			}
-		}
-		c:ZUL = {
-			random_scope_character = {
-				limit = {
-					has_template = ZUL_mbuyazi_heir
-					is_character_alive = yes
-				}
-				save_scope_as = summoned_character_scope
-			}
-			sb_zulu_install_summoned_claimant_as_ruler = yes
-		}
-	}
-	else_if = {
-		limit = {
-			NOT = { has_global_variable = sb_zulu_mbuyazi_succession_global_var }
-			game_date >= 1884.1.1
-			any_country = {
-				any_scope_character = {
-					has_template = ZUL_dinuzulu_heir
-					is_character_alive = yes
-				}
-			}
-		}
-		random_country = {
-			limit = {
-				any_scope_character = {
-					has_template = ZUL_dinuzulu_heir
-					is_character_alive = yes
-				}
-			}
-			random_scope_character = {
-				limit = {
-					has_template = ZUL_dinuzulu_heir
-					is_character_alive = yes
-				}
-				transfer_character = c:ZUL
-			}
-		}
-		c:ZUL = {
-			random_scope_character = {
-				limit = {
-					has_template = ZUL_dinuzulu_heir
-					is_character_alive = yes
-				}
-				save_scope_as = summoned_character_scope
-			}
-			sb_zulu_install_summoned_claimant_as_ruler = yes
-		}
-	}
-	else_if = {
-		limit = {
-			c:NAL = {
-				any_scope_character = {
-					has_variable = sb_natal_generated_zulu_restoration_leader_var
-					is_character_alive = yes
-				}
-			}
-		}
-		c:NAL = {
-			random_scope_character = {
-				limit = {
-					has_variable = sb_natal_generated_zulu_restoration_leader_var
-					is_character_alive = yes
-				}
-				transfer_character = c:ZUL
-			}
-		}
-		c:ZUL = {
-			random_scope_character = {
-				limit = {
-					has_variable = sb_natal_generated_zulu_restoration_leader_var
-					is_character_alive = yes
-				}
-				save_scope_as = summoned_character_scope
-			}
-			sb_zulu_install_summoned_claimant_as_ruler = yes
-		}
-	}
-	else = {
-		c:ZUL = {
-			create_character = {
-				culture = cu:zulu
-				religion = rel:animist
-				age = 30
-				interest_group = ig_landowners
-				ideology = ideology_traditionalist
-				traits = { ambitious imperious basic_diplomat }
-				on_created = { save_scope_as = summoned_character_scope }
-			}
-			sb_zulu_install_summoned_claimant_as_ruler = yes
 		}
 	}
 }
 
-sb_natal_restore_zululand_as_puppet = {
-	if = {
-		limit = {
-			country_definition = cd:NAL
-			sb_natal_owns_complete_northern_zulu_core = yes
-			NOT = { c:ZUL ?= { is_country_alive = yes } }
-		}
-		set_variable = sb_natal_restored_zululand_setup_pending_var
-		create_country = {
-			tag = ZUL
-			origin = ROOT
-			province = p:xBE6FEE
-			on_created = { sb_natal_apply_restored_zulu_baseline = yes }
-		}
-		# Newly created country-tag links are not safe until the following day.
-		trigger_event = { id = sb_natal_interwar.031 days = 1 popup = no }
-	}
+sb_natal_prepare_zulu_restoration_secession = {
+	set_country_type = unrecognized
+	activate_law = law_type:law_monarchy
+	activate_law = law_type:law_autocracy
+	activate_law = law_type:law_sb_amabutho_system
+	sb_zululand_restore_secession_dynasty = yes
+	sb_natal_add_zulu_secession_war_goal = yes
 }
 
-sb_natal_finalize_restored_zululand_as_puppet = {
+sb_natal_move_trn_servicemen_to_zululand = {
 	if = {
 		limit = {
-			country_definition = cd:NAL
-			has_variable = sb_natal_restored_zululand_setup_pending_var
+			country_definition = cd:TRN
 			c:ZUL ?= { is_country_alive = yes }
+			any_scope_pop = {
+				culture = cu:boer
+				is_pop_type = soldiers
+				total_size > 0
+			}
 		}
-		remove_variable = sb_natal_restored_zululand_setup_pending_var
-		s:STATE_ZULULAND = {
-			set_owner_of_provinces = {
-				country = c:ZUL
-				provinces = {
-					xBE6FEE x1A084B xBFA16B x9E9742 x88FAD4
-					x904EBE x41C070 xE882CE xE1E455
+		c:ZUL = { capital = { save_temporary_scope_as = sb_natal_zulu_aid_servicemen_target } }
+		set_variable = {
+			name = sb_natal_zulu_aid_servicemen_total_var
+			value = {
+				every_scope_state = {
+					every_scope_pop = {
+						limit = {
+							culture = cu:boer
+							is_pop_type = soldiers
+						}
+						add = total_size
+					}
 				}
 			}
 		}
-		create_diplomatic_pact = {
-			country = c:ZUL
-			type = puppet
+		set_variable = { name = sb_natal_zulu_aid_servicemen_ratio_var value = 1000 }
+		change_variable = {
+			name = sb_natal_zulu_aid_servicemen_ratio_var
+			divide = var:sb_natal_zulu_aid_servicemen_total_var
 		}
-		c:ZUL = { add_liberty_desire = 75 }
-		c:ZUL = { sb_natal_restore_archived_zulu_firearms = yes }
-		sb_natal_install_restored_zulu_ruler = yes
-	}
-	else_if = {
-		limit = {
-			country_definition = cd:NAL
-			has_variable = sb_natal_restored_zululand_setup_pending_var
+		clamp_variable = { name = sb_natal_zulu_aid_servicemen_ratio_var min = 0 max = 1 }
+		every_scope_state = {
+			every_scope_pop = {
+				limit = {
+					culture = cu:boer
+					is_pop_type = soldiers
+				}
+				move_partial_pop = {
+					state = scope:sb_natal_zulu_aid_servicemen_target
+					population_ratio = { add = c:TRN.var:sb_natal_zulu_aid_servicemen_ratio_var }
+				}
+			}
 		}
-		remove_variable = sb_natal_restored_zululand_setup_pending_var
-	}
-}
-
-sb_natal_apply_zulu_chiefdom_settlement = {
-	set_variable = sb_natal_zulu_chiefdom_settlement_var
-	if = {
-		limit = { NOT = { has_law = law_type:law_sb_imperial_administration } }
-		activate_law = law_type:law_sb_imperial_administration
-	}
-	active_law:lawgroup_bureaucracy ?= {
-		add_amendment = {
-			type = amendment_sb_zulu_chiefdom_settlement
-			sponsor = PREV.ig:ig_armed_forces
-		}
-	}
-}
-
-sb_natal_remove_zulu_chiefdom_settlement = {
-	active_law:lawgroup_bureaucracy ?= {
-		every_scope_amendment = {
-			limit = { type = amendment_type:amendment_sb_zulu_chiefdom_settlement }
-			remove_amendment = yes
-		}
-	}
-	if = {
-		limit = { has_variable = sb_natal_zulu_chiefdom_settlement_var }
-		remove_variable = sb_natal_zulu_chiefdom_settlement_var
+		remove_variable = sb_natal_zulu_aid_servicemen_total_var
+		remove_variable = sb_natal_zulu_aid_servicemen_ratio_var
 	}
 }
 
 sb_natal_create_trn_zulu_arms_treaty = {
 	if = {
 		limit = { sb_natal_trn_arms_treaty_possible = yes }
-		s:STATE_ZULULAND = {
-			set_owner_of_provinces = {
-				country = c:TRN
-				provinces = { xE1E455 xE882CE x1A084B xBFA16B x41C070 }
-			}
-		}
-		change_infamy = 2.5
-		change_relations = { country = c:NAL value = -15 }
-		change_relations = { country = c:GBR value = -5 }
 		create_treaty = {
+			name = treaty_name_sb_trn_zulu_rebellion_aid
 			first_country = ROOT
 			second_country = c:ZUL
 			is_draft = no
-			binding_period = { years = 5 }
+			binding_period = { years = 3 }
 			articles_to_create = {
 				{
 					article = military_assistance
 					source_country = ROOT
 					target_country = c:ZUL
+				}
+				{
+					article = goods_transfer
+					source_country = ROOT
+					target_country = c:ZUL
+					inputs = {
+						{ goods = g:grain }
+						{ quantity = 10 }
+					}
 				}
 				{
 					article = goods_transfer
@@ -1826,6 +1608,70 @@ sb_natal_create_trn_zulu_arms_treaty = {
 			}
 		}
 	}
+}
+
+sb_natal_expire_trn_zulu_aid_treaty = {
+	if = {
+		limit = { c:ZUL ?= { is_country_alive = yes } }
+		every_scope_treaty = {
+			limit = {
+				binds = c:ZUL
+				any_scope_article = {
+					has_type = military_assistance
+					source_country = ROOT
+					target_country = c:ZUL
+				}
+				any_scope_article = {
+					has_type = goods_transfer
+					source_country = ROOT
+					target_country = c:ZUL
+					input_goods = g:grain
+				}
+				any_scope_article = {
+					has_type = goods_transfer
+					source_country = ROOT
+					target_country = c:ZUL
+					input_goods = g:small_arms
+				}
+			}
+			withdraw = { country = root }
+		}
+	}
+	if = {
+		limit = { has_variable = sb_natal_trn_zulu_aid_treaty_expiry_pending_var }
+		remove_variable = sb_natal_trn_zulu_aid_treaty_expiry_pending_var
+	}
+}
+
+sb_natal_accept_trn_zulu_aid = {
+	c:NAL ?= { set_variable = sb_nrp_direct_annexation_rebellion_pending_var }
+	add_treasury = -10000
+	c:ZUL ?= {
+		add_treasury = 10000
+		create_military_formation = {
+			type = army
+			hq_region = sr:region_southern_africa
+			name = zulu_boer_dragoon_contingent
+			combat_unit = {
+				type = unit_type:combat_unit_type_dragoons
+				state_region = s:STATE_ZULULAND
+				count = 1
+			}
+		}
+	}
+	sb_natal_move_trn_servicemen_to_zululand = yes
+	sb_natal_create_trn_zulu_arms_treaty = yes
+	change_relations = { country = c:NAL value = -15 }
+	change_relations = { country = c:GBR value = -5 }
+	set_variable = sb_natal_trn_zulu_aid_treaty_expiry_pending_var
+	trigger_event = { id = sb_natal_interwar.045 months = 36 popup = no }
+	c:NAL ?= { sb_nrp_create_greater_republic = yes }
+}
+
+sb_natal_refuse_trn_zulu_aid = {
+	change_relations = { country = c:ZUL value = -20 }
+	change_relations = { country = c:GBR value = 5 }
+	change_relations = { country = c:NAL value = 15 }
 }
 
 sb_natal_resolve_zulu_arms_appeal = {
@@ -1899,16 +1745,6 @@ sb_natal_interwar_monthly_housekeeping = {
 	sb_natal_schedule_zulu_settlement = yes
 	sb_natal_sync_declined_shepstone_zulu_movement_attraction = yes
 	sb_natal_sync_repealed_shepstone_zulu_movement_attraction = yes
-	if = {
-		limit = {
-			sb_natal_is_british_colony = yes
-			sb_natal_owns_complete_northern_zulu_core = yes
-			sb_natal_has_zulu_national_movement = yes
-			NOT = { has_variable = sb_natal_zulu_restoration_active_var }
-			NOT = { has_variable = sb_natal_zulu_restoration_resolved_var }
-		}
-		sb_natal_ensure_zulu_restoration_agitator = yes
-	}
 	if = {
 		limit = {
 			has_variable = sb_natal_zulu_arms_appeal_sent_var

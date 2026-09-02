@@ -72,6 +72,13 @@ class SuccessorTechnologyInheritanceTests(unittest.TestCase):
         ):
             assert_no_technology_grants(self, source)
 
+    def test_transvaal_founding_sets_zulu_relations_to_minus_thirty(self):
+        transvaal = object_block(
+            "common/scripted_effects/sb_trek_migration.txt",
+            "sb_spawn_transvaal_republic_v2",
+        )
+        self.assertIn("set_relations = { country = c:ZUL value = -30 }", transvaal)
+
     def test_lydenburg_inherits_transvaal_without_a_technology_floor(self):
         lydenburg = object_block(
             "common/scripted_effects/sb_trek_migration.txt",
@@ -101,12 +108,70 @@ class SuccessorTechnologyInheritanceTests(unittest.TestCase):
         self.assertEqual(4, len(active_blocks))
         self.assertTrue(all("origin = root" in block for block in active_blocks))
 
-        assert_no_technology_grants(
-            self,
-            object_block(
-                "common/scripted_effects/sb_bechuanaland_corridor_effects.txt",
-                "sb_bechuanaland_setup_sgo_frontier_republic",
+        setup = object_block(
+            "common/scripted_effects/sb_bechuanaland_corridor_effects.txt",
+            "sb_bechuanaland_setup_sgo_frontier_drive",
+        )
+        assert_no_technology_grants(self, setup)
+        self.assertNotIn("effect_starting_politics_conservative = yes", setup)
+
+    def test_nieuwe_republiek_inherits_transvaals_technology_and_uses_limited_frontier_laws(self):
+        effects_path = "common/scripted_effects/sb_zululand_settlement_effects.txt"
+        creation = creation_blocks(
+            object_block(effects_path, "sb_nrp_create_greater_republic"), "NRP"
+        )
+        setup = object_block(effects_path, "sb_nrp_apply_boer_republic_setup")
+
+        self.assertEqual(1, len(creation))
+        self.assertIn("origin = c:TRN", creation[0])
+        assert_no_technology_grants(self, setup)
+        self.assertIn("set_variable = sb_boer_preserve_inherited_peripheral_laws_var", setup)
+        self.assertIn("sb_apply_boer_republic_spawn_setup = yes", setup)
+        self.assertIn("remove_variable = sb_boer_preserve_inherited_peripheral_laws_var", setup)
+        self.assertNotIn("effect_starting_politics_conservative = yes", setup)
+        for law in (
+            "law_national_supremacy",
+            "law_agrarianism",
+            "law_national_militia",
+        ):
+            self.assertIn(f"activate_law = law_type:{law}", setup)
+        for inherited_law in (
+            "law_elected_bureaucrats",
+            "law_land_based_taxation",
+            "law_homesteading",
+            "law_discrete_inboekstelsel",
+            "law_frontier_colonization",
+        ):
+            self.assertNotIn(inherited_law, setup)
+
+    def test_sgo_uses_the_same_limited_frontier_law_packet(self):
+        setup = object_block(
+            "common/scripted_effects/sb_bechuanaland_corridor_effects.txt",
+            "sb_bechuanaland_setup_sgo_frontier_drive",
+        )
+        helper = object_block(
+            "common/scripted_effects/sb_boer_commandant_effects.txt",
+            "sb_apply_boer_republic_spawn_setup",
+        )
+
+        self.assertIn("set_variable = sb_boer_preserve_inherited_peripheral_laws_var", setup)
+        self.assertIn("remove_variable = sb_boer_preserve_inherited_peripheral_laws_var", setup)
+        for law in (
+            "law_national_supremacy",
+            "law_agrarianism",
+            "law_national_militia",
+        ):
+            self.assertIn(f"activate_law = law_type:{law}", setup)
+        for inherited_law in (
+            "law_discrete_inboekstelsel",
+            "law_frontier_colonization",
+        ):
+            self.assertNotIn(inherited_law, setup)
+        self.assertGreaterEqual(
+            helper.count(
+                "NOT = { has_variable = sb_boer_preserve_inherited_peripheral_laws_var }"
             ),
+            2,
         )
 
     def test_direct_british_natal_inherits_cape_without_a_technology_floor(self):

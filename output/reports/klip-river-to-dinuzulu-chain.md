@@ -241,16 +241,13 @@ Peaceful KLR outcomes do not themselves create the Dinuzulu conflict. Natal must
 
 The mod's explicit later bridge is the Anglo-Zulu pressure route:
 
-1. AI NAL must be a subject, have Civilizing Mission, and be idle.
-2. ZUL must be alive and idle.
-3. NAL issues **Ultimatum to Ulundi** and opens a locked return-state play.
-4. A Zulu victory adds 50 firearms-adoption progress.
-5. A Natal victory resolves the frontier in Natal's favor; British-held conquered territory can also be handed to NAL.
-6. Once NAL owns all nine Zululand provinces and ZUL has no state, the post-annexation settlement becomes ready.
-
-### Current reachability caveat
-
-Both the decision and `sb_anglo_zulu.010` require `is_ai = yes`. The decision's AI chance is zero unless `sb_nal_anglo_zulu_accelerated_var` has been set by the Imperial Confederation route, which then directly schedules the event after 30 days. A player-controlled NAL has no player-facing entry through this decision file. This is a live implementation fact, not an inference from the design notes.
+1. NAL must exist as Britain's colony; NAL may be AI- or player-controlled.
+2. AI GBR and an independent ZUL must both be idle, and GBR must have no truce with ZUL.
+3. The route becomes ready either immediately while the Imperial Confederation scheme is active and a participating Boer country has transit rights through ZUL, or from 1879 after the Confederation scheme has opened or resolved.
+4. AI GBR opens the standard `dp_annex_war` against ZUL without a custom ultimatum event or scripted delay.
+5. A Zulu victory adds 50 firearms-adoption progress.
+6. After British victory, Britain may place British- and AI Cape-held Natal/Zululand territory under NAL; AI Britain takes this handoff decision automatically.
+7. Once NAL owns all nine Zululand provinces and ZUL has no state, the post-annexation settlement becomes ready.
 
 The peaceful Mzinyathi branch also creates a 25-year NAL-ZUL and GBR-ZUL truce, naturally delaying any later aggressive play until the truce or a separate script permits it.
 

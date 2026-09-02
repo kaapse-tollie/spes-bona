@@ -210,15 +210,17 @@ sb_apply_boer_republic_spawn_setup = {
 	sb_ensure_boer_supremacist_movement = yes
 	if = {
 		limit = {
+			NOT = { has_variable = sb_boer_preserve_inherited_peripheral_laws_var }
 			sb_can_use_frontier_colonization = yes
 			NOT = { has_law = law_type:law_frontier_colonization }
 		}
 		activate_law = law_type:law_frontier_colonization
 	}
 		else_if = {
-			limit = {
-				has_law = law_type:law_frontier_colonization
-				NOT = { sb_can_use_frontier_colonization = yes }
+		limit = {
+			NOT = { has_variable = sb_boer_preserve_inherited_peripheral_laws_var }
+			has_law = law_type:law_frontier_colonization
+			NOT = { sb_can_use_frontier_colonization = yes }
 			}
 			activate_law = law_type:law_no_colonial_affairs
 		}
@@ -231,6 +233,7 @@ sb_apply_boer_republic_spawn_setup = {
 	}
 	if = {
 		limit = {
+			NOT = { has_variable = sb_boer_preserve_inherited_peripheral_laws_var }
 			has_law = law_type:law_frontier_colonization
 		}
 		active_law:lawgroup_colonization ?= {

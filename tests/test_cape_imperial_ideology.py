@@ -122,10 +122,10 @@ class CapeImperialIdeologyTests(unittest.TestCase):
         )
         self.assertIn("sb_apply_british_natal_interest_group_identity = yes", bsa)
 
-    def test_imperialist_stances_are_bounded_to_five_law_groups(self):
+    def test_anglo_imperialist_stances_include_abolitionism(self):
         for name in ("ideology_sb_imperialist", "ideology_sb_imperialist_leader"):
             ideology = object_block("common/ideologies/sb_ideologies.txt", name)
-            self.assertEqual(5, ideology.count("lawgroup_"))
+            self.assertEqual(6, ideology.count("lawgroup_"))
             for token in (
                 'icon = "gfx/interface/icons/ideology_icons/royalist.dds"'
                 if name == "ideology_sb_imperialist"
@@ -168,6 +168,24 @@ class CapeImperialIdeologyTests(unittest.TestCase):
                 ),
             )
 
+            slavery = object_block_from_source(ideology, "lawgroup_slavery")
+            self.assertEqual(
+                {
+                    "law_slavery_banned": "strongly_approve",
+                    "law_legacy_slavery": "disapprove",
+                    "law_colonial_slavery": "disapprove",
+                    "law_debt_slavery": "strongly_disapprove",
+                    "law_slave_trade": "strongly_disapprove",
+                },
+                dict(
+                    re.findall(
+                        r"^\s*(law_[a-z0-9_]+)\s*=\s*([a-z_]+)",
+                        slavery,
+                        re.MULTILINE,
+                    )
+                ),
+            )
+
         ideology_sources = "\n".join(
             path.read_text(encoding="utf-8-sig")
             for path in (ROOT / "common/ideologies").glob("*.txt")
@@ -179,6 +197,9 @@ class CapeImperialIdeologyTests(unittest.TestCase):
         )
         self.assertIn("interest_group_leader_weight = { value = 0 }", leader)
         self.assertIn("non_interest_group_leader_weight = { value = 0 }", leader)
+
+        localization = text("localization/english/sb_interest_groups_l_english.yml")
+        self.assertIn('ideology_sb_imperialist:0 "Anglo-Imperialism"', localization)
 
     def test_citizenship_drift_uses_the_new_exclusive_values(self):
         bar = object_block(
@@ -273,6 +294,17 @@ class CapeImperialIdeologyTests(unittest.TestCase):
             "law_national_guard",
         ):
             self.assertNotIn(neutral_law, bar)
+
+    def test_xhosa_frontier_no_longer_drives_cape_settler_balance(self):
+        bar = object_block(
+            "common/scripted_progress_bars/sb_progress_bars.txt",
+            "sb_cape_balance_bar",
+        )
+        localization = text("localization/english/sb_l_english.yml")
+
+        self.assertNotIn("state_trait_sb_xhosa_resistance", bar)
+        self.assertNotIn("sb_cape_xhosa_frontier_pressure", bar)
+        self.assertNotIn("sb_cape_xhosa_frontier_pressure:0", localization)
 
     def test_rhodes_changes_ideology_only_after_bsac_appointment(self):
         rhodes = object_block(

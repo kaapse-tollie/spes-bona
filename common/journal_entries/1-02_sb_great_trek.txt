@@ -59,6 +59,7 @@ je_sb_great_trek = {
 			country_definition = cd:NAL
 			country_definition = cd:KLR
 			country_definition = cd:SGO
+			country_definition = cd:NRP
 		}
 		country_has_primary_culture = cu:boer
 		NOT = { has_variable = sb_natalia_great_trek_disabled_var }
@@ -66,6 +67,7 @@ je_sb_great_trek = {
 			is_subject = no
 			country_definition = cd:KLR
 			country_definition = cd:SGO
+			country_definition = cd:NRP
 		}
 	}
 
@@ -220,6 +222,14 @@ je_sb_great_trek = {
 					set_variable = sb_trek_stage2_pending_var
 					trigger_event = { id = sb_great_trek.045 popup = yes }
 				}
+				else_if = {
+					limit = {
+						country_definition = cd:NRP
+						owns_entire_state_region = STATE_ZULULAND
+					}
+					set_variable = sb_trek_stage2_pending_var
+					trigger_event = { id = sb_great_trek.046 popup = yes }
+				}
 			}
 
 		}
@@ -237,7 +247,12 @@ je_sb_great_trek = {
 			has_variable = sb_natalia_great_trek_disabled_var
 			AND = {
 				is_subject = yes
-				NOT = { country_definition = cd:SGO }
+				NOT = {
+					OR = {
+						country_definition = cd:SGO
+						country_definition = cd:NRP
+					}
+				}
 			}
 		}
 	}

@@ -1,0 +1,557 @@
+﻿namespace = sb_zululand_settlement
+
+sb_zululand_settlement.001 = {
+	type = country_event
+	placement = root
+	title = sb_zululand_settlement.001.t
+	desc = sb_zululand_settlement.001.d
+	flavor = sb_zululand_settlement.001.f
+	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:GBR
+		has_variable = sb_zululand_postwar_handoff_pending_var
+		sb_zululand_under_british_postwar_control = yes
+	}
+
+	option = {
+		name = sb_zululand_settlement.001.a
+		default_option = yes
+		custom_tooltip = sb_zululand_settlement.001.a.tt
+		hidden_effect = { sb_zululand_handoff_to_natal = yes }
+		ai_chance = { base = 1000 }
+	}
+
+	option = {
+		name = sb_zululand_settlement.001.b
+		trigger = { is_player = yes }
+		custom_tooltip = sb_zululand_settlement.001.b.tt
+		hidden_effect = { sb_zululand_apply_direct_british_administration = yes }
+		ai_chance = { base = 0 }
+	}
+}
+
+sb_zululand_settlement.110 = {
+	type = country_event
+	placement = root
+	title = sb_zululand_settlement.110.t
+	desc = {
+		first_valid = {
+			triggered_desc = { trigger = { has_variable = sb_zululand_skirmish_zibhebhu_var } desc = sb_zululand_settlement.110.d.zibhebhu }
+			desc = sb_zululand_settlement.110.d.usuthu
+		}
+	}
+	event_image = { video = "gfx/event_pictures/africa_soldiers_breaking_protest.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_military.dds"
+	duration = 3
+
+	trigger = { country_definition = cd:NAL sb_zululand_chiefdoms_runtime_valid = yes }
+	immediate = {
+		random_list = {
+			50 = { set_variable = sb_zululand_skirmish_zibhebhu_var sb_zululand_shift_balance_zibhebhu_5 = yes }
+			50 = { set_variable = sb_zululand_skirmish_usuthu_var sb_zululand_shift_balance_usuthu_5 = yes }
+		}
+	}
+	option = {
+		name = sb_zululand_settlement.110.a
+		default_option = yes
+		sb_zululand_finish_situation_event = yes
+	}
+}
+
+sb_zululand_settlement.111 = {
+	type = country_event
+	placement = root
+	title = sb_zululand_settlement.111.t
+	desc = sb_zululand_settlement.111.d
+	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_trade.dds"
+	duration = 3
+
+	trigger = { country_definition = cd:NAL sb_zululand_chiefdoms_runtime_valid = yes }
+	option = {
+		name = sb_zululand_settlement.111.a
+		default_option = yes
+		custom_tooltip = sb_zululand_settlement.111.a.tt
+		sb_zululand_apply_full_hut_tax = yes
+		sb_zululand_shift_balance_usuthu_5 = yes
+		sb_zululand_finish_situation_event = yes
+	}
+	option = {
+		name = sb_zululand_settlement.111.b
+		custom_tooltip = sb_zululand_settlement.111.b.tt
+		sb_zululand_relax_hut_tax = yes
+		sb_zululand_shift_balance_zibhebhu_5 = yes
+		sb_zululand_finish_situation_event = yes
+	}
+}
+
+sb_zululand_settlement.112 = {
+	type = country_event
+	placement = root
+	title = sb_zululand_settlement.112.t
+	desc = {
+		first_valid = {
+			triggered_desc = { trigger = { has_variable = sb_zululand_defection_zibhebhu_var } desc = sb_zululand_settlement.112.d.zibhebhu }
+			desc = sb_zululand_settlement.112.d.usuthu
+		}
+	}
+	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+
+	trigger = { country_definition = cd:NAL sb_zululand_chiefdoms_runtime_valid = yes }
+	immediate = {
+		if = {
+			limit = { sb_zululand_defection_favors_zibhebhu = yes }
+			set_variable = sb_zululand_defection_zibhebhu_var
+			sb_zululand_shift_balance_zibhebhu_5 = yes
+		}
+		else = {
+			set_variable = sb_zululand_defection_usuthu_var
+			sb_zululand_shift_balance_usuthu_5 = yes
+		}
+	}
+	option = {
+		name = sb_zululand_settlement.112.a
+		default_option = yes
+		sb_zululand_finish_situation_event = yes
+	}
+}
+
+sb_zululand_settlement.113 = {
+	type = country_event
+	placement = root
+	title = sb_zululand_settlement.113.t
+	desc = {
+		first_valid = {
+			triggered_desc = { trigger = { has_variable = sb_zululand_claimant_killed_var } desc = sb_zululand_settlement.113.d.death }
+			desc = sb_zululand_settlement.113.d.survival
+		}
+	}
+	event_image = { video = "gfx/event_pictures/africa_soldiers_breaking_protest.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:NAL
+		sb_zululand_chiefdoms_runtime_valid = yes
+		has_variable = sb_zululand_claimant_returned_var
+		NOT = { has_variable = sb_zululand_claimant_fate_resolved_var }
+	}
+	immediate = {
+		if = {
+			limit = { is_player = yes }
+			random_list = { 80 = { sb_zululand_claimant_is_killed = yes } 20 = { sb_zululand_claimant_survives = yes } }
+		}
+		else_if = {
+			limit = { sb_frontier_ai_behavior_strict_historical = yes }
+			sb_zululand_claimant_is_killed = yes
+		}
+		else_if = {
+			limit = { sb_frontier_ai_behavior_off = yes }
+			random_list = { 50 = { sb_zululand_claimant_is_killed = yes } 50 = { sb_zululand_claimant_survives = yes } }
+		}
+		else = {
+			random_list = { 80 = { sb_zululand_claimant_is_killed = yes } 20 = { sb_zululand_claimant_survives = yes } }
+		}
+	}
+	option = {
+		name = sb_zululand_settlement.113.a
+		default_option = yes
+		sb_zululand_finish_situation_event = yes
+	}
+}
+
+sb_zululand_settlement.115 = {
+	type = country_event
+	placement = root
+	title = sb_zululand_settlement.115.t
+	desc = sb_zululand_settlement.115.d
+	flavor = sb_zululand_settlement.115.f
+	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_military.dds"
+	duration = 3
+
+	trigger = { country_definition = cd:TRN sb_zululand_trn_is_eligible_participant = yes }
+	option = {
+		name = sb_zululand_settlement.115.a
+		default_option = yes
+		trigger = { any_scope_pop = { is_pop_type = soldiers total_size >= 500 } }
+		custom_tooltip = sb_zululand_settlement.115.a.tt
+		sb_zululand_accept_boer_appeal = yes
+		c:NAL ?= { sb_zululand_finish_situation_event = yes }
+		ai_chance = {
+			base = 0
+			modifier = { trigger = { sb_frontier_ai_behavior_strict_historical = yes } add = 1000 }
+			modifier = { trigger = { sb_frontier_ai_behavior_off = yes } add = 50 }
+			modifier = {
+				trigger = {
+					sb_frontier_ai_behavior_dynamic_historical = yes
+					NOT = { in_default = yes }
+					NOT = { has_modifier = declared_bankruptcy }
+					container:sb_zululand_chiefdoms_state.var:sb_zululand_balance_var < 50
+				}
+				add = 80
+			}
+			modifier = {
+				trigger = {
+					sb_frontier_ai_behavior_dynamic_historical = yes
+					NOT = { in_default = yes }
+					NOT = { has_modifier = declared_bankruptcy }
+					container:sb_zululand_chiefdoms_state.var:sb_zululand_balance_var >= 50
+				}
+				add = 60
+			}
+		}
+	}
+	option = {
+		name = sb_zululand_settlement.115.b
+		custom_tooltip = sb_zululand_settlement.115.b.tt
+		c:NAL ?= { sb_zululand_finish_situation_event = yes }
+		ai_chance = {
+			base = 0
+			modifier = { trigger = { sb_frontier_ai_behavior_off = yes } add = 50 }
+			modifier = {
+				trigger = {
+					OR = { in_default = yes has_modifier = declared_bankruptcy }
+					sb_frontier_ai_behavior_dynamic_historical = yes
+				}
+				add = 1000
+			}
+			modifier = {
+				trigger = {
+					sb_frontier_ai_behavior_dynamic_historical = yes
+					NOT = { in_default = yes }
+					NOT = { has_modifier = declared_bankruptcy }
+					container:sb_zululand_chiefdoms_state.var:sb_zululand_balance_var < 50
+				}
+				add = 20
+			}
+			modifier = {
+				trigger = {
+					sb_frontier_ai_behavior_dynamic_historical = yes
+					NOT = { in_default = yes }
+					NOT = { has_modifier = declared_bankruptcy }
+					container:sb_zululand_chiefdoms_state.var:sb_zululand_balance_var >= 50
+				}
+				add = 40
+			}
+		}
+	}
+}
+
+sb_zululand_settlement.120 = {
+	type = country_event
+	placement = root
+	title = sb_zululand_settlement.120.t
+	desc = sb_zululand_settlement.120.d
+	flavor = sb_zululand_settlement.120.f
+	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+	trigger = { country_definition = cd:NAL sb_zululand_chiefdoms_runtime_valid = yes }
+	option = {
+		name = sb_zululand_settlement.120.a
+		default_option = yes
+		custom_tooltip = sb_zululand_settlement.120.a.tt
+		hidden_effect = { sb_zululand_apply_zibhebhu_victory = yes }
+	}
+}
+
+sb_zululand_settlement.121 = {
+	type = country_event
+	placement = root
+	title = sb_zululand_settlement.121.t
+	desc = sb_zululand_settlement.121.d
+	flavor = sb_zululand_settlement.121.f
+	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+	trigger = { country_definition = cd:NAL sb_zululand_chiefdoms_runtime_valid = yes }
+	option = {
+		name = sb_zululand_settlement.121.a
+		default_option = yes
+		custom_tooltip = sb_zululand_settlement.121.a.tt
+		hidden_effect = { sb_zululand_apply_crown_victory = yes }
+	}
+}
+
+sb_zululand_settlement.130 = {
+	type = country_event
+	placement = root
+	title = sb_zululand_settlement.130.t
+	desc = sb_zululand_settlement.130.d
+	event_image = { video = "gfx/event_pictures/africa_construction_colony.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+	trigger = { country_definition = cd:NAL has_variable = sb_zululand_incorporation_complete_pending_var }
+	option = {
+		name = sb_zululand_settlement.130.a
+		default_option = yes
+		remove_variable = sb_zululand_incorporation_complete_pending_var
+		set_variable = sb_zululand_incorporation_complete_var
+		sb_zululand_remove_hut_tax = yes
+		s:STATE_ZULULAND.region_state:NAL ?= {
+			if = { limit = { has_modifier = sb_zululand_chiefdom_reserves } remove_modifier = sb_zululand_chiefdom_reserves }
+			if = { limit = { has_modifier = sb_zululand_zibhebhu_incorporation_legacy } remove_modifier = sb_zululand_zibhebhu_incorporation_legacy }
+			if = { limit = { has_modifier = sb_zululand_crown_incorporation_legacy } remove_modifier = sb_zululand_crown_incorporation_legacy }
+		}
+	}
+}
+
+sb_zululand_settlement.200 = {
+	type = country_event
+	placement = root
+	title = sb_zululand_settlement.200.t
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { c:NRP ?= { has_variable = sb_nrp_direct_annexation_rebellion_var } }
+				desc = sb_zululand_settlement.200.d.rebellion
+			}
+			desc = sb_zululand_settlement.200.d
+		}
+	}
+	flavor = sb_zululand_settlement.200.f
+	event_image = { video = "gfx/event_pictures/africa_construction_colony.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+	trigger = { country_definition = cd:TRN is_player = yes c:NRP ?= { is_country_alive = yes } }
+	option = { name = sb_zululand_settlement.200.a default_option = yes }
+	option = { name = sb_zululand_settlement.200.b play_as = c:NRP }
+}
+
+# The on_created callback is the fast path. This independent dispatch also
+# reaches the finalizer when creation fails, so its cleanup branch is reachable.
+sb_zululand_settlement.201 = {
+	type = country_event
+	hidden = yes
+	trigger = { country_definition = cd:NAL has_variable = sb_nrp_setup_pending_var }
+	immediate = { sb_nrp_finalize_greater_republic = yes }
+}
+
+sb_zululand_settlement.209 = {
+	type = country_event
+	hidden = yes
+	trigger = {
+		country_definition = cd:NRP
+		has_variable = sb_nrp_boundary_pending_var
+	}
+	immediate = {
+		if = { limit = { has_variable = sb_nrp_boundary_not_before_var } remove_variable = sb_nrp_boundary_not_before_var }
+		sb_nrp_open_boundary_demand = yes
+	}
+}
+
+sb_zululand_settlement.210 = {
+	type = country_event
+	placement = root
+	title = sb_zululand_settlement.210.t
+	desc = sb_zululand_settlement.210.d
+	flavor = sb_zululand_settlement.210.f
+	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+	trigger = {
+		country_definition = cd:NRP
+		has_variable = sb_nrp_boundary_pending_var
+		has_variable = sb_nrp_boundary_initiator_scope
+		sb_nrp_is_greater_republic = yes
+		exists = s:STATE_ZULULAND.region_state:ZUL
+		c:ZUL ?= { is_country_alive = yes }
+	}
+	immediate = {
+		sb_nrp_roll_boundary_response = yes
+	}
+	option = {
+		name = sb_zululand_settlement.210.a
+		default_option = yes
+		custom_tooltip = sb_zululand_settlement.210.a.tt
+		hidden_effect = { sb_nrp_notify_natal_of_boundary_cutback = yes }
+		ai_chance = {
+			base = 0
+			modifier = { trigger = { NOT = { has_variable = sb_nrp_should_refuse_boundary_var } } add = 1000 }
+		}
+	}
+	option = {
+		name = sb_zululand_settlement.210.b
+		custom_tooltip = sb_zululand_settlement.210.b.tt
+		hidden_effect = { sb_nrp_refuse_boundary_demand = yes }
+		ai_chance = {
+			base = 0
+			modifier = { trigger = { has_variable = sb_nrp_should_refuse_boundary_var } add = 1000 }
+		}
+	}
+}
+
+sb_zululand_settlement.211 = {
+	type = country_event
+	placement = root
+	title = sb_zululand_settlement.211.t
+	desc = sb_zululand_settlement.211.d
+	flavor = sb_zululand_settlement.211.f
+	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_military.dds"
+	duration = 3
+	trigger = { country_definition = cd:TRN is_subject = no c:NRP ?= { is_country_alive = yes has_variable = sb_nrp_boundary_refused_var } }
+	option = {
+		name = sb_zululand_settlement.211.a
+		default_option = yes
+		custom_tooltip = sb_zululand_settlement.211.a.tt
+		hidden_effect = { sb_nrp_accept_defence_request = yes }
+		ai_chance = {
+			base = 0
+			modifier = { trigger = { has_variable = sb_nrp_shared_refusal_commitment_var } add = 1000 }
+		}
+	}
+	option = {
+		name = sb_zululand_settlement.211.b
+		custom_tooltip = sb_zululand_settlement.211.b.tt
+		hidden_effect = { sb_nrp_decline_defence_request = yes }
+		ai_chance = {
+			base = 0
+			modifier = { trigger = { NOT = { has_variable = sb_nrp_shared_refusal_commitment_var } } add = 1000 }
+		}
+	}
+}
+
+sb_zululand_settlement.230 = {
+	type = country_event
+	placement = root
+	title = sb_zululand_settlement.230.t
+	desc = sb_zululand_settlement.230.d
+	flavor = sb_zululand_settlement.230.f
+	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+	trigger = {
+		country_definition = cd:NRP
+		has_variable = sb_nrp_boundary_pending_var
+		has_variable = sb_nrp_boundary_initiator_scope
+		has_variable = sb_nrp_direct_annexation_rebellion_var
+		sb_nrp_is_greater_republic = yes
+		c:NAL ?= { is_country_alive = yes }
+		NOT = { c:ZUL ?= { is_country_alive = yes } }
+	}
+	immediate = { sb_nrp_roll_boundary_response = yes }
+	option = {
+		name = sb_zululand_settlement.230.a
+		default_option = yes
+		custom_tooltip = sb_zululand_settlement.230.a.tt
+		hidden_effect = { sb_nrp_notify_natal_of_boundary_cutback = yes }
+		ai_chance = {
+			base = 0
+			modifier = { trigger = { NOT = { has_variable = sb_nrp_should_refuse_boundary_var } } add = 1000 }
+		}
+	}
+	option = {
+		name = sb_zululand_settlement.230.b
+		custom_tooltip = sb_zululand_settlement.230.b.tt
+		hidden_effect = { sb_nrp_refuse_boundary_demand = yes }
+		ai_chance = {
+			base = 0
+			modifier = { trigger = { has_variable = sb_nrp_should_refuse_boundary_var } add = 1000 }
+		}
+	}
+}
+
+sb_zululand_settlement.231 = {
+	type = country_event
+	placement = root
+	title = sb_zululand_settlement.231.t
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { c:NRP ?= { has_variable = sb_nrp_direct_annexation_rebellion_var } }
+				desc = sb_zululand_settlement.231.d_direct
+			}
+			triggered_desc = {
+				trigger = { always = yes }
+				desc = sb_zululand_settlement.231.d_crown
+			}
+		}
+	}
+	flavor = sb_zululand_settlement.231.f
+	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+	trigger = {
+		country_definition = cd:NAL
+		c:NRP ?= {
+			is_country_alive = yes
+			has_variable = sb_nrp_boundary_cutback_notification_pending_var
+			sb_nrp_is_greater_republic = yes
+		}
+	}
+	immediate = {
+		c:NRP = { sb_nrp_accept_boundary_cutback = yes }
+	}
+	option = {
+		name = sb_zululand_settlement.231.a
+		default_option = yes
+	}
+}
+
+sb_zululand_settlement.220 = {
+	type = country_event
+	placement = root
+	title = sb_zululand_settlement.220.t
+	desc = sb_zululand_settlement.220.d
+	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+	trigger = { country_definition = cd:NRP has_variable = sb_nrp_union_petition_pending_var sb_nrp_is_reduced_republic = yes }
+	option = {
+		name = sb_zululand_settlement.220.a
+		default_option = yes
+		remove_variable = sb_nrp_union_petition_pending_var
+		if = {
+			limit = { c:TRN ?= { is_country_alive = yes } }
+			c:TRN = { trigger_event = { id = sb_zululand_settlement.221 days = 1 popup = yes } }
+		}
+		else = { set_variable = sb_nrp_union_petition_lapsed_var }
+	}
+}
+
+sb_zululand_settlement.221 = {
+	type = country_event
+	placement = root
+	title = sb_zululand_settlement.221.t
+	desc = sb_zululand_settlement.221.d
+	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+	trigger = { country_definition = cd:TRN c:NRP ?= { is_country_alive = yes sb_nrp_is_reduced_republic = yes } }
+	option = {
+		name = sb_zululand_settlement.221.a
+		default_option = yes
+		custom_tooltip = sb_zululand_settlement.221.a.tt
+		annex = c:NRP
+		ai_chance = { base = 100 }
+	}
+	option = {
+		name = sb_zululand_settlement.221.b
+		trigger = { is_player = yes }
+		custom_tooltip = sb_zululand_settlement.221.b.tt
+		ai_chance = { base = 0 }
+	}
+}

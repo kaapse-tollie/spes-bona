@@ -116,6 +116,9 @@ class NatalZululandStateSplitTests(unittest.TestCase):
         self.assertEqual(
             {"x279045", "xBBCA32"}, validate.object_values(natal, "prime_land")
         )
+        self.assertEqual(
+            {"xE882CE"}, validate.object_values(zululand, "prime_land")
+        )
         self.assertEqual(1, natal.count("naval_exit_id = 3106"))
         self.assertEqual(1, zululand.count("naval_exit_id = 3106"))
 
@@ -220,6 +223,14 @@ class NatalZululandStateSplitTests(unittest.TestCase):
             self.assertEqual([], duplicates)
             self.assertIn(257, instances, kind)
             self.assertIn(1213, instances, kind)
+
+    def test_vryheid_border_has_no_stray_old_province_pixel(self):
+        # The reviewed boundary redraw once left a one-pixel xBE6FEE island at
+        # this point. Lock the corrected continuous xE882CE side of the border.
+        _, _, _, samples = validate.decode_rgb_png(
+            ROOT / "map_data/provinces.png", {(4813, 2743)}
+        )
+        self.assertEqual("xE882CE", samples[(4813, 2743)])
 
     def test_spline_anchor_reindex_is_semantically_locked_and_pinned(self):
         spline_path = "gfx/map/spline_network/spline_network.splnet"
@@ -455,6 +466,11 @@ class NatalZululandStateSplitTests(unittest.TestCase):
         self.assertIn("STATE_ZULULAND_state_name_assign = yes", dispatch)
         for key in ("STATE_NATAL_zulu", "STATE_NATAL_boer", "STATE_NATAL_british"):
             self.assertIn(key, natal_names)
+        self.assertIn("sb_natal_is_british_colony = yes", natal_names)
+        self.assertLess(
+            natal_names.index("sb_natal_is_british_colony = yes"),
+            natal_names.index("has_discrimination_trait = language_dutch"),
+        )
         for key in (
             "STATE_ZULULAND_zulu",
             "STATE_ZULULAND_boer",

@@ -46,6 +46,7 @@ Closed FA findings are recorded in the completed register. What remains:
 | ID | State | What closes it |
 |---|---|---|
 | `FA-24` | Awaiting DP decision | MTB territory trim. Research delivered: `../References/mtb_territory_proposal.md` (tiered proposal; preserves every Vegkop event input province). |
+| `FA-26R` | Reopened by playtest | Kimberley discovery can remain blocked long after the historical discovery window when WBL is annexed before discovery. In the 1879-01-01 ORA playtest save, Griqualand West had no diamond mine, potential, or discovery marker because ORA lacked both `mechanical_tools` and `dynamite`, while CAP lacked the currently required `dynamite`. Decide and implement a historical-date fallback (recommended within 1867-68) while retaining the event-led 1 + 19 package; cover the late, post-WBL-annexation case with a static test and fresh-start runtime check. |
 
 
 > **FA-09 update (DP, 2026-08-21):** the dead `c:SAF ?= { ... }` relations block (which contained the stray `c:TRN` rows and the duplicated SWZ pair) has been commented out in `common/history/diplomacy/00_relations.txt`; inventory hash regenerated. The manifest wording still says "removes only ORA→TRN" and should be reworded at the next touch of that file.
@@ -64,6 +65,9 @@ Closed FA findings are recorded in the completed register. What remains:
   ABY-on-emergence.
 - **KLR display name:** "Klip River County" vs historiographic "Klip River Republic" was
   reviewed and left unchanged unless DP asks (broad surface: loc, flags, file names, tests).
+- **Cape colonization of Namaqualand:** playtesting has occasionally shown Cape Colony
+  colonizing Namaqualand without the expected story flag. Reproduce the route and audit
+  every colonization-rights grant before changing the gate.
 
 ## Validation Contract
 

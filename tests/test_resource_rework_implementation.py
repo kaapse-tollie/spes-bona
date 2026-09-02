@@ -10,6 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 STATE_PATH = ROOT / "map_data/state_regions/04_subsaharan_africa.txt"
 GATE_PATH = ROOT / "common/scripted_effects/sb_resource_technology_gates_effects.txt"
 ON_ACTION_PATH = ROOT / "common/on_actions/sb_mineral_discoveries_on_actions.txt"
+DISCOVERY_TRIGGER_PATH = ROOT / "common/scripted_triggers/sb_mineral_discoveries_triggers.txt"
 KIMBERLEY_PATH = ROOT / "common/scripted_effects/sb_griqualand_west_effects.txt"
 MESSAGE_PATH = ROOT / "common/messages/sb_resource_gate_messages.txt"
 GUIDE_PATH = ROOT / "Docs/resource_update_guide.md"
@@ -197,6 +198,15 @@ class ResourceReworkImplementationTests(unittest.TestCase):
             self.assertRegex(block, r"\bnotification_type\s*=\s*toast\b")
             self.assertRegex(block, r"\bcolor\s*=\s*good\b")
             self.assertRegex(block, r'\btexture\s*=\s*"gfx/interface/icons/notification_icons/resource\.dds"')
+
+    def test_oranje_can_open_kimberley_at_nitroglycerin(self):
+        source = DISCOVERY_TRIGGER_PATH.read_text(encoding="utf-8-sig")
+        trigger = object_block(source, "sb_can_discover_kimberley_diamonds")
+        match = re.search(r"\bc:ORA\s+\?=\s*\{", trigger)
+        self.assertIsNotNone(match)
+        oranje = validate.extract_braced(trigger, match.start())
+        self.assertIn("has_technology_researched = nitroglycerin", oranje)
+        self.assertNotIn("has_technology_researched = dynamite", oranje)
 
     def test_crop_slot_design_changes_only_the_two_approved_grains(self):
         griqualand = self.states["STATE_GRIQUALAND_WEST"]

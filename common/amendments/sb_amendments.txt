@@ -228,10 +228,11 @@ amendment_sb_shepstone_system = {
 	}
 
 	modifier = {
-		building_subsistence_output_mult = 0.30 # +5
+		tax_land_add = 0.03
+		building_subsistence_output_mult = 0.30
 		building_minimum_incorporated_subsistence_employment_add = 0.80
 		state_minimum_incorporated_subsistence_arable_land_add = 0.15
-		state_migration_pull_mult = -0.35 # increased +10, still too much Anglo migration
+		state_migration_pull_mult = -0.35
 	}
 
 	possible = {
@@ -246,6 +247,10 @@ amendment_sb_shepstone_system = {
 	ai_will_revoke = { always = no }
 
 	can_repeal = {
+		custom_tooltip = {
+			text = sb_natal_shepstone_repeal_lock_tt
+			NOT = { has_variable = sb_natal_shepstone_repeal_locked_var }
+		}
 		legitimacy >= legitimacy_to_repeal_amendment
 	}
 
@@ -348,56 +353,4 @@ amendment_sb_natal_indian_civic_rights = {
 	}
 
 	amendment_activism_multiplier = 0.8
-}
-
-amendment_sb_zulu_chiefdom_settlement = {
-
-	parent = law_sb_imperial_administration
-
-	allowed_laws = {
-		law_sb_imperial_administration
-	}
-
-	possible = {
-		country_definition = cd:NAL
-		has_variable = sb_natal_zulu_chiefdom_settlement_var
-	}
-
-	would_sponsor = {
-		is_interest_group_type = ig_armed_forces
-	}
-
-	on_activate = {
-		set_variable = sb_natal_zulu_chiefdom_bureaucracy_guard_var
-		set_variable = {
-			name = sb_natal_zulu_chiefdom_dismantle_cooldown_var
-			days = 1825
-		}
-		s:STATE_ZULULAND.region_state:NAL ?= {
-			add_modifier = { name = sb_zulu_chiefdom_administration }
-		}
-	}
-
-	on_deactivate = {
-		if = {
-			limit = { has_variable = sb_natal_zulu_chiefdom_bureaucracy_guard_var }
-			remove_variable = sb_natal_zulu_chiefdom_bureaucracy_guard_var
-		}
-		if = {
-			limit = { has_variable = sb_natal_zulu_chiefdom_dismantle_cooldown_var }
-			remove_variable = sb_natal_zulu_chiefdom_dismantle_cooldown_var
-		}
-		s:STATE_ZULULAND.region_state:NAL ?= {
-			if = {
-				limit = { has_modifier = sb_zulu_chiefdom_administration }
-				remove_modifier = sb_zulu_chiefdom_administration
-			}
-		}
-	}
-
-	ai_will_revoke = { always = no }
-
-	can_repeal = { always = no }
-
-	amendment_activism_multiplier = 0.5
 }

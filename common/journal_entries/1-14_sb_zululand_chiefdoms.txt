@@ -1,0 +1,64 @@
+﻿# ### TO REVIEW ###
+je_sb_zululand_chiefdoms = {
+	group = je_group_global_international_situations
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	scripted_progress_bar = sb_zululand_chiefdom_balance_bar
+	scripted_progress_bar = sb_zululand_boer_commitment_bar
+
+	widget = {
+		gui = "gui/com_journal_injects/situation_widgets.gui"
+		name = "widget_com_international_situation_illustration"
+		container = "custom_widget_container_je_icon"
+	}
+	widget = {
+		gui = "gui/com_journal_injects/injects.gui"
+		name = "com_journal_entry_progress_bars"
+		container = "com_custom_widget_container_scripted_progress_bars"
+	}
+	widget = {
+		gui = "gui/com_journal_injects/com_shared_widgets.gui"
+		name = "com_journal_scripted_buttons"
+		container = "custom_widget_container_2"
+	}
+
+	immediate = {
+		scope:journal_entry = {
+			com_set_situation_illustration_background_effect = { texture = com_situation_background_africa_construction_colony }
+			sb_zululand_project_chiefdoms_journal = yes
+		}
+	}
+
+	should_be_involved = { sb_zululand_chiefdoms_involved_actor = yes }
+	should_show_when_not_involved = { always = no }
+	is_shown_when_inactive = { always = no }
+	possible = { sb_zululand_chiefdoms_situation_active = yes }
+
+	scripted_button = je_sb_zululand_increase_policing_button
+	scripted_button = je_sb_zululand_end_policing_button
+	scripted_button = je_sb_zululand_unload_refugees_button
+	scripted_button = je_sb_zululand_return_claimant_button
+	scripted_button = je_sb_zululand_sponsor_usuthu_button
+	scripted_button = je_sb_zululand_end_usuthu_sponsorship_button
+	scripted_button = je_sb_zululand_sanction_volunteers_button
+	scripted_button = je_sb_zululand_end_volunteers_button
+
+	status_desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { container:sb_zululand_chiefdoms_state.var:sb_zululand_boer_commitment_var >= 100 }
+				desc = je_sb_zululand_chiefdoms_status_committed
+			}
+			triggered_desc = {
+				trigger = { container:sb_zululand_chiefdoms_state.var:sb_zululand_balance_var > 50 }
+				desc = je_sb_zululand_chiefdoms_status_zibhebhu
+			}
+			desc = je_sb_zululand_chiefdoms_status_usuthu
+		}
+	}
+
+	invalid = { NOT = { sb_zululand_chiefdoms_situation_active = yes } }
+	weight = 1000
+	should_be_pinned_by_default_involved = yes
+	should_be_pinned_by_default_uninvolved_or_context = yes
+	transferable = no
+}

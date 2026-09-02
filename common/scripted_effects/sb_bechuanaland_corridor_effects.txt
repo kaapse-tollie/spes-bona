@@ -681,6 +681,7 @@ sb_bechuanaland_clear_pink_map_terminal_state = {
 sb_bechuanaland_record_invalid_terminal_outcome = {
 	sb_bechuanaland_clear_pink_map_terminal_state = yes
 	set_global_variable = sb_bechuanaland_terminal_outcome_invalid_global_var
+	sb_bechuanaland_clear_arid_corridor_modifier = yes
 }
 
 sb_bechuanaland_record_british_terminal_outcome = {
@@ -746,10 +747,36 @@ sb_bechuanaland_skip_corridor_crisis = {
 	if = { limit = { has_global_variable = sb_bechuanaland_corridor_open_global_var } remove_global_variable = sb_bechuanaland_corridor_open_global_var }
 	sb_bechuanaland_record_invalid_terminal_outcome = yes
 	set_global_variable = sb_bechuanaland_corridor_resolved_global_var
-	sb_bechuanaland_clear_arid_corridor_modifier = yes
 	sb_bechuanaland_cleanup_corridor_crisis = yes
 }
 
+sb_bechuanaland_grant_british_botswana_claim_after_swa_mission = {
+	if = {
+		limit = {
+			NOT = { has_global_variable = sb_bechuanaland_corridor_open_global_var }
+			NOT = { has_global_variable = sb_bechuanaland_corridor_resolved_global_var }
+			c:CAP ?= {
+				is_country_alive = yes
+				is_subject_of = c:GBR
+			}
+			c:GBR ?= {
+				is_country_alive = yes
+				NOT = { has_claim = s:STATE_BOTSWANA }
+			}
+			any_country = {
+				has_variable = sb_nam_consolidation_resolved_var
+			}
+		}
+		s:STATE_BOTSWANA = { add_claim = c:GBR }
+	}
+}
+
+sb_bechuanaland_remove_british_botswana_claim = {
+	if = {
+		limit = { c:GBR ?= { has_claim = s:STATE_BOTSWANA } }
+		s:STATE_BOTSWANA = { remove_claim = c:GBR }
+	}
+}
 
 # Root-agnostic terminal routing for prerequisites lost after the corridor opens.
 sb_bechuanaland_handle_post_open_lifecycle = {
@@ -981,23 +1008,25 @@ sb_bechuanaland_install_sgo_historical_ruler = {
 	}
 }
 
-sb_bechuanaland_setup_sgo_frontier_republic = {
+sb_bechuanaland_setup_sgo_frontier_drive = {
 	c:SGO ?= {
 		if = {
-			limit = { has_modifier = sb_trek_frontier_drive }
-			remove_modifier = sb_trek_frontier_drive
+			limit = { NOT = { has_modifier = sb_trek_frontier_drive } }
+			add_modifier = {
+				name = sb_trek_frontier_drive
+				months = 120
+			}
 		}
 		set_country_type = unrecognized
 		set_variable = sb_commandant_general_visible_var
 		set_variable = sb_early_republic_var
 		set_variable = sb_sgo_scripted_frontier_setup_var
+		set_variable = sb_boer_preserve_inherited_peripheral_laws_var
 		sb_apply_boer_republic_spawn_setup = yes
-		activate_law = law_type:law_discrete_inboekstelsel
-		activate_law = law_type:law_frontier_colonization
-		add_modifier = {
-			name = sb_trek_frontier_republic
-			months = 120
-		}
+		remove_variable = sb_boer_preserve_inherited_peripheral_laws_var
+		activate_law = law_type:law_national_supremacy
+		activate_law = law_type:law_agrarianism
+		activate_law = law_type:law_national_militia
 		if = {
 			limit = { NOT = { has_journal_entry = je_sb_great_trek } }
 			add_journal_entry = { type = je_sb_great_trek }
@@ -1186,7 +1215,7 @@ sb_bechuanaland_create_sgo_beachhead_for_root = {
 	}
 	if = {
 		limit = { c:SGO ?= { is_country_alive = yes } }
-		sb_bechuanaland_setup_sgo_frontier_republic = yes
+		sb_bechuanaland_setup_sgo_frontier_drive = yes
 		sb_bechuanaland_move_cape_boers_to_sgo = yes
 		sb_bechuanaland_ensure_sgo_population_floor = yes
 		sb_bechuanaland_ensure_sgo_subject_of_root = yes
@@ -3830,6 +3859,7 @@ sb_bechuanaland_cleanup_corridor_crisis = {
 		sb_bechuanaland_clear_pending_crisis_flags = yes
 		sb_bechuanaland_clear_influence_source_cache = yes
 	}
+	sb_bechuanaland_remove_british_botswana_claim = yes
 	if = { limit = { has_global_variable = sb_bechuanaland_corridor_watch_global_var } remove_global_variable = sb_bechuanaland_corridor_watch_global_var }
 	if = { limit = { has_global_variable = sb_bechuanaland_corridor_open_global_var } remove_global_variable = sb_bechuanaland_corridor_open_global_var }
 	every_country = {

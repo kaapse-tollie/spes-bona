@@ -1106,7 +1106,7 @@ sb_imperial_confederation_start_sea_access_warning_if_needed = {
 		}
 		set_variable = {
 			name = sb_imperial_confederation_sea_access_warning_var
-			months = 36
+			months = 60
 		}
 		set_variable = sb_imperial_confederation_sea_access_warned_var
 		if = {
@@ -1295,7 +1295,7 @@ sb_imperial_confederation_update_sea_access_counter = {
 			set_global_variable = { name = sb_imperial_confederation_sea_access_months_var value = 0 }
 		}
 		if = {
-			limit = { global_var:sb_imperial_confederation_sea_access_months_var < 36 }
+			limit = { global_var:sb_imperial_confederation_sea_access_months_var < 60 }
 			change_global_variable = { name = sb_imperial_confederation_sea_access_months_var add = 1 }
 		}
 	}
@@ -1480,29 +1480,67 @@ sb_eastern_sphere_monthly_housekeeping = {
 			}
 			trigger_event = { id = sb_imperial_confederation.030 days = 1 popup = yes }
 		}
-		if = {
-			limit = {
-				NOT = { has_variable = sb_nal_anglo_zulu_accelerated_var }
-				c:NAL ?= {
-					is_country_alive = yes
-					is_ai = yes
-					is_subject = yes
+	}
+	if = {
+		limit = {
+			country_definition = cd:GBR
+			is_ai = yes
+			aggressive_diplomatic_plays_permitted = yes
+			NOT = { has_truce_with = c:ZUL }
+			NOT = { has_variable = sb_anglo_zulu_pressure_active_var }
+			NOT = { has_variable = sb_anglo_zulu_pressure_resolved_var }
+			c:NAL ?= {
+				is_country_alive = yes
+				is_subject_of = c:GBR
+				has_variable = sb_natalia_british_colony_resolved_var
+				NOT = { has_variable = sb_anglo_zulu_pressure_active_var }
+				NOT = { has_variable = sb_anglo_zulu_pressure_resolved_var }
+			}
+			c:ZUL ?= {
+				is_country_alive = yes
+				is_subject = no
+				is_at_war = no
+				is_active_in_diplomatic_play = no
+				NOT = { is_country_type = decentralized }
+				NOT = { is_in_same_power_bloc = c:GBR }
+				NOT = { has_variable = sb_anglo_zulu_pressure_active_var }
+				NOT = { has_variable = sb_anglo_zulu_pressure_resolved_var }
+			}
+			s:STATE_ZULULAND = {
+				any_scope_state = { owner = c:ZUL }
+			}
+			OR = {
+				AND = {
+					sb_imperial_confederation_scheme_is_active = yes
+					any_country = {
+						sb_is_imperial_confederation_participant = yes
+						country_has_primary_culture = cu:boer
+						save_temporary_scope_as = sb_anglo_zulu_transit_receiver_scope
+						any_scope_treaty = {
+							binds = c:ZUL
+							any_scope_article = {
+								has_type = transit_rights
+								source_country = c:ZUL
+								target_country = scope:sb_anglo_zulu_transit_receiver_scope
+							}
+						}
+					}
 				}
-				c:ZUL ?= {
-					is_country_alive = yes
-					NOT = { is_in_same_power_bloc = c:GBR }
-				}
-				any_country = {
-					sb_is_imperial_confederation_participant = yes
-					country_has_primary_culture = cu:boer
-					any_scope_treaty = {
-						binds = c:ZUL
-						any_scope_article = { has_type = transit_rights }
+				AND = {
+					game_date >= 1879.1.1
+					OR = {
+						has_global_variable = sb_imperial_confederation_scheme_unlocked_var
+						has_global_variable = sb_imperial_confederation_scheme_resolved_var
 					}
 				}
 			}
-			set_variable = sb_nal_anglo_zulu_accelerated_var
-			trigger_event = { id = sb_imperial_confederation.040 days = 1 popup = yes }
+		}
+		set_variable = sb_anglo_zulu_pressure_active_var
+		c:NAL ?= { set_variable = sb_anglo_zulu_pressure_active_var }
+		c:ZUL ?= { set_variable = sb_anglo_zulu_pressure_active_var }
+		create_diplomatic_play = {
+			type = dp_annex_war
+			target_country = c:ZUL
 		}
 	}
 }

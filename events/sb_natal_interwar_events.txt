@@ -142,29 +142,6 @@ sb_natal_interwar.010 = {
 	}
 }
 
-sb_natal_interwar.020 = {
-	type = country_event
-	placement = root
-
-	title = sb_natal_interwar.020.t
-	desc = sb_natal_interwar.020.d
-
-	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
-	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-	icon = "gfx/interface/icons/event_icons/event_map.dds"
-	duration = 3
-
-	trigger = {
-		country_definition = cd:NAL
-		has_variable = sb_natal_zulu_chiefdom_bureaucracy_guard_var
-	}
-
-	option = {
-		name = sb_natal_interwar.020.a
-		default_option = yes
-	}
-}
-
 sb_natal_interwar.030 = {
 	type = country_event
 	placement = root
@@ -173,7 +150,7 @@ sb_natal_interwar.030 = {
 	desc = sb_natal_interwar.030.d
 	flavor = sb_natal_interwar.030.f
 
-	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+	event_image = { video = "gfx/event_pictures/ep1_transfer_of_authority.bk2" }
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
 	icon = "gfx/interface/icons/event_icons/event_map.dds"
 	duration = 3
@@ -191,11 +168,8 @@ sb_natal_interwar.030 = {
 
 	option = {
 		name = sb_natal_interwar.030.a
-		add_radicals = { value = 0.25 culture = cu:zulu }
-		hidden_effect = {
-			set_variable = sb_natal_zulu_settlement_resolved_var
-			sb_natal_create_zulu_national_movement = yes
-		}
+		custom_tooltip = sb_natal_interwar.030.a.tt
+		hidden_effect = { sb_zululand_choose_direct_natal_administration = yes }
 		ai_chance = {
 			base = 20
 			modifier = {
@@ -208,12 +182,8 @@ sb_natal_interwar.030 = {
 	option = {
 		name = sb_natal_interwar.030.b
 		default_option = yes
-		add_radicals = { value = -0.05 culture = cu:zulu }
-		hidden_effect = {
-			set_variable = sb_natal_zulu_settlement_resolved_var
-			sb_natal_apply_zulu_chiefdom_settlement = yes
-			sb_natal_create_zulu_national_movement = yes
-		}
+		custom_tooltip = sb_natal_interwar.030.b.tt
+		hidden_effect = { sb_zululand_choose_thirteen_chiefdoms = yes }
 		ai_chance = {
 			base = 60
 			modifier = {
@@ -225,11 +195,8 @@ sb_natal_interwar.030 = {
 
 	option = {
 		name = sb_natal_interwar.030.c
-		hidden_effect = {
-			set_variable = sb_natal_zulu_settlement_resolved_var
-			set_variable = sb_natal_gradual_zulu_restoration_var
-			sb_natal_restore_zululand_as_puppet = yes
-		}
+		custom_tooltip = sb_natal_interwar.030.c.tt
+		hidden_effect = { sb_zululand_choose_subordinate_crown = yes }
 		ai_chance = {
 			base = 20
 			modifier = {
@@ -240,31 +207,20 @@ sb_natal_interwar.030 = {
 	}
 }
 
-sb_natal_interwar.031 = {
-	type = country_event
-	hidden = yes
-
-	trigger = {
-		country_definition = cd:NAL
-		has_variable = sb_natal_restored_zululand_setup_pending_var
-	}
-
-	immediate = {
-		sb_natal_finalize_restored_zululand_as_puppet = yes
-	}
-}
-
-sb_natal_interwar.035 = {
+# Apply the restoration package from an event option only after the engine has
+# finished creating the secession country. Applying it directly in
+# on_secession_start leaves the inherited colonial government in place.
+sb_natal_interwar.039 = {
 	type = country_event
 	placement = root
 
-	title = sb_natal_interwar.035.t
-	desc = sb_natal_interwar.035.d
-	flavor = sb_natal_interwar.035.f
+	title = sb_natal_interwar.039.t
+	desc = sb_natal_interwar.039.d
+	flavor = sb_natal_interwar.039.f
 
-	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+	event_image = { video = "gfx/event_pictures/africa_leader_arguing.bk2" }
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	icon = "gfx/interface/icons/event_icons/event_portrait.dds"
 	duration = 3
 
 	trigger = {
@@ -278,45 +234,33 @@ sb_natal_interwar.035 = {
 		}
 	}
 
-	cancellation_trigger = {
-		OR = {
-			is_secessionist = no
-			NOT = { has_variable = sb_natal_zulu_restoration_active_var }
-			NOT = {
-				c:NAL ?= {
-					is_country_alive = yes
-					has_variable = sb_natal_zulu_restoration_active_var
-				}
-			}
-		}
-	}
-
-	immediate = {
-		c:NAL = { save_scope_as = sb_natal_arms_appeal_natal_scope }
-	}
-
 	option = {
-		name = sb_natal_interwar.035.a
+		name = sb_natal_interwar.039.a
 		default_option = yes
-		trigger = { c:TRN ?= { is_country_alive = yes } }
-		custom_tooltip = sb_natal_zulu_appeals_to_transvaal_tt
+		custom_tooltip = sb_natal_interwar.039.a.tt
 		hidden_effect = {
-			c:NAL = {
-				set_variable = sb_natal_zulu_arms_appeal_sent_var
-				set_variable = {
-					name = sb_natal_zulu_arms_appeal_wait_var
-					days = 30
+			sb_natal_prepare_zulu_restoration_secession = yes
+			# Queue the appeal only after the engine-created government and dynasty
+			# have been normalized, so the military bargain cannot race this event.
+			if = {
+				limit = {
+					sb_natal_zulu_secession_controls_full_zululand = yes
+					c:TRN ?= { is_country_alive = yes }
+					c:NAL ?= {
+						is_country_alive = yes
+						NOT = { has_variable = sb_natal_zulu_arms_appeal_sent_var }
+					}
 				}
+				c:NAL = {
+					set_variable = sb_natal_zulu_arms_appeal_sent_var
+					set_variable = {
+						name = sb_natal_zulu_arms_appeal_wait_var
+						days = 30
+					}
+				}
+				c:TRN = { trigger_event = { id = sb_natal_interwar.040 days = 2 popup = yes } }
 			}
-			c:TRN = { trigger_event = { id = sb_natal_interwar.040 days = 5 popup = yes } }
 		}
-		ai_chance = { base = 100 }
-	}
-
-	option = {
-		name = sb_natal_interwar.035.b
-		hidden_effect = { sb_natal_resolve_zulu_arms_appeal = yes }
-		ai_chance = { base = 0 }
 	}
 }
 
@@ -344,9 +288,7 @@ sb_natal_interwar.040 = {
 			NOT = { has_variable = sb_natal_zulu_arms_appeal_resolved_var }
 		}
 		c:ZUL ?= {
-			is_country_alive = yes
-			is_secessionist = yes
-			has_variable = sb_natal_zulu_restoration_active_var
+			sb_natal_zulu_secession_controls_full_zululand = yes
 		}
 	}
 
@@ -379,72 +321,105 @@ sb_natal_interwar.040 = {
 		trigger = { sb_natal_trn_arms_treaty_possible = yes }
 		custom_tooltip = sb_natal_trn_supports_zulu_restoration_tt
 		hidden_effect = {
-			sb_natal_create_trn_zulu_arms_treaty = yes
+			sb_natal_accept_trn_zulu_aid = yes
 			sb_natal_resolve_zulu_arms_appeal = yes
 		}
 		ai_chance = {
-			base = 60
-			modifier = { trigger = { sb_natal_trn_is_imperial_confederation_participant = yes } add = 20 }
-			modifier = { trigger = { sb_natal_trn_leads_bechuanaland_story = yes } add = 15 }
-			modifier = { trigger = { has_diplomatic_pact = { who = c:GBR type = rivalry } } add = 20 }
-			modifier = { trigger = { sb_natal_trn_opposes_britain_or_natal = yes } add = 15 }
-			modifier = { trigger = { c:GBR ?= { relations:root >= relations_threshold:friendly } } add = -15 }
+			base = 0
+			modifier = { trigger = { sb_frontier_ai_behavior_off = yes } add = 50 }
 			modifier = {
-				trigger = { c:GBR ?= { relations:root >= relations_threshold:amicable relations:root < relations_threshold:friendly } }
+				trigger = {
+					sb_frontier_ai_behavior_dynamic_historical = yes
+					NOT = { sb_bechuanaland_ai_in_default_or_bankrupt = yes }
+				}
+				add = 60
+			}
+			modifier = { trigger = { sb_frontier_ai_behavior_dynamic_historical = yes sb_natal_trn_is_imperial_confederation_participant = yes } add = 20 }
+			modifier = { trigger = { sb_frontier_ai_behavior_dynamic_historical = yes sb_natal_trn_leads_bechuanaland_story = yes } add = 15 }
+			modifier = { trigger = { sb_frontier_ai_behavior_dynamic_historical = yes has_diplomatic_pact = { who = c:GBR type = rivalry } } add = 20 }
+			modifier = { trigger = { sb_frontier_ai_behavior_dynamic_historical = yes sb_natal_trn_opposes_britain_or_natal = yes } add = 15 }
+			modifier = { trigger = { sb_frontier_ai_behavior_dynamic_historical = yes c:GBR ?= { relations:root >= relations_threshold:friendly } } add = -15 }
+			modifier = {
+				trigger = { sb_frontier_ai_behavior_dynamic_historical = yes c:GBR ?= { relations:root >= relations_threshold:amicable relations:root < relations_threshold:friendly } }
 				add = -10
 			}
 			modifier = {
-				trigger = { c:GBR ?= { relations:root >= relations_threshold:cordial relations:root < relations_threshold:amicable } }
+				trigger = { sb_frontier_ai_behavior_dynamic_historical = yes c:GBR ?= { relations:root >= relations_threshold:cordial relations:root < relations_threshold:amicable } }
 				add = -5
 			}
-			modifier = { trigger = { c:GBR ?= { relations:root <= relations_threshold:hostile } } add = 15 }
+			modifier = { trigger = { sb_frontier_ai_behavior_dynamic_historical = yes c:GBR ?= { relations:root <= relations_threshold:hostile } } add = 15 }
 			modifier = {
-				trigger = { c:GBR ?= { relations:root <= relations_threshold:cold relations:root > relations_threshold:hostile } }
+				trigger = { sb_frontier_ai_behavior_dynamic_historical = yes c:GBR ?= { relations:root <= relations_threshold:cold relations:root > relations_threshold:hostile } }
 				add = 10
 			}
 			modifier = {
-				trigger = { c:GBR ?= { relations:root <= relations_threshold:poor relations:root > relations_threshold:cold } }
+				trigger = { sb_frontier_ai_behavior_dynamic_historical = yes c:GBR ?= { relations:root <= relations_threshold:poor relations:root > relations_threshold:cold } }
 				add = 5
 			}
-			modifier = { trigger = { is_in_same_power_bloc = c:GBR } add = -30 }
-			modifier = { trigger = { sb_natal_trn_has_british_security_treaty = yes } add = -20 }
-			modifier = { trigger = { sb_bechuanaland_ai_in_default_or_bankrupt = yes } add = -20 }
+			modifier = { trigger = { sb_frontier_ai_behavior_dynamic_historical = yes is_in_same_power_bloc = c:GBR } add = -30 }
+			modifier = { trigger = { sb_frontier_ai_behavior_dynamic_historical = yes sb_natal_trn_has_british_security_treaty = yes } add = -20 }
+			modifier = {
+				trigger = {
+					sb_frontier_ai_behavior_dynamic_historical = yes
+					sb_bechuanaland_ai_in_default_or_bankrupt = yes
+				}
+				factor = 0
+			}
 		}
 	}
 
 	option = {
 		name = sb_natal_interwar.040.b
 		default_option = yes
-		hidden_effect = { sb_natal_resolve_zulu_arms_appeal = yes }
+		custom_tooltip = sb_natal_trn_refuses_zulu_restoration_tt
+		hidden_effect = {
+			sb_natal_refuse_trn_zulu_aid = yes
+			sb_natal_resolve_zulu_arms_appeal = yes
+		}
 		ai_chance = {
-			base = 40
-			modifier = { trigger = { sb_natal_trn_is_imperial_confederation_participant = yes } add = -20 }
-			modifier = { trigger = { sb_natal_trn_leads_bechuanaland_story = yes } add = -15 }
-			modifier = { trigger = { has_diplomatic_pact = { who = c:GBR type = rivalry } } add = -20 }
-			modifier = { trigger = { sb_natal_trn_opposes_britain_or_natal = yes } add = -15 }
-			modifier = { trigger = { c:GBR ?= { relations:root >= relations_threshold:friendly } } add = 15 }
+			base = 0
+			modifier = { trigger = { sb_frontier_ai_behavior_strict_historical = yes } add = 1000 }
+			modifier = { trigger = { sb_frontier_ai_behavior_off = yes } add = 50 }
+			modifier = { trigger = { sb_frontier_ai_behavior_dynamic_historical = yes sb_bechuanaland_ai_in_default_or_bankrupt = yes } add = 1000 }
+			modifier = { trigger = { sb_frontier_ai_behavior_dynamic_historical = yes NOT = { sb_bechuanaland_ai_in_default_or_bankrupt = yes } } add = 40 }
+			modifier = { trigger = { sb_frontier_ai_behavior_dynamic_historical = yes sb_natal_trn_is_imperial_confederation_participant = yes } add = -20 }
+			modifier = { trigger = { sb_frontier_ai_behavior_dynamic_historical = yes sb_natal_trn_leads_bechuanaland_story = yes } add = -15 }
+			modifier = { trigger = { sb_frontier_ai_behavior_dynamic_historical = yes has_diplomatic_pact = { who = c:GBR type = rivalry } } add = -20 }
+			modifier = { trigger = { sb_frontier_ai_behavior_dynamic_historical = yes sb_natal_trn_opposes_britain_or_natal = yes } add = -15 }
+			modifier = { trigger = { sb_frontier_ai_behavior_dynamic_historical = yes c:GBR ?= { relations:root >= relations_threshold:friendly } } add = 15 }
 			modifier = {
-				trigger = { c:GBR ?= { relations:root >= relations_threshold:amicable relations:root < relations_threshold:friendly } }
+				trigger = { sb_frontier_ai_behavior_dynamic_historical = yes c:GBR ?= { relations:root >= relations_threshold:amicable relations:root < relations_threshold:friendly } }
 				add = 10
 			}
 			modifier = {
-				trigger = { c:GBR ?= { relations:root >= relations_threshold:cordial relations:root < relations_threshold:amicable } }
+				trigger = { sb_frontier_ai_behavior_dynamic_historical = yes c:GBR ?= { relations:root >= relations_threshold:cordial relations:root < relations_threshold:amicable } }
 				add = 5
 			}
-			modifier = { trigger = { c:GBR ?= { relations:root <= relations_threshold:hostile } } add = -15 }
+			modifier = { trigger = { sb_frontier_ai_behavior_dynamic_historical = yes c:GBR ?= { relations:root <= relations_threshold:hostile } } add = -15 }
 			modifier = {
-				trigger = { c:GBR ?= { relations:root <= relations_threshold:cold relations:root > relations_threshold:hostile } }
+				trigger = { sb_frontier_ai_behavior_dynamic_historical = yes c:GBR ?= { relations:root <= relations_threshold:cold relations:root > relations_threshold:hostile } }
 				add = -10
 			}
 			modifier = {
-				trigger = { c:GBR ?= { relations:root <= relations_threshold:poor relations:root > relations_threshold:cold } }
+				trigger = { sb_frontier_ai_behavior_dynamic_historical = yes c:GBR ?= { relations:root <= relations_threshold:poor relations:root > relations_threshold:cold } }
 				add = -5
 			}
-			modifier = { trigger = { is_in_same_power_bloc = c:GBR } add = 30 }
-			modifier = { trigger = { sb_natal_trn_has_british_security_treaty = yes } add = 20 }
-			modifier = { trigger = { sb_bechuanaland_ai_in_default_or_bankrupt = yes } add = 20 }
+			modifier = { trigger = { sb_frontier_ai_behavior_dynamic_historical = yes is_in_same_power_bloc = c:GBR } add = 30 }
+			modifier = { trigger = { sb_frontier_ai_behavior_dynamic_historical = yes sb_natal_trn_has_british_security_treaty = yes } add = 20 }
 		}
 	}
+}
+
+sb_natal_interwar.045 = {
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		country_definition = cd:TRN
+		has_variable = sb_natal_trn_zulu_aid_treaty_expiry_pending_var
+	}
+
+	immediate = { sb_natal_expire_trn_zulu_aid_treaty = yes }
 }
 
 sb_natal_interwar.050 = {
