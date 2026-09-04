@@ -21,7 +21,7 @@ import zlib
 
 ROOT = Path(__file__).resolve().parents[1]
 CMF_ID = "com.github.Victoria-3-Modding-Co-op.Community-Mod-Framework"
-CMF_PINNED_VERSION = "1.65.0"
+CMF_PINNED_VERSION = "1.66.0"
 DEFAULT_CMF_ROOT = ROOT.parent / "Community Mod Framework"
 TEXT_ROOTS = ("common", "events", "localization", "map_data")
 TRIGGER_EVENT_RE = re.compile(r"\btrigger_event\s*=\s*\{")
@@ -41,8 +41,15 @@ LOCATOR_INSTANCE_RE = re.compile(
     re.DOTALL,
 )
 REVIEW_MARKER_RE = re.compile(r"^\s*#\s*###\s+(TO REVIEW|REVIEWED)\s+###\s*$")
-EVENT_LOC_KEY_RE = re.compile(r"^\s*([A-Za-z0-9_]+\.\d+)(?:\.[^:]*)?:\d*\s")
+LOC_LINE_KEY_RE = re.compile(r"^\s*([^#\s][^:]*):\d*(?:\s|$)")
+EVENT_LOC_NAMESPACE_RE = re.compile(
+    r"^([A-Za-z0-9_]+\.\d+)(?:\.[A-Za-z0-9_-]+)*$"
+)
 SCRIPT_EVENT_RE = re.compile(r"^([A-Za-z0-9_]+\.\d+)\s*=\s*\{", re.MULTILINE)
+JOURNAL_ENTRY_RE = re.compile(
+    r"^(?:(?:REPLACE|TRY_REPLACE|REPLACE_OR_CREATE):)?(je_[A-Za-z0-9_]+)\s*=\s*\{",
+    re.MULTILINE,
+)
 TOP_LEVEL_OBJECT_RE = re.compile(r"^([A-Za-z0-9_]+)\s*=\s*\{", re.MULTILINE)
 HARD_REPLACE_RE = re.compile(
     r"^(REPLACE|TRY_REPLACE|REPLACE_OR_CREATE):([^\s=]+)\s*=\s*\{", re.MULTILINE
@@ -584,11 +591,97 @@ def check_map_data() -> Check:
     return Check("map data", "FAIL" if errors else "PASS", "; ".join(errors))
 
 
+def source_journal_entry_ids(root: Path = ROOT) -> set[str]:
+    """Return journal-entry IDs defined by this mod, including replacement objects."""
+    journal_entries = root / "common/journal_entries"
+    identifiers: set[str] = set()
+    for path in sorted(journal_entries.rglob("*.txt")):
+        text = path.read_text(encoding="utf-8-sig", errors="ignore")
+        identifiers.update(JOURNAL_ENTRY_RE.findall(text))
+    return identifiers
+
+
+def resolve_localization_namespace(
+    key: str,
+    journal_entry_ids: Iterable[str],
+) -> tuple[str, str] | None:
+    """Resolve an exact event or source-defined journal-entry localization key."""
+    event = EVENT_LOC_NAMESPACE_RE.fullmatch(key)
+    if event is not None:
+        return "event", event.group(1)
+
+    matching_journal_entries = [
+        identifier
+        for identifier in journal_entry_ids
+        if key == identifier
+        or (
+            key.startswith(f"{identifier}_")
+            and len(key) > len(identifier) + 1
+        )
+    ]
+    if not matching_journal_entries:
+        return None
+    identifier = max(matching_journal_entries, key=lambda item: (len(item), item))
+    return "journal_entry", identifier
+
+
+def localization_review_classifications(
+    text: str,
+    journal_entry_ids: Iterable[str],
+) -> list[tuple[str, str, str, int]]:
+    """Bind each review marker to the namespace of its first following key, if any."""
+    identifiers = tuple(journal_entry_ids)
+    classifications: list[tuple[str, str, str, int]] = []
+    lines = text.splitlines()
+    for index, line in enumerate(lines):
+        marker = REVIEW_MARKER_RE.match(line)
+        if marker is None:
+            continue
+        for following in lines[index + 1 :]:
+            key_match = LOC_LINE_KEY_RE.match(following)
+            if key_match is None:
+                continue
+            key = key_match.group(1).strip()
+            namespace = resolve_localization_namespace(key, identifiers)
+            if namespace is not None:
+                kind, identifier = namespace
+                classifications.append((kind, identifier, marker.group(1), index + 1))
+            # An unrelated first key is a boundary. Never scan through it.
+            break
+    return classifications
+
+
+def review_classification_errors(
+    classifications: dict[tuple[str, str], list[tuple[str, Path, int]]],
+    localized_events: Iterable[str],
+    localized_journal_entries: Iterable[str],
+) -> list[str]:
+    """Require exactly one marker classification per localized event and JE."""
+    errors: list[str] = []
+    required = (
+        ("event", localized_events),
+        ("journal_entry", localized_journal_entries),
+    )
+    for kind, identifiers in required:
+        for identifier in sorted(identifiers):
+            entries = classifications.get((kind, identifier), [])
+            if len(entries) != 1:
+                errors.append(
+                    f"{identifier}: expected one review classification, "
+                    f"found {len(entries)}"
+                )
+    for (_, identifier), entries in sorted(classifications.items()):
+        if len(entries) != 1:
+            errors.append(f"{identifier}: duplicate review classifications")
+    return errors
+
+
 def check_localization() -> Check:
     errors: list[str] = []
     definitions: dict[str, Path] = {}
     folded: dict[str, str] = {}
-    classifications: dict[str, list[tuple[str, Path, int]]] = {}
+    classifications: dict[tuple[str, str], list[tuple[str, Path, int]]] = {}
+    journal_entry_ids = source_journal_entry_ids(ROOT)
     reviewed = 0
     to_review = 0
     for path in sorted((ROOT / "localization/english").rglob("*.yml")):
@@ -617,23 +710,18 @@ def check_localization() -> Check:
                 errors.append(f"case-insensitive duplicate {folded[lowered]} / {key}")
             folded[lowered] = key
 
-        lines = text.splitlines()
-        for index, line in enumerate(lines):
-            marker = REVIEW_MARKER_RE.match(line)
-            if marker is None:
-                continue
-            for following in lines[index + 1 :]:
-                key_match = EVENT_LOC_KEY_RE.match(following)
-                if key_match is not None:
-                    event_id = key_match.group(1)
-                    classifications.setdefault(event_id, []).append((marker.group(1), path, index + 1))
-                    if marker.group(1) == "REVIEWED":
-                        reviewed += 1
-                    else:
-                        to_review += 1
-                    break
-                if REVIEW_MARKER_RE.match(following):
-                    break
+        file_classifications = localization_review_classifications(
+            text,
+            journal_entry_ids,
+        )
+        for kind, identifier, status, line_number in file_classifications:
+            classifications.setdefault((kind, identifier), []).append(
+                (status, path, line_number)
+            )
+            if status == "REVIEWED":
+                reviewed += 1
+            else:
+                to_review += 1
 
     script_events: set[str] = set()
     for path in sorted((ROOT / "events").rglob("*.txt")):
@@ -646,13 +734,18 @@ def check_localization() -> Check:
     localized_events = {
         event_id for event_id in script_events if f"{event_id}.t" in definitions
     }
-    for event_id in sorted(localized_events):
-        entries = classifications.get(event_id, [])
-        if len(entries) != 1:
-            errors.append(f"{event_id}: expected one review classification, found {len(entries)}")
-    for event_id, entries in sorted(classifications.items()):
-        if len(entries) != 1:
-            errors.append(f"{event_id}: duplicate review classifications")
+    localized_journal_entries: set[str] = set()
+    for key in definitions:
+        namespace = resolve_localization_namespace(key, journal_entry_ids)
+        if namespace is not None and namespace[0] == "journal_entry":
+            localized_journal_entries.add(namespace[1])
+    errors.extend(
+        review_classification_errors(
+            classifications,
+            localized_events,
+            localized_journal_entries,
+        )
+    )
 
     allowlist_path = ROOT / "tools/localization_reference_allowlist.json"
     allowlist = set()
@@ -676,7 +769,7 @@ def check_localization() -> Check:
     elif support_key not in support_event.read_text(encoding="utf-8-sig"):
         errors.append(f"{support_key} is not referenced by its event")
 
-    coverage = f"event review coverage: {reviewed} reviewed, {to_review} to review"
+    coverage = f"event/JE review coverage: {reviewed} reviewed, {to_review} to review"
     return Check(
         "localization",
         "FAIL" if errors else "PASS",
@@ -880,7 +973,7 @@ def check_release_invariants() -> Check:
         "sb_bechuanaland_project_corridor_journal = yes",
     ):
         if token not in journal:
-            errors.append(f"Bechuanaland JE is missing its CMF 1.65 journal projection: {token}")
+            errors.append(f"Bechuanaland JE is missing its CMF 1.66 journal projection: {token}")
     for token in (
         "com_set_situation_left_title =",
         "com_set_situation_right_title =",
@@ -951,7 +1044,7 @@ def check_release_invariants() -> Check:
                 )
 
     detail = f"{war_goal_count} complete scripted war-goal blocks"
-    return Check("1.13.11 release invariants", "FAIL" if errors else "PASS", "; ".join(errors or [detail]))
+    return Check("1.14.0 release invariants", "FAIL" if errors else "PASS", "; ".join(errors or [detail]))
 
 
 def check_local_override_inventory() -> Check:
@@ -1007,7 +1100,56 @@ def run_command(name: str, command: list[str], cwd: Path = ROOT) -> Check:
     return Check(name, "FAIL", tail)
 
 
-def check_cmf_install(cmf_root: Path) -> Check:
+def load_cmf_release_pin(
+    inventory_path: Path = ROOT / "Docs/compatibility/override_inventory.json",
+) -> tuple[str, str]:
+    """Read the exact CMF release tag and asset digest from the override inventory."""
+    try:
+        inventory = json.loads(inventory_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise ValueError(f"cannot read override inventory: {exc}") from exc
+    dependencies = [
+        dependency
+        for dependency in inventory.get("dependencies", [])
+        if dependency.get("name") == "Community Mod Framework"
+    ]
+    if len(dependencies) != 1:
+        raise ValueError("override inventory must contain exactly one CMF dependency")
+    dependency = dependencies[0]
+    tag = dependency.get("release_tag")
+    digest = dependency.get("asset_sha256")
+    if not isinstance(tag, str) or not tag:
+        raise ValueError("CMF dependency release_tag is missing")
+    if dependency.get("version") != tag:
+        raise ValueError("CMF dependency version and release_tag differ")
+    if dependency.get("asset_name") != f"release-{tag}.zip":
+        raise ValueError("CMF dependency asset_name does not match its exact release tag")
+    if not isinstance(digest, str) or re.fullmatch(r"[0-9a-f]{64}", digest) is None:
+        raise ValueError("CMF dependency asset_sha256 must be 64 lowercase hexadecimal characters")
+    return tag, digest
+
+
+def cmf_sync_command(
+    cmf_root: Path,
+    inventory_path: Path = ROOT / "Docs/compatibility/override_inventory.json",
+) -> list[str]:
+    tag, digest = load_cmf_release_pin(inventory_path)
+    return [
+        sys.executable,
+        "-B",
+        "tools/sync_cmf.py",
+        "--target",
+        str(cmf_root),
+        "--tag",
+        tag,
+        "--sha256",
+        digest,
+    ]
+
+
+def check_cmf_install(
+    cmf_root: Path, expected_version: str = CMF_PINNED_VERSION
+) -> Check:
     metadata_path = cmf_root / ".metadata/metadata.json"
     errors: list[str] = []
     if not metadata_path.is_file():
@@ -1018,10 +1160,10 @@ def check_cmf_install(cmf_root: Path) -> Check:
         return Check("CMF compatibility", "FAIL", f"invalid CMF metadata: {exc}")
     if metadata.get("id") != CMF_ID:
         errors.append(f"unexpected metadata id {metadata.get('id')}")
-    if metadata.get("version") != CMF_PINNED_VERSION:
+    if metadata.get("version") != expected_version:
         errors.append(
-            f"latest CMF is {metadata.get('version')}; SB remains pinned to "
-            f"{CMF_PINNED_VERSION} and requires a rebase"
+            f"installed CMF is {metadata.get('version')}; SB is pinned to exact "
+            f"{expected_version} and requires a rebase"
         )
     for relative in (
         "common/scripted_effects/com_general_effects.txt",
@@ -1058,15 +1200,26 @@ def main() -> int:
 
     cmf_root = Path(args.cmf_root).expanduser().absolute() if args.cmf_root else DEFAULT_CMF_ROOT
     checks = []
-    if args.skip_cmf_sync:
-        checks.append(Check("CMF release sync", "SKIP", "disabled by --skip-cmf-sync"))
+    try:
+        cmf_tag, cmf_digest = load_cmf_release_pin()
+    except ValueError as exc:
+        cmf_tag = CMF_PINNED_VERSION
+        checks.append(Check("CMF release pin", "FAIL", str(exc)))
+        checks.append(Check("CMF release sync", "SKIP", "override inventory pin is invalid"))
     else:
-        checks.append(run_command(
-            "CMF release sync",
-            [sys.executable, "-B", "tools/sync_cmf.py", "--target", str(cmf_root)],
-        ))
+        checks.append(
+            Check(
+                "CMF release pin",
+                "PASS",
+                f"exact tag {cmf_tag}, SHA-256 {cmf_digest}",
+            )
+        )
+        if args.skip_cmf_sync:
+            checks.append(Check("CMF release sync", "SKIP", "disabled by --skip-cmf-sync"))
+        else:
+            checks.append(run_command("CMF release sync", cmf_sync_command(cmf_root)))
     checks.extend([
-        check_cmf_install(cmf_root),
+        check_cmf_install(cmf_root, cmf_tag),
         run_command("unit tests", [sys.executable, "-B", "-m", "unittest", "discover", "-s", "tests"]),
         check_local_override_inventory(),
         check_map_data(),

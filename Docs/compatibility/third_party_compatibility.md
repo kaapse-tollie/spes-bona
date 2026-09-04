@@ -1,8 +1,10 @@
 # Third-Party Compatibility Notes
 
-Target game version: `1.13.11`
+Target game version: Victoria 3 `1.14.0` Open Beta 1, Steam build `25081502`, branch `1.14-openbeta`.
 
-Required framework: Community Mod Framework `1.65.x`. The launcher dependency is pinned to `1.65.*`, and release validation is pinned to `1.65.0` commit `d832d15`.
+Required framework: Community Mod Framework `1.66.x`. The launcher dependency is pinned to `1.66.*`. Release validation pins exact tag `1.66.0`, commit `807c32ff42b75714a3a0e090c0db3357b5e46ed7`, asset `release-1.66.0.zip`, and SHA-256 `79dd0d434e6ffb617147ad1b91b73e6306139adfffcadf6774eeb32db3a09b8b`.
+
+The [Workshop change log](https://steamcommunity.com/sharedfiles/filedetails/changelog/3385002128) reported “Reverted to 1.13 version” during this beta. Treat the [official GitHub 1.66.0 release](https://github.com/Victoria-3-Modding-Co-op/Community-Mod-Framework/releases/tag/1.66.0) as authoritative until the Workshop payload is unambiguous. Normal validation follows that exact tag and digest, not GitHub's moving latest release.
 
 Spes Bona is a Southern Africa map, population, and flavor overhaul. It is not a light overlay.
 
@@ -32,13 +34,13 @@ The three intentional isolated passable Bechuanaland pockets are allowlisted by 
 
 SB does not use a treaty-history `replace_path`. Its exact-path `00_historical_treaties.txt` shadows Vanilla and changes the Southern African startup rows; uniquely named treaty files remain additive. Another mod changing the same Vanilla filename requires a merged patch.
 
-SB does not override Vanilla 1.13.11's treaty-port inheritance on-action. It also relies on CMF 1.65.0's standard and double-sided journal widgets and ships no competing journal GUI copy.
+SB does not override Vanilla 1.14.0's treaty-port inheritance on-action. It also relies on CMF 1.66.0's standard and double-sided journal widgets and ships no competing journal GUI copy.
 
 ## Global Keyed Overrides
 
 Some definitions are global keyed replacements despite a Southern African design goal: dominion actions/types, Stake Colonial Claim, Abolish Monarchy, commander retirement, Frontier Colonization and Legacy Slavery, selected ideologies and technologies, state traits, companies, and political movements. The inventory identifies every object and pins its Vanilla or CMF source.
 
-The Cultural Supremacy override is rebased to CMF 1.65.0 and reviewed against Vanilla 1.13.11, while retaining only SB's CAP exclusion.
+The Cultural Supremacy override is rebased to CMF 1.66.0 and reviewed against Vanilla 1.14.0, while retaining only SB's CAP exclusion.
 
 ## Hail Columbia
 

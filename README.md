@@ -24,8 +24,8 @@ Spes Bona is a Victoria 3 regional flavor mod for greater Southern Africa built 
 
 ## Requirements
 
-- Victoria 3 `1.13.11`
-- Community Mod Framework `1.65.x`
+- Victoria 3 `1.14.0` Open Beta 1 (Steam build `25081502`, branch `1.14-openbeta`)
+- Community Mod Framework `1.66.x`
 
 ## Compatibility
 
@@ -61,7 +61,7 @@ Run the validation suite from the repository root:
 python3 tools/validate.py
 ```
 
-Validation queries GitHub for CMF's latest stable release and synchronizes the official release payload to the canonical sibling directory `../Community Mod Framework` before running compatibility checks. If GitHub publishes a newer CMF minor release, it is installed and validation then fails with a rebase-required error until SB's pinned CMF baseline is updated. Use `--skip-cmf-sync` only for an intentional offline run.
+Validation fetches GitHub's exact CMF `1.66.0` release tag, requires `release-1.66.0.zip`, verifies its pinned SHA-256, and only then synchronizes the canonical sibling directory `../Community Mod Framework`. It never follows a newer “latest” release during normal validation. Use `--skip-cmf-sync` only for an intentional offline run; `tools/sync_cmf.py --latest` is an explicit maintainer-only discovery mode.
 
 When the proprietary dependencies are available, include explicit Vanilla/CMF comparison and Tiger validation:
 
@@ -73,7 +73,7 @@ python3 tools/validate.py \
 
 Missing proprietary dependencies report `SKIP`; CI does not require them. Tiger is useful for parser validation, but cold-launch logs and fresh-start smoke tests remain authoritative. Do not rely on filewatcher hot reload for map-data or startup-history changes.
 
-Release validation is pinned to CMF `1.65.0` commit `d832d15`. The launcher dependency is `1.65.*`, so patch releases are accepted while each new CMF minor line requires an explicit compatibility review.
+Release validation is pinned to CMF `1.66.0`, commit `807c32ff42b75714a3a0e090c0db3357b5e46ed7`, and GitHub asset SHA-256 `79dd0d434e6ffb617147ad1b91b73e6306139adfffcadf6774eeb32db3a09b8b`. The launcher dependency is `1.66.*`. During the 1.14 beta audit, the Workshop change log reported a reversion to its 1.13 payload, so use the exact GitHub asset until the Workshop copy is unambiguous.
 
 On the primary development machine, the canonical GitHub release is installed without local edits at `/Users/depro/Documents/Paradox Interactive/Victoria 3/mod/Community Mod Framework`.
 

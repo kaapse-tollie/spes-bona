@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Synchronize the canonical local CMF install with GitHub's latest release."""
+"""Synchronize the canonical local CMF install with an exact GitHub release."""
 
 from __future__ import annotations
 
@@ -9,6 +9,7 @@ from http.client import RemoteDisconnected
 import json
 import os
 from pathlib import Path, PurePosixPath
+import re
 import shutil
 import stat
 import subprocess
@@ -16,15 +17,21 @@ import tempfile
 import time
 from typing import Callable
 from urllib.error import HTTPError, URLError
+from urllib.parse import quote
 from urllib.request import Request, urlopen
 import zipfile
 
 
 CMF_ID = "com.github.Victoria-3-Modding-Co-op.Community-Mod-Framework"
 REPOSITORY = "Victoria-3-Modding-Co-op/Community-Mod-Framework"
-LATEST_RELEASE_URL = f"https://api.github.com/repos/{REPOSITORY}/releases/latest"
+RELEASES_URL = f"https://api.github.com/repos/{REPOSITORY}/releases"
+LATEST_RELEASE_URL = f"{RELEASES_URL}/latest"
+PINNED_TAG = "1.66.0"
+PINNED_SHA256 = "79dd0d434e6ffb617147ad1b91b73e6306139adfffcadf6774eeb32db3a09b8b"
 DEFAULT_TARGET = Path(__file__).resolve().parents[2] / "Community Mod Framework"
 USER_AGENT = "Spes-Bona-CMF-Synchronizer/1"
+SAFE_TAG_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9._+-]*")
+SHA256_RE = re.compile(r"[0-9a-fA-F]{64}")
 
 
 class SyncError(RuntimeError):
@@ -67,33 +74,110 @@ def read_url(
     raise SyncError(f"could not download {url} after {attempts} attempts: {detail}") from last_error
 
 
-def latest_release(opener: Callable = urlopen) -> dict:
+def validate_tag(tag: str) -> str:
+    if not isinstance(tag, str) or SAFE_TAG_RE.fullmatch(tag) is None:
+        raise SyncError(f"invalid CMF release tag {tag!r}")
+    return tag
+
+
+def validate_sha256(digest: str, *, label: str = "expected SHA-256") -> str:
+    if not isinstance(digest, str) or SHA256_RE.fullmatch(digest) is None:
+        raise SyncError(f"{label} must be exactly 64 hexadecimal characters")
+    return digest.lower()
+
+
+def tagged_release_url(tag: str) -> str:
+    tag = validate_tag(tag)
+    return f"{RELEASES_URL}/tags/{quote(tag, safe='')}"
+
+
+def read_release_metadata(url: str, opener: Callable = urlopen) -> dict:
     try:
-        release = json.loads(read_url(LATEST_RELEASE_URL, opener))
+        release = json.loads(read_url(url, opener))
     except (json.JSONDecodeError, UnicodeDecodeError) as exc:
         raise SyncError("GitHub returned invalid release metadata") from exc
-    if release.get("draft") or release.get("prerelease"):
-        raise SyncError("GitHub's latest release endpoint returned a non-stable release")
-    version = str(release.get("tag_name", "")).strip()
-    if not version:
-        raise SyncError("GitHub's latest CMF release has no tag")
-    expected_name = f"release-{version}.zip"
-    assets = [asset for asset in release.get("assets", []) if asset.get("name") == expected_name]
-    if len(assets) != 1:
-        raise SyncError(f"latest CMF release does not contain exactly one {expected_name}")
-    asset = assets[0]
-    digest = str(asset.get("digest", ""))
-    if not digest.startswith("sha256:"):
-        raise SyncError(f"{expected_name} has no GitHub SHA-256 digest")
-    download_url = str(asset.get("browser_download_url", ""))
-    if not download_url.startswith("https://github.com/"):
-        raise SyncError(f"{expected_name} has an unexpected download URL")
+    if not isinstance(release, dict):
+        raise SyncError("GitHub returned invalid release metadata")
+    return release
+
+
+def parse_release(
+    release: dict,
+    *,
+    source: str,
+    expected_tag: str | None = None,
+    expected_sha256: str | None = None,
+) -> dict:
+    if release.get("draft") is not False or release.get("prerelease") is not False:
+        raise SyncError(f"GitHub's {source} endpoint returned a non-stable release")
+
+    version = release.get("tag_name")
+    if not isinstance(version, str) or SAFE_TAG_RE.fullmatch(version) is None:
+        raise SyncError(f"GitHub's {source} CMF release has no valid tag")
+    if expected_tag is not None and version != expected_tag:
+        raise SyncError(
+            f"GitHub's tag endpoint returned {version!r}, expected exact tag {expected_tag!r}"
+        )
+
+    asset_name = f"release-{version}.zip"
+    assets_value = release.get("assets")
+    assets = assets_value if isinstance(assets_value, list) else []
+    matches = [
+        asset
+        for asset in assets
+        if isinstance(asset, dict) and asset.get("name") == asset_name
+    ]
+    if len(matches) != 1:
+        raise SyncError(f"{source} CMF release does not contain exactly one {asset_name}")
+    asset = matches[0]
+
+    digest_value = asset.get("digest")
+    if not isinstance(digest_value, str) or not digest_value.startswith("sha256:"):
+        raise SyncError(f"{asset_name} has no GitHub SHA-256 digest")
+    digest = validate_sha256(
+        digest_value.removeprefix("sha256:"),
+        label=f"GitHub digest for {asset_name}",
+    )
+    if expected_sha256 is not None and digest != expected_sha256:
+        raise SyncError(
+            f"GitHub digest for {asset_name} is {digest}, expected {expected_sha256}"
+        )
+
+    download_url = asset.get("browser_download_url")
+    canonical_url = (
+        f"https://github.com/{REPOSITORY}/releases/download/"
+        f"{quote(version, safe='')}/{quote(asset_name, safe='')}"
+    )
+    if download_url != canonical_url:
+        raise SyncError(f"{asset_name} has an unexpected download URL")
+
     return {
         "version": version,
-        "asset_name": expected_name,
+        "asset_name": asset_name,
         "download_url": download_url,
-        "sha256": digest.removeprefix("sha256:"),
+        "sha256": digest,
     }
+
+
+def tagged_release(
+    tag: str,
+    expected_sha256: str,
+    opener: Callable = urlopen,
+) -> dict:
+    tag = validate_tag(tag)
+    expected_sha256 = validate_sha256(expected_sha256)
+    release = read_release_metadata(tagged_release_url(tag), opener)
+    return parse_release(
+        release,
+        source=f"tag {tag}",
+        expected_tag=tag,
+        expected_sha256=expected_sha256,
+    )
+
+
+def latest_release(opener: Callable = urlopen) -> dict:
+    release = read_release_metadata(LATEST_RELEASE_URL, opener)
+    return parse_release(release, source="latest")
 
 
 def download_release(url: str, opener: Callable = urlopen) -> bytes:
@@ -171,49 +255,97 @@ def extract_release(archive: bytes, destination: Path, version: str) -> None:
         raise SyncError("release archive is missing required CMF content")
 
 
+def path_exists(path: Path) -> bool:
+    return path.exists() or path.is_symlink()
+
+
 def install_release(target: Path, release: dict, archive: bytes) -> None:
-    if "steamapps/workshop" in target.as_posix():
+    if "steamapps/workshop" in target.as_posix().lower():
         raise SyncError("refusing to overwrite a Steam Workshop installation")
     target.parent.mkdir(parents=True, exist_ok=True)
     actual_digest = hashlib.sha256(archive).hexdigest()
     if actual_digest != release["sha256"]:
         raise SyncError(
-            f"downloaded {release['asset_name']} digest {actual_digest} does not match GitHub"
+            f"downloaded {release['asset_name']} digest {actual_digest} "
+            f"does not match required {release['sha256']}"
         )
 
-    with tempfile.TemporaryDirectory(prefix=".cmf-update-", dir=target.parent) as temporary:
-        staging = Path(temporary)
+    # Extract and validate the complete candidate before moving the live target. Both
+    # directory renames are on the target filesystem. If the second rename fails, the
+    # first is reversed before the staging directory is removed.
+    staging = Path(tempfile.mkdtemp(prefix=".cmf-update-", dir=target.parent))
+    preserve_staging = False
+    try:
         extract_release(archive, staging, release["version"])
         payload = staging / "payload"
         backup = staging / "previous"
-        if target.exists():
-            target.rename(backup)
+        had_target = path_exists(target)
         try:
+            if had_target:
+                target.rename(backup)
             payload.rename(target)
-        except Exception:
-            if backup.exists() and not target.exists():
-                backup.rename(target)
+        except BaseException as exc:
+            rollback_error: BaseException | None = None
+            if path_exists(backup):
+                if path_exists(target):
+                    rollback_error = RuntimeError("replacement path unexpectedly exists")
+                else:
+                    try:
+                        backup.rename(target)
+                    except BaseException as caught:
+                        rollback_error = caught
+            if rollback_error is not None:
+                preserve_staging = True
+                raise SyncError(
+                    "CMF installation failed and automatic rollback failed; "
+                    f"the previous installation remains at {backup}: {rollback_error}"
+                ) from exc
+            if isinstance(exc, Exception):
+                state = "previous installation was restored" if had_target else "target was unchanged"
+                raise SyncError(f"atomic CMF installation failed; {state}: {exc}") from exc
             raise
-        if backup.exists():
-            shutil.rmtree(backup)
+    finally:
+        if not preserve_staging:
+            shutil.rmtree(staging, ignore_errors=True)
 
 
 def synchronize(
     target: Path,
     *,
+    tag: str | None = None,
+    expected_sha256: str | None = None,
+    latest: bool = False,
     check_only: bool = False,
     force: bool = False,
     opener: Callable = urlopen,
 ) -> tuple[str, str]:
     target = target.expanduser().absolute()
-    release = latest_release(opener)
+    if latest:
+        if tag is not None or expected_sha256 is not None:
+            raise SyncError("latest maintenance mode cannot be combined with an exact tag or digest")
+        release = latest_release(opener)
+        expectation = f"latest release {release['version']}"
+    else:
+        exact_tag = PINNED_TAG if tag is None else tag
+        if expected_sha256 is None:
+            if exact_tag != PINNED_TAG:
+                raise SyncError("an exact non-pinned tag requires an expected SHA-256")
+            expected_sha256 = PINNED_SHA256
+        release = tagged_release(exact_tag, expected_sha256, opener)
+        expectation = f"exact release {exact_tag}"
+
     installed = load_installed_metadata(target)
-    current = installed.get("id") == CMF_ID and installed.get("version") == release["version"]
+    current = (
+        installed.get("id") == CMF_ID
+        and installed.get("version") == release["version"]
+        and (target / "common").is_dir()
+        and (target / "gui").is_dir()
+    )
     if current and not force:
         return "current", release["version"]
     if check_only:
         installed_version = installed.get("version", "not installed")
-        raise SyncError(f"CMF {installed_version} is not latest release {release['version']}")
+        raise SyncError(f"CMF {installed_version} is not {expectation}")
     archive = download_release(release["download_url"], opener)
     install_release(target, release, archive)
     return "updated", release["version"]
@@ -222,12 +354,33 @@ def synchronize(
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--target", type=Path, default=DEFAULT_TARGET)
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument(
+        "--tag",
+        help=f"Synchronize an exact release tag (default: {PINNED_TAG})",
+    )
+    mode.add_argument(
+        "--latest",
+        action="store_true",
+        help="Maintenance only: discover and synchronize GitHub's latest stable release",
+    )
+    parser.add_argument(
+        "--sha256",
+        "--expected-sha256",
+        dest="expected_sha256",
+        help=f"Required archive SHA-256 for exact-tag mode (default for {PINNED_TAG}: pinned)",
+    )
     parser.add_argument("--check", action="store_true", help="Check without installing an update")
     parser.add_argument("--force", action="store_true", help="Reinstall even when versions match")
     args = parser.parse_args()
+    if args.latest and args.expected_sha256 is not None:
+        parser.error("--sha256 cannot be combined with --latest")
     try:
         status, version = synchronize(
             args.target,
+            tag=args.tag,
+            expected_sha256=args.expected_sha256,
+            latest=args.latest,
             check_only=args.check,
             force=args.force,
         )

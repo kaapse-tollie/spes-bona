@@ -22,16 +22,42 @@ def text(path: str) -> str:
 
 
 class RebaseTests(unittest.TestCase):
-    def test_release_metadata_targets_1_13_11_and_cmf_1_65_x(self):
-        self.assertIn('supported_version="1.13.11"', text("descriptor.mod"))
-        self.assertIn('version="0.19.0"', text("descriptor.mod"))
+    def test_release_metadata_targets_1_14_0_and_cmf_1_66_x(self):
+        self.assertIn('supported_version="1.14.0"', text("descriptor.mod"))
+        self.assertIn('version="0.20.0"', text("descriptor.mod"))
         metadata = json.loads(text(".metadata/metadata.json"))
-        self.assertEqual("1.13.11", metadata["supported_game_version"])
-        self.assertEqual("0.19.0", metadata["version"])
+        self.assertEqual("1.14.0", metadata["supported_game_version"])
+        self.assertEqual("0.20.0", metadata["version"])
         relationships = [item for item in metadata["relationships"] if item["id"] == CMF_ID]
-        self.assertEqual(["1.65.*"], [item["version"] for item in relationships])
+        self.assertEqual(["1.66.*"], [item["version"] for item in relationships])
 
-    def test_1_13_11_hotfix_files_remain_vanilla_owned(self):
+        inventory = json.loads(text("Docs/compatibility/override_inventory.json"))
+        self.assertEqual("1.14.0", inventory["target_game_version"])
+        self.assertEqual("25081502", inventory["target_steam_build"])
+        self.assertEqual("1.14-openbeta", inventory["target_steam_branch"])
+        self.assertEqual("529341", inventory["target_core_depot"])
+        self.assertEqual(
+            "3868129321396195520", inventory["target_core_depot_manifest"]
+        )
+        dependencies = [
+            item for item in inventory["dependencies"]
+            if item["name"] == "Community Mod Framework"
+        ]
+        self.assertEqual(1, len(dependencies))
+        self.assertEqual("1.66.0", dependencies[0]["version"])
+        self.assertEqual("1.66.*", dependencies[0]["version_range"])
+        self.assertEqual("1.66.0", dependencies[0]["release_tag"])
+        self.assertEqual("release-1.66.0.zip", dependencies[0]["asset_name"])
+        self.assertEqual(
+            "807c32ff42b75714a3a0e090c0db3357b5e46ed7",
+            dependencies[0]["commit"],
+        )
+        self.assertEqual(
+            "79dd0d434e6ffb617147ad1b91b73e6306139adfffcadf6774eeb32db3a09b8b",
+            dependencies[0]["asset_sha256"],
+        )
+
+    def test_1_14_0_preserves_1_13_11_hotfix_files_as_vanilla_owned(self):
         self.assertFalse((ROOT / "common/production_methods/04_plantations.txt").exists())
         self.assertFalse((ROOT / "events/tech_events/military_tech_events.txt").exists())
 

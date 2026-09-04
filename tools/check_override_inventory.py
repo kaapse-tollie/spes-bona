@@ -17,11 +17,23 @@ HARD_REPLACE_RE = re.compile(
 )
 TOP_LEVEL_RE = re.compile(r"^([A-Za-z0-9_]+)\s*=\s*\{", re.MULTILINE)
 SKIP_TOP_LEVEL = {".git", ".claude", ".prime"}
-SUPPORTED_TARGETS = {"1.13.11": "24799966"}
+STEAM_APP_ID = "529340"
+CORE_DEPOT_ID = "529341"
+SUPPORTED_TARGETS = {
+    "1.14.0": {
+        "build": "25081502",
+        "branch": "1.14-openbeta",
+        "core_depot": CORE_DEPOT_ID,
+        "core_manifest": "3868129321396195520",
+    }
+}
 CMF_NAME = "Community Mod Framework"
-CMF_VERSION = "1.65.0"
-CMF_COMMIT = "d832d15"
-CMF_DEPENDENCY_RANGE = "1.65.*"
+CMF_VERSION = "1.66.0"
+CMF_COMMIT = "807c32ff42b75714a3a0e090c0db3357b5e46ed7"
+CMF_DEPENDENCY_RANGE = "1.66.*"
+CMF_RELEASE_TAG = "1.66.0"
+CMF_ASSET_NAME = "release-1.66.0.zip"
+CMF_ASSET_SHA256 = "79dd0d434e6ffb617147ad1b91b73e6306139adfffcadf6774eeb32db3a09b8b"
 
 
 def sha256_bytes(data: bytes) -> str:
@@ -143,16 +155,135 @@ def load_metadata(path: Path, label: str, errors: list[str]) -> dict:
         return {}
 
 
-def validate_release_metadata(root: Path, inventory: dict, errors: list[str]) -> None:
-    target = inventory.get("target_game_version")
-    expected_build = SUPPORTED_TARGETS.get(target)
-    if expected_build is None:
-        errors.append(f"unsupported target_game_version: {target}")
-    elif str(inventory.get("target_steam_build")) != expected_build:
+VDF_TOKEN_RE = re.compile(r'"((?:\\.|[^"\\])*)"|([{}])')
+
+
+def parse_vdf(text: str) -> dict:
+    """Parse the quoted KeyValues subset used by Steam app manifests."""
+    tokens = [
+        match.group(1).replace(r'\"', '"').replace(r"\\", "\\")
+        if match.group(1) is not None
+        else match.group(2)
+        for match in VDF_TOKEN_RE.finditer(text)
+    ]
+
+    def parse_object(index: int, *, nested: bool) -> tuple[dict, int]:
+        result: dict[str, object] = {}
+        while index < len(tokens):
+            token = tokens[index]
+            if token == "}":
+                if not nested:
+                    raise ValueError("unexpected closing brace")
+                return result, index + 1
+            if token == "{":
+                raise ValueError("object key is missing")
+            key = token
+            index += 1
+            if index >= len(tokens):
+                raise ValueError(f"missing value for {key}")
+            value = tokens[index]
+            index += 1
+            if value == "{":
+                value, index = parse_object(index, nested=True)
+            elif value == "}":
+                raise ValueError(f"missing value for {key}")
+            result[key] = value
+        if nested:
+            raise ValueError("unclosed object")
+        return result, index
+
+    parsed, index = parse_object(0, nested=False)
+    if index != len(tokens):
+        raise ValueError("unexpected trailing tokens")
+    return parsed
+
+
+def find_steam_app_manifest(game_root: Path) -> Path | None:
+    filename = f"appmanifest_{STEAM_APP_ID}.acf"
+    for directory in (game_root, *game_root.parents):
+        candidate = directory / filename
+        if candidate.is_file():
+            return candidate
+    return None
+
+
+def validate_steam_app_manifest(path: Path, inventory: dict, errors: list[str]) -> None:
+    try:
+        parsed = parse_vdf(path.read_text(encoding="utf-8-sig"))
+    except (OSError, UnicodeDecodeError, ValueError) as exc:
+        errors.append(f"Steam app manifest is invalid: {exc}")
+        return
+    app = parsed.get("AppState")
+    if not isinstance(app, dict):
+        errors.append("Steam app manifest has no AppState object")
+        return
+    if str(app.get("appid", "")) != STEAM_APP_ID:
         errors.append(
-            f"target_steam_build {inventory.get('target_steam_build')} does not match "
-            f"{target} build {expected_build}"
+            f"Steam app manifest appid {app.get('appid', 'missing')} does not match {STEAM_APP_ID}"
         )
+
+    expected_build = str(inventory.get("target_steam_build", ""))
+    actual_build = str(app.get("buildid", ""))
+    if actual_build != expected_build:
+        errors.append(
+            f"installed Steam build {actual_build or 'missing'} does not match "
+            f"target_steam_build {expected_build}"
+        )
+
+    expected_branch = str(inventory.get("target_steam_branch", ""))
+    branches = {
+        str(section.get("BetaKey"))
+        for name in ("UserConfig", "MountedConfig")
+        if isinstance((section := app.get(name)), dict) and section.get("BetaKey") is not None
+    }
+    if branches != {expected_branch}:
+        actual = ", ".join(sorted(branches)) if branches else "missing"
+        errors.append(
+            f"installed Steam branch {actual} does not match target_steam_branch "
+            f"{expected_branch}"
+        )
+
+    depots = app.get("InstalledDepots")
+    depot_id = str(inventory.get("target_core_depot", ""))
+    expected_manifest = str(inventory.get("target_core_depot_manifest", ""))
+    depot = depots.get(depot_id) if isinstance(depots, dict) else None
+    actual_manifest = str(depot.get("manifest", "")) if isinstance(depot, dict) else ""
+    if actual_manifest != expected_manifest:
+        errors.append(
+            f"installed core depot {depot_id or 'missing'} manifest "
+            f"{actual_manifest or 'missing'} does not match target_core_depot_manifest "
+            f"{expected_manifest}"
+        )
+
+
+def validate_release_metadata(
+    root: Path,
+    inventory: dict,
+    errors: list[str],
+    steam_app_manifest: Path | None = None,
+) -> None:
+    if inventory.get("schema_version") != 2:
+        errors.append("override inventory schema_version must be 2")
+
+    target = inventory.get("target_game_version")
+    expected = SUPPORTED_TARGETS.get(target)
+    if expected is None:
+        errors.append(f"unsupported target_game_version: {target}")
+    else:
+        fields = {
+            "target_steam_build": expected["build"],
+            "target_steam_branch": expected["branch"],
+            "target_core_depot": expected["core_depot"],
+            "target_core_depot_manifest": expected["core_manifest"],
+        }
+        for field, value in fields.items():
+            if inventory.get(field) != value:
+                errors.append(
+                    f"{field} {inventory.get(field)} does not match {target} target {value}"
+                )
+
+    if steam_app_manifest is not None:
+        validate_steam_app_manifest(steam_app_manifest, inventory, errors)
 
     baseline = inventory.get("generated_for_commit_baseline")
     if not isinstance(baseline, str) or re.fullmatch(r"[0-9a-f]{40}", baseline) is None:
@@ -189,11 +320,17 @@ def validate_release_metadata(root: Path, inventory: dict, errors: list[str]) ->
         errors.append(f"inventory must declare exactly one {CMF_NAME} dependency")
     else:
         dependency = dependencies[0]
-        if dependency.get("version") != CMF_VERSION:
-            errors.append(f"inventory CMF version must be {CMF_VERSION}")
-        if dependency.get("commit") != CMF_COMMIT:
-            errors.append(f"inventory CMF commit must be {CMF_COMMIT}")
-
+        expected_fields = {
+            "version": CMF_VERSION,
+            "version_range": CMF_DEPENDENCY_RANGE,
+            "commit": CMF_COMMIT,
+            "release_tag": CMF_RELEASE_TAG,
+            "asset_name": CMF_ASSET_NAME,
+            "asset_sha256": CMF_ASSET_SHA256,
+        }
+        for field, value in expected_fields.items():
+            if dependency.get(field) != value:
+                errors.append(f"inventory CMF {field} must be {value}")
 
 def validate_cmf_checkout(cmf_root: Path, errors: list[str]) -> None:
     metadata = load_metadata(cmf_root / ".metadata/metadata.json", "CMF", errors)
@@ -207,7 +344,7 @@ def validate_cmf_checkout(cmf_root: Path, errors: list[str]) -> None:
             capture_output=True,
             text=True,
         )
-        if result.returncode != 0 or not result.stdout.strip().startswith(CMF_COMMIT):
+        if result.returncode != 0 or result.stdout.strip() != CMF_COMMIT:
             actual = result.stdout.strip() or "unavailable"
             errors.append(f"CMF checkout commit {actual} does not match {CMF_COMMIT}")
 
@@ -217,7 +354,7 @@ def validate_upstream_api_surface(
 ) -> None:
     vanilla_on_actions = game_root / "common/on_actions/00_code_on_actions.txt"
     if not vanilla_on_actions.is_file():
-        errors.append("Vanilla 1.13.11 code on-actions file is missing")
+        errors.append("Vanilla 1.14.0 code on-actions file is missing")
     else:
         source = vanilla_on_actions.read_text(encoding="utf-8-sig")
         expected = {
@@ -233,11 +370,11 @@ def validate_upstream_api_surface(
             try:
                 block = find_object(source, key)
             except ValueError as exc:
-                errors.append(f"Vanilla 1.13.11 API {key}: {exc}")
+                errors.append(f"Vanilla 1.14.0 API {key}: {exc}")
                 continue
             for token in tokens:
                 if token not in block:
-                    errors.append(f"Vanilla 1.13.11 API {key} is missing: {token}")
+                    errors.append(f"Vanilla 1.14.0 API {key} is missing: {token}")
 
     if cmf_root is None:
         return
@@ -356,10 +493,16 @@ def validate_localization_replace(root: Path, game_root: Path, inventory: dict, 
                 errors.append(f"unregistered localization replace file: {rel}")
 
 
-def validate(root: Path, game_root: Path, inventory: dict, cmf_root: Path | None = None) -> list[str]:
+def validate(
+    root: Path,
+    game_root: Path,
+    inventory: dict,
+    cmf_root: Path | None = None,
+    steam_app_manifest: Path | None = None,
+) -> list[str]:
     errors: list[str] = []
     target = inventory.get("target_game_version")
-    validate_release_metadata(root, inventory, errors)
+    validate_release_metadata(root, inventory, errors, steam_app_manifest)
     if cmf_root is not None:
         validate_cmf_checkout(cmf_root, errors)
     validate_upstream_api_surface(game_root, cmf_root, errors)
@@ -473,6 +616,10 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--game-root", help="Victoria 3 game directory")
     parser.add_argument("--cmf-root", help="Community Mod Framework directory")
+    parser.add_argument(
+        "--steam-app-manifest",
+        help="Optional Steam appmanifest_529340.acf path; inferred from --game-root when available",
+    )
     parser.add_argument("--inventory", default="Docs/compatibility/override_inventory.json")
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
@@ -488,7 +635,12 @@ def main() -> int:
         Path.home() / "Documents/Paradox Interactive/Victoria 3/mod/Community Mod Framework",
     ], ("common",))
     inventory = json.loads((root / args.inventory).read_text(encoding="utf-8"))
-    errors = validate(root, game_root, inventory, cmf_root)
+    steam_app_manifest = (
+        Path(args.steam_app_manifest).expanduser().resolve()
+        if args.steam_app_manifest
+        else find_steam_app_manifest(game_root)
+    )
+    errors = validate(root, game_root, inventory, cmf_root, steam_app_manifest)
     if errors:
         print("Override inventory validation FAILED:")
         for error in errors:
