@@ -1,8 +1,8 @@
 # Natal–Zululand Postwar Settlement — Live Design Record
 
-Status: first implementation complete; runtime playtesting remains authoritative for engine-only behavior.
+Status: `0.20.0` rebase contract recorded for Victoria 3 `1.14.0` Open Beta 1; every engine-only case remains pending until a fresh runtime pass.
 
-This file preserves the design discussion for rebuilding `sb_natal_interwar.030` and its downstream Zulu-restoration story. The **Decision register** is the authoritative implementation contract; earlier alternatives and later historical working lists are retained for audit context.
+This file preserves the design discussion for rebuilding `sb_natal_interwar.030` and its downstream Zulu-restoration story. The **Decision register** and the OB1 lifecycle addendum below are the authoritative implementation contract; earlier alternatives and later historical working lists are retained for audit context.
 
 > **Implementation warning:** `Docs/natal_zululand_postwar_settlement_proposal.md` is a superseded snapshot that predates the Natal-administered ZUL, shared Chiefdoms Situation, and independent-NRP boundary design. Do not use it as the coding specification.
 
@@ -39,7 +39,7 @@ The three labels describe materially different constitutional settlements, but t
 - Vanilla country-creation examples either create a country from a complete `region_state` or transfer explicit provinces inside `create_country.on_created`; they do not rely on an unguarded one-day completion step merely to establish the intended footprint.
 - A country definition does not by itself define a releasable footprint. Vanilla's Release Country interface and `liberate_country` war goal read `common/country_creation`; ZUL's SB entry now gives it the ordinary two-state `STATE_NATAL` and `STATE_ZULULAND` geography. The bespoke postwar restoration deliberately passes only the complete `STATE_ZULULAND` owner state.
 
-## Current flow
+## Current 0.20.0 flow
 
 ```mermaid
 flowchart TD
@@ -50,20 +50,63 @@ flowchart TD
     B --> C["A: Direct integration"]
     B --> D["B: Thirteen Chiefdoms"]
     B --> E["C: Crown-led protectorate"]
-    C --> C0["Annex ZUL and begin incorporating Zululand"]
-    C0 --> C1["+25% Zulu radicals"]
-    C1 --> F["Force normal Zulu cultural-minority movement and claimant agitator"]
+    C --> C0["Annex ZUL; mark the authored NAL incorporation route"]
+    C0 --> C1["Player uses the normal interaction; AI NAL receives the exact OB1 Zululand priority"]
+    C1 --> C2["+25% Zulu radicals; preserve the normal Zulu cultural-minority movement"]
     D --> D0["Convert the protectorate to the Thirteen Chiefdoms subject"]
     D0 --> D1["-5% Zulu radicals; Imperial Administration + amendment"]
-    D1 --> F
-    D1 --> D2["Five-year dismantling lock; no incorporation-speed benefit"]
+    D1 --> D2["Five-year dismantling lock; no incorporation-speed benefit while ZUL owns the state"]
     E --> E1["Retain the Crown-led ZUL protectorate"]
-    E1 --> E2["At 0 liberty desire: decision annexes ZUL, then begins the integration transition"]
-    F --> G["If the engine starts ZUL secession: Boer-aid event"]
-    G --> H["TRN may receive the Vryheid provinces immediately for military assistance"]
+    E1 --> E2["At 0 liberty desire: annex ZUL, apply the authored post-annex marker, and request normal incorporation"]
+    C2 --> F["If the engine starts ZUL secession, restore the rebel constitution and evaluate the Boer appeal"]
+    F --> G{"Rebel ZUL controls all of STATE_ZULULAND and TRN accepts?"}
+    G -->|"Yes"| H["Create greater NRP and deliver the three-year aid package; never transfer Vryheid directly to TRN"]
+    G -->|"No"| I["The ordinary ZUL secession continues without NRP creation"]
+    H --> J{"Final secession result"}
+    I --> J
+    J -->|"ZUL survives"| K["Honour greater NRP; no imperial boundary ultimatum"]
+    J -->|"NAL reabsorbs ZUL and NRP exists"| L["Issue the NAL/GBR-to-NRP boundary ultimatum"]
+    L -->|"Accept"| M["Reduce NRP to Vryheid"]
+    L -->|"Refuse"| N["Resolve the authored locked boundary play from its final war state"]
 ```
 
-## Audit findings
+## Victoria 3 1.14.0 Open Beta 1 lifecycle addendum — authoritative
+
+The flow diagram above records the story topology. The following rules own play closure, incorporation completion, and recovery under OB1. They supersede older lifecycle language elsewhere in this design record without changing the agreed constitutional outcomes.
+
+### War timers and final-state settlement
+
+- OB1 can enforce eligible goals by occupation timer before a multi-goal war ends and can later enforce a mirrored goal in the opposite direction. `on_wargoal_enforced` therefore records only an idempotent route-specific pending or accepted-demand bit. It must not annex a country, transfer the terminal story state, choose a settlement winner, grant a union, or fire a terminal event merely because one goal enforced.
+- War-end resolution reads the final authoritative predicate once: actual state ownership for territorial routes, the live subject relation for subject routes, and the live treaty/article state for imposed-rights routes. A pre-war back-down has no `on_war_end`, so the same idempotent resolver records the demand won by the non-backing side and closes the route immediately.
+- Natal and Martinus story Humiliation use the hidden assent-required `sb_story_humiliation` goal. It has no occupation timer and no mirror. Their shared truth table is authoritative: only the initiator demand accepted selects the initiator outcome; only the target demand accepted selects the target outcome; neither selects white-peace cleanup; both select mutual stand-down and grant neither exclusive victory, annexation, nor union.
+- Timer-safe territorial goals retain OB1's same-war mirror only where the inverse is valid. Third-party/proxy transfers and irreversible claim records are assent-required. Territory is reconciled before a recorded claim removal is applied.
+- Every scripted `dp_sb_*` launcher preflights the exact type, initiator, and target; takes a route-specific launch lease; configures only the actual new play in the play-start hook; adds every replacement goal before removing its placeholder; and clears the lease on success, refusal, back-down, war end, or creation failure. No post-create random play lookup may mutate an older or unrelated play.
+- These rules cover the postwar British–Zulu/Natal handoff and NRP boundary routes as well as the wider Natal, Klip River, Martinus, Kimberley, frontier, Swazi/Zulu, Great Trek, BST, and Bechuanaland story-war matrix. They do not change ordinary Vanilla diplomatic plays.
+
+### Zululand incorporation ownership lifecycle
+
+- `sb_regional_ai_should_incorporate` is a general OB1 AI priority, not proof that NAL entered this story. It admits only AI NAL/`STATE_ZULULAND`, CAP/`STATE_BECHUANALAND`, CAP/`STATE_GRIQUALAND_WEST`, and ORA/`STATE_DRAKENSBERG`, always with `owner = root`. It is routed through the ordinary, colonial, and value/scoring incorporation overrides without a population, adjacency, full-state, homeland-time, or narrative-request gate.
+- NAL's request, started, post-annex, and completion-pending variables remain story leases used only for authored settlement modifiers, hut-tax cleanup, and `sb_zululand_settlement.130` prose. A generic NAL acquisition may receive the AI priority, but it incorporates silently and must not be described as the authored conquest settlement.
+- The `STATE_ZULULAND` owner-change handler synchronously clears those transient leases when the new owner is not NAL. It preserves the durable completed marker, so a completed annexation cannot replay its prose after later reacquisition. An unfinished authored route may start cleanly after NAL reacquires the state.
+- Scheduling `.130`, its trigger, and its option mutation each independently require an authored route marker, current NAL ownership, and actual incorporation. If ownership or incorporation changes during the one-day delay, the stale event performs cleanup only and leaves a clean retry path.
+- The two OB1 `will` overrides make the exact regional mappings willing candidates; they cannot bypass affordability, code-side validity, or highest-candidate selection and do not promise immediate or simultaneous completion.
+
+### Runtime limits that remain open
+
+Static structure is not engine certification. The complete `Docs/compatibility/1_14_0_open_beta_1_runtime_matrix.md` remains authoritative, and every unrun case is `Engine pending`. In particular, a fresh OB1 campaign must still prove:
+
+- occupation enforcement, mirror reversal, final-predicate reconciliation, both-sided negotiated peace, both back-down directions, and save/reload without an early or duplicate terminal settlement;
+- play-start hook ordering, launch-lease cleanup, and forced creation failure while an unrelated old play exists;
+- NAL incorporation under both ordinary and colonial caller paths, silent generic incorporation, owner loss/reacquisition, the one-day completion race, and preservation of the durable completion marker;
+- all eight Vanilla/SB subject-restoration relationships, including the exact Zulu chiefdom relation and revolution behavior;
+- the nested NAL–ZUL relationship at NAL's live rank, complete-state handoff, NRP/ZUL last-state peace restrictions, and all map/naval paths used by the settlement; and
+- fresh logs with no SB-authored parser, scope, missing-texture, treaty, container, or missing-localisation error.
+
+This target promises new-game compatibility only. A live pre-OB1 campaign is not a supported migration input; save/reload within a new OB1 campaign is required.
+
+## Pre-rebuild audit findings (historical)
+
+The bullets in this section record the defects that motivated the rebuild. They are not the live contract where the OB1 lifecycle addendum or final Decision register states a later outcome.
 
 ### Event presentation
 
@@ -110,7 +153,7 @@ flowchart TD
 - Before 1884, the claimant effect may generate a generic Zulu agitator. Monthly maintenance can later add Dinuzulu as another agitator, but it does not remove or supersede that generic claimant.
 - If the Mbuyazi succession was chosen, the code uses Mbuyazi's scripted son and removes Dinuzulu's agitator role.
 - The Boer-aid event is triggered by any engine-created ZUL secession against NAL. It has no date, claimant, settlement-path, or Dinuzulu gate.
-- ZUL's AI always asks TRN for support when TRN exists. TRN's acceptance is dynamic, but accepted aid transfers the five scripted Vryheid provinces immediately while the secession is still under way.
+- Superseded legacy behavior: ZUL's AI always asked TRN for support when TRN existed, and accepted aid transferred five scripted Vryheid provinces directly to TRN during the secession. The live route instead creates greater NRP only after the full-state gate and delivers the three-year aid package; it never pays TRN with an immediate province transfer.
 - The subordinate-crown option does not create a national movement and does not enter this secession/Boer-aid chain. Its restored ruler can be Dinuzulu after 1884, but that is a separate code path.
 
 ## Fixed constraints
@@ -1046,11 +1089,11 @@ Status: **implemented on 3 September 2026; static validation complete**.
 
 This pass concerns an ordinary engine-created Zulu cultural secession after NAL chose direct annexation in `sb_natal_interwar.030.a`, directly owns Zululand, and then fails to contain Zulu radicalism. It does not replace the Zulu national movement, force that movement to rebel, or reuse the internal Thirteen Chiefdoms situation as a second rebellion system. In particular, it is distinct from the earlier uSuthu–Zibhebhu route and its ZUL–NRP boundary confrontation.
 
-### Current implementation audit
+### Pre-implementation audit (resolved)
 
 - `on_secession_start` supplies NAL as `ROOT` and the uprising country as `scope:target`. SB already detects a ZUL secession in that hook and opens the Boer-aid story.
 - The engine-created ZUL initially inherits NAL's constitutional order. Its restoration package must therefore run after the engine has finished creating the secession country, rather than directly inside the first secession callback.
-- The existing accepted-aid effect does not create NRP. It immediately transfers `xE1E455 xE882CE x1A084B xBFA16B x41C070` from `STATE_ZULULAND` to TRN, then creates a five-year treaty containing military assistance and only 10 units of small arms. This is the confirmed legacy province transfer and is to be replaced, not corrected in place.
+- The pre-rebuild accepted-aid effect did not create NRP. It transferred `xE1E455 xE882CE x1A084B xBFA16B x41C070` from `STATE_ZULULAND` to TRN and created a five-year treaty containing military assistance and only 10 units of small arms. The rebuild replaced that legacy surface with greater-NRP creation and the bounded three-year aid package rather than correcting the direct transfer in place.
 - The existing greater-NRP footprint is `xE1E455 xE882CE xBE6FEE x904EBE x9E9742`; the reduced footprint after the imperial boundary settlement is `xBE6FEE xE882CE`.
 - Vanilla supports multiple goods-transfer articles in one treaty, so grain and small arms can be represented separately. A treaty `binding_period`, however, is a minimum lock rather than an automatic expiry; a genuinely three-year aid package therefore needs explicit 36-month cleanup.
 - The military contingent is a Dragoons unit, avoiding the incompatible technology requirement attached to Shrapnel Artillery. Artillery is not transferred as treaty goods.
@@ -1115,8 +1158,8 @@ No design choices remain open.
 ### Agreed
 
 - The persistent Shepstone land-and-subsistence system affects `STATE_NATAL` only; it does not spill into Zululand.
-- Direct administration (`.030.a`) explicitly begins incorporating Zululand for both player and AI NAL rather than leaving the action to vanilla AI's long-duration gate.
-- The Crown-led integration decision uses ordinary annexation rather than `annex_with_incorporation` and automatically begins normal incorporation of Zululand with no temporary speed bonus. Its preceding protectorate phase plus ordinary incorporation makes it the longest route.
+- Direct administration (`.030.a`) annexes ZUL and records the authored incorporation request. A player uses the normal incorporation interaction. AI NAL is admitted through both applicable OB1 `will` branches, but affordability, code-valid candidate selection, and priority against other states still control when progress begins.
+- The Crown-led integration decision uses ordinary annexation rather than `annex_with_incorporation`, records its post-annex/request lease, and grants no temporary speed bonus. A player uses the normal incorporation interaction; AI selection uses the same bounded OB1 priority. Its preceding protectorate phase plus ordinary incorporation keeps it the longest route without promising an immediate start command.
 - A player GBR who rejects the handoff uses direct British administration: GBR owns the complete Zululand state, receives a substantial Zulu-radical shock there, and creates an ordinary engine-driven Zulu cultural-national movement.
 - NAL's first creation ensures a normal Zulu cultural-national movement and applies vanilla Initial Enthusiasm for Movement once. Later tag transformation or settlement maintenance does not refresh it, and the foundation hook does not install a restoration agitator.
 - If the uSuthu–Zibhebhu conflict is modelled, it will not use a literal engine civil war.
@@ -1222,7 +1265,7 @@ They remain useful balance references. Any that survive must be reassigned expli
 
 - Exact first-test radical percentages for direct Natal administration, direct British administration, the initial Chiefdoms settlement, victorious Zibhebhu, and Crown restoration.
 - The invented successor's name for the explicitly speculative Dingane/Uthumbo line.
-- Exact validated syntax for starting normal state incorporation from script; the design requires automatic start but forbids instant incorporation.
+- Resolved for OB1: no unverified scripted start command is used. Authored routes record request/post-annex state; players use the normal interaction, while AI willingness is routed through both OB1 caller branches and remains subject to affordability and code-side candidate selection. Runtime timing remains in `OB1-AI-01` and `OB1-AI-02`.
 - Whether the first-test hut-tax value should remain +5% after runtime revenue testing.
 - Whether Britain's Anglo-Zulu play remains annex-country or becomes a temporary protectorate followed by the same three-way imperial settlement.
 - Whether a player-GBR direct-administration choice should apply Initial Enthusiasm to the ordinary Zulu national movement in addition to creating it.

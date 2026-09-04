@@ -1,22 +1,18 @@
 # Spes Bona Audit Issues — Open
 
-Last refreshed: 2026-08-21
+Last refreshed: 2026-09-04
 
-Repository baseline: `de97d34cb1776bfbe804bf524d8d9815ef55b2d7`
+Approved implementation baseline: `51c98bf32fc9f9049c99f858f5a558bdfde0dffe`
 
-Target: Victoria 3 `1.13.11`, Steam build `24799966`, Vanilla checksum `a47f`
+Target: Victoria 3 `1.14.0` Open Beta 1, Steam build `25081502`, branch `1.14-openbeta`, core depot manifest `3868129321396195520`
 
-Dependency baseline: Community Mod Framework `1.65.0`, commit `d832d15`
+Dependency baseline: Community Mod Framework `1.66.0`, commit `807c32ff42b75714a3a0e090c0db3357b5e46ed7`
 
 ## Status
 
-This register tracks **open work only**: the six deferred gates below, the remaining FA-round
-items, and content-design decisions awaiting DP. Closed tickets from every audit round live in
-[audit_issues_completed.md](audit_issues_completed.md).
+This register tracks **open work only**: the six deferred gates below, the remaining FA-round items, the OB1 follow-up findings, and content-design decisions awaiting DP. Closed tickets from every audit round live in [audit_issues_completed.md](audit_issues_completed.md).
 
-Strict release certification remains contingent on the engine-only cases in
-`Docs/compatibility/1_13_11_runtime_matrix.md`; those cases cannot be certified by static
-analysis and are not marked as passed here.
+Static success is not runtime certification. Strict release certification remains contingent on every engine-only case in `Docs/compatibility/1_14_0_open_beta_1_runtime_matrix.md`; every unrun row remains `Engine pending`. The unchanged `Docs/compatibility/1_13_11_runtime_matrix.md` is historical evidence only.
 
 ## Deferred Gates
 
@@ -48,9 +44,6 @@ Closed FA findings are recorded in the completed register. What remains:
 | `FA-24` | Awaiting DP decision | MTB territory trim. Research delivered: `../References/mtb_territory_proposal.md` (tiered proposal; preserves every Vegkop event input province). |
 | `FA-26R` | Reopened by playtest | Kimberley discovery can remain blocked long after the historical discovery window when WBL is annexed before discovery. In the 1879-01-01 ORA playtest save, Griqualand West had no diamond mine, potential, or discovery marker because ORA lacked both `mechanical_tools` and `dynamite`, while CAP lacked the currently required `dynamite`. Decide and implement a historical-date fallback (recommended within 1867-68) while retaining the event-led 1 + 19 package; cover the late, post-WBL-annexation case with a static test and fresh-start runtime check. |
 
-
-> **FA-09 update (DP, 2026-08-21):** the dead `c:SAF ?= { ... }` relations block (which contained the stray `c:TRN` rows and the duplicated SWZ pair) has been commented out in `common/history/diplomacy/00_relations.txt`; inventory hash regenerated. The manifest wording still says "removes only ORA→TRN" and should be reworded at the next touch of that file.
-
 ### Content backlogs spun out of the FA round
 - **Formed-TRN opening relations (from DP note in `00_relations.txt`):** nothing sets
   TRN↔SWZ/GZA relations when Transvaal forms, so it starts at 0. Decide whether the trek
@@ -69,28 +62,46 @@ Closed FA findings are recorded in the completed register. What remains:
   colonizing Namaqualand without the expected story flag. Reproduce the route and audit
   every colonization-rights grant before changing the gate.
 
+## 1.14 Open Beta 1 Findings Registered for Follow-up
+
+These findings were exposed or rechecked during the exact OB1 rebase. They are outside the approved war, subject, AI-incorporation, map, asset-path, and two isolated script-fix scope. This patch records them without silently changing their mechanics or presentation.
+
+| ID | State | Finding | What closes it |
+|---|---|---|---|
+| `OB1-01` | Runtime/design follow-up | Several treaty matchers can select or withdraw more than their authored bundle: compact renewal, Martinus/ZPB compact cleanup, Natalia annulment, frontier-goods cleanup, TRN–ZUL expiry, and partial Delagoa/imperial duplicate checks. OB1 AI ship selling increases the chance that an unrelated ship-transfer article shares such a treaty. | Add scenario tests for mixed treaties and narrow each matcher only where the authored article identity can be proven. Do not infer safety from the isolated ORA–ZUL small-arms fix. |
+| `OB1-02` | Design/reachability follow-up | `STATE_LOURENCO_MARQUES_state_name_assign` is never dispatched, leaving its authored Portuguese/Southern-Bantu state and hub names unreachable. The German Hereroland/Namaqualand keys for Windhuk, Tsumeb, Swakopmund, and Walvis Bay have no assign effect or `set_hub_names = german` route. | Decide the intended routing policy, make the smallest explicit routing change, and cover both positive and negative name transitions. |
+| `OB1-03` | Design follow-up | SB's TRN replacement omits Vanilla `dyn_c_transvaal_colony`, so a mature British-controlled TRN can retain republic naming. This is a missing design branch, not a safe mechanical rebase. | DP selects the intended name/tier and approves its localisation before implementation. |
+| `OB1-04` | Runtime gameplay follow-up | `law_sb_amabutho_system` may omit `country_can_only_conscript_peasants_bool = yes`. All referenced unit IDs still resolve, so the audit does not prove a parser defect. | Run the formation/conscription gameplay case, then make a balance decision from observed unit eligibility. |
+| `OB1-05` | Runtime entitlement follow-up | Seven event-image calls resolve on the all-DLC installation but have no matching entitlement gates: `sb_klip_river_county.010` at `events/sb_klip_river_county_events.txt:43` (`ep1_redcoats`); `sb_nam.140` at `events/sb_namibia_events.txt:1253` (`votp_french_algeria`); `sb_natal_crisis.110` at `events/sb_natal_crisis_events.txt:1219` (`votp_gunboat_diplomacy`); `sb_natal_crisis.115` at `events/sb_natal_crisis_events.txt:1788` (`ep1_transfer_of_authority`); `sb_natal_interwar.005` at `events/sb_natal_interwar_events.txt:63` (`ip4_colonial_exploitation_going_well`); `sb_natal_interwar.030` at `events/sb_natal_interwar_events.txt:153` (`ep1_transfer_of_authority`); and `sb_pink_map.040` at `events/sb_pink_map_events.txt:305` (`ep1_printing_press`). | Run each exact event with its relevant DLC disabled and record image/error-log evidence before changing DP-selected art or adding gates. |
+| `OB1-06` | Runtime/design follow-up | ORA/TRN have no explicit `stance_colonize_region`, while OB1's default excludes unrecognized countries. It is unknown whether adjacency or another engine path still produces the intended behavior. | Observe fresh ORA/TRN cases under OB1, then decide whether an explicit stance is needed. |
+
+Existing `FA-26R` remains open. The Kimberley historical-date fallback must stay in scope when the Griqualand pipeline receives later content work.
+
+## Recorded OB1 Rebase Decisions Awaiting Runtime Evidence
+
+- DP approved retirement of `dp_sb_griqualand_revoke_claim` after an exhaustive search found no launcher. The `0.20.0` implementation removes the definition, its two handler branches, and its three unreviewed localisation keys together, and adds no replacement launch route. Do not move this outcome to the completed register until the integrated static gates prove that no definition, handler, or localisation residue remains. Its cold-load/database check is `OB1-GQ-00` and remains `Engine pending` until run.
+- `sb_griqualand_west.254` no longer starts three simultaneous plays. Phase A settles claim priority between CAP and the live Boer claimant. Phase B challenges independent WBL only when exactly one legal claim survives. A zero-demand Phase-A white peace preserves both claims and WBL ownership, starts no later play, and finalizes once. All sequence, save/reload, invalidation, retry, proxy, and last-state settlement rows `OB1-GQ-01` through `OB1-GQ-08` remain `Engine pending`.
+- The open-beta target is new-game compatibility. No migration of a live pre-OB1 campaign is promised. Save/reload inside a fresh OB1 campaign remains mandatory.
+
 ## Validation Contract
 
-Current static evidence (2026-08-21; corrected during the FA round — the previous entry still said 126 tests, 14/14 categories, 102 keyed overrides, and 17 state-region blocks):
-
-- `139` unit tests pass.
-- The integrated validator passes `13/13` categories with `0` failures.
-- The override comparison reports `36` exact-path files, `103` keyed overrides, `18` changed state-region blocks, and `0` `replace_path` directives.
-- Tiger passes against the installed `1.13.11` game data.
-- Localisation structure passes with `91` reviewed and `143` still assigned to human review.
-- The delayed-event lifecycle inventory and all `84` scripted war-goal blocks pass their structural checks.
-- `git diff --check` passes.
-
-Run:
+The `0.20.0` static release candidate must pass all of these gates on the same integrated tree before a new completed-audit section is added:
 
 ```sh
+python3 -B -m unittest discover -s tests -q
+python3 -B tools/validate.py --skip-cmf-sync
 python3 -B tools/validate.py \
   --game-root '/path/to/Victoria 3/game' \
   --cmf-root '/path/to/Community Mod Framework' \
   --tiger
+python3 -B tools/check_override_inventory.py \
+  --game-root '/path/to/Victoria 3/game' \
+  --cmf-root '/path/to/Community Mod Framework'
 git diff --check
 ```
 
-The suite checks unit tests, exact-path and keyed overrides, game/build/dependency metadata, CMF and Vanilla API surfaces, map connectivity and generated assets, localisation structure, on-action routing, stale and unused symbols, delayed-event lifecycle, deferred gates, and 1.13.11 release invariants.
+The direct checker must report zero drift against build `25081502`, branch `1.14-openbeta`, core depot manifest `3868129321396195520`, and CMF `1.66.0`. The suite must also verify the depot delta, structured spline merge, localisation review boundaries and queue, subject/war contracts, AI-incorporation overrides, naval-port connectivity, delayed-event lifecycle, changed-file BOM state, and absence of stale live-baseline labels.
 
-Release support becomes strict only after every engine case in the runtime matrix is recorded as passing and fresh launch logs contain no new SB-authored errors. Fresh starts are authoritative; active 1.13.9 corridor crises are not migrated.
+Tiger currently advertises older schema support, so any Victoria 3 `1.14` Tiger diagnostic is advisory unless its schema has been updated. Repository semantic gates remain mandatory. A test that actually fails is a blocker; it cannot be relabelled `Engine pending`.
+
+Release support becomes strict only after every runtime-matrix row is recorded with a fresh OB1 run, exact command/save/load order, UTC timestamp, and rotated-log hashes, and fresh logs contain no new SB-authored errors.
