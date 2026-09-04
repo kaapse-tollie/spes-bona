@@ -52,16 +52,16 @@ EXPECTED_HUBS = {
         "wood": "xBE6FEE",
     },
 }
-SPLINE_PRE_SPLIT_SHA256 = "b96c927167595c0430c21ad471508d79585fa6a84a440c6230e8896193099715"
-SPLINE_NATAL_REINDEX_SHA256 = "74cebc60ca7155f598f03924b725de0b3f0e060ca37af8dc356a4b120cb36274"
+SPLINE_PRE_REINDEX_SHA256 = "e9fdab54f3267538ae35f7990818166ae9581af9eac535f4e8bf4753356a5673"
+SPLINE_NATAL_REINDEX_SHA256 = "9fd9d83f0b651284d5ef22066d19239fd9e1127d25c14c0763eca3bbade5ef8c"
 SPLINE_ANCHOR_ID_PATCHES = (
     (0x0097DE, 25703, 121303),
     (0x009800, 25704, 121304),
-    (0x128E30, 25703, 121303),
-    (0x1660F6, 25704, 121304),
-    (0x167928, 25703, 121303),
-    (0x16793A, 25704, 121304),
-    (0x168146, 25704, 121304),
+    (0x128DCA, 25703, 121303),
+    (0x165DDC, 25704, 121304),
+    (0x16760E, 25703, 121303),
+    (0x167620, 25704, 121304),
+    (0x167E2C, 25704, 121304),
 )
 
 
@@ -258,7 +258,7 @@ class NatalZululandStateSplitTests(unittest.TestCase):
         )
         self.assertEqual(21, len(changed_bytes))
         self.assertEqual(
-            SPLINE_PRE_SPLIT_SHA256,
+            SPLINE_PRE_REINDEX_SHA256,
             hashlib.sha256(reconstructed).hexdigest(),
         )
 
