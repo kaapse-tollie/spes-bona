@@ -1,24 +1,41 @@
-﻿# Preserve Vanilla incorporation policy, with one narrow exception for AI Natal's
-# scripted postwar settlement. The engine exposes no script effect that starts the
-# ordinary incorporation interaction, so this lets the normal AI command do it.
+﻿# Preserve the complete Vanilla 1.14.0 incorporation gates while giving the AI
+# exact regional priorities selected for Natal, the Cape, and Oranje. The helper
+# is state-scoped; root is the country evaluating incorporation.
 
-sb_zululand_ai_should_incorporate = {
-	state_region = s:STATE_ZULULAND
-	owner = {
-		country_definition = cd:NAL
+sb_regional_ai_should_incorporate = {
+	owner = root
+	root = {
 		is_ai = yes
-		OR = {
-			has_variable = sb_zululand_incorporation_requested_var
-			has_variable = sb_zululand_incorporation_started_var
+	}
+	OR = {
+		AND = {
+			root = { country_definition = cd:NAL }
+			state_region = s:STATE_ZULULAND
+		}
+		AND = {
+			root = { country_definition = cd:CAP }
+			state_region = s:STATE_BECHUANALAND
+		}
+		AND = {
+			root = { country_definition = cd:CAP }
+			state_region = s:STATE_GRIQUALAND_WEST
+		}
+		AND = {
+			root = { country_definition = cd:ORA }
+			state_region = s:STATE_DRAKENSBERG
 		}
 	}
 }
 
 REPLACE:ai_can_incorporate_state = {
 	OR = {
-		is_homeland_of_country_cultures = root
-		"years_to_incorporate(root)" <= define:NAI|INCORPORATE_STATE_MAX_YEARS
-		sb_zululand_ai_should_incorporate = yes
+		AND = {
+			OR = {
+				is_homeland_of_country_cultures = root
+				"years_to_incorporate(root)" <= define:NAI|INCORPORATE_STATE_MAX_YEARS
+			}
+		}
+		sb_regional_ai_should_incorporate = yes
 	}
 }
 
@@ -31,6 +48,22 @@ REPLACE:ai_will_incorporate_state = {
 			}
 			state_population >= define:NAI|INCORPORATE_STATE_MIN_POPULATION
 		}
-		sb_zululand_ai_should_incorporate = yes
+		sb_regional_ai_should_incorporate = yes
+	}
+}
+
+REPLACE:ai_colony_will_incorporate_state = {
+	OR = {
+		AND = {
+			OR = {
+				region = root.capital.region
+				any_neighbouring_state = {
+					owner = root
+					is_incorporated = yes
+				}
+			}
+			state_population >= define:NAI|INCORPORATE_STATE_MIN_POPULATION
+		}
+		sb_regional_ai_should_incorporate = yes
 	}
 }
