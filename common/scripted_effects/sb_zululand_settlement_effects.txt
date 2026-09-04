@@ -1550,6 +1550,7 @@ sb_zululand_check_natal_incorporation = {
 			country_definition = cd:NAL
 			has_variable = sb_zululand_incorporation_requested_var
 			s:STATE_ZULULAND.region_state:NAL ?= {
+				owner = root
 				is_incorporated = no
 				incorporation_progress > 0
 			}
@@ -1569,7 +1570,10 @@ sb_zululand_check_natal_incorporation = {
 			}
 			NOT = { has_variable = sb_zululand_incorporation_complete_var }
 			NOT = { has_variable = sb_zululand_incorporation_complete_pending_var }
-			s:STATE_ZULULAND.region_state:NAL ?= { is_incorporated = yes }
+			s:STATE_ZULULAND.region_state:NAL ?= {
+				owner = root
+				is_incorporated = yes
+			}
 		}
 		set_variable = sb_zululand_incorporation_complete_pending_var
 		trigger_event = { id = sb_zululand_settlement.130 days = 1 popup = yes }
@@ -2069,123 +2073,87 @@ sb_nrp_notify_natal_of_boundary_cutback = {
 }
 
 sb_nrp_add_boundary_war_goals = {
+	# Root is the exact play admitted by on_diplomatic_play_started.
 	s:STATE_ZULULAND.region_state:NRP ?= { save_temporary_scope_as = sb_nrp_boundary_nrp_state }
 	if = {
-		limit = { has_variable = sb_nrp_direct_annexation_rebellion_var }
+		limit = { c:NRP ?= { has_variable = sb_nrp_direct_annexation_rebellion_var } }
 		s:STATE_ZULULAND.region_state:NAL ?= { save_temporary_scope_as = sb_nrp_boundary_natal_state }
-		scope:sb_nrp_boundary_play ?= {
-			remove_war_goal = {
-				who = initiator
-				type = humiliation
-			}
-			if = {
-				limit = {
-					c:NAL ?= {
-						is_country_alive = yes
-						NOT = { this = scope:sb_nrp_boundary_initiator }
-					}
-				}
-				add_initiator_backers = { c:NAL }
-			}
-			add_war_goal = {
-				holder = c:NAL
-				type = annex_country
-				target_country = c:NRP
-				primary_demand = yes
-			}
-			add_war_goal = {
-				holder = c:NRP
-				type = return_state
-				target_country = c:NAL
-				target_state = scope:sb_nrp_boundary_natal_state
-				primary_demand = yes
-			}
-		}
+		if = { limit = { c:NAL ?= { is_country_alive = yes NOT = { this = scope:initiator } } } add_initiator_backers = { c:NAL } }
+		# Replacement goals are installed before the engine-required placeholder.
+		add_war_goal = { holder = c:NAL type = annex_country target_country = c:NRP primary_demand = yes }
+		add_war_goal = { holder = c:NRP type = return_state target_country = c:NAL target_state = scope:sb_nrp_boundary_natal_state primary_demand = yes }
 	}
 	else = {
 		s:STATE_ZULULAND.region_state:ZUL ?= { save_temporary_scope_as = sb_nrp_boundary_zul_state }
-		scope:sb_nrp_boundary_play ?= {
-			remove_war_goal = {
-				who = initiator
-				type = humiliation
+		add_initiator_backers = { c:ZUL }
+		if = { limit = { c:NAL ?= { is_country_alive = yes NOT = { this = scope:initiator } } } add_initiator_backers = { c:NAL } }
+		add_war_goal = { holder = c:ZUL type = return_state target_country = c:NRP target_state = scope:sb_nrp_boundary_nrp_state primary_demand = yes }
+		add_war_goal = { holder = c:NRP type = return_state target_country = c:ZUL target_state = scope:sb_nrp_boundary_zul_state primary_demand = yes }
+	}
+	remove_war_goal = { who = initiator type = sb_story_humiliation }
+}
+
+# Root is the actual new play. Do not select a same-type play after creation.
+sb_nrp_configure_started_boundary_play = {
+	if = {
+		limit = {
+			is_diplomatic_play_type = dp_sb_nrp_boundary_confrontation
+			scope:initiator ?= { has_variable = sb_nrp_boundary_launch_lease_var }
+			c:NRP ?= {
+				is_country_alive = yes
+				has_variable = sb_nrp_boundary_confrontation_active_var
+				has_variable = sb_nrp_boundary_initiator_scope
+				var:sb_nrp_boundary_initiator_scope = scope:initiator
 			}
-			add_initiator_backers = { c:ZUL }
-			if = {
-				limit = {
-					c:NAL ?= {
-						is_country_alive = yes
-						NOT = { this = scope:sb_nrp_boundary_initiator }
-					}
-				}
-				add_initiator_backers = { c:NAL }
-			}
-			add_war_goal = {
-				holder = c:ZUL
-				type = return_state
-				target_country = c:NRP
-				target_state = scope:sb_nrp_boundary_nrp_state
-				primary_demand = yes
-			}
-			add_war_goal = {
-				holder = c:NRP
-				type = return_state
-				target_country = c:ZUL
-				target_state = scope:sb_nrp_boundary_zul_state
-				primary_demand = yes
+			OR = {
+				scope:target ?= { country_definition = cd:NRP }
+				AND = { scope:target ?= { country_definition = cd:TRN } c:NRP ?= { is_direct_subject_of = scope:target } }
 			}
 		}
+		if = { limit = { scope:target ?= { country_definition = cd:TRN } } add_target_backers = { c:NRP } }
+		sb_nrp_add_boundary_war_goals = yes
+		scope:initiator = { remove_variable = sb_nrp_boundary_launch_lease_var }
 	}
 }
+
 
 sb_nrp_launch_boundary_confrontation = {
 	if = {
 		limit = {
 			country_definition = cd:NRP
 			has_variable = sb_nrp_boundary_initiator_scope
-			OR = {
-				c:ZUL ?= { is_country_alive = yes }
-				AND = {
-					has_variable = sb_nrp_direct_annexation_rebellion_var
-					c:NAL ?= { is_country_alive = yes }
-				}
-			}
+			OR = { c:ZUL ?= { is_country_alive = yes } AND = { has_variable = sb_nrp_direct_annexation_rebellion_var c:NAL ?= { is_country_alive = yes } } }
 		}
 		var:sb_nrp_boundary_initiator_scope = { save_temporary_scope_as = sb_nrp_boundary_initiator }
-		set_variable = sb_nrp_boundary_confrontation_active_var
 		if = {
-			limit = {
-				c:NRP ?= {
-					is_country_alive = yes
-					is_direct_subject_of = c:TRN
-					is_subject_type = subject_type_sb_boer_confederal_partner
+			limit = { c:NRP ?= { is_country_alive = yes is_direct_subject_of = c:TRN is_subject_type = subject_type_sb_boer_confederal_partner } }
+			if = {
+				limit = { scope:sb_nrp_boundary_initiator ?= { NOT = { any_diplomatic_play = { is_diplomatic_play_type = dp_sb_nrp_boundary_confrontation initiator = scope:sb_nrp_boundary_initiator target = c:TRN } } } }
+				set_variable = sb_nrp_boundary_confrontation_active_var
+				scope:sb_nrp_boundary_initiator = {
+					set_variable = sb_nrp_boundary_launch_lease_var
+					create_diplomatic_play = { type = dp_sb_nrp_boundary_confrontation target_country = c:TRN }
 				}
 			}
-			scope:sb_nrp_boundary_initiator = {
-				create_diplomatic_play = {
-					type = dp_sb_nrp_boundary_confrontation
-					target_country = c:TRN
-					add_target_backers = { c:NRP }
-				}
-			}
+			else = { set_variable = sb_nrp_boundary_launch_refused_var }
 		}
 		else = {
-			scope:sb_nrp_boundary_initiator = {
-				create_diplomatic_play = {
-					type = dp_sb_nrp_boundary_confrontation
-					target_country = c:NRP
+			if = {
+				limit = { scope:sb_nrp_boundary_initiator ?= { NOT = { any_diplomatic_play = { is_diplomatic_play_type = dp_sb_nrp_boundary_confrontation initiator = scope:sb_nrp_boundary_initiator target = c:NRP } } } }
+				set_variable = sb_nrp_boundary_confrontation_active_var
+				scope:sb_nrp_boundary_initiator = {
+					set_variable = sb_nrp_boundary_launch_lease_var
+					create_diplomatic_play = { type = dp_sb_nrp_boundary_confrontation target_country = c:NRP }
 				}
 			}
+			else = { set_variable = sb_nrp_boundary_launch_refused_var }
 		}
-		random_diplomatic_play = {
-			limit = {
-				initiator = scope:sb_nrp_boundary_initiator
-				is_diplomatic_play_type = dp_sb_nrp_boundary_confrontation
-			}
-			save_temporary_scope_as = sb_nrp_boundary_play
-		}
+		# On-start is synchronous under the approved Engine-pending contract.
 		if = {
-			limit = { exists = scope:sb_nrp_boundary_play }
-			sb_nrp_add_boundary_war_goals = yes
+			limit = { scope:sb_nrp_boundary_initiator ?= { has_variable = sb_nrp_boundary_launch_lease_var } }
+			scope:sb_nrp_boundary_initiator = { remove_variable = sb_nrp_boundary_launch_lease_var }
+			remove_variable = sb_nrp_boundary_confrontation_active_var
+			set_variable = sb_nrp_boundary_creation_failed_var
 		}
 		if = { limit = { has_variable = sb_nrp_boundary_initiator_scope } remove_variable = sb_nrp_boundary_initiator_scope }
 	}

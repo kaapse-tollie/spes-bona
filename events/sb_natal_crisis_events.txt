@@ -449,7 +449,7 @@ sb_natal_crisis.026 = {
 			target_country = c:ORA
 			add_war_goal = {
 				holder = c:ORA
-				type = humiliation
+				type = sb_story_humiliation
 				target_country = root
 			}
 		}
@@ -587,7 +587,7 @@ sb_natal_crisis.050 = {
 				target_country = root
 				add_war_goal = {
 					holder = root
-					type = humiliation
+					type = sb_story_humiliation
 					target_country = scope:zulu_kingdom
 				}
 			}
@@ -794,6 +794,45 @@ sb_natal_crisis.070 = {
 		ai_chance = {
 			base = 100
 		}
+	}
+}
+
+# Neutral close for a white peace or a negotiated mutual stand-down. This keeps
+# the authored frontier/Port Natal follow-up without granting either war result.
+sb_natal_crisis.081 = {
+	type = country_event
+	placement = root
+
+	title = sb_natal_crisis.081.t
+	desc = sb_natal_crisis.081.d
+	flavor = sb_natal_crisis.081.f
+
+	event_image = { video = "gfx/event_pictures/africa_soldiers_breaking_protest.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_military.dds"
+	duration = 3
+
+	trigger = { country_definition = cd:ZUL }
+
+	option = {
+		name = sb_natal_crisis.081.a
+		default_option = yes
+		hidden_effect = {
+			set_variable = sb_zulu_blood_river_resolved_var
+			set_variable = sb_zulu_port_natal_raid_available_var
+			sb_zulu_maybe_open_swazi_question = yes
+			c:ORA ?= {
+				set_variable = sb_natal_path_resolved_var
+				if = { limit = { has_variable = sb_natal_diplomacy_started_var } remove_variable = sb_natal_diplomacy_started_var }
+				if = { limit = { has_variable = sb_natal_war_active_var } remove_variable = sb_natal_war_active_var }
+				if = { limit = { has_variable = sb_natal_guns_bargain_war_var } remove_variable = sb_natal_guns_bargain_war_var }
+			}
+			if = { limit = { has_variable = sb_natal_war_active_var } remove_variable = sb_natal_war_active_var }
+			c:TRN ?= {
+				if = { limit = { has_variable = sb_trn_joined_natal_war_var } remove_variable = sb_trn_joined_natal_war_var }
+			}
+		}
+		ai_chance = { base = 100 }
 	}
 }
 

@@ -229,7 +229,7 @@ class ZululandPostwarSettlementTests(unittest.TestCase):
         self.assertGreaterEqual(len(started_routes), 1)
         started_route = min(started_routes, key=len)
         self.assertIn("is_diplomatic_play_type = dp_annex_war", started_route)
-        self.assertIn("scope:actor ?=", started_route)
+        self.assertIn("scope:initiator ?=", started_route)
         self.assertIn("sb_zululand_british_postwar_owner = yes", started_route)
         self.assertIn(
             "sb_zululand_discard_preannexation_royal_house_archive = yes",
@@ -237,15 +237,11 @@ class ZululandPostwarSettlementTests(unittest.TestCase):
         )
         self.assertNotIn("sb_zululand_restore_preannexation_royal_house = yes", back_down)
 
-        archive_routes = [
-            block
-            for block in nested_blocks(enforced, "if")
-            if "sb_zululand_archive_preannexation_royal_house = yes" in block
-        ]
-        self.assertGreaterEqual(len(archive_routes), 1)
-        archive_route = min(archive_routes, key=len)
-        self.assertIn("is_diplomatic_play_type = dp_annex_war", archive_route)
-        self.assertIn("ROOT = { sb_zululand_british_postwar_owner = yes }", archive_route)
+        # OB1 timer enforcement is reversible. The crown snapshot is taken once
+        # when the exact play starts, never again from a goal-enforcement callback.
+        self.assertNotIn(
+            "sb_zululand_archive_preannexation_royal_house = yes", enforced
+        )
         self.assertIn("root = { is_diplomatic_play_type = dp_annex_war }", war_end)
         self.assertIn("scope:actor ?= { sb_zululand_british_postwar_owner = yes }", war_end)
         self.assertIn(
@@ -472,25 +468,17 @@ class ZululandPostwarSettlementTests(unittest.TestCase):
         effects_path = "common/scripted_effects/sb_zululand_settlement_effects.txt"
         begin = object_block(effects_path, "sb_zululand_begin_natal_incorporation")
         check = object_block(effects_path, "sb_zululand_check_natal_incorporation")
-        overrides_path = "common/scripted_triggers/zz_sb_ai_incorporation_overrides.txt"
-        overrides = text(overrides_path)
-        helper = object_block(overrides_path, "sb_zululand_ai_should_incorporate")
 
         self.assertIn(
             "set_variable = sb_zululand_incorporation_requested_var", begin
         )
-        self.assertNotIn("start_incorporation", begin)
+        self.assertNotIn("start_incorporation", begin + check)
         self.assertIn("incorporation_progress > 0", check)
         self.assertIn("set_variable = sb_zululand_incorporation_started_var", check)
+        self.assertIn("owner = root", check)
+        self.assertIn("is_incorporated = no", check)
         self.assertIn("is_incorporated = yes", check)
         self.assertIn("id = sb_zululand_settlement.130", check)
-
-        self.assertIn("REPLACE:ai_can_incorporate_state", overrides)
-        self.assertIn("REPLACE:ai_will_incorporate_state", overrides)
-        self.assertIn("state_region = s:STATE_ZULULAND", helper)
-        self.assertIn("country_definition = cd:NAL", helper)
-        self.assertIn("is_ai = yes", helper)
-        self.assertIn("sb_zululand_incorporation_requested_var", helper)
 
     def test_dynastic_fallbacks_are_explicit_and_not_forced_agitators(self):
         templates = text("common/character_templates/sb_zulu_dynasty_characters.txt")

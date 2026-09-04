@@ -1485,32 +1485,34 @@ sb_natal_apply_restored_zulu_baseline = {
 }
 
 sb_natal_add_zulu_secession_war_goal = {
-	if = {
-		limit = { NOT = { has_claim = s:STATE_NATAL } }
-		s:STATE_NATAL = { add_claim = ROOT }
+	if = { limit = { NOT = { has_claim = s:STATE_NATAL } } s:STATE_NATAL = { add_claim = ROOT } }
+	# Never select a post-created play. A remaining lease proves on-start ordering
+	# did not authorize configuration and is an Engine-pending contract failure.
+	c:NAL ?= {
+		if = {
+			limit = { has_variable = sb_natal_zulu_secession_launch_lease_var }
+			remove_variable = sb_natal_zulu_secession_launch_lease_var
+			set_variable = sb_natal_zulu_secession_configuration_failed_var
+		}
 	}
+}
+
+# Root = exact engine-created play from on_diplomatic_play_started.
+sb_natal_configure_started_zulu_secession_play = {
 	if = {
-		limit = { exists = s:STATE_NATAL.region_state:NAL }
-		random_diplomatic_play = {
-			limit = {
-				OR = {
-					AND = {
-						initiator = ROOT
-						target = c:NAL
-					}
-					AND = {
-						initiator = c:NAL
-						target = ROOT
-					}
-				}
-			}
-			add_war_goal = {
-				holder = ROOT
-				type = return_state
-				target_country = c:NAL
-				target_state = s:STATE_NATAL.region_state:NAL
+		limit = {
+			is_diplomatic_play_type = dp_secession
+			c:NAL ?= { is_country_alive = yes has_variable = sb_natal_zulu_secession_launch_lease_var has_variable = sb_natal_zulu_restoration_active_var }
+			c:ZUL ?= { is_country_alive = yes has_variable = sb_natal_zulu_restoration_active_var }
+			exists = s:STATE_NATAL.region_state:NAL
+			OR = {
+				AND = { scope:initiator ?= { country_definition = cd:ZUL } scope:target ?= { country_definition = cd:NAL } }
+				AND = { scope:initiator ?= { country_definition = cd:NAL } scope:target ?= { country_definition = cd:ZUL } }
 			}
 		}
+		if = { limit = { NOT = { c:ZUL ?= { has_claim = s:STATE_NATAL } } } s:STATE_NATAL = { add_claim = c:ZUL } }
+		add_war_goal = { holder = c:ZUL type = return_state target_country = c:NAL target_state = s:STATE_NATAL.region_state:NAL }
+		c:NAL = { remove_variable = sb_natal_zulu_secession_launch_lease_var }
 	}
 }
 

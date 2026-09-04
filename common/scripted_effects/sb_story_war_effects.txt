@@ -1,0 +1,221 @@
+﻿# Shared 1.14 story-Humiliation recording and terminal resolution.
+# The assent-required goal can only record a peace choice. The diplomatic play
+# itself owns the one 0/1/2-side truth table and resolves after the final peace.
+
+sb_story_humiliation_clear_natal_state = {
+	if = { limit = { has_global_variable = sb_natal_story_initiator_demand_accepted_global_var } remove_global_variable = sb_natal_story_initiator_demand_accepted_global_var }
+	if = { limit = { has_global_variable = sb_natal_story_target_demand_accepted_global_var } remove_global_variable = sb_natal_story_target_demand_accepted_global_var }
+	if = { limit = { has_global_variable = sb_natal_story_war_active_global_var } remove_global_variable = sb_natal_story_war_active_global_var }
+	c:ORA ?= {
+		if = { limit = { has_variable = sb_natal_war_active_var } remove_variable = sb_natal_war_active_var }
+	}
+	c:ZUL ?= {
+		if = { limit = { has_variable = sb_natal_war_active_var } remove_variable = sb_natal_war_active_var }
+	}
+	c:TRN ?= {
+		if = { limit = { has_variable = sb_trn_joined_natal_war_var } remove_variable = sb_trn_joined_natal_war_var }
+	}
+}
+
+sb_story_humiliation_clear_martinus_state = {
+	if = { limit = { has_global_variable = sb_martinus_story_initiator_demand_accepted_global_var } remove_global_variable = sb_martinus_story_initiator_demand_accepted_global_var }
+	if = { limit = { has_global_variable = sb_martinus_story_target_demand_accepted_global_var } remove_global_variable = sb_martinus_story_target_demand_accepted_global_var }
+	if = { limit = { has_global_variable = sb_martinus_story_war_active_global_var } remove_global_variable = sb_martinus_story_war_active_global_var }
+}
+
+sb_story_humiliation_martinus_stand_down = {
+	c:TRN ?= {
+		if = { limit = { has_variable = sb_martinus_story_humiliation_route_var } remove_variable = sb_martinus_story_humiliation_route_var }
+		set_variable = sb_martinus_ambition_resolved_var
+		set_variable = sb_martinus_legal_union_resolved_var
+		if = { limit = { has_variable = sb_martinus_legal_union_pending_var } remove_variable = sb_martinus_legal_union_pending_var }
+	}
+	c:ORA ?= {
+		if = { limit = { has_variable = sb_martinus_legal_union_pending_var } remove_variable = sb_martinus_legal_union_pending_var }
+		sb_martinus_restore_ora_historical_groot_boere_leader = yes
+	}
+}
+
+# Root = enforcing country; scope:target and scope:diplomatic_play come from
+# on_wargoal_enforced. Timer enforcement is diagnostic-only and cannot resolve.
+sb_story_humiliation_record_enforcement = {
+	if = {
+		limit = {
+			exists = scope:enforced_by_timer
+			scope:diplomatic_play ?= {
+				OR = {
+					is_diplomatic_play_type = dp_sb_natal_crisis
+					is_diplomatic_play_type = dp_sb_martinus_humiliation
+				}
+			}
+		}
+		set_global_variable = sb_story_humiliation_timer_seen_global_var
+	}
+	else_if = {
+		limit = {
+			has_global_variable = sb_natal_story_war_active_global_var
+			scope:diplomatic_play ?= { is_diplomatic_play_type = dp_sb_natal_crisis }
+			OR = {
+				AND = {
+					country_definition = cd:ORA
+					has_variable = sb_natal_war_active_var
+					scope:target ?= { country_definition = cd:ZUL has_variable = sb_natal_war_active_var }
+				}
+				AND = {
+					country_definition = cd:ZUL
+					has_variable = sb_natal_war_active_var
+					scope:target ?= { country_definition = cd:ORA has_variable = sb_natal_war_active_var }
+				}
+			}
+		}
+		if = {
+			limit = { scope:diplomatic_play ?= { initiator = root } }
+			set_global_variable = sb_natal_story_initiator_demand_accepted_global_var
+		}
+		else_if = {
+			limit = { scope:diplomatic_play ?= { target = root } }
+			set_global_variable = sb_natal_story_target_demand_accepted_global_var
+		}
+	}
+	else_if = {
+		limit = {
+			has_global_variable = sb_martinus_story_war_active_global_var
+			scope:diplomatic_play ?= { is_diplomatic_play_type = dp_sb_martinus_humiliation }
+			OR = {
+				AND = { country_definition = cd:TRN scope:target ?= { country_definition = cd:ORA } }
+				AND = { country_definition = cd:ORA scope:target ?= { country_definition = cd:TRN } }
+			}
+		}
+		if = {
+			limit = { scope:diplomatic_play ?= { initiator = root } }
+			set_global_variable = sb_martinus_story_initiator_demand_accepted_global_var
+		}
+		else_if = {
+			limit = { scope:diplomatic_play ?= { target = root } }
+			set_global_variable = sb_martinus_story_target_demand_accepted_global_var
+		}
+	}
+}
+
+# Root = diplomatic play; scope:actor is the country that backed down.
+# Award only the non-backing side's demand, then use the normal resolver.
+sb_story_humiliation_record_back_down = {
+	if = {
+		limit = {
+			is_diplomatic_play_type = dp_sb_natal_crisis
+			has_global_variable = sb_natal_story_war_active_global_var
+		}
+		if = {
+			limit = { initiator = scope:actor }
+			set_global_variable = sb_natal_story_target_demand_accepted_global_var
+		}
+		else_if = {
+			limit = { target = scope:actor }
+			set_global_variable = sb_natal_story_initiator_demand_accepted_global_var
+		}
+	}
+	else_if = {
+		limit = {
+			is_diplomatic_play_type = dp_sb_martinus_humiliation
+			has_global_variable = sb_martinus_story_war_active_global_var
+		}
+		if = {
+			limit = { initiator = scope:actor }
+			set_global_variable = sb_martinus_story_target_demand_accepted_global_var
+		}
+		else_if = {
+			limit = { target = scope:actor }
+			set_global_variable = sb_martinus_story_initiator_demand_accepted_global_var
+		}
+	}
+}
+
+# Root = diplomatic play. Each route uses the same mutually exclusive truth table:
+# both accepted -> mutual stand-down; initiator only; target only; neither -> status quo.
+sb_story_humiliation_resolve = {
+	if = {
+		limit = {
+			is_diplomatic_play_type = dp_sb_natal_crisis
+			has_global_variable = sb_natal_story_war_active_global_var
+			NOT = { has_global_variable = sb_natal_story_war_resolved_global_var }
+		}
+		set_global_variable = sb_natal_story_war_resolved_global_var
+		# 2: a negotiated mutual stand-down grants neither exclusive victory.
+		if = {
+			limit = {
+				has_global_variable = sb_natal_story_initiator_demand_accepted_global_var
+				has_global_variable = sb_natal_story_target_demand_accepted_global_var
+			}
+			sb_story_humiliation_clear_natal_state = yes
+			c:ZUL ?= { if = { limit = { is_country_alive = yes } trigger_event = { id = sb_natal_crisis.081 days = 3 popup = yes } } }
+		}
+		# 1: only the initiator demand was accepted.
+		else_if = {
+			limit = { has_global_variable = sb_natal_story_initiator_demand_accepted_global_var }
+			if = {
+				limit = { initiator = c:ORA }
+				sb_story_humiliation_clear_natal_state = yes
+				c:ORA ?= { if = { limit = { is_country_alive = yes } trigger_event = { id = sb_natal_crisis.070 days = 3 popup = yes } } }
+			}
+			else = {
+				sb_story_humiliation_clear_natal_state = yes
+				c:ZUL ?= { if = { limit = { is_country_alive = yes } trigger_event = { id = sb_natal_crisis.080 days = 3 popup = yes } } }
+			}
+		}
+		# 1: only the target demand was accepted.
+		else_if = {
+			limit = { has_global_variable = sb_natal_story_target_demand_accepted_global_var }
+			if = {
+				limit = { target = c:ORA }
+				sb_story_humiliation_clear_natal_state = yes
+				c:ORA ?= { if = { limit = { is_country_alive = yes } trigger_event = { id = sb_natal_crisis.070 days = 3 popup = yes } } }
+			}
+			else = {
+				sb_story_humiliation_clear_natal_state = yes
+				c:ZUL ?= { if = { limit = { is_country_alive = yes } trigger_event = { id = sb_natal_crisis.080 days = 3 popup = yes } } }
+			}
+		}
+		# 0: white peace uses the neutral follow-up, not Zulu triumph.
+		else = {
+			sb_story_humiliation_clear_natal_state = yes
+			c:ZUL ?= { if = { limit = { is_country_alive = yes } trigger_event = { id = sb_natal_crisis.081 days = 3 popup = yes } } }
+		}
+	}
+	else_if = {
+		limit = {
+			is_diplomatic_play_type = dp_sb_martinus_humiliation
+			has_global_variable = sb_martinus_story_war_active_global_var
+			NOT = { has_global_variable = sb_martinus_story_war_resolved_global_var }
+		}
+		set_global_variable = sb_martinus_story_war_resolved_global_var
+		# 2: both demands accepted; neither republic gets an exclusive result.
+		if = {
+			limit = {
+				has_global_variable = sb_martinus_story_initiator_demand_accepted_global_var
+				has_global_variable = sb_martinus_story_target_demand_accepted_global_var
+			}
+			sb_story_humiliation_martinus_stand_down = yes
+		}
+		# 1: initiator demand only. TRN alone can create the union.
+		else_if = {
+			limit = { has_global_variable = sb_martinus_story_initiator_demand_accepted_global_var }
+			if = {
+				limit = { initiator = c:TRN }
+				c:TRN ?= { if = { limit = { is_country_alive = yes } sb_martinus_create_presidential_union_with_ora = yes } }
+			}
+			else = { sb_story_humiliation_martinus_stand_down = yes }
+		}
+		# 1: target demand only. TRN alone can create the union.
+		else_if = {
+			limit = { has_global_variable = sb_martinus_story_target_demand_accepted_global_var }
+			if = {
+				limit = { target = c:TRN }
+				c:TRN ?= { if = { limit = { is_country_alive = yes } sb_martinus_create_presidential_union_with_ora = yes } }
+			}
+			else = { sb_story_humiliation_martinus_stand_down = yes }
+		}
+		# 0: white peace leaves both republics independent.
+		else = { sb_story_humiliation_martinus_stand_down = yes }
+		sb_story_humiliation_clear_martinus_state = yes
+	}
+}

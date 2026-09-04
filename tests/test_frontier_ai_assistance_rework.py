@@ -284,31 +284,31 @@ class FrontierAiAssistanceReworkTests(unittest.TestCase):
         self.assertEqual(1, len(modifier_additions(tier_12, "native_conscription_12")))
         self.assertIn("months = -1", modifier_additions(tier_12, "native_conscription_12")[0])
 
-        handler = block(
+        enforced = block(
             "common/on_actions/sb_diplomatic_play_on_action_handlers.txt",
             "sb_on_spes_bona_wargoal_enforced",
         )
+        war_end = block(
+            "common/on_actions/sb_diplomatic_play_on_action_handlers.txt",
+            "sb_on_spes_bona_war_end",
+        )
         routes = {
-            "dp_sb_xhosa_war_7": "sb_xhosa_set_native_conscription_tier_9 = yes",
-            "dp_sb_xhosa_war_8": "sb_xhosa_set_native_conscription_tier_12 = yes",
+            "dp_sb_xhosa_war_7": (
+                "sb_xhosa_war_7_goal_accepted_pending_var",
+                "sb_xhosa_set_native_conscription_tier_9 = yes",
+            ),
+            "dp_sb_xhosa_war_8": (
+                "sb_xhosa_war_8_goal_accepted_pending_var",
+                "sb_xhosa_set_native_conscription_tier_12 = yes",
+            ),
         }
-        for play, effect in routes.items():
-            candidates = [
-                candidate
-                for candidate in nested_blocks(handler, "if")
-                if effect in candidate
-            ]
-            self.assertEqual(1, len(candidates), play)
-            route = candidates[0]
-            for token in (
-                "country_definition = cd:CAP",
-                "country_definition = cd:ABY",
-                "country_definition = cd:XHO",
-                "is_country_alive = yes",
-                f"is_diplomatic_play_type = {play}",
-                "scope:target = {",
-            ):
-                self.assertIn(token, route)
+        for play, (pending, effect) in routes.items():
+            self.assertIn(f"is_diplomatic_play_type = {play}", enforced)
+            self.assertIn(pending, enforced)
+            self.assertNotIn(effect, enforced)
+            self.assertIn(f"is_diplomatic_play_type = {play}", war_end)
+            self.assertIn(pending, war_end)
+            self.assertIn(effect, war_end)
 
     def test_mtb_opening_uprising_capacity_is_vrystaat_only(self):
         opening = block("events/sb_great_trek_events.txt", "sb_great_trek.001")

@@ -63,6 +63,17 @@ sb_on_mozambique_company_disbanded = {
 	}
 }
 
+
+# Durable monthly recovery for the two-stage independent-WBL route. The called
+# effect elects one live coordinator, so every other country's pulse is inert.
+sb_on_griqualand_sequence_watchdog_monthly = {
+	trigger = {
+		has_global_variable = sb_griqualand_sequence_active_global_var
+		is_country_alive = yes
+	}
+	effect = { sb_griqualand_sequence_watchdog = yes }
+}
+
 sb_on_natal_colony_monthly_pulse_country = {
 	trigger = { country_definition = cd:NAL }
 	effect = {
@@ -80,6 +91,13 @@ sb_on_zululand_state_incorporation = {
 		is_incorporated = yes
 		owner = {
 			country_definition = cd:NAL
+			OR = {
+				has_variable = sb_zululand_incorporation_requested_var
+				has_variable = sb_zululand_incorporation_started_var
+				has_variable = sb_zululand_direct_natal_administration_var
+				has_variable = sb_zululand_zibhebhu_victory_var
+				has_variable = sb_zululand_crown_restored_victory_var
+			}
 			NOT = { has_variable = sb_zululand_incorporation_complete_var }
 			NOT = { has_variable = sb_zululand_incorporation_complete_pending_var }
 		}
@@ -88,6 +106,23 @@ sb_on_zululand_state_incorporation = {
 		owner = {
 			set_variable = sb_zululand_incorporation_complete_pending_var
 			trigger_event = { id = sb_zululand_settlement.130 days = 1 popup = yes }
+		}
+	}
+}
+
+# Close the one-day completion race synchronously. The completed marker is durable;
+# only unfinished route leases are cleared so a later NAL reacquisition can retry.
+sb_on_zululand_incorporation_state_owner_change = {
+	trigger = { state_region = s:STATE_ZULULAND }
+	effect = {
+		if = {
+			limit = { NOT = { owner ?= { country_definition = cd:NAL } } }
+			c:NAL ?= {
+				if = { limit = { has_variable = sb_zululand_incorporation_requested_var } remove_variable = sb_zululand_incorporation_requested_var }
+				if = { limit = { has_variable = sb_zululand_incorporation_started_var } remove_variable = sb_zululand_incorporation_started_var }
+				if = { limit = { has_variable = sb_zululand_post_annex_incorporation_pending_var } remove_variable = sb_zululand_post_annex_incorporation_pending_var }
+				if = { limit = { has_variable = sb_zululand_incorporation_complete_pending_var } remove_variable = sb_zululand_incorporation_complete_pending_var }
+			}
 		}
 	}
 }

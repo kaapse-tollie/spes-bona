@@ -296,17 +296,50 @@ sb_zululand_settlement.130 = {
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
 	icon = "gfx/interface/icons/event_icons/event_map.dds"
 	duration = 3
-	trigger = { country_definition = cd:NAL has_variable = sb_zululand_incorporation_complete_pending_var }
+	trigger = {
+		country_definition = cd:NAL
+		has_variable = sb_zululand_incorporation_complete_pending_var
+		OR = {
+			has_variable = sb_zululand_incorporation_requested_var
+			has_variable = sb_zululand_incorporation_started_var
+			has_variable = sb_zululand_direct_natal_administration_var
+			has_variable = sb_zululand_zibhebhu_victory_var
+			has_variable = sb_zululand_crown_restored_victory_var
+		}
+		s:STATE_ZULULAND.region_state:NAL ?= {
+			owner = root
+			is_incorporated = yes
+		}
+	}
 	option = {
 		name = sb_zululand_settlement.130.a
 		default_option = yes
-		remove_variable = sb_zululand_incorporation_complete_pending_var
-		set_variable = sb_zululand_incorporation_complete_var
-		sb_zululand_remove_hut_tax = yes
-		s:STATE_ZULULAND.region_state:NAL ?= {
-			if = { limit = { has_modifier = sb_zululand_chiefdom_reserves } remove_modifier = sb_zululand_chiefdom_reserves }
-			if = { limit = { has_modifier = sb_zululand_zibhebhu_incorporation_legacy } remove_modifier = sb_zululand_zibhebhu_incorporation_legacy }
-			if = { limit = { has_modifier = sb_zululand_crown_incorporation_legacy } remove_modifier = sb_zululand_crown_incorporation_legacy }
+		# Recheck immediately before mutation. A stale delayed event only clears its lease.
+		if = {
+			limit = {
+				OR = {
+					has_variable = sb_zululand_incorporation_requested_var
+					has_variable = sb_zululand_incorporation_started_var
+					has_variable = sb_zululand_direct_natal_administration_var
+					has_variable = sb_zululand_zibhebhu_victory_var
+					has_variable = sb_zululand_crown_restored_victory_var
+				}
+				s:STATE_ZULULAND.region_state:NAL ?= {
+					owner = root
+					is_incorporated = yes
+				}
+			}
+			remove_variable = sb_zululand_incorporation_complete_pending_var
+			set_variable = sb_zululand_incorporation_complete_var
+			sb_zululand_remove_hut_tax = yes
+			s:STATE_ZULULAND.region_state:NAL ?= {
+				if = { limit = { has_modifier = sb_zululand_chiefdom_reserves } remove_modifier = sb_zululand_chiefdom_reserves }
+				if = { limit = { has_modifier = sb_zululand_zibhebhu_incorporation_legacy } remove_modifier = sb_zululand_zibhebhu_incorporation_legacy }
+				if = { limit = { has_modifier = sb_zululand_crown_incorporation_legacy } remove_modifier = sb_zululand_crown_incorporation_legacy }
+			}
+		}
+		else = {
+			if = { limit = { has_variable = sb_zululand_incorporation_complete_pending_var } remove_variable = sb_zululand_incorporation_complete_pending_var }
 		}
 	}
 }

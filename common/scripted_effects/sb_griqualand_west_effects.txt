@@ -371,18 +371,23 @@ sb_cap_ai_incorporate_griqualand_west = {
 sb_kimberley_finalize_cap_annexation_route = {
 	set_global_variable = sb_kimberley_cap_victory_global_var
 	set_global_variable = sb_bechuanaland_corridor_watch_global_var
+	# If return_state already moved Griqualand, a synthetic surviving WBL may
+	# retain other land. Never annex those unrelated states during story close.
 	c:WBL ?= {
 		if = {
-			limit = { is_country_alive = yes }
-				c:CAP ?= {
+			limit = {
+				is_country_alive = yes
+				p:x68B5E8.state.owner = c:WBL
+			}
+			c:CAP ?= {
+				if = {
+					limit = { is_country_alive = yes }
 					if = {
-						limit = { is_country_alive = yes }
-						if = {
-							limit = { c:WBL ?= { is_subject = yes } }
-							transfer_subject = c:WBL
-						}
-						annex = c:WBL
+						limit = { c:WBL ?= { is_subject = yes } }
+						transfer_subject = c:WBL
 					}
+					annex = c:WBL
+				}
 			}
 		}
 	}
@@ -392,12 +397,8 @@ sb_kimberley_finalize_cap_annexation_route = {
 		sb_griqualand_west_mark_resolved = yes
 		sb_griqualand_west_clear_crisis_vars = yes
 	}
-
 	c:CAP ?= {
-		if = {
-			limit = { is_country_alive = yes }
-			trigger_event = { id = sb_griqualand_west.260 days = 14 popup = yes }
-		}
+		if = { limit = { is_country_alive = yes } trigger_event = { id = sb_griqualand_west.260 days = 14 popup = yes } }
 	}
 }
 
@@ -621,21 +622,24 @@ sb_griqualand_west_try_finalize_refusal_contest = {
 	if = {
 		limit = {
 			has_global_variable = sb_griqualand_west_refusal_contest_active_var
+			NOT = { has_global_variable = sb_griqualand_sequence_active_global_var }
 			NOT = {
 				any_country = {
 					any_diplomatic_play = {
 						OR = {
 							is_diplomatic_play_type = dp_sb_griqualand_cap_revoke_claim_locked
 							is_diplomatic_play_type = dp_sb_griqualand_cap_revoke_oranje_proxy_locked
+							is_diplomatic_play_type = dp_sb_griqualand_oranje_revoke_cap_claim_locked
 							is_diplomatic_play_type = dp_sb_griqualand_cap_return_wbl_locked
 							is_diplomatic_play_type = dp_sb_griqualand_oranje_return_wbl_locked
+							is_diplomatic_play_type = dp_sb_griqualand_oranje_independent_return_wbl_proxy_locked
 							is_diplomatic_play_type = dp_sb_griqualand_oranje_return_wbl_proxy_locked
 						}
 					}
 				}
 			}
 		}
-		sb_griqualand_west_finalize_refusal_contest = yes
+		sb_griqualand_west_close_routed_play = yes
 	}
 }
 
@@ -981,4 +985,703 @@ sb_griqualand_east_create_march_state = {
 		}
 	}
 
+}
+
+# -----------------------------------------------------------------------------
+# 1.14 Griqualand record goals and independent-WBL sequential route
+# -----------------------------------------------------------------------------
+
+# Root = enforcing goal holder; scope:target is the scripted goal target.
+# Store acceptance before execution-priority-70 territorial goals can remove WBL.
+sb_griqualand_record_claim_revocation = {
+	if = {
+		limit = { scope:target_country ?= { country_definition = cd:CAP } }
+		set_global_variable = sb_griqualand_cap_claim_revocation_accepted_global_var
+	}
+	else_if = {
+		limit = { scope:target_country ?= { country_definition = cd:ORA } }
+		set_global_variable = sb_griqualand_boer_claim_revocation_accepted_global_var
+		set_global_variable = sb_griqualand_ora_claim_revocation_accepted_global_var
+	}
+	else_if = {
+		limit = {
+			scope:target_country ?= { country_definition = cd:TRN }
+			c:ORA ?= { is_country_alive = yes is_direct_subject_of = scope:target_country has_claim = s:STATE_GRIQUALAND_WEST }
+		}
+		set_global_variable = sb_griqualand_boer_claim_revocation_accepted_global_var
+		set_global_variable = sb_griqualand_ora_claim_revocation_accepted_global_var
+	}
+	else_if = {
+		limit = { scope:target_country ?= { country_definition = cd:TRN has_variable = sb_oranje_federated_into_trn_var has_claim = s:STATE_GRIQUALAND_WEST } }
+		set_global_variable = sb_griqualand_boer_claim_revocation_accepted_global_var
+		set_global_variable = sb_griqualand_trn_claim_revocation_accepted_global_var
+	}
+	if = {
+		limit = { container_exists = sb_griqualand_sequence_state }
+		container:sb_griqualand_sequence_state = {
+			set_variable = { name = sb_griqualand_last_record_holder_scope value = root }
+			if = {
+				limit = { has_global_variable = sb_griqualand_ora_claim_revocation_accepted_global_var }
+				set_variable = { name = sb_griqualand_last_record_claim_target_scope value = c:ORA }
+			}
+			else = { set_variable = { name = sb_griqualand_last_record_claim_target_scope value = scope:target_country } }
+		}
+	}
+}
+
+sb_griqualand_clear_launch_leases = {
+	c:CAP ?= {
+		if = { limit = { has_variable = sb_griqualand_phase_a_launch_lease_var } remove_variable = sb_griqualand_phase_a_launch_lease_var }
+		if = { limit = { has_variable = sb_griqualand_phase_b_launch_lease_var } remove_variable = sb_griqualand_phase_b_launch_lease_var }
+		if = { limit = { has_variable = sb_griqualand_aligned_proxy_launch_lease_var } remove_variable = sb_griqualand_aligned_proxy_launch_lease_var }
+	}
+	c:ORA ?= {
+		if = { limit = { has_variable = sb_griqualand_phase_a_launch_lease_var } remove_variable = sb_griqualand_phase_a_launch_lease_var }
+		if = { limit = { has_variable = sb_griqualand_phase_b_launch_lease_var } remove_variable = sb_griqualand_phase_b_launch_lease_var }
+	}
+	c:TRN ?= {
+		if = { limit = { has_variable = sb_griqualand_phase_a_launch_lease_var } remove_variable = sb_griqualand_phase_a_launch_lease_var }
+		if = { limit = { has_variable = sb_griqualand_phase_b_launch_lease_var } remove_variable = sb_griqualand_phase_b_launch_lease_var }
+		if = { limit = { has_variable = sb_griqualand_aligned_proxy_launch_lease_var } remove_variable = sb_griqualand_aligned_proxy_launch_lease_var }
+	}
+	c:WBL ?= {
+		if = { limit = { has_variable = sb_griqualand_phase_a_launch_lease_var } remove_variable = sb_griqualand_phase_a_launch_lease_var }
+		if = { limit = { has_variable = sb_griqualand_phase_b_launch_lease_var } remove_variable = sb_griqualand_phase_b_launch_lease_var }
+	}
+}
+
+sb_griqualand_sequence_cleanup = {
+	sb_griqualand_clear_launch_leases = yes
+	if = { limit = { container_exists = sb_griqualand_sequence_state } container:sb_griqualand_sequence_state = { destroy_container = yes } }
+	if = { limit = { has_global_variable = sb_griqualand_sequence_active_global_var } remove_global_variable = sb_griqualand_sequence_active_global_var }
+	if = { limit = { has_global_variable = sb_griqualand_sequence_launch_refused_global_var } remove_global_variable = sb_griqualand_sequence_launch_refused_global_var }
+	if = { limit = { has_global_variable = sb_griqualand_sequence_generation_global_var } remove_global_variable = sb_griqualand_sequence_generation_global_var }
+	if = { limit = { has_global_variable = sb_griqualand_phase_a_pending_global_var } remove_global_variable = sb_griqualand_phase_a_pending_global_var }
+	if = { limit = { has_global_variable = sb_griqualand_phase_a_active_global_var } remove_global_variable = sb_griqualand_phase_a_active_global_var }
+	if = { limit = { has_global_variable = sb_griqualand_phase_a_acknowledged_global_var } remove_global_variable = sb_griqualand_phase_a_acknowledged_global_var }
+	if = { limit = { has_global_variable = sb_griqualand_phase_a_close_handled_global_var } remove_global_variable = sb_griqualand_phase_a_close_handled_global_var }
+	if = { limit = { has_global_variable = sb_griqualand_phase_a_hardline_global_var } remove_global_variable = sb_griqualand_phase_a_hardline_global_var }
+	if = { limit = { has_global_variable = sb_griqualand_phase_b_pending_global_var } remove_global_variable = sb_griqualand_phase_b_pending_global_var }
+	if = { limit = { has_global_variable = sb_griqualand_phase_b_event_pending_global_var } remove_global_variable = sb_griqualand_phase_b_event_pending_global_var }
+	if = { limit = { has_global_variable = sb_griqualand_phase_b_active_global_var } remove_global_variable = sb_griqualand_phase_b_active_global_var }
+	if = { limit = { has_global_variable = sb_griqualand_phase_b_acknowledged_global_var } remove_global_variable = sb_griqualand_phase_b_acknowledged_global_var }
+	if = { limit = { has_global_variable = sb_griqualand_phase_b_close_handled_global_var } remove_global_variable = sb_griqualand_phase_b_close_handled_global_var }
+	if = { limit = { has_global_variable = sb_griqualand_phase_b_retry_used_global_var } remove_global_variable = sb_griqualand_phase_b_retry_used_global_var }
+	if = { limit = { has_global_variable = sb_griqualand_phase_b_creation_failed_global_var } remove_global_variable = sb_griqualand_phase_b_creation_failed_global_var }
+	if = { limit = { has_global_variable = sb_griqualand_cap_claim_revocation_accepted_global_var } remove_global_variable = sb_griqualand_cap_claim_revocation_accepted_global_var }
+	if = { limit = { has_global_variable = sb_griqualand_boer_claim_revocation_accepted_global_var } remove_global_variable = sb_griqualand_boer_claim_revocation_accepted_global_var }
+	if = { limit = { has_global_variable = sb_griqualand_ora_claim_revocation_accepted_global_var } remove_global_variable = sb_griqualand_ora_claim_revocation_accepted_global_var }
+	if = { limit = { has_global_variable = sb_griqualand_trn_claim_revocation_accepted_global_var } remove_global_variable = sb_griqualand_trn_claim_revocation_accepted_global_var }
+	if = { limit = { has_global_variable = sb_griqualand_phase_a_creation_failed_global_var } remove_global_variable = sb_griqualand_phase_a_creation_failed_global_var }
+	if = { limit = { has_global_variable = sb_griqualand_claim_revocations_applied_global_var } remove_global_variable = sb_griqualand_claim_revocations_applied_global_var }
+	c:CAP ?= { if = { limit = { has_variable = sb_griqualand_west_hardline_path_var } remove_variable = sb_griqualand_west_hardline_path_var } }
+	c:WBL ?= { if = { limit = { has_variable = sb_griqualand_west_wbl_independent_var } remove_variable = sb_griqualand_west_wbl_independent_var } }
+}
+
+# Refreshable identity links. This is safe to call after save/reload and before
+# either close: accepted claim records have not mutated claims yet.
+sb_griqualand_sequence_refresh_container = {
+	if = {
+		limit = { NOT = { container_exists = sb_griqualand_sequence_state } }
+		if = {
+			limit = {
+				c:CAP ?= { is_country_alive = yes has_claim = s:STATE_GRIQUALAND_WEST }
+				NOR = {
+					c:ORA ?= { is_country_alive = yes has_claim = s:STATE_GRIQUALAND_WEST }
+					c:TRN ?= { is_country_alive = yes has_variable = sb_oranje_federated_into_trn_var has_claim = s:STATE_GRIQUALAND_WEST }
+				}
+			}
+			c:CAP = { save_temporary_scope_as = sb_griqualand_elected_container_parent }
+		}
+		else_if = {
+			limit = {
+				NOT = { c:CAP ?= { is_country_alive = yes has_claim = s:STATE_GRIQUALAND_WEST } }
+				c:ORA ?= { is_country_alive = yes is_direct_subject_of = c:TRN has_claim = s:STATE_GRIQUALAND_WEST }
+				c:TRN ?= { is_country_alive = yes }
+			}
+			c:TRN = { save_temporary_scope_as = sb_griqualand_elected_container_parent }
+		}
+		else_if = {
+			limit = { NOT = { c:CAP ?= { is_country_alive = yes has_claim = s:STATE_GRIQUALAND_WEST } } c:ORA ?= { is_country_alive = yes has_claim = s:STATE_GRIQUALAND_WEST } }
+			c:ORA = { save_temporary_scope_as = sb_griqualand_elected_container_parent }
+		}
+		else_if = {
+			limit = { NOT = { c:CAP ?= { is_country_alive = yes has_claim = s:STATE_GRIQUALAND_WEST } } c:TRN ?= { is_country_alive = yes has_variable = sb_oranje_federated_into_trn_var has_claim = s:STATE_GRIQUALAND_WEST } }
+			c:TRN = { save_temporary_scope_as = sb_griqualand_elected_container_parent }
+		}
+		else_if = { limit = { c:WBL ?= { is_country_alive = yes } } c:WBL = { save_temporary_scope_as = sb_griqualand_elected_container_parent } }
+		else_if = { limit = { c:CAP ?= { is_country_alive = yes } } c:CAP = { save_temporary_scope_as = sb_griqualand_elected_container_parent } }
+		else_if = { limit = { c:TRN ?= { is_country_alive = yes } } c:TRN = { save_temporary_scope_as = sb_griqualand_elected_container_parent } }
+		else_if = { limit = { c:ORA ?= { is_country_alive = yes } } c:ORA = { save_temporary_scope_as = sb_griqualand_elected_container_parent } }
+		else = { p:x68B5E8.state.owner = { save_temporary_scope_as = sb_griqualand_elected_container_parent } }
+		if = {
+			limit = { exists = scope:sb_griqualand_elected_container_parent }
+			create_container = {
+				name = sb_griqualand_sequence_state
+				tags = { sb_story sb_griqualand_sequence }
+				parent = scope:sb_griqualand_elected_container_parent
+			}
+		}
+	}
+	if = {
+		limit = { container_exists = sb_griqualand_sequence_state }
+		container:sb_griqualand_sequence_state = {
+			if = { limit = { has_variable = sb_griqualand_cap_scope } remove_variable = sb_griqualand_cap_scope }
+			if = { limit = { has_variable = sb_griqualand_boer_party_scope } remove_variable = sb_griqualand_boer_party_scope }
+			if = { limit = { has_variable = sb_griqualand_legal_claim_owner_scope } remove_variable = sb_griqualand_legal_claim_owner_scope }
+			if = { limit = { has_variable = sb_griqualand_wbl_scope } remove_variable = sb_griqualand_wbl_scope }
+			if = { limit = { has_variable = sb_griqualand_advancing_claimant_scope } remove_variable = sb_griqualand_advancing_claimant_scope }
+			if = { limit = { has_variable = sb_griqualand_advancing_diplomatic_leader_scope } remove_variable = sb_griqualand_advancing_diplomatic_leader_scope }
+			if = { limit = { c:CAP ?= { is_country_alive = yes } } set_variable = { name = sb_griqualand_cap_scope value = c:CAP } }
+			if = { limit = { c:WBL ?= { is_country_alive = yes } } set_variable = { name = sb_griqualand_wbl_scope value = c:WBL } }
+			if = {
+				limit = { c:ORA ?= { is_country_alive = yes is_direct_subject_of = c:TRN has_claim = s:STATE_GRIQUALAND_WEST } c:TRN ?= { is_country_alive = yes } }
+				set_variable = { name = sb_griqualand_boer_party_scope value = c:TRN }
+				set_variable = { name = sb_griqualand_legal_claim_owner_scope value = c:ORA }
+			}
+			else_if = {
+				limit = { c:TRN ?= { is_country_alive = yes has_variable = sb_oranje_federated_into_trn_var has_claim = s:STATE_GRIQUALAND_WEST } }
+				set_variable = { name = sb_griqualand_boer_party_scope value = c:TRN }
+				set_variable = { name = sb_griqualand_legal_claim_owner_scope value = c:TRN }
+			}
+			else_if = {
+				limit = { c:ORA ?= { is_country_alive = yes has_claim = s:STATE_GRIQUALAND_WEST } }
+				set_variable = { name = sb_griqualand_boer_party_scope value = c:ORA }
+				set_variable = { name = sb_griqualand_legal_claim_owner_scope value = c:ORA }
+			}
+			if = {
+				limit = {
+					c:CAP ?= { is_country_alive = yes has_claim = s:STATE_GRIQUALAND_WEST }
+					NOR = {
+						c:ORA ?= { is_country_alive = yes has_claim = s:STATE_GRIQUALAND_WEST }
+						c:TRN ?= { is_country_alive = yes has_variable = sb_oranje_federated_into_trn_var has_claim = s:STATE_GRIQUALAND_WEST }
+					}
+				}
+				set_variable = { name = sb_griqualand_advancing_claimant_scope value = c:CAP }
+				set_variable = { name = sb_griqualand_advancing_diplomatic_leader_scope value = c:CAP }
+			}
+			else_if = {
+				limit = {
+					NOT = { c:CAP ?= { is_country_alive = yes has_claim = s:STATE_GRIQUALAND_WEST } }
+					has_variable = sb_griqualand_legal_claim_owner_scope
+					has_variable = sb_griqualand_boer_party_scope
+				}
+				set_variable = { name = sb_griqualand_advancing_claimant_scope value = var:sb_griqualand_legal_claim_owner_scope }
+				set_variable = { name = sb_griqualand_advancing_diplomatic_leader_scope value = var:sb_griqualand_boer_party_scope }
+			}
+		}
+	}
+}
+
+sb_griqualand_apply_recorded_claim_revocations = {
+	if = {
+		limit = { NOT = { has_global_variable = sb_griqualand_claim_revocations_applied_global_var } }
+		set_global_variable = sb_griqualand_claim_revocations_applied_global_var
+		if = {
+			limit = { has_global_variable = sb_griqualand_cap_claim_revocation_accepted_global_var c:CAP ?= { has_claim = s:STATE_GRIQUALAND_WEST } }
+			s:STATE_GRIQUALAND_WEST = { remove_claim = c:CAP }
+		}
+		if = {
+			limit = { has_global_variable = sb_griqualand_ora_claim_revocation_accepted_global_var c:ORA ?= { has_claim = s:STATE_GRIQUALAND_WEST } }
+			s:STATE_GRIQUALAND_WEST = { remove_claim = c:ORA }
+		}
+		else_if = {
+			limit = { has_global_variable = sb_griqualand_trn_claim_revocation_accepted_global_var c:TRN ?= { has_claim = s:STATE_GRIQUALAND_WEST } }
+			s:STATE_GRIQUALAND_WEST = { remove_claim = c:TRN }
+		}
+		else_if = {
+			limit = {
+				has_global_variable = sb_griqualand_boer_claim_revocation_accepted_global_var
+				container:sb_griqualand_sequence_state ?= { has_variable = sb_griqualand_legal_claim_owner_scope }
+			}
+			container:sb_griqualand_sequence_state.var:sb_griqualand_legal_claim_owner_scope = {
+				if = { limit = { has_claim = s:STATE_GRIQUALAND_WEST } s:STATE_GRIQUALAND_WEST = { remove_claim = prev } }
+			}
+		}
+	}
+}
+
+sb_griqualand_sequence_terminal_fallback = {
+	# Close authority first so a scheduled .261/watchdog cannot relaunch while a
+	# finalizer schedules .260. The finalizer then derives only from live state.
+	sb_griqualand_sequence_cleanup = yes
+	sb_griqualand_west_finalize_refusal_contest = yes
+}
+
+sb_griqualand_sequence_queue_phase_b = {
+	if = { limit = { has_global_variable = sb_griqualand_phase_a_active_global_var } remove_global_variable = sb_griqualand_phase_a_active_global_var }
+	set_global_variable = sb_griqualand_phase_b_pending_global_var
+	set_global_variable = sb_griqualand_phase_b_event_pending_global_var
+	sb_griqualand_sequence_refresh_container = yes
+	if = {
+		limit = { container:sb_griqualand_sequence_state ?= { has_variable = sb_griqualand_advancing_diplomatic_leader_scope } }
+		container:sb_griqualand_sequence_state.var:sb_griqualand_advancing_diplomatic_leader_scope = {
+			trigger_event = { id = sb_griqualand_west.261 days = 1 }
+		}
+	}
+	else = { sb_griqualand_sequence_terminal_fallback = yes }
+}
+
+sb_griqualand_sequence_close_phase_a = {
+	if = {
+		limit = {
+			has_global_variable = sb_griqualand_sequence_active_global_var
+			has_global_variable = sb_griqualand_phase_a_active_global_var
+			NOT = { has_global_variable = sb_griqualand_phase_a_close_handled_global_var }
+		}
+		set_global_variable = sb_griqualand_phase_a_close_handled_global_var
+		sb_griqualand_sequence_refresh_container = yes
+		sb_griqualand_apply_recorded_claim_revocations = yes
+		# Fresh claims, not aggressor identity, elect the sole advancing claimant.
+		sb_griqualand_sequence_refresh_container = yes
+		if = {
+			limit = {
+				container:sb_griqualand_sequence_state ?= { has_variable = sb_griqualand_advancing_claimant_scope }
+				container:sb_griqualand_sequence_state.var:sb_griqualand_advancing_claimant_scope = { this = p:x68B5E8.state.owner }
+			}
+			sb_griqualand_sequence_terminal_fallback = yes
+		}
+		else_if = {
+			limit = {
+				container:sb_griqualand_sequence_state ?= { has_variable = sb_griqualand_advancing_claimant_scope }
+				c:WBL ?= {
+					is_country_alive = yes
+					is_subject = no
+					has_variable = sb_griqualand_west_wbl_independent_var
+				}
+				p:x68B5E8.state.owner = c:WBL
+			}
+			sb_griqualand_sequence_queue_phase_b = yes
+		}
+		else = {
+			# Zero claims, two surviving claims after white peace, subject WBL,
+			# invalid parties, or a third-party owner all finalize without a new war.
+			sb_griqualand_sequence_terminal_fallback = yes
+		}
+	}
+}
+
+sb_griqualand_sequence_close_phase_b = {
+	if = {
+		limit = {
+			has_global_variable = sb_griqualand_sequence_active_global_var
+			has_global_variable = sb_griqualand_phase_b_active_global_var
+			NOT = { has_global_variable = sb_griqualand_phase_b_close_handled_global_var }
+		}
+		set_global_variable = sb_griqualand_phase_b_close_handled_global_var
+		# Territorial callbacks/mirrors have finished. Derive the result from the
+		# actual state owner first, then apply WBL's durable counter record.
+		sb_griqualand_sequence_refresh_container = yes
+		sb_griqualand_apply_recorded_claim_revocations = yes
+		sb_griqualand_sequence_terminal_fallback = yes
+	}
+}
+
+# Root = diplomatic play, scope:actor = country backing down.
+sb_griqualand_record_live_boer_claim_revocation = {
+	set_global_variable = sb_griqualand_boer_claim_revocation_accepted_global_var
+	if = {
+		limit = { c:ORA ?= { is_country_alive = yes has_claim = s:STATE_GRIQUALAND_WEST } }
+		set_global_variable = sb_griqualand_ora_claim_revocation_accepted_global_var
+	}
+	else_if = {
+		limit = { c:TRN ?= { is_country_alive = yes has_variable = sb_oranje_federated_into_trn_var has_claim = s:STATE_GRIQUALAND_WEST } }
+		set_global_variable = sb_griqualand_trn_claim_revocation_accepted_global_var
+	}
+}
+
+sb_griqualand_sequence_record_back_down = {
+	if = {
+		limit = { has_global_variable = sb_griqualand_phase_a_active_global_var }
+		if = {
+			limit = {
+				OR = {
+					AND = { has_global_variable = sb_griqualand_phase_a_hardline_global_var initiator = scope:actor }
+					AND = { NOT = { has_global_variable = sb_griqualand_phase_a_hardline_global_var } target = scope:actor }
+				}
+			}
+			set_global_variable = sb_griqualand_cap_claim_revocation_accepted_global_var
+		}
+		else = { sb_griqualand_record_live_boer_claim_revocation = yes }
+	}
+	else_if = {
+		limit = { has_global_variable = sb_griqualand_phase_b_active_global_var initiator = scope:actor }
+		# The advancing claimant backed down; WBL's counter demand was awarded.
+		if = {
+			limit = { target = c:WBL }
+			if = { limit = { initiator = c:CAP } set_global_variable = sb_griqualand_cap_claim_revocation_accepted_global_var }
+			else = { sb_griqualand_record_live_boer_claim_revocation = yes }
+		}
+	}
+	else_if = {
+		limit = { has_global_variable = sb_griqualand_west_refusal_contest_active_var }
+		# Non-sequence .252/.253/.025 back-down: award only a record goal
+		# actually held by the side that did not back down.
+		if = {
+			limit = {
+				target = scope:actor
+				OR = { is_diplomatic_play_type = dp_sb_griqualand_cap_revoke_claim_locked is_diplomatic_play_type = dp_sb_griqualand_cap_revoke_oranje_proxy_locked }
+			}
+			sb_griqualand_record_live_boer_claim_revocation = yes
+		}
+		else_if = {
+			limit = { target = scope:actor is_diplomatic_play_type = dp_sb_griqualand_oranje_revoke_cap_claim_locked }
+			set_global_variable = sb_griqualand_cap_claim_revocation_accepted_global_var
+		}
+		else_if = {
+			limit = {
+				initiator = scope:actor
+				target = c:WBL
+				OR = {
+					is_diplomatic_play_type = dp_sb_griqualand_cap_return_wbl_locked
+					is_diplomatic_play_type = dp_sb_griqualand_oranje_return_wbl_locked
+					is_diplomatic_play_type = dp_sb_griqualand_oranje_independent_return_wbl_proxy_locked
+					is_diplomatic_play_type = dp_sb_griqualand_oranje_return_wbl_proxy_locked
+				}
+			}
+			if = { limit = { initiator = c:CAP } set_global_variable = sb_griqualand_cap_claim_revocation_accepted_global_var }
+			else = { sb_griqualand_record_live_boer_claim_revocation = yes }
+		}
+	}
+}
+
+# Root = actual newly started diplomatic play. The launcher's country lease and
+# exact identity are the only authority to mutate this play.
+sb_griqualand_configure_started_sequence_play = {
+	if = {
+		limit = {
+			has_global_variable = sb_griqualand_phase_a_pending_global_var
+			scope:initiator ?= { country_definition = cd:CAP has_variable = sb_griqualand_phase_a_launch_lease_var }
+			scope:target ?= { country_definition = cd:TRN }
+			is_diplomatic_play_type = dp_sb_griqualand_cap_revoke_oranje_proxy_locked
+			has_global_variable = sb_griqualand_phase_a_hardline_global_var
+		}
+		add_target_backers = { c:ORA }
+		add_war_goal = { holder = c:TRN type = sb_griqualand_story_revoke_claim target_country = c:CAP target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL primary_demand = yes }
+		scope:initiator = { remove_variable = sb_griqualand_phase_a_launch_lease_var }
+		set_global_variable = sb_griqualand_phase_a_acknowledged_global_var
+		remove_global_variable = sb_griqualand_phase_a_pending_global_var
+		set_global_variable = sb_griqualand_phase_a_active_global_var
+	}
+	else_if = {
+		limit = {
+			has_global_variable = sb_griqualand_phase_a_pending_global_var
+			scope:initiator ?= { country_definition = cd:CAP has_variable = sb_griqualand_phase_a_launch_lease_var }
+			scope:target ?= { has_variable = sb_kimberley_cap_ora_dispute_war_var }
+			is_diplomatic_play_type = dp_sb_griqualand_cap_revoke_claim_locked
+			has_global_variable = sb_griqualand_phase_a_hardline_global_var
+		}
+		add_war_goal = { holder = scope:target type = sb_griqualand_story_revoke_claim target_country = c:CAP target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL primary_demand = yes }
+		scope:initiator = { remove_variable = sb_griqualand_phase_a_launch_lease_var }
+		set_global_variable = sb_griqualand_phase_a_acknowledged_global_var
+		remove_global_variable = sb_griqualand_phase_a_pending_global_var
+		set_global_variable = sb_griqualand_phase_a_active_global_var
+	}
+	else_if = {
+		limit = {
+			has_global_variable = sb_griqualand_phase_a_pending_global_var
+			NOT = { has_global_variable = sb_griqualand_phase_a_hardline_global_var }
+			scope:initiator ?= { has_variable = sb_griqualand_phase_a_launch_lease_var }
+			scope:target ?= { country_definition = cd:CAP }
+			is_diplomatic_play_type = dp_sb_griqualand_oranje_revoke_cap_claim_locked
+		}
+		add_target_backers = { c:GBR }
+		if = {
+			limit = { scope:initiator ?= { country_definition = cd:TRN } c:ORA ?= { is_country_alive = yes is_direct_subject_of = scope:initiator } }
+			add_initiator_backers = { c:ORA }
+			add_war_goal = { holder = c:CAP type = sb_revoke_oranje_griqualand_claim target_country = scope:initiator target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL primary_demand = yes }
+		}
+		else = {
+			add_war_goal = { holder = c:CAP type = sb_griqualand_story_revoke_claim target_country = scope:initiator target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL primary_demand = yes }
+		}
+		scope:initiator = { remove_variable = sb_griqualand_phase_a_launch_lease_var }
+		set_global_variable = sb_griqualand_phase_a_acknowledged_global_var
+		remove_global_variable = sb_griqualand_phase_a_pending_global_var
+		set_global_variable = sb_griqualand_phase_a_active_global_var
+	}
+	else_if = {
+		limit = {
+			has_global_variable = sb_griqualand_phase_b_pending_global_var
+			scope:initiator ?= { has_variable = sb_griqualand_phase_b_launch_lease_var }
+			scope:target ?= { country_definition = cd:WBL has_variable = sb_griqualand_west_wbl_independent_var }
+			OR = {
+				is_diplomatic_play_type = dp_sb_griqualand_cap_return_wbl_locked
+				is_diplomatic_play_type = dp_sb_griqualand_oranje_return_wbl_locked
+				is_diplomatic_play_type = dp_sb_griqualand_oranje_independent_return_wbl_proxy_locked
+			}
+		}
+		if = {
+			limit = { is_diplomatic_play_type = dp_sb_griqualand_cap_return_wbl_locked }
+			add_war_goal = { holder = c:WBL type = sb_griqualand_story_revoke_claim target_country = c:CAP target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL primary_demand = yes }
+		}
+		else_if = {
+			limit = { is_diplomatic_play_type = dp_sb_griqualand_oranje_independent_return_wbl_proxy_locked }
+			add_initiator_backers = { c:ORA }
+			add_war_goal = { holder = c:WBL type = sb_revoke_oranje_griqualand_claim target_country = c:TRN target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL primary_demand = yes }
+		}
+		else = {
+			add_war_goal = { holder = c:WBL type = sb_griqualand_story_revoke_claim target_country = scope:initiator target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL primary_demand = yes }
+		}
+		scope:initiator = { remove_variable = sb_griqualand_phase_b_launch_lease_var }
+		set_global_variable = sb_griqualand_phase_b_acknowledged_global_var
+		remove_global_variable = sb_griqualand_phase_b_pending_global_var
+		set_global_variable = sb_griqualand_phase_b_active_global_var
+	}
+	if = {
+		limit = {
+			container_exists = sb_griqualand_sequence_state
+			OR = {
+				has_global_variable = sb_griqualand_phase_a_active_global_var
+				has_global_variable = sb_griqualand_phase_b_active_global_var
+			}
+		}
+		container:sb_griqualand_sequence_state = { set_variable = { name = sb_griqualand_sequence_play_scope value = root } }
+	}
+}
+
+sb_griqualand_sequence_phase_a_creation_failure = {
+	sb_griqualand_clear_launch_leases = yes
+	set_global_variable = sb_griqualand_phase_a_creation_failed_global_var
+	sb_griqualand_sequence_terminal_fallback = yes
+}
+
+sb_griqualand_sequence_launch_phase_a = {
+	set_global_variable = sb_griqualand_phase_a_pending_global_var
+	if = {
+		limit = { c:CAP ?= { has_variable = sb_griqualand_west_hardline_path_var } }
+		set_global_variable = sb_griqualand_phase_a_hardline_global_var
+		if = {
+			limit = { c:ORA ?= { is_country_alive = yes is_direct_subject_of = c:TRN has_claim = s:STATE_GRIQUALAND_WEST } c:TRN ?= { is_country_alive = yes } }
+			if = {
+				limit = { c:CAP ?= { NOT = { any_diplomatic_play = { is_diplomatic_play_type = dp_sb_griqualand_cap_revoke_oranje_proxy_locked initiator = c:CAP target = c:TRN } } } }
+				c:CAP = {
+					set_variable = sb_griqualand_phase_a_launch_lease_var
+					create_diplomatic_play = { type = dp_sb_griqualand_cap_revoke_oranje_proxy_locked target_country = c:TRN target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL }
+				}
+			}
+		}
+		else_if = {
+			limit = { c:TRN ?= { is_country_alive = yes has_variable = sb_oranje_federated_into_trn_var has_claim = s:STATE_GRIQUALAND_WEST } }
+			if = {
+				limit = { c:CAP ?= { NOT = { any_diplomatic_play = { is_diplomatic_play_type = dp_sb_griqualand_cap_revoke_claim_locked initiator = c:CAP target = c:TRN } } } }
+				c:CAP = { set_variable = sb_griqualand_phase_a_launch_lease_var create_diplomatic_play = { type = dp_sb_griqualand_cap_revoke_claim_locked target_country = c:TRN target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL } }
+			}
+		}
+		else_if = {
+			limit = { c:ORA ?= { is_country_alive = yes has_claim = s:STATE_GRIQUALAND_WEST } }
+			if = {
+				limit = { c:CAP ?= { NOT = { any_diplomatic_play = { is_diplomatic_play_type = dp_sb_griqualand_cap_revoke_claim_locked initiator = c:CAP target = c:ORA } } } }
+				c:CAP = { set_variable = sb_griqualand_phase_a_launch_lease_var create_diplomatic_play = { type = dp_sb_griqualand_cap_revoke_claim_locked target_country = c:ORA target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL } }
+			}
+		}
+	}
+	else = {
+		if = {
+			limit = { c:ORA ?= { is_country_alive = yes is_direct_subject_of = c:TRN has_claim = s:STATE_GRIQUALAND_WEST } c:TRN ?= { is_country_alive = yes } }
+			if = {
+				limit = { c:TRN ?= { NOT = { any_diplomatic_play = { is_diplomatic_play_type = dp_sb_griqualand_oranje_revoke_cap_claim_locked initiator = c:TRN target = c:CAP } } } }
+				c:TRN = { set_variable = sb_griqualand_phase_a_launch_lease_var create_diplomatic_play = { type = dp_sb_griqualand_oranje_revoke_cap_claim_locked target_country = c:CAP target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL } }
+			}
+		}
+		else_if = {
+			limit = { c:TRN ?= { is_country_alive = yes has_variable = sb_oranje_federated_into_trn_var has_claim = s:STATE_GRIQUALAND_WEST } }
+			if = {
+				limit = { c:TRN ?= { NOT = { any_diplomatic_play = { is_diplomatic_play_type = dp_sb_griqualand_oranje_revoke_cap_claim_locked initiator = c:TRN target = c:CAP } } } }
+				c:TRN = { set_variable = sb_griqualand_phase_a_launch_lease_var create_diplomatic_play = { type = dp_sb_griqualand_oranje_revoke_cap_claim_locked target_country = c:CAP target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL } }
+			}
+		}
+		else_if = {
+			limit = { c:ORA ?= { is_country_alive = yes has_claim = s:STATE_GRIQUALAND_WEST } }
+			if = {
+				limit = { c:ORA ?= { NOT = { any_diplomatic_play = { is_diplomatic_play_type = dp_sb_griqualand_oranje_revoke_cap_claim_locked initiator = c:ORA target = c:CAP } } } }
+				c:ORA = { set_variable = sb_griqualand_phase_a_launch_lease_var create_diplomatic_play = { type = dp_sb_griqualand_oranje_revoke_cap_claim_locked target_country = c:CAP target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL } }
+			}
+		}
+	}
+	if = {
+		limit = { NOT = { has_global_variable = sb_griqualand_phase_a_acknowledged_global_var } }
+		sb_griqualand_sequence_phase_a_creation_failure = yes
+	}
+}
+
+sb_griqualand_sequence_begin = {
+	# Duplicate refusal happens before any new active marker, container, or lease.
+	if = {
+		limit = {
+			any_country = {
+				any_diplomatic_play = {
+					OR = {
+						is_diplomatic_play_type = dp_sb_griqualand_cap_revoke_claim_locked
+						is_diplomatic_play_type = dp_sb_griqualand_cap_revoke_oranje_proxy_locked
+						is_diplomatic_play_type = dp_sb_griqualand_oranje_revoke_cap_claim_locked
+					}
+					OR = { initiator = c:CAP target = c:CAP }
+				}
+			}
+		}
+		sb_griqualand_clear_launch_leases = yes
+		set_global_variable = sb_griqualand_sequence_launch_refused_global_var
+	}
+	else = {
+		if = { limit = { has_global_variable = sb_griqualand_sequence_launch_refused_global_var } remove_global_variable = sb_griqualand_sequence_launch_refused_global_var }
+		if = { limit = { container_exists = sb_griqualand_sequence_state } container:sb_griqualand_sequence_state = { destroy_container = yes } }
+		sb_griqualand_clear_launch_leases = yes
+		set_global_variable = { name = sb_griqualand_sequence_generation_global_var value = 1 }
+		set_global_variable = sb_griqualand_sequence_active_global_var
+		set_global_variable = sb_griqualand_west_refusal_contest_active_var
+		c:CAP ?= { set_variable = sb_kimberley_cap_ora_dispute_war_var }
+		c:WBL ?= { set_variable = sb_kimberley_cap_ora_dispute_war_var }
+		c:ORA ?= { set_variable = sb_kimberley_cap_ora_dispute_war_var }
+		c:TRN ?= { if = { limit = { OR = { has_variable = sb_oranje_federated_into_trn_var c:ORA ?= { is_direct_subject_of = c:TRN } } } set_variable = sb_kimberley_cap_ora_dispute_war_var } }
+		sb_griqualand_sequence_refresh_container = yes
+		sb_griqualand_sequence_launch_phase_a = yes
+	}
+}
+
+sb_griqualand_sequence_phase_b_creation_failure = {
+	sb_griqualand_clear_launch_leases = yes
+	set_global_variable = sb_griqualand_phase_b_creation_failed_global_var
+	if = {
+		limit = { NOT = { has_global_variable = sb_griqualand_phase_b_retry_used_global_var } }
+		set_global_variable = sb_griqualand_phase_b_retry_used_global_var
+		set_global_variable = sb_griqualand_phase_b_pending_global_var
+		set_global_variable = sb_griqualand_phase_b_event_pending_global_var
+		sb_griqualand_sequence_refresh_container = yes
+		if = {
+			limit = { container:sb_griqualand_sequence_state ?= { has_variable = sb_griqualand_advancing_diplomatic_leader_scope } }
+			container:sb_griqualand_sequence_state.var:sb_griqualand_advancing_diplomatic_leader_scope = { trigger_event = { id = sb_griqualand_west.261 days = 7 } }
+		}
+		else = { sb_griqualand_sequence_terminal_fallback = yes }
+	}
+	else = { sb_griqualand_sequence_terminal_fallback = yes }
+}
+
+# Called by hidden .261. Its event trigger is deliberately permissive; all live
+# owner, independence, claim, party, and exact-play preflight checks live here.
+sb_griqualand_sequence_launch_phase_b = {
+	if = { limit = { has_global_variable = sb_griqualand_phase_b_event_pending_global_var } remove_global_variable = sb_griqualand_phase_b_event_pending_global_var }
+	sb_griqualand_sequence_refresh_container = yes
+	if = {
+		limit = {
+			has_global_variable = sb_griqualand_sequence_active_global_var
+			has_global_variable = sb_griqualand_phase_b_pending_global_var
+			c:WBL ?= { is_country_alive = yes is_subject = no has_variable = sb_griqualand_west_wbl_independent_var }
+			p:x68B5E8.state.owner = c:WBL
+			container:sb_griqualand_sequence_state ?= {
+				has_variable = sb_griqualand_advancing_claimant_scope
+				has_variable = sb_griqualand_advancing_diplomatic_leader_scope
+			}
+		}
+		if = {
+			limit = { container:sb_griqualand_sequence_state.var:sb_griqualand_advancing_claimant_scope = { country_definition = cd:CAP has_claim = s:STATE_GRIQUALAND_WEST } c:CAP ?= { NOT = { any_diplomatic_play = { is_diplomatic_play_type = dp_sb_griqualand_cap_return_wbl_locked initiator = c:CAP target = c:WBL } } } }
+			c:CAP = { set_variable = sb_griqualand_phase_b_launch_lease_var create_diplomatic_play = { type = dp_sb_griqualand_cap_return_wbl_locked target_country = c:WBL target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL } }
+		}
+		else_if = {
+			limit = { container:sb_griqualand_sequence_state.var:sb_griqualand_advancing_claimant_scope = { country_definition = cd:ORA is_direct_subject_of = c:TRN has_claim = s:STATE_GRIQUALAND_WEST } c:TRN ?= { is_country_alive = yes NOT = { any_diplomatic_play = { is_diplomatic_play_type = dp_sb_griqualand_oranje_independent_return_wbl_proxy_locked initiator = c:TRN target = c:WBL } } } }
+			c:TRN = { set_variable = sb_griqualand_phase_b_launch_lease_var create_diplomatic_play = { type = dp_sb_griqualand_oranje_independent_return_wbl_proxy_locked target_country = c:WBL target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL } }
+		}
+		else_if = {
+			limit = { container:sb_griqualand_sequence_state.var:sb_griqualand_advancing_diplomatic_leader_scope = { OR = { country_definition = cd:ORA country_definition = cd:TRN } has_claim = s:STATE_GRIQUALAND_WEST NOT = { any_diplomatic_play = { is_diplomatic_play_type = dp_sb_griqualand_oranje_return_wbl_locked initiator = this target = c:WBL } } } }
+			container:sb_griqualand_sequence_state.var:sb_griqualand_advancing_diplomatic_leader_scope = { set_variable = sb_griqualand_phase_b_launch_lease_var create_diplomatic_play = { type = dp_sb_griqualand_oranje_return_wbl_locked target_country = c:WBL target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL } }
+		}
+	}
+	if = {
+		limit = { NOT = { has_global_variable = sb_griqualand_phase_b_acknowledged_global_var } }
+		sb_griqualand_sequence_phase_b_creation_failure = yes
+	}
+}
+
+# Elect exactly one monthly actor. Order: advancing diplomatic leader, WBL, CAP,
+# Boer diplomatic party, then current state owner.
+sb_griqualand_sequence_elect_watchdog = {
+	sb_griqualand_sequence_refresh_container = yes
+	if = {
+		limit = { container:sb_griqualand_sequence_state ?= { has_variable = sb_griqualand_advancing_diplomatic_leader_scope } container:sb_griqualand_sequence_state.var:sb_griqualand_advancing_diplomatic_leader_scope = { is_country_alive = yes } }
+		container:sb_griqualand_sequence_state.var:sb_griqualand_advancing_diplomatic_leader_scope = { save_temporary_scope_as = sb_griqualand_watchdog_coordinator }
+	}
+	else_if = { limit = { c:WBL ?= { is_country_alive = yes } } c:WBL = { save_temporary_scope_as = sb_griqualand_watchdog_coordinator } }
+	else_if = { limit = { c:CAP ?= { is_country_alive = yes } } c:CAP = { save_temporary_scope_as = sb_griqualand_watchdog_coordinator } }
+	else_if = {
+		limit = { container:sb_griqualand_sequence_state ?= { has_variable = sb_griqualand_boer_party_scope } container:sb_griqualand_sequence_state.var:sb_griqualand_boer_party_scope = { is_country_alive = yes } }
+		container:sb_griqualand_sequence_state.var:sb_griqualand_boer_party_scope = { save_temporary_scope_as = sb_griqualand_watchdog_coordinator }
+	}
+	else = { p:x68B5E8.state.owner = { save_temporary_scope_as = sb_griqualand_watchdog_coordinator } }
+}
+
+sb_griqualand_sequence_watchdog = {
+	sb_griqualand_sequence_elect_watchdog = yes
+	if = {
+		limit = { scope:sb_griqualand_watchdog_coordinator ?= { this = root } }
+		if = {
+			limit = { has_global_variable = sb_griqualand_phase_b_pending_global_var NOT = { has_global_variable = sb_griqualand_phase_b_event_pending_global_var } }
+			set_global_variable = sb_griqualand_phase_b_event_pending_global_var
+			trigger_event = { id = sb_griqualand_west.261 days = 1 }
+		}
+		if = {
+			limit = {
+				has_global_variable = sb_griqualand_phase_a_active_global_var
+				has_global_variable = sb_griqualand_phase_a_acknowledged_global_var
+				c:CAP ?= { is_at_war = no }
+				NOT = { any_country = { OR = {
+					any_diplomatic_play = { OR = { is_diplomatic_play_type = dp_sb_griqualand_cap_revoke_claim_locked is_diplomatic_play_type = dp_sb_griqualand_cap_revoke_oranje_proxy_locked is_diplomatic_play_type = dp_sb_griqualand_oranje_revoke_cap_claim_locked } }
+					any_scope_war = { diplomatic_play = { OR = { is_diplomatic_play_type = dp_sb_griqualand_cap_revoke_claim_locked is_diplomatic_play_type = dp_sb_griqualand_cap_revoke_oranje_proxy_locked is_diplomatic_play_type = dp_sb_griqualand_oranje_revoke_cap_claim_locked } } }
+				} } }
+			}
+			sb_griqualand_sequence_close_phase_a = yes
+		}
+		if = {
+			limit = {
+				has_global_variable = sb_griqualand_phase_b_active_global_var
+				has_global_variable = sb_griqualand_phase_b_acknowledged_global_var
+				c:WBL ?= { is_at_war = no }
+				NOT = { any_country = { OR = {
+					any_diplomatic_play = { OR = { is_diplomatic_play_type = dp_sb_griqualand_cap_return_wbl_locked is_diplomatic_play_type = dp_sb_griqualand_oranje_return_wbl_locked is_diplomatic_play_type = dp_sb_griqualand_oranje_independent_return_wbl_proxy_locked } }
+					any_scope_war = { diplomatic_play = { OR = { is_diplomatic_play_type = dp_sb_griqualand_cap_return_wbl_locked is_diplomatic_play_type = dp_sb_griqualand_oranje_return_wbl_locked is_diplomatic_play_type = dp_sb_griqualand_oranje_independent_return_wbl_proxy_locked } } }
+				} } }
+			}
+			sb_griqualand_sequence_close_phase_b = yes
+		}
+	}
+}
+
+sb_griqualand_west_close_routed_play = {
+	if = {
+		limit = { has_global_variable = sb_griqualand_sequence_active_global_var has_global_variable = sb_griqualand_phase_a_active_global_var }
+		sb_griqualand_sequence_close_phase_a = yes
+	}
+	else_if = {
+		limit = { has_global_variable = sb_griqualand_sequence_active_global_var has_global_variable = sb_griqualand_phase_b_active_global_var }
+		sb_griqualand_sequence_close_phase_b = yes
+	}
+	else = {
+		# Aligned .252/.253 routes use the same order-safe record policy.
+		sb_griqualand_sequence_refresh_container = yes
+		sb_griqualand_apply_recorded_claim_revocations = yes
+		sb_griqualand_west_finalize_refusal_contest = yes
+		if = { limit = { container_exists = sb_griqualand_sequence_state } container:sb_griqualand_sequence_state = { destroy_container = yes } }
+		if = { limit = { has_global_variable = sb_griqualand_cap_claim_revocation_accepted_global_var } remove_global_variable = sb_griqualand_cap_claim_revocation_accepted_global_var }
+		if = { limit = { has_global_variable = sb_griqualand_boer_claim_revocation_accepted_global_var } remove_global_variable = sb_griqualand_boer_claim_revocation_accepted_global_var }
+		if = { limit = { has_global_variable = sb_griqualand_ora_claim_revocation_accepted_global_var } remove_global_variable = sb_griqualand_ora_claim_revocation_accepted_global_var }
+		if = { limit = { has_global_variable = sb_griqualand_trn_claim_revocation_accepted_global_var } remove_global_variable = sb_griqualand_trn_claim_revocation_accepted_global_var }
+		if = { limit = { has_global_variable = sb_griqualand_claim_revocations_applied_global_var } remove_global_variable = sb_griqualand_claim_revocations_applied_global_var }
+	}
+}
+
+# Safe on-start configuration for the aligned live-subject ORA route (.252).
+sb_griqualand_configure_started_aligned_proxy_play = {
+	if = {
+		limit = {
+			is_diplomatic_play_type = dp_sb_griqualand_oranje_return_wbl_proxy_locked
+			scope:initiator ?= { country_definition = cd:TRN has_variable = sb_griqualand_aligned_proxy_launch_lease_var }
+			scope:target ?= { country_definition = cd:WBL }
+			has_global_variable = sb_griqualand_west_refusal_contest_active_var
+			NOT = { has_global_variable = sb_griqualand_sequence_active_global_var }
+			c:ORA ?= { is_country_alive = yes is_direct_subject_of = scope:initiator has_claim = s:STATE_GRIQUALAND_WEST }
+		}
+		add_initiator_backers = { c:ORA }
+		add_target_backers = { c:CAP c:GBR }
+		# The base is already the sole TRN-held, ORA-benefiting proxy demand.
+		add_war_goal = { holder = c:CAP type = sb_revoke_oranje_griqualand_claim target_country = c:TRN target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL primary_demand = yes }
+		scope:initiator = { remove_variable = sb_griqualand_aligned_proxy_launch_lease_var }
+	}
 }

@@ -878,44 +878,6 @@ sb_griqualand_west.248 = {
 	}
 }
 
-sb_griqualand_west.249 = {
-	type = country_event
-	placement = root
-
-	title = sb_griqualand_west.249.t
-	desc = sb_griqualand_west.249.d
-	flavor = sb_griqualand_west.249.f
-
-	event_image = {
-		video = "africa_diplomats_negotiating"
-	}
-
-	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-	icon = "gfx/interface/icons/event_icons/event_newspaper.dds"
-	duration = 3
-
-	immediate = {
-		sb_griqualand_west_save_country_loc_scopes = yes
-	}
-
-	trigger = {
-		country_definition = cd:CAP
-		c:WBL ?= {
-			is_country_alive = yes
-			any_scope_state = { state_region = s:STATE_GRIQUALAND_WEST }
-		}
-	}
-
-	option = {
-		name = sb_griqualand_west.249.a
-		default_option = yes
-		custom_tooltip = sb_griqualand_west_244_tt
-		hidden_effect = {
-			sb_griqualand_west_prepare_cap_annexation_demand = yes
-		}
-	}
-}
-
 sb_griqualand_west.250 = {
 	type = country_event
 	placement = root
@@ -1431,8 +1393,8 @@ sb_griqualand_west.252 = {
 						add_initiator_backers = { c:WBL }
 						add_target_backers = { c:ORA }
 						add_war_goal = {
-							holder = c:ORA
-							type = return_state
+							holder = c:TRN
+							type = sb_return_oranje_griqualand
 							target_country = c:WBL
 							target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
 							primary_demand = yes
@@ -1457,40 +1419,21 @@ sb_griqualand_west.252 = {
 			}
 			else = {
 				if = {
-					limit = { c:ORA ?= { is_direct_subject_of = c:TRN } }
-					c:TRN = {
-						create_diplomatic_play = {
-							type = dp_sb_griqualand_oranje_return_wbl_proxy_locked
-							target_country = c:WBL
-							target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
-							add_initiator_backers = { c:ORA }
-							add_target_backers = { c:CAP c:GBR }
-							add_war_goal = {
-								holder = c:ORA
-								type = return_state
-								target_country = c:WBL
-								target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
-								primary_demand = yes
-							}
-							add_war_goal = {
-								holder = c:CAP
-								type = sb_revoke_oranje_griqualand_claim
-								target_country = c:TRN
-								target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
-								primary_demand = yes
-							}
-						}
-						random_diplomatic_play = {
-							limit = {
-								is_diplomatic_play_type = dp_sb_griqualand_oranje_return_wbl_proxy_locked
-								initiator = c:TRN
-							}
-							remove_war_goal = {
-								who = initiator
-								type = sb_return_oranje_griqualand
+					limit = { c:ORA ?= { is_country_alive = yes is_direct_subject_of = c:TRN has_claim = s:STATE_GRIQUALAND_WEST } c:TRN ?= { is_country_alive = yes } }
+					if = {
+						limit = { c:TRN ?= { NOT = { any_diplomatic_play = { is_diplomatic_play_type = dp_sb_griqualand_oranje_return_wbl_proxy_locked initiator = c:TRN target = c:WBL } } } }
+						c:TRN = {
+							set_variable = sb_griqualand_aligned_proxy_launch_lease_var
+							create_diplomatic_play = { type = dp_sb_griqualand_oranje_return_wbl_proxy_locked target_country = c:WBL target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL }
+							if = {
+								limit = { has_variable = sb_griqualand_aligned_proxy_launch_lease_var }
+								remove_variable = sb_griqualand_aligned_proxy_launch_lease_var
+								set_global_variable = sb_griqualand_aligned_proxy_creation_failed_global_var
+								sb_griqualand_west_finalize_refusal_contest = yes
 							}
 						}
 					}
+					else = { set_global_variable = sb_griqualand_aligned_proxy_launch_refused_global_var }
 				}
 				else = {
 					scope:sb_oranje_claimant_scope = {
@@ -1499,13 +1442,7 @@ sb_griqualand_west.252 = {
 							target_country = c:WBL
 							target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
 							add_target_backers = { c:CAP c:GBR }
-							add_war_goal = {
-								holder = c:CAP
-								type = revoke_claim
-								target_country = scope:sb_oranje_claimant_scope
-								target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
-								primary_demand = yes
-							}
+							add_war_goal = { holder = c:CAP type = sb_griqualand_story_revoke_claim target_country = scope:sb_oranje_claimant_scope target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL primary_demand = yes }
 						}
 					}
 				}
@@ -1584,7 +1521,7 @@ sb_griqualand_west.253 = {
 					target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
 					add_war_goal = {
 						holder = c:WBL
-						type = revoke_claim
+						type = sb_griqualand_story_revoke_claim
 						target_country = root
 						target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
 						primary_demand = yes
@@ -1689,178 +1626,7 @@ sb_griqualand_west.254 = {
 			custom_tooltip = sb_griqualand_west_254_boer_aggressor_tt
 		}
 		hidden_effect = {
-			set_global_variable = sb_griqualand_west_refusal_contest_active_var
-			set_variable = sb_kimberley_cap_ora_dispute_war_var
-			c:WBL = { set_variable = sb_kimberley_cap_ora_dispute_war_var }
-			c:ORA ?= { set_variable = sb_kimberley_cap_ora_dispute_war_var }
-			scope:sb_oranje_claimant_scope = { set_variable = sb_kimberley_cap_ora_dispute_war_var }
-			create_diplomatic_play = {
-				type = dp_sb_griqualand_cap_return_wbl_locked
-				target_country = c:WBL
-				target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
-				add_war_goal = {
-					holder = c:WBL
-					type = revoke_claim
-					target_country = root
-					target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
-					primary_demand = yes
-				}
-			}
-			if = {
-				limit = { has_variable = sb_griqualand_west_hardline_path_var }
-				if = {
-					limit = { c:ORA ?= { is_direct_subject_of = c:TRN } }
-					create_diplomatic_play = {
-						type = dp_sb_griqualand_cap_revoke_oranje_proxy_locked
-						target_country = c:TRN
-						target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
-						add_target_backers = { c:ORA }
-						add_war_goal = {
-							holder = c:ORA
-							type = revoke_claim
-							target_country = root
-							target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
-							primary_demand = yes
-						}
-					}
-				}
-				else_if = {
-					limit = {
-						c:TRN ?= {
-							is_country_alive = yes
-							has_variable = sb_oranje_federated_into_trn_var
-						}
-						NOT = { c:ORA ?= { is_country_alive = yes } }
-					}
-					create_diplomatic_play = {
-						type = dp_sb_griqualand_cap_revoke_claim_locked
-						target_country = c:TRN
-						target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
-						add_war_goal = {
-							holder = c:TRN
-							type = revoke_claim
-							target_country = root
-							target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
-							primary_demand = yes
-						}
-					}
-				}
-				else = {
-					create_diplomatic_play = {
-						type = dp_sb_griqualand_cap_revoke_claim_locked
-						target_country = c:ORA
-						target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
-						add_war_goal = {
-							holder = c:ORA
-							type = revoke_claim
-							target_country = root
-							target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
-							primary_demand = yes
-						}
-					}
-				}
-			}
-			else = {
-				if = {
-					limit = { c:ORA ?= { is_direct_subject_of = c:TRN } }
-					c:TRN = {
-						create_diplomatic_play = {
-							type = dp_sb_griqualand_oranje_revoke_cap_claim_locked
-							target_country = c:CAP
-							target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
-							add_initiator_backers = { c:ORA }
-							add_target_backers = { c:GBR }
-							add_war_goal = {
-								holder = c:CAP
-								type = sb_revoke_oranje_griqualand_claim
-								target_country = c:TRN
-								target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
-								primary_demand = yes
-							}
-						}
-					}
-				}
-				else = {
-					scope:sb_oranje_claimant_scope = {
-						create_diplomatic_play = {
-							type = dp_sb_griqualand_oranje_revoke_cap_claim_locked
-							target_country = c:CAP
-							target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
-							add_target_backers = { c:GBR }
-							add_war_goal = {
-								holder = c:CAP
-								type = revoke_claim
-								target_country = scope:sb_oranje_claimant_scope
-								target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
-								primary_demand = yes
-							}
-						}
-					}
-				}
-			}
-			if = {
-				limit = {
-					scope:sb_oranje_claimant_scope ?= {
-						country_definition = cd:TRN
-						has_variable = sb_oranje_federated_into_trn_var
-					}
-					NOT = { c:ORA ?= { is_country_alive = yes } }
-				}
-				scope:sb_oranje_claimant_scope = {
-					create_diplomatic_play = {
-						type = dp_sb_griqualand_oranje_return_wbl_locked
-						target_country = c:WBL
-						target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
-						add_war_goal = {
-							holder = c:WBL
-							type = revoke_claim
-							target_country = c:TRN
-							target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
-							primary_demand = yes
-						}
-					}
-				}
-			}
-			else_if = {
-				limit = { scope:sb_oranje_claimant_scope ?= { country_definition = cd:TRN } }
-				scope:sb_oranje_claimant_scope = {
-					create_diplomatic_play = {
-						type = dp_sb_griqualand_oranje_return_wbl_locked
-						target_country = c:WBL
-						target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
-						add_war_goal = {
-							holder = c:ORA
-							type = return_state
-							target_country = c:WBL
-							target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
-							primary_demand = yes
-						}
-						add_war_goal = {
-							holder = c:WBL
-							type = revoke_claim
-							target_country = c:ORA
-							target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
-							primary_demand = yes
-						}
-					}
-				}
-			}
-			else = {
-				c:ORA ?= {
-					create_diplomatic_play = {
-						type = dp_sb_griqualand_oranje_return_wbl_locked
-						target_country = c:WBL
-						target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
-						add_war_goal = {
-							holder = c:WBL
-							type = revoke_claim
-							target_country = c:ORA
-							target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
-							primary_demand = yes
-						}
-					}
-				}
-			}
+			sb_griqualand_sequence_begin = yes
 		}
 		ai_chance = { base = 100 }
 	}
@@ -1914,6 +1680,7 @@ sb_griqualand_west.025 = {
 		any_scope_state = { state_region = s:STATE_GRIQUALAND_WEST }
 		OR = {
 			has_variable = sb_griqualand_west_cap_annexation_demand_var
+			has_variable = sb_griqualand_west_oranje_annexation_demand_var
 			has_variable = sb_griqualand_west_ora_submission_demand_var
 			has_variable = sb_griqualand_west_trn_submission_demand_var
 		}
@@ -2088,44 +1855,42 @@ sb_griqualand_west.025 = {
 			custom_tooltip = sb_griqualand_west_025_refuse_oranje_annexation_tt
 			hidden_effect = {
 				remove_variable = sb_griqualand_west_oranje_annexation_demand_var
+				set_variable = sb_griqualand_west_wbl_independent_var
 				set_global_variable = sb_griqualand_west_refusal_contest_active_var
 				if = {
-					limit = { scope:sb_oranje_claimant_scope ?= { country_definition = cd:TRN } }
-					scope:sb_oranje_claimant_scope = {
+					limit = {
+						c:ORA ?= { is_country_alive = yes is_direct_subject_of = c:TRN has_claim = s:STATE_GRIQUALAND_WEST }
+						c:TRN ?= { is_country_alive = yes }
+					}
+					c:TRN = {
 						create_diplomatic_play = {
-							type = dp_sb_griqualand_oranje_return_wbl_locked
+							type = dp_sb_griqualand_oranje_independent_return_wbl_proxy_locked
 							target_country = c:WBL
 							target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
-							add_war_goal = {
-								holder = c:ORA
-								type = return_state
-								target_country = c:WBL
-								target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
-								primary_demand = yes
-							}
-							add_war_goal = {
-								holder = c:WBL
-								type = revoke_claim
-								target_country = c:ORA
-								target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
-								primary_demand = yes
-							}
+							add_initiator_backers = { c:ORA }
+							add_war_goal = { holder = c:WBL type = sb_revoke_oranje_griqualand_claim target_country = c:TRN target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL primary_demand = yes }
 						}
 					}
 				}
-				else = {
-					c:ORA ?= {
+				else_if = {
+					limit = { c:TRN ?= { is_country_alive = yes has_variable = sb_oranje_federated_into_trn_var has_claim = s:STATE_GRIQUALAND_WEST } }
+					c:TRN = {
 						create_diplomatic_play = {
 							type = dp_sb_griqualand_oranje_return_wbl_locked
 							target_country = c:WBL
 							target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
-							add_war_goal = {
-								holder = c:WBL
-								type = revoke_claim
-								target_country = c:ORA
-								target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
-								primary_demand = yes
-							}
+							add_war_goal = { holder = c:WBL type = sb_griqualand_story_revoke_claim target_country = c:TRN target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL primary_demand = yes }
+						}
+					}
+				}
+				else_if = {
+					limit = { c:ORA ?= { is_country_alive = yes has_claim = s:STATE_GRIQUALAND_WEST } }
+					c:ORA = {
+						create_diplomatic_play = {
+							type = dp_sb_griqualand_oranje_return_wbl_locked
+							target_country = c:WBL
+							target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
+							add_war_goal = { holder = c:WBL type = sb_griqualand_story_revoke_claim target_country = c:ORA target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL primary_demand = yes }
 						}
 					}
 				}
@@ -2143,7 +1908,7 @@ sb_griqualand_west.025 = {
 						target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
 						add_war_goal = {
 							holder = root
-							type = revoke_claim
+							type = sb_griqualand_story_revoke_claim
 							target_country = c:CAP
 							target_state = s:STATE_GRIQUALAND_WEST.region_state:WBL
 							primary_demand = yes
@@ -2357,4 +2122,13 @@ sb_griqualand_west.260 = {
 			}
 		}
 	}
+}
+
+# Hidden Phase-B dispatcher. The trigger is intentionally permissive so a new
+# elected coordinator can recover it; the effect revalidates every live relation.
+sb_griqualand_west.261 = {
+	type = country_event
+	hidden = yes
+	trigger = { has_global_variable = sb_griqualand_phase_b_pending_global_var }
+	immediate = { sb_griqualand_sequence_launch_phase_b = yes }
 }

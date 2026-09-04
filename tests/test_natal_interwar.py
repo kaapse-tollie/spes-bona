@@ -1411,6 +1411,9 @@ class NatalInterwarTests(unittest.TestCase):
         war_goal = object_block(
             effects_path, "sb_natal_add_zulu_secession_war_goal"
         )
+        war_goal_config = object_block(
+            effects_path, "sb_natal_configure_started_zulu_secession_play"
+        )
         appeal = object_block(
             "events/sb_natal_interwar_events.txt", "sb_natal_interwar.040"
         )
@@ -1451,13 +1454,16 @@ class NatalInterwarTests(unittest.TestCase):
         )
         self.assertNotIn("effect_starting_politics_traditional", secession)
         self.assertNotIn("effect_starting_technology", secession)
-        self.assertIn("type = return_state", war_goal)
-        self.assertIn("target_country = c:NAL", war_goal)
-        self.assertIn("target_state = s:STATE_NATAL.region_state:NAL", war_goal)
-        self.assertIn("exists = s:STATE_NATAL.region_state:NAL", war_goal)
-        self.assertIn("initiator = ROOT", war_goal)
-        self.assertIn("target = ROOT", war_goal)
-        self.assertNotIn("primary_demand = yes", war_goal)
+        self.assertNotIn("random_diplomatic_play", war_goal)
+        self.assertIn("sb_natal_zulu_secession_launch_lease_var", war_goal)
+        self.assertIn("type = return_state", war_goal_config)
+        self.assertIn("target_country = c:NAL", war_goal_config)
+        self.assertIn("target_state = s:STATE_NATAL.region_state:NAL", war_goal_config)
+        self.assertIn("exists = s:STATE_NATAL.region_state:NAL", war_goal_config)
+        self.assertIn("scope:initiator ?=", war_goal_config)
+        self.assertIn("scope:target ?=", war_goal_config)
+        self.assertNotIn("primary_demand = yes", war_goal_config)
+        self.assertIn("sb_natal_configure_started_zulu_secession_play = yes", hooks)
 
         normalization = object_block(
             "events/sb_natal_interwar_events.txt", "sb_natal_interwar.039"
