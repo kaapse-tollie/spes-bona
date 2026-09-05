@@ -259,12 +259,26 @@ sb_zululand_settlement.120 = {
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
 	icon = "gfx/interface/icons/event_icons/event_map.dds"
 	duration = 3
-	trigger = { country_definition = cd:NAL sb_zululand_chiefdoms_runtime_valid = yes }
+	# Receipt remains broad so a stale delivery can take its cleanup-only option.
+	trigger = { country_definition = cd:NAL }
 	option = {
 		name = sb_zululand_settlement.120.a
 		default_option = yes
+		# sb_zululand_chiefdoms_runtime_valid = yes is included by the bound authority.
+		trigger = { sb_zululand_bound_zibhebhu_terminal_event_authority = yes }
 		custom_tooltip = sb_zululand_settlement.120.a.tt
-		hidden_effect = { sb_zululand_apply_zibhebhu_victory = yes }
+		hidden_effect = {
+			if = {
+				limit = { sb_zululand_bound_zibhebhu_terminal_event_authority = yes }
+				sb_zululand_apply_zibhebhu_victory = yes
+			}
+			else = { sb_zululand_clear_terminal_generation = yes }
+		}
+	}
+	option = {
+		name = sb_zululand_settlement.120.a
+		trigger = { NOT = { sb_zululand_bound_zibhebhu_terminal_event_authority = yes } }
+		hidden_effect = { sb_zululand_clear_terminal_generation = yes }
 	}
 }
 
@@ -278,12 +292,26 @@ sb_zululand_settlement.121 = {
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
 	icon = "gfx/interface/icons/event_icons/event_map.dds"
 	duration = 3
-	trigger = { country_definition = cd:NAL sb_zululand_chiefdoms_runtime_valid = yes }
+	# Receipt remains broad so a stale delivery can take its cleanup-only option.
+	trigger = { country_definition = cd:NAL }
 	option = {
 		name = sb_zululand_settlement.121.a
 		default_option = yes
+		# sb_zululand_chiefdoms_runtime_valid = yes is included by the bound authority.
+		trigger = { sb_zululand_bound_crown_terminal_event_authority = yes }
 		custom_tooltip = sb_zululand_settlement.121.a.tt
-		hidden_effect = { sb_zululand_apply_crown_victory = yes }
+		hidden_effect = {
+			if = {
+				limit = { sb_zululand_bound_crown_terminal_event_authority = yes }
+				sb_zululand_apply_crown_victory = yes
+			}
+			else = { sb_zululand_clear_terminal_generation = yes }
+		}
+	}
+	option = {
+		name = sb_zululand_settlement.121.a
+		trigger = { NOT = { sb_zululand_bound_crown_terminal_event_authority = yes } }
+		hidden_effect = { sb_zululand_clear_terminal_generation = yes }
 	}
 }
 
@@ -399,19 +427,13 @@ sb_zululand_settlement.210 = {
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
 	icon = "gfx/interface/icons/event_icons/event_map.dds"
 	duration = 3
-	trigger = {
-		country_definition = cd:NRP
-		has_variable = sb_nrp_boundary_pending_var
-		has_variable = sb_nrp_boundary_initiator_scope
-		sb_nrp_is_greater_republic = yes
-		exists = s:STATE_ZULULAND.region_state:ZUL
-		c:ZUL ?= { is_country_alive = yes }
-	}
+	trigger = { has_variable = sb_nrp_boundary_pending_var has_variable = sb_nrp_boundary_event_open_var sb_nrp_boundary_current_political_authority = yes NOT = { has_variable = sb_nrp_direct_annexation_rebellion_var } }
 	immediate = {
 		sb_nrp_roll_boundary_response = yes
 	}
 	option = {
 		name = sb_zululand_settlement.210.a
+		trigger = { has_variable = sb_nrp_boundary_pending_var has_variable = sb_nrp_boundary_event_open_var sb_nrp_boundary_current_political_authority = yes NOT = { has_variable = sb_nrp_direct_annexation_rebellion_var } }
 		default_option = yes
 		custom_tooltip = sb_zululand_settlement.210.a.tt
 		hidden_effect = { sb_nrp_notify_natal_of_boundary_cutback = yes }
@@ -422,12 +444,19 @@ sb_zululand_settlement.210 = {
 	}
 	option = {
 		name = sb_zululand_settlement.210.b
+		trigger = { has_variable = sb_nrp_boundary_pending_var has_variable = sb_nrp_boundary_event_open_var sb_nrp_boundary_current_political_authority = yes NOT = { has_variable = sb_nrp_direct_annexation_rebellion_var } }
 		custom_tooltip = sb_zululand_settlement.210.b.tt
 		hidden_effect = { sb_nrp_refuse_boundary_demand = yes }
 		ai_chance = {
 			base = 0
 			modifier = { trigger = { has_variable = sb_nrp_should_refuse_boundary_var } add = 1000 }
 		}
+	}
+
+	option = {
+		name = sb_zululand_settlement.210.b
+		trigger = { NOT = { AND = { has_variable = sb_nrp_boundary_pending_var has_variable = sb_nrp_boundary_event_open_var sb_nrp_boundary_current_political_authority = yes NOT = { has_variable = sb_nrp_direct_annexation_rebellion_var } } } }
+		sb_nrp_clear_boundary_confrontation_runtime = yes
 	}
 }
 
@@ -441,9 +470,10 @@ sb_zululand_settlement.211 = {
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
 	icon = "gfx/interface/icons/event_icons/event_military.dds"
 	duration = 3
-	trigger = { country_definition = cd:TRN is_subject = no c:NRP ?= { is_country_alive = yes has_variable = sb_nrp_boundary_refused_var } }
+	trigger = { country_definition = cd:TRN is_country_alive = yes is_subject = no c:NRP ?= { has_variable = sb_nrp_boundary_refused_var has_variable = sb_nrp_trn_defence_request_queued_var sb_nrp_boundary_current_political_authority = yes } }
 	option = {
 		name = sb_zululand_settlement.211.a
+		trigger = { country_definition = cd:TRN is_country_alive = yes is_subject = no c:NRP ?= { has_variable = sb_nrp_boundary_refused_var has_variable = sb_nrp_trn_defence_request_queued_var sb_nrp_boundary_current_political_authority = yes } }
 		default_option = yes
 		custom_tooltip = sb_zululand_settlement.211.a.tt
 		hidden_effect = { sb_nrp_accept_defence_request = yes }
@@ -454,12 +484,20 @@ sb_zululand_settlement.211 = {
 	}
 	option = {
 		name = sb_zululand_settlement.211.b
+		trigger = { country_definition = cd:TRN is_country_alive = yes is_subject = no c:NRP ?= { has_variable = sb_nrp_boundary_refused_var has_variable = sb_nrp_trn_defence_request_queued_var sb_nrp_boundary_current_political_authority = yes } }
 		custom_tooltip = sb_zululand_settlement.211.b.tt
 		hidden_effect = { sb_nrp_decline_defence_request = yes }
 		ai_chance = {
 			base = 0
 			modifier = { trigger = { NOT = { has_variable = sb_nrp_shared_refusal_commitment_var } } add = 1000 }
 		}
+	}
+
+	option = {
+		name = sb_zululand_settlement.211.b
+		trigger = { NOT = { AND = { country_definition = cd:TRN is_country_alive = yes is_subject = no c:NRP ?= { has_variable = sb_nrp_boundary_refused_var has_variable = sb_nrp_trn_defence_request_queued_var sb_nrp_boundary_current_political_authority = yes } } } }
+		if = { limit = { has_variable = sb_nrp_shared_refusal_commitment_var } remove_variable = sb_nrp_shared_refusal_commitment_var }
+		c:NRP ?= { if = { limit = { has_variable = sb_nrp_trn_defence_request_queued_var } remove_variable = sb_nrp_trn_defence_request_queued_var } }
 	}
 }
 
@@ -473,18 +511,11 @@ sb_zululand_settlement.230 = {
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
 	icon = "gfx/interface/icons/event_icons/event_map.dds"
 	duration = 3
-	trigger = {
-		country_definition = cd:NRP
-		has_variable = sb_nrp_boundary_pending_var
-		has_variable = sb_nrp_boundary_initiator_scope
-		has_variable = sb_nrp_direct_annexation_rebellion_var
-		sb_nrp_is_greater_republic = yes
-		c:NAL ?= { is_country_alive = yes }
-		NOT = { c:ZUL ?= { is_country_alive = yes } }
-	}
+	trigger = { has_variable = sb_nrp_boundary_pending_var has_variable = sb_nrp_boundary_event_open_var sb_nrp_boundary_current_political_authority = yes has_variable = sb_nrp_direct_annexation_rebellion_var }
 	immediate = { sb_nrp_roll_boundary_response = yes }
 	option = {
 		name = sb_zululand_settlement.230.a
+		trigger = { has_variable = sb_nrp_boundary_pending_var has_variable = sb_nrp_boundary_event_open_var sb_nrp_boundary_current_political_authority = yes has_variable = sb_nrp_direct_annexation_rebellion_var }
 		default_option = yes
 		custom_tooltip = sb_zululand_settlement.230.a.tt
 		hidden_effect = { sb_nrp_notify_natal_of_boundary_cutback = yes }
@@ -495,12 +526,19 @@ sb_zululand_settlement.230 = {
 	}
 	option = {
 		name = sb_zululand_settlement.230.b
+		trigger = { has_variable = sb_nrp_boundary_pending_var has_variable = sb_nrp_boundary_event_open_var sb_nrp_boundary_current_political_authority = yes has_variable = sb_nrp_direct_annexation_rebellion_var }
 		custom_tooltip = sb_zululand_settlement.230.b.tt
 		hidden_effect = { sb_nrp_refuse_boundary_demand = yes }
 		ai_chance = {
 			base = 0
 			modifier = { trigger = { has_variable = sb_nrp_should_refuse_boundary_var } add = 1000 }
 		}
+	}
+
+	option = {
+		name = sb_zululand_settlement.230.b
+		trigger = { NOT = { AND = { has_variable = sb_nrp_boundary_pending_var has_variable = sb_nrp_boundary_event_open_var sb_nrp_boundary_current_political_authority = yes has_variable = sb_nrp_direct_annexation_rebellion_var } } }
+		sb_nrp_clear_boundary_confrontation_runtime = yes
 	}
 }
 
@@ -554,13 +592,22 @@ sb_zululand_settlement.220 = {
 	trigger = { country_definition = cd:NRP has_variable = sb_nrp_union_petition_pending_var sb_nrp_is_reduced_republic = yes }
 	option = {
 		name = sb_zululand_settlement.220.a
+		trigger = { country_definition = cd:NRP is_country_alive = yes has_variable = sb_nrp_union_petition_pending_var sb_nrp_is_reduced_republic = yes }
 		default_option = yes
 		remove_variable = sb_nrp_union_petition_pending_var
 		if = {
 			limit = { c:TRN ?= { is_country_alive = yes } }
+			set_variable = { name = sb_nrp_union_petition_response_pending_var months = 4 }
 			c:TRN = { trigger_event = { id = sb_zululand_settlement.221 days = 1 popup = yes } }
 		}
 		else = { set_variable = sb_nrp_union_petition_lapsed_var }
+	}
+
+	option = {
+		name = sb_zululand_settlement.220.a
+		trigger = { NOT = { AND = { country_definition = cd:NRP is_country_alive = yes has_variable = sb_nrp_union_petition_pending_var sb_nrp_is_reduced_republic = yes } } }
+		if = { limit = { has_variable = sb_nrp_union_petition_pending_var } remove_variable = sb_nrp_union_petition_pending_var }
+		set_variable = sb_nrp_union_petition_lapsed_var
 	}
 }
 
@@ -573,18 +620,27 @@ sb_zululand_settlement.221 = {
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
 	icon = "gfx/interface/icons/event_icons/event_map.dds"
 	duration = 3
-	trigger = { country_definition = cd:TRN c:NRP ?= { is_country_alive = yes sb_nrp_is_reduced_republic = yes } }
+	trigger = { country_definition = cd:TRN is_country_alive = yes is_subject = no c:NRP ?= { is_country_alive = yes has_variable = sb_nrp_union_petition_response_pending_var sb_nrp_is_reduced_republic = yes } }
 	option = {
 		name = sb_zululand_settlement.221.a
+		trigger = { country_definition = cd:TRN is_country_alive = yes is_subject = no c:NRP ?= { is_country_alive = yes has_variable = sb_nrp_union_petition_response_pending_var sb_nrp_is_reduced_republic = yes } }
 		default_option = yes
 		custom_tooltip = sb_zululand_settlement.221.a.tt
+		c:NRP = { remove_variable = sb_nrp_union_petition_response_pending_var }
 		annex = c:NRP
 		ai_chance = { base = 100 }
 	}
 	option = {
 		name = sb_zululand_settlement.221.b
-		trigger = { is_player = yes }
+		trigger = { country_definition = cd:TRN is_country_alive = yes is_subject = no is_player = yes c:NRP ?= { is_country_alive = yes has_variable = sb_nrp_union_petition_response_pending_var sb_nrp_is_reduced_republic = yes } }
 		custom_tooltip = sb_zululand_settlement.221.b.tt
+		c:NRP = { remove_variable = sb_nrp_union_petition_response_pending_var set_variable = sb_nrp_union_petition_lapsed_var }
 		ai_chance = { base = 0 }
+	}
+
+	option = {
+		name = sb_zululand_settlement.221.b
+		trigger = { NOT = { AND = { country_definition = cd:TRN is_country_alive = yes is_subject = no c:NRP ?= { is_country_alive = yes has_variable = sb_nrp_union_petition_response_pending_var sb_nrp_is_reduced_republic = yes } } } }
+		c:NRP ?= { if = { limit = { has_variable = sb_nrp_union_petition_response_pending_var } remove_variable = sb_nrp_union_petition_response_pending_var } set_variable = sb_nrp_union_petition_lapsed_var }
 	}
 }

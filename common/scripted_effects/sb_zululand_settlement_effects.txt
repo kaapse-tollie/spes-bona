@@ -455,8 +455,13 @@ sb_zululand_handoff_to_natal = {
 }
 
 sb_zululand_apply_direct_british_administration = {
+	sb_british_archive_preannex_zulu_firearms = yes
+	sb_british_archive_preannex_zulu_royal_house = yes
+	sb_british_transfer_archived_zulu_firearms_to_natal = yes
+	sb_british_transfer_preannex_zulu_royal_house_to_natal = yes
 	if = {
 		limit = { c:ZUL ?= { is_country_alive = yes } }
+		c:ZUL = { sb_natal_archive_zulu_firearms = yes sb_zululand_archive_preannexation_royal_house = yes }
 		if = {
 			limit = {
 				c:ZUL ?= {
@@ -534,7 +539,7 @@ sb_zululand_begin_natal_incorporation = {
 sb_zululand_choose_direct_natal_administration = {
 	if = {
 		limit = { c:ZUL ?= { is_country_alive = yes is_direct_subject_of = ROOT } }
-		c:ZUL = { sb_zululand_archive_preannexation_royal_house = yes }
+		c:ZUL = { sb_natal_archive_zulu_firearms = yes sb_zululand_archive_preannexation_royal_house = yes }
 		annex = c:ZUL
 	}
 	if = { limit = { has_variable = sb_natal_zulu_settlement_event_open_var } remove_variable = sb_natal_zulu_settlement_event_open_var }
@@ -1306,6 +1311,56 @@ sb_zululand_apply_monthly_action_drift = {
 	}
 }
 
+# One terminal container is one delivery generation. Its saved event scope
+# prevents a held .120/.121 from becoming an authority for a later situation.
+sb_zululand_begin_zibhebhu_terminal_generation = {
+	if = {
+		limit = {
+			sb_zululand_chiefdoms_runtime_valid = yes
+			NOT = { has_variable = sb_zululand_terminal_event_pending_var }
+			NOT = { container_exists = sb_zululand_terminal_generation_state }
+			NOT = { has_variable = sb_zululand_terminal_generation_scope }
+		}
+		create_container = {
+			name = sb_zululand_terminal_generation_state
+			tags = { sb_story sb_zululand_terminal_generation }
+			parent = root
+			on_created = { set_variable = sb_zululand_terminal_generation_pending_var }
+		}
+		container:sb_zululand_terminal_generation_state = {
+			set_variable = sb_zululand_terminal_zibhebhu_outcome_var
+			save_scope_as = sb_zululand_terminal_receipt_scope
+		}
+		set_variable = { name = sb_zululand_terminal_generation_scope value = scope:sb_zululand_terminal_receipt_scope }
+		set_variable = sb_zululand_terminal_event_pending_var
+		trigger_event = { id = sb_zululand_settlement.120 days = 1 popup = yes }
+	}
+}
+
+sb_zululand_begin_crown_terminal_generation = {
+	if = {
+		limit = {
+			sb_zululand_chiefdoms_runtime_valid = yes
+			NOT = { has_variable = sb_zululand_terminal_event_pending_var }
+			NOT = { container_exists = sb_zululand_terminal_generation_state }
+			NOT = { has_variable = sb_zululand_terminal_generation_scope }
+		}
+		create_container = {
+			name = sb_zululand_terminal_generation_state
+			tags = { sb_story sb_zululand_terminal_generation }
+			parent = root
+			on_created = { set_variable = sb_zululand_terminal_generation_pending_var }
+		}
+		container:sb_zululand_terminal_generation_state = {
+			set_variable = sb_zululand_terminal_crown_outcome_var
+			save_scope_as = sb_zululand_terminal_receipt_scope
+		}
+		set_variable = { name = sb_zululand_terminal_generation_scope value = scope:sb_zululand_terminal_receipt_scope }
+		set_variable = sb_zululand_terminal_event_pending_var
+		trigger_event = { id = sb_zululand_settlement.121 days = 1 popup = yes }
+	}
+}
+
 sb_zululand_queue_terminal_outcome = {
 	if = {
 		limit = {
@@ -1324,8 +1379,8 @@ sb_zululand_queue_terminal_outcome = {
 			has_variable = sb_zululand_hut_tax_fired_var
 			has_variable = sb_zululand_defection_fired_var
 		}
-		set_variable = sb_zululand_terminal_event_pending_var
-		trigger_event = { id = sb_zululand_settlement.121 days = 1 popup = yes }
+		# id = sb_zululand_settlement.121 (created by the bound Crown receipt)
+		sb_zululand_begin_crown_terminal_generation = yes
 	}
 	else_if = {
 		limit = {
@@ -1344,8 +1399,7 @@ sb_zululand_queue_terminal_outcome = {
 			has_variable = sb_zululand_hut_tax_fired_var
 			has_variable = sb_zululand_defection_fired_var
 		}
-		set_variable = sb_zululand_terminal_event_pending_var
-		trigger_event = { id = sb_zululand_settlement.120 days = 1 popup = yes }
+		sb_zululand_begin_zibhebhu_terminal_generation = yes
 	}
 	else_if = {
 		limit = {
@@ -1355,14 +1409,13 @@ sb_zululand_queue_terminal_outcome = {
 			NOT = { has_variable = sb_zululand_claimant_fate_pending_var }
 			container:sb_zululand_chiefdoms_state.var:sb_zululand_situation_months_var >= 60
 		}
-		set_variable = sb_zululand_terminal_event_pending_var
 		if = {
 			limit = { container:sb_zululand_chiefdoms_state.var:sb_zululand_balance_var > 50 }
-			trigger_event = { id = sb_zululand_settlement.120 days = 1 popup = yes }
+			sb_zululand_begin_zibhebhu_terminal_generation = yes
 		}
 		else = {
 			# Parity at the hard timeout restores the Crown.
-			trigger_event = { id = sb_zululand_settlement.121 days = 1 popup = yes }
+			sb_zululand_begin_crown_terminal_generation = yes
 		}
 	}
 }
@@ -1463,10 +1516,19 @@ sb_zululand_restore_dynastic_ruler = {
 	}
 }
 
+# Clears only a stale terminal delivery. A still-live situation can queue one
+# fresh, generation-bound receipt on its next monthly pulse.
+sb_zululand_clear_terminal_generation = {
+	c:NAL ?= {
+		if = { limit = { has_variable = sb_zululand_terminal_event_pending_var } remove_variable = sb_zululand_terminal_event_pending_var }
+		if = { limit = { has_variable = sb_zululand_terminal_generation_scope } remove_variable = sb_zululand_terminal_generation_scope }
+	}
+	if = { limit = { container_exists = sb_zululand_terminal_generation_state } container:sb_zululand_terminal_generation_state = { destroy_container = yes } }
+}
+
 sb_zululand_cleanup_situation = {
 	c:NAL ?= {
 		sb_zululand_stop_policing = yes
-		if = { limit = { has_variable = sb_zululand_terminal_event_pending_var } remove_variable = sb_zululand_terminal_event_pending_var }
 		if = { limit = { has_variable = sb_zululand_incident_pending_var } remove_variable = sb_zululand_incident_pending_var }
 		if = { limit = { has_variable = sb_zululand_claimant_fate_pending_var } remove_variable = sb_zululand_claimant_fate_pending_var }
 		if = { limit = { has_variable = sb_zululand_next_incident_wait_var } remove_variable = sb_zululand_next_incident_wait_var }
@@ -1477,6 +1539,7 @@ sb_zululand_cleanup_situation = {
 		sb_zululand_stop_boer_volunteers = yes
 	}
 	if = { limit = { has_global_variable = sb_zululand_chiefdoms_open_global_var } remove_global_variable = sb_zululand_chiefdoms_open_global_var }
+	sb_zululand_clear_terminal_generation = yes
 	set_global_variable = sb_zululand_chiefdoms_resolved_global_var
 	container:sb_zululand_chiefdoms_state ?= { destroy_container = yes }
 }
@@ -1870,7 +1933,7 @@ sb_nrp_open_boundary_demand = {
 		sb_nrp_select_boundary_initiator = yes
 		if = {
 			limit = { has_variable = sb_nrp_boundary_initiator_scope }
-			set_variable = { name = sb_nrp_boundary_event_open_var days = 120 }
+			set_variable = { name = sb_nrp_boundary_event_open_var months = 4 }
 			if = {
 				limit = { has_variable = sb_nrp_direct_annexation_rebellion_var }
 				trigger_event = { id = sb_zululand_settlement.230 popup = yes }
@@ -2009,13 +2072,6 @@ sb_nrp_roll_boundary_response = {
 		# Strict Historical and Dynamic hard-safety cases deliberately leave the
 		# refusal marker unset.
 	}
-	if = {
-		limit = {
-			has_variable = sb_nrp_should_refuse_boundary_var
-			c:TRN ?= { is_country_alive = yes is_ai = yes is_subject = no }
-		}
-		c:TRN = { set_variable = sb_nrp_shared_refusal_commitment_var }
-	}
 }
 
 sb_nrp_accept_boundary_cutback = {
@@ -2100,62 +2156,88 @@ sb_nrp_configure_started_boundary_play = {
 			is_diplomatic_play_type = dp_sb_nrp_boundary_confrontation
 			scope:initiator ?= { has_variable = sb_nrp_boundary_launch_lease_var }
 			c:NRP ?= {
-				is_country_alive = yes
-				has_variable = sb_nrp_boundary_confrontation_active_var
-				has_variable = sb_nrp_boundary_initiator_scope
+				sb_nrp_boundary_current_political_authority = yes
+				has_variable = sb_nrp_boundary_refused_var
 				var:sb_nrp_boundary_initiator_scope = scope:initiator
 			}
 			OR = {
 				scope:target ?= { country_definition = cd:NRP }
-				AND = { scope:target ?= { country_definition = cd:TRN } c:NRP ?= { is_direct_subject_of = scope:target } }
+				AND = { scope:target ?= { country_definition = cd:TRN } c:NRP ?= { is_direct_subject_of = scope:target is_subject_type = subject_type_sb_boer_confederal_partner } }
 			}
 		}
 		if = { limit = { scope:target ?= { country_definition = cd:TRN } } add_target_backers = { c:NRP } }
+		if = {
+			limit = { scope:target ?= { country_definition = cd:NRP } c:NRP ?= { has_variable = sb_nrp_trn_defence_accepted_pending_var } c:TRN ?= { is_country_alive = yes is_subject = no } }
+			add_target_backers = { c:TRN }
+		}
+		if = {
+			limit = { c:NRP ?= { has_variable = sb_nrp_trn_defence_declined_pending_var } c:TRN ?= { is_country_alive = yes } }
+			c:TRN = { change_relations = { country = c:NRP value = -50 } }
+			c:NRP = {
+				every_scope_treaty = {
+					limit = { binds = c:TRN any_scope_article = { has_type = defensive_pact } }
+					withdraw = { country = c:NRP }
+				}
+			}
+		}
+		c:NRP = {
+			set_variable = sb_nrp_boundary_confrontation_active_var
+			set_variable = { name = sb_nrp_boundary_play_scope value = root }
+			if = { limit = { has_variable = sb_nrp_boundary_refused_var } remove_variable = sb_nrp_boundary_refused_var }
+			if = { limit = { has_variable = sb_nrp_boundary_creation_failed_var } remove_variable = sb_nrp_boundary_creation_failed_var }
+		}
 		sb_nrp_add_boundary_war_goals = yes
 		scope:initiator = { remove_variable = sb_nrp_boundary_launch_lease_var }
+	}
+	# A real leased root may have raced into an obsolete target shape. It remains
+	# deliberately unbound: remove only launch scaffolding and retain the refusal,
+	# saved initiator, and accept/decline receipts for a later exact retry.
+	else_if = {
+		limit = {
+			is_diplomatic_play_type = dp_sb_nrp_boundary_confrontation
+			scope:initiator ?= { has_variable = sb_nrp_boundary_launch_lease_var }
+			c:NRP ?= {
+				sb_nrp_boundary_current_political_authority = yes
+				has_variable = sb_nrp_boundary_refused_var
+				var:sb_nrp_boundary_initiator_scope = scope:initiator
+			}
+		}
+		scope:initiator = { remove_variable = sb_nrp_boundary_launch_lease_var }
+		c:NRP = {
+			if = { limit = { has_variable = sb_nrp_boundary_creation_failed_var } remove_variable = sb_nrp_boundary_creation_failed_var }
+			if = { limit = { has_variable = sb_nrp_boundary_launch_refused_var } remove_variable = sb_nrp_boundary_launch_refused_var }
+		}
+	}
+	# The lease still authenticates this engine root, but durable route authority
+	# is gone. Never configure that root; retire its route instead of leaking it.
+	else_if = {
+		limit = {
+			is_diplomatic_play_type = dp_sb_nrp_boundary_confrontation
+			scope:initiator ?= { has_variable = sb_nrp_boundary_launch_lease_var }
+		}
+		scope:initiator = { remove_variable = sb_nrp_boundary_launch_lease_var }
+		c:NRP ?= { sb_nrp_clear_boundary_confrontation_runtime = yes }
 	}
 }
 
 
 sb_nrp_launch_boundary_confrontation = {
 	if = {
-		limit = {
-			country_definition = cd:NRP
-			has_variable = sb_nrp_boundary_initiator_scope
-			OR = { c:ZUL ?= { is_country_alive = yes } AND = { has_variable = sb_nrp_direct_annexation_rebellion_var c:NAL ?= { is_country_alive = yes } } }
-		}
+		limit = { sb_nrp_boundary_current_launch_authority = yes has_variable = sb_nrp_boundary_refused_var NOT = { has_variable = sb_nrp_boundary_play_scope } }
 		var:sb_nrp_boundary_initiator_scope = { save_temporary_scope_as = sb_nrp_boundary_initiator }
 		if = {
-			limit = { c:NRP ?= { is_country_alive = yes is_direct_subject_of = c:TRN is_subject_type = subject_type_sb_boer_confederal_partner } }
-			if = {
-				limit = { scope:sb_nrp_boundary_initiator ?= { NOT = { any_diplomatic_play = { is_diplomatic_play_type = dp_sb_nrp_boundary_confrontation initiator = scope:sb_nrp_boundary_initiator target = c:TRN } } } }
-				set_variable = sb_nrp_boundary_confrontation_active_var
-				scope:sb_nrp_boundary_initiator = {
-					set_variable = sb_nrp_boundary_launch_lease_var
-					create_diplomatic_play = { type = dp_sb_nrp_boundary_confrontation target_country = c:TRN }
-				}
-			}
-			else = { set_variable = sb_nrp_boundary_launch_refused_var }
+			limit = { is_direct_subject_of = c:TRN is_subject_type = subject_type_sb_boer_confederal_partner scope:sb_nrp_boundary_initiator ?= { NOT = { any_diplomatic_play = { is_diplomatic_play_type = dp_sb_nrp_boundary_confrontation initiator = scope:sb_nrp_boundary_initiator target = c:TRN } } } }
+			scope:sb_nrp_boundary_initiator = { set_variable = sb_nrp_boundary_launch_lease_var create_diplomatic_play = { type = dp_sb_nrp_boundary_confrontation target_country = c:TRN } }
 		}
-		else = {
-			if = {
-				limit = { scope:sb_nrp_boundary_initiator ?= { NOT = { any_diplomatic_play = { is_diplomatic_play_type = dp_sb_nrp_boundary_confrontation initiator = scope:sb_nrp_boundary_initiator target = c:NRP } } } }
-				set_variable = sb_nrp_boundary_confrontation_active_var
-				scope:sb_nrp_boundary_initiator = {
-					set_variable = sb_nrp_boundary_launch_lease_var
-					create_diplomatic_play = { type = dp_sb_nrp_boundary_confrontation target_country = c:NRP }
-				}
-			}
-			else = { set_variable = sb_nrp_boundary_launch_refused_var }
+		else_if = {
+			limit = { NOT = { AND = { is_direct_subject_of = c:TRN is_subject_type = subject_type_sb_boer_confederal_partner } } scope:sb_nrp_boundary_initiator ?= { NOT = { any_diplomatic_play = { is_diplomatic_play_type = dp_sb_nrp_boundary_confrontation initiator = scope:sb_nrp_boundary_initiator target = c:NRP } } } }
+			scope:sb_nrp_boundary_initiator = { set_variable = sb_nrp_boundary_launch_lease_var create_diplomatic_play = { type = dp_sb_nrp_boundary_confrontation target_country = c:NRP } }
 		}
-		# On-start is synchronous under the approved Engine-pending contract.
 		if = {
 			limit = { scope:sb_nrp_boundary_initiator ?= { has_variable = sb_nrp_boundary_launch_lease_var } }
 			scope:sb_nrp_boundary_initiator = { remove_variable = sb_nrp_boundary_launch_lease_var }
-			remove_variable = sb_nrp_boundary_confrontation_active_var
 			set_variable = sb_nrp_boundary_creation_failed_var
 		}
-		if = { limit = { has_variable = sb_nrp_boundary_initiator_scope } remove_variable = sb_nrp_boundary_initiator_scope }
 	}
 }
 
@@ -2163,42 +2245,95 @@ sb_nrp_refuse_boundary_demand = {
 	if = { limit = { has_variable = sb_nrp_boundary_pending_var } remove_variable = sb_nrp_boundary_pending_var }
 	if = { limit = { has_variable = sb_nrp_boundary_event_open_var } remove_variable = sb_nrp_boundary_event_open_var }
 	set_variable = sb_nrp_boundary_refused_var
+	# The shared AI commitment belongs only to this delivered refusal request.
+	# Remove an old receipt before creating the new .211 generation.
+	c:TRN ?= {
+		if = { limit = { has_variable = sb_nrp_shared_refusal_commitment_var } remove_variable = sb_nrp_shared_refusal_commitment_var }
+	}
 	if = {
 		limit = { c:TRN ?= { is_country_alive = yes is_subject = no } }
-		c:TRN = { trigger_event = { id = sb_zululand_settlement.211 days = 1 popup = yes } }
+		set_variable = { name = sb_nrp_trn_defence_request_queued_var months = 4 }
+		c:TRN = {
+			if = { limit = { is_ai = yes } set_variable = sb_nrp_shared_refusal_commitment_var }
+			trigger_event = { id = sb_zululand_settlement.211 days = 1 popup = yes }
+		}
 	}
 	else = { sb_nrp_launch_boundary_confrontation = yes }
 }
 
 sb_nrp_accept_defence_request = {
 	if = { limit = { has_variable = sb_nrp_shared_refusal_commitment_var } remove_variable = sb_nrp_shared_refusal_commitment_var }
-	if = {
-		limit = { c:NRP ?= { is_country_alive = yes is_subject = no } }
-		end_truce = c:NRP
-		create_diplomatic_pact = {
-			country = c:NRP
-			type = sb_boer_confederal_partner
-		}
-	}
-	c:NRP ?= { sb_nrp_launch_boundary_confrontation = yes }
+	c:NRP ?= { if = { limit = { has_variable = sb_nrp_trn_defence_request_queued_var } remove_variable = sb_nrp_trn_defence_request_queued_var } set_variable = sb_nrp_trn_defence_accepted_pending_var sb_nrp_launch_boundary_confrontation = yes }
 }
 
 sb_nrp_decline_defence_request = {
 	if = { limit = { has_variable = sb_nrp_shared_refusal_commitment_var } remove_variable = sb_nrp_shared_refusal_commitment_var }
-	change_relations = { country = c:NRP value = -50 }
-	c:NRP ?= {
-		every_scope_treaty = {
-			limit = {
-				binds = c:TRN
-				any_scope_article = { has_type = defensive_pact }
-			}
-			withdraw = { country = c:NRP }
+	c:NRP ?= { if = { limit = { has_variable = sb_nrp_trn_defence_request_queued_var } remove_variable = sb_nrp_trn_defence_request_queued_var } set_variable = sb_nrp_trn_defence_declined_pending_var sb_nrp_launch_boundary_confrontation = yes }
+}
+
+sb_nrp_commit_deferred_defence_pact = {
+	if = { limit = { has_variable = sb_nrp_trn_defence_accepted_pending_var } set_variable = sb_nrp_deferred_defence_pact_pending_var }
+	if = {
+		limit = { has_variable = sb_nrp_deferred_defence_pact_pending_var is_country_alive = yes is_subject = no is_at_war = no is_active_in_diplomatic_play = no c:TRN ?= { is_country_alive = yes is_subject = no is_at_war = no is_active_in_diplomatic_play = no } }
+		c:TRN = {
+			if = { limit = { has_truce_with = c:NRP } end_truce = c:NRP }
+			create_diplomatic_pact = { country = c:NRP type = sb_boer_confederal_partner }
 		}
-		sb_nrp_launch_boundary_confrontation = yes
+		if = { limit = { is_direct_subject_of = c:TRN is_subject_type = subject_type_sb_boer_confederal_partner } remove_variable = sb_nrp_deferred_defence_pact_pending_var }
 	}
 }
 
+sb_nrp_clear_boundary_confrontation_runtime = {
+	if = { limit = { has_variable = sb_nrp_boundary_pending_var } remove_variable = sb_nrp_boundary_pending_var }
+	if = { limit = { has_variable = sb_nrp_boundary_event_open_var } remove_variable = sb_nrp_boundary_event_open_var }
+	if = { limit = { has_variable = sb_nrp_boundary_cutback_notification_pending_var } remove_variable = sb_nrp_boundary_cutback_notification_pending_var }
+	if = { limit = { has_variable = sb_nrp_should_refuse_boundary_var } remove_variable = sb_nrp_should_refuse_boundary_var }
+	if = { limit = { has_variable = sb_nrp_boundary_confrontation_active_var } remove_variable = sb_nrp_boundary_confrontation_active_var }
+	if = { limit = { has_variable = sb_nrp_boundary_creation_failed_var } remove_variable = sb_nrp_boundary_creation_failed_var }
+	if = { limit = { has_variable = sb_nrp_boundary_play_scope } remove_variable = sb_nrp_boundary_play_scope }
+	if = { limit = { has_variable = sb_nrp_boundary_refused_var } remove_variable = sb_nrp_boundary_refused_var }
+	if = { limit = { has_variable = sb_nrp_boundary_initiator_scope } remove_variable = sb_nrp_boundary_initiator_scope }
+	if = { limit = { has_variable = sb_nrp_trn_defence_accepted_pending_var } remove_variable = sb_nrp_trn_defence_accepted_pending_var }
+	if = { limit = { has_variable = sb_nrp_trn_defence_declined_pending_var } remove_variable = sb_nrp_trn_defence_declined_pending_var }
+	if = { limit = { has_variable = sb_nrp_trn_defence_request_queued_var } remove_variable = sb_nrp_trn_defence_request_queued_var }
+	if = { limit = { has_variable = sb_nrp_boundary_launch_refused_var } remove_variable = sb_nrp_boundary_launch_refused_var }
+	c:NAL ?= { if = { limit = { has_variable = sb_nrp_boundary_launch_lease_var } remove_variable = sb_nrp_boundary_launch_lease_var } }
+	c:GBR ?= { if = { limit = { has_variable = sb_nrp_boundary_launch_lease_var } remove_variable = sb_nrp_boundary_launch_lease_var } }
+	c:TRN ?= { if = { limit = { has_variable = sb_nrp_shared_refusal_commitment_var } remove_variable = sb_nrp_shared_refusal_commitment_var } }
+}
+
 sb_nrp_monthly_housekeeping = {
+	if = {
+		limit = {
+			country_definition = cd:NRP
+			OR = { has_variable = sb_nrp_union_petition_pending_var has_variable = sb_nrp_union_petition_response_pending_var }
+			OR = { NOT = { sb_nrp_is_reduced_republic = yes } AND = { has_variable = sb_nrp_union_petition_response_pending_var NOT = { c:TRN ?= { is_country_alive = yes is_subject = no } } } }
+		}
+		if = { limit = { has_variable = sb_nrp_union_petition_pending_var } remove_variable = sb_nrp_union_petition_pending_var }
+		if = { limit = { has_variable = sb_nrp_union_petition_response_pending_var } remove_variable = sb_nrp_union_petition_response_pending_var }
+		set_variable = sb_nrp_union_petition_lapsed_var
+	}
+
+	if = {
+		limit = { country_definition = cd:NRP has_variable = sb_nrp_deferred_defence_pact_pending_var }
+		if = { limit = { c:TRN ?= { is_country_alive = yes is_subject = no } is_country_alive = yes is_subject = no } sb_nrp_commit_deferred_defence_pact = yes }
+		else = { remove_variable = sb_nrp_deferred_defence_pact_pending_var }
+	}
+
+	if = {
+		limit = { country_definition = cd:NRP has_variable = sb_nrp_boundary_refused_var NOT = { has_variable = sb_nrp_boundary_play_scope } }
+		if = {
+			limit = { sb_nrp_boundary_current_political_authority = yes }
+			if = {
+				limit = { c:TRN ?= { is_country_alive = yes is_subject = no } NOT = { has_variable = sb_nrp_trn_defence_request_queued_var } NOT = { has_variable = sb_nrp_trn_defence_accepted_pending_var } NOT = { has_variable = sb_nrp_trn_defence_declined_pending_var } }
+				set_variable = { name = sb_nrp_trn_defence_request_queued_var months = 4 }
+				c:TRN = { trigger_event = { id = sb_zululand_settlement.211 days = 1 popup = yes } }
+			}
+			else_if = { limit = { sb_nrp_boundary_current_launch_authority = yes } sb_nrp_launch_boundary_confrontation = yes }
+		}
+		else = { sb_nrp_clear_boundary_confrontation_runtime = yes }
+	}
+
 	if = {
 		limit = {
 			country_definition = cd:NRP
@@ -2242,9 +2377,60 @@ sb_nrp_monthly_housekeeping = {
 			has_variable = sb_nrp_boundary_cutback_accepted_var
 			NOT = { has_variable = sb_nrp_union_wait_var }
 			NOT = { has_variable = sb_nrp_union_petition_pending_var }
+			NOT = { has_variable = sb_nrp_union_petition_response_pending_var }
 			sb_nrp_is_reduced_republic = yes
 		}
 		set_variable = sb_nrp_union_petition_pending_var
 		trigger_event = { id = sb_zululand_settlement.220 days = 1 popup = yes }
+	}
+}
+
+
+# ROOT = GBR; durable counterpart for annexation routes that predate NAL.
+sb_british_archive_preannex_zulu_royal_house = {
+	if = { limit = { country_definition = cd:GBR c:ZUL ?= { is_country_alive = yes } }
+		if = { limit = { exists = var:sb_british_zulu_preannex_ruler_scope_var } remove_variable = sb_british_zulu_preannex_ruler_scope_var }
+		if = { limit = { exists = var:sb_british_zulu_preannex_heir_scope_var } remove_variable = sb_british_zulu_preannex_heir_scope_var }
+		if = { limit = { has_variable = sb_british_zulu_preannex_mbuyazi_line_var } remove_variable = sb_british_zulu_preannex_mbuyazi_line_var }
+		if = { limit = { has_variable = sb_british_zulu_preannex_cetshwayo_line_var } remove_variable = sb_british_zulu_preannex_cetshwayo_line_var }
+		c:ZUL = { sb_zulu_reconcile_secured_mpande_heir = yes }
+		if = {
+			limit = { c:ZUL = { OR = { has_variable = sb_zulu_mpande_mbuyazi_heir_var has_global_variable = sb_zulu_mbuyazi_succession_global_var ruler ?= { has_template = ZUL_mbuyazi_heir } heir ?= { has_template = ZUL_mbuyazi_heir } } } }
+			set_variable = sb_british_zulu_preannex_mbuyazi_line_var
+		}
+		else = { set_variable = sb_british_zulu_preannex_cetshwayo_line_var }
+		if = {
+			limit = { c:ZUL = { exists = ruler ruler = { is_character_alive = yes } } }
+			c:ZUL = { ruler = { save_temporary_scope_as = sb_british_zulu_ruler } }
+			set_variable = { name = sb_british_zulu_preannex_ruler_scope_var value = scope:sb_british_zulu_ruler }
+		}
+		if = {
+			limit = { c:ZUL = { exists = heir heir = { is_character_alive = yes } } }
+			c:ZUL = { heir = { save_temporary_scope_as = sb_british_zulu_heir } }
+			set_variable = { name = sb_british_zulu_preannex_heir_scope_var value = scope:sb_british_zulu_heir }
+		}
+		set_variable = sb_british_zulu_preannex_royal_house_archived_var
+	}
+}
+
+sb_british_clear_preannex_zulu_royal_house = {
+	if = { limit = { exists = var:sb_british_zulu_preannex_ruler_scope_var } remove_variable = sb_british_zulu_preannex_ruler_scope_var }
+	if = { limit = { exists = var:sb_british_zulu_preannex_heir_scope_var } remove_variable = sb_british_zulu_preannex_heir_scope_var }
+	if = { limit = { has_variable = sb_british_zulu_preannex_mbuyazi_line_var } remove_variable = sb_british_zulu_preannex_mbuyazi_line_var }
+	if = { limit = { has_variable = sb_british_zulu_preannex_cetshwayo_line_var } remove_variable = sb_british_zulu_preannex_cetshwayo_line_var }
+	if = { limit = { has_variable = sb_british_zulu_preannex_royal_house_archived_var } remove_variable = sb_british_zulu_preannex_royal_house_archived_var }
+}
+
+sb_british_transfer_preannex_zulu_royal_house_to_natal = {
+	if = { limit = { country_definition = cd:GBR has_variable = sb_british_zulu_preannex_royal_house_archived_var c:NAL ?= { is_country_alive = yes } }
+		sb_zululand_discard_preannexation_royal_house_archive = yes
+		c:NAL = {
+			if = { limit = { exists = ROOT.var:sb_british_zulu_preannex_ruler_scope_var } set_variable = { name = sb_zululand_preannexation_ruler_scope_var value = ROOT.var:sb_british_zulu_preannex_ruler_scope_var } }
+			if = { limit = { exists = ROOT.var:sb_british_zulu_preannex_heir_scope_var } set_variable = { name = sb_zululand_preannexation_heir_scope_var value = ROOT.var:sb_british_zulu_preannex_heir_scope_var } }
+			if = { limit = { ROOT = { has_variable = sb_british_zulu_preannex_mbuyazi_line_var } } set_variable = sb_zululand_preannexation_mbuyazi_line_var }
+			else = { set_variable = sb_zululand_preannexation_cetshwayo_line_var }
+			set_variable = sb_zululand_preannexation_royal_house_archived_var
+		}
+		sb_british_clear_preannex_zulu_royal_house = yes
 	}
 }

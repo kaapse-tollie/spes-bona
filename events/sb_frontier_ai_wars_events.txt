@@ -281,6 +281,7 @@ sb_frontier_ai_wars.030 = {
 		c:PHL ?= {
 			is_country_alive = no
 		}
+		s:STATE_VRYSTAAT.region_state:ORA ?= { owner = c:ORA }
 		c:BST ?= {
 			is_country_alive = yes
 			is_ai = yes
@@ -291,106 +292,14 @@ sb_frontier_ai_wars.030 = {
 	}
 
 	immediate = {
-		c:BST ?= { sb_bst_kill_non_moshoeshoe_ai_generals = yes }
+		set_variable = sb_ora_bst_1856_launch_lease_var
+		create_diplomatic_play = { type = dp_annex_war target_country = c:BST }
 		if = {
-			limit = {
-				sb_frontier_ai_behavior_dynamic_historical = yes
-			}
-			# Dynamic:
-			# 60% push to Stalemate
-			# 20% BST major comeback
-			# 20% ORA kills BST
-			random_list = {
-				# BST defensive edge
-				60 = {
-					c:BST ?= {
-						if = {
-							limit = {
-								NOT = { sb_bst_holds_vrystaat = yes }
-							}
-							add_modifier = {
-								name = sb_bst_scripted_thaba_bosiu
-								months = 12
-							}
-							root = {
-								add_modifier = {
-									name = sb_ora_scripted_annex_war_overreach
-									months = 12
-								}
-							}
-						}
-					}
-				}
-				# BST offensive edge to win
-				20 = {
-					c:BST ?= {
-						if = {
-							limit = {
-								NOT = { sb_bst_holds_vrystaat = yes }
-							}
-							add_modifier = {
-								name = sb_bst_scripted_frontier_major_edge
-								months = 12
-							}
-							root = {
-								add_modifier = {
-									name = sb_ora_scripted_annex_war_overreach
-									months = 12
-								}
-							}
-						}
-					}
-				}
-				# ORA offensive edge
-				20 = {
-					add_modifier = {
-						name = sb_laager_defence_ai
-						months = 15
-					}
-				}
-
-			}
+			limit = { has_variable = sb_ora_bst_1856_launch_lease_var }
+			remove_variable = sb_ora_bst_1856_launch_lease_var
+			sb_cleanup_ora_bst_1856_play_support = yes
 		}
-		if = {
-			limit = {
-				sb_frontier_ai_behavior_strict_historical = yes
-			}
-			c:BST ?= {
-				if = {
-					limit = {
-						NOT = { sb_bst_holds_vrystaat = yes }
-					}
-					add_modifier = {
-						name = sb_bst_scripted_thaba_bosiu
-						months = 12
-					}
-					root = {
-						add_modifier = {
-							name = sb_ora_scripted_annex_war_overreach
-							months = 12
-						}
-					}
-				}
-			}
-		}
-		create_diplomatic_play = {
-			type = dp_annex_war
-			target_country = c:BST
 
-			add_war_goal = {
-				holder = c:BST
-				target_state = s:STATE_VRYSTAAT.region_state:ORA
-					type = return_state
-				}
-			}
-			random_diplomatic_play = {
-				limit = {
-					initiator = root
-					target = c:BST
-					is_diplomatic_play_type = dp_annex_war
-				}
-				c:ORA ?= { set_variable = sb_ora_bst_scripted_war_1856_resolved_var }
-			}
 		}
 	}
 
@@ -399,7 +308,7 @@ sb_frontier_ai_wars.040 = {
 	hidden = yes
 
 	trigger = {
-		sb_is_zulu_dynasty_country = yes
+		country_definition = cd:ZUL
 		is_ai = yes
 		is_country_alive = yes
 		is_at_war = no
@@ -422,40 +331,27 @@ sb_frontier_ai_wars.040 = {
 			aggressive_diplomatic_plays_permitted = yes
 		}
 	}
-
 	immediate = {
 		if = {
-			limit = { has_variable = sb_zulu_gaza_followup_pending_var }
-			remove_variable = sb_zulu_gaza_followup_pending_var
-		}
-		create_diplomatic_play = {
-			type = dp_annex_war
-			target_country = c:GZA
-		}
-		random_diplomatic_play = {
 			limit = {
-				initiator = root
-				target = c:GZA
-				is_diplomatic_play_type = dp_annex_war
-			}
-			if = {
-				limit = { exists = s:STATE_EAST_TRANSVAAL.region_state:ZUL }
-				c:GZA ?= {
-					set_variable = sb_gaza_eastern_transvaal_claim_if_zulu_defeated_var
-				}
-				add_war_goal = {
-					holder = c:GZA
-					type = conquer_state
-					target_state = s:STATE_EAST_TRANSVAAL.region_state:ZUL
+				NOT = {
+					any_diplomatic_play = {
+						initiator = root
+						target = c:GZA
+						is_diplomatic_play_type = dp_annex_war
+					}
 				}
 			}
+			set_variable = sb_gaza_zulu_launch_lease_var
+			create_diplomatic_play = {
+				type = dp_annex_war
+				target_country = c:GZA
+			}
+			# A residual lease means creation/on-start configuration was refused.
+			# Keep the follow-up marker so the existing monthly route can retry.
 			if = {
-				limit = { exists = s:STATE_ZULULAND.region_state:ZUL }
-				add_war_goal = {
-					holder = c:GZA
-					type = conquer_state
-					target_state = s:STATE_ZULULAND.region_state:ZUL
-				}
+				limit = { has_variable = sb_gaza_zulu_launch_lease_var }
+				remove_variable = sb_gaza_zulu_launch_lease_var
 			}
 		}
 	}
@@ -485,267 +381,174 @@ sb_frontier_ai_wars.100 = {
 	type = country_event
 	hidden = yes
 
+	# Receipt is permissive for temporary war/play/truce states. The immediate
+	# handler retries them and only cancels permanently invalid authority.
 	trigger = {
 		country_definition = cd:XHO
 		is_country_alive = yes
-		is_at_war = no
-		is_active_in_diplomatic_play = no
-		OR = {
-			c:CAP ?= { sb_xhosa_frontier_war_target_is_launchable = yes }
-			c:ABY ?= { sb_xhosa_frontier_war_target_is_launchable = yes }
-		}
+		has_variable = sb_xhosa_delivery_pending_var
+		has_variable = sb_xhosa_delivery_target_scope
+		has_variable = sb_xhosa_delivery_generation_var
+		var:sb_xhosa_delivery_generation_var = 7
 	}
 
 	immediate = {
-			if = {
-				limit = {
-						any_scope_state = {
-							state_region = s:STATE_EASTERN_CAPE
-							num_provinces >= 1
-						}
-					NOT = { sb_xho_owns_all_thembu_frontier_provinces = yes }
-					OR = {
-						c:ABY ?= {
-							sb_xhosa_frontier_war_target_is_launchable = yes
-							has_variable = sb_xhosa_frontier_war_7_scheduled_var
-							has_technology_researched = colonization
-						}
-						c:CAP ?= {
-							sb_xhosa_frontier_war_target_is_launchable = yes
-							has_variable = sb_xhosa_frontier_war_7_scheduled_var
-							has_technology_researched = colonization
-						}
-					}
-				}
-			if = {
-				limit = {
-					c:ABY ?= {
-						sb_xhosa_frontier_war_target_is_launchable = yes
-						has_variable = sb_xhosa_frontier_war_7_scheduled_var
-						has_technology_researched = colonization
-					}
-				}
-				create_diplomatic_play = {
-					type = dp_sb_xhosa_war_7
-					target_country = c:ABY
-				}
-				c:ABY ?= {
-					remove_variable = sb_xhosa_frontier_war_7_scheduled_var
+		var:sb_xhosa_delivery_target_scope = { save_temporary_scope_as = sb_xhosa_delivery_target }
+		if = {
+			limit = {
+				any_scope_state = { state_region = s:STATE_EASTERN_CAPE num_provinces >= 1 }
+				NOT = { sb_xho_owns_all_thembu_frontier_provinces = yes }
+				scope:sb_xhosa_delivery_target ?= {
+					is_country_alive = yes
+					OR = { country_definition = cd:CAP country_definition = cd:ABY }
+					has_variable = sb_xhosa_frontier_war_7_scheduled_var
+					has_technology_researched = colonization
+					any_scope_state = { state_region = s:STATE_EASTERN_CAPE has_state_trait = state_trait_sb_xhosa_resistance }
 				}
 			}
-			else_if = {
-				limit = {
-					c:CAP ?= {
-						sb_xhosa_frontier_war_target_is_launchable = yes
-						has_variable = sb_xhosa_frontier_war_7_scheduled_var
-						has_technology_researched = colonization
-					}
-				}
-				create_diplomatic_play = {
-					type = dp_sb_xhosa_war_7
-					target_country = c:CAP
-				}
-				c:CAP ?= {
-					remove_variable = sb_xhosa_frontier_war_7_scheduled_var
+			if = {
+				limit = { scope:sb_xhosa_delivery_target ?= { sb_xhosa_frontier_war_target_is_launchable = yes } }
+				set_variable = { name = sb_xhosa_story_target_scope value = scope:sb_xhosa_delivery_target }
+				set_variable = { name = sb_xhosa_story_generation_var value = 7 }
+				set_variable = sb_xhosa_story_launch_lease_var
+				create_diplomatic_play = { type = dp_sb_xhosa_war_7 target_country = scope:sb_xhosa_delivery_target }
+				if = {
+					limit = { has_variable = sb_xhosa_story_launch_lease_var }
+					remove_variable = sb_xhosa_story_launch_lease_var
+					remove_variable = sb_xhosa_story_target_scope
+					remove_variable = sb_xhosa_story_generation_var
+					trigger_event = { id = sb_frontier_ai_wars.100 days = 30 }
 				}
 			}
+			else = { trigger_event = { id = sb_frontier_ai_wars.100 days = 30 } }
 		}
 		else = {
-			c:ABY ?= {
-					if = {
-						limit = { has_variable = sb_xhosa_frontier_war_7_scheduled_var }
-						remove_variable = sb_xhosa_frontier_war_7_scheduled_var
-					}
-				}
-				c:CAP ?= {
-					if = {
-						limit = { has_variable = sb_xhosa_frontier_war_7_scheduled_var }
-						remove_variable = sb_xhosa_frontier_war_7_scheduled_var
-					}
-				}
+			scope:sb_xhosa_delivery_target ?= {
+				if = { limit = { has_variable = sb_xhosa_frontier_war_7_scheduled_var } remove_variable = sb_xhosa_frontier_war_7_scheduled_var }
+				set_variable = sb_xhosa_frontier_war_7_resolved_var
 			}
+			remove_variable = sb_xhosa_delivery_pending_var
+			remove_variable = sb_xhosa_delivery_target_scope
+			remove_variable = sb_xhosa_delivery_generation_var
 		}
 	}
+}
 
 sb_frontier_ai_wars.110 = {
 	type = country_event
 	hidden = yes
 
+	# Receipt is permissive for temporary war/play/truce states. The immediate
+	# handler retries them and only cancels permanently invalid authority.
 	trigger = {
 		country_definition = cd:XHO
 		is_country_alive = yes
-		is_at_war = no
-		is_active_in_diplomatic_play = no
-		OR = {
-			c:CAP ?= { sb_xhosa_frontier_war_target_is_launchable = yes }
-			c:ABY ?= { sb_xhosa_frontier_war_target_is_launchable = yes }
-		}
+		has_variable = sb_xhosa_delivery_pending_var
+		has_variable = sb_xhosa_delivery_target_scope
+		has_variable = sb_xhosa_delivery_generation_var
+		var:sb_xhosa_delivery_generation_var = 8
 	}
 
 	immediate = {
-			if = {
-				limit = {
-						any_scope_state = {
-							state_region = s:STATE_EASTERN_CAPE
-							num_provinces >= 1
-						}
-					NOT = { sb_xho_owns_all_rharhabe_frontier_provinces = yes }
-					OR = {
-						c:ABY ?= {
-							sb_xhosa_frontier_war_target_is_launchable = yes
-							has_variable = sb_xhosa_frontier_war_8_scheduled_var
-							has_variable = sb_xhosa_frontier_war_7_resolved_var
-							has_technology_researched = colonization
-						}
-						c:CAP ?= {
-							sb_xhosa_frontier_war_target_is_launchable = yes
-							has_variable = sb_xhosa_frontier_war_8_scheduled_var
-							has_variable = sb_xhosa_frontier_war_7_resolved_var
-							has_technology_researched = colonization
-						}
-					}
-				}
-			if = {
-				limit = {
-					c:ABY ?= {
-						sb_xhosa_frontier_war_target_is_launchable = yes
-						has_variable = sb_xhosa_frontier_war_8_scheduled_var
-						has_variable = sb_xhosa_frontier_war_7_resolved_var
-						has_technology_researched = colonization
-					}
-				}
-				create_diplomatic_play = {
-					type = dp_sb_xhosa_war_8
-					target_country = c:ABY
-				}
-				c:ABY ?= {
-					remove_variable = sb_xhosa_frontier_war_8_scheduled_var
+		var:sb_xhosa_delivery_target_scope = { save_temporary_scope_as = sb_xhosa_delivery_target }
+		if = {
+			limit = {
+				any_scope_state = { state_region = s:STATE_EASTERN_CAPE num_provinces >= 1 }
+				NOT = { sb_xho_owns_all_rharhabe_frontier_provinces = yes }
+				scope:sb_xhosa_delivery_target ?= {
+					is_country_alive = yes
+					OR = { country_definition = cd:CAP country_definition = cd:ABY }
+					has_variable = sb_xhosa_frontier_war_8_scheduled_var
+				has_variable = sb_xhosa_frontier_war_7_resolved_var
+					has_technology_researched = colonization
+					any_scope_state = { state_region = s:STATE_EASTERN_CAPE has_state_trait = state_trait_sb_xhosa_resistance }
 				}
 			}
-			else_if = {
-				limit = {
-					c:CAP ?= {
-						sb_xhosa_frontier_war_target_is_launchable = yes
-						has_variable = sb_xhosa_frontier_war_8_scheduled_var
-						has_variable = sb_xhosa_frontier_war_7_resolved_var
-						has_technology_researched = colonization
-					}
-				}
-				create_diplomatic_play = {
-					type = dp_sb_xhosa_war_8
-					target_country = c:CAP
-				}
-				c:CAP ?= {
-					remove_variable = sb_xhosa_frontier_war_8_scheduled_var
+			if = {
+				limit = { scope:sb_xhosa_delivery_target ?= { sb_xhosa_frontier_war_target_is_launchable = yes } }
+				set_variable = { name = sb_xhosa_story_target_scope value = scope:sb_xhosa_delivery_target }
+				set_variable = { name = sb_xhosa_story_generation_var value = 8 }
+				set_variable = sb_xhosa_story_launch_lease_var
+				create_diplomatic_play = { type = dp_sb_xhosa_war_8 target_country = scope:sb_xhosa_delivery_target }
+				if = {
+					limit = { has_variable = sb_xhosa_story_launch_lease_var }
+					remove_variable = sb_xhosa_story_launch_lease_var
+					remove_variable = sb_xhosa_story_target_scope
+					remove_variable = sb_xhosa_story_generation_var
+					trigger_event = { id = sb_frontier_ai_wars.110 days = 30 }
 				}
 			}
+			else = { trigger_event = { id = sb_frontier_ai_wars.110 days = 30 } }
 		}
 		else = {
-			c:ABY ?= {
-					if = {
-						limit = { has_variable = sb_xhosa_frontier_war_8_scheduled_var }
-						remove_variable = sb_xhosa_frontier_war_8_scheduled_var
-					}
-				}
-				c:CAP ?= {
-					if = {
-						limit = { has_variable = sb_xhosa_frontier_war_8_scheduled_var }
-						remove_variable = sb_xhosa_frontier_war_8_scheduled_var
-					}
-				}
+			scope:sb_xhosa_delivery_target ?= {
+				if = { limit = { has_variable = sb_xhosa_frontier_war_8_scheduled_var } remove_variable = sb_xhosa_frontier_war_8_scheduled_var }
+				set_variable = sb_xhosa_frontier_war_8_resolved_var
 			}
+			remove_variable = sb_xhosa_delivery_pending_var
+			remove_variable = sb_xhosa_delivery_target_scope
+			remove_variable = sb_xhosa_delivery_generation_var
 		}
 	}
+}
 
 sb_frontier_ai_wars.120 = {
 	type = country_event
 	hidden = yes
 
+	# Receipt is permissive for temporary war/play/truce states. The immediate
+	# handler retries them and only cancels permanently invalid authority.
 	trigger = {
 		country_definition = cd:XHO
 		is_country_alive = yes
-		is_at_war = no
-		is_active_in_diplomatic_play = no
-		OR = {
-			c:CAP ?= { sb_xhosa_frontier_war_target_is_launchable = yes }
-			c:ABY ?= { sb_xhosa_frontier_war_target_is_launchable = yes }
-		}
+		has_variable = sb_xhosa_delivery_pending_var
+		has_variable = sb_xhosa_delivery_target_scope
+		has_variable = sb_xhosa_delivery_generation_var
+		var:sb_xhosa_delivery_generation_var = 9
 	}
 
 	immediate = {
-			if = {
-				limit = {
-						any_scope_state = {
-							state_region = s:STATE_EASTERN_CAPE
-							num_provinces >= 1
-						}
-					NOT = { sb_xho_owns_all_gcaleka_frontier_provinces = yes }
-					OR = {
-						c:ABY ?= {
-							sb_xhosa_frontier_war_target_is_launchable = yes
-							has_variable = sb_xhosa_frontier_war_9_scheduled_var
-							has_variable = sb_xhosa_frontier_war_8_resolved_var
-							has_technology_researched = colonization
-						}
-						c:CAP ?= {
-							sb_xhosa_frontier_war_target_is_launchable = yes
-							has_variable = sb_xhosa_frontier_war_9_scheduled_var
-							has_variable = sb_xhosa_frontier_war_8_resolved_var
-							has_technology_researched = colonization
-						}
-					}
-				}
-			if = {
-				limit = {
-					c:ABY ?= {
-						sb_xhosa_frontier_war_target_is_launchable = yes
-						has_variable = sb_xhosa_frontier_war_9_scheduled_var
-						has_variable = sb_xhosa_frontier_war_8_resolved_var
-						has_technology_researched = colonization
-					}
-				}
-				create_diplomatic_play = {
-					type = dp_sb_xhosa_war_9
-					target_country = c:ABY
-				}
-				c:ABY ?= {
-					remove_variable = sb_xhosa_frontier_war_9_scheduled_var
+		var:sb_xhosa_delivery_target_scope = { save_temporary_scope_as = sb_xhosa_delivery_target }
+		if = {
+			limit = {
+				any_scope_state = { state_region = s:STATE_EASTERN_CAPE num_provinces >= 1 }
+				NOT = { sb_xho_owns_all_gcaleka_frontier_provinces = yes }
+				scope:sb_xhosa_delivery_target ?= {
+					is_country_alive = yes
+					OR = { country_definition = cd:CAP country_definition = cd:ABY }
+					has_variable = sb_xhosa_frontier_war_9_scheduled_var
+				has_variable = sb_xhosa_frontier_war_8_resolved_var
+					has_technology_researched = colonization
+					any_scope_state = { state_region = s:STATE_EASTERN_CAPE has_state_trait = state_trait_sb_xhosa_resistance }
 				}
 			}
-			else_if = {
-				limit = {
-					c:CAP ?= {
-						sb_xhosa_frontier_war_target_is_launchable = yes
-						has_variable = sb_xhosa_frontier_war_9_scheduled_var
-						has_variable = sb_xhosa_frontier_war_8_resolved_var
-						has_technology_researched = colonization
-					}
-				}
-				create_diplomatic_play = {
-					type = dp_sb_xhosa_war_9
-					target_country = c:CAP
-				}
-				c:CAP ?= {
-					remove_variable = sb_xhosa_frontier_war_9_scheduled_var
+			if = {
+				limit = { scope:sb_xhosa_delivery_target ?= { sb_xhosa_frontier_war_target_is_launchable = yes } }
+				set_variable = { name = sb_xhosa_story_target_scope value = scope:sb_xhosa_delivery_target }
+				set_variable = { name = sb_xhosa_story_generation_var value = 9 }
+				set_variable = sb_xhosa_story_launch_lease_var
+				create_diplomatic_play = { type = dp_sb_xhosa_war_9 target_country = scope:sb_xhosa_delivery_target }
+				if = {
+					limit = { has_variable = sb_xhosa_story_launch_lease_var }
+					remove_variable = sb_xhosa_story_launch_lease_var
+					remove_variable = sb_xhosa_story_target_scope
+					remove_variable = sb_xhosa_story_generation_var
+					trigger_event = { id = sb_frontier_ai_wars.120 days = 30 }
 				}
 			}
+			else = { trigger_event = { id = sb_frontier_ai_wars.120 days = 30 } }
 		}
 		else = {
-			c:ABY ?= {
-					if = {
-						limit = { has_variable = sb_xhosa_frontier_war_9_scheduled_var }
-						remove_variable = sb_xhosa_frontier_war_9_scheduled_var
-					}
-				}
-				c:CAP ?= {
-					if = {
-						limit = { has_variable = sb_xhosa_frontier_war_9_scheduled_var }
-						remove_variable = sb_xhosa_frontier_war_9_scheduled_var
-					}
-				}
+			scope:sb_xhosa_delivery_target ?= {
+				if = { limit = { has_variable = sb_xhosa_frontier_war_9_scheduled_var } remove_variable = sb_xhosa_frontier_war_9_scheduled_var }
+				set_variable = sb_xhosa_frontier_war_9_resolved_var
 			}
+			remove_variable = sb_xhosa_delivery_pending_var
+			remove_variable = sb_xhosa_delivery_target_scope
+			remove_variable = sb_xhosa_delivery_generation_var
 		}
 	}
+}
 
 sb_frontier_ai_wars.130 = {
 	type = country_event

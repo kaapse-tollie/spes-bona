@@ -19,6 +19,13 @@ class NavalNetworkTests(unittest.TestCase):
         cls.state_paths = sorted(STATE_REGION_ROOT.glob("*.txt"))
         cls.ports = naval.parse_state_ports(cls.state_paths)
 
+    def test_main_validator_invokes_the_naval_checker_after_game_root_resolution(self):
+        validator = (ROOT / "tools/validate.py").read_text(encoding="utf-8")
+        game_root_index = validator.index("game_root = find_game_root(args.game_root)")
+        checker_index = validator.index('"tools/check_naval_network.py"')
+        self.assertGreater(checker_index, game_root_index)
+        self.assertIn('"naval network connectivity"', validator[game_root_index:checker_index])
+
     def test_mod_does_not_shadow_the_generated_vanilla_network(self):
         self.assertFalse((ROOT / "common/travel_network/naval_network.txt").exists())
 

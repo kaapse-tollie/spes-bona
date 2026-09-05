@@ -230,3 +230,210 @@ sb_natal_trn_has_british_security_treaty = {
 		}
 	}
 }
+
+
+# Blood River authority is rechecked when a held response is chosen. The unique
+# container receipt prevents a stale .026/.050 popup from authenticating a later
+# route with reused country variables.
+sb_natal_story_current_launch_authority = {
+	country_definition = cd:ZUL
+	is_country_alive = yes
+	is_subject = no
+	is_at_war = no
+	is_active_in_diplomatic_play = no
+	aggressive_diplomatic_plays_permitted = yes
+	ruler = { is_character_alive = yes }
+	NOT = { has_variable = sb_natal_story_launch_pending_var }
+	NOT = { has_variable = sb_natal_story_play_scope }
+	NOT = { has_variable = sb_natal_war_active_var }
+	NOT = { has_truce_with = c:ORA }
+	NOT = { has_global_variable = sb_natal_story_war_active_global_var }
+	c:ORA ?= {
+		is_country_alive = yes
+		is_subject = no
+		is_at_war = no
+		is_active_in_diplomatic_play = no
+		ruler = { is_character_alive = yes }
+		NOT = { has_variable = sb_natal_story_launch_pending_var }
+		NOT = { has_variable = sb_natal_story_play_scope }
+		NOT = { has_variable = sb_natal_war_active_var }
+	}
+	NOT = {
+		any_diplomatic_play = {
+			is_diplomatic_play_type = dp_sb_natal_crisis
+			initiator = c:ZUL
+			target = c:ORA
+		}
+	}
+}
+
+sb_natal_story_guns_bargain_generation_is_valid = {
+	NOT = { exists = c:NAL }
+	container_exists = sb_natal_guns_bargain_generation_state
+	container:sb_natal_guns_bargain_generation_state ?= { has_variable = sb_natal_guns_bargain_generation_pending_var }
+	c:ZUL ?= {
+		country_definition = cd:ZUL
+		is_country_alive = yes
+		is_subject = no
+		ruler = { is_character_alive = yes }
+		has_variable = sb_natal_guns_bargain_generation_scope
+		var:sb_natal_guns_bargain_generation_scope ?= { has_variable = sb_natal_guns_bargain_generation_pending_var }
+		has_variable = sb_natal_guns_bargain_war_var
+	}
+	c:ORA ?= {
+		country_definition = cd:ORA
+		is_country_alive = yes
+		is_subject = no
+		has_variable = sb_natal_diplomacy_started_var
+		ruler = { is_character_alive = yes }
+		has_variable = sb_natal_guns_bargain_generation_scope
+		var:sb_natal_guns_bargain_generation_scope ?= { has_variable = sb_natal_guns_bargain_generation_pending_var }
+		has_variable = sb_natal_guns_bargain_war_var
+	}
+}
+
+sb_natal_story_bound_guns_bargain_event_authority = {
+	exists = scope:sb_natal_guns_bargain_receipt_scope
+	sb_natal_story_guns_bargain_generation_is_valid = yes
+	has_variable = sb_natal_guns_bargain_generation_scope
+	var:sb_natal_guns_bargain_generation_scope = scope:sb_natal_guns_bargain_receipt_scope
+	c:ORA ?= {
+		has_variable = sb_natal_guns_bargain_generation_scope
+		var:sb_natal_guns_bargain_generation_scope = scope:sb_natal_guns_bargain_receipt_scope
+	}
+	scope:sb_natal_guns_bargain_receipt_scope ?= { has_variable = sb_natal_guns_bargain_generation_pending_var has_variable = sb_natal_guns_bargain_popup_receipt_var }
+}
+
+sb_natal_story_current_refusal_authority = {
+	country_definition = cd:ORA
+	is_country_alive = yes
+	is_subject = no
+	is_at_war = no
+	is_active_in_diplomatic_play = no
+	ruler = { is_character_alive = yes }
+	NOT = { has_variable = sb_natal_path_resolved_var }
+	c:ZUL ?= { sb_natal_story_current_launch_authority = yes }
+}
+
+sb_natal_story_refusal_generation_is_valid = {
+	NOT = { exists = c:NAL }
+	container_exists = sb_natal_refusal_generation_state
+	container:sb_natal_refusal_generation_state ?= { has_variable = sb_natal_refusal_generation_pending_var }
+	c:ORA ?= {
+		country_definition = cd:ORA
+		is_country_alive = yes
+		is_subject = no
+		has_variable = sb_natal_diplomacy_started_var
+		ruler = { is_character_alive = yes }
+		NOT = { has_variable = sb_natal_path_resolved_var }
+		has_variable = sb_natal_refusal_generation_scope
+		var:sb_natal_refusal_generation_scope ?= { has_variable = sb_natal_refusal_generation_pending_var }
+	}
+	c:ZUL ?= {
+		country_definition = cd:ZUL
+		is_country_alive = yes
+		is_subject = no
+		ruler = { is_character_alive = yes }
+		has_variable = sb_natal_refusal_generation_scope
+		var:sb_natal_refusal_generation_scope ?= { has_variable = sb_natal_refusal_generation_pending_var }
+	}
+}
+
+sb_natal_story_bound_refusal_event_authority = {
+	exists = scope:sb_natal_refusal_receipt_scope
+	sb_natal_story_refusal_generation_is_valid = yes
+	scope:zulu_kingdom = c:ZUL
+	has_variable = sb_natal_refusal_generation_scope
+	var:sb_natal_refusal_generation_scope = scope:sb_natal_refusal_receipt_scope
+	c:ZUL ?= {
+		has_variable = sb_natal_refusal_generation_scope
+		var:sb_natal_refusal_generation_scope = scope:sb_natal_refusal_receipt_scope
+	}
+	scope:sb_natal_refusal_receipt_scope ?= { has_variable = sb_natal_refusal_generation_pending_var has_variable = sb_natal_refusal_popup_receipt_var }
+}
+
+
+# Retry only a still-bound delivery whose participants and route remain real.
+# War/play/truce idleness is deliberately absent: it is rechecked by the option.
+sb_natal_story_guns_bargain_delivery_can_retry = {
+	exists = scope:sb_natal_guns_bargain_receipt_scope
+	country_definition = cd:ZUL
+	is_country_alive = yes
+	is_subject = no
+	ruler = { is_character_alive = yes }
+	aggressive_diplomatic_plays_permitted = yes
+	has_variable = sb_natal_guns_bargain_generation_scope
+	var:sb_natal_guns_bargain_generation_scope = scope:sb_natal_guns_bargain_receipt_scope
+	has_variable = sb_natal_guns_bargain_war_var
+	c:ORA ?= {
+		is_country_alive = yes
+		is_subject = no
+		ruler = { is_character_alive = yes }
+		has_variable = sb_natal_guns_bargain_generation_scope
+		var:sb_natal_guns_bargain_generation_scope = scope:sb_natal_guns_bargain_receipt_scope
+		has_variable = sb_natal_guns_bargain_war_var
+	}
+	scope:sb_natal_guns_bargain_receipt_scope ?= { has_variable = sb_natal_guns_bargain_generation_pending_var }
+}
+
+sb_natal_story_refusal_delivery_can_retry = {
+	exists = scope:sb_natal_refusal_receipt_scope
+	country_definition = cd:ORA
+	is_country_alive = yes
+	is_subject = no
+	ruler = { is_character_alive = yes }
+	NOT = { has_variable = sb_natal_path_resolved_var }
+	has_variable = sb_natal_refusal_generation_scope
+	var:sb_natal_refusal_generation_scope = scope:sb_natal_refusal_receipt_scope
+	c:ZUL ?= {
+		is_country_alive = yes
+		is_subject = no
+		ruler = { is_character_alive = yes }
+		aggressive_diplomatic_plays_permitted = yes
+		has_variable = sb_natal_refusal_generation_scope
+		var:sb_natal_refusal_generation_scope = scope:sb_natal_refusal_receipt_scope
+	}
+	scope:sb_natal_refusal_receipt_scope ?= { has_variable = sb_natal_refusal_generation_pending_var }
+}
+
+# A receipt is authoritative only for its saved, still-living recipient. It is
+# intentionally tag-agnostic: SAF formation or another retag cannot redirect it.
+sb_natal_story_terminal_outcome_authority = {
+	is_country_alive = yes
+	has_variable = sb_natal_terminal_outcome_pending_var
+	has_variable = sb_natal_terminal_outcome_scope
+	var:sb_natal_terminal_outcome_scope ?= {
+		has_variable = sb_natal_terminal_outcome_pending_var
+		var:sb_natal_terminal_recipient_scope = root
+	}
+}
+
+sb_natal_story_terminal_ora_victory_event_authority = {
+	sb_natal_story_terminal_outcome_authority = yes
+	has_variable = sb_natal_terminal_outcome_popup_receipt_var
+	NOT = { has_variable = sb_natal_terminal_outcome_received_var }
+	scope:sb_natal_terminal_receipt_scope ?= {
+		has_variable = sb_natal_terminal_outcome_ora_victory_var
+		var:sb_natal_terminal_recipient_scope = root
+	}
+}
+
+sb_natal_story_terminal_zulu_victory_event_authority = {
+	sb_natal_story_terminal_outcome_authority = yes
+	has_variable = sb_natal_terminal_outcome_popup_receipt_var
+	NOT = { has_variable = sb_natal_terminal_outcome_received_var }
+	scope:sb_natal_terminal_receipt_scope ?= {
+		has_variable = sb_natal_terminal_outcome_zulu_victory_var
+		var:sb_natal_terminal_recipient_scope = root
+	}
+}
+
+sb_natal_story_terminal_zulu_neutral_event_authority = {
+	sb_natal_story_terminal_outcome_authority = yes
+	has_variable = sb_natal_terminal_outcome_popup_receipt_var
+	NOT = { has_variable = sb_natal_terminal_outcome_received_var }
+	scope:sb_natal_terminal_receipt_scope ?= {
+		has_variable = sb_natal_terminal_outcome_zulu_neutral_var
+		var:sb_natal_terminal_recipient_scope = root
+	}
+}

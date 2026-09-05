@@ -90,7 +90,7 @@ class OverrideInventoryTests(unittest.TestCase):
             "rebase_date": "2026-08-06",
         }
         self.inventory = {
-            "schema_version": 2,
+            "schema_version": 3,
             "target_game_version": "1.14.0",
             "target_steam_build": "25081502",
             "target_steam_branch": "1.14-openbeta",
@@ -183,12 +183,19 @@ class OverrideInventoryTests(unittest.TestCase):
         (self.mod / rel).write_text("AI = { }\n")
         inv = dict(self.inventory)
         inv["additive_overrides"] = [{
-            "path": rel, "intent": "test", "owner": "tests", "mod_sha256": "deadbeef",
+            "path": rel, "intent": "test", "owner": "tests", "rebase_date": "2026-09-04",
+            "mod_sha256": "deadbeef",
         }]
         errors = self.validate(inv)
         self.assertTrue(any("additive override mod hash drift" in e for e in errors))
         inv["additive_overrides"][0]["mod_sha256"] = CHECKER.sha256(self.mod / rel)
         self.assertEqual([], self.validate(inv))
+        for field in ("owner", "rebase_date"):
+            bad_inventory = copy.deepcopy(inv)
+            bad_inventory["additive_overrides"][0].pop(field)
+            self.assertTrue(
+                any(f"additive override missing {field}" in error for error in self.validate(bad_inventory))
+            )
 
     def test_unregistered_localization_replace_file_fails(self):
         replace = self.mod / "localization/english/replace"
@@ -205,12 +212,145 @@ class OverrideInventoryTests(unittest.TestCase):
         inv["localization_replace_files"] = [{
             "path": "localization/english/replace/sb_new_l_english.yml",
             "upstream_file": None, "intent": "test", "owner": "tests",
+            "rebase_date": "2026-09-04",
             "mod_sha256": CHECKER.sha256(replace / "sb_new_l_english.yml"),
         }]
         self.assertEqual([], self.validate(inv))
+        for field in ("owner", "rebase_date"):
+            bad_inventory = copy.deepcopy(inv)
+            bad_inventory["localization_replace_files"][0].pop(field)
+            self.assertTrue(
+                any(
+                    f"localization replace entry missing {field}" in error
+                    for error in self.validate(bad_inventory)
+                )
+            )
         inv["localization_replace_files"][0]["mod_sha256"] = "deadbeef"
         errors = self.validate(inv)
         self.assertTrue(any("localization replace mod hash drift" in e for e in errors))
+
+    def test_localization_key_parser_accepts_column_zero_without_crossing_lines(self):
+        path = Path(self.temp.name) / "fixture_l_english.yml"
+        path.write_text(
+            "l_english:\n"
+            "column_zero_one:0 \"One\"\n"
+            "column_zero_two: \"Two\"\n"
+            " indented_key:0 \"Three\"\n"
+            "# commented_key:0 \"No\"\n"
+        )
+        self.assertEqual(
+            {"column_zero_one", "column_zero_two", "indented_key"},
+            CHECKER.localization_keys(path),
+        )
+
+    def test_null_primary_localization_collisions_require_exact_key_source_pins(self):
+        replace = self.mod / "localization/english/replace"
+        vanilla = self.game / "localization/english"
+        replace.mkdir(parents=True, exist_ok=True)
+        vanilla.mkdir(parents=True, exist_ok=True)
+        mod_file = replace / "sb_names_l_english.yml"
+        source = vanilla / "hub_names_l_english.yml"
+        mod_file.write_text('l_english:\n key_test:0 "Mod"\n')
+        source.write_text('l_english:\n key_test:0 "Vanilla"\n')
+        inventory = copy.deepcopy(self.inventory)
+        inventory["localization_replace_files"] = [{
+            "path": "localization/english/replace/sb_names_l_english.yml",
+            "upstream_file": None,
+            "intent": "test",
+            "owner": "tests",
+            "rebase_date": "2026-09-04",
+            "mod_sha256": digest(mod_file),
+        }]
+        errors = self.validate(inventory)
+        self.assertTrue(any("unmanifested localization key collision" in error for error in errors))
+
+        inventory["localization_key_collisions"] = [{
+            "mod_file": "localization/english/replace/sb_names_l_english.yml",
+            "key": "key_test",
+            "upstream_version": "1.14.0",
+            "upstream_file": "hub_names_l_english.yml",
+            "upstream_sha256": digest(source),
+            "scope": "exact test key",
+            "intent": "test",
+            "load_order": "localization replace precedence",
+            "owner": "tests",
+            "rebase_date": "2026-09-04",
+        }]
+        self.assertEqual([], self.validate(inventory))
+        for version in (None, "0.0.0"):
+            with self.subTest(version=version):
+                bad_inventory = copy.deepcopy(inventory)
+                if version is None:
+                    bad_inventory["localization_key_collisions"][0].pop("upstream_version")
+                else:
+                    bad_inventory["localization_key_collisions"][0]["upstream_version"] = version
+                self.assertTrue(
+                    any(
+                        "localization collision version does not match target" in error
+                        for error in self.validate(bad_inventory)
+                    )
+                )
+        source.write_text('l_english:\n key_test:0 "Changed"\n')
+        self.assertTrue(
+            any("upstream localization source hash drift" in error for error in self.validate(inventory))
+        )
+
+    def test_secondary_localization_source_is_pinned_separately(self):
+        replace = self.mod / "localization/english/replace"
+        vanilla = self.game / "localization/english"
+        replace.mkdir(parents=True, exist_ok=True)
+        vanilla.mkdir(parents=True, exist_ok=True)
+        mod_file = replace / "dynamic_l_english.yml"
+        primary = vanilla / "dynamic_l_english.yml"
+        secondary = vanilla / "hub_names_l_english.yml"
+        for path, value in (
+            (mod_file, "Mod"),
+            (primary, "Primary"),
+            (secondary, "Secondary"),
+        ):
+            path.write_text(f'l_english:\n key_test:0 "{value}"\n')
+        inventory = copy.deepcopy(self.inventory)
+        inventory["localization_replace_files"] = [{
+            "path": "localization/english/replace/dynamic_l_english.yml",
+            "upstream_file": "dynamic_l_english.yml",
+            "upstream_sha256": digest(primary),
+            "intent": "test",
+            "owner": "tests",
+            "rebase_date": "2026-09-04",
+            "mod_sha256": digest(mod_file),
+        }]
+        errors = self.validate(inventory)
+        self.assertEqual(1, sum("unmanifested localization key collision" in error for error in errors))
+        inventory["localization_key_collisions"] = [{
+            "mod_file": "localization/english/replace/dynamic_l_english.yml",
+            "key": "key_test",
+            "upstream_version": "1.14.0",
+            "upstream_file": "hub_names_l_english.yml",
+            "upstream_sha256": digest(secondary),
+            "scope": "exact secondary test key",
+            "intent": "test",
+            "load_order": "localization replace precedence",
+            "owner": "tests",
+            "rebase_date": "2026-09-04",
+        }]
+        self.assertEqual([], self.validate(inventory))
+
+    def test_stale_localization_key_collision_entry_fails(self):
+        inventory = copy.deepcopy(self.inventory)
+        inventory["localization_key_collisions"] = [{
+            "mod_file": "localization/english/replace/missing_l_english.yml",
+            "key": "missing_key",
+            "upstream_file": "missing_l_english.yml",
+            "upstream_sha256": "0" * 64,
+            "scope": "exact missing key",
+            "intent": "test",
+            "load_order": "localization replace precedence",
+            "owner": "tests",
+            "rebase_date": "2026-09-04",
+        }]
+        errors = self.validate(inventory)
+        self.assertTrue(any("stale localization key collision entry" in error for error in errors))
+        self.assertTrue(any("mod_file is not a registered" in error for error in errors))
 
     def test_descriptor_replace_path_and_version_are_locked(self):
         (self.mod / "descriptor.mod").write_text('supported_version="1.14.8"\n  replace_path = "common/history"\n')
@@ -284,6 +424,26 @@ class OverrideInventoryTests(unittest.TestCase):
         errors = self.validate()
         self.assertTrue(any("supported_game_version" in error for error in errors))
         self.assertTrue(any("version 1.66.*" in error for error in errors))
+
+    def test_non_shadowed_upstream_contract_is_hash_and_object_pinned(self):
+        inventory = copy.deepcopy(self.inventory)
+        inventory["upstream_contracts"] = [{
+            "path": "common/laws/base.txt",
+            "key": "foo",
+            "upstream_version": "1.14.0",
+            "file_sha256": digest(self.game / "common/laws/base.txt"),
+            "object_sha256": object_digest(self.up_object, "foo"),
+            "scope": "test caller",
+            "intent": "test",
+            "load_order": "Vanilla-owned",
+            "owner": "tests",
+            "rebase_date": "2026-09-04",
+        }]
+        self.assertEqual([], self.validate(inventory))
+        inventory["upstream_contracts"][0]["object_sha256"] = "0" * 64
+        self.assertTrue(
+            any("upstream contract object hash drift" in error for error in self.validate(inventory))
+        )
 
     def test_missing_upstream_state_region_block_fails(self):
         (self.mod / "map_data/state_regions").mkdir(parents=True)

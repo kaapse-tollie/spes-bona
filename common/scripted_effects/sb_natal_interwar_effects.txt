@@ -57,41 +57,39 @@ sb_natal_archive_zulu_firearms = {
 
 sb_natal_restore_archived_zulu_firearms = {
 	if = {
-		limit = {
-			country_definition = cd:ZUL
-			c:NAL ?= { has_variable = sb_natal_zulu_firearms_archived_var }
+		limit = { country_definition = cd:ZUL c:NAL ?= { has_variable = sb_natal_zulu_firearms_archived_var } }
+		# Create the non-modern journal first because its initialization may seed
+		# progress variables. The archived values are authoritative and follow it.
+		if = {
+			limit = { c:NAL = { NOT = { has_variable = sb_natal_archived_firearms_modernized_var } } NOT = { has_journal_entry = je_sb_adopt_firearms } }
+			add_journal_entry = { type = je_sb_adopt_firearms }
 		}
-		set_variable = {
-			name = sb_firearms_progress_months_var
-			value = c:NAL.var:sb_natal_archived_firearms_progress_var
-		}
-		set_variable = {
-			name = sb_firearms_treaty_progress_months_var
-			value = c:NAL.var:sb_natal_archived_firearms_treaty_progress_var
-		}
-		set_variable = {
-			name = sb_firearms_industry_progress_months_var
-			value = c:NAL.var:sb_natal_archived_firearms_industry_progress_var
-		}
+		set_variable = { name = sb_firearms_progress_months_var value = c:NAL.var:sb_natal_archived_firearms_progress_var }
+		set_variable = { name = sb_firearms_treaty_progress_months_var value = c:NAL.var:sb_natal_archived_firearms_treaty_progress_var }
+		set_variable = { name = sb_firearms_industry_progress_months_var value = c:NAL.var:sb_natal_archived_firearms_industry_progress_var }
+		set_variable = { name = sb_firearms_applied_tier_var value = c:NAL.var:sb_natal_archived_firearms_tier_var }
 		if = {
 			limit = { c:NAL = { has_variable = sb_natal_archived_firearms_modernized_var } }
 			set_variable = sb_firearms_modernized_var
 			sb_remove_iron_age_weapons_modifiers = yes
+			if = { limit = { has_variable = sb_firearms_applied_tier_var } remove_variable = sb_firearms_applied_tier_var }
+			if = { limit = { has_variable = sb_firearms_treaty_progress_months_var } remove_variable = sb_firearms_treaty_progress_months_var }
+			if = { limit = { has_variable = sb_firearms_industry_progress_months_var } remove_variable = sb_firearms_industry_progress_months_var }
+			if = { limit = { has_variable = sb_firearms_progress_months_var } remove_variable = sb_firearms_progress_months_var }
 		}
 		else = {
-			if = {
-				limit = { NOT = { has_journal_entry = je_sb_adopt_firearms } }
-				add_journal_entry = { type = je_sb_adopt_firearms }
-			}
-			if = {
-				limit = { c:NAL = { has_variable = sb_natal_archived_firearms_tier_var } }
-				set_variable = {
-					name = sb_firearms_applied_tier_var
-					value = c:NAL.var:sb_natal_archived_firearms_tier_var
-				}
-			}
+			if = { limit = { has_variable = sb_firearms_modernized_var } remove_variable = sb_firearms_modernized_var }
 			sb_repair_iron_age_weapons_penalty = yes
 			sb_sync_firearms_progress_bar = yes
+		}
+		# The archive is a one-delivery receipt, not a perpetual reset source.
+		c:NAL = {
+			remove_variable = sb_natal_zulu_firearms_archived_var
+			if = { limit = { has_variable = sb_natal_archived_firearms_progress_var } remove_variable = sb_natal_archived_firearms_progress_var }
+			if = { limit = { has_variable = sb_natal_archived_firearms_treaty_progress_var } remove_variable = sb_natal_archived_firearms_treaty_progress_var }
+			if = { limit = { has_variable = sb_natal_archived_firearms_industry_progress_var } remove_variable = sb_natal_archived_firearms_industry_progress_var }
+			if = { limit = { has_variable = sb_natal_archived_firearms_tier_var } remove_variable = sb_natal_archived_firearms_tier_var }
+			if = { limit = { has_variable = sb_natal_archived_firearms_modernized_var } remove_variable = sb_natal_archived_firearms_modernized_var }
 		}
 	}
 }
@@ -1754,5 +1752,128 @@ sb_natal_interwar_monthly_housekeeping = {
 			NOT = { has_variable = sb_natal_zulu_arms_appeal_resolved_var }
 		}
 		set_variable = sb_natal_zulu_arms_appeal_resolved_var
+	}
+}
+
+
+# Durable pre-annex firearms archive owned by Britain when NAL does not yet exist.
+# ROOT = GBR and c:ZUL is still alive at exact play admission.
+sb_british_archive_preannex_zulu_firearms = {
+	if = {
+		limit = { country_definition = cd:GBR c:ZUL ?= { is_country_alive = yes } }
+		set_variable = { name = sb_british_archived_firearms_progress_var value = 0 }
+		set_variable = { name = sb_british_archived_firearms_treaty_progress_var value = 0 }
+		set_variable = { name = sb_british_archived_firearms_industry_progress_var value = 0 }
+		set_variable = { name = sb_british_archived_firearms_tier_var value = 0 }
+		if = { limit = { c:ZUL = { has_variable = sb_firearms_progress_months_var } } set_variable = { name = sb_british_archived_firearms_progress_var value = c:ZUL.var:sb_firearms_progress_months_var } }
+		if = { limit = { c:ZUL = { has_variable = sb_firearms_treaty_progress_months_var } } set_variable = { name = sb_british_archived_firearms_treaty_progress_var value = c:ZUL.var:sb_firearms_treaty_progress_months_var } }
+		if = { limit = { c:ZUL = { has_variable = sb_firearms_industry_progress_months_var } } set_variable = { name = sb_british_archived_firearms_industry_progress_var value = c:ZUL.var:sb_firearms_industry_progress_months_var } }
+		if = { limit = { c:ZUL = { has_variable = sb_firearms_applied_tier_var } } set_variable = { name = sb_british_archived_firearms_tier_var value = c:ZUL.var:sb_firearms_applied_tier_var } }
+		if = { limit = { c:ZUL = { has_variable = sb_firearms_modernized_var } } set_variable = sb_british_archived_firearms_modernized_var }
+		else_if = { limit = { has_variable = sb_british_archived_firearms_modernized_var } remove_variable = sb_british_archived_firearms_modernized_var }
+		set_variable = sb_british_zulu_firearms_archive_var
+	}
+}
+
+sb_british_clear_preannex_zulu_firearms = {
+	if = { limit = { has_variable = sb_british_zulu_firearms_archive_var } remove_variable = sb_british_zulu_firearms_archive_var }
+	if = { limit = { has_variable = sb_british_archived_firearms_progress_var } remove_variable = sb_british_archived_firearms_progress_var }
+	if = { limit = { has_variable = sb_british_archived_firearms_treaty_progress_var } remove_variable = sb_british_archived_firearms_treaty_progress_var }
+	if = { limit = { has_variable = sb_british_archived_firearms_industry_progress_var } remove_variable = sb_british_archived_firearms_industry_progress_var }
+	if = { limit = { has_variable = sb_british_archived_firearms_tier_var } remove_variable = sb_british_archived_firearms_tier_var }
+	if = { limit = { has_variable = sb_british_archived_firearms_modernized_var } remove_variable = sb_british_archived_firearms_modernized_var }
+}
+
+# ROOT = GBR. Transfer once the British Natal archive owner exists.
+sb_british_transfer_archived_zulu_firearms_to_natal = {
+	if = {
+		limit = { country_definition = cd:GBR has_variable = sb_british_zulu_firearms_archive_var c:NAL ?= { is_country_alive = yes } }
+		c:NAL = {
+			set_variable = { name = sb_natal_archived_firearms_progress_var value = ROOT.var:sb_british_archived_firearms_progress_var }
+			set_variable = { name = sb_natal_archived_firearms_treaty_progress_var value = ROOT.var:sb_british_archived_firearms_treaty_progress_var }
+			set_variable = { name = sb_natal_archived_firearms_industry_progress_var value = ROOT.var:sb_british_archived_firearms_industry_progress_var }
+			set_variable = { name = sb_natal_archived_firearms_tier_var value = ROOT.var:sb_british_archived_firearms_tier_var }
+			if = { limit = { ROOT = { has_variable = sb_british_archived_firearms_modernized_var } } set_variable = sb_natal_archived_firearms_modernized_var }
+			else_if = { limit = { has_variable = sb_natal_archived_firearms_modernized_var } remove_variable = sb_natal_archived_firearms_modernized_var }
+			set_variable = sb_natal_zulu_firearms_archived_var
+		}
+		sb_british_clear_preannex_zulu_firearms = yes
+	}
+}
+
+
+sb_natal_clear_archived_zulu_firearms = {
+	if = { limit = { has_variable = sb_natal_zulu_firearms_archived_var } remove_variable = sb_natal_zulu_firearms_archived_var }
+	if = { limit = { has_variable = sb_natal_archived_firearms_progress_var } remove_variable = sb_natal_archived_firearms_progress_var }
+	if = { limit = { has_variable = sb_natal_archived_firearms_treaty_progress_var } remove_variable = sb_natal_archived_firearms_treaty_progress_var }
+	if = { limit = { has_variable = sb_natal_archived_firearms_industry_progress_var } remove_variable = sb_natal_archived_firearms_industry_progress_var }
+	if = { limit = { has_variable = sb_natal_archived_firearms_tier_var } remove_variable = sb_natal_archived_firearms_tier_var }
+	if = { limit = { has_variable = sb_natal_archived_firearms_modernized_var } remove_variable = sb_natal_archived_firearms_modernized_var }
+}
+
+# ROOT = GBR after an exact British-Zulu route has reached a terminal callback.
+sb_british_zulu_clear_bound_annex_runtime = {
+	if = { limit = { has_variable_list = sb_british_zulu_annex_target_states } clear_variable_list = sb_british_zulu_annex_target_states }
+	if = { limit = { has_variable = sb_british_zulu_annex_play_scope } remove_variable = sb_british_zulu_annex_play_scope }
+	if = { limit = { has_variable = sb_british_zulu_pressure_route_var } remove_variable = sb_british_zulu_pressure_route_var }
+	if = { limit = { has_variable = sb_british_zulu_port_natal_route_var } remove_variable = sb_british_zulu_port_natal_route_var }
+	if = { limit = { has_variable = sb_anglo_zulu_pressure_launch_lease_var } remove_variable = sb_anglo_zulu_pressure_launch_lease_var }
+	if = { limit = { has_variable = sb_port_natal_british_annex_launch_lease_var } remove_variable = sb_port_natal_british_annex_launch_lease_var }
+	if = { limit = { has_variable = sb_british_zulu_backdown_finalizer_pending_var } remove_variable = sb_british_zulu_backdown_finalizer_pending_var }
+	if = { limit = { has_variable = sb_anglo_zulu_pressure_active_var } remove_variable = sb_anglo_zulu_pressure_active_var }
+	if = { limit = { has_variable = sb_british_zulu_goal_seen_var } remove_variable = sb_british_zulu_goal_seen_var }
+	if = { limit = { has_global_variable = sb_british_zulu_goal_accepted_global_var } remove_global_variable = sb_british_zulu_goal_accepted_global_var }
+	c:NAL ?= {
+		if = { limit = { has_variable = sb_anglo_zulu_pressure_active_var } remove_variable = sb_anglo_zulu_pressure_active_var }
+		if = { limit = { has_variable = sb_british_zulu_goal_accepted_pending_var } remove_variable = sb_british_zulu_goal_accepted_pending_var }
+	}
+	c:ZUL ?= {
+		if = { limit = { has_variable = sb_anglo_zulu_pressure_active_var } remove_variable = sb_anglo_zulu_pressure_active_var }
+		if = { limit = { has_variable = sb_port_natal_british_war_var } remove_variable = sb_port_natal_british_war_var }
+		if = { limit = { has_variable = sb_port_natal_raid_var } remove_variable = sb_port_natal_raid_var }
+		if = { limit = { has_variable = sb_zulu_port_natal_goal_accepted_pending_var } remove_variable = sb_zulu_port_natal_goal_accepted_pending_var }
+	}
+}
+
+sb_british_zulu_finalize_bound_annex = {
+	if = {
+		limit = { country_definition = cd:GBR has_variable = sb_british_zulu_annex_play_scope OR = { has_variable = sb_british_zulu_pressure_route_var has_variable = sb_british_zulu_port_natal_route_var } }
+		if = {
+			limit = { c:ZUL ?= { is_country_alive = yes } }
+			if = { limit = { has_variable = sb_british_zulu_pressure_route_var } c:ZUL = { trigger_event = { id = sb_anglo_zulu.020 days = 3 popup = yes } } }
+			else = { c:ZUL = { trigger_event = { id = sb_zulu_dynasty.092 days = 7 popup = yes } } }
+			sb_british_clear_preannex_zulu_firearms = yes
+			sb_british_clear_preannex_zulu_royal_house = yes
+			c:NAL ?= { sb_natal_clear_archived_zulu_firearms = yes }
+			c:ZUL = { sb_zululand_discard_preannexation_royal_house_archive = yes }
+		}
+		else_if = {
+			limit = {
+				c:ZUL ?= { is_country_alive = no }
+				has_variable_list = sb_british_zulu_annex_target_states
+				NOT = { any_in_list = { variable = sb_british_zulu_annex_target_states NOT = { OR = { owner = c:GBR owner = c:NAL } } } }
+			}
+			if = { limit = { c:NAL ?= { is_country_alive = yes } } sb_british_transfer_archived_zulu_firearms_to_natal = yes sb_british_transfer_preannex_zulu_royal_house_to_natal = yes }
+			else = { set_variable = { name = sb_natal_proclamation_pending_var days = 30 } trigger_event = { id = sb_zulu_dynasty.091 days = 7 popup = yes } }
+		}
+		else = {
+			sb_british_clear_preannex_zulu_firearms = yes
+			sb_british_clear_preannex_zulu_royal_house = yes
+			c:NAL ?= { sb_natal_clear_archived_zulu_firearms = yes }
+			c:ZUL ?= { sb_zululand_discard_preannexation_royal_house_archive = yes }
+		}
+		sb_british_zulu_clear_bound_annex_runtime = yes
+	}
+}
+
+
+# ROOT = GBR at exact annex-play admission.
+sb_british_zulu_snapshot_annex_target_states = {
+	if = { limit = { has_variable_list = sb_british_zulu_annex_target_states } clear_variable_list = sb_british_zulu_annex_target_states }
+	c:ZUL ?= {
+		every_scope_state = {
+			save_temporary_scope_as = sb_british_zulu_annex_target_state
+			c:GBR = { add_to_variable_list = { name = sb_british_zulu_annex_target_states target = scope:sb_british_zulu_annex_target_state } }
+		}
 	}
 }

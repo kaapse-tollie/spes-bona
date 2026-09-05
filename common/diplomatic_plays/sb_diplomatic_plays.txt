@@ -466,6 +466,7 @@ dp_sb_bechuanaland_proxy_namaqualand_locked = {
 
 dp_sb_trn_zpb_crackdown_locked = {
 	requires_interest_marker = no
+	blocked_by_diplomatic_status = no
 
 	war_goal = return_state
 
@@ -480,12 +481,23 @@ dp_sb_trn_zpb_crackdown_locked = {
 
 	possible = {
 		country_definition = cd:TRN
+		is_country_alive = yes
+		is_subject = no
+		is_at_war = no
+		is_active_in_diplomatic_play = no
 		NOT = { is_country_type = decentralized }
 		aggressive_diplomatic_plays_permitted = yes
+		has_variable = sb_zpb_crackdown_active_var
+		any_scope_state = { always = yes }
 		NOT = { is_subject_of = scope:target_country }
 		scope:target_country = {
 			country_definition = cd:ZPB
+			is_country_alive = yes
+			is_subject = no
+			is_at_war = no
+			is_active_in_diplomatic_play = no
 			NOT = { is_country_type = decentralized }
+			any_scope_state = { state_region = s:STATE_NORTHERN_TRANSVAAL }
 		}
 		diplomatic_play_has_no_relations_blockers = yes
 	}
@@ -678,12 +690,5 @@ dp_sb_nrp_boundary_confrontation = {
 
 	on_weekly_pulse = {}
 	on_war_begins = {}
-	on_war_end = {
-		c:NRP ?= {
-			if = {
-				limit = { has_variable = sb_nrp_boundary_confrontation_active_var }
-				remove_variable = sb_nrp_boundary_confrontation_active_var
-			}
-		}
-	}
+	on_war_end = {}
 }

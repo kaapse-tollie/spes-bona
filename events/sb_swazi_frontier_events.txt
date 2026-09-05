@@ -48,19 +48,19 @@ sb_swazi_frontier.094 = {
 	icon = "gfx/interface/icons/event_icons/event_military.dds"
 	duration = 3
 
+	immediate = { set_variable = { name = sb_zulu_swazi_outcome_popup_receipt_var months = 4 } }
+
+
 	trigger = {
-		sb_is_zulu_dynasty_country = yes
+		has_variable = sb_zulu_swazi_outcome_delivery_pending_var
+		has_variable = sb_zulu_swazi_outcome_delivery_queued_var
+		NOT = { has_variable = sb_zulu_swazi_outcome_delivery_received_var }
+		country_definition = cd:ZUL
+		is_country_alive = yes
 		has_journal_entry = je_sb_zulu_kingdom
-		ruler = {
-			has_template = ZUL_dingane
-		}
-		c:SWZ ?= {
-			is_country_alive = yes
-			is_subject = no
-			any_scope_state = {
-				state_region = s:STATE_EAST_TRANSVAAL
-			}
-		}
+		NOT = { has_variable = sb_zulu_swazi_war_active_var }
+		ruler = { has_template = ZUL_dingane }
+		c:SWZ ?= { is_country_alive = yes is_subject = no any_scope_state = { state_region = s:STATE_EAST_TRANSVAAL } }
 	}
 
 	# This is the crisis-release valve for Dingane after the Natal line. It only
@@ -68,6 +68,26 @@ sb_swazi_frontier.094 = {
 	# AI weighting below is driven by how that line ended.
 	option = {
 		name = sb_swazi_frontier.094.a
+		trigger = {
+			has_variable = sb_zulu_swazi_outcome_delivery_pending_var
+			has_variable = sb_zulu_swazi_outcome_popup_receipt_var
+			NOT = { has_variable = sb_zulu_swazi_outcome_delivery_received_var }
+			country_definition = cd:ZUL
+			is_country_alive = yes
+			is_at_war = no
+			is_active_in_diplomatic_play = no
+			aggressive_diplomatic_plays_permitted = yes
+			has_journal_entry = je_sb_zulu_kingdom
+			NOT = { has_variable = sb_zulu_swazi_war_active_var }
+			ruler = { has_template = ZUL_dingane }
+			c:SWZ ?= {
+				is_country_alive = yes
+				is_subject = no
+				is_at_war = no
+				is_active_in_diplomatic_play = no
+				any_scope_state = { state_region = s:STATE_EAST_TRANSVAAL }
+			}
+		}
 		default_option = yes
 		hidden_effect = {
 			if = {
@@ -117,39 +137,29 @@ sb_swazi_frontier.094 = {
 				}
 			}
 		}
-		sb_zulu_clear_swazi_question_ai_context = yes
 		set_variable = sb_zulu_swazi_war_active_var
-		c:SWZ ?= {
-			set_variable = sb_zulu_swazi_war_active_var
-		}
+		set_variable = sb_zulu_swazi_launch_lease_var
+		set_variable = { name = sb_zulu_swazi_target_state_scope value = s:STATE_EAST_TRANSVAAL.region_state:SWZ }
+		c:SWZ ?= { set_variable = sb_zulu_swazi_war_active_var }
 		create_diplomatic_play = {
 			type = dp_conquer_state
 			target_country = c:SWZ
 			target_state = s:STATE_EAST_TRANSVAAL.region_state:SWZ
 		}
-		# The AI-history roll above stores only an intent marker. If play creation
-		# fails, clear the campaign markers immediately and leave no orphan muster.
+		# Only the matching on-start callback consumes this lease. A residual lease
+		# is explicit creation failure and must not be inferred from another play.
 		if = {
-			limit = {
-				NOT = {
-					any_diplomatic_play = {
-						initiator = root
-						target = c:SWZ
-						is_diplomatic_play_type = dp_conquer_state
-					}
-				}
-			}
-			remove_variable = sb_zulu_swazi_war_active_var
-			c:SWZ ?= {
-				if = {
-					limit = { has_variable = sb_zulu_swazi_war_active_var }
-					remove_variable = sb_zulu_swazi_war_active_var
-				}
-				if = {
-					limit = { has_variable = sb_swazi_ai_history_muster_selected_var }
-					remove_variable = sb_swazi_ai_history_muster_selected_var
-				}
-			}
+			limit = { has_variable = sb_zulu_swazi_launch_lease_var }
+			sb_zulu_clear_swazi_campaign_runtime = yes
+			if = { limit = { has_variable = sb_zulu_swazi_outcome_delivery_queued_var } remove_variable = sb_zulu_swazi_outcome_delivery_queued_var }
+			if = { limit = { has_variable = sb_zulu_swazi_outcome_popup_receipt_var } remove_variable = sb_zulu_swazi_outcome_popup_receipt_var }
+		}
+		else = {
+			remove_variable = sb_zulu_swazi_outcome_delivery_pending_var
+			if = { limit = { has_variable = sb_zulu_swazi_outcome_delivery_queued_var } remove_variable = sb_zulu_swazi_outcome_delivery_queued_var }
+			if = { limit = { has_variable = sb_zulu_swazi_outcome_popup_receipt_var } remove_variable = sb_zulu_swazi_outcome_popup_receipt_var }
+			set_variable = { name = sb_zulu_swazi_outcome_delivery_received_var days = 30 }
+			sb_zulu_clear_swazi_question_ai_context = yes
 		}
 		ai_chance = {
 			base = 50
@@ -178,6 +188,21 @@ sb_swazi_frontier.094 = {
 
 	option = {
 		name = sb_swazi_frontier.094.b
+		trigger = {
+			has_variable = sb_zulu_swazi_outcome_delivery_pending_var
+			has_variable = sb_zulu_swazi_outcome_popup_receipt_var
+			NOT = { has_variable = sb_zulu_swazi_outcome_delivery_received_var }
+			country_definition = cd:ZUL
+			is_country_alive = yes
+			has_journal_entry = je_sb_zulu_kingdom
+			NOT = { has_variable = sb_zulu_swazi_war_active_var }
+			ruler = { has_template = ZUL_dingane }
+			c:SWZ ?= { is_country_alive = yes is_subject = no any_scope_state = { state_region = s:STATE_EAST_TRANSVAAL } }
+		}
+		remove_variable = sb_zulu_swazi_outcome_delivery_pending_var
+		if = { limit = { has_variable = sb_zulu_swazi_outcome_delivery_queued_var } remove_variable = sb_zulu_swazi_outcome_delivery_queued_var }
+		if = { limit = { has_variable = sb_zulu_swazi_outcome_popup_receipt_var } remove_variable = sb_zulu_swazi_outcome_popup_receipt_var }
+		set_variable = { name = sb_zulu_swazi_outcome_delivery_received_var days = 30 }
 		sb_zulu_clear_swazi_question_ai_context = yes
 		custom_tooltip = sb_zulu_dynasty_lose_stability_5
 		hidden_effect = {
@@ -206,6 +231,31 @@ sb_swazi_frontier.094 = {
 				has_variable = sb_zulu_swazi_ai_won_blood_river_var
 			}
 		}
+	}
+
+
+	option = {
+		name = sb_swazi_frontier.094.b
+		trigger = {
+			has_variable = sb_zulu_swazi_outcome_delivery_pending_var
+			has_variable = sb_zulu_swazi_outcome_popup_receipt_var
+			NOT = {
+				AND = {
+					NOT = { has_variable = sb_zulu_swazi_outcome_delivery_received_var }
+					country_definition = cd:ZUL
+					is_country_alive = yes
+					has_journal_entry = je_sb_zulu_kingdom
+					NOT = { has_variable = sb_zulu_swazi_war_active_var }
+					ruler = { has_template = ZUL_dingane }
+					c:SWZ ?= { is_country_alive = yes is_subject = no any_scope_state = { state_region = s:STATE_EAST_TRANSVAAL } }
+				}
+			}
+		}
+		remove_variable = sb_zulu_swazi_outcome_delivery_pending_var
+		remove_variable = sb_zulu_swazi_outcome_delivery_queued_var
+		if = { limit = { has_variable = sb_zulu_swazi_outcome_popup_receipt_var } remove_variable = sb_zulu_swazi_outcome_popup_receipt_var }
+		set_variable = { name = sb_zulu_swazi_outcome_delivery_received_var days = 30 }
+		sb_zulu_clear_swazi_question_ai_context = yes
 	}
 }
 

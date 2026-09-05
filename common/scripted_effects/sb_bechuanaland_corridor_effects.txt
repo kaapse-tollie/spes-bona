@@ -335,6 +335,26 @@ sb_bechuanaland_add_to_british_boer_goal_targets = {
 	}
 }
 
+sb_bechuanaland_add_to_boer_transfer_goal_targets = {
+	save_temporary_scope_as = sb_bechuanaland_list_country
+	container:sb_bechuanaland_corridor_state = {
+		if = {
+			limit = { NOT = { is_target_in_variable_list = { name = sb_bechuanaland_boer_transfer_goal_targets target = scope:sb_bechuanaland_list_country } } }
+			add_to_variable_list = { name = sb_bechuanaland_boer_transfer_goal_targets target = scope:sb_bechuanaland_list_country }
+		}
+	}
+}
+
+sb_bechuanaland_add_to_boer_liberate_goal_targets = {
+	save_temporary_scope_as = sb_bechuanaland_list_country
+	container:sb_bechuanaland_corridor_state = {
+		if = {
+			limit = { NOT = { is_target_in_variable_list = { name = sb_bechuanaland_boer_liberate_goal_targets target = scope:sb_bechuanaland_list_country } } }
+			add_to_variable_list = { name = sb_bechuanaland_boer_liberate_goal_targets target = scope:sb_bechuanaland_list_country }
+		}
+	}
+}
+
 # ROOT = selected corridor principal for the total Warren route.
 sb_bechuanaland_remember_total_war_target = {
 	save_temporary_scope_as = sb_bechuanaland_total_war_target
@@ -798,7 +818,16 @@ sb_bechuanaland_handle_post_open_lifecycle = {
 		}
 		sb_bechuanaland_refresh_influence_scopes = yes
 		if = {
-			limit = { c:SAF ?= { is_country_alive = yes } }
+			limit = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_british_victory_var } }
+			sb_bechuanaland_queue_british_settlement_once = yes
+		}
+		else_if = {
+			limit = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_boer_swa_victory_var } }
+			sb_bechuanaland_queue_boer_swa_settlement_event = yes
+		}
+		else_if = {
+			limit = {
+				NOT = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_unresolved_settlement_pending_var } } NOT = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_crisis_war_active_var } } c:SAF ?= { is_country_alive = yes } }
 			if = { limit = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_british_victory_var } } container:sb_bechuanaland_corridor_state = { remove_variable = sb_bechuanaland_british_victory_var } }
 			if = { limit = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_boer_swa_victory_var } } container:sb_bechuanaland_corridor_state = { remove_variable = sb_bechuanaland_boer_swa_victory_var } }
 			if = {
@@ -810,13 +839,20 @@ sb_bechuanaland_handle_post_open_lifecycle = {
 				sb_bechuanaland_cleanup_corridor_crisis = yes
 			}
 			else_if = {
-				limit = { sb_bechuanaland_cap_is_swa_overlord_subject = yes }
+				limit = {
+				NOT = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_unresolved_settlement_pending_var } }
+					NOT = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_crisis_war_active_var } }
+					sb_bechuanaland_cap_is_non_british_swa_overlord_subject = yes
+					NOT = { sb_bechuanaland_cap_has_exact_boer_endpoint = yes }
+				}
 				sb_bechuanaland_set_boer_swa_crisis_victory = yes
 			}
 		else_if = {
 			limit = {
+				NOT = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_unresolved_settlement_pending_var } }
 				NOT = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_crisis_war_active_var } }
-				NOT = { sb_bechuanaland_cap_is_swa_overlord_subject = yes }
+				NOT = { sb_bechuanaland_cap_is_non_british_swa_overlord_subject = yes }
+				NOT = { sb_bechuanaland_cap_has_exact_boer_endpoint = yes }
 				NOT = {
 					c:CAP ?= {
 						is_country_alive = yes
@@ -833,6 +869,8 @@ sb_bechuanaland_handle_post_open_lifecycle = {
 		}
 		else_if = {
 			limit = {
+				NOT = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_unresolved_settlement_pending_var } }
+				NOT = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_crisis_war_active_var } }
 				c:SWA ?= { is_country_alive = yes is_subject = no }
 				NOT = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_british_victory_var } }
 				NOT = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_boer_swa_victory_var } }
@@ -841,17 +879,20 @@ sb_bechuanaland_handle_post_open_lifecycle = {
 		}
 		else_if = {
 			limit = {
+				NOT = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_unresolved_settlement_pending_var } }
 				sb_bechuanaland_sgo_is_british_subject = yes
 				sb_bechuanaland_crisis_escalation_available = yes
 			}
 			sb_bechuanaland_queue_sgo_annexation_offer = yes
 		}
 		else_if = {
-			limit = { sb_bechuanaland_sgo_is_third_party_subject = yes }
+			limit = {
+				NOT = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_unresolved_settlement_pending_var } } NOT = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_crisis_war_active_var } } sb_bechuanaland_sgo_is_third_party_subject = yes }
 			sb_bechuanaland_invalidate_for_third_party_sgo = yes
 		}
 		else_if = {
 			limit = {
+				NOT = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_unresolved_settlement_pending_var } }
 				sb_bechuanaland_swa_overlord_is_british_aligned = yes
 				sb_bechuanaland_crisis_escalation_available = yes
 			}
@@ -1654,7 +1695,6 @@ sb_bechuanaland_clear_pending_crisis_flags = {
 	if = { limit = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_crisis_direct_route_var } } container:sb_bechuanaland_corridor_state = { remove_variable = sb_bechuanaland_crisis_direct_route_var } }
 	if = { limit = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_crisis_proxy_route_var } } container:sb_bechuanaland_corridor_state = { remove_variable = sb_bechuanaland_crisis_proxy_route_var } }
 	if = { limit = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_crisis_caprivi_route_var } } container:sb_bechuanaland_corridor_state = { remove_variable = sb_bechuanaland_crisis_caprivi_route_var } }
-	if = { limit = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_legacy_cap_sgo_route_var } } container:sb_bechuanaland_corridor_state = { remove_variable = sb_bechuanaland_legacy_cap_sgo_route_var } }
 	if = { limit = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_unresolved_settlement_pending_var } } container:sb_bechuanaland_corridor_state = { remove_variable = sb_bechuanaland_unresolved_settlement_pending_var } }
 	if = { limit = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_crisis_boer_choice_pending_var } } container:sb_bechuanaland_corridor_state = { remove_variable = sb_bechuanaland_crisis_boer_choice_pending_var } }
 	if = { limit = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_crisis_boer_choice_dispatched_var } } container:sb_bechuanaland_corridor_state = { remove_variable = sb_bechuanaland_crisis_boer_choice_dispatched_var } }
@@ -1667,6 +1707,10 @@ sb_bechuanaland_clear_pending_crisis_flags = {
 	if = { limit = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_british_settlement_pending_var } } container:sb_bechuanaland_corridor_state = { remove_variable = sb_bechuanaland_british_settlement_pending_var } }
 }
 
+
+
+
+
 sb_bechuanaland_clear_crisis_participant_markers = {
 	if = {
 		limit = { container_exists = sb_bechuanaland_corridor_state }
@@ -1677,6 +1721,11 @@ sb_bechuanaland_clear_crisis_participant_markers = {
 			if = { limit = { has_variable_list = sb_bechuanaland_british_war_side } clear_variable_list = sb_bechuanaland_british_war_side }
 			if = { limit = { has_variable_list = sb_bechuanaland_boer_swa_war_side } clear_variable_list = sb_bechuanaland_boer_swa_war_side }
 			if = { limit = { has_variable_list = sb_bechuanaland_british_boer_goal_targets } clear_variable_list = sb_bechuanaland_british_boer_goal_targets }
+			if = { limit = { has_variable_list = sb_bechuanaland_boer_transfer_goal_targets } clear_variable_list = sb_bechuanaland_boer_transfer_goal_targets }
+			if = { limit = { has_variable_list = sb_bechuanaland_boer_liberate_goal_targets } clear_variable_list = sb_bechuanaland_boer_liberate_goal_targets }
+			if = { limit = { has_variable_list = sb_bechuanaland_boer_griqualand_goal_states } clear_variable_list = sb_bechuanaland_boer_griqualand_goal_states }
+			if = { limit = { has_variable = sb_bechuanaland_boer_transfer_recipient_scope } remove_variable = sb_bechuanaland_boer_transfer_recipient_scope }
+			if = { limit = { has_variable = sb_bechuanaland_swa_to_gbr_goal_added_var } remove_variable = sb_bechuanaland_swa_to_gbr_goal_added_var }
 			if = { limit = { has_variable = sb_bechuanaland_total_war_primary_target_scope } remove_variable = sb_bechuanaland_total_war_primary_target_scope }
 		}
 	}
@@ -1740,7 +1789,86 @@ sb_bechuanaland_repair_abandoned_crisis_attempts = {
 	}
 }
 
+sb_bechuanaland_clear_exact_goal_target_scopes = {
+	if = {
+		limit = { container_exists = sb_bechuanaland_corridor_state }
+		container:sb_bechuanaland_corridor_state = {
+			if = { limit = { has_variable = sb_bechuanaland_cap_corridor_goal_target_scope } remove_variable = sb_bechuanaland_cap_corridor_goal_target_scope }
+			if = { limit = { has_variable = sb_bechuanaland_sgo_corridor_goal_target_scope } remove_variable = sb_bechuanaland_sgo_corridor_goal_target_scope }
+			if = { limit = { has_variable = sb_bechuanaland_namaqualand_goal_target_scope } remove_variable = sb_bechuanaland_namaqualand_goal_target_scope }
+			if = { limit = { has_variable = sb_bechuanaland_total_war_cap_goal_target_scope } remove_variable = sb_bechuanaland_total_war_cap_goal_target_scope }
+			if = { limit = { has_variable = sb_bechuanaland_total_war_target_state_scope } remove_variable = sb_bechuanaland_total_war_target_state_scope }
+			if = { limit = { has_variable = sb_bechuanaland_warren_namaqualand_goal_added_var } remove_variable = sb_bechuanaland_warren_namaqualand_goal_added_var }
+			if = { limit = { has_variable = sb_bechuanaland_sgo_claim_goal_added_var } remove_variable = sb_bechuanaland_sgo_claim_goal_added_var }
+			if = { limit = { has_variable = sb_bechuanaland_cap_claim_goal_added_var } remove_variable = sb_bechuanaland_cap_claim_goal_added_var }
+			if = { limit = { has_variable = sb_bechuanaland_bst_annex_goal_added_var } remove_variable = sb_bechuanaland_bst_annex_goal_added_var }
+			if = { limit = { has_variable_list = sb_bechuanaland_bst_annex_target_states } clear_variable_list = sb_bechuanaland_bst_annex_target_states }
+			if = { limit = { has_variable = sb_bechuanaland_swa_to_gbr_goal_added_var } remove_variable = sb_bechuanaland_swa_to_gbr_goal_added_var }
+			if = { limit = { has_variable = sb_bechuanaland_boer_transfer_recipient_scope } remove_variable = sb_bechuanaland_boer_transfer_recipient_scope }
+			if = { limit = { has_variable = sb_bechuanaland_british_humiliation_accepted_var } remove_variable = sb_bechuanaland_british_humiliation_accepted_var }
+			if = { limit = { has_variable = sb_bechuanaland_boer_humiliation_accepted_var } remove_variable = sb_bechuanaland_boer_humiliation_accepted_var }
+			if = { limit = { has_variable_list = sb_bechuanaland_boer_transfer_goal_targets } clear_variable_list = sb_bechuanaland_boer_transfer_goal_targets }
+			if = { limit = { has_variable_list = sb_bechuanaland_boer_liberate_goal_targets } clear_variable_list = sb_bechuanaland_boer_liberate_goal_targets }
+			if = { limit = { has_variable_list = sb_bechuanaland_boer_griqualand_goal_states } clear_variable_list = sb_bechuanaland_boer_griqualand_goal_states }
+			if = { limit = { has_variable = sb_bechuanaland_british_goal_enforced_var } remove_variable = sb_bechuanaland_british_goal_enforced_var }
+			if = { limit = { has_variable = sb_bechuanaland_boer_swa_goal_enforced_var } remove_variable = sb_bechuanaland_boer_swa_goal_enforced_var }
+			if = { limit = { has_variable = sb_bechuanaland_british_timer_goal_seen_pending_var } remove_variable = sb_bechuanaland_british_timer_goal_seen_pending_var }
+			if = { limit = { has_variable = sb_bechuanaland_boer_swa_timer_goal_seen_pending_var } remove_variable = sb_bechuanaland_boer_swa_timer_goal_seen_pending_var }
+			if = { limit = { has_variable = sb_bechuanaland_british_terminal_evidence_var } remove_variable = sb_bechuanaland_british_terminal_evidence_var }
+			if = { limit = { has_variable = sb_bechuanaland_boer_swa_terminal_evidence_var } remove_variable = sb_bechuanaland_boer_swa_terminal_evidence_var }
+			if = { limit = { has_variable = sb_bechuanaland_crisis_play_scope } remove_variable = sb_bechuanaland_crisis_play_scope }
+		}
+	}
+}
+
+sb_bechuanaland_rollback_unbound_launch_claims = {
+	if = {
+		limit = { container:sb_bechuanaland_corridor_state ?= { has_variable = sb_bechuanaland_namaqualand_claim_added_for_launch_var } }
+		if = { limit = { c:SWA ?= { has_claim = s:STATE_NAMAQUALAND } } s:STATE_NAMAQUALAND = { remove_claim = c:SWA } }
+		container:sb_bechuanaland_corridor_state = { remove_variable = sb_bechuanaland_namaqualand_claim_added_for_launch_var }
+	}
+	if = {
+		limit = { container:sb_bechuanaland_corridor_state ?= { has_variable = sb_bechuanaland_total_cap_claim_added_for_launch_var } }
+		if = { limit = { c:CAP ?= { has_claim = s:STATE_BECHUANALAND } } s:STATE_BECHUANALAND = { remove_claim = c:CAP } }
+		container:sb_bechuanaland_corridor_state = { remove_variable = sb_bechuanaland_total_cap_claim_added_for_launch_var }
+	}
+	if = {
+		limit = {
+			container:sb_bechuanaland_corridor_state ?= {
+				has_variable = sb_bechuanaland_total_target_claim_added_for_launch_var
+				has_variable = sb_bechuanaland_total_war_primary_target_scope
+			}
+		}
+		container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_total_war_primary_target_scope = { save_temporary_scope_as = sb_bechuanaland_rollback_total_claimant }
+		if = {
+			limit = { scope:sb_bechuanaland_rollback_total_claimant ?= { has_claim = s:STATE_BECHUANALAND } }
+			s:STATE_BECHUANALAND = { remove_claim = scope:sb_bechuanaland_rollback_total_claimant }
+		}
+		container:sb_bechuanaland_corridor_state = { remove_variable = sb_bechuanaland_total_target_claim_added_for_launch_var }
+	}
+}
+
+sb_bechuanaland_clear_launch_leases = {
+	every_country = {
+		limit = { OR = {
+			has_variable = sb_bechuanaland_direct_launch_lease_var
+			has_variable = sb_bechuanaland_proxy_launch_lease_var
+			has_variable = sb_bechuanaland_warren_direct_launch_lease_var
+			has_variable = sb_bechuanaland_warren_proxy_launch_lease_var
+			has_variable = sb_bechuanaland_total_launch_lease_var
+		} }
+		if = { limit = { has_variable = sb_bechuanaland_direct_launch_lease_var } remove_variable = sb_bechuanaland_direct_launch_lease_var }
+		if = { limit = { has_variable = sb_bechuanaland_proxy_launch_lease_var } remove_variable = sb_bechuanaland_proxy_launch_lease_var }
+		if = { limit = { has_variable = sb_bechuanaland_warren_direct_launch_lease_var } remove_variable = sb_bechuanaland_warren_direct_launch_lease_var }
+		if = { limit = { has_variable = sb_bechuanaland_warren_proxy_launch_lease_var } remove_variable = sb_bechuanaland_warren_proxy_launch_lease_var }
+		if = { limit = { has_variable = sb_bechuanaland_total_launch_lease_var } remove_variable = sb_bechuanaland_total_launch_lease_var }
+	}
+}
+
 sb_bechuanaland_cancel_pending_crisis = {
+	sb_bechuanaland_rollback_unbound_launch_claims = yes
+	sb_bechuanaland_clear_exact_goal_target_scopes = yes
+	sb_bechuanaland_clear_launch_leases = yes
 	if = {
 		limit = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_crisis_caprivi_route_var } }
 		sb_bechuanaland_reset_caprivi_attempt_country_flags = yes
@@ -2141,6 +2269,10 @@ sb_bechuanaland_add_reciprocal_corridor_goals = {
 		}
 		s:STATE_BECHUANALAND.region_state:CAP ?= { save_temporary_scope_as = sb_bechuanaland_cap_corridor_state }
 		s:STATE_BECHUANALAND.region_state:SGO ?= { save_temporary_scope_as = sb_bechuanaland_sgo_corridor_state }
+		container:sb_bechuanaland_corridor_state = {
+			set_variable = { name = sb_bechuanaland_cap_corridor_goal_target_scope value = scope:sb_bechuanaland_cap_corridor_state }
+			set_variable = { name = sb_bechuanaland_sgo_corridor_goal_target_scope value = scope:sb_bechuanaland_sgo_corridor_state }
+		}
 		scope:sb_bechuanaland_crisis_play = {
 			add_war_goal = {
 				holder = c:CAP
@@ -2158,6 +2290,7 @@ sb_bechuanaland_add_reciprocal_corridor_goals = {
 			}
 			if = {
 				limit = { c:SGO ?= { has_claim = s:STATE_BECHUANALAND } }
+				container:sb_bechuanaland_corridor_state = { set_variable = sb_bechuanaland_sgo_claim_goal_added_var }
 				add_war_goal = {
 					holder = c:CAP
 					type = revoke_claim
@@ -2168,6 +2301,7 @@ sb_bechuanaland_add_reciprocal_corridor_goals = {
 			}
 			if = {
 				limit = { c:CAP ?= { has_claim = s:STATE_BECHUANALAND } }
+				container:sb_bechuanaland_corridor_state = { set_variable = sb_bechuanaland_cap_claim_goal_added_var }
 				add_war_goal = {
 					holder = c:SGO
 					type = revoke_claim
@@ -2204,6 +2338,10 @@ sb_bechuanaland_add_secondary_corridor_goals = {
 		}
 		s:STATE_BECHUANALAND.region_state:CAP ?= { save_temporary_scope_as = sb_bechuanaland_cap_corridor_state }
 		s:STATE_BECHUANALAND.region_state:SGO ?= { save_temporary_scope_as = sb_bechuanaland_sgo_corridor_state }
+		container:sb_bechuanaland_corridor_state = {
+			set_variable = { name = sb_bechuanaland_cap_corridor_goal_target_scope value = scope:sb_bechuanaland_cap_corridor_state }
+			set_variable = { name = sb_bechuanaland_sgo_corridor_goal_target_scope value = scope:sb_bechuanaland_sgo_corridor_state }
+		}
 		scope:sb_bechuanaland_crisis_play = {
 			add_war_goal = {
 				holder = c:CAP
@@ -2221,6 +2359,7 @@ sb_bechuanaland_add_secondary_corridor_goals = {
 			}
 			if = {
 				limit = { c:SGO ?= { has_claim = s:STATE_BECHUANALAND } }
+				container:sb_bechuanaland_corridor_state = { set_variable = sb_bechuanaland_sgo_claim_goal_added_var }
 				add_war_goal = {
 					holder = c:CAP
 					type = revoke_claim
@@ -2231,6 +2370,7 @@ sb_bechuanaland_add_secondary_corridor_goals = {
 			}
 			if = {
 				limit = { c:CAP ?= { has_claim = s:STATE_BECHUANALAND } }
+				container:sb_bechuanaland_corridor_state = { set_variable = sb_bechuanaland_cap_claim_goal_added_var }
 				add_war_goal = {
 					holder = c:SGO
 					type = revoke_claim
@@ -2264,6 +2404,7 @@ sb_bechuanaland_add_boer_corridor_primary_goal = {
 		s:STATE_BECHUANALAND.region_state:CAP ?= {
 			save_temporary_scope_as = sb_bechuanaland_cap_corridor_state
 		}
+		container:sb_bechuanaland_corridor_state = { set_variable = { name = sb_bechuanaland_total_war_cap_goal_target_scope value = scope:sb_bechuanaland_cap_corridor_state } }
 		scope:sb_bechuanaland_crisis_play = {
 			add_war_goal = {
 				holder = scope:sb_bechuanaland_total_war_target
@@ -2349,6 +2490,7 @@ sb_bechuanaland_add_early_boer_war_secondary_goals = {
 				sb_bechuanaland_is_boer_swa_war_side_member = yes
 			}
 		}
+		container:sb_bechuanaland_corridor_state = { set_variable = { name = sb_bechuanaland_boer_transfer_recipient_scope value = c:TRN } }
 		if = {
 			limit = {
 				c:CAP ?= {
@@ -2359,6 +2501,7 @@ sb_bechuanaland_add_early_boer_war_secondary_goals = {
 				}
 				c:TRN ?= { can_transfer_subject = c:CAP }
 			}
+			c:CAP = { sb_bechuanaland_add_to_boer_transfer_goal_targets = yes }
 			scope:sb_bechuanaland_crisis_play = {
 				add_war_goal = {
 					holder = c:TRN
@@ -2375,6 +2518,7 @@ sb_bechuanaland_add_early_boer_war_secondary_goals = {
 					sb_bechuanaland_is_british_war_side_member = yes
 				}
 			}
+			c:CAP = { sb_bechuanaland_add_to_boer_liberate_goal_targets = yes }
 			scope:sb_bechuanaland_crisis_play = {
 				add_war_goal = {
 					holder = scope:sb_bechuanaland_total_war_target
@@ -2393,6 +2537,7 @@ sb_bechuanaland_add_early_boer_war_secondary_goals = {
 				}
 				c:TRN ?= { can_transfer_subject = c:NAL }
 			}
+			c:NAL = { sb_bechuanaland_add_to_boer_transfer_goal_targets = yes }
 			scope:sb_bechuanaland_crisis_play = {
 				add_war_goal = {
 					holder = c:TRN
@@ -2409,6 +2554,7 @@ sb_bechuanaland_add_early_boer_war_secondary_goals = {
 					sb_bechuanaland_is_british_war_side_member = yes
 				}
 			}
+			c:NAL = { sb_bechuanaland_add_to_boer_liberate_goal_targets = yes }
 			scope:sb_bechuanaland_crisis_play = {
 				add_war_goal = {
 					holder = scope:sb_bechuanaland_total_war_target
@@ -2433,6 +2579,7 @@ sb_bechuanaland_add_early_boer_war_secondary_goals = {
 					sb_bechuanaland_is_british_war_side_member = yes
 				}
 			}
+			c:CAP = { sb_bechuanaland_add_to_boer_liberate_goal_targets = yes }
 			scope:sb_bechuanaland_crisis_play = {
 				add_war_goal = {
 					holder = scope:sb_bechuanaland_total_war_target
@@ -2449,6 +2596,7 @@ sb_bechuanaland_add_early_boer_war_secondary_goals = {
 					sb_bechuanaland_is_british_war_side_member = yes
 				}
 			}
+			c:NAL = { sb_bechuanaland_add_to_boer_liberate_goal_targets = yes }
 			scope:sb_bechuanaland_crisis_play = {
 				add_war_goal = {
 					holder = scope:sb_bechuanaland_total_war_target
@@ -2481,6 +2629,9 @@ sb_bechuanaland_add_early_boer_war_secondary_goals = {
 				limit = { state_region = s:STATE_GRIQUALAND_WEST }
 				save_temporary_scope_as = sb_bechuanaland_british_griqualand_state
 			}
+			container:sb_bechuanaland_corridor_state = {
+				add_to_variable_list = { name = sb_bechuanaland_boer_griqualand_goal_states target = scope:sb_bechuanaland_british_griqualand_state }
+			}
 			scope:sb_bechuanaland_crisis_play = {
 				add_war_goal = {
 					holder = c:ORA
@@ -2499,6 +2650,15 @@ sb_bechuanaland_add_early_boer_war_secondary_goals = {
 					NOT = { is_country_type = decentralized }
 				}
 			}
+			c:BST = {
+				every_scope_state = {
+					save_temporary_scope_as = sb_bechuanaland_bst_annex_target_state
+					container:sb_bechuanaland_corridor_state = {
+						add_to_variable_list = { name = sb_bechuanaland_bst_annex_target_states target = scope:sb_bechuanaland_bst_annex_target_state }
+					}
+				}
+			}
+			container:sb_bechuanaland_corridor_state = { set_variable = sb_bechuanaland_bst_annex_goal_added_var }
 			scope:sb_bechuanaland_crisis_play = {
 				add_war_goal = {
 					holder = c:ORA
@@ -2517,18 +2677,22 @@ sb_bechuanaland_add_early_boer_war_secondary_goals = {
 sb_bechuanaland_configure_direct_crisis_play = {
 	save_temporary_scope_as = sb_bechuanaland_crisis_play
 	container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_crisis_swa_overlord_scope = { save_temporary_scope_as = sb_bechuanaland_direct_initiator }
+	container:sb_bechuanaland_corridor_state = { set_variable = { name = sb_bechuanaland_boer_transfer_recipient_scope value = scope:sb_bechuanaland_direct_initiator } }
 	add_initiator_backers = { c:SWA }
 	if = { limit = { c:GBR ?= { NOT = { this = scope:target } } } add_target_backers = { c:GBR } }
+	container:sb_bechuanaland_corridor_state = { set_variable = sb_bechuanaland_swa_to_gbr_goal_added_var }
 	add_war_goal = { holder = c:GBR type = transfer_subject target_country = c:SWA primary_demand = yes }
 	sb_bechuanaland_record_cap_prewar_subject_type = yes
 	scope:sb_bechuanaland_direct_initiator = { sb_bechuanaland_add_to_boer_swa_war_side = yes }
 	c:SWA ?= { sb_bechuanaland_add_to_boer_swa_war_side = yes }
 	c:CAP ?= { sb_bechuanaland_add_to_british_war_side = yes }
 	c:GBR ?= { sb_bechuanaland_add_to_british_war_side = yes }
+	c:CAP ?= { sb_bechuanaland_add_to_boer_transfer_goal_targets = yes }
 	if = {
 		limit = { p:x8031D0.state.owner = c:CAP }
 		s:STATE_NAMAQUALAND = { add_claim = c:SWA }
 		p:x8031D0.state = { save_temporary_scope_as = sb_bechuanaland_namaqualand_direct_state }
+		container:sb_bechuanaland_corridor_state = { set_variable = { name = sb_bechuanaland_namaqualand_goal_target_scope value = scope:sb_bechuanaland_namaqualand_direct_state } }
 		scope:sb_bechuanaland_crisis_play = {
 			add_war_goal = {
 				holder = c:SWA
@@ -2542,7 +2706,10 @@ sb_bechuanaland_configure_direct_crisis_play = {
 	# The remaining direct Southern African British subjects enter on Britain's
 	# side and may be transferred to the direct intervening great power.
 	every_country = {
-		limit = { sb_bechuanaland_is_british_subject_target = yes }
+		limit = {
+			sb_bechuanaland_is_british_subject_target = yes
+			NOT = { this = c:CAP }
+		}
 		save_temporary_scope_as = sb_bechuanaland_british_subject_target
 		sb_bechuanaland_add_to_british_war_side = yes
 		scope:sb_bechuanaland_crisis_play = {
@@ -2555,6 +2722,7 @@ sb_bechuanaland_configure_direct_crisis_play = {
 					can_transfer_subject = scope:sb_bechuanaland_british_subject_target
 				}
 			}
+			scope:sb_bechuanaland_british_subject_target = { sb_bechuanaland_add_to_boer_transfer_goal_targets = yes }
 			scope:sb_bechuanaland_crisis_play = {
 				add_war_goal = {
 					holder = scope:sb_bechuanaland_direct_initiator
@@ -2610,8 +2778,11 @@ sb_bechuanaland_configure_proxy_crisis_play = {
 
 sb_bechuanaland_configure_warren_direct_crisis_play = {
 	save_temporary_scope_as = sb_bechuanaland_crisis_play
+	scope:initiator = { sb_bechuanaland_add_to_british_war_side = yes }
+	scope:target = { sb_bechuanaland_add_to_boer_swa_war_side = yes }
 	container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_warren_defender_scope = { save_temporary_scope_as = sb_bechuanaland_warren_target }
 	container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_crisis_swa_overlord_scope = { save_temporary_scope_as = sb_bechuanaland_warren_direct_supporter }
+	container:sb_bechuanaland_corridor_state = { set_variable = { name = sb_bechuanaland_boer_transfer_recipient_scope value = scope:sb_bechuanaland_warren_direct_supporter } }
 	add_initiator_backers = { c:CAP }
 	sb_bechuanaland_record_cap_prewar_subject_type = yes
 	c:GBR ?= { sb_bechuanaland_add_to_british_war_side = yes }
@@ -2665,6 +2836,7 @@ sb_bechuanaland_configure_warren_direct_crisis_play = {
 			c:SWA ?= { sb_bechuanaland_subject_can_be_transferred = yes }
 			c:GBR ?= { can_transfer_subject = c:SWA }
 		}
+		container:sb_bechuanaland_corridor_state = { set_variable = sb_bechuanaland_swa_to_gbr_goal_added_var }
 		scope:sb_bechuanaland_crisis_play = {
 			add_war_goal = {
 				holder = c:GBR
@@ -2683,6 +2855,7 @@ sb_bechuanaland_configure_warren_direct_crisis_play = {
 				can_transfer_subject = c:CAP
 			}
 		}
+		c:CAP = { sb_bechuanaland_add_to_boer_transfer_goal_targets = yes }
 		scope:sb_bechuanaland_crisis_play = {
 			add_war_goal = {
 				holder = scope:sb_bechuanaland_warren_direct_supporter
@@ -2700,6 +2873,7 @@ sb_bechuanaland_configure_warren_direct_crisis_play = {
 			}
 		}
 		save_temporary_scope_as = sb_bechuanaland_british_subject_target
+		sb_bechuanaland_add_to_boer_transfer_goal_targets = yes
 		scope:sb_bechuanaland_crisis_play = {
 			add_war_goal = {
 				holder = scope:sb_bechuanaland_warren_direct_supporter
@@ -2710,8 +2884,10 @@ sb_bechuanaland_configure_warren_direct_crisis_play = {
 	}
 	if = {
 		limit = { p:x8031D0.state.owner = c:CAP }
+		container:sb_bechuanaland_corridor_state = { set_variable = sb_bechuanaland_warren_namaqualand_goal_added_var }
 		s:STATE_NAMAQUALAND = { add_claim = c:SWA }
 		p:x8031D0.state = { save_temporary_scope_as = sb_bechuanaland_warren_namaqualand_state }
+		container:sb_bechuanaland_corridor_state = { set_variable = { name = sb_bechuanaland_namaqualand_goal_target_scope value = scope:sb_bechuanaland_warren_namaqualand_state } }
 		scope:sb_bechuanaland_crisis_play = {
 			add_war_goal = {
 				holder = c:SWA
@@ -2727,6 +2903,8 @@ sb_bechuanaland_configure_warren_direct_crisis_play = {
 
 sb_bechuanaland_configure_warren_proxy_crisis_play = {
 	save_temporary_scope_as = sb_bechuanaland_crisis_play
+	scope:initiator = { sb_bechuanaland_add_to_british_war_side = yes }
+	scope:target = { sb_bechuanaland_add_to_boer_swa_war_side = yes }
 	container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_warren_defender_scope = { save_temporary_scope_as = sb_bechuanaland_warren_target }
 	add_initiator_backers = { c:CAP }
 	c:GBR ?= { sb_bechuanaland_add_to_british_war_side = yes }
@@ -2762,8 +2940,10 @@ sb_bechuanaland_configure_warren_proxy_crisis_play = {
 	}
 	if = {
 		limit = { p:x8031D0.state.owner = c:CAP }
+		container:sb_bechuanaland_corridor_state = { set_variable = sb_bechuanaland_warren_namaqualand_goal_added_var }
 		s:STATE_NAMAQUALAND = { add_claim = c:SWA }
 		p:x8031D0.state = { save_temporary_scope_as = sb_bechuanaland_warren_namaqualand_state }
+		container:sb_bechuanaland_corridor_state = { set_variable = { name = sb_bechuanaland_namaqualand_goal_target_scope value = scope:sb_bechuanaland_warren_namaqualand_state } }
 		scope:sb_bechuanaland_crisis_play = {
 			add_war_goal = {
 				holder = c:SWA
@@ -2788,12 +2968,17 @@ sb_bechuanaland_configure_warren_proxy_crisis_play = {
 
 sb_bechuanaland_configure_total_crisis_play = {
 	save_temporary_scope_as = sb_bechuanaland_crisis_play
+	scope:initiator = { sb_bechuanaland_add_to_british_war_side = yes }
+	scope:target = { sb_bechuanaland_add_to_boer_swa_war_side = yes }
 	container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_total_war_primary_target_scope = {
 		save_temporary_scope_as = sb_bechuanaland_total_war_target
 		random_scope_state = { limit = { state_region = s:STATE_BECHUANALAND } save_temporary_scope_as = sb_bechuanaland_total_war_target_state }
 	}
+	if = {
+		limit = { exists = scope:sb_bechuanaland_total_war_target_state }
+		container:sb_bechuanaland_corridor_state = { set_variable = { name = sb_bechuanaland_total_war_target_state_scope value = scope:sb_bechuanaland_total_war_target_state } }
+	}
 	if = { limit = { c:GBR ?= { NOT = { this = scope:initiator } } } add_initiator_backers = { c:GBR } }
-	container:sb_bechuanaland_corridor_state = { set_variable = sb_bechuanaland_legacy_cap_sgo_route_var }
 	container:sb_bechuanaland_corridor_state = { set_variable = sb_bechuanaland_warren_boers_only_route_var }
 	container:sb_bechuanaland_corridor_state = { set_variable = sb_bechuanaland_crisis_war_active_var }
 	c:CAP ?= { sb_bechuanaland_add_to_british_war_side = yes }
@@ -2836,6 +3021,7 @@ sb_bechuanaland_configure_started_story_play = {
 			OR = { scope:target ?= { country_definition = cd:CAP } AND = { scope:target ?= { country_definition = cd:GBR } c:CAP ?= { is_direct_subject_of = scope:target } } }
 		}
 		sb_bechuanaland_configure_direct_crisis_play = yes
+		container:sb_bechuanaland_corridor_state = { set_variable = { name = sb_bechuanaland_crisis_play_scope value = root } }
 		scope:initiator = { remove_variable = sb_bechuanaland_direct_launch_lease_var }
 	}
 	else_if = {
@@ -2846,6 +3032,11 @@ sb_bechuanaland_configure_started_story_play = {
 			OR = { scope:target ?= { country_definition = cd:CAP } AND = { scope:target ?= { country_definition = cd:GBR } c:CAP ?= { is_direct_subject_of = scope:target } } }
 		}
 		sb_bechuanaland_configure_proxy_crisis_play = yes
+		container:sb_bechuanaland_corridor_state = { set_variable = { name = sb_bechuanaland_crisis_play_scope value = root } }
+		if = {
+			limit = { is_diplomatic_play_type = dp_sb_bechuanaland_proxy_namaqualand_locked container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_namaqualand_claim_added_for_launch_var } }
+			container:sb_bechuanaland_corridor_state = { remove_variable = sb_bechuanaland_namaqualand_claim_added_for_launch_var }
+		}
 		c:SWA = { remove_variable = sb_bechuanaland_proxy_launch_lease_var }
 	}
 	else_if = {
@@ -2859,6 +3050,7 @@ sb_bechuanaland_configure_started_story_play = {
 			}
 		}
 		sb_bechuanaland_configure_warren_direct_crisis_play = yes
+		container:sb_bechuanaland_corridor_state = { set_variable = { name = sb_bechuanaland_crisis_play_scope value = root } }
 		scope:initiator = { remove_variable = sb_bechuanaland_warren_direct_launch_lease_var }
 	}
 	else_if = {
@@ -2872,6 +3064,7 @@ sb_bechuanaland_configure_started_story_play = {
 			}
 		}
 		sb_bechuanaland_configure_warren_proxy_crisis_play = yes
+		container:sb_bechuanaland_corridor_state = { set_variable = { name = sb_bechuanaland_crisis_play_scope value = root } }
 		scope:initiator = { remove_variable = sb_bechuanaland_warren_proxy_launch_lease_var }
 	}
 	else_if = {
@@ -2886,11 +3079,19 @@ sb_bechuanaland_configure_started_story_play = {
 			}
 		}
 		sb_bechuanaland_configure_total_crisis_play = yes
+		container:sb_bechuanaland_corridor_state = {
+			set_variable = { name = sb_bechuanaland_crisis_play_scope value = root }
+			if = { limit = { has_variable = sb_bechuanaland_total_cap_claim_added_for_launch_var } remove_variable = sb_bechuanaland_total_cap_claim_added_for_launch_var }
+			if = { limit = { has_variable = sb_bechuanaland_total_target_claim_added_for_launch_var } remove_variable = sb_bechuanaland_total_target_claim_added_for_launch_var }
+		}
 		c:CAP = { remove_variable = sb_bechuanaland_total_launch_lease_var }
 	}
 }
 
 sb_bechuanaland_launch_direct_crisis = {
+	sb_bechuanaland_rollback_unbound_launch_claims = yes
+	sb_bechuanaland_clear_exact_goal_target_scopes = yes
+	sb_bechuanaland_clear_launch_leases = yes
 	container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_crisis_swa_overlord_scope = { save_temporary_scope_as = sb_bechuanaland_direct_initiator }
 	if = {
 		limit = {
@@ -2917,11 +3118,19 @@ sb_bechuanaland_launch_direct_crisis = {
 }
 
 sb_bechuanaland_launch_proxy_crisis = {
+	sb_bechuanaland_rollback_unbound_launch_claims = yes
+	sb_bechuanaland_clear_exact_goal_target_scopes = yes
+	sb_bechuanaland_clear_launch_leases = yes
 	# Walvis Bay turns the limited contest into the Namaqualand return route.
 	if = {
 		limit = { p:x8031D0.state.owner = c:CAP }
+		if = {
+			limit = { c:SWA ?= { NOT = { has_claim = s:STATE_NAMAQUALAND } } }
+			container:sb_bechuanaland_corridor_state = { set_variable = sb_bechuanaland_namaqualand_claim_added_for_launch_var }
+		}
 		s:STATE_NAMAQUALAND = { add_claim = c:SWA }
 		p:x8031D0.state = { save_temporary_scope_as = sb_bechuanaland_namaqualand_proxy_state }
+		container:sb_bechuanaland_corridor_state = { set_variable = { name = sb_bechuanaland_namaqualand_goal_target_scope value = scope:sb_bechuanaland_namaqualand_proxy_state } }
 		if = {
 			limit = { c:SWA ?= { is_country_alive = yes NOT = { OR = { any_diplomatic_play = { is_diplomatic_play_type = dp_sb_bechuanaland_proxy_namaqualand_locked OR = { target = c:CAP AND = { target = c:GBR c:CAP ?= { is_direct_subject_of = c:GBR } } } } any_scope_war = { diplomatic_play = { is_diplomatic_play_type = dp_sb_bechuanaland_proxy_namaqualand_locked } } } } } }
 			c:SWA = {
@@ -2953,6 +3162,9 @@ sb_bechuanaland_launch_proxy_crisis = {
 # overlord. The SWA great power and its colony support the defence, while every
 # imperial transfer demand remains secondary to the CAP-SGO corridor claims.
 sb_bechuanaland_launch_warren_direct_crisis = {
+	sb_bechuanaland_rollback_unbound_launch_claims = yes
+	sb_bechuanaland_clear_exact_goal_target_scopes = yes
+	sb_bechuanaland_clear_launch_leases = yes
 	container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_warren_defender_scope = { save_temporary_scope_as = sb_bechuanaland_warren_target }
 	if = {
 		limit = {
@@ -2981,6 +3193,9 @@ sb_bechuanaland_launch_warren_direct_crisis = {
 # Warren proxy route: Britain remains the initiator and SWA supports the Boer
 # defender. The colonial proxy demands are secondary to the corridor dispute.
 sb_bechuanaland_launch_warren_proxy_crisis = {
+	sb_bechuanaland_rollback_unbound_launch_claims = yes
+	sb_bechuanaland_clear_exact_goal_target_scopes = yes
+	sb_bechuanaland_clear_launch_leases = yes
 	container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_warren_defender_scope = { save_temporary_scope_as = sb_bechuanaland_warren_target }
 	if = {
 		limit = {
@@ -3126,8 +3341,25 @@ sb_bechuanaland_set_boer_swa_crisis_victory = {
 
 sb_bechuanaland_handle_crisis_backdown = {
 	if = {
-		limit = { sb_bechuanaland_is_corridor_diplomatic_play = yes }
+		limit = {
+			sb_bechuanaland_is_corridor_diplomatic_play = yes
+				container:sb_bechuanaland_corridor_state ?= { has_variable = sb_bechuanaland_crisis_play_scope var:sb_bechuanaland_crisis_play_scope = root }
+		}
 		if = {
+			limit = {
+				OR = {
+					c:SAF ?= { is_country_alive = yes }
+					AND = {
+						NOT = { c:CAP ?= { is_country_alive = yes is_subject_of = c:GBR } }
+						NOT = { sb_bechuanaland_cap_has_exact_boer_endpoint = yes }
+					}
+					c:SWA ?= { is_country_alive = yes is_subject = no }
+					sb_bechuanaland_sgo_is_third_party_subject = yes
+				}
+			}
+			sb_bechuanaland_resolve_crisis_war_at_end = yes
+		}
+		else_if = {
 			limit = { scope:actor ?= { sb_bechuanaland_is_british_war_side_member = yes } }
 			sb_bechuanaland_set_boer_swa_crisis_victory = yes
 		}
@@ -3135,82 +3367,271 @@ sb_bechuanaland_handle_crisis_backdown = {
 			limit = { scope:actor ?= { sb_bechuanaland_is_boer_swa_war_side_member = yes } }
 			sb_bechuanaland_set_british_crisis_victory = yes
 		}
+		container:sb_bechuanaland_corridor_state ?= {
+			if = { limit = { has_variable = sb_bechuanaland_crisis_play_scope } remove_variable = sb_bechuanaland_crisis_play_scope }
+		}
+		sb_bechuanaland_clear_exact_goal_target_scopes = yes
+		sb_bechuanaland_clear_launch_leases = yes
 	}
 }
 
 sb_bechuanaland_track_crisis_wargoal_enforcement = {
 	if = {
-		limit = { scope:diplomatic_play ?= { sb_bechuanaland_is_corridor_diplomatic_play = yes } NOT = { has_global_variable = sb_bechuanaland_corridor_resolved_global_var } }
+		limit = {
+			scope:diplomatic_play ?= { sb_bechuanaland_is_corridor_diplomatic_play = yes }
+			NOT = { has_global_variable = sb_bechuanaland_corridor_resolved_global_var }
+				container:sb_bechuanaland_corridor_state ?= {
+					has_variable = sb_bechuanaland_crisis_play_scope
+					var:sb_bechuanaland_crisis_play_scope = scope:diplomatic_play
+				}
+		}
 		if = {
 			limit = { exists = scope:enforced_by_timer }
-			container:sb_bechuanaland_corridor_state = { set_variable = sb_bechuanaland_timer_goal_seen_pending_var }
+			# Timer evidence is reversible and side-specific. It authorizes no
+			# result unless an unambiguous matching final predicate survives.
+			if = {
+				limit = { scope:actor ?= { sb_bechuanaland_is_british_war_side_member = yes } }
+				container:sb_bechuanaland_corridor_state = { set_variable = sb_bechuanaland_british_timer_goal_seen_pending_var }
+			}
+			else_if = {
+				limit = { scope:actor ?= { sb_bechuanaland_is_boer_swa_war_side_member = yes } }
+				container:sb_bechuanaland_corridor_state = { set_variable = sb_bechuanaland_boer_swa_timer_goal_seen_pending_var }
+			}
 		}
 		else_if = {
-			limit = { sb_bechuanaland_is_british_war_side_member = yes }
+			limit = { scope:actor ?= { sb_bechuanaland_is_british_war_side_member = yes } }
 			container:sb_bechuanaland_corridor_state = { set_variable = sb_bechuanaland_british_goal_enforced_var }
 		}
 		else_if = {
-			limit = { sb_bechuanaland_is_boer_swa_war_side_member = yes }
+			limit = { scope:actor ?= { sb_bechuanaland_is_boer_swa_war_side_member = yes } }
 			container:sb_bechuanaland_corridor_state = { set_variable = sb_bechuanaland_boer_swa_goal_enforced_var }
 		}
 	}
 }
 
 sb_bechuanaland_resolve_crisis_war_at_end = {
+	# Apply the journal's terminal-state precedence before goal evidence. These
+	# statuses may change during an unrelated concurrent play but cannot erase
+	# the exact authored war's resolver.
 	if = {
 		limit = {
 			sb_bechuanaland_is_corridor_diplomatic_play = yes
+				container:sb_bechuanaland_corridor_state ?= { has_variable = sb_bechuanaland_crisis_play_scope var:sb_bechuanaland_crisis_play_scope = root }
+			NOT = { has_global_variable = sb_bechuanaland_corridor_resolved_global_var }
+			OR = {
+				c:SAF ?= { is_country_alive = yes }
+				AND = {
+					sb_bechuanaland_cap_is_non_british_swa_overlord_subject = yes
+					NOT = { sb_bechuanaland_cap_has_exact_boer_endpoint = yes }
+				}
+				AND = {
+					NOT = { c:CAP ?= { is_country_alive = yes is_subject_of = c:GBR } }
+					NOT = { sb_bechuanaland_cap_is_non_british_swa_overlord_subject = yes }
+					NOT = { sb_bechuanaland_cap_has_exact_boer_endpoint = yes }
+				}
+				c:SWA ?= { is_country_alive = yes is_subject = no }
+				sb_bechuanaland_sgo_is_third_party_subject = yes
+			}
+		}
+		if = {
+			limit = { c:SAF ?= { is_country_alive = yes } }
+			if = { limit = { c:GBR ?= { has_claim = s:STATE_BOTSWANA } } s:STATE_BOTSWANA = { add_claim = c:SAF } }
+			sb_bechuanaland_record_invalid_terminal_outcome = yes
+			set_global_variable = sb_bechuanaland_corridor_resolved_global_var
+			sb_bechuanaland_cleanup_corridor_crisis = yes
+		}
+		else_if = {
+			limit = { sb_bechuanaland_cap_is_non_british_swa_overlord_subject = yes NOT = { sb_bechuanaland_cap_has_exact_boer_endpoint = yes } }
+			sb_bechuanaland_set_boer_swa_crisis_victory = yes
+		}
+		else_if = {
+			limit = {
+				NOT = { c:CAP ?= { is_country_alive = yes is_subject_of = c:GBR } }
+				NOT = { sb_bechuanaland_cap_is_non_british_swa_overlord_subject = yes }
+				NOT = { sb_bechuanaland_cap_has_exact_boer_endpoint = yes }
+			}
+			if = { limit = { c:GBR ?= { has_claim = s:STATE_BOTSWANA } } s:STATE_BOTSWANA = { remove_claim = c:GBR } }
+			sb_bechuanaland_record_invalid_terminal_outcome = yes
+			set_global_variable = sb_bechuanaland_corridor_resolved_global_var
+			sb_bechuanaland_cleanup_corridor_crisis = yes
+		}
+		else_if = {
+			limit = { c:SWA ?= { is_country_alive = yes is_subject = no } }
+			sb_bechuanaland_set_british_crisis_victory = yes
+		}
+		else = { sb_bechuanaland_invalidate_for_third_party_sgo = yes }
+		sb_bechuanaland_clear_exact_goal_target_scopes = yes
+		sb_bechuanaland_clear_launch_leases = yes
+	}
+	else_if = {
+		limit = {
+			sb_bechuanaland_is_corridor_diplomatic_play = yes
+				container:sb_bechuanaland_corridor_state ?= { has_variable = sb_bechuanaland_crisis_play_scope var:sb_bechuanaland_crisis_play_scope = root }
 			NOT = { has_global_variable = sb_bechuanaland_corridor_resolved_global_var }
 			NOT = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_british_victory_var } }
 			NOT = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_boer_swa_victory_var } }
 		}
 		container:sb_bechuanaland_corridor_state ?= {
 			if = { limit = { has_variable = sb_bechuanaland_crisis_swa_overlord_scope } var:sb_bechuanaland_crisis_swa_overlord_scope = { save_temporary_scope_as = sb_bechuanaland_final_swa_overlord } }
+			if = { limit = { has_variable = sb_bechuanaland_total_war_primary_target_scope } var:sb_bechuanaland_total_war_primary_target_scope = { save_temporary_scope_as = sb_bechuanaland_final_total_war_target } }
 		}
-		# Timer-only closes use only unambiguous live ownership/subject predicates.
+
+		# Timer callbacks only record the enforcing side. Derive terminal evidence
+		# here from live, route-specific subject or complete-fragment ownership.
 		if = {
 			limit = {
-				container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_timer_goal_seen_pending_var }
-				is_diplomatic_play_type = dp_sb_bechuanaland_direct_intervention_locked
-				c:SWA ?= { is_country_alive = yes is_direct_subject_of = c:GBR }
+				OR = {
+					AND = {
+						container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_swa_to_gbr_goal_added_var }
+						c:SWA ?= { is_country_alive = yes is_direct_subject_of = c:GBR }
+					}
+					AND = {
+						OR = {
+							is_diplomatic_play_type = dp_sb_bechuanaland_direct_intervention_locked
+							is_diplomatic_play_type = dp_sb_bechuanaland_proxy_intervention_locked
+							is_diplomatic_play_type = dp_sb_bechuanaland_proxy_namaqualand_locked
+							is_diplomatic_play_type = dp_sb_bechuanaland_warren_intervention_locked
+						}
+						container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_sgo_corridor_goal_target_scope ?= { owner = c:CAP }
+					}
+					AND = {
+						is_diplomatic_play_type = dp_sb_bechuanaland_cap_sgo_return
+						container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_total_war_target_state_scope ?= { owner = c:CAP }
+					}
+					AND = {
+						container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_sgo_claim_goal_added_var }
+						c:SGO ?= { is_country_alive = yes NOT = { has_claim = s:STATE_BECHUANALAND } }
+					}
+					container:sb_bechuanaland_corridor_state = {
+						any_in_list = { variable = sb_bechuanaland_british_boer_goal_targets is_country_alive = yes is_direct_subject_of = c:GBR }
+					}
+				}
+			}
+			container:sb_bechuanaland_corridor_state = { set_variable = sb_bechuanaland_british_terminal_evidence_var }
+		}
+		if = {
+			limit = {
+				OR = {
+					AND = {
+						OR = {
+							is_diplomatic_play_type = dp_sb_bechuanaland_direct_intervention_locked
+							is_diplomatic_play_type = dp_sb_bechuanaland_proxy_intervention_locked
+							is_diplomatic_play_type = dp_sb_bechuanaland_proxy_namaqualand_locked
+							is_diplomatic_play_type = dp_sb_bechuanaland_warren_intervention_locked
+						}
+						container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_cap_corridor_goal_target_scope ?= { owner = c:SGO }
+					}
+					AND = {
+						OR = {
+							is_diplomatic_play_type = dp_sb_bechuanaland_direct_intervention_locked
+							is_diplomatic_play_type = dp_sb_bechuanaland_proxy_namaqualand_locked
+							AND = {
+								is_diplomatic_play_type = dp_sb_bechuanaland_warren_intervention_locked
+								container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_warren_namaqualand_goal_added_var }
+							}
+						}
+						container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_namaqualand_goal_target_scope ?= { owner = c:SWA }
+					}
+					AND = {
+						is_diplomatic_play_type = dp_sb_bechuanaland_cap_sgo_return
+						exists = scope:sb_bechuanaland_final_total_war_target
+						container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_total_war_cap_goal_target_scope ?= { owner = scope:sb_bechuanaland_final_total_war_target }
+					}
+					AND = {
+						container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_cap_claim_goal_added_var }
+						c:CAP ?= { is_country_alive = yes NOT = { has_claim = s:STATE_BECHUANALAND } }
+					}
+					container:sb_bechuanaland_corridor_state = {
+						has_variable = sb_bechuanaland_boer_transfer_recipient_scope
+						any_in_list = {
+							variable = sb_bechuanaland_boer_transfer_goal_targets
+							is_country_alive = yes
+							is_direct_subject_of = container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_boer_transfer_recipient_scope
+						}
+					}
+					container:sb_bechuanaland_corridor_state = {
+						any_in_list = { variable = sb_bechuanaland_boer_liberate_goal_targets is_country_alive = yes is_subject = no }
+					}
+					container:sb_bechuanaland_corridor_state = {
+						any_in_list = { variable = sb_bechuanaland_boer_griqualand_goal_states owner = c:ORA }
+					}
+					AND = {
+						c:BST ?= { is_country_alive = no }
+						container:sb_bechuanaland_corridor_state = {
+							has_variable = sb_bechuanaland_bst_annex_goal_added_var
+							has_variable_list = sb_bechuanaland_bst_annex_target_states
+							NOT = {
+								any_in_list = {
+									variable = sb_bechuanaland_bst_annex_target_states
+									NOT = { owner = c:ORA }
+								}
+							}
+						}
+					}
+				}
+			}
+			container:sb_bechuanaland_corridor_state = { set_variable = sb_bechuanaland_boer_swa_terminal_evidence_var }
+		}
+
+		# Story Humiliation is assent-required and has no timer/mirror path, so its
+		# exact-play receipt is authoritative without a mechanical final predicate.
+		if = {
+			limit = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_british_humiliation_accepted_var } }
+			container:sb_bechuanaland_corridor_state = { set_variable = sb_bechuanaland_british_terminal_evidence_var }
+		}
+		if = {
+			limit = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_boer_humiliation_accepted_var } }
+			container:sb_bechuanaland_corridor_state = { set_variable = sb_bechuanaland_boer_swa_terminal_evidence_var }
+		}
+
+		# Both timer and negotiated callbacks are provisional. Only a matching
+		# final relation, claim, or state predicate above becomes terminal evidence.
+		if = {
+			limit = {
+				container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_british_terminal_evidence_var }
+				NOT = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_boer_swa_terminal_evidence_var } }
 			}
 			sb_bechuanaland_set_british_crisis_victory = yes
 		}
 		else_if = {
 			limit = {
-				container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_timer_goal_seen_pending_var }
-				is_diplomatic_play_type = dp_sb_bechuanaland_direct_intervention_locked
-				exists = scope:sb_bechuanaland_final_swa_overlord
-				c:CAP ?= { is_direct_subject_of = scope:sb_bechuanaland_final_swa_overlord }
-			}
-			sb_bechuanaland_set_boer_swa_crisis_victory = yes
-		}
-		else_if = {
-			limit = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_timer_goal_seen_pending_var } is_diplomatic_play_type = dp_sb_bechuanaland_proxy_namaqualand_locked p:x8031D0.state.owner = c:SWA }
-			sb_bechuanaland_set_boer_swa_crisis_victory = yes
-		}
-		else_if = {
-			limit = {
-				container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_british_goal_enforced_var }
-				NOT = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_boer_swa_goal_enforced_var } }
-			}
-			sb_bechuanaland_set_british_crisis_victory = yes
-		}
-		else_if = {
-			limit = {
-				container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_boer_swa_goal_enforced_var }
-				NOT = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_british_goal_enforced_var } }
+				container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_boer_swa_terminal_evidence_var }
+				NOT = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_british_terminal_evidence_var } }
 			}
 			sb_bechuanaland_set_boer_swa_crisis_victory = yes
 		}
 		else = {
 			sb_bechuanaland_queue_unresolved_settlement_event = yes
 		}
-	}
-	container:sb_bechuanaland_corridor_state ?= {
-		if = { limit = { has_variable = sb_bechuanaland_british_goal_enforced_var } remove_variable = sb_bechuanaland_british_goal_enforced_var }
-		if = { limit = { has_variable = sb_bechuanaland_boer_swa_goal_enforced_var } remove_variable = sb_bechuanaland_boer_swa_goal_enforced_var }
-		if = { limit = { has_variable = sb_bechuanaland_timer_goal_seen_pending_var } remove_variable = sb_bechuanaland_timer_goal_seen_pending_var }
+		# Truth bits belong to this matched corridor play. Unrelated wars must not
+		# consume timer or accepted-side evidence while the route remains active.
+		container:sb_bechuanaland_corridor_state ?= {
+			if = { limit = { has_variable = sb_bechuanaland_british_goal_enforced_var } remove_variable = sb_bechuanaland_british_goal_enforced_var }
+			if = { limit = { has_variable = sb_bechuanaland_boer_swa_goal_enforced_var } remove_variable = sb_bechuanaland_boer_swa_goal_enforced_var }
+			if = { limit = { has_variable = sb_bechuanaland_british_timer_goal_seen_pending_var } remove_variable = sb_bechuanaland_british_timer_goal_seen_pending_var }
+			if = { limit = { has_variable = sb_bechuanaland_boer_swa_timer_goal_seen_pending_var } remove_variable = sb_bechuanaland_boer_swa_timer_goal_seen_pending_var }
+			if = { limit = { has_variable = sb_bechuanaland_british_humiliation_accepted_var } remove_variable = sb_bechuanaland_british_humiliation_accepted_var }
+			if = { limit = { has_variable = sb_bechuanaland_boer_humiliation_accepted_var } remove_variable = sb_bechuanaland_boer_humiliation_accepted_var }
+			if = { limit = { has_variable = sb_bechuanaland_british_terminal_evidence_var } remove_variable = sb_bechuanaland_british_terminal_evidence_var }
+			if = { limit = { has_variable = sb_bechuanaland_boer_swa_terminal_evidence_var } remove_variable = sb_bechuanaland_boer_swa_terminal_evidence_var }
+			if = { limit = { has_variable = sb_bechuanaland_warren_namaqualand_goal_added_var } remove_variable = sb_bechuanaland_warren_namaqualand_goal_added_var }
+			if = { limit = { has_variable = sb_bechuanaland_sgo_claim_goal_added_var } remove_variable = sb_bechuanaland_sgo_claim_goal_added_var }
+			if = { limit = { has_variable = sb_bechuanaland_cap_claim_goal_added_var } remove_variable = sb_bechuanaland_cap_claim_goal_added_var }
+			if = { limit = { has_variable = sb_bechuanaland_bst_annex_goal_added_var } remove_variable = sb_bechuanaland_bst_annex_goal_added_var }
+			if = { limit = { has_variable_list = sb_bechuanaland_bst_annex_target_states } clear_variable_list = sb_bechuanaland_bst_annex_target_states }
+			if = { limit = { has_variable = sb_bechuanaland_swa_to_gbr_goal_added_var } remove_variable = sb_bechuanaland_swa_to_gbr_goal_added_var }
+			if = { limit = { has_variable = sb_bechuanaland_boer_transfer_recipient_scope } remove_variable = sb_bechuanaland_boer_transfer_recipient_scope }
+			if = { limit = { has_variable_list = sb_bechuanaland_boer_griqualand_goal_states } clear_variable_list = sb_bechuanaland_boer_griqualand_goal_states }
+			if = { limit = { has_variable_list = sb_bechuanaland_boer_transfer_goal_targets } clear_variable_list = sb_bechuanaland_boer_transfer_goal_targets }
+			if = { limit = { has_variable_list = sb_bechuanaland_boer_liberate_goal_targets } clear_variable_list = sb_bechuanaland_boer_liberate_goal_targets }
+			if = { limit = { has_variable = sb_bechuanaland_cap_corridor_goal_target_scope } remove_variable = sb_bechuanaland_cap_corridor_goal_target_scope }
+			if = { limit = { has_variable = sb_bechuanaland_sgo_corridor_goal_target_scope } remove_variable = sb_bechuanaland_sgo_corridor_goal_target_scope }
+			if = { limit = { has_variable = sb_bechuanaland_namaqualand_goal_target_scope } remove_variable = sb_bechuanaland_namaqualand_goal_target_scope }
+			if = { limit = { has_variable = sb_bechuanaland_total_war_target_state_scope } remove_variable = sb_bechuanaland_total_war_target_state_scope }
+			if = { limit = { has_variable = sb_bechuanaland_total_war_cap_goal_target_scope } remove_variable = sb_bechuanaland_total_war_cap_goal_target_scope }
+			if = { limit = { has_variable = sb_bechuanaland_crisis_play_scope } remove_variable = sb_bechuanaland_crisis_play_scope }
+		}
+		sb_bechuanaland_clear_launch_leases = yes
 	}
 }
 
@@ -3331,6 +3752,9 @@ sb_bechuanaland_save_total_war_target = {
 }
 
 sb_bechuanaland_start_cap_sgo_annex_war = {
+	sb_bechuanaland_rollback_unbound_launch_claims = yes
+	sb_bechuanaland_clear_exact_goal_target_scopes = yes
+	sb_bechuanaland_clear_launch_leases = yes
 	sb_bechuanaland_reset_warren_attempt_country_flags = yes
 	sb_bechuanaland_refresh_influence_scopes = yes
 	sb_bechuanaland_mark_current_boer_network = yes
@@ -3344,13 +3768,20 @@ sb_bechuanaland_start_cap_sgo_annex_war = {
 			exists = scope:sb_bechuanaland_total_war_target_state
 			NOT = {
 				any_country = {
-					any_diplomatic_play = {
-						is_diplomatic_play_type = dp_sb_bechuanaland_cap_sgo_return
-						OR = { initiator = c:CAP AND = { initiator = c:GBR c:CAP ?= { is_direct_subject_of = c:GBR } } }
-						target = scope:sb_bechuanaland_total_war_target
+					OR = {
+						any_diplomatic_play = { is_diplomatic_play_type = dp_sb_bechuanaland_cap_sgo_return }
+						any_scope_war = { diplomatic_play = { is_diplomatic_play_type = dp_sb_bechuanaland_cap_sgo_return } }
 					}
 				}
 			}
+		}
+		if = {
+			limit = { c:CAP ?= { is_country_alive = yes NOT = { has_claim = s:STATE_BECHUANALAND } } }
+			container:sb_bechuanaland_corridor_state = { set_variable = sb_bechuanaland_total_cap_claim_added_for_launch_var }
+		}
+		if = {
+			limit = { scope:sb_bechuanaland_total_war_target ?= { NOT = { has_claim = s:STATE_BECHUANALAND } } }
+			container:sb_bechuanaland_corridor_state = { set_variable = sb_bechuanaland_total_target_claim_added_for_launch_var }
 		}
 		hidden_effect = { s:STATE_BECHUANALAND = { add_claim = c:CAP } s:STATE_BECHUANALAND = { add_claim = scope:sb_bechuanaland_total_war_target } }
 		c:CAP = {
@@ -3361,12 +3792,18 @@ sb_bechuanaland_start_cap_sgo_annex_war = {
 			limit = { c:CAP ?= { has_variable = sb_bechuanaland_total_launch_lease_var } }
 			c:CAP = { remove_variable = sb_bechuanaland_total_launch_lease_var }
 			container:sb_bechuanaland_corridor_state = { set_variable = sb_bechuanaland_crisis_creation_failed_var }
+			sb_bechuanaland_rollback_unbound_launch_claims = yes
+			sb_bechuanaland_clear_exact_goal_target_scopes = yes
+			sb_bechuanaland_clear_launch_leases = yes
 			sb_bechuanaland_finish_warren_attempt = yes
 			sb_bechuanaland_clear_escalation_decision = yes
 			sb_bechuanaland_queue_unresolved_settlement_event = yes
 		}
 	}
 	else = {
+		sb_bechuanaland_rollback_unbound_launch_claims = yes
+		sb_bechuanaland_clear_exact_goal_target_scopes = yes
+		sb_bechuanaland_clear_launch_leases = yes
 		sb_bechuanaland_finish_warren_attempt = yes
 		sb_bechuanaland_clear_escalation_decision = yes
 		sb_bechuanaland_queue_unresolved_settlement_event = yes
@@ -3959,6 +4396,9 @@ sb_bechuanaland_maintain_crisis_support = {
 }
 
 sb_bechuanaland_cleanup_corridor_crisis = {
+	sb_bechuanaland_rollback_unbound_launch_claims = yes
+	sb_bechuanaland_clear_exact_goal_target_scopes = yes
+	sb_bechuanaland_clear_launch_leases = yes
 	if = {
 		limit = { container_exists = sb_bechuanaland_corridor_state }
 		sb_bechuanaland_clear_pending_crisis_flags = yes

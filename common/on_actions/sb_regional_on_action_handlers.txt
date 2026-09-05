@@ -68,10 +68,70 @@ sb_on_mozambique_company_disbanded = {
 # effect elects one live coordinator, so every other country's pulse is inert.
 sb_on_griqualand_sequence_watchdog_monthly = {
 	trigger = {
-		has_global_variable = sb_griqualand_sequence_active_global_var
+		OR = {
+			has_global_variable = sb_griqualand_sequence_active_global_var
+			has_global_variable = sb_griqualand_ingress_delivery_pending_global_var
+		}
 		is_country_alive = yes
 	}
 	effect = { sb_griqualand_sequence_watchdog = yes }
+}
+
+# A terminal chiefdom receipt must not survive destruction or retagging of NAL.
+# The first live country pulse clears the global/container state; later pulses
+# are inert because cleanup removes the global single-flight marker.
+# Recover generation containers even when their fixed-tag event recipients died.
+# The first live country pulse performs idempotent cleanup; valid held receipts
+# are left to their saved recipient and timed popup watchdogs.
+# Klip River generations carry their original actor scopes. This global pulse
+# removes only orphaned saved actors; it never adopts a replacement c:NAL.
+sb_on_klip_river_orphan_monthly = {
+	trigger = {
+		is_country_alive = yes
+		OR = {
+			AND = {
+				container_exists = sb_klip_river_secession_generation_state
+				NOT = { container:sb_klip_river_secession_generation_state ?= { has_variable = sb_klip_river_secession_generation_actor_scope var:sb_klip_river_secession_generation_actor_scope ?= { is_country_alive = yes country_definition = cd:NAL } } }
+			}
+			AND = {
+				container_exists = sb_klip_river_punitive_generation_state
+				NOT = { container:sb_klip_river_punitive_generation_state ?= { has_variable = sb_klip_river_punitive_generation_actor_scope var:sb_klip_river_punitive_generation_actor_scope ?= { is_country_alive = yes country_definition = cd:NAL } } }
+			}
+			any_country = {
+				is_country_alive = yes
+				NOT = { country_definition = cd:NAL }
+				OR = { has_variable = sb_klip_river_county_creation_lease_var has_variable = sb_klip_river_county_created_this_attempt_var }
+			}
+		}
+	}
+	effect = { sb_klip_river_recover_orphaned_generations = yes }
+}
+
+sb_on_natal_story_orphan_monthly = {
+	trigger = {
+		is_country_alive = yes
+		OR = {
+			AND = { container_exists = sb_natal_guns_bargain_generation_state NOT = { sb_natal_story_guns_bargain_generation_is_valid = yes } }
+			AND = { container_exists = sb_natal_refusal_generation_state NOT = { sb_natal_story_refusal_generation_is_valid = yes } }
+			AND = {
+				container_exists = sb_natal_terminal_outcome_state
+				container:sb_natal_terminal_outcome_state ?= { var:sb_natal_terminal_recipient_scope ?= { is_country_alive = no } }
+			}
+		}
+	}
+	effect = {
+		sb_natal_story_recover_generation = yes
+		sb_natal_story_recover_terminal_outcome = yes
+	}
+}
+
+sb_on_zululand_chiefdoms_orphan_monthly = {
+	trigger = {
+		is_country_alive = yes
+		has_global_variable = sb_zululand_chiefdoms_open_global_var
+		NOT = { c:NAL ?= { country_definition = cd:NAL is_country_alive = yes } }
+	}
+	effect = { sb_zululand_cleanup_situation = yes }
 }
 
 sb_on_natal_colony_monthly_pulse_country = {

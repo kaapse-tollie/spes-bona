@@ -94,7 +94,7 @@ class CapeImperialIdeologyTests(unittest.TestCase):
             text("localization/english/sb_l_english.yml"),
         )
         self.assertIn(
-            "a9bf6cdad3a02a13a0e3edacb9c23cf87cb8695065b6a97a859ba0a730f3ce47",
+            "c010ec05625f29a1e2691e49b1b30a2900cfce46553d8a9c2c7f248a1ae3e119",
             armed_forces,
         )
 

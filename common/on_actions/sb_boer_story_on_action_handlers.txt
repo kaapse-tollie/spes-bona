@@ -23,17 +23,73 @@ sb_on_trek_monthly_pulse_country = {
 			country_definition = cd:MTB
 			country_definition = cd:GBR
 			country_definition = cd:BST
+			country_definition = cd:ZUL
 		}
 	}
 	effect = {
 		if = {
+			limit = {
+				country_definition = cd:ZUL
+				has_variable = sb_zulu_swazi_outcome_delivery_pending_var
+				NOT = { has_variable = sb_zulu_swazi_outcome_popup_receipt_var }
+				OR = {
+					NOT = { has_journal_entry = je_sb_zulu_kingdom }
+					ruler = { NOT = { has_template = ZUL_dingane } }
+					NOT = { c:SWZ ?= { is_country_alive = yes is_subject = no any_scope_state = { state_region = s:STATE_EAST_TRANSVAAL } } }
+				}
+			}
+			remove_variable = sb_zulu_swazi_outcome_delivery_pending_var
+			if = { limit = { has_variable = sb_zulu_swazi_outcome_delivery_queued_var } remove_variable = sb_zulu_swazi_outcome_delivery_queued_var }
+			if = { limit = { has_variable = sb_zulu_swazi_outcome_popup_receipt_var } remove_variable = sb_zulu_swazi_outcome_popup_receipt_var }
+			sb_zulu_clear_swazi_question_ai_context = yes
+		}
+		else_if = {
+			limit = {
+				country_definition = cd:ZUL
+				has_variable = sb_zulu_swazi_outcome_delivery_pending_var
+				NOT = { has_variable = sb_zulu_swazi_outcome_delivery_queued_var }
+				NOT = { has_variable = sb_zulu_swazi_outcome_popup_receipt_var }
+			}
+			set_variable = { name = sb_zulu_swazi_outcome_delivery_queued_var days = 7 }
+			trigger_event = { id = sb_swazi_frontier.094 days = 1 popup = yes }
+		}
+		if = {
+			limit = {
+				has_variable = sb_great_trek_outcome_delivery_pending_var
+				NOT = { has_variable = sb_great_trek_outcome_popup_receipt_var }
+				NOT = {
+					c:MTB ?= {
+						is_country_alive = yes
+						has_diplomatic_pact = { who = root type = colonization_rights }
+					}
+				}
+			}
+			remove_variable = sb_great_trek_outcome_delivery_pending_var
+			if = { limit = { has_variable = sb_great_trek_outcome_delivery_queued_var } remove_variable = sb_great_trek_outcome_delivery_queued_var }
+		}
+		else_if = {
+			limit = { has_variable = sb_great_trek_outcome_delivery_pending_var NOT = { has_variable = sb_great_trek_outcome_delivery_queued_var } NOT = { has_variable = sb_great_trek_outcome_popup_receipt_var } }
+			sb_great_trek_queue_outcome_delivery = yes
+		}
+		if = {
 			limit = { country_definition = cd:ORA }
+			if = {
+				limit = {
+					NOT = { c:TRN ?= { is_country_alive = yes } }
+					OR = {
+						has_variable = sb_martinus_ora_union_pending_var
+						c:TRN ?= { OR = { has_variable = sb_martinus_coercive_chain_pending_var has_variable = sb_martinus_coercive_chain_active_var has_variable = sb_martinus_story_launch_lease_var has_variable = sb_martinus_story_play_scope has_variable = sb_martinus_legal_union_pending_var has_variable = sb_martinus_legal_union_generation_scope has_variable = sb_martinus_union_install_pending_var } }
+					}
+				}
+				sb_story_humiliation_clear_martinus_state = yes
+				sb_martinus_clear_legal_union_generation_state = yes
+			}
 			sb_martinus_normalize_ora_foreign_union = yes
 		}
 
 		if = {
 			limit = {
-				sb_is_zulu_dynasty_country = yes
+				country_definition = cd:ZUL
 				is_ai = yes
 				sb_frontier_ai_scripting_enabled = yes
 				sb_frontier_ai_behavior_strict_historical = no
@@ -61,7 +117,7 @@ sb_on_trek_monthly_pulse_country = {
 		}
 		else_if = {
 			limit = {
-				sb_is_zulu_dynasty_country = yes
+				country_definition = cd:ZUL
 				has_variable = sb_zulu_gaza_followup_pending_var
 				OR = {
 					sb_frontier_ai_scripting_enabled = no
@@ -95,6 +151,7 @@ sb_on_trek_monthly_pulse_country = {
 				limit = {
 					country_definition = cd:MTB
 					NOT = { has_variable = sb_ndebele_opening_play_fired }
+					NOT = { has_variable = sb_great_trek_opening_event_reserved_var }
 					is_country_alive = yes
 					is_at_war = no
 					aggressive_diplomatic_plays_permitted = yes
@@ -104,6 +161,7 @@ sb_on_trek_monthly_pulse_country = {
 						aggressive_diplomatic_plays_permitted = yes
 					}
 				}
+				set_variable = sb_great_trek_opening_event_reserved_var
 				trigger_event = { id = sb_great_trek.001 days = 1 }
 			}
 
@@ -281,48 +339,49 @@ sb_on_trek_monthly_pulse_country = {
 		}
 
 		if = {
-			limit = {
-				sb_martinus_trn_can_open_coercive_chain = yes
-				NOT = { has_variable = sb_martinus_coercive_chain_pending_var }
-			}
-			set_variable = {
-				name = sb_martinus_coercive_chain_pending_var
-				days = 120
-			}
-			trigger_event = { id = sb_martinus_confederation.010 days = 30 popup = yes }
+			limit = { country_definition = cd:TRN has_variable = sb_martinus_union_install_pending_var }
+			sb_martinus_try_complete_pending_union_install = yes
+		}
+
+		if = {
+			limit = { country_definition = cd:TRN has_variable = sb_martinus_coercive_generation_scope }
+			sb_martinus_reconcile_coercive_generation = yes
 		}
 
 		if = {
 			limit = {
 				country_definition = cd:TRN
-				OR = {
-					has_variable = sb_martinus_coercive_chain_pending_var
-					has_variable = sb_martinus_coercive_chain_active_var
-				}
+				has_variable = sb_martinus_legal_union_generation_scope
+				NOT = { has_variable = sb_martinus_union_install_pending_var }
 				OR = {
 					is_subject = yes
-					NOT = { exists = c:ORA }
-					c:ORA ?= {
-						NOT = { sb_martinus_ora_is_independent_candidate = yes }
-					}
+					has_journal_entry = je_sb_great_trek
+					has_variable = sb_early_republic_var
+					NOT = { has_law_or_variant = law_type:law_presidential_republic }
+					NOT = { sb_martinus_trn_ruler_is_pretorius = yes }
+					NOT = { sb_martinus_trn_has_east_transvaal_consolidation = yes }
+					has_variable = sb_martinus_legal_union_resolved_var
+					NOT = { c:ORA ?= { sb_martinus_ora_has_durable_independent_authority = yes has_law_or_variant = law_type:law_presidential_republic } }
 				}
 			}
-			sb_martinus_clear_coercive_chain_state = yes
+			# A lost prerequisite cancels this receipt. It is not an election defeat.
+			sb_martinus_clear_legal_union_generation_state = yes
+		}
+		else_if = {
+			limit = { country_definition = cd:TRN has_variable = sb_martinus_legal_union_generation_scope NOT = { has_variable = sb_martinus_union_install_pending_var } }
+			sb_martinus_maybe_queue_legal_union_offer = yes
+			sb_martinus_maybe_queue_legal_campaign_notice = yes
 		}
 
 		if = {
-			limit = {
-				sb_martinus_trn_can_open_legal_union = yes
-				NOT = { has_variable = sb_martinus_legal_union_pending_var }
-				c:ORA ?= {
-					NOT = { has_variable = sb_martinus_legal_union_pending_var }
-				}
-			}
-			set_variable = {
-				name = sb_martinus_legal_union_pending_var
-				months = 12
-			}
-			trigger_event = { id = sb_martinus_confederation.080 days = 1 popup = yes }
+			limit = { sb_martinus_trn_can_open_coercive_chain = yes }
+			sb_martinus_begin_coercive_generation = yes
+		}
+
+
+		if = {
+			limit = { sb_martinus_trn_can_open_legal_union = yes }
+			sb_martinus_begin_legal_union_generation = yes
 		}
 
 			if = {
@@ -626,20 +685,6 @@ sb_on_zpb_monthly_pulse_country = {
 		}
 	}
 	effect = {
-		if = {
-			limit = {
-				country_definition = cd:ZPB
-				has_variable = sb_zpb_crackdown_total_conquest_route_var
-				has_variable = sb_zpb_crackdown_successor_pending_var
-				is_active_in_diplomatic_play = no
-			}
-			sb_zpb_assume_transvaal_after_crackdown_victory = yes
-			if = {
-				limit = { has_variable = sb_zpb_crackdown_total_conquest_route_var }
-				remove_variable = sb_zpb_crackdown_total_conquest_route_var
-				remove_variable = sb_zpb_crackdown_successor_pending_var
-			}
-		}
 		if = {
 				limit = {
 					country_definition = cd:GBR

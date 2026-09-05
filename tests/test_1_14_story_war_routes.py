@@ -138,8 +138,16 @@ class StoryWarRouteTests(unittest.TestCase):
             "common/scripted_effects/sb_story_war_effects.txt",
             "sb_story_humiliation_resolve",
         )
+        recorder = object_block(
+            "common/scripted_effects/sb_story_war_effects.txt",
+            "sb_story_humiliation_record_enforcement",
+        )
 
         self.assertIn("scope:initiator ?=", started)
+        self.assertEqual(
+            3, recorder.count("NOT = { exists = scope:enforced_by_timer }")
+        )
+        self.assertNotIn("sb_story_humiliation_timer_seen_global_var", recorder)
         story_goal = object_block(
             "common/war_goal_types/sb_story_war_goals.txt",
             "sb_story_humiliation",
@@ -271,6 +279,70 @@ class StoryWarRouteTests(unittest.TestCase):
             with self.subTest(path=path, launcher=name):
                 self.assertNotIn("random_diplomatic_play", object_block(path, name))
 
+    def test_martinus_launcher_uses_preflight_lease_and_exact_on_start_root(self):
+        effect_launcher = object_block(
+            "common/scripted_effects/sb_martinus_confederation_effects.txt",
+            "sb_martinus_force_pretorius_standoff",
+        )
+        event_launcher = object_block(
+            "events/sb_martinus_confederation_events.txt",
+            "sb_martinus_confederation.050",
+        )
+        started = object_block(
+            "common/on_actions/sb_diplomatic_play_on_action_handlers.txt",
+            "sb_on_spes_bona_diplomatic_play_started",
+        )
+        story_effects = text("common/scripted_effects/sb_story_war_effects.txt")
+
+        self.assertNotIn("random_diplomatic_play", effect_launcher)
+        self.assertIn("sb_martinus_story_generation_scope", effect_launcher)
+        self.assertIn(
+            "set_variable = { name = sb_martinus_story_generation_scope value = scope:sb_martinus_coercive_receipt_scope }",
+            effect_launcher,
+        )
+        self.assertIn("sb_martinus_story_launch_lease_var", effect_launcher)
+        self.assertIn("any_diplomatic_play", effect_launcher)
+        self.assertIn("initiator = root target = c:ORA", effect_launcher)
+        self.assertIn(
+            "is_diplomatic_play_type = dp_sb_martinus_humiliation", effect_launcher
+        )
+        self.assertIn("create_diplomatic_play =", effect_launcher)
+        self.assertNotIn("random_diplomatic_play", event_launcher)
+        self.assertEqual(1, event_launcher.count("sb_martinus_force_pretorius_standoff = yes"))
+        self.assertNotIn("sb_martinus_story_launch_lease_var", event_launcher)
+
+        config = shortest_block_containing(
+            started,
+            "if",
+            "dp_sb_martinus_humiliation",
+            "sb_martinus_story_launch_lease_var",
+            "name = sb_martinus_story_play_scope value = root",
+        )
+        self.assertIn("scope:initiator ?=", config)
+        self.assertIn("scope:target ?=", config)
+        self.assertIn("add_war_goal", config)
+        self.assertIn("holder = scope:target", config)
+        self.assertIn("target_country = scope:initiator", config)
+        self.assertIn("add_target_backers = { c:LYD }", config)
+        self.assertIn("add_target_backers = { c:ZPB }", config)
+        self.assertIn("add_target_backers = { c:NAL }", config)
+        self.assertIn("remove_variable = sb_martinus_story_launch_lease_var", config)
+        self.assertIn("remove_variable = sb_martinus_story_generation_scope", effect_launcher)
+
+        self.assertGreaterEqual(
+            story_effects.count("var:sb_martinus_story_play_scope = root"), 2
+        )
+        self.assertIn(
+            "var:sb_martinus_story_play_scope = scope:diplomatic_play",
+            story_effects,
+        )
+        clear = object_block_from_source(
+            story_effects,
+            "sb_story_humiliation_clear_martinus_state",
+            "story effects",
+        )
+        self.assertIn("remove_variable = sb_martinus_story_play_scope", clear)
+
     def test_on_start_configuration_is_lease_and_identity_guarded(self):
         handlers = object_block(
             "common/on_actions/sb_diplomatic_play_on_action_handlers.txt",
@@ -395,6 +467,19 @@ class StoryWarRouteTests(unittest.TestCase):
         )
         self.assertIn("sb_natal_zulu_secession_configuration_failed_var", secession_finish)
 
+        live_routes = (
+            text("events/sb_griqualand_west_events.txt")
+            + text("common/on_actions/sb_diplomatic_play_on_action_handlers.txt")
+            + text("common/scripted_effects/sb_story_war_effects.txt")
+        )
+        for obsolete_trace in (
+            "sb_frontier_timer_enforcement_seen_global_var",
+            "sb_griqualand_aligned_proxy_creation_failed_global_var",
+            "sb_griqualand_aligned_proxy_launch_refused_global_var",
+        ):
+            with self.subTest(obsolete_trace=obsolete_trace):
+                self.assertNotIn(obsolete_trace, live_routes)
+
     def test_independent_wbl_route_runs_claim_phase_then_delayed_owner_phase(self):
         event = object_block(
             "events/sb_griqualand_west_events.txt", "sb_griqualand_west.254"
@@ -444,11 +529,63 @@ class StoryWarRouteTests(unittest.TestCase):
         for play_type in PHASE_A_PLAY_TYPES:
             self.assertNotIn(f"type = {play_type}", phase_b)
         self.assertIn("sb_griqualand_phase_b_launch_lease_var", phase_b)
-        self.assertIn("is_subject = no", phase_b)
-        self.assertIn("p:x68B5E8.state.owner = c:WBL", phase_b)
-        self.assertIn("id = sb_griqualand_west.261 days = 7", retry)
-        self.assertIn("sb_griqualand_phase_b_retry_used_global_var", retry)
-        self.assertIn("sb_griqualand_sequence_terminal_fallback = yes", retry)
+        self.assertIn("sb_griqualand_phase_b_authority_is_valid = yes", phase_b)
+        self.assertIn("sb_griqualand_phase_b_authority_is_launchable = yes", phase_b)
+        self.assertEqual(3, phase_b.count("NOT = { any_diplomatic_play = {"))
+        self.assertIn("sb_griqualand_phase_b_creation_failed_global_var", retry)
+        self.assertIn(
+            "remove_global_variable = sb_griqualand_phase_b_event_pending_global_var",
+            retry,
+        )
+        self.assertIn("sb_griqualand_clear_launch_leases = yes", retry)
+        self.assertNotIn("trigger_event", retry)
+        self.assertNotIn("sb_griqualand_sequence_terminal_fallback = yes", retry)
+
+    def test_griqualand_records_and_closes_only_the_bound_phase_generation(self):
+        effects_path = "common/scripted_effects/sb_griqualand_west_effects.txt"
+        recorder = object_block(effects_path, "sb_griqualand_record_claim_revocation")
+        apply_records = object_block(
+            effects_path, "sb_griqualand_apply_recorded_claim_revocations"
+        )
+        configure = object_block(
+            effects_path, "sb_griqualand_configure_started_sequence_play"
+        )
+        queue_b = object_block(effects_path, "sb_griqualand_sequence_queue_phase_b")
+        close = object_block(effects_path, "sb_griqualand_west_close_routed_play")
+        handlers_path = "common/on_actions/sb_diplomatic_play_on_action_handlers.txt"
+        back_down = object_block(handlers_path, "sb_on_spes_bona_diplo_play_back_down")
+        war_end = object_block(handlers_path, "sb_on_spes_bona_war_end")
+
+        self.assertIn("NOT = { exists = scope:enforced_by_timer }", recorder)
+        self.assertIn(
+            "var:sb_griqualand_sequence_play_scope = scope:diplomatic_play",
+            recorder,
+        )
+        self.assertIn("sb_griqualand_sequence_play_generation_var = 1", recorder)
+        self.assertIn("sb_griqualand_sequence_play_generation_var = 2", recorder)
+
+        # Claim removals are individually idempotent. A one-shot global guard
+        # would suppress a new WBL counter-demand recorded during Phase B.
+        self.assertNotIn("sb_griqualand_claim_revocations_applied_global_var", apply_records)
+        self.assertGreaterEqual(apply_records.count("has_claim = s:STATE_GRIQUALAND_WEST"), 4)
+        self.assertGreaterEqual(apply_records.count("remove_claim ="), 4)
+
+        self.assertEqual(8, configure.count("name = sb_griqualand_sequence_play_scope"))
+        self.assertEqual(3, configure.count("name = sb_griqualand_sequence_play_generation_var value = 1"))
+        self.assertEqual(1, configure.count("name = sb_griqualand_sequence_play_generation_var value = 2"))
+        self.assertIn(
+            "name = sb_griqualand_sequence_generation_global_var value = 2", queue_b
+        )
+        self.assertIn("destroy_container = yes", queue_b)
+        self.assertIn(
+            "remove_global_variable = sb_griqualand_sequence_play_scope_global_var", queue_b
+        )
+
+        for source in (close, back_down, war_end):
+            with self.subTest(source=source[:50]):
+                self.assertIn("var:sb_griqualand_sequence_play_scope = root", source)
+                self.assertIn("var:sb_griqualand_sequence_play_generation_var = 1", source)
+                self.assertIn("var:sb_griqualand_sequence_play_generation_var = 2", source)
 
     def test_griqualand_phase_guards_watchdog_and_close_lists_are_complete(self):
         effects_path = "common/scripted_effects/sb_griqualand_west_effects.txt"
@@ -469,10 +606,25 @@ class StoryWarRouteTests(unittest.TestCase):
             early_finalize,
         )
         self.assertIn("sb_on_griqualand_sequence_watchdog_monthly", on_actions)
-        self.assertIn("any_diplomatic_play", watchdog)
-        self.assertIn("any_scope_war", watchdog)
+        self.assertNotIn("any_diplomatic_play", watchdog)
+        self.assertNotIn("any_scope_war", watchdog)
+        self.assertEqual(
+            2, watchdog.count("has_variable = sb_griqualand_sequence_play_scope")
+        )
+        self.assertEqual(
+            2, watchdog.count("has_variable = sb_griqualand_sequence_play_generation_var")
+        )
+        self.assertIn("sb_griqualand_phase_b_authority_is_valid = yes", watchdog)
+        self.assertIn("sb_griqualand_phase_b_authority_is_launchable = yes", watchdog)
+        self.assertIn("var:sb_griqualand_sequence_play_generation_var = 1", watchdog)
+        self.assertIn("var:sb_griqualand_sequence_play_generation_var = 2", watchdog)
         self.assertIn("sb_griqualand_sequence_close_phase_a = yes", watchdog)
         self.assertIn("sb_griqualand_sequence_close_phase_b = yes", watchdog)
+        self.assertIn("id = sb_griqualand_west.261 days = 1", watchdog)
+        self.assertIn(
+            "NOT = { has_global_variable = sb_griqualand_phase_b_event_pending_global_var }",
+            watchdog,
+        )
 
         routed_types = PHASE_A_PLAY_TYPES | PHASE_B_PLAY_TYPES | {ALIGNED_PROXY_PLAY_TYPE}
         for play_type in routed_types:
@@ -498,6 +650,22 @@ class StoryWarRouteTests(unittest.TestCase):
         self.assertIn("destroy_container = yes", cleanup)
         self.assertIn("sb_griqualand_clear_launch_leases = yes", cleanup)
 
+    def test_retired_249_event_keeps_only_documented_reviewed_archive_prose(self):
+        events = text("events/sb_griqualand_west_events.txt")
+        localization = text("localization/english/sb_griqualand_west_l_english.yml")
+        evidence = text("Docs/compatibility/1_14_0_open_beta_1_rebase.md")
+
+        self.assertNotRegex(events, r"(?m)^\s*sb_griqualand_west\.249\s*=\s*\{")
+        for suffix in ("t", "d", "f", "a"):
+            self.assertIn(f"sb_griqualand_west.249.{suffix}:0", localization)
+        marker_index = localization.rfind(
+            "# ### REVIEWED ###", 0, localization.index("sb_griqualand_west.249.t:0")
+        )
+        self.assertGreaterEqual(marker_index, 0)
+        self.assertIn("byte-for-byte", evidence)
+        self.assertIn("sb_griqualand_west.249", evidence)
+        self.assertIn("sb_story_war_effects.txt", evidence)
+
     def test_retired_griqualand_play_has_no_definition_handler_or_localization(self):
         retired = "dp_sb_griqualand_revoke_claim"
         for path in (
@@ -513,7 +681,7 @@ class StoryWarRouteTests(unittest.TestCase):
             "events/sb_griqualand_west_events.txt", "sb_griqualand_west.025"
         )
         trigger = shortest_block_containing(
-            event, "trigger", "country_definition = cd:WBL", "any_scope_state"
+            event, "trigger", "sb_griqualand_ingress_political_authority"
         )
         annex = shortest_block_containing(
             event,
@@ -522,7 +690,10 @@ class StoryWarRouteTests(unittest.TestCase):
             "annex = root",
         )
 
-        self.assertIn("sb_griqualand_west_oranje_annexation_demand_var", trigger)
+        self.assertIn("sb_griqualand_ingress_political_authority = yes", trigger)
+        self.assertIn("has_global_variable = sb_griqualand_ingress_delivery_pending_global_var", trigger)
+        self.assertIn("has_variable = sb_griqualand_ingress_delivery_queued_var", trigger)
+        self.assertNotIn("any_scope_state", trigger)
         self.assertIn("c:ORA ?=", annex)
         self.assertLess(
             annex.index("annex = root"),
@@ -601,23 +772,506 @@ class StoryWarRouteTests(unittest.TestCase):
         ):
             with self.subTest(exclusive_reward=exclusive_reward):
                 self.assertNotIn(exclusive_reward, event)
-        self.assertEqual(2, resolver.count("id = sb_natal_crisis.081"))
+        self.assertEqual(2, resolver.count("sb_natal_story_begin_terminal_zulu_neutral = yes"))
+
+    def test_blood_river_terminal_outcomes_use_bound_receipts_and_recover_delivery(self):
+        effects_path = "common/scripted_effects/sb_story_war_effects.txt"
+        events_path = "events/sb_natal_crisis_events.txt"
+        triggers_path = "common/scripted_triggers/sb_natal_interwar_triggers.txt"
+        effects = text(effects_path)
+        resolver = object_block(effects_path, "sb_story_humiliation_resolve")
+        watchdog = object_block(events_path, "sb_natal_crisis.098")
+
+        for begin, result, event_id in (
+            ("sb_natal_story_begin_terminal_ora_victory", "sb_natal_terminal_outcome_ora_victory_var", ".070"),
+            ("sb_natal_story_begin_terminal_zulu_victory", "sb_natal_terminal_outcome_zulu_victory_var", ".080"),
+            ("sb_natal_story_begin_terminal_zulu_neutral", "sb_natal_terminal_outcome_zulu_neutral_var", ".081"),
+        ):
+            with self.subTest(result=result):
+                receipt = object_block(effects_path, begin)
+                self.assertIn("create_container", receipt)
+                self.assertIn("sb_natal_terminal_outcome_state", receipt)
+                self.assertIn(result, receipt)
+                self.assertIn("sb_natal_terminal_recipient_scope", receipt)
+                self.assertIn("sb_natal_terminal_counterparty_scope", receipt)
+                self.assertIn("sb_natal_story_requeue_terminal_outcome = yes", receipt)
+                self.assertIn(f"sb_natal_crisis{event_id}", text(events_path))
+
+        queue = object_block(effects_path, "sb_natal_story_requeue_terminal_outcome")
+        recover = object_block(effects_path, "sb_natal_story_recover_terminal_outcome")
+        consume = object_block(effects_path, "sb_natal_story_consume_terminal_outcome")
+        clear = object_block(effects_path, "sb_natal_story_clear_terminal_outcome")
+        self.assertIn("days = 20", queue)
+        self.assertIn("id = sb_natal_crisis.070", queue)
+        self.assertIn("id = sb_natal_crisis.080", queue)
+        self.assertIn("id = sb_natal_crisis.081", queue)
+        self.assertIn("sb_natal_terminal_outcome_popup_receipt_var", recover)
+        self.assertIn("is_country_alive = yes", recover)
+        self.assertIn("sb_natal_terminal_outcome_received_var", consume)
+        self.assertIn("sb_natal_terminal_recipient_scope", consume)
+        self.assertIn("sb_natal_terminal_counterparty_scope", consume)
+        self.assertGreaterEqual(2, consume.count("remove_variable = sb_natal_terminal_outcome_scope"))
+        self.assertIn("destroy_container = yes", consume)
+        self.assertIn("sb_natal_terminal_recipient_scope", clear)
+        self.assertIn("sb_natal_terminal_counterparty_scope", clear)
+        self.assertIn("sb_natal_story_recover_terminal_outcome = yes", watchdog)
+        self.assertIn("sb_natal_terminal_outcome_scope", watchdog)
+
+        for event_id, authority in (
+            (".070", "sb_natal_story_terminal_ora_victory_event_authority"),
+            (".080", "sb_natal_story_terminal_zulu_victory_event_authority"),
+            (".081", "sb_natal_story_terminal_zulu_neutral_event_authority"),
+        ):
+            with self.subTest(event=event_id):
+                event = object_block(events_path, f"sb_natal_crisis{event_id}")
+                self.assertIn("sb_natal_terminal_outcome_delivery_queued_var", event)
+                self.assertIn("sb_natal_terminal_outcome_popup_receipt_var months = 4", event)
+                self.assertIn(authority, event)
+                self.assertIn("sb_natal_story_consume_terminal_outcome = yes", event)
+                self.assertNotIn("country_definition = cd:", event)
+
+        for authority, result in (
+            ("sb_natal_story_terminal_ora_victory_event_authority", "sb_natal_terminal_outcome_ora_victory_var"),
+            ("sb_natal_story_terminal_zulu_victory_event_authority", "sb_natal_terminal_outcome_zulu_victory_var"),
+            ("sb_natal_story_terminal_zulu_neutral_event_authority", "sb_natal_terminal_outcome_zulu_neutral_var"),
+        ):
+            with self.subTest(authority=authority):
+                trigger = object_block(triggers_path, authority)
+                self.assertIn(result, trigger)
+                self.assertIn("sb_natal_terminal_recipient_scope = root", trigger)
+                self.assertIn("sb_natal_terminal_outcome_popup_receipt_var", trigger)
+
+        self.assertNotIn("scope:initiator", resolver)
+        self.assertNotIn("scope:target", resolver)
+        self.assertNotIn("id = sb_natal_crisis.070", resolver)
+        self.assertNotIn("id = sb_natal_crisis.080", resolver)
+        self.assertNotIn("id = sb_natal_crisis.081", resolver)
+        self.assertEqual(2, resolver.count("sb_natal_story_begin_terminal_zulu_neutral = yes"))
+        self.assertIn("sb_natal_story_begin_terminal_ora_victory = yes", resolver)
+        self.assertIn("sb_natal_story_begin_terminal_zulu_victory = yes", resolver)
+
+
+    def test_blood_river_generation_cleanup_uses_saved_actors_after_retag(self):
+        effects_path = "common/scripted_effects/sb_story_war_effects.txt"
+        triggers_path = "common/scripted_triggers/sb_natal_interwar_triggers.txt"
+        events_path = "events/sb_natal_crisis_events.txt"
+
+        guns_begin = object_block(effects_path, "sb_natal_story_begin_guns_bargain_generation")
+        guns_clear = object_block(effects_path, "sb_natal_story_clear_guns_bargain_receipt")
+        refusal_begin = object_block(effects_path, "sb_natal_story_begin_refusal_generation")
+        refusal_clear = object_block(effects_path, "sb_natal_story_clear_refusal_generation")
+        launch_clear = object_block(effects_path, "sb_natal_story_clear_launch_reservation")
+        recover = object_block(effects_path, "sb_natal_story_recover_generation")
+        failed_create = object_block(effects_path, "sb_natal_story_begin_exact_launch")
+
+        for begin, clear, actor, counterparty, generation, queued in (
+            (
+                guns_begin,
+                guns_clear,
+                "sb_natal_guns_bargain_generation_actor_scope",
+                "sb_natal_guns_bargain_generation_counterparty_scope",
+                "sb_natal_guns_bargain_generation_scope",
+                "sb_natal_guns_bargain_delivery_queued_var",
+            ),
+            (
+                refusal_begin,
+                refusal_clear,
+                "sb_natal_refusal_generation_actor_scope",
+                "sb_natal_refusal_generation_counterparty_scope",
+                "sb_natal_refusal_generation_scope",
+                "sb_natal_refusal_delivery_queued_var",
+            ),
+        ):
+            with self.subTest(generation=generation):
+                self.assertIn(actor, begin)
+                self.assertIn(counterparty, begin)
+                self.assertIn(actor, clear)
+                self.assertIn(counterparty, clear)
+                self.assertIn(f"remove_variable = {generation}", clear)
+                self.assertIn(f"remove_variable = {queued}", clear)
+                self.assertNotIn("c:ZUL", uncommented(clear))
+                self.assertNotIn("c:ORA", uncommented(clear))
+
+        for token in (
+            "sb_natal_guns_bargain_generation_actor_scope",
+            "sb_natal_guns_bargain_generation_counterparty_scope",
+            "sb_natal_refusal_generation_actor_scope",
+            "sb_natal_refusal_generation_counterparty_scope",
+            "sb_natal_story_launch_pending_var",
+            "sb_natal_story_launch_retry_queued_var",
+            "sb_natal_story_launch_lease_var",
+        ):
+            with self.subTest(token=token):
+                self.assertIn(token, launch_clear)
+        self.assertNotIn("c:ZUL", uncommented(launch_clear))
+        self.assertNotIn("c:ORA", uncommented(launch_clear))
+
+        # The original Oranje scope owns route-open state in both cancellations;
+        # the guns marker remains exact to the saved generation actors.
+        guns_ora = guns_clear[
+            guns_clear.index("var:sb_natal_guns_bargain_generation_counterparty_scope"):
+        ]
+        refusal_ora = refusal_clear[
+            refusal_clear.index("var:sb_natal_refusal_generation_actor_scope"):
+        ]
+        for scope in (guns_ora, refusal_ora):
+            self.assertIn("remove_variable = sb_natal_diplomacy_started_var", scope)
+        self.assertIn("remove_variable = sb_natal_guns_bargain_war_var", guns_ora)
+
+        watchdog = object_block(events_path, "sb_natal_crisis.098")
+        guns_fallback = shortest_block_containing(
+            watchdog,
+            "if",
+            "NOT = { container_exists = sb_natal_guns_bargain_generation_state }",
+            "sb_natal_guns_bargain_war_var",
+            "sb_natal_diplomacy_started_var",
+        )
+        refusal_fallback = shortest_block_containing(
+            watchdog,
+            "if",
+            "NOT = { container_exists = sb_natal_refusal_generation_state }",
+            "sb_natal_guns_bargain_war_var",
+            "sb_natal_diplomacy_started_var",
+        )
+        for fallback, generation in (
+            (guns_fallback, "sb_natal_guns_bargain_generation_scope"),
+            (refusal_fallback, "sb_natal_refusal_generation_scope"),
+        ):
+            with self.subTest(fallback=generation):
+                self.assertIn(f"limit = {{ has_variable = {generation} }}", fallback)
+                self.assertLess(
+                    fallback.index(f"limit = {{ has_variable = {generation} }}"),
+                    fallback.index("remove_variable = sb_natal_diplomacy_started_var"),
+                )
+                self.assertNotIn("c:ZUL", uncommented(fallback))
+                self.assertNotIn("c:ORA", uncommented(fallback))
+
+        # Both watchdog invalidation and failed creation reach the saved-scope
+        # cleanup functions, rather than leaving a retagged actor's receipt.
+        self.assertIn("sb_natal_story_clear_guns_bargain_generation = yes", recover)
+        self.assertIn("sb_natal_story_clear_refusal_generation = yes", recover)
+        self.assertIn("sb_natal_story_clear_guns_bargain_generation = yes", failed_create)
+        self.assertIn("sb_natal_story_clear_refusal_generation = yes", failed_create)
+
+        # Terminal delivery deliberately does the opposite: its saved recipient
+        # identity is tag-agnostic, so a surviving SAF/retag successor can act.
+        authority = object_block(
+            triggers_path, "sb_natal_story_terminal_ora_victory_event_authority"
+        )
+        self.assertIn("sb_natal_terminal_recipient_scope = root", authority)
+        self.assertNotIn("country_definition", authority)
+
+
+    def test_klip_routes_use_exact_play_leases_and_route_local_cleanup(self):
+        path = "common/scripted_effects/sb_klip_river_county_effects.txt"
+        secession = object_block(path, "sb_klip_river_start_secession_play")
+        punitive = object_block(path, "sb_klip_river_start_punitive_play")
+        configure = object_block(path, "sb_klip_river_configure_started_play")
+        enforced = object_block(path, "sb_klip_river_handle_wargoal_enforced")
+        back_down = object_block(path, "sb_klip_river_handle_backdown")
+        war_end = object_block(path, "sb_klip_river_handle_war_end")
+        started = object_block(
+            "common/on_actions/sb_diplomatic_play_on_action_handlers.txt",
+            "sb_on_spes_bona_diplomatic_play_started",
+        )
+
+        for launcher, lease in (
+            (secession, "sb_klip_river_secession_launch_lease_var"),
+            (punitive, "sb_klip_river_punitive_launch_lease_var"),
+        ):
+            self.assertNotIn("random_diplomatic_play", launcher)
+            self.assertIn("any_diplomatic_play", launcher)
+            self.assertLess(launcher.index(lease), launcher.index("create_diplomatic_play"))
+            self.assertGreater(launcher.rindex(lease), launcher.index("create_diplomatic_play"))
+
+        self.assertEqual(1, started.count("sb_klip_river_configure_started_play = yes"))
+        for token in (
+            "scope:initiator ?=",
+            "scope:target ?=",
+            "sb_klip_river_secession_launch_lease_var",
+            "sb_klip_river_punitive_launch_lease_var",
+            "name = sb_klip_river_secession_play_scope value = root",
+            "name = sb_klip_river_punitive_play_scope value = root",
+            "holder = c:ZUL",
+            "target_country = c:NAL",
+        ):
+            self.assertIn(token, configure)
+
+        self.assertIn(
+            "var:sb_klip_river_secession_play_scope = scope:diplomatic_play",
+            enforced,
+        )
+        self.assertIn(
+            "var:sb_klip_river_punitive_play_scope = scope:diplomatic_play",
+            enforced,
+        )
+        self.assertGreaterEqual(
+            back_down.count("var:sb_klip_river_secession_play_scope = root"), 2
+        )
+        self.assertGreaterEqual(
+            back_down.count("var:sb_klip_river_punitive_play_scope = root"), 2
+        )
+        self.assertIn("scope:actor ?= { country_definition = cd:ZUL }", war_end)
+        self.assertIn("scope:actor ?= { country_definition = cd:NAL }", war_end)
+        self.assertIn("var:sb_klip_river_secession_play_scope = root", war_end)
+        self.assertIn("var:sb_klip_river_punitive_play_scope = root", war_end)
+        self.assertIn("sb_klip_river_clear_secession_runtime = yes", war_end)
+        self.assertIn("sb_klip_river_clear_punitive_runtime = yes", war_end)
+        self.assertIn("else = { c:NAL ?= { sb_klip_river_finalize_secession_white_peace = yes } }", war_end)
+
+    def test_klip_held_deliveries_bind_generation_and_freeze_state_footprints(self):
+        effects_path = "common/scripted_effects/sb_klip_river_county_effects.txt"
+        events_path = "events/sb_klip_river_county_events.txt"
+        triggers_path = "common/scripted_triggers/sb_klip_river_county_triggers.txt"
+        secession_queue = object_block(effects_path, "sb_klip_river_queue_secession_delivery")
+        punitive_queue = object_block(effects_path, "sb_klip_river_queue_punitive_delivery")
+        configure = object_block(effects_path, "sb_klip_river_configure_started_play")
+        secession_event = object_block(events_path, "sb_klip_river_county.050")
+        punitive_event = object_block(events_path, "sb_klip_river_county.060")
+        housekeeping = object_block(effects_path, "sb_klip_river_county_monthly_housekeeping")
+        triggers = text(triggers_path)
+
+        for queue, generation, receipt in (
+            (secession_queue, "sb_klip_river_secession_generation_scope", "sb_klip_river_secession_receipt_scope"),
+            (punitive_queue, "sb_klip_river_punitive_generation_scope", "sb_klip_river_punitive_receipt_scope"),
+        ):
+            self.assertIn(generation, queue)
+            self.assertIn("trigger_event", queue)
+            self.assertIn(receipt, triggers)
+
+        for event, bound, permanent in (
+            (secession_event, "sb_klip_river_secession_bound_delivery_receipt", "sb_klip_river_secession_delivery_permanently_invalid"),
+            (punitive_event, "sb_klip_river_punitive_bound_delivery_receipt", "sb_klip_river_punitive_delivery_permanently_invalid"),
+        ):
+            self.assertIn(f"trigger = {{ {bound} = yes", event)
+            self.assertIn(f"NOT = {{ {permanent} = yes }}", event)
+            self.assertIn(f"trigger = {{ {permanent} = yes }}", event)
+            self.assertIn(f"NOT = {{ {bound} = yes }}", event)
+
+        self.assertIn("target_state = scope:sb_klip_river_punitive_frozen_state", configure)
+        self.assertIn("var:sb_klip_river_secession_frozen_state_scope ?= { owner", text(effects_path))
+        self.assertIn("var:sb_klip_river_punitive_frozen_state_scope ?= { owner", text(effects_path))
+        self.assertIn("sb_klip_river_secession_delivery_currently_permanently_invalid = yes", housekeeping)
+        self.assertIn("sb_klip_river_punitive_delivery_currently_permanently_invalid = yes", housekeeping)
+
+    def test_vanilla_type_story_routes_bind_exact_authored_plays(self):
+        started = object_block(
+            "common/on_actions/sb_diplomatic_play_on_action_handlers.txt",
+            "sb_on_spes_bona_diplomatic_play_started",
+        )
+        enforced = object_block(
+            "common/on_actions/sb_diplomatic_play_on_action_handlers.txt",
+            "sb_on_spes_bona_wargoal_enforced",
+        )
+        back_down = object_block(
+            "common/on_actions/sb_diplomatic_play_on_action_handlers.txt",
+            "sb_on_spes_bona_diplo_play_back_down",
+        )
+        war_end = object_block(
+            "common/on_actions/sb_diplomatic_play_on_action_handlers.txt",
+            "sb_on_spes_bona_war_end",
+        )
+        gaza = object_block("events/sb_frontier_ai_wars_events.txt", "sb_frontier_ai_wars.040")
+        swazi = object_block("events/sb_swazi_frontier_events.txt", "sb_swazi_frontier.094")
+        trek = object_block("events/sb_great_trek_events.txt", "sb_great_trek.001")
+
+        self.assertNotIn("random_diplomatic_play", gaza)
+        self.assertIn("sb_gaza_zulu_launch_lease_var", gaza)
+        self.assertIn("any_diplomatic_play", gaza)
+        self.assertNotIn("remove_variable = sb_zulu_gaza_followup_pending_var", gaza)
+        self.assertIn(
+            "remove_variable = sb_zulu_gaza_followup_pending_var", started
+        )
+        self.assertIn("sb_zulu_swazi_launch_lease_var", swazi)
+        self.assertIn("has_variable = sb_zulu_swazi_launch_lease_var", swazi)
+        self.assertNotIn("any_diplomatic_play", shortest_block_containing(
+            swazi, "if", "has_variable = sb_zulu_swazi_launch_lease_var",
+            "sb_zulu_clear_swazi_campaign_runtime = yes",
+        ))
+        self.assertIn("sb_great_trek_opening_launch_lease_var", trek)
+        self.assertIn("remove_variable = sb_ndebele_opening_play_fired", trek)
+
+        bindings = {
+            "sb_gaza_zulu_play_scope": ("dp_annex_war", "cd:ZUL", "cd:GZA"),
+            "sb_zulu_swazi_play_scope": ("dp_conquer_state", "cd:ZUL", "cd:SWZ"),
+            "sb_great_trek_opening_play_scope": ("dp_native_uprising", "cd:MTB", "cd:ORA"),
+        }
+        for scope_name, (play_type, initiator, target) in bindings.items():
+            with self.subTest(scope=scope_name):
+                binding = shortest_block_containing(
+                    started, "if", play_type, initiator, target,
+                    f"name = {scope_name} value = root",
+                )
+                self.assertIn("scope:initiator ?=", binding)
+                self.assertIn("scope:target ?=", binding)
+                self.assertIn(f"var:{scope_name} = scope:diplomatic_play", enforced)
+                self.assertIn(f"var:{scope_name} = root", back_down)
+                self.assertIn(f"var:{scope_name} = root", war_end)
+
+        self.assertNotIn("scope:initiator", back_down)
+        self.assertNotIn("scope:initiator", war_end)
+
+    def test_zulu_terminal_truth_tables_are_unbiased_and_scope_safe(self):
+        handler_path = "common/on_actions/sb_diplomatic_play_on_action_handlers.txt"
+        war_end = object_block(handler_path, "sb_on_spes_bona_war_end")
+        generic = shortest_block_containing(
+            war_end,
+            "if",
+            "sb_zulu_generic_war_play_scope",
+            "sb_zulu_apply_generic_war_victory",
+            "sb_zulu_apply_generic_war_defeat",
+        )
+        self.assertIn(
+            "has_variable = sb_zulu_generic_goal_accepted_pending_var NOT = { has_variable = sb_zulu_generic_defeat_goal_accepted_pending_var }",
+            generic,
+        )
+        self.assertIn(
+            "has_variable = sb_zulu_generic_defeat_goal_accepted_pending_var NOT = { has_variable = sb_zulu_generic_goal_accepted_pending_var }",
+            generic,
+        )
+        self.assertEqual(1, generic.count("sb_zulu_apply_generic_war_victory = yes"))
+        self.assertEqual(1, generic.count("sb_zulu_apply_generic_war_defeat = yes"))
+
+        swazi = shortest_block_containing(
+            war_end,
+            "if",
+            "sb_zulu_swazi_play_scope",
+            "sb_zulu_apply_swazi_campaign_victory",
+            "sb_zulu_apply_swazi_campaign_defeat",
+            "sb_zulu_apply_swazi_campaign_stalemate",
+        )
+        self.assertEqual(2, swazi.count("has_variable = sb_zulu_swazi_target_state_scope"))
+        self.assertEqual(
+            2, swazi.count("var:sb_zulu_swazi_target_state_scope ?= { owner = c:ZUL }")
+        )
+        self.assertEqual(
+            2, swazi.count("var:sb_zulu_swazi_target_state_scope ?= { owner = c:SWZ }")
+        )
+        self.assertIn("sb_zulu_clear_swazi_campaign_runtime = yes", swazi)
+        victory = object_block(
+            "common/scripted_effects/sb_zulu_dynasty_succession_effects.txt",
+            "sb_zulu_apply_swazi_campaign_victory",
+        )
+        self.assertIn("add_claim = c:ZUL", victory)
+        self.assertNotIn("add_claim = root", victory)
+
+    def test_bechuanaland_timer_reconciliation_covers_warren_and_total_war(self):
+        path = "common/scripted_effects/sb_bechuanaland_corridor_effects.txt"
+        tracker = object_block(path, "sb_bechuanaland_track_crisis_wargoal_enforcement")
+        resolver = object_block(path, "sb_bechuanaland_resolve_crisis_war_at_end")
+
+        timer = shortest_block_containing(
+            tracker, "if", "exists = scope:enforced_by_timer",
+            "sb_bechuanaland_british_timer_goal_seen_pending_var",
+        )
+        self.assertEqual(1, timer.count("sb_bechuanaland_british_timer_goal_seen_pending_var"))
+        self.assertEqual(1, timer.count("sb_bechuanaland_boer_swa_timer_goal_seen_pending_var"))
+        self.assertIn(
+            "scope:actor ?= { sb_bechuanaland_is_british_war_side_member = yes }",
+            timer,
+        )
+        self.assertIn(
+            "scope:actor ?= { sb_bechuanaland_is_boer_swa_war_side_member = yes }",
+            timer,
+        )
+        self.assertNotIn("sb_bechuanaland_timer_goal_seen_pending_var", timer)
+        self.assertNotIn("sb_bechuanaland_set_british_crisis_victory", timer)
+        self.assertNotIn("sb_bechuanaland_set_boer_swa_crisis_victory", timer)
+        self.assertGreaterEqual(
+            resolver.count("dp_sb_bechuanaland_warren_intervention_locked"), 3
+        )
+        self.assertGreaterEqual(
+            resolver.count("dp_sb_bechuanaland_cap_sgo_return"), 2
+        )
+        self.assertGreaterEqual(
+            resolver.count("sb_bechuanaland_total_war_primary_target_scope"), 2
+        )
+        self.assertIn("sb_bechuanaland_set_british_crisis_victory = yes", resolver)
+        self.assertIn("sb_bechuanaland_set_boer_swa_crisis_victory = yes", resolver)
+        self.assertIn("var:sb_bechuanaland_crisis_play_scope = root", resolver)
+        self.assertIn("remove_variable = sb_bechuanaland_crisis_play_scope", resolver)
+        self.assertIn("sb_bechuanaland_british_terminal_evidence_var", resolver)
+        self.assertIn("sb_bechuanaland_boer_swa_terminal_evidence_var", resolver)
+        self.assertIn(
+            "NOT = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_boer_swa_terminal_evidence_var } }",
+            resolver,
+        )
+        self.assertIn(
+            "NOT = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_british_terminal_evidence_var } }",
+            resolver,
+        )
+        self.assertIn(
+            "container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_total_war_target_state_scope ?= { owner = c:CAP }",
+            resolver,
+        )
+        self.assertIn(
+            "container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_total_war_cap_goal_target_scope ?= { owner = scope:sb_bechuanaland_final_total_war_target }",
+            resolver,
+        )
+        configure = object_block(path, "sb_bechuanaland_configure_started_story_play")
+        self.assertEqual(
+            5,
+            configure.count("name = sb_bechuanaland_crisis_play_scope value = root"),
+        )
+        self.assertIn(
+            "var:sb_bechuanaland_crisis_play_scope = scope:diplomatic_play",
+            tracker,
+        )
+
+    def test_gaza_claim_finalizer_uses_saved_state_and_exact_play_root(self):
+        handler = object_block(
+            "common/on_actions/sb_diplomatic_play_on_action_handlers.txt",
+            "sb_on_spes_bona_war_end",
+        )
+        dispatch = shortest_block_containing(
+            handler, "if", "sb_gaza_resolve_exact_terminal",
+        )
+        self.assertIn(
+            "root = { is_diplomatic_play_type = dp_annex_war initiator = c:ZUL target = c:GZA }",
+            dispatch,
+        )
+        self.assertIn(
+            "initiator = { has_variable = sb_gaza_zulu_play_scope var:sb_gaza_zulu_play_scope = root }",
+            dispatch,
+        )
+        resolver = object_block(
+            "common/scripted_effects/sb_zulu_dynasty_succession_effects.txt",
+            "sb_gaza_resolve_exact_terminal",
+        )
+        self.assertIn(
+            "initiator ?= { has_variable = sb_gaza_zulu_play_scope var:sb_gaza_zulu_play_scope = root }",
+            resolver,
+        )
+        self.assertIn(
+            "var:sb_gaza_east_transvaal_target_state_scope ?= { owner = c:GZA }",
+            resolver,
+        )
+        self.assertIn("s:STATE_EAST_TRANSVAAL = { add_claim = c:GZA }", resolver)
+        self.assertNotIn("add_claim = root", resolver)
 
     def test_bst_backdown_and_timer_guards_do_not_award_an_aggressor_loss(self):
         path = "common/on_actions/sb_bst_on_actions.txt"
         back_down = object_block(path, "sb_on_bst_diplo_play_back_down")
         enforced = object_block(path, "sb_on_bst_wargoal_enforced")
         war_end = object_block(path, "sb_on_bst_war_end")
+        monthly = object_block(path, "sb_on_bst_monthly_pulse_country")
 
         self.assertNotIn("sb_ora_annexed_bst_var", back_down)
         rejected = shortest_block_containing(
             back_down, "if", "sb_bst_annexation_backdown_rejected_var"
         )
+        self.assertIn(
+            "root = { is_diplomatic_play_type = dp_annex_war initiator = scope:actor target = c:BST }",
+            rejected,
+        )
         self.assertIn("scope:actor ?=", rejected)
         self.assertIn("sb_bst_oranje_frontier_actor = yes", rejected)
-        self.assertIn("scope:target ?= { country_definition = cd:BST }", rejected)
+        self.assertNotIn("scope:target", rejected)
 
         self.assertIn("sb_bst_story_goal_accepted_pending_var", enforced)
+        self.assertIn("is_diplomatic_play_type = dp_sb_basotho_gun_war", enforced)
+        self.assertIn("var:sb_bst_gun_war_play_scope = scope:diplomatic_play", enforced)
+        self.assertNotIn("is_diplomatic_play_type = dp_annex_war", enforced)
         for terminal_mutation in (
             "sb_ora_annexed_bst_var",
             "remove_variable = sb_bst_cap_annexation_crisis_var",
@@ -630,6 +1284,103 @@ class StoryWarRouteTests(unittest.TestCase):
         self.assertIn("NOT = { is_subject_of = c:CAP }", war_end)
         self.assertIn("sb_bst_gun_war_resolution_guard_var", war_end)
         self.assertIn("sb_bst_restore_gbr_protectorate = yes", war_end)
+        self.assertIn("remove_variable = sb_bst_gun_war_launch_lease_var", monthly)
+        started = object_block(
+            "common/on_actions/sb_diplomatic_play_on_action_handlers.txt",
+            "sb_on_spes_bona_diplomatic_play_started",
+        )
+        self.assertIn("sb_cap_has_bst_subject_for_disarmament = yes", started)
+
+
+    def test_klip_county_creation_failure_is_attempt_local_and_restores_owners(self):
+        path = "common/scripted_effects/sb_klip_river_county_effects.txt"
+        create = object_block(path, "sb_klip_river_create_county")
+        rollback = object_block(path, "sb_klip_river_rollback_created_county_attempt")
+        orphan = object_block(path, "sb_klip_river_cleanup_orphaned_runtime")
+
+        # The creation lease survives country admission and the transfer itself.
+        self.assertLess(
+            create.index("set_variable = sb_klip_river_county_creation_lease_var"),
+            create.index("create_country ="),
+        )
+        transfer = "country = c:KLR provinces = { xBBCA32 xDE0EDE x552449 }"
+        self.assertIn(transfer, create)
+        success = shortest_block_containing(
+            create,
+            "if",
+            "p:xBBCA32.state.owner = this",
+            "p:xDE0EDE.state.owner = this",
+            "p:x552449.state.owner = this",
+        )
+        self.assertIn(
+            "remove_variable = sb_klip_river_county_creation_lease_var", success
+        )
+        self.assertIn(
+            "sb_klip_river_county_created_this_attempt_var", create
+        )
+
+        # The rollback stores object identity before/after admission. It restores
+        # only provinces still owned by that exact created object, never tags.
+        for token in (
+            "sb_klip_river_county_original_xbb_owner_scope",
+            "sb_klip_river_county_created_country_scope",
+            "p:xBBCA32.state.owner = scope:sb_klip_river_attempt_created_country",
+            "country = scope:sb_klip_river_attempt_original_xbb_owner",
+            "annex = scope:sb_klip_river_attempt_created_country",
+            "country = root provinces = { xDE0EDE }",
+            "country = root provinces = { x552449 }",
+            "sb_klip_river_prepare_standard_boer_flight = yes",
+        ):
+            self.assertIn(token, rollback)
+        self.assertIn(
+            "value = scope:sb_klip_river_attempt_original_xbb_owner", create
+        )
+        self.assertIn(
+            "value = scope:sb_klip_river_attempt_created_country", create
+        )
+        self.assertNotIn("annex = c:KLR", rollback)
+        self.assertNotIn("country = c:ZUL", rollback)
+        self.assertNotIn("country = c:NAL", rollback)
+        self.assertIn("sb_klip_river_rollback_created_county_attempt = yes", create)
+        self.assertIn("NOT = { c:KLR ?= { is_country_alive = yes } }", orphan)
+        self.assertIn("sb_klip_river_clear_secession_runtime = yes", orphan)
+
+
+    def test_klip_orphan_handler_uses_saved_actor_not_replacement_tag(self):
+        effects = "common/scripted_effects/sb_klip_river_county_effects.txt"
+        secession = object_block(
+            effects, "sb_klip_river_begin_secession_delivery_generation"
+        )
+        punitive = object_block(
+            effects, "sb_klip_river_begin_punitive_delivery_generation"
+        )
+        recover = object_block(effects, "sb_klip_river_recover_orphaned_generations")
+        values = object_block(effects, "sb_klip_river_clear_country_marker_values")
+        public_cleanup = object_block(effects, "sb_klip_river_clear_country_markers")
+        regional = text("common/on_actions/sb_regional_on_action_handlers.txt")
+        router = object_block("common/on_actions/sb_on_actions.txt", "on_monthly_pulse_country")
+
+        for generation in (secession, punitive):
+            self.assertIn("save_temporary_scope_as = sb_klip_river_", generation)
+            self.assertIn("generation_actor_scope value = scope:", generation)
+        self.assertIn("generation_county_scope", secession)
+        self.assertIn("generation_zulu_scope", secession)
+        self.assertIn("generation_zulu_scope", punitive)
+        self.assertIn("var:sb_klip_river_secession_generation_actor_scope", recover)
+        self.assertIn("var:sb_klip_river_punitive_generation_actor_scope", recover)
+        # Recovery is inside each container. It clears saved country values first,
+        # and has exactly one local destroy per route branch.
+        self.assertIn("sb_klip_river_clear_country_marker_values = yes", recover)
+        self.assertNotIn("sb_klip_river_clear_country_markers = yes", recover)
+        self.assertEqual(2, recover.count("destroy_container = yes"))
+        self.assertIn("remove_variable = sb_klip_river_secession_active_var", values)
+        self.assertIn("sb_klip_river_clear_country_marker_values = yes", public_cleanup)
+        self.assertEqual(2, public_cleanup.count("destroy_container = yes"))
+        self.assertIn("every_country = {", recover)
+        self.assertIn("NOT = { country_definition = cd:NAL }", recover)
+        self.assertIn("sb_on_klip_river_orphan_monthly", regional)
+        self.assertIn("sb_klip_river_recover_orphaned_generations = yes", regional)
+        self.assertIn("sb_on_klip_river_orphan_monthly", router)
 
 
 

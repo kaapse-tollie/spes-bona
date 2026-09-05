@@ -269,5 +269,30 @@ class SubjectRestorationContractTests(unittest.TestCase):
         self.assertEqual(expected, actual)
 
 
+class WarGoalPolicySurfaceTests(unittest.TestCase):
+    def test_no_removed_1_13_war_exhaustion_api_token_remains_live(self):
+        findings = []
+        for base in ("common", "events"):
+            for path in (ROOT / base).rglob("*.txt"):
+                source = path.read_text(encoding="utf-8-sig", errors="ignore")
+                if re.search(r"\bwar_exhaustion(?:_[a-z0-9_]+)?\b", source):
+                    findings.append(path.relative_to(ROOT).as_posix())
+        self.assertEqual([], findings)
+
+    def test_every_sb_war_goal_declares_mirror_or_assent_policy(self):
+        missing = []
+        for path in sorted((ROOT / "common/war_goal_types").glob("*.txt")):
+            source = path.read_text(encoding="utf-8-sig")
+            for match in re.finditer(r"^([A-Za-z0-9_]+)\s*=\s*\{", source, re.MULTILINE):
+                key = match.group(1)
+                block = validate.extract_braced(source, match.start())
+                executable = re.sub(r"#.*", "", block)
+                if "mirrored_wargoal" not in executable and not re.search(
+                    r"^\s*assent_required\s*$", executable, re.MULTILINE
+                ):
+                    missing.append(f"{path.name}:{key}")
+        self.assertEqual([], missing)
+
+
 if __name__ == "__main__":
     unittest.main()

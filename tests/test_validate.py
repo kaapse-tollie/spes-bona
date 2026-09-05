@@ -43,6 +43,92 @@ class RepositoryValidatorTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "asset_sha256"):
                 validate.cmf_sync_command(Path(temporary) / "cmf", inventory)
 
+    def test_nonzero_diagnostic_is_operational_failure(self):
+        check = validate.run_advisory_command(
+            "fixture diagnostic",
+            [validate.sys.executable, "-c", "print('schema lag'); raise SystemExit(7)"],
+        )
+        self.assertEqual("FAIL", check.status)
+        self.assertIn("exit status 7", check.detail)
+        self.assertIn("schema lag", check.detail)
+
+    def test_tiger_requires_exact_load_paths_and_terminal_summary(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            cmf = root / 'CMF with "quote"'
+            cmf.mkdir()
+            config = (root / "dependencies.conf").resolve()
+            escaped = str(cmf.resolve()).replace("\\", "\\\\").replace('"', '\\"')
+            config.write_text(f'load_mod = {{ label = "CMF" mod = "{escaped}" }}\n')
+            expected = (
+                f"Using conf file: {config}\n"
+                "Using mod directory: Fixture Mod\n"
+                f"Loading secondary mod CMF from: {cmf.resolve()}\n"
+                "fatal: 0, error: 8, warning: 1, untidy: 0, tips: 0"
+            )
+
+            def invoke(output):
+                return validate.run_advisory_command(
+                    "vic3-tiger",
+                    [validate.sys.executable, "-c", f"print({output!r})", "--config", str(config), "Fixture Mod"],
+                    root,
+                )
+
+            self.assertEqual("WARN", invoke(expected).status)
+            self.assertEqual("FAIL", invoke(expected.replace(str(cmf.resolve()), "WRONG", 1)).status)
+            self.assertEqual("FAIL", invoke(expected + "\nnot terminal").status)
+            self.assertEqual("FAIL", invoke("prefix " + expected).status)
+
+    def test_tiger_style_exit_zero_diagnostics_are_retained_as_warning(self):
+        check = validate.run_advisory_command(
+            "fixture diagnostic",
+            [validate.sys.executable, "-c", "print('fatal: 0, error: 8')"],
+        )
+        self.assertEqual("WARN", check.status)
+        self.assertIn("fatal: 0, error: 8", check.detail)
+
+        silent = validate.run_advisory_command(
+            "silent fixture",
+            [validate.sys.executable, "-c", "pass"],
+        )
+        self.assertEqual("PASS", silent.status)
+        self.assertEqual("", silent.detail)
+
+    def test_localization_key_regex_is_horizontal_and_does_not_cross_lines(self):
+        fixture = (
+            "l_english:\n"
+            "column_zero:0 \"value\"\n"
+            "  spaced_key:1 \"value\"\n"
+            "\ttabbed_key:0 \"value\"\n"
+            "broken_without_colon\n"
+            "  next_key:0 \"value\"\n"
+        )
+        self.assertEqual(
+            ["column_zero", "spaced_key", "tabbed_key", "next_key"],
+            validate.LOC_KEY_RE.findall(fixture),
+        )
+        self.assertNotIn("l_english", validate.LOC_KEY_RE.findall(fixture))
+        self.assertTrue(validate.LOC_LINE_KEY_RE.match("column_zero:0 \"value\""))
+        self.assertTrue(validate.LOC_LINE_KEY_RE.match("  spaced_key:0 \"value\""))
+        self.assertTrue(validate.LOC_LINE_KEY_RE.match("\ttabbed_key:0 \"value\""))
+        self.assertIsNone(validate.LOC_LINE_KEY_RE.match("broken\n key:0 \"value\""))
+
+    def test_source_definition_regexes_accept_space_and_tab_indentation(self):
+        events = "fixture.1 = { }\n  fixture.2 = { }\n\tfixture.3 = { }\n"
+        journals = (
+            "je_fixture = { }\n"
+            "  REPLACE:je_spaced = { }\n"
+            "\tTRY_REPLACE:je_tabbed = { }\n"
+        )
+        self.assertEqual(
+            ["fixture.1", "fixture.2", "fixture.3"],
+            validate.SCRIPT_EVENT_RE.findall(events),
+        )
+        self.assertEqual(
+            ["je_fixture", "je_spaced", "je_tabbed"],
+            validate.JOURNAL_ENTRY_RE.findall(journals),
+        )
+
     def test_repository_manifests_are_current(self):
         deferred = validate.check_deferred_release_gates()
         checks = (
@@ -329,6 +415,72 @@ class LocalizationReviewNamespaceTests(unittest.TestCase):
             errors,
         )
         self.assertIn("sb_fixture.20: duplicate review classifications", errors)
+
+    def test_plain_general_review_group_is_contiguous_and_not_a_namespace_marker(self):
+        fixture = (
+            "l_english:\n"
+            " # TO REVIEW (non-event/JE keys)\n"
+            " first_key:0 \"First\"\n"
+            " second_key:0 \"Second\"\n"
+            "\n"
+            " unmarked_key:0 \"Not in group\"\n"
+            " # ### TO REVIEW ###\n"
+            " sb_fixture.30.t:0 \"Event\"\n"
+        )
+        self.assertEqual(
+            {"first_key", "second_key"},
+            validate.general_localization_review_keys(fixture),
+        )
+
+    def test_plain_general_review_group_rejects_event_and_source_je_namespaces(self):
+        fixture = (
+            "l_english:\n"
+            " # ### TO REVIEW ###\n"
+            " # TO REVIEW (non-event/JE keys)\n"
+            " sb_fixture.30.t:0 \"Event title\"\n"
+            " je_sb_fixture_reason:0 \"JE reason\"\n"
+            " ordinary_key:0 \"Ordinary\"\n"
+        )
+        keys = validate.general_localization_review_keys(fixture)
+        self.assertEqual(
+            [
+                ("je_sb_fixture_reason", "journal_entry", "je_sb_fixture"),
+                ("sb_fixture.30.t", "event", "sb_fixture.30"),
+            ],
+            validate.general_review_namespace_violations(keys, {"je_sb_fixture"}),
+        )
+
+    def test_general_review_queue_is_exact_and_non_dangling(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            loc = root / "localization/english/fixture_l_english.yml"
+            loc.parent.mkdir(parents=True)
+            loc.write_text(
+                "l_english:\n"
+                " # TO REVIEW (non-event/JE keys)\n"
+                " fixture_key:0 \"Fixture\"\n"
+            )
+            queue = root / "Docs/localisation_review_queue.md"
+            queue.parent.mkdir()
+            queue.write_text(
+                "| Localisation file | Exact key | Review note |\n"
+                "|---|---|---|\n"
+                "| `localization/english/fixture_l_english.yml` | `fixture_key` | Test. |\n"
+            )
+            definitions = {"fixture_key": loc}
+            pairs = {("localization/english/fixture_l_english.yml", "fixture_key")}
+            self.assertEqual(
+                [],
+                validate.localization_review_queue_errors(definitions, pairs, root),
+            )
+
+            queue.write_text(
+                "| `localization/english/fixture_l_english.yml` | `wrong_key` | Test. |\n"
+            )
+            errors = validate.localization_review_queue_errors(definitions, pairs, root)
+            self.assertTrue(any("not defined in declared file" in error for error in errors))
+            self.assertTrue(any("missing from review queue" in error for error in errors))
+            self.assertTrue(any("dangling" in error for error in errors))
 
     def test_source_journal_entry_ids_include_replacement_directives(self):
         with tempfile.TemporaryDirectory() as temporary:

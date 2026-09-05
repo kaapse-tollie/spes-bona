@@ -544,37 +544,111 @@ class FrontierTweaksTests(unittest.TestCase):
         self.assertIn("hq_region = sr:region_east_africa", gaza)
         self.assertNotIn("hq_region = sr:region_southern_africa", gaza)
 
-    def test_zoutpansberg_targets_every_transvaal_state_and_inherits_tag(self):
+    def test_zoutpansberg_binds_only_the_exact_started_crackdown_play(self):
         path = "common/scripted_effects/sb_treaty_effects.txt"
         launch = object_block(path, "sb_open_trn_zpb_crackdown_play")
+        configure = object_block(path, "sb_configure_started_trn_zpb_crackdown_play")
+        terminal = object_block(path, "sb_zpb_crackdown_resolve_bound_terminal")
         succession = object_block(path, "sb_zpb_assume_transvaal_after_crackdown_victory")
-        war_end = object_block(
-            "common/on_actions/sb_diplomatic_play_on_action_handlers.txt",
-            "sb_on_spes_bona_war_end",
+        delivery = object_block(path, "sb_zpb_crackdown_prepare_held_delivery")
+        preflight = object_block(
+            "common/scripted_triggers/sb_boer_conventions_triggers.txt",
+            "sb_trn_zpb_crackdown_preflight",
         )
-        self.assertIn("c:TRN ?= {\n\t\t\tevery_scope_state", launch)
-        self.assertIn("holder = c:ZPB", launch)
-        self.assertIn("type = conquer_state", launch)
-        self.assertIn("target_state = prev", launch)
-        self.assertIn("primary_demand = yes", launch)
-        self.assertIn("NOT = { exists = c:TRN }", succession)
+        held = object_block("events/sb_boer_conventions_events.txt", "sb_boer_conventions.150")
+        route_live = object_block(
+            "common/scripted_triggers/sb_boer_conventions_triggers.txt",
+            "sb_trn_zpb_crackdown_route_live_authority",
+        )
+        cleanup = object_block(path, "sb_zpb_crackdown_clear_route_runtime")
+        receipt_cleanup = object_block(path, "sb_zpb_crackdown_clear_generation_receipt")
+        on_actions = text("common/on_actions/sb_diplomatic_play_on_action_handlers.txt")
+
+        self.assertIn("sb_trn_zpb_crackdown_popup_authority = yes", launch)
+        self.assertIn("set_variable = sb_zpb_crackdown_launch_lease_var", launch)
+        self.assertIn("sb_zpb_crackdown_frozen_target_state_var", launch)
+        self.assertIn("sb_zpb_crackdown_frozen_contested_state_var", launch)
+        self.assertLess(
+            launch.index("sb_zpb_crackdown_frozen_contested_state_var"),
+            launch.index("sb_zpb_crackdown_frozen_target_state_var"),
+        )
+        self.assertNotIn("random_diplomatic_play", launch)
+        self.assertNotIn("sb_zpb_crackdown_break_compacts = yes", launch)
+        self.assertIn("sb_zpb_crackdown_launch_lease_var", preflight)
+        self.assertIn("is_active_in_diplomatic_play = no", preflight)
+        self.assertIn("any_scope_state = { always = yes }", preflight)
+        self.assertIn("NOT = { has_truce_with = c:ZPB }", preflight)
+        self.assertIn("aggressive_diplomatic_plays_permitted = yes", route_live)
+        self.assertIn("any_scope_state = { always = yes }", route_live)
+
+        self.assertIn("create_container", delivery)
+        self.assertIn("sb_zpb_crackdown_generation_state", delivery)
+        self.assertIn("sb_zpb_crackdown_dispatch_lease_var days = 30", delivery)
+        self.assertIn("sb_zpb_crackdown_popup_authority_var months = 4", delivery)
+        self.assertIn("sb_zpb_crackdown_prepare_held_delivery = yes", held)
+        self.assertIn("sb_zpb_crackdown_handle_invalid_held_delivery = yes", held)
+        self.assertIn("sb_trn_zpb_crackdown_popup_authority = yes", held)
+        invalid_held = object_block(path, "sb_zpb_crackdown_handle_invalid_held_delivery")
+        self.assertIn("sb_zpb_crackdown_clear_generation_receipt = yes", invalid_held)
+
+        self.assertIn("is_diplomatic_play_type = dp_sb_trn_zpb_crackdown_locked", configure)
+        self.assertIn("has_variable = sb_zpb_crackdown_receipt_launch_lease_var", configure)
+        self.assertIn("set_variable = { name = sb_zpb_crackdown_play_scope value = root }", configure)
+        self.assertIn("set_variable = { name = sb_zpb_crackdown_contested_state_scope", configure)
+        self.assertIn("sb_zpb_crackdown_break_compacts = yes", configure)
+        goal_loop = configure[configure.index("# Do not rescan live TRN territory") :]
+        self.assertIn("limit = { has_variable = sb_zpb_crackdown_frozen_target_state_var }", goal_loop)
+        self.assertNotIn("sb_zpb_crackdown_frozen_contested_state_var", goal_loop)
+        self.assertIn("sb_zpb_crackdown_frozen_contested_state_var", configure[: configure.index("# Do not rescan live TRN territory")])
+        self.assertIn("holder = c:ZPB", configure)
+        self.assertIn("type = conquer_state", configure)
+        self.assertIn("target_state = prev", configure)
+
+        self.assertIn("var:sb_zpb_crackdown_play_scope = root", terminal)
+        self.assertIn(
+            "sb_zpb_crackdown_frozen_contested_state_var owner = scope:sb_zpb_crackdown_terminal_target",
+            terminal,
+        )
+        self.assertNotIn("sb_zpb_crackdown_frozen_target_state_var owner", terminal)
+        self.assertIn("sb_zpb_assume_transvaal_after_crackdown_victory = yes", terminal)
+        self.assertIn("initiator = {", terminal)
+        self.assertIn("target = {", terminal)
+        self.assertNotIn("scope:initiator", terminal)
+        self.assertNotIn("scope:target", terminal)
+        self.assertNotIn("is_direct_subject_of", terminal)
+        self.assertIn("NOT = { var:sb_zpb_crackdown_trn_scope ?= { is_country_alive = yes } }", succession)
+        self.assertIn("sb_zpb_crackdown_frozen_contested_state_var owner = root", succession)
+        self.assertNotIn("sb_zpb_crackdown_frozen_target_state_var owner = root", succession)
+        for marker in (
+            "sb_zpb_crackdown_active_var",
+            "sb_zpb_crackdown_appealed_var",
+            "sb_zpb_crackdown_backed_zpb_var",
+            "sb_zpb_crackdown_backer_resolved_var",
+            "sb_zpb_crackdown_play_scope",
+            "sb_zpb_crackdown_target_scope",
+            "sb_zpb_crackdown_trn_scope",
+            "sb_zpb_crackdown_contested_state_scope",
+            "sb_zpb_crackdown_generation_scope",
+            "sb_zpb_crackdown_launch_lease_var",
+            "sb_zpb_crackdown_launch_ack_var",
+            "sb_zpb_crackdown_delivery_pending_var",
+            "sb_zpb_crackdown_total_conquest_route_var",
+            "sb_zpb_player_trn_civil_war_support_var",
+        ):
+            self.assertIn(marker, cleanup)
+        self.assertIn("sb_zpb_crackdown_clear_generation_receipt = yes", cleanup)
+        self.assertIn("every_country = {", cleanup)
+        for fixed_actor in ("c:TRN ?=", "c:ZPB ?=", "c:ORA ?=", "c:LYD ?=", "c:NAL ?="):
+            self.assertNotIn(fixed_actor, cleanup)
+        self.assertIn("sb_zpb_crackdown_generation_scope", receipt_cleanup)
+        self.assertIn("every_country = {", receipt_cleanup)
+        self.assertIn("every_scope_state = {", receipt_cleanup)
+        self.assertNotIn("c:TRN ?= {\n\t\tevery_scope_state", receipt_cleanup)
+        self.assertNotIn("c:ZPB ?= {\n\t\tevery_scope_state", receipt_cleanup)
         self.assertIn("activate_law = law_type:law_discrete_inboekstelsel", succession)
         self.assertIn("sb_add_expanded_inboekstelsel_amendment = yes", succession)
         self.assertIn("change_tag = TRN", succession)
-        self.assertIn("sb_zpb_assume_transvaal_after_crackdown_victory = yes", war_end)
-        self.assertIn("set_variable = sb_zpb_crackdown_successor_pending_var", war_end)
-
-        backdown = object_block(
-            "common/on_actions/sb_diplomatic_play_on_action_handlers.txt",
-            "sb_on_spes_bona_diplo_play_back_down",
-        )
-        monthly = object_block(
-            "common/on_actions/sb_boer_story_on_action_handlers.txt",
-            "sb_on_zpb_monthly_pulse_country",
-        )
-        self.assertIn("sb_zpb_crackdown_successor_pending_var", backdown)
-        self.assertIn("country_definition = cd:ZPB", monthly)
-        self.assertIn("sb_zpb_assume_transvaal_after_crackdown_victory = yes", monthly)
+        self.assertEqual(on_actions.count("sb_zpb_crackdown_resolve_bound_terminal = yes"), 2)
 
     def test_walvis_bay_has_prime_weight_and_namaqualand_trial_cap(self):
         namaqualand = object_block(

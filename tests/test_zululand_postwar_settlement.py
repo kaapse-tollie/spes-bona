@@ -230,11 +230,13 @@ class ZululandPostwarSettlementTests(unittest.TestCase):
         started_route = min(started_routes, key=len)
         self.assertIn("is_diplomatic_play_type = dp_annex_war", started_route)
         self.assertIn("scope:initiator ?=", started_route)
-        self.assertIn("sb_zululand_british_postwar_owner = yes", started_route)
-        self.assertIn(
-            "sb_zululand_discard_preannexation_royal_house_archive = yes",
-            back_down,
-        )
+        self.assertIn("country_definition = cd:GBR", started_route)
+        self.assertIn("scope:target ?= { country_definition = cd:ZUL is_country_alive = yes }", started_route)
+        self.assertIn("sb_anglo_zulu_pressure_launch_lease_var", started_route)
+        self.assertIn("sb_port_natal_british_annex_launch_lease_var", started_route)
+        self.assertIn("sb_british_zulu_snapshot_annex_target_states = yes", started_route)
+        self.assertIn("sb_british_zulu_backdown_finalizer_pending_var", back_down)
+        self.assertIn("id = sb_anglo_zulu.099 days = 1", back_down)
         self.assertNotIn("sb_zululand_restore_preannexation_royal_house = yes", back_down)
 
         # OB1 timer enforcement is reversible. The crown snapshot is taken once
@@ -345,7 +347,12 @@ class ZululandPostwarSettlementTests(unittest.TestCase):
             self.assertEqual(2, terminal.count(f"has_variable = {flag}"))
         self.assertIn("sb_zululand_situation_months_var >= 60", terminal)
         self.assertIn("sb_zululand_balance_var > 50", terminal)
-        self.assertIn("id = sb_zululand_settlement.121", terminal)
+        self.assertIn("sb_zululand_begin_zibhebhu_terminal_generation = yes", terminal)
+        self.assertIn("sb_zululand_begin_crown_terminal_generation = yes", terminal)
+        zibhebhu_generation = object_block(path, "sb_zululand_begin_zibhebhu_terminal_generation")
+        crown_generation = object_block(path, "sb_zululand_begin_crown_terminal_generation")
+        self.assertIn("id = sb_zululand_settlement.120", zibhebhu_generation)
+        self.assertIn("id = sb_zululand_settlement.121", crown_generation)
         for guard in (
             "NOT = { has_variable = sb_zululand_event_spacing_var }",
             "NOT = { has_variable = sb_zululand_incident_pending_var }",
@@ -630,9 +637,19 @@ class ZululandPostwarSettlementTests(unittest.TestCase):
 
     def test_chiefdoms_delayed_events_revalidate_the_live_subject_relationship(self):
         events_path = "events/sb_zululand_settlement_events.txt"
-        for event_id in (110, 111, 112, 113, 120, 121):
+        for event_id in (110, 111, 112, 113):
             event = object_block(events_path, f"sb_zululand_settlement.{event_id}")
             self.assertIn("sb_zululand_chiefdoms_runtime_valid = yes", event)
+        for event_id, authority in (
+            (120, "sb_zululand_bound_zibhebhu_terminal_event_authority"),
+            (121, "sb_zululand_bound_crown_terminal_event_authority"),
+        ):
+            event = object_block(events_path, f"sb_zululand_settlement.{event_id}")
+            # Delivery is intentionally broad; each option authenticates the
+            # exact saved terminal receipt and stale deliveries only clean up.
+            self.assertIn("trigger = { country_definition = cd:NAL }", event)
+            self.assertIn(f"{authority} = yes", event)
+            self.assertIn(f"NOT = {{ {authority} = yes }}", event)
 
         trn_eligibility = object_block(
             "common/scripted_triggers/sb_zululand_settlement_triggers.txt",
@@ -709,9 +726,17 @@ class ZululandPostwarSettlementTests(unittest.TestCase):
         self.assertEqual(3, goals.count("type = return_state"))
         self.assertIn("target_country = c:NRP", goals)
         self.assertIn("target_country = c:ZUL", goals)
-        self.assertIn("type = sb_boer_confederal_partner", support)
-        self.assertIn("change_relations = { country = c:NRP value = -50 }", decline)
-        self.assertIn("has_type = defensive_pact", decline)
+        self.assertIn("sb_nrp_launch_boundary_confrontation = yes", support)
+        deferred_pact = object_block(path, "sb_nrp_commit_deferred_defence_pact")
+        self.assertIn("sb_nrp_deferred_defence_pact_pending_var", deferred_pact)
+        self.assertIn("type = sb_boer_confederal_partner", deferred_pact)
+        self.assertIn("is_at_war = no", deferred_pact)
+        self.assertIn("is_active_in_diplomatic_play = no", deferred_pact)
+        self.assertIn("sb_nrp_trn_defence_declined_pending_var", decline)
+        self.assertIn("sb_nrp_launch_boundary_confrontation = yes", decline)
+        started_boundary = object_block(path, "sb_nrp_configure_started_boundary_play")
+        self.assertIn("change_relations = { country = c:NRP value = -50 }", started_boundary)
+        self.assertIn("has_type = defensive_pact", started_boundary)
         self.assertNotIn("add_initiator_backers = { c:GBR }", goals)
 
         union_event = object_block(
@@ -722,7 +747,65 @@ class ZululandPostwarSettlementTests(unittest.TestCase):
         refuse = option(union_event, "sb_zululand_settlement.221.b")
         self.assertIn("default_option = yes", accept)
         self.assertIn("ai_chance = { base = 100 }", accept)
-        self.assertIn("trigger = { is_player = yes }", refuse)
+        self.assertIn("is_player = yes", refuse)
+
+    def test_nrp_union_refusal_and_boundary_launch_receipts_are_generation_safe(self):
+        effects_path = "common/scripted_effects/sb_zululand_settlement_effects.txt"
+        union_event = object_block(
+            "events/sb_zululand_settlement_events.txt", "sb_zululand_settlement.221"
+        )
+        player_refusal = option(union_event, "sb_zululand_settlement.221.b")
+        stale_defence = next(
+            block
+            for block in nested_blocks(
+                object_block(
+                    "events/sb_zululand_settlement_events.txt",
+                    "sb_zululand_settlement.211",
+                ),
+                "option",
+            )
+            if "NOT = { AND =" in block
+        )
+        roll = object_block(effects_path, "sb_nrp_roll_boundary_response")
+        refusal = object_block(effects_path, "sb_nrp_refuse_boundary_demand")
+        cleanup = object_block(effects_path, "sb_nrp_clear_boundary_confrontation_runtime")
+        configured = object_block(effects_path, "sb_nrp_configure_started_boundary_play")
+
+        # A Clausewitz object may have only one trigger key. The refusal is
+        # available only to a living independent player TRN with a live receipt.
+        self.assertEqual(1, player_refusal.count("trigger ="))
+        self.assertIn("is_player = yes", player_refusal)
+        self.assertIn("sb_nrp_union_petition_response_pending_var", player_refusal)
+
+        # The shared AI receipt is created only after this refusal is delivered,
+        # then every stale/cancel route removes it before another request can use it.
+        self.assertNotIn("sb_nrp_shared_refusal_commitment_var", roll)
+        self.assertIn("sb_nrp_shared_refusal_commitment_var", refusal)
+        self.assertIn("if = { limit = { is_ai = yes }", refusal)
+        self.assertIn("remove_variable = sb_nrp_shared_refusal_commitment_var", stale_defence)
+        self.assertIn("c:TRN ?=", cleanup)
+        self.assertIn("remove_variable = sb_nrp_shared_refusal_commitment_var", cleanup)
+
+        transient_start = validate.extract_braced(
+            configured,
+            configured.index("else_if = {", configured.index("A real leased root")),
+        )
+        permanent_loss = validate.extract_braced(
+            configured,
+            configured.index("else_if = {", configured.index("durable route authority")),
+        )
+        # A leased real root with political authority but wrong target shape is
+        # unbound and retryable: only its lease/scaffolding is cleared.
+        self.assertIn("sb_nrp_boundary_current_political_authority = yes", transient_start)
+        self.assertIn("remove_variable = sb_nrp_boundary_launch_lease_var", transient_start)
+        self.assertNotIn("sb_nrp_clear_boundary_confrontation_runtime", transient_start)
+        self.assertNotIn("sb_nrp_add_boundary_war_goals", transient_start)
+        self.assertNotIn("sb_nrp_trn_defence_accepted_pending_var", transient_start)
+        self.assertNotIn("sb_nrp_trn_defence_declined_pending_var", transient_start)
+        # Lost political authority takes the central terminal cleanup and leaves
+        # the unbound engine play without a route receipt or mutation authority.
+        self.assertIn("sb_nrp_clear_boundary_confrontation_runtime = yes", permanent_loss)
+        self.assertIn("remove_variable = sb_nrp_boundary_launch_lease_var", permanent_loss)
 
     def test_unrelated_imperial_wars_do_not_stall_the_nrp_boundary_demand(self):
         trigger = object_block(
@@ -771,8 +854,16 @@ class ZululandPostwarSettlementTests(unittest.TestCase):
         self.assertIn("holder = c:NRP", goals)
         self.assertIn("target_country = c:NAL", goals)
         self.assertIn("target_state = scope:sb_nrp_boundary_natal_state", goals)
-        self.assertIn("c:ZUL ?= { is_country_alive = yes }", launch)
-        self.assertIn("sb_nrp_direct_annexation_rebellion_var", launch)
+        self.assertIn("sb_nrp_boundary_current_launch_authority = yes", launch)
+        self.assertIn("sb_nrp_boundary_initiator_scope", launch)
+        self.assertIn("set_variable = sb_nrp_boundary_launch_lease_var", launch)
+        self.assertIn("target_country = c:TRN", launch)
+        self.assertIn("target_country = c:NRP", launch)
+        authority = object_block(
+            "common/scripted_triggers/sb_zululand_settlement_triggers.txt",
+            "sb_nrp_boundary_current_launch_authority",
+        )
+        self.assertIn("sb_nrp_direct_annexation_rebellion_var", authority)
 
         self.assertIn("sb_nrp_direct_annexation_rebellion_var", event)
         self.assertIn("sb_nrp_notify_natal_of_boundary_cutback = yes", event)

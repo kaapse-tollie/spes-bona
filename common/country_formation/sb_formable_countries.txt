@@ -21,6 +21,75 @@ SAF = {
 	ai_will_do = { always = yes }
 
 	possible = {
+		is_at_war = no
+		is_active_in_diplomatic_play = no
+		NOT = { sb_southern_formation_has_blocking_story_transaction = yes }
+		NOT = {
+			OR = {
+				has_variable = sb_natal_story_launch_pending_var
+				has_variable = sb_natal_story_launch_retry_queued_var
+				has_variable = sb_natal_story_launch_lease_var
+				has_variable = sb_natal_story_play_scope
+				has_variable = sb_natal_guns_bargain_generation_scope
+				has_variable = sb_natal_refusal_generation_scope
+			}
+		}
+		NOT = {
+			c:ZUL ?= {
+				OR = {
+					has_variable = sb_natal_story_launch_pending_var
+					has_variable = sb_natal_story_launch_retry_queued_var
+					has_variable = sb_natal_story_launch_lease_var
+					has_variable = sb_natal_story_play_scope
+					has_variable = sb_natal_guns_bargain_generation_scope
+					has_variable = sb_natal_refusal_generation_scope
+				}
+			}
+		}
+		NOT = {
+			c:ORA ?= {
+				OR = {
+					has_variable = sb_natal_story_launch_pending_var
+					has_variable = sb_natal_story_play_scope
+					has_variable = sb_natal_guns_bargain_generation_scope
+					has_variable = sb_natal_refusal_generation_scope
+				}
+			}
+		}
+		NOT = { has_variable = sb_great_trek_outcome_delivery_pending_var }
+		# Do not consume state/participants while Klip River has an admitted play or a retryable receipt.
+		NOT = { any_country = { country_definition = cd:NAL OR = { has_variable = sb_klip_river_secession_active_var has_variable = sb_klip_river_punitive_active_var has_variable = sb_klip_river_secession_delivery_pending_var has_variable = sb_klip_river_punitive_delivery_pending_var has_variable = sb_klip_river_punitive_outcome_delivery_pending_var } } }
+		NOT = { has_global_variable = sb_griqualand_sequence_active_global_var }
+		NOT = { any_country = { country_definition = cd:NRP OR = { has_variable = sb_nrp_boundary_pending_var has_variable = sb_nrp_boundary_event_open_var has_variable = sb_nrp_boundary_refused_var has_variable = sb_nrp_boundary_play_scope has_variable = sb_nrp_boundary_confrontation_active_var has_variable = sb_nrp_trn_defence_request_queued_var } } }
+		NOT = { has_global_variable = sb_griqualand_ingress_delivery_pending_global_var }
+		NOT = { any_country = { OR = { country_definition = cd:CAP country_definition = cd:ABY } OR = { has_variable = sb_xhosa_frontier_war_7_scheduled_var has_variable = sb_xhosa_frontier_war_8_scheduled_var has_variable = sb_xhosa_frontier_war_9_scheduled_var } } }
+		NOT = {
+			c:TRN ?= {
+				OR = {
+					has_variable = sb_martinus_coercive_chain_active_var
+					has_variable = sb_martinus_coercive_generation_scope
+					has_variable = sb_martinus_story_humiliation_route_var
+					has_variable = sb_martinus_story_play_scope
+					has_variable = sb_martinus_legal_union_pending_var
+					has_variable = sb_martinus_legal_union_generation_scope
+					has_variable = sb_martinus_coercive_chain_pending_var
+					has_variable = sb_martinus_story_launch_lease_var
+					has_variable = sb_martinus_union_install_pending_var
+				}
+			}
+		}
+		NOT = { has_global_variable = sb_griqualand_west_refusal_contest_active_var }
+		NOT = { has_global_variable = sb_zululand_chiefdoms_open_global_var }
+		NOT = { container_exists = sb_natal_guns_bargain_generation_state }
+		NOT = { container_exists = sb_natal_refusal_generation_state }
+		NOT = { any_country = { OR = { has_variable = sb_zpb_crackdown_active_var has_variable = sb_zpb_crackdown_generation_scope has_variable = sb_zpb_crackdown_launch_lease_var has_variable = sb_zpb_crackdown_play_scope has_variable = sb_zpb_crackdown_total_conquest_route_var } } }
+		NOT = { container_exists = sb_zpb_crackdown_generation_state }
+		NOT = { container_exists = sb_natal_terminal_outcome_state }
+		NOT = { any_country = { OR = { has_variable = sb_natal_terminal_outcome_scope has_variable = sb_natal_terminal_outcome_pending_var has_variable = sb_natal_terminal_outcome_delivery_queued_var has_variable = sb_natal_terminal_outcome_popup_receipt_var } } }
+		NOT = { container_exists = sb_klip_river_secession_generation_state }
+		NOT = { container_exists = sb_klip_river_punitive_generation_state }
+		NOT = { any_country = { OR = { has_variable = sb_klip_river_county_pending_var has_variable = sb_klip_river_county_scheduled_var has_variable = sb_klip_river_county_ready_var has_variable = sb_klip_river_county_creation_lease_var has_variable = sb_klip_river_secession_delivery_pending_var has_variable = sb_klip_river_secession_delivery_queued_var has_variable = sb_klip_river_secession_generation_scope has_variable = sb_klip_river_secession_launch_lease_var has_variable = sb_klip_river_secession_play_scope has_variable = sb_klip_river_secession_active_var has_variable = sb_klip_river_secession_frozen_state_scope has_variable = sb_klip_river_punitive_delivery_pending_var has_variable = sb_klip_river_punitive_delivery_queued_var has_variable = sb_klip_river_punitive_generation_scope has_variable = sb_klip_river_punitive_launch_lease_var has_variable = sb_klip_river_punitive_play_scope has_variable = sb_klip_river_punitive_active_var has_variable = sb_klip_river_punitive_frozen_state_scope has_variable = sb_klip_river_punitive_outcome_delivery_pending_var has_variable = sb_klip_river_punitive_outcome_delivery_queued_var } } }
+		NOT = { any_country = { OR = { has_variable = sb_nrp_boundary_pending_var has_variable = sb_nrp_boundary_event_open_var has_variable = sb_nrp_boundary_refused_var has_variable = sb_nrp_boundary_play_scope has_variable = sb_nrp_boundary_confrontation_active_var has_variable = sb_nrp_trn_defence_request_queued_var has_variable = sb_nrp_trn_defence_accepted_pending_var has_variable = sb_nrp_trn_defence_declined_pending_var has_variable = sb_nrp_deferred_defence_pact_pending_var has_variable = sb_nrp_boundary_cutback_notification_pending_var has_variable = sb_nrp_union_petition_pending_var has_variable = sb_nrp_union_petition_response_pending_var has_variable = sb_nrp_boundary_launch_lease_var } } }
 		has_technology_researched = nationalism
 		country_rank >= rank_value:minor_power
 		OR = {
@@ -42,7 +111,13 @@ STA = {
 	ai_will_do = { always = yes }
 
 	possible = {
+		is_at_war = no
+		is_active_in_diplomatic_play = no
+		NOT = { sb_southern_formation_has_blocking_story_transaction = yes }
 		country_definition = cd:BST
+		NOT = { has_variable = sb_bst_cap_disarmament_pending_var }
+		NOT = { has_variable = sb_bst_gun_war_play_scope }
+		NOT = { has_variable = sb_bst_cap_annexation_crisis_var }
 		is_subject = no
 		has_variable = sb_sotho_tswana_nation_completed_var
 		c:TSW ?= {

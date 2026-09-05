@@ -135,6 +135,7 @@ pass (candidates: BST, ~~NGN~~, SWZ, GZA, ~~ORL~~, ~~ABY-on-emergence~~). | DP: 
 | `PERF-12` | Frontier eligibility, mineral one-shots, CAP conversion, ORA refresh, and recurring pulse ownership are singular; the empty Namibia yearly handler is absent. |
 | `QUAL-06` | `unused_symbol_allowlist.json` and its generated report classify the three legitimate definition-only engine entry points; accidental dead scaffolding was removed. |
 | `QUAL-07` | Rebased overrides and shared lifecycle helpers now carry precise source/delta or ownership comments without renaming stable public keys. |
+| `OB1-GQ-00 (static)` | Retired dead `dp_sb_griqualand_revoke_claim` end to end: no definition, launcher, handler branch, or unreviewed localisation residue remains, and no replacement launcher was added. Full static discovery and stale-symbol validation pass. Its database/cold-load row remains `Engine pending` in the OB1 runtime matrix. |
 
 ---
 

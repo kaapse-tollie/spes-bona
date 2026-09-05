@@ -18,6 +18,94 @@ This is a new-game compatibility target. It does not promise migration of a live
 save. Because the beta is rolling, a build, branch, or manifest change invalidates this
 review and requires a new depot delta before release.
 
+## Implementation discoveries
+
+- The approved per-route war work exposed enough duplicated 0/1/2 accepted-side logic
+  that implementation added `common/scripted_effects/sb_story_war_effects.txt` as the
+  shared, idempotent Humiliation recorder/resolver. This is an implementation-discovered
+  file, not a mechanics expansion: timer callbacks remain non-authoritative, while
+  terminal resolution still runs only from the authored play's final back-down or
+  war-end path.
+- `sb_griqualand_west.249` was retired as an executable event and dispatch when the
+  dead one-play claim-revocation route was replaced by the approved two-phase `.254`
+  sequence. Its existing DP-reviewed English localization block remains byte-for-byte
+  archived in `sb_griqualand_west_l_english.yml`; it is intentionally historical prose,
+  not a live dispatch or an unreviewed replacement.
+- Post-integration hostile review found that type-only terminal hooks and post-create
+  play searches could consume or mutate unrelated plays. The convergence patch binds
+  the affected routes to pre-create leases and saved actual-play scopes, makes Phase-B
+  claim revocation independently idempotent, and derives timer-safe Warren/total-war
+  outcomes only from unambiguous final subject or ownership predicates. These are
+  correctness repairs to the approved mechanics, not new outcomes.
+- Three-month held popups could outlive the old 45/90-day dispatch markers. The
+  implementation therefore separates short scheduling leases from four-month popup
+  receipts and, where a name can be reused, binds the receipt to a unique container
+  generation. Stale options are inert, valid-but-busy routes retry, and permanent
+  invalidity cancels without inventing a narrative victory.
+- Blood River required a second transaction after the exact play closes: `.070`,
+  `.080`, and `.081` now carry a saved terminal result plus exact recipient and
+  counterparty. This lets a live retagged recipient consume the result after play
+  cleanup, while dead-recipient recovery clears it without reward. The documented
+  diplomatic-play `initiator` and `target` links, not callback-only aliases, bind the
+  transaction on back-down.
+- Zulu firearms and royal continuity use different lifetimes. The firearms archive
+  may refresh while the exact annex play remains active, but ruler/heir/house identity
+  freezes once at exact admission (or immediately before a direct annex). Monthly and
+  wargoal callbacks no longer rewrite the royal snapshot. Both archives survive a
+  no-NAL British annex and transfer once when Natalia is later created.
+- Martinus coercive and legal offers, Griqualand `.261`, Klip secession/punitive
+  offers, TRN-ZPB crackdown, Xhosa 7/8/9 delivery, Natal refusal/guns, and the
+  Zululand chiefdom terminals now use generation-bound authority. Exact victory may
+  reserve a deferred Martinus union install after ambition resolution; the reservation
+  clears only after the authored pact is observed.
+- TRN-ZPB crackdown needs two distinct physical records. Its launch-time TRN state
+  footprint configures goals, while the separately frozen ZPB Northern Transvaal
+  state proves the authored succession endpoint together with TRN extinction. Route
+  cleanup globally removes the singleton country and state markers so a retagged
+  backer or transferred state cannot retain authority.
+- Klip River county creation is now a fail-closed local transaction. The creation
+  lease remains until all three provinces verify under the exact newly created country;
+  a failed verification restores only provinces still owned by that exact object to
+  their saved pre-attempt owners and never selects a replacement `KLR`, `NAL`, or
+  `ZUL` tag.
+- SAF/STA/NGN formation and both imperial/confederated formation and expansion
+  branches now call one shared story-transaction lock. It covers all live generation
+  containers, popup receipts, launch/play leases, terminal deliveries, and frozen
+  state evidence, including orphan recovery after actor death or retag.
+- Four older selectors outside the approved Step 8 file set still use
+  `random_diplomatic_play`. They were not silently redesigned in this patch and are
+  registered as `OB1-07`; none is used as evidence for the exact-launch claims below.
+
+## Frozen static validation snapshot
+
+The post-convergence tree was validated after all route and formation fixes:
+
+- `uv run python -m unittest discover -s tests -q`: **388 tests passed**.
+- `tools/validate.py --skip-cmf-sync` with the explicit OB1 game root and a fresh
+  extraction of the verified CMF asset: **16/16 checks, 0 failed**; the five declared
+  deferred gates remain warnings.
+- Delayed-event lifecycle inventory: **442 dispatches**, SHA-256
+  `bb3ec8d44de7cc00e329762ddbe19eb57e241835c9925b714f2c9452d843618c`, with every
+  destination classified.
+- Override inventory: **37** same-path files, **109** keyed overrides, **18** changed
+  state blocks, **0** `replace_path` directives, **1** additive override, **8**
+  localisation replacements, **20** key collisions, and **2** upstream contracts.
+- Reviewed localisation: **105** namespaces match the byte baseline; **174** remain
+  explicitly `TO REVIEW`.
+- Naval validation: **6,641** nodes, **7,191** connections, and all **33** SB state
+  ports connected. The merged spline is 1,650,134 bytes with SHA-256
+  `9fd9d83f0b651284d5ef22066d19239fd9e1127d25c14c0763eca3bbade5ef8c`.
+- A fresh `vic3-tiger` run loaded SB plus the disposable exact CMF extraction, exited
+  zero, and ended with `fatal: 0, error: 1109, warning: 103, untidy: 1, tips: 1`.
+  Its validator-owned ordered output SHA-256 is
+  `708bbcea675e055fa84a63cc3f3f2c5a986040c253127eb09a3c6abbdd8ab701`.
+  Tiger identifies itself as a 1.13.5 schema against OB1 and flags 1.14 constructs
+  such as `container_exists`; completed diagnostics are therefore advisory warnings,
+  not runtime certification.
+
+All 52 engine scenarios remain `Engine pending`; none of these static results is
+reported as a cold-launch or save/load pass.
+
 ## Sources
 
 Sources were fetched or inspected on 2026-09-04.
@@ -132,7 +220,8 @@ records remain the authoritative delta evidence.
   Colonial and company countries now call the new
   `ai_colony_will_incorporate_state`; `ai_strategy_default` selects between those
   routes. `ai_can_incorporate_state` feeds state-value and transfer-state scoring, not
-  the start command.
+  the start command. The inventory pins the unchanged `ai_strategy_default` caller and
+  `state_transfer` valuation object as non-shadowed upstream contracts.
 - The two old focused Vanilla incorporation-trigger objects are unchanged even though
   their shared source file changed. SB still needs the new sibling path because NAL and
   CAP can traverse both country-type branches. Willingness does not bypass

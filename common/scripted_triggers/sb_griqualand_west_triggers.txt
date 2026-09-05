@@ -1,0 +1,139 @@
+﻿# Launch authority for delayed Griqualand West refusal deliveries.
+
+sb_griqualand_current_oranje_claimant_is_launchable = {
+	OR = {
+		AND = {
+			c:ORA ?= { is_country_alive = yes has_claim = s:STATE_GRIQUALAND_WEST is_direct_subject_of = c:TRN }
+			c:TRN ?= { is_country_alive = yes is_at_war = no is_active_in_diplomatic_play = no aggressive_diplomatic_plays_permitted = yes has_variable = sb_kimberley_oranje_proxy_var has_variable = sb_kimberley_ora_pressed_claim_var }
+		}
+		c:TRN ?= { is_country_alive = yes is_at_war = no is_active_in_diplomatic_play = no aggressive_diplomatic_plays_permitted = yes has_claim = s:STATE_GRIQUALAND_WEST has_variable = sb_kimberley_ora_pressed_claim_var }
+		AND = {
+			NOT = { c:ORA ?= { is_direct_subject_of = c:TRN } }
+			c:ORA ?= { is_country_alive = yes is_at_war = no is_active_in_diplomatic_play = no aggressive_diplomatic_plays_permitted = yes has_claim = s:STATE_GRIQUALAND_WEST has_variable = sb_kimberley_ora_pressed_claim_var }
+		}
+	}
+}
+
+
+sb_griqualand_current_oranje_claimant_is_idle = {
+	OR = {
+		AND = {
+			c:ORA ?= { is_country_alive = yes has_claim = s:STATE_GRIQUALAND_WEST is_direct_subject_of = c:TRN }
+			c:TRN ?= { is_country_alive = yes is_at_war = no is_active_in_diplomatic_play = no has_variable = sb_kimberley_oranje_proxy_var has_variable = sb_kimberley_ora_pressed_claim_var }
+		}
+		c:TRN ?= { is_country_alive = yes is_at_war = no is_active_in_diplomatic_play = no has_claim = s:STATE_GRIQUALAND_WEST has_variable = sb_kimberley_ora_pressed_claim_var }
+		AND = {
+			NOT = { c:ORA ?= { is_direct_subject_of = c:TRN } }
+			c:ORA ?= { is_country_alive = yes is_at_war = no is_active_in_diplomatic_play = no has_claim = s:STATE_GRIQUALAND_WEST has_variable = sb_kimberley_ora_pressed_claim_var }
+		}
+	}
+}
+
+sb_griqualand_directional_refusal_parties_are_launchable = {
+	OR = {
+		AND = {
+			c:CAP ?= { is_country_alive = yes has_variable = sb_griqualand_west_hardline_path_var is_at_war = no is_active_in_diplomatic_play = no aggressive_diplomatic_plays_permitted = yes }
+			sb_griqualand_current_oranje_claimant_is_idle = yes
+		}
+		AND = {
+			c:CAP ?= { is_country_alive = yes NOT = { has_variable = sb_griqualand_west_hardline_path_var } is_at_war = no is_active_in_diplomatic_play = no }
+			sb_griqualand_current_oranje_claimant_is_launchable = yes
+		}
+	}
+}
+
+
+# ROOT = WBL while .025 owns a durable ingress receipt.
+sb_griqualand_ingress_political_authority = {
+	country_definition = cd:WBL
+	is_country_alive = yes
+	any_scope_state = { state_region = s:STATE_GRIQUALAND_WEST }
+	OR = {
+		AND = { has_variable = sb_griqualand_west_cap_annexation_demand_var c:CAP ?= { is_country_alive = yes } }
+		AND = { has_variable = sb_griqualand_west_ora_submission_demand_var c:ORA ?= { is_country_alive = yes } }
+		AND = { has_variable = sb_griqualand_west_trn_submission_demand_var c:TRN ?= { is_country_alive = yes } }
+		AND = {
+			has_variable = sb_griqualand_west_oranje_annexation_demand_var
+			OR = {
+				c:ORA ?= { is_country_alive = yes }
+				c:TRN ?= { is_country_alive = yes has_variable = sb_oranje_federated_into_trn_var }
+			}
+		}
+	}
+}
+
+sb_griqualand_ingress_accept_is_ready = {
+	sb_griqualand_ingress_political_authority = yes
+	is_at_war = no
+	is_active_in_diplomatic_play = no
+	OR = {
+		AND = { has_variable = sb_griqualand_west_cap_annexation_demand_var c:CAP ?= { is_at_war = no is_active_in_diplomatic_play = no } }
+		AND = { has_variable = sb_griqualand_west_ora_submission_demand_var c:ORA ?= { is_at_war = no is_active_in_diplomatic_play = no } }
+		AND = { has_variable = sb_griqualand_west_trn_submission_demand_var c:TRN ?= { is_at_war = no is_active_in_diplomatic_play = no } }
+		AND = {
+			has_variable = sb_griqualand_west_oranje_annexation_demand_var
+			OR = {
+				c:ORA ?= { is_country_alive = yes is_at_war = no is_active_in_diplomatic_play = no has_claim = s:STATE_GRIQUALAND_WEST }
+				c:TRN ?= { is_country_alive = yes is_at_war = no is_active_in_diplomatic_play = no has_claim = s:STATE_GRIQUALAND_WEST has_variable = sb_oranje_federated_into_trn_var }
+			}
+		}
+	}
+}
+
+sb_griqualand_ingress_refusal_is_ready = {
+	sb_griqualand_ingress_political_authority = yes
+	is_at_war = no
+	is_active_in_diplomatic_play = no
+	OR = {
+		AND = { has_variable = sb_griqualand_west_cap_annexation_demand_var c:CAP ?= { is_at_war = no is_active_in_diplomatic_play = no aggressive_diplomatic_plays_permitted = yes } }
+		AND = { has_variable = sb_griqualand_west_ora_submission_demand_var c:ORA ?= { is_at_war = no is_active_in_diplomatic_play = no aggressive_diplomatic_plays_permitted = yes } }
+		AND = { has_variable = sb_griqualand_west_trn_submission_demand_var c:TRN ?= { is_at_war = no is_active_in_diplomatic_play = no aggressive_diplomatic_plays_permitted = yes } }
+		AND = { has_variable = sb_griqualand_west_oranje_annexation_demand_var sb_griqualand_current_oranje_claimant_is_launchable = yes }
+	}
+}
+
+
+sb_griqualand_phase_b_authority_is_valid = {
+	has_global_variable = sb_griqualand_sequence_active_global_var
+	has_global_variable = sb_griqualand_phase_b_pending_global_var
+	c:WBL ?= {
+		is_country_alive = yes
+		is_subject = no
+		has_variable = sb_griqualand_west_wbl_independent_var
+	}
+	p:x68B5E8.state.owner = c:WBL
+	container:sb_griqualand_sequence_state ?= {
+		has_variable = sb_griqualand_advancing_claimant_scope
+		has_variable = sb_griqualand_advancing_diplomatic_leader_scope
+		var:sb_griqualand_advancing_claimant_scope = { is_country_alive = yes has_claim = s:STATE_GRIQUALAND_WEST }
+		var:sb_griqualand_advancing_diplomatic_leader_scope = { is_country_alive = yes }
+		OR = {
+			AND = { var:sb_griqualand_advancing_claimant_scope = c:CAP var:sb_griqualand_advancing_diplomatic_leader_scope = c:CAP }
+			AND = { var:sb_griqualand_advancing_claimant_scope = c:ORA var:sb_griqualand_advancing_diplomatic_leader_scope = c:ORA NOT = { c:ORA ?= { is_direct_subject_of = c:TRN } } }
+			AND = { var:sb_griqualand_advancing_claimant_scope = c:ORA var:sb_griqualand_advancing_diplomatic_leader_scope = c:TRN c:ORA ?= { is_direct_subject_of = c:TRN } }
+			AND = { var:sb_griqualand_advancing_claimant_scope = c:TRN var:sb_griqualand_advancing_diplomatic_leader_scope = c:TRN }
+		}
+	}
+}
+
+sb_griqualand_phase_b_authority_is_launchable = {
+	sb_griqualand_phase_b_authority_is_valid = yes
+	c:WBL ?= { is_at_war = no is_active_in_diplomatic_play = no }
+	container:sb_griqualand_sequence_state.var:sb_griqualand_advancing_diplomatic_leader_scope = {
+		is_at_war = no
+		is_active_in_diplomatic_play = no
+		aggressive_diplomatic_plays_permitted = yes
+	}
+}
+
+
+sb_griqualand_current_oranje_claimant_is_valid = {
+	OR = {
+		AND = {
+			c:ORA ?= { is_country_alive = yes has_claim = s:STATE_GRIQUALAND_WEST is_direct_subject_of = c:TRN }
+			c:TRN ?= { is_country_alive = yes has_variable = sb_kimberley_oranje_proxy_var has_variable = sb_kimberley_ora_pressed_claim_var }
+		}
+		c:TRN ?= { is_country_alive = yes has_claim = s:STATE_GRIQUALAND_WEST has_variable = sb_kimberley_ora_pressed_claim_var }
+		AND = { NOT = { c:ORA ?= { is_direct_subject_of = c:TRN } } c:ORA ?= { is_country_alive = yes has_claim = s:STATE_GRIQUALAND_WEST has_variable = sb_kimberley_ora_pressed_claim_var } }
+	}
+}

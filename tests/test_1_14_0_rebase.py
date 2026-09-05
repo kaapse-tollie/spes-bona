@@ -39,6 +39,33 @@ class RebaseTests(unittest.TestCase):
         self.assertEqual(
             "3868129321396195520", inventory["target_core_depot_manifest"]
         )
+        self.assertEqual(3, inventory["schema_version"])
+        self.assertEqual(37, len(inventory["same_path_files"]))
+        self.assertEqual(109, len(inventory["keyed_overrides"]))
+        self.assertEqual(18, len(inventory["state_region_blocks"]))
+        self.assertEqual(1, len(inventory["additive_overrides"]))
+        self.assertEqual(8, len(inventory["localization_replace_files"]))
+        self.assertEqual(20, len(inventory["localization_key_collisions"]))
+        reviewed_entries = (
+            inventory["same_path_files"]
+            + inventory["keyed_overrides"]
+            + inventory["additive_overrides"]
+            + inventory["localization_replace_files"]
+            + inventory["localization_key_collisions"]
+            + inventory["upstream_contracts"]
+        )
+        self.assertEqual({"2026-09-04"}, {entry["rebase_date"] for entry in reviewed_entries})
+        self.assertEqual(
+            {"1.14.0"},
+            {entry["upstream_version"] for entry in inventory["same_path_files"]},
+        )
+        self.assertEqual(
+            {
+                ("common/ai_strategies/00_default_strategy.txt", "ai_strategy_default"),
+                ("common/treaty_articles/06_transfer_state.txt", "state_transfer"),
+            },
+            {(entry["path"], entry["key"]) for entry in inventory["upstream_contracts"]},
+        )
         dependencies = [
             item for item in inventory["dependencies"]
             if item["name"] == "Community Mod Framework"
@@ -56,6 +83,40 @@ class RebaseTests(unittest.TestCase):
             "79dd0d434e6ffb617147ad1b91b73e6306139adfffcadf6774eeb32db3a09b8b",
             dependencies[0]["asset_sha256"],
         )
+
+    def test_live_baseline_surfaces_have_no_stale_1_13_or_cmf_1_65_labels(self):
+        paths = []
+        for base in ("common", "events", "localization"):
+            paths.extend(
+                path
+                for path in (ROOT / base).rglob("*")
+                if path.is_file() and path.suffix in {".txt", ".yml", ".gui"}
+            )
+        paths.extend(
+            ROOT / relative
+            for relative in (
+                "descriptor.mod",
+                ".metadata/metadata.json",
+                "README.md",
+                "AGENTS.md",
+                "Docs/audit_issues_open.md",
+                "Docs/compatibility/override_inventory.json",
+                "Docs/compatibility/override_manifest.md",
+                "Docs/compatibility/third_party_compatibility.md",
+            )
+        )
+        stale = re.compile(
+            r"1\.13\.11|1\.65\.\*|"
+            r"(?:CMF|Community Mod Framework)[^\n]{0,32}1\.65(?:\.0)?"
+        )
+        findings = []
+        for path in paths:
+            for line_number, line in enumerate(
+                path.read_text(encoding="utf-8-sig", errors="ignore").splitlines(), 1
+            ):
+                if stale.search(line):
+                    findings.append(f"{path.relative_to(ROOT)}:{line_number}:{line.strip()}")
+        self.assertEqual([], findings)
 
     def test_1_14_0_preserves_1_13_11_hotfix_files_as_vanilla_owned(self):
         self.assertFalse((ROOT / "common/production_methods/04_plantations.txt").exists())

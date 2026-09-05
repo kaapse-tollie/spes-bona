@@ -65,7 +65,7 @@ sb_zulu_face_swazi_defensive_muster = {
 
 sb_apply_swazi_defensive_muster_for_play = {
 	c:SWZ ?= { sb_swazi_raise_defensive_muster = yes }
-	scope:initiator ?= {
+	initiator ?= {
 		if = {
 			limit = {
 				country_definition = cd:ZUL
@@ -86,7 +86,7 @@ sb_apply_swazi_defensive_muster_for_play = {
 
 sb_clear_swazi_defensive_muster_for_play = {
 	c:SWZ ?= { sb_swazi_clear_defensive_muster = yes }
-	scope:initiator ?= {
+	initiator ?= {
 		if = {
 			limit = { has_variable = sb_zulu_swazi_disarray_from_muster_var }
 			remove_variable = sb_zulu_swazi_disarray_from_muster_var
@@ -104,11 +104,11 @@ sb_clear_swazi_defensive_muster_for_play = {
 sb_route_swazi_defensive_muster_for_play = {
 	if = {
 		limit = {
-			scope:target ?= {
-				country_definition = cd:SWZ
-				is_country_alive = yes
-				is_ai = yes
-			}
+			is_diplomatic_play_type = dp_conquer_state
+			initiator = c:ZUL
+			target = c:SWZ
+			c:ZUL ?= { has_variable = sb_zulu_swazi_play_scope var:sb_zulu_swazi_play_scope = root }
+			c:SWZ ?= { is_country_alive = yes is_ai = yes }
 		}
 		if = {
 			limit = {
@@ -137,7 +137,12 @@ sb_route_swazi_defensive_muster_for_play = {
 
 sb_cleanup_swazi_defensive_muster_for_play = {
 	if = {
-		limit = { scope:target ?= { country_definition = cd:SWZ } }
+		limit = {
+			is_diplomatic_play_type = dp_conquer_state
+			c:ZUL ?= { has_variable = sb_zulu_swazi_play_scope var:sb_zulu_swazi_play_scope = root }
+			initiator = c:ZUL
+			target = c:SWZ
+		}
 		c:SWZ ?= {
 			sb_swazi_end_defensive_muster = yes
 			if = {
@@ -145,7 +150,7 @@ sb_cleanup_swazi_defensive_muster_for_play = {
 				remove_variable = sb_swazi_ai_history_muster_selected_var
 			}
 		}
-		scope:initiator ?= {
+		c:ZUL ?= {
 			if = {
 				limit = { has_variable = sb_zulu_swazi_disarray_from_muster_var }
 				remove_variable = sb_zulu_swazi_disarray_from_muster_var

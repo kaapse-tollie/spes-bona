@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate Spes Bona's exact-path and keyed override inventory."""
+"""Validate Spes Bona's same-path, keyed, additive, and localization override inventory."""
 
 from __future__ import annotations
 
@@ -13,9 +13,10 @@ import subprocess
 import sys
 
 HARD_REPLACE_RE = re.compile(
-    r"^(REPLACE|TRY_REPLACE|REPLACE_OR_CREATE):([^\s=]+)\s*=\s*\{", re.MULTILINE
+    r"^[ \t]*(REPLACE|TRY_REPLACE|REPLACE_OR_CREATE):([^\s=]+)\s*=\s*\{", re.MULTILINE
 )
-TOP_LEVEL_RE = re.compile(r"^([A-Za-z0-9_]+)\s*=\s*\{", re.MULTILINE)
+TOP_LEVEL_RE = re.compile(r"^[ \t]*([A-Za-z0-9_]+)\s*=\s*\{", re.MULTILINE)
+LOCALIZATION_KEY_RE = re.compile(r"^[ \t]*([A-Za-z0-9_.-]+):\d*(?:[ \t]|$)", re.MULTILINE)
 SKIP_TOP_LEVEL = {".git", ".claude", ".prime"}
 STEAM_APP_ID = "529340"
 CORE_DEPOT_ID = "529341"
@@ -94,12 +95,50 @@ def extract_braced_object(text: str, start: int) -> str:
     raise ValueError("unclosed object")
 
 
+def top_level_matches(pattern: re.Pattern[str], text: str) -> list[re.Match[str]]:
+    """Return regex matches whose first character is at script brace depth zero."""
+    matches = list(pattern.finditer(text))
+    if not matches:
+        return []
+    starts = {match.start(): match for match in matches}
+    result: list[re.Match[str]] = []
+    depth = 0
+    in_quote = False
+    escaped = False
+    in_comment = False
+    for index, char in enumerate(text):
+        match = starts.get(index)
+        if match is not None and depth == 0 and not in_quote and not in_comment:
+            result.append(match)
+        if in_comment:
+            if char == "\n":
+                in_comment = False
+            continue
+        if in_quote:
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == '"':
+                in_quote = False
+            continue
+        if char == "#":
+            in_comment = True
+        elif char == '"':
+            in_quote = True
+        elif char == "{":
+            depth += 1
+        elif char == "}":
+            depth = max(0, depth - 1)
+    return result
+
+
 def find_object(text: str, key: str, *, directive: str | None = None) -> str:
     if directive is None:
         pattern = re.compile(rf"^{re.escape(key)}\s*=\s*\{{", re.MULTILINE)
     else:
         pattern = re.compile(rf"^{re.escape(directive)}:{re.escape(key)}\s*=\s*\{{", re.MULTILINE)
-    matches = list(pattern.finditer(text))
+    matches = top_level_matches(pattern, text)
     if len(matches) != 1:
         raise ValueError(f"expected one {directive + ':' if directive else ''}{key}, found {len(matches)}")
     return extract_braced_object(text, matches[0].start())
@@ -123,14 +162,17 @@ def current_keyed_overrides(root: Path) -> dict[tuple[str, str, str], str]:
             text = path.read_text(encoding="utf-8-sig")
         except UnicodeDecodeError:
             continue
-        for match in HARD_REPLACE_RE.finditer(text):
+        for match in top_level_matches(HARD_REPLACE_RE, text):
             identity = (rel.as_posix(), match.group(1), match.group(2))
             result[identity] = extract_braced_object(text, match.start())
     return result
 
 
 def extract_top_level_blocks(text: str) -> dict[str, str]:
-    return {match.group(1): extract_braced_object(text, match.start()) for match in TOP_LEVEL_RE.finditer(text)}
+    return {
+        match.group(1): extract_braced_object(text, match.start())
+        for match in top_level_matches(TOP_LEVEL_RE, text)
+    }
 
 
 def state_region_block_comparison(root: Path, game_root: Path) -> tuple[set[str], set[str]]:
@@ -142,6 +184,34 @@ def state_region_block_comparison(root: Path, game_root: Path) -> tuple[set[str]
     changed = {name for name, block in mod_blocks.items() if upstream_blocks.get(name) != block}
     missing = set(upstream_blocks) - set(mod_blocks)
     return changed, missing
+
+
+def validate_inventory_path_containment(inventory: dict, errors: list[str]) -> None:
+    """Reject inventory paths that can escape their selected Vanilla, CMF, or mod root."""
+    path_fields = {"path", "mod_path", "mod_file", "upstream_file"}
+
+    def visit(value: object, label: str) -> None:
+        if isinstance(value, dict):
+            for key, child in value.items():
+                child_label = f"{label}.{key}" if label else key
+                if key in path_fields and child is not None:
+                    if not isinstance(child, str) or not child:
+                        errors.append(f"{child_label}: inventory path must be a non-empty relative string")
+                    else:
+                        candidate = Path(child)
+                        if (
+                            candidate.is_absolute()
+                            or ".." in candidate.parts
+                            or child.startswith(("/", "\\"))
+                            or re.match(r"^[A-Za-z]:[\\/]", child)
+                        ):
+                            errors.append(f"{child_label}: inventory path must remain beneath its selected root: {child}")
+                visit(child, child_label)
+        elif isinstance(value, list):
+            for index, child in enumerate(value):
+                visit(child, f"{label}[{index}]")
+
+    visit(inventory, "inventory")
 
 
 def load_metadata(path: Path, label: str, errors: list[str]) -> dict:
@@ -262,8 +332,8 @@ def validate_release_metadata(
     errors: list[str],
     steam_app_manifest: Path | None = None,
 ) -> None:
-    if inventory.get("schema_version") != 2:
-        errors.append("override inventory schema_version must be 2")
+    if inventory.get("schema_version") != 3:
+        errors.append("override inventory schema_version must be 3")
 
     target = inventory.get("target_game_version")
     expected = SUPPORTED_TARGETS.get(target)
@@ -417,7 +487,7 @@ def require_metadata(entry: dict, label: str, errors: list[str]) -> None:
 
 
 
-ZZ_OVERRIDE_FILE_RE = re.compile(r"^(zz|zzz)_sb_.+\.txt$")
+ZZ_OVERRIDE_FILE_RE = re.compile(r"^z{2,}_.+\.txt$")
 
 
 def validate_additive_overrides(root: Path, inventory: dict, errors: list[str]) -> None:
@@ -440,7 +510,7 @@ def validate_additive_overrides(root: Path, inventory: dict, errors: list[str]) 
             continue
         if entry.get("mod_sha256") != sha256(path):
             errors.append(f"{rel}: additive override mod hash drift")
-        for field in ("intent", "owner"):
+        for field in ("intent", "owner", "rebase_date"):
             if not str(entry.get(field, "")).strip():
                 errors.append(f"{rel}: additive override missing {field}")
     keyed_paths = {k.get("mod_path") for k in inventory.get("keyed_overrides", [])}
@@ -457,25 +527,120 @@ def validate_additive_overrides(root: Path, inventory: dict, errors: list[str]) 
                 )
 
 
+def localization_keys(path: Path) -> set[str]:
+    """Return exact localisation keys from one Paradox YAML file."""
+    return {
+        key
+        for key in LOCALIZATION_KEY_RE.findall(path.read_text(encoding="utf-8-sig"))
+        if key != "l_english"
+    }
+
+
+def vanilla_localization_sources(game_root: Path) -> dict[str, set[str]]:
+    """Map each Vanilla English key to every source file that defines it."""
+    english_root = game_root / "localization/english"
+    sources: dict[str, set[str]] = {}
+    if not english_root.is_dir():
+        return sources
+    for path in sorted(english_root.rglob("*.yml")):
+        relative = path.relative_to(english_root).as_posix()
+        for key in localization_keys(path):
+            sources.setdefault(key, set()).add(relative)
+    return sources
+
+
+def validate_localization_key_collisions(
+    root: Path,
+    game_root: Path,
+    inventory: dict,
+    replace_entries: dict[str, dict],
+    errors: list[str],
+) -> None:
+    """Pin every collision not covered by a replace file's primary Vanilla source.
+
+    A null-primary replace file needs one entry per colliding key/source pair. A file with
+    a primary source needs entries only for keys that also collide with another Vanilla
+    source. This makes secondary and multi-source collisions explicit rather than letting
+    them hide behind file-level registration.
+    """
+    vanilla_sources = vanilla_localization_sources(game_root)
+    actual: set[tuple[str, str, str]] = set()
+    mod_key_cache: dict[str, set[str]] = {}
+    for mod_file, replace_entry in replace_entries.items():
+        path = root / mod_file
+        if not path.is_file():
+            continue
+        mod_keys = localization_keys(path)
+        mod_key_cache[mod_file] = mod_keys
+        primary = replace_entry.get("upstream_file")
+        for key in mod_keys:
+            for upstream_file in vanilla_sources.get(key, set()):
+                if upstream_file != primary:
+                    actual.add((mod_file, key, upstream_file))
+
+    declared: set[tuple[str, str, str]] = set()
+    for entry in inventory.get("localization_key_collisions", []):
+        identity = (
+            str(entry.get("mod_file", "")),
+            str(entry.get("key", "")),
+            str(entry.get("upstream_file", "")),
+        )
+        label = ":".join(identity)
+        if not all(identity):
+            errors.append("localization key collision entry has an empty identity field")
+            continue
+        if identity in declared:
+            errors.append(f"duplicate localization key collision entry: {label}")
+            continue
+        declared.add(identity)
+        require_metadata(entry, label, errors)
+        if entry.get("upstream_version") != inventory.get("target_game_version"):
+            errors.append(f"{label}: localization collision version does not match target")
+
+        mod_file, key, upstream_file = identity
+        if mod_file not in replace_entries:
+            errors.append(f"{label}: mod_file is not a registered localization replace file")
+        elif key not in mod_key_cache.get(mod_file, set()):
+            errors.append(f"{label}: key is missing from the declared mod file")
+
+        upstream_path = game_root / "localization/english" / upstream_file
+        if not upstream_path.is_file():
+            errors.append(f"{label}: upstream localization source is missing")
+        else:
+            if key not in localization_keys(upstream_path):
+                errors.append(f"{label}: key is missing from the upstream localization source")
+            if entry.get("upstream_sha256") != sha256(upstream_path):
+                errors.append(f"{label}: upstream localization source hash drift")
+
+    for identity in sorted(actual - declared):
+        errors.append(f"unmanifested localization key collision: {identity}")
+    for identity in sorted(declared - actual):
+        errors.append(f"stale localization key collision entry: {identity}")
+
+
 def validate_localization_replace(root: Path, game_root: Path, inventory: dict, errors: list[str]) -> None:
     """Files under localization/english/replace/ shadow upstream localisation by name and
     must be registered in `localization_replace_files` with an explicit upstream reference
     (or null for SB-authored names) and the mod file hash."""
-    registered: set[str] = set()
+    registered: dict[str, dict] = {}
     for entry in inventory.get("localization_replace_files", []):
         rel = entry.get("path")
         if not rel:
             errors.append("localization replace entry has no path")
             continue
-        registered.add(rel)
+        if rel in registered:
+            errors.append(f"duplicate localization replace entry: {rel}")
+            continue
+        registered[rel] = entry
         path = root / rel
         if not path.is_file():
             errors.append(f"localization replace path missing: {rel}")
             continue
         if entry.get("mod_sha256") != sha256(path):
             errors.append(f"{rel}: localization replace mod hash drift")
-        if not str(entry.get("intent", "")).strip():
-            errors.append(f"{rel}: localization replace entry missing intent")
+        for field in ("intent", "owner", "rebase_date"):
+            if not str(entry.get(field, "")).strip():
+                errors.append(f"{rel}: localization replace entry missing {field}")
         upstream = entry.get("upstream_file")
         if upstream:
             upstream_path = game_root / "localization/english" / upstream
@@ -491,6 +656,45 @@ def validate_localization_replace(root: Path, game_root: Path, inventory: dict, 
             rel = path.relative_to(root).as_posix()
             if rel not in registered:
                 errors.append(f"unregistered localization replace file: {rel}")
+    validate_localization_key_collisions(root, game_root, inventory, registered, errors)
+
+
+def validate_upstream_contracts(
+    game_root: Path,
+    inventory: dict,
+    target: str,
+    errors: list[str],
+) -> None:
+    """Validate non-shadowed Vanilla objects that are part of an SB override contract."""
+    seen: set[tuple[str, str]] = set()
+    text_cache: dict[Path, str] = {}
+    for entry in inventory.get("upstream_contracts", []):
+        identity = (str(entry.get("path", "")), str(entry.get("key", "")))
+        label = ":".join(identity)
+        if not all(identity):
+            errors.append("upstream contract entry has an empty path or key")
+            continue
+        if identity in seen:
+            errors.append(f"duplicate upstream contract entry: {label}")
+            continue
+        seen.add(identity)
+        require_metadata(entry, label, errors)
+        if entry.get("upstream_version") != target:
+            errors.append(f"{label}: upstream contract version does not match target")
+        path = game_root / identity[0]
+        if not path.is_file():
+            errors.append(f"{label}: upstream contract source is missing")
+            continue
+        if entry.get("file_sha256") != sha256(path):
+            errors.append(f"{label}: upstream contract source-file hash drift")
+        try:
+            text = text_cache.setdefault(path, path.read_text(encoding="utf-8-sig"))
+            block = find_object(text, identity[1])
+        except ValueError as exc:
+            errors.append(f"{label}: {exc}")
+            continue
+        if entry.get("object_sha256") != sha256_bytes(block.encode("utf-8")):
+            errors.append(f"{label}: upstream contract object hash drift")
 
 
 def validate(
@@ -501,11 +705,15 @@ def validate(
     steam_app_manifest: Path | None = None,
 ) -> list[str]:
     errors: list[str] = []
+    validate_inventory_path_containment(inventory, errors)
+    if errors:
+        return errors
     target = inventory.get("target_game_version")
     validate_release_metadata(root, inventory, errors, steam_app_manifest)
     if cmf_root is not None:
         validate_cmf_checkout(cmf_root, errors)
     validate_upstream_api_surface(game_root, cmf_root, errors)
+    validate_upstream_contracts(game_root, inventory, target, errors)
     descriptor = (root / "descriptor.mod").read_text(encoding="utf-8-sig")
     supported = re.findall(r'^\s*supported_version\s*=\s*"([^"]+)"', descriptor, re.MULTILINE)
     if supported != [target]:
@@ -602,7 +810,13 @@ def validate(
 
 
 def find_root(explicit: str | None, env_name: str, candidates: list[Path], required: tuple[str, ...]) -> Path | None:
-    values = [Path(explicit).expanduser() if explicit else None, Path(os.environ[env_name]).expanduser() if os.environ.get(env_name) else None, *candidates]
+    # An explicit selection is authoritative. Never fall back to an installed
+    # default when the caller supplied an invalid or mistyped root.
+    values = (
+        [Path(explicit).expanduser()]
+        if explicit is not None
+        else [Path(os.environ[env_name]).expanduser() if os.environ.get(env_name) else None, *candidates]
+    )
     for value in values:
         if value is None:
             continue
@@ -629,12 +843,22 @@ def main() -> int:
         Path.home() / ".local/share/Steam/steamapps/common/Victoria 3/game",
     ], ("common", "map_data"))
     if game_root is None:
-        print("Victoria 3 game root not found; pass --game-root or set VIC3_GAME_ROOT")
+        if args.game_root:
+            print(f"invalid explicit Victoria 3 game root: {args.game_root}")
+        else:
+            print("Victoria 3 game root not found; pass --game-root or set VIC3_GAME_ROOT")
         return 2
     cmf_root = find_root(args.cmf_root, "CMF_ROOT", [
         Path.home() / "Documents/Paradox Interactive/Victoria 3/mod/Community Mod Framework",
     ], ("common",))
-    inventory = json.loads((root / args.inventory).read_text(encoding="utf-8"))
+    if args.cmf_root and cmf_root is None:
+        print(f"invalid explicit Community Mod Framework root: {args.cmf_root}")
+        return 2
+    inventory_path = Path(args.inventory)
+    if inventory_path.is_absolute() or ".." in inventory_path.parts:
+        print(f"inventory path must remain beneath the mod root: {args.inventory}")
+        return 2
+    inventory = json.loads((root / inventory_path).read_text(encoding="utf-8"))
     steam_app_manifest = (
         Path(args.steam_app_manifest).expanduser().resolve()
         if args.steam_app_manifest
@@ -652,7 +876,9 @@ def main() -> int:
         f"{len(inventory['state_region_blocks'])} changed state-region blocks, "
         f"{len(inventory['approved_replace_paths'])} replace_path directives, "
         f"{len(inventory.get('additive_overrides', []))} additive overrides, "
-        f"{len(inventory.get('localization_replace_files', []))} localization replace files."
+        f"{len(inventory.get('localization_replace_files', []))} localization replace files, "
+        f"{len(inventory.get('localization_key_collisions', []))} localization key collisions, "
+        f"{len(inventory.get('upstream_contracts', []))} non-shadowed upstream contracts."
     )
     return 0
 

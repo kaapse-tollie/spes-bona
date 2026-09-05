@@ -68,10 +68,15 @@ def province_set(source: str) -> set[str]:
 
 
 def owner_provinces(state_block: str, country: str) -> set[str]:
+    # Current helpers may keep a compact state transfer on one line. Match the
+    # object itself rather than requiring the directive to start a line.
     matches = [
-        block
-        for block in nested_blocks(state_block, "set_owner_of_provinces")
-        if re.search(rf"\bcountry\s*=\s*c:{re.escape(country)}\b", block)
+        validate.extract_braced(state_block, match.start())
+        for match in re.finditer(r"set_owner_of_provinces\s*=\s*\{", state_block)
+        if re.search(
+            rf"\bcountry\s*=\s*c:{re.escape(country)}\b",
+            validate.extract_braced(state_block, match.start()),
+        )
     ]
     if len(matches) != 1:
         raise AssertionError(
@@ -463,23 +468,34 @@ class NatalZululandGameplayContractTests(unittest.TestCase):
         fight = named_option(response, "sb_natal_crisis.026.a")
         cede = named_option(response, "sb_natal_crisis.026.b")
 
-        self.assertIn("trigger_event = { id = sb_natal_crisis.026 days = 7 }", rejection)
+        self.assertIn("sb_natal_story_begin_guns_bargain_generation = yes", rejection)
+        authority = object_block(
+            "common/scripted_triggers/sb_natal_interwar_triggers.txt",
+            "sb_natal_story_bound_guns_bargain_event_authority",
+        )
+        self.assertIn("sb_natal_guns_bargain_generation_scope", authority)
+        self.assertIn("var:sb_natal_guns_bargain_generation_scope = scope:sb_natal_guns_bargain_receipt_scope", authority)
+        self.assertIn("sb_natal_story_bound_guns_bargain_event_authority = yes", response)
+        self.assertIn("sb_natal_story_begin_exact_launch = yes", fight)
         self.assertNotIn("set_owner_of_provinces", response)
         self.assertNotIn("x5B124F", response)
         self.assertNotIn("sb_natal_crisis.051", source)
 
-        self.assertIn("set_variable = sb_natal_war_active_var", fight)
-        self.assertIn("type = dp_sb_natal_crisis", fight)
-        self.assertIn("target_country = c:ORA", fight)
-        self.assertIn("holder = c:ORA", fight)
-        self.assertIn("target_country = root", fight)
-        self.assertIn("custom_tooltip = sb_natalia_chiefdoms_absorbed_tt", fight)
-        self.assertIn("annex = c:NGI", fight)
-        self.assertIn("custom_tooltip = sb_zulu_dynasty_gain_stability_10", fight)
-        self.assertIn("sb_zulu_add_dynastic_stability_10 = yes", fight)
-        self.assertIn("has_template = ZUL_dingane", fight)
-        self.assertIn("NOT = { has_trait = brave }", fight)
-        self.assertIn("add_trait = brave", fight)
+        self.assertIn("sb_natal_story_begin_exact_launch = yes", fight)
+        self.assertNotIn("annex = c:NGI", fight)
+        started = object_block(
+            "common/on_actions/sb_diplomatic_play_on_action_handlers.txt",
+            "sb_on_spes_bona_diplomatic_play_started",
+        )
+        self.assertIn("is_diplomatic_play_type = dp_sb_natal_crisis", started)
+        self.assertIn("has_variable = sb_natal_story_launch_lease_var", started)
+        self.assertIn("set_variable = sb_natal_war_active_var", started)
+        self.assertIn("sb_natal_story_absorption_commit_var", started)
+        self.assertIn("annex = c:NGI", started)
+        self.assertIn("sb_zulu_add_dynastic_stability_10 = yes", started)
+        self.assertIn("has_template = ZUL_dingane", started)
+        self.assertIn("NOT = { has_trait = brave }", started)
+        self.assertIn("add_trait = brave", started)
 
         stability_bar = object_block(
             "common/scripted_progress_bars/sb_progress_bars.txt",
@@ -646,8 +662,10 @@ class NatalZululandGameplayContractTests(unittest.TestCase):
         self.assertNotIn("is_ai = yes", nal)
         self.assertIn("is_subject_of = c:GBR", nal)
         self.assertIn("sb_natalia_british_colony_resolved_var", nal)
-        self.assertNotIn("is_at_war = no", british_gate)
-        self.assertNotIn("is_active_in_diplomatic_play = no", british_gate)
+        # The scheduler is a preflight. Britain and the Natal subject must be
+        # idle before the exact annexation root is created.
+        self.assertIn("is_at_war = no", british_gate)
+        self.assertIn("is_active_in_diplomatic_play = no", british_gate)
         self.assertNotIn("is_at_war = no", nal)
         self.assertNotIn("is_active_in_diplomatic_play = no", nal)
         self.assertIn("is_at_war = no", zul)
@@ -675,7 +693,12 @@ class NatalZululandGameplayContractTests(unittest.TestCase):
             scheduler_limit,
         )
         self.assertNotIn("game_date >= 1870.1.1", scheduler)
-        self.assertEqual(3, scheduler.count("set_variable = sb_anglo_zulu_pressure_active_var"))
+        self.assertEqual(0, scheduler.count("set_variable = sb_anglo_zulu_pressure_active_var"))
+        started = object_block(
+            "common/on_actions/sb_diplomatic_play_on_action_handlers.txt",
+            "sb_on_spes_bona_diplomatic_play_started",
+        )
+        self.assertEqual(3, started.count("set_variable = sb_anglo_zulu_pressure_active_var"))
         self.assertIn("type = dp_annex_war", play)
         self.assertIn("target_country = c:ZUL", play)
         self.assertNotIn("trigger_event", scheduler)
@@ -703,10 +726,16 @@ class NatalZululandGameplayContractTests(unittest.TestCase):
         self.assertIn("sb_boost_firearms_progress_50 = yes", victory)
         self.assertIn("c:GBR ?=", victory)
         self.assertIn("set_variable = sb_anglo_zulu_pressure_resolved_var", victory)
-        self.assertIn("is_diplomatic_play_type = dp_annex_war", backdown)
-        self.assertIn("country_definition = cd:GBR", backdown)
-        self.assertIn("country_definition = cd:ZUL", backdown)
-        self.assertIn("id = sb_anglo_zulu.020", backdown)
+        self.assertIn(
+            "root = { is_diplomatic_play_type = dp_annex_war initiator = c:GBR target = c:ZUL }",
+            backdown,
+        )
+        self.assertIn("sb_british_zulu_annex_play_scope", backdown)
+        self.assertIn("var:sb_british_zulu_annex_play_scope = root", backdown)
+        self.assertIn("scope:actor = c:GBR", backdown)
+        self.assertIn("scope:actor = c:ZUL", backdown)
+        self.assertIn("set_variable = sb_british_zulu_backdown_finalizer_pending_var", backdown)
+        self.assertIn("id = sb_anglo_zulu.099 days = 1", backdown)
         self.assertIn("is_diplomatic_play_type = dp_annex_war", war_end)
         self.assertIn("c:NAL ?=", war_end)
         self.assertGreaterEqual(

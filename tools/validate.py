@@ -15,6 +15,7 @@ import shutil
 import struct
 import subprocess
 import sys
+import tempfile
 from typing import Iterable
 import zlib
 
@@ -27,7 +28,9 @@ TEXT_ROOTS = ("common", "events", "localization", "map_data")
 TRIGGER_EVENT_RE = re.compile(r"\btrigger_event\s*=\s*\{")
 EVENT_ID_RE = re.compile(r"\bid\s*=\s*([A-Za-z0-9_.:-]+)")
 TIMING_RE = re.compile(r"\b(days|months|years)\s*=\s*([^\s}]+)")
-LOC_KEY_RE = re.compile(r"^\s*([^#\s][^:]*):\d*\s", re.MULTILINE)
+LOC_KEY_RE = re.compile(
+    r"^[ \t]*(?!l_english:)([^#\s:][^:\r\n]*):\d*(?:[ \t]|$)", re.MULTILINE
+)
 LOC_REFERENCE_RE = re.compile(
     r"\b(?:title|desc|text)\s*=\s*((?:sb_|je_sb_|decision_sb_|concept_sb_|dp_sb_|state_trait_sb_|law_sb_)[A-Za-z0-9_.-]+)"
 )
@@ -41,18 +44,22 @@ LOCATOR_INSTANCE_RE = re.compile(
     re.DOTALL,
 )
 REVIEW_MARKER_RE = re.compile(r"^\s*#\s*###\s+(TO REVIEW|REVIEWED)\s+###\s*$")
-LOC_LINE_KEY_RE = re.compile(r"^\s*([^#\s][^:]*):\d*(?:\s|$)")
+GENERAL_REVIEW_MARKER = "# TO REVIEW (non-event/JE keys)"
+REVIEW_QUEUE_ROW_RE = re.compile(r"^\|\s*`([^`]+)`\s*\|\s*`([^`]+)`\s*\|", re.MULTILINE)
+LOC_LINE_KEY_RE = re.compile(r"^[ \t]*(?!l_english:)([^#\s:][^:\r\n]*):\d*(?:[ \t]|$)")
 EVENT_LOC_NAMESPACE_RE = re.compile(
     r"^([A-Za-z0-9_]+\.\d+)(?:\.[A-Za-z0-9_-]+)*$"
 )
-SCRIPT_EVENT_RE = re.compile(r"^([A-Za-z0-9_]+\.\d+)\s*=\s*\{", re.MULTILINE)
+SCRIPT_EVENT_RE = re.compile(
+    r"^[ \t]*([A-Za-z0-9_]+\.\d+)[ \t]*=[ \t]*\{", re.MULTILINE
+)
 JOURNAL_ENTRY_RE = re.compile(
-    r"^(?:(?:REPLACE|TRY_REPLACE|REPLACE_OR_CREATE):)?(je_[A-Za-z0-9_]+)\s*=\s*\{",
+    r"^[ \t]*(?:(?:REPLACE|TRY_REPLACE|REPLACE_OR_CREATE):)?(je_[A-Za-z0-9_]+)[ \t]*=[ \t]*\{",
     re.MULTILINE,
 )
 TOP_LEVEL_OBJECT_RE = re.compile(r"^([A-Za-z0-9_]+)\s*=\s*\{", re.MULTILINE)
 HARD_REPLACE_RE = re.compile(
-    r"^(REPLACE|TRY_REPLACE|REPLACE_OR_CREATE):([^\s=]+)\s*=\s*\{", re.MULTILINE
+    r"^[ \t]*(REPLACE|TRY_REPLACE|REPLACE_OR_CREATE):([^\s=]+)\s*=\s*\{", re.MULTILINE
 )
 SB_SYMBOL_RE = re.compile(r"\bsb_[A-Za-z0-9_.]+\b")
 SB_DEFINITION_RE = re.compile(
@@ -75,6 +82,18 @@ class Check:
 
 def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def is_safe_relative_path(value: object) -> bool:
+    if not isinstance(value, str) or not value:
+        return False
+    path = Path(value)
+    return not (
+        path.is_absolute()
+        or ".." in path.parts
+        or value.startswith(("/", "\\"))
+        or re.match(r"^[A-Za-z]:[\\/]", value)
+    )
 
 
 def extract_braced(text: str, start: int) -> str:
@@ -110,6 +129,42 @@ def extract_braced(text: str, start: int) -> str:
             if depth == 0:
                 return text[start : index + 1]
     raise ValueError("unclosed braced object")
+
+
+def top_level_matches(pattern: re.Pattern[str], text: str) -> list[re.Match[str]]:
+    """Return regex matches at script brace depth zero, ignoring comments/quotes."""
+    matches = list(pattern.finditer(text))
+    starts = {match.start(): match for match in matches}
+    result: list[re.Match[str]] = []
+    depth = 0
+    quoted = False
+    escaped = False
+    commented = False
+    for index, char in enumerate(text):
+        match = starts.get(index)
+        if match is not None and depth == 0 and not quoted and not commented:
+            result.append(match)
+        if commented:
+            if char == "\n":
+                commented = False
+            continue
+        if quoted:
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == '"':
+                quoted = False
+            continue
+        if char == "#":
+            commented = True
+        elif char == '"':
+            quoted = True
+        elif char == "{":
+            depth += 1
+        elif char == "}":
+            depth = max(0, depth - 1)
+    return result
 
 
 def mask_script_comments(text: str) -> str:
@@ -151,7 +206,7 @@ def runtime_script_hazards(root: Path = ROOT) -> list[str]:
     if journal_root.is_dir():
         for path in sorted(journal_root.rglob("*.txt")):
             source = mask_script_comments(path.read_text(encoding="utf-8-sig", errors="ignore"))
-            for match in TOP_LEVEL_OBJECT_RE.finditer(source):
+            for match in top_level_matches(TOP_LEVEL_OBJECT_RE, source):
                 name = match.group(1)
                 if not name.startswith("je_"):
                     continue
@@ -174,7 +229,7 @@ def runtime_script_hazards(root: Path = ROOT) -> list[str]:
             masked = mask_script_comments(source)
             relative = path.relative_to(root).as_posix()
             if relative.startswith("common/scripted_effects/"):
-                for object_match in TOP_LEVEL_OBJECT_RE.finditer(masked):
+                for object_match in top_level_matches(TOP_LEVEL_OBJECT_RE, masked):
                     block = extract_braced(masked, object_match.start())
                     delta_variables = set(
                         re.findall(r"\bname\s*=\s*([A-Za-z0-9_]+_delta_var)\b", block)
@@ -597,7 +652,7 @@ def source_journal_entry_ids(root: Path = ROOT) -> set[str]:
     identifiers: set[str] = set()
     for path in sorted(journal_entries.rglob("*.txt")):
         text = path.read_text(encoding="utf-8-sig", errors="ignore")
-        identifiers.update(JOURNAL_ENTRY_RE.findall(text))
+        identifiers.update(match.group(1) for match in top_level_matches(JOURNAL_ENTRY_RE, text))
     return identifiers
 
 
@@ -651,6 +706,73 @@ def localization_review_classifications(
     return classifications
 
 
+def reviewed_localization_digest(
+    path: Path,
+    kind: str,
+    namespace: str,
+    journal_entry_ids: Iterable[str],
+) -> tuple[str, int, int]:
+    """Hash the exact UTF-8 definition lines belonging to one reviewed namespace."""
+    selected: list[str] = []
+    for line in path.read_text(encoding="utf-8-sig").splitlines(keepends=True):
+        key_match = LOC_LINE_KEY_RE.match(line.rstrip("\r\n"))
+        if key_match is None:
+            continue
+        resolved = resolve_localization_namespace(key_match.group(1).strip(), journal_entry_ids)
+        if resolved == (kind, namespace):
+            selected.append(line)
+    payload = "".join(selected).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest(), len(payload), len(selected)
+
+
+def reviewed_localization_baseline_errors(
+    journal_entry_ids: Iterable[str],
+    classifications: dict[tuple[str, str], list[tuple[str, Path, int]]],
+) -> list[str]:
+    fixture_path = ROOT / "tools/reviewed_localization_baseline.json"
+    if not fixture_path.is_file():
+        return ["reviewed localization baseline fixture is missing"]
+    try:
+        fixture = json.loads(fixture_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        return [f"reviewed localization baseline fixture is invalid: {exc}"]
+    if fixture.get("schema_version") != 1:
+        return ["reviewed localization baseline schema_version must be 1"]
+
+    expected: dict[tuple[str, str, str], dict] = {}
+    errors: list[str] = []
+    for entry in fixture.get("namespaces", []):
+        identity = (str(entry.get("kind", "")), str(entry.get("namespace", "")), str(entry.get("path", "")))
+        if not all(identity):
+            errors.append("reviewed localization baseline has an empty identity")
+            continue
+        if identity in expected:
+            errors.append(f"duplicate reviewed localization baseline identity: {identity}")
+        expected[identity] = entry
+
+    actual = {
+        (kind, namespace, path.relative_to(ROOT).as_posix())
+        for (kind, namespace), rows in classifications.items()
+        for status, path, _line in rows
+        if status == "REVIEWED"
+    }
+    for identity in sorted(actual - set(expected)):
+        errors.append(f"reviewed localization namespace missing from baseline: {identity}")
+    for identity in sorted(set(expected) - actual):
+        errors.append(f"stale reviewed localization baseline namespace: {identity}")
+    for identity in sorted(actual & set(expected)):
+        kind, namespace, relative = identity
+        digest, byte_count, line_count = reviewed_localization_digest(
+            ROOT / relative, kind, namespace, journal_entry_ids
+        )
+        entry = expected[identity]
+        if digest != entry.get("sha256"):
+            errors.append(f"reviewed localization prose drift: {relative}:{namespace}")
+        if byte_count != entry.get("bytes") or line_count != entry.get("key_lines"):
+            errors.append(f"reviewed localization size drift: {relative}:{namespace}")
+    return errors
+
+
 def review_classification_errors(
     classifications: dict[tuple[str, str], list[tuple[str, Path, int]]],
     localized_events: Iterable[str],
@@ -676,11 +798,84 @@ def review_classification_errors(
     return errors
 
 
+def general_localization_review_keys(text: str) -> set[str]:
+    """Return keys in contiguous plain non-event/JE review groups."""
+    keys: set[str] = set()
+    active = False
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped == GENERAL_REVIEW_MARKER:
+            active = True
+            continue
+        if not active:
+            continue
+        if not stripped or stripped.startswith("#"):
+            active = False
+            continue
+        match = LOC_LINE_KEY_RE.match(line)
+        if match is None:
+            active = False
+            continue
+        key = match.group(1).strip()
+        if key != "l_english":
+            keys.add(key)
+    return keys
+
+
+def general_review_namespace_violations(
+    keys: Iterable[str],
+    journal_entry_ids: Iterable[str],
+) -> list[tuple[str, str, str]]:
+    """Return plain-group keys that improperly belong to an event or source JE."""
+    violations: list[tuple[str, str, str]] = []
+    identifiers = tuple(journal_entry_ids)
+    for key in sorted(keys):
+        namespace = resolve_localization_namespace(key, identifiers)
+        if namespace is not None:
+            kind, identifier = namespace
+            violations.append((key, kind, identifier))
+    return violations
+
+
+def localization_review_queue_errors(
+    definitions: dict[str, Path],
+    marked_pairs: set[tuple[str, str]],
+    root: Path = ROOT,
+) -> list[str]:
+    """Require a one-to-one queue row for every plain general-localisation marker key."""
+    errors: list[str] = []
+    queue_path = root / "Docs/localisation_review_queue.md"
+    if not queue_path.is_file():
+        return ["missing Docs/localisation_review_queue.md"]
+    text = queue_path.read_text(encoding="utf-8")
+    rows = REVIEW_QUEUE_ROW_RE.findall(text)
+    queued_pairs: set[tuple[str, str]] = set()
+    for relative, key in rows:
+        identity = (relative, key)
+        if identity in queued_pairs:
+            errors.append(f"duplicate localisation review-queue row: {relative}:{key}")
+            continue
+        queued_pairs.add(identity)
+        path = root / relative
+        if not path.is_file():
+            errors.append(f"localisation review-queue file is missing: {relative}")
+        elif definitions.get(key) != path:
+            errors.append(
+                f"localisation review-queue key is not defined in declared file: {relative}:{key}"
+            )
+    for relative, key in sorted(marked_pairs - queued_pairs):
+        errors.append(f"general localisation key is missing from review queue: {relative}:{key}")
+    for relative, key in sorted(queued_pairs - marked_pairs):
+        errors.append(f"dangling localisation review-queue row: {relative}:{key}")
+    return errors
+
+
 def check_localization() -> Check:
     errors: list[str] = []
     definitions: dict[str, Path] = {}
     folded: dict[str, str] = {}
     classifications: dict[tuple[str, str], list[tuple[str, Path, int]]] = {}
+    general_review_pairs: set[tuple[str, str]] = set()
     journal_entry_ids = source_journal_entry_ids(ROOT)
     reviewed = 0
     to_review = 0
@@ -689,6 +884,18 @@ def check_localization() -> Check:
         if not data.startswith(b"\xef\xbb\xbf"):
             errors.append(f"{path.name}: missing UTF-8 BOM")
         text = data.decode("utf-8-sig")
+        relative = path.relative_to(ROOT).as_posix()
+        general_keys = general_localization_review_keys(text)
+        violations = general_review_namespace_violations(general_keys, journal_entry_ids)
+        for key, kind, identifier in violations:
+            errors.append(
+                f"{path.name}: plain non-event/JE review group contains {kind} "
+                f"namespace {identifier}: {key}"
+            )
+        invalid_keys = {key for key, _, _ in violations}
+        general_review_pairs.update(
+            (relative, key) for key in general_keys - invalid_keys
+        )
         if not text.startswith("l_english:"):
             errors.append(f"{path.name}: invalid language header")
         if data and not data.endswith(b"\n"):
@@ -723,10 +930,12 @@ def check_localization() -> Check:
             else:
                 to_review += 1
 
+    errors.extend(localization_review_queue_errors(definitions, general_review_pairs))
+
     script_events: set[str] = set()
     for path in sorted((ROOT / "events").rglob("*.txt")):
         text = path.read_text(encoding="utf-8-sig", errors="ignore")
-        script_events.update(SCRIPT_EVENT_RE.findall(text))
+        script_events.update(match.group(1) for match in top_level_matches(SCRIPT_EVENT_RE, text))
         for line_number, line in enumerate(text.splitlines(), 1):
             if "### TO REVIEW ###" in line or "### REVIEWED ###" in line:
                 errors.append(f"{path.name}:{line_number}: review marker belongs in localization")
@@ -746,6 +955,7 @@ def check_localization() -> Check:
             localized_journal_entries,
         )
     )
+    errors.extend(reviewed_localization_baseline_errors(journal_entry_ids, classifications))
 
     allowlist_path = ROOT / "tools/localization_reference_allowlist.json"
     allowlist = set()
@@ -783,7 +993,7 @@ def check_on_action_router() -> Check:
     text = router.read_text(encoding="utf-8-sig")
     if len(text.splitlines()) > 150:
         errors.append("central router exceeds 150 lines")
-    handler_bodies = [key for key in TOP_LEVEL_OBJECT_RE.findall(text) if key.startswith("sb_")]
+    handler_bodies = [match.group(1) for match in top_level_matches(TOP_LEVEL_OBJECT_RE, text) if match.group(1).startswith("sb_")]
     if handler_bodies:
         errors.append("handler bodies remain in central router: " + ", ".join(handler_bodies))
 
@@ -796,7 +1006,8 @@ def check_on_action_router() -> Check:
         if path == router:
             continue
         handler_text = path.read_text(encoding="utf-8-sig", errors="ignore")
-        for key in TOP_LEVEL_OBJECT_RE.findall(handler_text):
+        for match in top_level_matches(TOP_LEVEL_OBJECT_RE, handler_text):
+            key = match.group(1)
             if key.startswith("sb_"):
                 definitions.setdefault(key, []).append(path)
 
@@ -868,7 +1079,8 @@ def check_unused_symbols() -> Check:
     definitions: dict[str, list[str]] = {}
     for path, source in texts.items():
         relative = path.relative_to(ROOT).as_posix()
-        for symbol in SB_DEFINITION_RE.findall(source):
+        for match in top_level_matches(SB_DEFINITION_RE, source):
+            symbol = match.group(1)
             definitions.setdefault(symbol, []).append(relative)
 
     definition_only = {
@@ -1048,19 +1260,48 @@ def check_release_invariants() -> Check:
 
 
 def check_local_override_inventory() -> Check:
+    """Validate every locally checkable schema-3 inventory contract offline."""
     path = ROOT / "Docs/compatibility/override_inventory.json"
     inventory = json.loads(path.read_text(encoding="utf-8"))
     errors: list[str] = []
+    if inventory.get("schema_version") != 3:
+        errors.append("override inventory schema_version must be 3")
+
+    def check_path_fields(value: object, label: str = "inventory") -> None:
+        if isinstance(value, dict):
+            for key, child in value.items():
+                child_label = f"{label}.{key}"
+                if key in {"path", "mod_path", "mod_file", "upstream_file"} and child is not None:
+                    if not is_safe_relative_path(child):
+                        errors.append(f"unsafe inventory path: {child_label}={child!r}")
+                check_path_fields(child, child_label)
+        elif isinstance(value, list):
+            for index, child in enumerate(value):
+                check_path_fields(child, f"{label}[{index}]")
+
+    check_path_fields(inventory)
+    if errors:
+        return Check("local override inventory", "FAIL", "; ".join(errors))
+
     descriptor = (ROOT / "descriptor.mod").read_text(encoding="utf-8-sig")
     versions = re.findall(r'^\s*supported_version\s*=\s*"([^"]+)"', descriptor, re.MULTILINE)
     if versions != [inventory.get("target_game_version")]:
         errors.append("descriptor and override inventory target versions differ")
-    for entry in inventory.get("same_path_files", []):
-        mod_path = ROOT / entry["path"]
-        if not mod_path.is_file():
-            errors.append(f"missing override {entry['path']}")
-        elif entry.get("mod_sha256") != sha256(mod_path):
-            errors.append(f"mod hash drift: {entry['path']}")
+
+    for category, path_field, hash_field in (
+        ("same_path_files", "path", "mod_sha256"),
+        ("additive_overrides", "path", "mod_sha256"),
+        ("localization_replace_files", "path", "mod_sha256"),
+    ):
+        for entry in inventory.get(category, []):
+            relative = entry.get(path_field)
+            if not is_safe_relative_path(relative):
+                continue
+            mod_path = ROOT / relative
+            if not mod_path.is_file():
+                errors.append(f"missing {category} file {relative}")
+            elif entry.get(hash_field) != sha256(mod_path):
+                errors.append(f"{category} hash drift: {relative}")
 
     keyed: dict[tuple[str, str, str], str] = {}
     for base in ("common", "events", "gui"):
@@ -1071,11 +1312,11 @@ def check_local_override_inventory() -> Check:
             if not mod_path.is_file() or mod_path.suffix not in {".txt", ".gui"}:
                 continue
             text = mod_path.read_text(encoding="utf-8-sig", errors="ignore")
-            for match in HARD_REPLACE_RE.finditer(text):
+            for match in top_level_matches(HARD_REPLACE_RE, text):
                 identity = (mod_path.relative_to(ROOT).as_posix(), match.group(1), match.group(2))
                 keyed[identity] = extract_braced(text, match.start())
     declared = {
-        (entry["mod_path"], entry["directive"], entry["key"]): entry
+        (entry.get("mod_path"), entry.get("directive"), entry.get("key")): entry
         for entry in inventory.get("keyed_overrides", [])
     }
     for identity in sorted(set(keyed) - set(declared)):
@@ -1086,6 +1327,31 @@ def check_local_override_inventory() -> Check:
         digest = hashlib.sha256(keyed[identity].encode("utf-8")).hexdigest()
         if declared[identity].get("mod_object_sha256") != digest:
             errors.append(f"keyed override hash drift: {identity}")
+
+    registered_additive = {
+        entry.get("path") for entry in inventory.get("additive_overrides", [])
+    }
+    keyed_paths = {identity[0] for identity in declared if identity[0]}
+    zz_pattern = re.compile(r"^z{2,}_.+\.txt$")
+    for base in ("common", "events"):
+        base_path = ROOT / base
+        if not base_path.is_dir():
+            continue
+        for mod_path in base_path.rglob("*.txt"):
+            relative = mod_path.relative_to(ROOT).as_posix()
+            if zz_pattern.match(mod_path.name) and relative not in registered_additive and relative not in keyed_paths:
+                errors.append(f"unregistered zz_ override-style file: {relative}")
+
+    registered_localization = {
+        entry.get("path") for entry in inventory.get("localization_replace_files", [])
+    }
+    replace_root = ROOT / "localization/english/replace"
+    if replace_root.is_dir():
+        for mod_path in replace_root.rglob("*.yml"):
+            relative = mod_path.relative_to(ROOT).as_posix()
+            if relative not in registered_localization:
+                errors.append(f"unregistered localization replace file: {relative}")
+
     return Check("local override inventory", "FAIL" if errors else "PASS", "; ".join(errors))
 
 
@@ -1098,6 +1364,61 @@ def run_command(name: str, command: list[str], cwd: Path = ROOT) -> Check:
         return Check(name, "PASS")
     tail = "\n".join(output.splitlines()[-12:])
     return Check(name, "FAIL", tail)
+
+
+def run_advisory_command(name: str, command: list[str], cwd: Path = ROOT) -> Check:
+    """Run a diagnostic as advisory while preserving true combined-stream order."""
+    env = os.environ.copy()
+    env["PYTHONDONTWRITEBYTECODE"] = "1"
+    result = subprocess.run(
+        command,
+        cwd=cwd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        env=env,
+    )
+    output = result.stdout.strip()
+    if result.returncode != 0:
+        detail = f"exit status {result.returncode}"
+        if output:
+            detail += "\n" + output
+        return Check(name, "FAIL", detail)
+    if name == "vic3-tiger":
+        failures: list[str] = []
+        try:
+            config_arg = Path(command[command.index("--config") + 1]).resolve()
+            mod_label = command[-1]
+            config_text = config_arg.read_text(encoding="utf-8")
+            match = re.search(r'load_mod\s*=\s*\{[^}]*label\s*=\s*"CMF"[^}]*mod\s*=\s*"((?:\\.|[^"\\])*)"', config_text)
+            if match is None:
+                raise ValueError("CMF load_mod entry is missing")
+            cmf_text = match.group(1).replace('\\"', '"').replace('\\\\', '\\')
+            expected_cmf = str(Path(cmf_text).resolve())
+        except (ValueError, OSError, IndexError) as exc:
+            failures.append(f"cannot derive exact Tiger invocation sentinels: {exc}")
+        else:
+            expected_lines = {
+                f"Using conf file: {config_arg}",
+                f"Using mod directory: {mod_label}",
+                f"Loading secondary mod CMF from: {expected_cmf}",
+            }
+            actual_lines = {line.strip() for line in output.splitlines()}
+            missing = sorted(expected_lines - actual_lines)
+            if missing:
+                failures.append("missing exact load sentinel(s): " + "; ".join(missing))
+        lines = [line.strip() for line in output.splitlines() if line.strip()]
+        summary_re = re.compile(
+            r"fatal:\s*\d+,\s*error:\s*\d+,\s*warning:\s*\d+,\s*untidy:\s*\d+,\s*tips:\s*\d+"
+        )
+        if not lines or summary_re.fullmatch(lines[-1]) is None:
+            failures.append("the final non-empty line is not Tiger's complete summary")
+        if failures:
+            return Check(name, "FAIL", "; ".join(failures) + "\n" + output)
+    if output:
+        # Tiger can exit 0 while still reporting unsupported-schema diagnostics.
+        return Check(name, "WARN", output)
+    return Check(name, "PASS")
 
 
 def load_cmf_release_pin(
@@ -1144,6 +1465,7 @@ def cmf_sync_command(
         tag,
         "--sha256",
         digest,
+        "--check",
     ]
 
 
@@ -1177,12 +1499,15 @@ def check_cmf_install(
 
 
 def find_game_root(explicit: str | None) -> Path | None:
-    candidates = [
-        Path(explicit).expanduser() if explicit else None,
-        Path(os.environ["VIC3_GAME_ROOT"]).expanduser() if os.environ.get("VIC3_GAME_ROOT") else None,
-        Path.home() / "Library/Application Support/Steam/steamapps/common/Victoria 3/game",
-        Path.home() / ".local/share/Steam/steamapps/common/Victoria 3/game",
-    ]
+    candidates = (
+        [Path(explicit).expanduser()]
+        if explicit is not None
+        else [
+            Path(os.environ["VIC3_GAME_ROOT"]).expanduser() if os.environ.get("VIC3_GAME_ROOT") else None,
+            Path.home() / "Library/Application Support/Steam/steamapps/common/Victoria 3/game",
+            Path.home() / ".local/share/Steam/steamapps/common/Victoria 3/game",
+        ]
+    )
     return next((path.resolve() for path in candidates if path and (path / "common").is_dir()), None)
 
 
@@ -1198,7 +1523,14 @@ def main() -> int:
     parser.add_argument("--tiger", action="store_true", help="Run vic3-tiger when its binary and game root are available")
     args = parser.parse_args()
 
-    cmf_root = Path(args.cmf_root).expanduser().absolute() if args.cmf_root else DEFAULT_CMF_ROOT
+    game_root = find_game_root(args.game_root)
+    if args.game_root and game_root is None:
+        print(f"[FAIL] explicit Victoria 3 game root is invalid: {args.game_root}")
+        return 1
+    cmf_root = Path(args.cmf_root).expanduser().resolve() if args.cmf_root else DEFAULT_CMF_ROOT
+    if args.cmf_root and not (cmf_root / "common").is_dir():
+        print(f"[FAIL] explicit Community Mod Framework root is invalid: {args.cmf_root}")
+        return 1
     checks = []
     try:
         cmf_tag, cmf_digest = load_cmf_release_pin()
@@ -1233,10 +1565,22 @@ def main() -> int:
         check_delayed_lifecycle(),
     ])
 
-    game_root = find_game_root(args.game_root)
     if game_root is None:
+        checks.append(Check("naval network connectivity", "SKIP", "game root not available"))
         checks.append(Check("Vanilla/CMF override comparison", "SKIP", "game root not available"))
     else:
+        checks.append(
+            run_command(
+                "naval network connectivity",
+                [
+                    sys.executable,
+                    "-B",
+                    "tools/check_naval_network.py",
+                    "--game-root",
+                    str(game_root),
+                ],
+            )
+        )
         command = [sys.executable, "-B", "tools/check_override_inventory.py", "--game-root", str(game_root)]
         if cmf_root.is_dir():
             command.extend(("--cmf-root", str(cmf_root)))
@@ -1247,15 +1591,29 @@ def main() -> int:
         if tiger is None or game_root is None:
             checks.append(Check("vic3-tiger", "SKIP", "binary or game root not available"))
         else:
-            command = [
-                tiger,
-                "-c",
-                "--no-color",
-                "--game",
-                str(game_root.parent),
-                ROOT.name,
-            ]
-            checks.append(run_command("vic3-tiger", command, ROOT.parent))
+            # Load CMF as a dependency through Tiger's config. A physical merge
+            # would incorrectly audit CMF itself as part of the target mod.
+            with tempfile.TemporaryDirectory(prefix="sb-tiger-") as temporary:
+                config = Path(temporary) / "dependencies.conf"
+                escaped_cmf = str(cmf_root).replace("\\", "\\\\").replace('"', '\\"')
+                config.write_text(
+                    'languages = { check = "english" }\n'
+                    'filter = { show_vanilla = no show_loaded_mods = no }\n'
+                    f'load_mod = {{ label = "CMF" mod = "{escaped_cmf}" }}\n',
+                    encoding="utf-8",
+                )
+                command = [
+                    tiger,
+                    "-c",
+                    "--no-color",
+                    "--config",
+                    str(config.resolve()),
+                    "--game",
+                    str(game_root.parent),
+                    ROOT.name,
+                ]
+                checks.append(run_advisory_command("vic3-tiger", command, ROOT.parent))
+
 
     for check in checks:
         suffix = f": {check.detail}" if check.detail else ""

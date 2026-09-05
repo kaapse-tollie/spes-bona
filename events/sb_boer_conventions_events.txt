@@ -1708,29 +1708,28 @@ sb_boer_conventions.150 = {
 	icon = "gfx/interface/icons/event_icons/event_military.dds"
 	duration = 3
 
+	# Do not require immediate launch availability here. The receipt handler
+	# distinguishes a temporary busy route from a permanently invalid one.
 	trigger = {
 		country_definition = cd:TRN
-		is_country_alive = yes
-		is_subject = no
-		is_at_war = no
-		is_active_in_diplomatic_play = no
 		has_variable = sb_zpb_crackdown_active_var
-		c:ZPB ?= {
-			is_country_alive = yes
-			is_subject = no
-			has_variable = sb_zpb_crackdown_appealed_var
-			any_scope_state = {
-				state_region = s:STATE_NORTHERN_TRANSVAAL
-			}
-		}
 	}
+
+	immediate = { sb_zpb_crackdown_prepare_held_delivery = yes }
 
 	option = {
 		name = sb_boer_conventions.150.a
+		trigger = { sb_trn_zpb_crackdown_popup_authority = yes }
 		default_option = yes
 		sb_open_trn_zpb_crackdown_play = yes
-		ai_chance = {
-			base = 100
-		}
+		ai_chance = { base = 100 }
+	}
+
+	# An expired or ABA-stale held popup cannot launch. The handler either
+	# requeues a still-live busy route or retires its one receipt.
+	option = {
+		name = sb_boer_conventions.150.a
+		trigger = { NOT = { sb_trn_zpb_crackdown_popup_authority = yes } }
+		sb_zpb_crackdown_handle_invalid_held_delivery = yes
 	}
 }

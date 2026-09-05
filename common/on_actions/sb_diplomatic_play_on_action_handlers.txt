@@ -4,119 +4,381 @@ sb_on_spes_bona_diplomatic_play_started = {
 	effect = {
 		sb_withdraw_ai_frontier_goods_exports_to_boers = yes
 		sb_restore_ai_frontier_force_floors_for_play = yes
-		sb_refresh_british_cape_boer_restraint = yes
+		# Bind/configure the one scripted 1856 Oranje-Basotho annexation play.
 		if = {
 			limit = {
 				is_diplomatic_play_type = dp_annex_war
-				scope:initiator ?= { sb_zululand_british_postwar_owner = yes }
-				scope:target ?= {
-					country_definition = cd:ZUL
-					is_country_alive = yes
-				}
-				c:NAL ?= {
-					is_country_alive = yes
-					has_variable = sb_natalia_british_colony_resolved_var
-				}
+				scope:initiator ?= { country_definition = cd:ORA has_variable = sb_ora_bst_1856_launch_lease_var }
+				scope:target ?= { country_definition = cd:BST is_country_alive = yes }
+				s:STATE_VRYSTAAT.region_state:ORA ?= { owner = c:ORA }
 			}
-			scope:target = { sb_zululand_archive_preannexation_royal_house = yes }
-		}
-		if = {
-			limit = { is_diplomatic_play_type = dp_sb_xhosa_war_7 }
-			scope:target ?= {
-				if = {
-					limit = {
-						OR = {
-							country_definition = cd:CAP
-							country_definition = cd:ABY
-						}
-					}
-					set_variable = sb_xhosa_frontier_war_7_resolved_var
-					if = { limit = { has_variable = sb_xhosa_frontier_war_7_scheduled_var } remove_variable = sb_xhosa_frontier_war_7_scheduled_var }
-				}
+			scope:initiator = { sb_prepare_ora_bst_1856_play_support = yes }
+			add_war_goal = { holder = scope:target target_state = s:STATE_VRYSTAAT.region_state:ORA type = return_state }
+			scope:initiator = {
+				set_variable = sb_ora_bst_scripted_war_1856_resolved_var
+				set_variable = { name = sb_ora_bst_1856_play_scope value = root }
+				remove_variable = sb_ora_bst_1856_launch_lease_var
 			}
 		}
+		sb_refresh_british_cape_boer_restraint = yes
+		# Configure only the exact live TRN-ZPB root that consumed its lease.
+		sb_configure_started_trn_zpb_crackdown_play = yes
+		# Bind and configure only the Gun War admitted from the held Cape option.
 		if = {
-			limit = { is_diplomatic_play_type = dp_sb_xhosa_war_8 }
-			scope:target ?= {
+			limit = {
+				is_diplomatic_play_type = dp_sb_basotho_gun_war
+				scope:initiator ?= { country_definition = cd:CAP has_variable = sb_bst_gun_war_launch_lease_var sb_cap_has_bst_subject_for_disarmament = yes }
+				scope:target ?= { country_definition = cd:BST is_country_alive = yes has_variable = sb_bst_cap_disarmament_pending_var }
+			}
+			scope:target = {
+				set_variable = { name = sb_bst_gun_war_play_scope value = root }
+				set_variable = sb_bst_cap_annexation_crisis_var
+				set_variable = sb_bst_cap_disarmament_resolved_var
+				remove_variable = sb_bst_cap_disarmament_pending_var
+			}
+			scope:initiator = {
+				set_variable = sb_bst_cap_annexation_crisis_var
+				remove_variable = sb_bst_gun_war_launch_lease_var
+			}
+			add_war_goal = { holder = scope:target target_country = scope:initiator type = increase_autonomy primary_demand = yes }
+			if = {
+				limit = { scope:target ?= { play_participant_has_war_goal_of_type_against = { type = independence target = scope:initiator } } }
+				remove_war_goal = { who = target type = independence }
+			}
+			sb_initialize_bst_gun_war_defence_for_play = yes
+		}
+		# Admit exactly one authored British-Zulu annexation source.
+		if = {
+			limit = {
+				is_diplomatic_play_type = dp_annex_war
+				scope:initiator ?= {
+					country_definition = cd:GBR
+					OR = { has_variable = sb_anglo_zulu_pressure_launch_lease_var has_variable = sb_port_natal_british_annex_launch_lease_var }
+					NOT = { AND = { has_variable = sb_anglo_zulu_pressure_launch_lease_var has_variable = sb_port_natal_british_annex_launch_lease_var } }
+				}
+				scope:target ?= { country_definition = cd:ZUL is_country_alive = yes }
+			}
+			scope:initiator = {
+				set_variable = { name = sb_british_zulu_annex_play_scope value = root }
+				sb_british_zulu_snapshot_annex_target_states = yes
+				sb_british_archive_preannex_zulu_firearms = yes
+				sb_british_archive_preannex_zulu_royal_house = yes
+				sb_british_transfer_preannex_zulu_royal_house_to_natal = yes
 				if = {
-					limit = {
-						OR = {
-							country_definition = cd:CAP
-							country_definition = cd:ABY
-						}
-					}
-					set_variable = sb_xhosa_frontier_war_8_resolved_var
-					if = { limit = { has_variable = sb_xhosa_frontier_war_8_scheduled_var } remove_variable = sb_xhosa_frontier_war_8_scheduled_var }
+					limit = { has_variable = sb_anglo_zulu_pressure_launch_lease_var }
+					set_variable = sb_british_zulu_pressure_route_var
+					set_variable = sb_anglo_zulu_pressure_active_var
+					remove_variable = sb_anglo_zulu_pressure_launch_lease_var
+					c:NAL ?= { set_variable = sb_anglo_zulu_pressure_active_var }
+					c:ZUL = { set_variable = sb_anglo_zulu_pressure_active_var }
+				}
+				else = {
+					set_variable = sb_british_zulu_port_natal_route_var
+					remove_variable = sb_port_natal_british_annex_launch_lease_var
+					c:ZUL = { set_variable = sb_port_natal_british_war_var }
 				}
 			}
+			scope:target = {
+				sb_natal_archive_zulu_firearms = yes
+				sb_zululand_archive_preannexation_royal_house = yes
+			}
 		}
+
 		if = {
-			limit = { is_diplomatic_play_type = dp_sb_xhosa_war_9 }
-			scope:target ?= {
-				if = {
-					limit = {
-						OR = {
-							country_definition = cd:CAP
-							country_definition = cd:ABY
-						}
-					}
-					set_variable = sb_xhosa_frontier_war_9_resolved_var
-					if = { limit = { has_variable = sb_xhosa_frontier_war_9_scheduled_var } remove_variable = sb_xhosa_frontier_war_9_scheduled_var }
+			limit = {
+				is_diplomatic_play_type = dp_sb_xhosa_war_7
+				scope:initiator ?= {
+					country_definition = cd:XHO
+					has_variable = sb_xhosa_story_launch_lease_var
+					has_variable = sb_xhosa_story_target_scope
+					has_variable = sb_xhosa_story_generation_var
+					var:sb_xhosa_story_generation_var = 7
 				}
+				OR = {
+					scope:initiator.var:sb_xhosa_story_target_scope = scope:target
+					scope:initiator.var:sb_xhosa_story_target_scope ?= { is_direct_subject_of = scope:target }
+				}
+			}
+			scope:initiator.var:sb_xhosa_story_target_scope = { save_temporary_scope_as = sb_xhosa_story_target }
+			if = { limit = { NOT = { scope:sb_xhosa_story_target = scope:target } } add_target_backers = { scope:sb_xhosa_story_target } }
+			add_war_goal = { holder = scope:sb_xhosa_story_target type = colonization_rights target_country = scope:initiator }
+			scope:sb_xhosa_story_target = {
+				set_variable = sb_xhosa_frontier_war_7_resolved_var
+				if = { limit = { has_variable = sb_xhosa_frontier_war_7_scheduled_var } remove_variable = sb_xhosa_frontier_war_7_scheduled_var }
+			}
+			scope:initiator = {
+				set_variable = { name = sb_xhosa_story_play_scope value = root }
+				if = { limit = { has_variable = sb_xhosa_delivery_pending_var } remove_variable = sb_xhosa_delivery_pending_var }
+				if = { limit = { has_variable = sb_xhosa_delivery_target_scope } remove_variable = sb_xhosa_delivery_target_scope }
+				if = { limit = { has_variable = sb_xhosa_delivery_generation_var } remove_variable = sb_xhosa_delivery_generation_var }
+				if = { limit = { has_variable = sb_xhosa_native_goal_seen_var } remove_variable = sb_xhosa_native_goal_seen_var }
+				if = { limit = { has_variable = sb_xhosa_colonial_goal_seen_var } remove_variable = sb_xhosa_colonial_goal_seen_var }
+				remove_variable = sb_xhosa_story_launch_lease_var
 			}
 		}
 		if = {
 			limit = {
-				is_diplomatic_play_type = dp_sb_natal_crisis
-			}
-			if = {
-				limit = {
-					OR = {
-						AND = {
-							scope:initiator ?= { country_definition = cd:ORA has_variable = sb_natal_war_active_var }
-							scope:target ?= { country_definition = cd:ZUL has_variable = sb_natal_war_active_var }
-						}
-						AND = {
-							scope:initiator ?= { country_definition = cd:ZUL has_variable = sb_natal_war_active_var }
-							scope:target ?= { country_definition = cd:ORA has_variable = sb_natal_war_active_var }
-						}
-					}
+				is_diplomatic_play_type = dp_sb_xhosa_war_8
+				scope:initiator ?= {
+					country_definition = cd:XHO
+					has_variable = sb_xhosa_story_launch_lease_var
+					has_variable = sb_xhosa_story_target_scope
+					has_variable = sb_xhosa_story_generation_var
+					var:sb_xhosa_story_generation_var = 8
 				}
-				if = { limit = { has_global_variable = sb_natal_story_initiator_demand_accepted_global_var } remove_global_variable = sb_natal_story_initiator_demand_accepted_global_var }
-				if = { limit = { has_global_variable = sb_natal_story_target_demand_accepted_global_var } remove_global_variable = sb_natal_story_target_demand_accepted_global_var }
-				if = { limit = { has_global_variable = sb_natal_story_war_resolved_global_var } remove_global_variable = sb_natal_story_war_resolved_global_var }
-				set_global_variable = sb_natal_story_war_active_global_var
+				OR = {
+					scope:initiator.var:sb_xhosa_story_target_scope = scope:target
+					scope:initiator.var:sb_xhosa_story_target_scope ?= { is_direct_subject_of = scope:target }
+				}
 			}
+			scope:initiator.var:sb_xhosa_story_target_scope = { save_temporary_scope_as = sb_xhosa_story_target }
+			if = { limit = { NOT = { scope:sb_xhosa_story_target = scope:target } } add_target_backers = { scope:sb_xhosa_story_target } }
+			add_war_goal = { holder = scope:sb_xhosa_story_target type = colonization_rights target_country = scope:initiator }
+			scope:sb_xhosa_story_target = {
+				set_variable = sb_xhosa_frontier_war_8_resolved_var
+				if = { limit = { has_variable = sb_xhosa_frontier_war_8_scheduled_var } remove_variable = sb_xhosa_frontier_war_8_scheduled_var }
+			}
+			scope:initiator = {
+				set_variable = { name = sb_xhosa_story_play_scope value = root }
+				if = { limit = { has_variable = sb_xhosa_delivery_pending_var } remove_variable = sb_xhosa_delivery_pending_var }
+				if = { limit = { has_variable = sb_xhosa_delivery_target_scope } remove_variable = sb_xhosa_delivery_target_scope }
+				if = { limit = { has_variable = sb_xhosa_delivery_generation_var } remove_variable = sb_xhosa_delivery_generation_var }
+				if = { limit = { has_variable = sb_xhosa_native_goal_seen_var } remove_variable = sb_xhosa_native_goal_seen_var }
+				if = { limit = { has_variable = sb_xhosa_colonial_goal_seen_var } remove_variable = sb_xhosa_colonial_goal_seen_var }
+				remove_variable = sb_xhosa_story_launch_lease_var
+			}
+		}
+		if = {
+			limit = {
+				is_diplomatic_play_type = dp_sb_xhosa_war_9
+				scope:initiator ?= {
+					country_definition = cd:XHO
+					has_variable = sb_xhosa_story_launch_lease_var
+					has_variable = sb_xhosa_story_target_scope
+					has_variable = sb_xhosa_story_generation_var
+					var:sb_xhosa_story_generation_var = 9
+				}
+				OR = {
+					scope:initiator.var:sb_xhosa_story_target_scope = scope:target
+					scope:initiator.var:sb_xhosa_story_target_scope ?= { is_direct_subject_of = scope:target }
+				}
+			}
+			scope:initiator.var:sb_xhosa_story_target_scope = { save_temporary_scope_as = sb_xhosa_story_target }
+			if = { limit = { NOT = { scope:sb_xhosa_story_target = scope:target } } add_target_backers = { scope:sb_xhosa_story_target } }
+			add_war_goal = { holder = scope:sb_xhosa_story_target type = colonization_rights target_country = scope:initiator }
+			scope:sb_xhosa_story_target = {
+				set_variable = sb_xhosa_frontier_war_9_resolved_var
+				if = { limit = { has_variable = sb_xhosa_frontier_war_9_scheduled_var } remove_variable = sb_xhosa_frontier_war_9_scheduled_var }
+			}
+			scope:initiator = {
+				set_variable = { name = sb_xhosa_story_play_scope value = root }
+				if = { limit = { has_variable = sb_xhosa_delivery_pending_var } remove_variable = sb_xhosa_delivery_pending_var }
+				if = { limit = { has_variable = sb_xhosa_delivery_target_scope } remove_variable = sb_xhosa_delivery_target_scope }
+				if = { limit = { has_variable = sb_xhosa_delivery_generation_var } remove_variable = sb_xhosa_delivery_generation_var }
+				if = { limit = { has_variable = sb_xhosa_native_goal_seen_var } remove_variable = sb_xhosa_native_goal_seen_var }
+				if = { limit = { has_variable = sb_xhosa_colonial_goal_seen_var } remove_variable = sb_xhosa_colonial_goal_seen_var }
+				remove_variable = sb_xhosa_story_launch_lease_var
+			}
+		}
+		# Admit only the Blood River play created under the live ZUL launch lease.
+		# All route mutations, support configuration, and root identity persist only
+		# after this exact type/participant acknowledgement.
+		if = {
+			limit = {
+				is_diplomatic_play_type = dp_sb_natal_crisis
+				scope:initiator ?= {
+					country_definition = cd:ZUL
+					is_country_alive = yes
+					has_variable = sb_natal_story_launch_lease_var
+					has_variable = sb_natal_story_launch_pending_var
+					NOT = { has_variable = sb_natal_story_play_scope }
+				}
+				scope:target ?= {
+					country_definition = cd:ORA
+					is_country_alive = yes
+					has_variable = sb_natal_story_launch_pending_var
+					NOT = { has_variable = sb_natal_story_play_scope }
+				}
+				OR = {
+					sb_natal_story_guns_bargain_generation_is_valid = yes
+					sb_natal_story_refusal_generation_is_valid = yes
+				}
+			}
+			scope:initiator = {
+				set_variable = { name = sb_natal_story_play_scope value = root }
+				set_variable = sb_natal_war_active_var
+				remove_variable = sb_natal_story_launch_lease_var
+				remove_variable = sb_natal_story_launch_pending_var
+				if = { limit = { has_variable = sb_natal_story_launch_retry_queued_var } remove_variable = sb_natal_story_launch_retry_queued_var }
+				# The .026 chiefdom absorption and Dingane reward are committed only
+				# after this exact play exists.
+				if = {
+					limit = { has_variable = sb_natal_story_absorption_commit_var }
+					sb_zulu_add_dynastic_stability_10 = yes
+					if = { limit = { exists = c:NGI } annex = c:NGI }
+					random_scope_character = {
+						limit = { has_template = ZUL_dingane is_character_alive = yes }
+						if = { limit = { NOT = { has_trait = brave } } add_trait = brave }
+					}
+					remove_variable = sb_natal_story_absorption_commit_var
+				}
+			}
+			scope:target = {
+				set_variable = { name = sb_natal_story_play_scope value = root }
+				set_variable = sb_natal_war_active_var
+				remove_variable = sb_natal_story_launch_pending_var
+			}
+			if = { limit = { has_global_variable = sb_natal_story_initiator_demand_accepted_global_var } remove_global_variable = sb_natal_story_initiator_demand_accepted_global_var }
+			if = { limit = { has_global_variable = sb_natal_story_target_demand_accepted_global_var } remove_global_variable = sb_natal_story_target_demand_accepted_global_var }
+			if = { limit = { has_global_variable = sb_natal_story_war_resolved_global_var } remove_global_variable = sb_natal_story_war_resolved_global_var }
+			set_global_variable = sb_natal_story_war_active_global_var
 			# Resolve Blood River balance at DP start so the support / no-support
 			# outcome is deterministic before war and cannot reroll on later joins.
-			c:ZUL ?= {
-				if = {
-					limit = { is_country_alive = yes }
-						trigger_event = { id = sb_natal_crisis.019 }
-				}
-			}
+			scope:initiator = { trigger_event = { id = sb_natal_crisis.019 } }
 			sb_join_trn_to_active_natal_war = yes
 			sb_reconcile_blood_river_assistance_for_play = yes
 		}
 		if = {
 			limit = {
 				is_diplomatic_play_type = dp_sb_martinus_humiliation
-				OR = {
-					AND = {
-						scope:initiator ?= { country_definition = cd:TRN has_variable = sb_martinus_ambition_resolved_var has_variable = sb_martinus_story_humiliation_route_var }
-						scope:target ?= { country_definition = cd:ORA }
-					}
-					AND = {
-						scope:initiator ?= { country_definition = cd:ORA }
-						scope:target ?= { country_definition = cd:TRN has_variable = sb_martinus_ambition_resolved_var has_variable = sb_martinus_story_humiliation_route_var }
-					}
+				scope:initiator ?= {
+					country_definition = cd:TRN
+					has_variable = sb_martinus_story_humiliation_route_var
+					has_variable = sb_martinus_story_launch_lease_var
+					has_variable = sb_martinus_coercive_generation_scope
+					has_variable = sb_martinus_story_generation_scope
+					var:sb_martinus_coercive_generation_scope = var:sb_martinus_story_generation_scope
+					var:sb_martinus_story_generation_scope ?= { has_variable = sb_martinus_generation_active_var }
 				}
+				scope:target ?= { country_definition = cd:ORA is_country_alive = yes }
+			}
+			# Irreversible compact withdrawal waits for exact root acknowledgement.
+			scope:initiator = { sb_martinus_break_boer_war_path_compacts = yes }
+			# Configure only the actual play delivered by on_diplomatic_play_started.
+			add_war_goal = {
+				holder = scope:target
+				target_country = scope:initiator
+				type = sb_story_humiliation
+			}
+			if = {
+				limit = {
+					scope:initiator.var:sb_martinus_story_generation_scope ?= { has_variable = sb_martinus_final_lyd_support_var }
+					c:LYD ?= { country_definition = cd:LYD is_country_alive = yes is_subject = no is_at_war = no is_active_in_diplomatic_play = no has_variable = sb_martinus_backed_ora_var has_variable = sb_martinus_backed_ora_generation_scope var:sb_martinus_backed_ora_generation_scope = scope:initiator.var:sb_martinus_story_generation_scope }
+				}
+				add_target_backers = { c:LYD }
+			}
+			if = {
+				limit = {
+					scope:initiator.var:sb_martinus_story_generation_scope ?= { has_variable = sb_martinus_final_zpb_support_var }
+					c:ZPB ?= { country_definition = cd:ZPB is_country_alive = yes is_subject = no is_at_war = no is_active_in_diplomatic_play = no has_variable = sb_martinus_backed_ora_var has_variable = sb_martinus_backed_ora_generation_scope var:sb_martinus_backed_ora_generation_scope = scope:initiator.var:sb_martinus_story_generation_scope }
+				}
+				add_target_backers = { c:ZPB }
+			}
+			if = {
+				limit = {
+					scope:initiator ?= { has_variable = sb_martinus_include_natal_backer_var }
+					scope:initiator.var:sb_martinus_story_generation_scope ?= { has_variable = sb_martinus_final_nal_support_var }
+					c:NAL ?= { country_definition = cd:NAL is_country_alive = yes is_subject = no is_at_war = no is_active_in_diplomatic_play = no country_has_primary_culture = cu:boer has_variable = sb_martinus_backed_ora_var has_variable = sb_martinus_backed_ora_generation_scope var:sb_martinus_backed_ora_generation_scope = scope:initiator.var:sb_martinus_story_generation_scope }
+				}
+				add_target_backers = { c:NAL }
+			}
+			scope:initiator = {
+				set_variable = sb_martinus_ambition_resolved_var
+				set_variable = { name = sb_martinus_story_play_scope value = root }
+				remove_variable = sb_martinus_story_launch_lease_var
+				if = { limit = { has_variable = sb_martinus_include_natal_backer_var } remove_variable = sb_martinus_include_natal_backer_var }
 			}
 			if = { limit = { has_global_variable = sb_martinus_story_initiator_demand_accepted_global_var } remove_global_variable = sb_martinus_story_initiator_demand_accepted_global_var }
 			if = { limit = { has_global_variable = sb_martinus_story_target_demand_accepted_global_var } remove_global_variable = sb_martinus_story_target_demand_accepted_global_var }
 			if = { limit = { has_global_variable = sb_martinus_story_war_resolved_global_var } remove_global_variable = sb_martinus_story_war_resolved_global_var }
 			set_global_variable = sb_martinus_story_war_active_global_var
 		}
+		# Bind the one authored Ndebele/Oranje opening native uprising.
+		if = {
+			limit = {
+				is_diplomatic_play_type = dp_native_uprising
+				scope:initiator ?= {
+					country_definition = cd:MTB
+					has_variable = sb_ndebele_opening_play_fired
+					has_variable = sb_great_trek_opening_launch_lease_var
+				}
+				scope:target ?= { country_definition = cd:ORA is_country_alive = yes }
+			}
+			c:ORA = {
+				if = { limit = { has_variable = sb_great_trek_goal_accepted_pending_var } remove_variable = sb_great_trek_goal_accepted_pending_var }
+				set_variable = { name = sb_great_trek_opening_play_scope value = root }
+			}
+			scope:initiator = { remove_variable = sb_great_trek_opening_launch_lease_var }
+		}
+
+		# Bind Dingane's authored Swazi campaign to this exact conquer-state play.
+		if = {
+			limit = {
+				is_diplomatic_play_type = dp_conquer_state
+				scope:initiator ?= {
+					country_definition = cd:ZUL
+					has_variable = sb_zulu_swazi_war_active_var
+					has_variable = sb_zulu_swazi_launch_lease_var
+					has_variable = sb_zulu_swazi_target_state_scope
+				}
+				scope:target ?= { country_definition = cd:SWZ has_variable = sb_zulu_swazi_war_active_var }
+			}
+			scope:initiator = {
+				if = { limit = { has_variable = sb_zulu_swazi_goal_accepted_pending_var } remove_variable = sb_zulu_swazi_goal_accepted_pending_var }
+				if = { limit = { has_variable = sb_swazi_goal_accepted_pending_var } remove_variable = sb_swazi_goal_accepted_pending_var }
+				set_variable = { name = sb_zulu_swazi_play_scope value = root }
+				remove_variable = sb_zulu_swazi_launch_lease_var
+			}
+		}
+
+		# Bind the authored Gaza counter-war before generic Zulu classification.
+		if = {
+			limit = {
+				is_diplomatic_play_type = dp_annex_war
+				scope:initiator ?= { country_definition = cd:ZUL has_variable = sb_gaza_zulu_launch_lease_var }
+				scope:target ?= { country_definition = cd:GZA is_country_alive = yes }
+			}
+			if = {
+				limit = { exists = s:STATE_EAST_TRANSVAAL.region_state:ZUL }
+				s:STATE_EAST_TRANSVAAL.region_state:ZUL = { save_temporary_scope_as = sb_gaza_east_transvaal_target_state }
+				scope:initiator = {
+					set_variable = sb_gaza_east_transvaal_goal_added_var
+					set_variable = { name = sb_gaza_east_transvaal_target_state_scope value = scope:sb_gaza_east_transvaal_target_state }
+				}
+				c:GZA = { if = { limit = { has_variable = sb_gaza_claim_goal_accepted_pending_var } remove_variable = sb_gaza_claim_goal_accepted_pending_var } }
+				add_war_goal = {
+					holder = c:GZA
+					type = conquer_state
+					target_state = s:STATE_EAST_TRANSVAAL.region_state:ZUL
+				}
+			}
+			if = {
+				limit = { exists = s:STATE_ZULULAND.region_state:ZUL }
+				s:STATE_ZULULAND.region_state:ZUL = { save_temporary_scope_as = sb_gaza_zululand_target_state }
+				scope:initiator = {
+					set_variable = sb_gaza_zululand_goal_added_var
+					set_variable = { name = sb_gaza_zululand_target_state_scope value = scope:sb_gaza_zululand_target_state }
+				}
+				add_war_goal = {
+					holder = c:GZA
+					type = conquer_state
+					target_state = s:STATE_ZULULAND.region_state:ZUL
+				}
+			}
+			if = {
+				limit = { scope:initiator = { OR = { has_variable = sb_gaza_east_transvaal_goal_added_var has_variable = sb_gaza_zululand_goal_added_var } } }
+				c:GZA = { set_variable = sb_gaza_eastern_transvaal_claim_if_zulu_defeated_var }
+			}
+			scope:initiator = {
+				set_variable = { name = sb_gaza_zulu_play_scope value = root }
+				remove_variable = sb_gaza_zulu_launch_lease_var
+				if = { limit = { has_variable = sb_zulu_gaza_followup_pending_var } remove_variable = sb_zulu_gaza_followup_pending_var }
+			}
+		}
+
+		# Bind Klip River story routes to the actual play before generic Zulu routing.
+		sb_klip_river_configure_started_play = yes
+
 		# Positive identity for an ordinary Zulu war. Known story routes keep their
 		# own markers and are excluded rather than inferred later by absence alone.
 		if = {
@@ -124,6 +386,10 @@ sb_on_spes_bona_diplomatic_play_started = {
 				OR = { scope:initiator ?= { country_definition = cd:ZUL } scope:target ?= { country_definition = cd:ZUL } }
 				c:ZUL ?= {
 					is_country_alive = yes
+					# One coordinator slot prevents concurrent eligible plays from
+					# overwriting or consuming each other's 0/1/2-side evidence.
+					NOT = { has_variable = sb_zulu_generic_war_active_var }
+					NOT = { has_variable = sb_zulu_generic_war_play_scope }
 					NOT = { has_variable = sb_anglo_zulu_pressure_active_var }
 					NOT = { has_variable = sb_natal_war_active_var }
 					NOT = { has_variable = sb_port_natal_british_war_var }
@@ -131,6 +397,7 @@ sb_on_spes_bona_diplomatic_play_started = {
 					NOT = { has_variable = sb_klip_river_secession_active_var }
 					NOT = { has_variable = sb_klip_river_punitive_active_var }
 					NOT = { has_variable = sb_natal_zulu_restoration_active_var }
+					NOT = { has_variable = sb_gaza_zulu_play_scope }
 				}
 				NOT = { c:GZA ?= { has_variable = sb_gaza_eastern_transvaal_claim_if_zulu_defeated_var } }
 			}
@@ -138,6 +405,7 @@ sb_on_spes_bona_diplomatic_play_started = {
 				set_variable = sb_zulu_generic_war_active_var
 				set_variable = { name = sb_zulu_generic_war_play_scope value = root }
 			}
+			set_global_variable = { name = sb_zulu_generic_war_coordinator_scope_global_var value = c:ZUL }
 		}
 		# Safe post-create configuration is authorized only by an exact initiator lease.
 		sb_griqualand_configure_started_sequence_play = yes
@@ -191,6 +459,12 @@ sb_on_spes_bona_diplo_play_war_start = {
 					is_country_alive = yes
 					is_ai = yes
 					has_variable = sb_natal_war_active_var
+					has_variable = sb_natal_story_play_scope
+					var:sb_natal_story_play_scope = root
+				}
+				c:ZUL ?= {
+					has_variable = sb_natal_story_play_scope
+					var:sb_natal_story_play_scope = root
 				}
 			}
 			# ORA is the only active Boer war participant in fresh V2 Blood River
@@ -251,6 +525,9 @@ sb_on_bechuanaland_subject_status_changed = {
 
 sb_on_spes_bona_diplo_play_back_down = {
 	effect = {
+		# Rebuild volatile Griqualand container state from the durable play link
+		# before authenticating this actual back-down callback.
+		if = { limit = { has_global_variable = sb_griqualand_sequence_active_global_var } sb_griqualand_sequence_refresh_container = yes }
 		# Resolve/record route state before generic participant cleanup.
 		# A backed-down play never reaches on_war_end. Record the demand won by
 		# the non-backing side and run the same idempotent 0/1/2 resolver now.
@@ -267,18 +544,89 @@ sb_on_spes_bona_diplo_play_back_down = {
 			sb_story_humiliation_resolve = yes
 		}
 
+		# Exact 7th-9th Xhosa War back-down terminal.
+		if = {
+			limit = {
+				root = { OR = { is_diplomatic_play_type = dp_sb_xhosa_war_7 is_diplomatic_play_type = dp_sb_xhosa_war_8 is_diplomatic_play_type = dp_sb_xhosa_war_9 } }
+				c:XHO ?= { has_variable = sb_xhosa_story_play_scope var:sb_xhosa_story_play_scope = root }
+			}
+			if = {
+				limit = { scope:actor ?= { country_definition = cd:XHO } }
+				c:XHO = { set_variable = sb_xhosa_colonial_goal_seen_var }
+			}
+			else = { c:XHO = { set_variable = sb_xhosa_native_goal_seen_var } }
+			root = { sb_xhosa_resolve_exact_story_war = yes }
+		}
+
+
+		# Exact `.025` submission play: back-down has no later war-end callback.
+		if = {
+			limit = {
+				has_global_variable = sb_griqualand_refusal_play_scope_global_var
+				global_var:sb_griqualand_refusal_play_scope_global_var ?= root
+				root = { is_diplomatic_play_type = dp_make_protectorate }
+				root = {
+					OR = {
+						AND = { initiator = c:WBL OR = { target = c:ORA target = c:TRN } }
+						AND = { target = c:WBL OR = { initiator = c:ORA initiator = c:TRN } }
+					}
+				}
+			}
+			if = {
+				limit = {
+					scope:actor ?= { country_definition = cd:WBL }
+					root = { OR = { initiator = c:TRN target = c:TRN } }
+				}
+				sb_kimberley_finalize_trn_puppet_route = yes
+			}
+			else_if = {
+				limit = { scope:actor ?= { country_definition = cd:WBL } }
+				sb_kimberley_finalize_ora_puppet_route = yes
+			}
+			else = { sb_griqualand_west_finalize_refusal_contest = yes }
+		}
+
 		if = {
 			limit = {
 				has_global_variable = sb_griqualand_west_refusal_contest_active_var
-				root = {
-					OR = {
-						is_diplomatic_play_type = dp_sb_griqualand_cap_revoke_claim_locked
-						is_diplomatic_play_type = dp_sb_griqualand_cap_revoke_oranje_proxy_locked
-						is_diplomatic_play_type = dp_sb_griqualand_oranje_revoke_cap_claim_locked
-						is_diplomatic_play_type = dp_sb_griqualand_cap_return_wbl_locked
-						is_diplomatic_play_type = dp_sb_griqualand_oranje_return_wbl_locked
-						is_diplomatic_play_type = dp_sb_griqualand_oranje_independent_return_wbl_proxy_locked
-						is_diplomatic_play_type = dp_sb_griqualand_oranje_return_wbl_proxy_locked
+				OR = {
+					AND = {
+						has_global_variable = sb_griqualand_sequence_active_global_var
+						container:sb_griqualand_sequence_state ?= {
+							has_variable = sb_griqualand_sequence_play_scope
+							has_variable = sb_griqualand_sequence_play_generation_var
+							var:sb_griqualand_sequence_play_scope = root
+							OR = {
+								AND = { var:sb_griqualand_sequence_play_generation_var = 1 has_global_variable = sb_griqualand_phase_a_active_global_var }
+								AND = { var:sb_griqualand_sequence_play_generation_var = 2 has_global_variable = sb_griqualand_phase_b_active_global_var }
+							}
+						}
+						root = {
+							OR = {
+								is_diplomatic_play_type = dp_sb_griqualand_cap_revoke_claim_locked
+								is_diplomatic_play_type = dp_sb_griqualand_cap_revoke_oranje_proxy_locked
+								is_diplomatic_play_type = dp_sb_griqualand_oranje_revoke_cap_claim_locked
+								is_diplomatic_play_type = dp_sb_griqualand_cap_return_wbl_locked
+								is_diplomatic_play_type = dp_sb_griqualand_oranje_return_wbl_locked
+								is_diplomatic_play_type = dp_sb_griqualand_oranje_independent_return_wbl_proxy_locked
+							}
+						}
+					}
+					AND = {
+						NOT = { has_global_variable = sb_griqualand_sequence_active_global_var }
+						has_global_variable = sb_griqualand_refusal_play_scope_global_var
+						global_var:sb_griqualand_refusal_play_scope_global_var ?= root
+						root = {
+							OR = {
+								is_diplomatic_play_type = dp_sb_griqualand_cap_revoke_claim_locked
+								is_diplomatic_play_type = dp_sb_griqualand_cap_revoke_oranje_proxy_locked
+								is_diplomatic_play_type = dp_sb_griqualand_oranje_revoke_cap_claim_locked
+								is_diplomatic_play_type = dp_sb_griqualand_cap_return_wbl_locked
+								is_diplomatic_play_type = dp_sb_griqualand_oranje_return_wbl_locked
+								is_diplomatic_play_type = dp_sb_griqualand_oranje_independent_return_wbl_proxy_locked
+								is_diplomatic_play_type = dp_sb_griqualand_oranje_return_wbl_proxy_locked
+							}
+						}
 					}
 				}
 			}
@@ -290,229 +638,191 @@ sb_on_spes_bona_diplo_play_back_down = {
 		sb_bechuanaland_handle_crisis_backdown = yes
 
 		if = {
-			limit = { root = { is_diplomatic_play_type = dp_sb_nrp_boundary_confrontation } }
-			scope:initiator ?= { if = { limit = { has_variable = sb_nrp_boundary_launch_lease_var } remove_variable = sb_nrp_boundary_launch_lease_var } }
-			c:NRP ?= {
-				if = { limit = { has_variable = sb_nrp_boundary_confrontation_active_var } remove_variable = sb_nrp_boundary_confrontation_active_var }
-				if = { limit = { has_variable = sb_nrp_boundary_initiator_scope } remove_variable = sb_nrp_boundary_initiator_scope }
-			}
+			limit = { root = { is_diplomatic_play_type = dp_annex_war initiator = c:ORA target = c:BST } c:ORA ?= { has_variable = sb_ora_bst_1856_play_scope var:sb_ora_bst_1856_play_scope = root } }
+			sb_cleanup_ora_bst_1856_play_support = yes
+			c:ORA = { remove_variable = sb_ora_bst_1856_play_scope }
+		}
+		if = {
+			limit = { root = { is_diplomatic_play_type = dp_sb_nrp_boundary_confrontation } c:NRP ?= { has_variable = sb_nrp_boundary_play_scope var:sb_nrp_boundary_play_scope = root } }
+			c:NRP = { sb_nrp_commit_deferred_defence_pact = yes sb_nrp_clear_boundary_confrontation_runtime = yes }
 		}
 		c:NAL ?= { if = { limit = { has_variable = sb_natal_zulu_secession_launch_lease_var } remove_variable = sb_natal_zulu_secession_launch_lease_var } }
-		scope:initiator ?= {
-			if = { limit = { has_variable = sb_bechuanaland_direct_launch_lease_var } remove_variable = sb_bechuanaland_direct_launch_lease_var }
-			if = { limit = { has_variable = sb_bechuanaland_proxy_launch_lease_var } remove_variable = sb_bechuanaland_proxy_launch_lease_var }
-			if = { limit = { has_variable = sb_bechuanaland_warren_direct_launch_lease_var } remove_variable = sb_bechuanaland_warren_direct_launch_lease_var }
-			if = { limit = { has_variable = sb_bechuanaland_warren_proxy_launch_lease_var } remove_variable = sb_bechuanaland_warren_proxy_launch_lease_var }
-			if = { limit = { has_variable = sb_bechuanaland_total_launch_lease_var } remove_variable = sb_bechuanaland_total_launch_lease_var }
-		}
 		sb_refresh_british_cape_boer_restraint = yes
 		sb_cleanup_trn_frontier_deployment_train_for_play = yes
 		sb_cleanup_blood_river_assistance_for_play = yes
 		sb_cleanup_swazi_defensive_muster_for_play = yes
 		sb_cleanup_bst_gun_war_defence_for_play = yes
-		if = {
-			limit = {
-				root = { is_diplomatic_play_type = dp_sb_trn_zpb_crackdown_locked }
-				scope:actor ?= { country_definition = cd:TRN }
-				scope:target ?= {
-					country_definition = cd:ZPB
-					is_country_alive = yes
-					has_variable = sb_zpb_crackdown_total_conquest_route_var
-				}
-			}
-			scope:target = { set_variable = sb_zpb_crackdown_successor_pending_var }
-		}
-		if = {
-			limit = {
-				root = { is_diplomatic_play_type = dp_sb_trn_zpb_crackdown_locked }
-				scope:actor ?= {
-					country_definition = cd:ZPB
-					has_variable = sb_zpb_crackdown_total_conquest_route_var
-				}
-			}
-			scope:actor = {
-				remove_variable = sb_zpb_crackdown_total_conquest_route_var
-				if = {
-					limit = { has_variable = sb_zpb_crackdown_successor_pending_var }
-					remove_variable = sb_zpb_crackdown_successor_pending_var
-				}
-			}
-		}
+		# The same proof-driven resolver handles either side's back-down.
+		sb_zpb_crackdown_resolve_bound_terminal = yes
 		# Dingane backing down from the Swazi play should still count as a dynastic
 		# humiliation rather than a free reset.
 		if = {
 			limit = {
-				root = {
-					is_diplomatic_play_type = dp_conquer_state
-					scope:target ?= { country_definition = cd:SWZ }
-				}
-				scope:actor ?= {
-					country_definition = cd:ZUL
+				root = { is_diplomatic_play_type = dp_conquer_state }
+				c:ZUL ?= {
 					has_variable = sb_zulu_swazi_war_active_var
+					has_variable = sb_zulu_swazi_play_scope
+					var:sb_zulu_swazi_play_scope = root
+				}
+				root = { initiator = c:ZUL target = c:SWZ }
+			}
+			if = { limit = { scope:actor ?= { country_definition = cd:ZUL } } c:ZUL = { sb_zulu_apply_swazi_campaign_defeat = yes } }
+			else_if = {
+				limit = { c:ZUL ?= { has_variable = sb_zulu_swazi_target_state_scope var:sb_zulu_swazi_target_state_scope ?= { owner = c:ZUL } } }
+				c:ZUL = { sb_zulu_apply_swazi_campaign_victory = yes }
+			}
+			sb_cleanup_swazi_defensive_muster_for_play = yes
+			sb_zulu_clear_swazi_campaign_runtime = yes
+		}
+
+		# The opening Great Trek play never reaches war-end after a pre-war back-down.
+		if = {
+			limit = {
+				root = { is_diplomatic_play_type = dp_native_uprising }
+				c:ORA ?= { has_variable = sb_great_trek_opening_play_scope var:sb_great_trek_opening_play_scope = root }
+				root = { initiator = c:MTB target = c:ORA }
+			}
+			if = {
+				limit = {
+					scope:actor = c:ORA
+					c:MTB ?= { is_country_alive = yes has_diplomatic_pact = { who = c:ORA type = colonization_rights } }
+					c:ORA ?= { is_country_alive = yes }
+				}
+				c:ORA = {
+					if = { limit = { has_variable = sb_great_trek_goal_accepted_pending_var } remove_variable = sb_great_trek_goal_accepted_pending_var }
+					sb_great_trek_queue_outcome_delivery = yes
 				}
 			}
-			scope:actor = {
-				remove_variable = sb_zulu_swazi_war_active_var
-				sb_zulu_apply_swazi_campaign_defeat = yes
+			c:ORA ?= {
+				if = { limit = { has_variable = sb_great_trek_goal_accepted_pending_var } remove_variable = sb_great_trek_goal_accepted_pending_var }
+				remove_variable = sb_great_trek_opening_play_scope
 			}
-			c:SWZ ?= {
-				if = {
-					limit = { has_variable = sb_zulu_swazi_war_active_var }
-					remove_variable = sb_zulu_swazi_war_active_var
-				}
+			c:MTB ?= { if = { limit = { has_variable = sb_great_trek_opening_launch_lease_var } remove_variable = sb_great_trek_opening_launch_lease_var } }
+		}
+
+		# Authored Gaza-Zulu play: only this saved root may award or clear the claim.
+		if = {
+			limit = {
+				root = { is_diplomatic_play_type = dp_annex_war initiator = c:ZUL target = c:GZA }
+				root = { initiator = { has_variable = sb_gaza_zulu_play_scope var:sb_gaza_zulu_play_scope = root } }
 			}
+			sb_gaza_resolve_exact_terminal = yes
 		}
 
 		# Ordinary Zulu play: the non-backing side receives the single terminal
 		# outcome, keyed to the exact play saved at start.
 		if = {
-			limit = { c:ZUL ?= { is_country_alive = yes has_variable = sb_zulu_generic_war_active_var has_variable = sb_zulu_generic_war_play_scope var:sb_zulu_generic_war_play_scope = root } }
-			if = { limit = { scope:actor ?= { country_definition = cd:ZUL } } c:ZUL = { sb_zulu_apply_generic_war_defeat = yes } }
-			else = { c:ZUL = { sb_zulu_apply_generic_war_victory = yes } }
-			c:ZUL = {
+			limit = {
+				has_global_variable = sb_zulu_generic_war_coordinator_scope_global_var
+				global_var:sb_zulu_generic_war_coordinator_scope_global_var ?= {
+					has_variable = sb_zulu_generic_war_active_var
+					has_variable = sb_zulu_generic_war_play_scope
+					var:sb_zulu_generic_war_play_scope = root
+				}
+			}
+			if = {
+				limit = { scope:actor = global_var:sb_zulu_generic_war_coordinator_scope_global_var }
+				global_var:sb_zulu_generic_war_coordinator_scope_global_var ?= { if = { limit = { is_country_alive = yes } sb_zulu_apply_generic_war_defeat = yes } }
+			}
+			else = { global_var:sb_zulu_generic_war_coordinator_scope_global_var ?= { if = { limit = { is_country_alive = yes } sb_zulu_apply_generic_war_victory = yes } } }
+			global_var:sb_zulu_generic_war_coordinator_scope_global_var ?= {
 				if = { limit = { has_variable = sb_zulu_generic_goal_accepted_pending_var } remove_variable = sb_zulu_generic_goal_accepted_pending_var }
 				if = { limit = { has_variable = sb_zulu_generic_defeat_goal_accepted_pending_var } remove_variable = sb_zulu_generic_defeat_goal_accepted_pending_var }
 				remove_variable = sb_zulu_generic_war_play_scope
 				remove_variable = sb_zulu_generic_war_active_var
 			}
-		}
-
-		# Kimberley claim dispute: the backing-down side determines whether the
-		# Cape proceeds against Waterboersland or Oranje takes over the claim.
-		if = {
-			limit = {
-				root = { is_diplomatic_play_type = dp_humiliation }
-				scope:actor ?= {
-					country_definition = cd:CAP
-					has_variable = sb_kimberley_cap_ora_dispute_war_var
-				}
-				scope:target ?= {
-					OR = {
-						country_definition = cd:ORA
-						country_definition = cd:TRN
-					}
-					has_variable = sb_kimberley_cap_ora_dispute_war_var
-				}
-			}
-				if = {
-						limit = { c:CAP ?= { has_claim = s:STATE_GRIQUALAND_WEST } }
-						s:STATE_GRIQUALAND_WEST = { remove_claim = c:CAP }
-					}
-					sb_griqualand_west_grant_oranje_claim = yes
-			scope:actor = { remove_variable = sb_kimberley_cap_ora_dispute_war_var }
-			scope:target = {
-				remove_variable = sb_kimberley_cap_ora_dispute_war_var
-				trigger_event = { id = sb_griqualand_west.245 days = 3 popup = yes }
-			}
-		}
-
-
-		# Waterboersland crisis wars only seed the remaining fields after the
-		# annexation/protectorate question is actually resolved.
-		if = {
-			limit = {
-				scope:actor ?= {
-					country_definition = cd:WBL
-					has_variable = sb_griqualand_west_cap_annexation_war_var
-				}
-				scope:target ?= {
-					country_definition = cd:CAP
-					has_variable = sb_griqualand_west_cap_annexation_war_var
-				}
-			}
-			sb_kimberley_finalize_cap_annexation_route = yes
-		}
-		if = {
-			limit = {
-				scope:actor ?= {
-					country_definition = cd:CAP
-					has_variable = sb_griqualand_west_cap_annexation_war_var
-				}
-				scope:target ?= {
-					country_definition = cd:WBL
-					has_variable = sb_griqualand_west_cap_annexation_war_var
-				}
-			}
-			sb_kimberley_finalize_wbl_diamond_mines_route = yes
-		}
-		if = {
-			limit = {
-				scope:actor ?= {
-					country_definition = cd:WBL
-					has_variable = sb_griqualand_west_ora_submission_war_var
-				}
-				scope:target ?= {
-					OR = {
-						country_definition = cd:ORA
-						country_definition = cd:TRN
-					}
-					has_variable = sb_griqualand_west_ora_submission_war_var
-				}
-			}
-			if = {
-				limit = { scope:target ?= { country_definition = cd:TRN } }
-				sb_kimberley_finalize_trn_puppet_route = yes
-			}
-			else = {
-				sb_kimberley_finalize_ora_puppet_route = yes
-			}
-		}
-		if = {
-			limit = {
-				scope:actor ?= {
-					OR = {
-						country_definition = cd:ORA
-						country_definition = cd:TRN
-					}
-					has_variable = sb_griqualand_west_ora_submission_war_var
-				}
-				scope:target ?= {
-					country_definition = cd:WBL
-					has_variable = sb_griqualand_west_ora_submission_war_var
-				}
-			}
-			sb_kimberley_finalize_wbl_diamond_mines_route = yes
+			remove_global_variable = sb_zulu_generic_war_coordinator_scope_global_var
 		}
 
 		# Britain backing down from the scheduled annexation counts as a Zulu
 		# victory; Zulu backing down is resolved by the enforced annexation goal.
 		if = {
 			limit = {
-				root = { is_diplomatic_play_type = dp_annex_war }
-				scope:actor ?= {
-					country_definition = cd:GBR
-					has_variable = sb_anglo_zulu_pressure_active_var
-				}
-				scope:target ?= {
-					country_definition = cd:ZUL
-					has_variable = sb_anglo_zulu_pressure_active_var
-				}
+				root = { is_diplomatic_play_type = dp_annex_war initiator = c:GBR target = c:ZUL }
+				c:GBR ?= { has_variable = sb_british_zulu_annex_play_scope var:sb_british_zulu_annex_play_scope = root OR = { has_variable = sb_british_zulu_pressure_route_var has_variable = sb_british_zulu_port_natal_route_var } }
 			}
-			scope:target = {
-				sb_zululand_discard_preannexation_royal_house_archive = yes
-				trigger_event = { id = sb_anglo_zulu.020 days = 3 popup = yes }
+			if = {
+				limit = { scope:actor = c:GBR }
+				c:GBR = { sb_british_zulu_finalize_bound_annex = yes }
+			}
+			else_if = {
+				limit = { scope:actor = c:ZUL }
+				c:GBR = { set_variable = sb_british_zulu_backdown_finalizer_pending_var trigger_event = { id = sb_anglo_zulu.099 days = 1 } }
 			}
 		}
+
 
 	}
 }
 
 sb_on_spes_bona_war_end = {
 	effect = {
+		# Rebuild volatile Griqualand container state from the durable play link
+		# before authenticating this actual war-end callback.
+		if = { limit = { has_global_variable = sb_griqualand_sequence_active_global_var } sb_griqualand_sequence_refresh_container = yes }
 		# Final predicates and accepted records must resolve before route cleanup.
 		sb_story_humiliation_resolve = yes
+		# Exact `.025` submission war: only the final live subject relation decides.
+		if = {
+			limit = {
+				has_global_variable = sb_griqualand_refusal_play_scope_global_var
+				global_var:sb_griqualand_refusal_play_scope_global_var ?= root
+				root = { is_diplomatic_play_type = dp_make_protectorate }
+				scope:actor ?= { OR = { country_definition = cd:ORA country_definition = cd:TRN } }
+				scope:target ?= { country_definition = cd:WBL }
+			}
+			if = {
+				limit = { c:WBL ?= { is_country_alive = yes is_direct_subject_of = c:TRN } }
+				sb_kimberley_finalize_trn_puppet_route = yes
+			}
+			else_if = {
+				limit = { c:WBL ?= { is_country_alive = yes is_direct_subject_of = c:ORA } }
+				sb_kimberley_finalize_ora_puppet_route = yes
+			}
+			else = { sb_griqualand_west_finalize_refusal_contest = yes }
+		}
+
 		if = {
 			limit = {
 				has_global_variable = sb_griqualand_west_refusal_contest_active_var
-				root = {
-					OR = {
-						is_diplomatic_play_type = dp_sb_griqualand_cap_revoke_claim_locked
-						is_diplomatic_play_type = dp_sb_griqualand_cap_revoke_oranje_proxy_locked
-						is_diplomatic_play_type = dp_sb_griqualand_oranje_revoke_cap_claim_locked
-						is_diplomatic_play_type = dp_sb_griqualand_cap_return_wbl_locked
-						is_diplomatic_play_type = dp_sb_griqualand_oranje_return_wbl_locked
-						is_diplomatic_play_type = dp_sb_griqualand_oranje_independent_return_wbl_proxy_locked
-						is_diplomatic_play_type = dp_sb_griqualand_oranje_return_wbl_proxy_locked
+				OR = {
+					AND = {
+						has_global_variable = sb_griqualand_sequence_active_global_var
+						container:sb_griqualand_sequence_state ?= {
+							has_variable = sb_griqualand_sequence_play_scope
+							has_variable = sb_griqualand_sequence_play_generation_var
+							var:sb_griqualand_sequence_play_scope = root
+							OR = {
+								AND = { var:sb_griqualand_sequence_play_generation_var = 1 has_global_variable = sb_griqualand_phase_a_active_global_var }
+								AND = { var:sb_griqualand_sequence_play_generation_var = 2 has_global_variable = sb_griqualand_phase_b_active_global_var }
+							}
+						}
+						root = {
+							OR = {
+								is_diplomatic_play_type = dp_sb_griqualand_cap_revoke_claim_locked
+								is_diplomatic_play_type = dp_sb_griqualand_cap_revoke_oranje_proxy_locked
+								is_diplomatic_play_type = dp_sb_griqualand_oranje_revoke_cap_claim_locked
+								is_diplomatic_play_type = dp_sb_griqualand_cap_return_wbl_locked
+								is_diplomatic_play_type = dp_sb_griqualand_oranje_return_wbl_locked
+								is_diplomatic_play_type = dp_sb_griqualand_oranje_independent_return_wbl_proxy_locked
+							}
+						}
+					}
+					AND = {
+						NOT = { has_global_variable = sb_griqualand_sequence_active_global_var }
+						has_global_variable = sb_griqualand_refusal_play_scope_global_var
+						global_var:sb_griqualand_refusal_play_scope_global_var ?= root
+						root = {
+							OR = {
+								is_diplomatic_play_type = dp_sb_griqualand_cap_revoke_claim_locked
+								is_diplomatic_play_type = dp_sb_griqualand_cap_revoke_oranje_proxy_locked
+								is_diplomatic_play_type = dp_sb_griqualand_oranje_revoke_cap_claim_locked
+								is_diplomatic_play_type = dp_sb_griqualand_cap_return_wbl_locked
+								is_diplomatic_play_type = dp_sb_griqualand_oranje_return_wbl_locked
+								is_diplomatic_play_type = dp_sb_griqualand_oranje_independent_return_wbl_proxy_locked
+								is_diplomatic_play_type = dp_sb_griqualand_oranje_return_wbl_proxy_locked
+							}
+						}
 					}
 				}
 			}
@@ -527,86 +837,134 @@ sb_on_spes_bona_war_end = {
 		}
 		if = {
 			limit = {
-				root = { is_diplomatic_play_type = dp_annex_war }
-				scope:target ?= {
-					country_definition = cd:ZUL
-					OR = { has_variable = sb_anglo_zulu_pressure_active_var has_variable = sb_port_natal_british_war_var }
+				root = { is_diplomatic_play_type = dp_annex_war initiator = c:GBR target = c:ZUL }
+				c:GBR ?= { has_variable = sb_british_zulu_annex_play_scope var:sb_british_zulu_annex_play_scope = root OR = { has_variable = sb_british_zulu_pressure_route_var has_variable = sb_british_zulu_port_natal_route_var } }
+			}
+			c:GBR = { sb_british_zulu_finalize_bound_annex = yes }
+		}
+
+		if = {
+			limit = {
+				root = { is_diplomatic_play_type = dp_annex_war initiator = c:ZUL target = c:GZA }
+				root = { initiator = { has_variable = sb_gaza_zulu_play_scope var:sb_gaza_zulu_play_scope = root } }
+			}
+			sb_gaza_resolve_exact_terminal = yes
+		}
+		if = {
+			limit = {
+				root = { OR = { is_diplomatic_play_type = dp_sb_xhosa_war_7 is_diplomatic_play_type = dp_sb_xhosa_war_8 is_diplomatic_play_type = dp_sb_xhosa_war_9 } }
+				c:XHO ?= { has_variable = sb_xhosa_story_play_scope var:sb_xhosa_story_play_scope = root }
+			}
+			root = { sb_xhosa_resolve_exact_story_war = yes }
+		}
+
+		if = {
+			limit = {
+				has_global_variable = sb_zulu_generic_war_coordinator_scope_global_var
+				global_var:sb_zulu_generic_war_coordinator_scope_global_var ?= {
+					has_variable = sb_zulu_generic_war_active_var
+					has_variable = sb_zulu_generic_war_play_scope
+					var:sb_zulu_generic_war_play_scope = root
 				}
 			}
-			if = { limit = { has_global_variable = sb_british_zulu_goal_accepted_global_var } remove_global_variable = sb_british_zulu_goal_accepted_global_var }
-			c:NAL ?= { if = { limit = { has_variable = sb_british_zulu_goal_accepted_pending_var } remove_variable = sb_british_zulu_goal_accepted_pending_var } }
-			if = {
-				limit = { scope:target ?= { is_country_alive = yes } p:xE882CE.state.owner = scope:target }
-				scope:target = {
-					if = { limit = { has_variable = sb_port_natal_british_war_var } remove_variable = sb_port_natal_british_war_var }
-					if = { limit = { has_variable = sb_port_natal_raid_var } remove_variable = sb_port_natal_raid_var }
-					if = { limit = { has_variable = sb_zulu_port_natal_goal_accepted_pending_var } remove_variable = sb_zulu_port_natal_goal_accepted_pending_var }
-					sb_zululand_discard_preannexation_royal_house_archive = yes
-					if = { limit = { has_variable = sb_anglo_zulu_pressure_active_var } trigger_event = { id = sb_anglo_zulu.020 days = 3 popup = yes } }
-					else = { trigger_event = { id = sb_zulu_dynasty.092 days = 7 popup = yes } }
-				}
-			}
-			else_if = {
-				limit = { p:xE882CE.state.owner ?= { sb_zululand_british_postwar_owner = yes } }
-				scope:target ?= { if = { limit = { is_country_alive = yes } sb_natal_archive_zulu_firearms = yes } }
+			global_var:sb_zulu_generic_war_coordinator_scope_global_var ?= {
+				# Exactly one non-timer accepted side awards that side's dynastic result.
 				if = {
-					limit = { NOT = { exists = c:NAL } }
-					c:GBR ?= { set_variable = { name = sb_natal_proclamation_pending_var days = 30 } trigger_event = { id = sb_zulu_dynasty.091 days = 7 popup = yes } }
+					limit = { is_country_alive = yes has_variable = sb_zulu_generic_goal_accepted_pending_var NOT = { has_variable = sb_zulu_generic_defeat_goal_accepted_pending_var } }
+					sb_zulu_apply_generic_war_victory = yes
 				}
-			}
-		}
-		if = {
-			limit = { c:GZA ?= { is_country_alive = yes has_variable = sb_gaza_claim_goal_accepted_pending_var has_variable = sb_gaza_eastern_transvaal_claim_if_zulu_defeated_var } }
-			c:GZA = {
-				remove_variable = sb_gaza_claim_goal_accepted_pending_var
-				if = { limit = { NOT = { has_claim = s:STATE_EAST_TRANSVAAL } } s:STATE_EAST_TRANSVAAL = { add_claim = root } }
-				remove_variable = sb_gaza_eastern_transvaal_claim_if_zulu_defeated_var
-			}
-		}
-		if = {
-			limit = { root = { is_diplomatic_play_type = dp_sb_xhosa_war_7 } c:XHO ?= { is_country_alive = yes OR = { has_variable = sb_xhosa_war_7_goal_accepted_pending_var has_diplomatic_pact = { who = c:CAP type = colonization_rights } has_diplomatic_pact = { who = c:ABY type = colonization_rights } } } }
-			c:XHO = { if = { limit = { has_variable = sb_xhosa_war_7_goal_accepted_pending_var } remove_variable = sb_xhosa_war_7_goal_accepted_pending_var } sb_xhosa_set_native_conscription_tier_9 = yes }
-		}
-		else_if = {
-			limit = { root = { is_diplomatic_play_type = dp_sb_xhosa_war_8 } c:XHO ?= { is_country_alive = yes OR = { has_variable = sb_xhosa_war_8_goal_accepted_pending_var has_diplomatic_pact = { who = c:CAP type = colonization_rights } has_diplomatic_pact = { who = c:ABY type = colonization_rights } } } }
-			c:XHO = { if = { limit = { has_variable = sb_xhosa_war_8_goal_accepted_pending_var } remove_variable = sb_xhosa_war_8_goal_accepted_pending_var } sb_xhosa_set_native_conscription_tier_12 = yes }
-		}
-		if = {
-			limit = { root = { OR = { is_diplomatic_play_type = dp_sb_xhosa_war_7 is_diplomatic_play_type = dp_sb_xhosa_war_8 is_diplomatic_play_type = dp_sb_xhosa_war_9 } } c:CAP ?= { OR = { has_variable = sb_xhosa_cape_goal_accepted_pending_var c:XHO ?= { has_diplomatic_pact = { who = c:CAP type = colonization_rights } } } } }
-			c:CAP = { if = { limit = { has_variable = sb_xhosa_cape_goal_accepted_pending_var } remove_variable = sb_xhosa_cape_goal_accepted_pending_var } add_modifier = { name = sb_cape_victory_against_xhosa months = 24 } }
-		}
-		if = {
-			limit = { c:ZUL ?= { is_country_alive = yes has_variable = sb_zulu_generic_war_active_var has_variable = sb_zulu_generic_war_play_scope var:sb_zulu_generic_war_play_scope = root has_variable = sb_zulu_generic_goal_accepted_pending_var } }
-			c:ZUL = { remove_variable = sb_zulu_generic_goal_accepted_pending_var sb_zulu_apply_generic_war_victory = yes }
-		}
-		else_if = {
-			limit = { c:ZUL ?= { is_country_alive = yes has_variable = sb_zulu_generic_war_active_var has_variable = sb_zulu_generic_war_play_scope var:sb_zulu_generic_war_play_scope = root has_variable = sb_zulu_generic_defeat_goal_accepted_pending_var } }
-			c:ZUL = { remove_variable = sb_zulu_generic_defeat_goal_accepted_pending_var sb_zulu_apply_generic_war_defeat = yes }
-		}
-		if = {
-			limit = { c:ZUL ?= { has_variable = sb_zulu_generic_war_active_var has_variable = sb_zulu_generic_war_play_scope var:sb_zulu_generic_war_play_scope = root } }
-			c:ZUL = {
+				else_if = {
+					limit = { is_country_alive = yes has_variable = sb_zulu_generic_defeat_goal_accepted_pending_var NOT = { has_variable = sb_zulu_generic_goal_accepted_pending_var } }
+					sb_zulu_apply_generic_war_defeat = yes
+				}
 				if = { limit = { has_variable = sb_zulu_generic_goal_accepted_pending_var } remove_variable = sb_zulu_generic_goal_accepted_pending_var }
 				if = { limit = { has_variable = sb_zulu_generic_defeat_goal_accepted_pending_var } remove_variable = sb_zulu_generic_defeat_goal_accepted_pending_var }
 				remove_variable = sb_zulu_generic_war_play_scope
 				remove_variable = sb_zulu_generic_war_active_var
 			}
+			remove_global_variable = sb_zulu_generic_war_coordinator_scope_global_var
 		}
 		if = {
-			limit = { root = { is_diplomatic_play_type = dp_conquer_state } c:ZUL ?= { is_country_alive = yes has_variable = sb_zulu_swazi_war_active_var has_variable = sb_zulu_swazi_goal_accepted_pending_var } }
-			c:ZUL = {
-				remove_variable = sb_zulu_swazi_goal_accepted_pending_var
-				if = { limit = { any_scope_state = { state_region = s:STATE_EAST_TRANSVAAL } } sb_zulu_apply_swazi_campaign_victory = yes }
-				else = { sb_zulu_apply_swazi_campaign_stalemate = yes }
+			limit = {
+				root = { is_diplomatic_play_type = dp_conquer_state }
+				scope:actor ?= { country_definition = cd:ZUL }
+				scope:target ?= { country_definition = cd:SWZ }
+				c:ZUL ?= {
+					has_variable = sb_zulu_swazi_war_active_var
+					has_variable = sb_zulu_swazi_play_scope
+					var:sb_zulu_swazi_play_scope = root
+				}
 			}
-		}
-		else_if = {
-			limit = { root = { is_diplomatic_play_type = dp_conquer_state } c:ZUL ?= { is_country_alive = yes has_variable = sb_zulu_swazi_war_active_var has_variable = sb_swazi_goal_accepted_pending_var } }
-			c:ZUL = { remove_variable = sb_swazi_goal_accepted_pending_var sb_zulu_apply_swazi_campaign_defeat = yes }
+			c:ZUL ?= {
+				if = {
+					limit = {
+						is_country_alive = yes
+						has_variable = sb_zulu_swazi_goal_seen_pending_var
+						has_variable = sb_zulu_swazi_target_state_scope
+						var:sb_zulu_swazi_target_state_scope ?= { owner = c:ZUL }
+						NOT = {
+							OR = {
+								has_variable = sb_swazi_goal_accepted_pending_var
+								AND = {
+									has_variable = sb_swazi_goal_seen_pending_var
+									var:sb_zulu_swazi_target_state_scope ?= { owner = c:SWZ }
+								}
+							}
+						}
+					}
+					sb_zulu_apply_swazi_campaign_victory = yes
+				}
+				else_if = {
+					limit = {
+						is_country_alive = yes
+						has_variable = sb_zulu_swazi_target_state_scope
+						OR = {
+							has_variable = sb_swazi_goal_accepted_pending_var
+							AND = {
+								has_variable = sb_swazi_goal_seen_pending_var
+								var:sb_zulu_swazi_target_state_scope ?= { owner = c:SWZ }
+							}
+						}
+						NOT = {
+							AND = {
+								has_variable = sb_zulu_swazi_goal_seen_pending_var
+								var:sb_zulu_swazi_target_state_scope ?= { owner = c:ZUL }
+							}
+						}
+					}
+					sb_zulu_apply_swazi_campaign_defeat = yes
+				}
+				else_if = {
+					limit = { is_country_alive = yes }
+					# Zero or two surviving goal-side predicates are non-exclusive.
+					sb_zulu_apply_swazi_campaign_stalemate = yes
+				}
+			}
+			sb_cleanup_swazi_defensive_muster_for_play = yes
+			sb_zulu_clear_swazi_campaign_runtime = yes
 		}
 		if = {
-			limit = { root = { is_diplomatic_play_type = dp_native_uprising } c:ORA ?= { is_country_alive = yes OR = { has_variable = sb_great_trek_goal_accepted_pending_var c:MTB ?= { has_diplomatic_pact = { who = c:ORA type = colonization_rights } } } } }
-			c:ORA = { if = { limit = { has_variable = sb_great_trek_goal_accepted_pending_var } remove_variable = sb_great_trek_goal_accepted_pending_var } trigger_event = { id = sb_great_trek.002 days = 3 popup = yes } }
+			limit = {
+				root = { is_diplomatic_play_type = dp_native_uprising }
+				scope:actor ?= { country_definition = cd:MTB }
+				scope:target ?= { country_definition = cd:ORA }
+				c:ORA ?= { has_variable = sb_great_trek_opening_play_scope var:sb_great_trek_opening_play_scope = root }
+			}
+			if = {
+				limit = {
+					c:ORA ?= { is_country_alive = yes }
+					c:MTB ?= {
+						is_country_alive = yes
+						has_diplomatic_pact = { who = c:ORA type = colonization_rights }
+					}
+				}
+				c:ORA = { sb_great_trek_queue_outcome_delivery = yes }
+			}
+			c:ORA ?= {
+				if = { limit = { has_variable = sb_great_trek_goal_accepted_pending_var } remove_variable = sb_great_trek_goal_accepted_pending_var }
+				remove_variable = sb_great_trek_opening_play_scope
+			}
+			c:MTB ?= { if = { limit = { has_variable = sb_great_trek_opening_launch_lease_var } remove_variable = sb_great_trek_opening_launch_lease_var } }
 		}
 		sb_klip_river_handle_war_end = yes
 		sb_bechuanaland_resolve_crisis_war_at_end = yes
@@ -614,34 +972,15 @@ sb_on_spes_bona_war_end = {
 		# Route-local close cleanup. Leases are consumed on start, but all terminal
 		# paths clear them again so failed/backed-down plays cannot poison a retry.
 		if = {
-			limit = { root = { is_diplomatic_play_type = dp_conquer_state } c:ZUL ?= { has_variable = sb_zulu_swazi_war_active_var } c:SWZ ?= { has_variable = sb_zulu_swazi_war_active_var } }
-			c:ZUL = {
-				if = { limit = { has_variable = sb_zulu_swazi_goal_accepted_pending_var } remove_variable = sb_zulu_swazi_goal_accepted_pending_var }
-				if = { limit = { has_variable = sb_swazi_goal_accepted_pending_var } remove_variable = sb_swazi_goal_accepted_pending_var }
-				remove_variable = sb_zulu_swazi_war_active_var
-			}
-			c:SWZ = { remove_variable = sb_zulu_swazi_war_active_var }
-		}
-		c:GZA ?= {
-			if = { limit = { has_variable = sb_gaza_claim_goal_accepted_pending_var } remove_variable = sb_gaza_claim_goal_accepted_pending_var }
-			if = { limit = { has_variable = sb_gaza_eastern_transvaal_claim_if_zulu_defeated_var } remove_variable = sb_gaza_eastern_transvaal_claim_if_zulu_defeated_var }
+			limit = { root = { is_diplomatic_play_type = dp_annex_war initiator = c:ORA target = c:BST } c:ORA ?= { has_variable = sb_ora_bst_1856_play_scope var:sb_ora_bst_1856_play_scope = root } }
+			sb_cleanup_ora_bst_1856_play_support = yes
+			c:ORA = { remove_variable = sb_ora_bst_1856_play_scope }
 		}
 		if = {
-			limit = { root = { is_diplomatic_play_type = dp_sb_nrp_boundary_confrontation } }
-			scope:initiator ?= { if = { limit = { has_variable = sb_nrp_boundary_launch_lease_var } remove_variable = sb_nrp_boundary_launch_lease_var } }
-			c:NRP ?= {
-				if = { limit = { has_variable = sb_nrp_boundary_confrontation_active_var } remove_variable = sb_nrp_boundary_confrontation_active_var }
-				if = { limit = { has_variable = sb_nrp_boundary_initiator_scope } remove_variable = sb_nrp_boundary_initiator_scope }
-			}
+			limit = { root = { is_diplomatic_play_type = dp_sb_nrp_boundary_confrontation } c:NRP ?= { has_variable = sb_nrp_boundary_play_scope var:sb_nrp_boundary_play_scope = root } }
+			c:NRP = { sb_nrp_commit_deferred_defence_pact = yes sb_nrp_clear_boundary_confrontation_runtime = yes }
 		}
 		c:NAL ?= { if = { limit = { has_variable = sb_natal_zulu_secession_launch_lease_var } remove_variable = sb_natal_zulu_secession_launch_lease_var } }
-		scope:initiator ?= {
-			if = { limit = { has_variable = sb_bechuanaland_direct_launch_lease_var } remove_variable = sb_bechuanaland_direct_launch_lease_var }
-			if = { limit = { has_variable = sb_bechuanaland_proxy_launch_lease_var } remove_variable = sb_bechuanaland_proxy_launch_lease_var }
-			if = { limit = { has_variable = sb_bechuanaland_warren_direct_launch_lease_var } remove_variable = sb_bechuanaland_warren_direct_launch_lease_var }
-			if = { limit = { has_variable = sb_bechuanaland_warren_proxy_launch_lease_var } remove_variable = sb_bechuanaland_warren_proxy_launch_lease_var }
-			if = { limit = { has_variable = sb_bechuanaland_total_launch_lease_var } remove_variable = sb_bechuanaland_total_launch_lease_var }
-		}
 		sb_refresh_british_cape_boer_restraint = yes
 		sb_cleanup_trn_frontier_deployment_train_for_play = yes
 		sb_cleanup_blood_river_assistance_for_play = yes
@@ -661,23 +1000,8 @@ sb_on_spes_bona_war_end = {
 			}
 			scope:target = { sb_zululand_discard_preannexation_royal_house_archive = yes }
 		}
-		if = {
-			limit = {
-				root = { is_diplomatic_play_type = dp_sb_trn_zpb_crackdown_locked }
-				scope:target ?= {
-					country_definition = cd:ZPB
-					is_country_alive = yes
-					has_variable = sb_zpb_crackdown_total_conquest_route_var
-				}
-			}
-			scope:target = {
-				sb_zpb_assume_transvaal_after_crackdown_victory = yes
-				if = {
-					limit = { has_variable = sb_zpb_crackdown_total_conquest_route_var }
-					set_variable = sb_zpb_crackdown_successor_pending_var
-				}
-			}
-		}
+		# War end uses the identical exact-root terminal resolver as back-down.
+		sb_zpb_crackdown_resolve_bound_terminal = yes
 
 		if = {
 			limit = {
@@ -714,23 +1038,60 @@ sb_on_spes_bona_wargoal_enforced = {
 		# authored route result; terminal mutations run once from on_war_end.
 		sb_klip_river_handle_wargoal_enforced = yes
 		sb_bechuanaland_track_crisis_wargoal_enforcement = yes
+		# Timer and assent callbacks are provisional. The terminal resolver also
+		# requires the saved Swazi target state to remain under Zulu ownership.
 		if = {
-			limit = { exists = scope:enforced_by_timer scope:diplomatic_play ?= { OR = { is_diplomatic_play_type = dp_annex_war is_diplomatic_play_type = dp_conquer_state is_diplomatic_play_type = dp_native_uprising is_diplomatic_play_type = dp_sb_xhosa_war_7 is_diplomatic_play_type = dp_sb_xhosa_war_8 is_diplomatic_play_type = dp_sb_xhosa_war_9 } } }
-			set_global_variable = sb_frontier_timer_enforcement_seen_global_var
+			limit = {
+				country_definition = cd:ZUL
+				scope:target ?= { country_definition = cd:SWZ }
+				scope:diplomatic_play ?= { is_diplomatic_play_type = dp_conquer_state }
+				c:ZUL ?= { has_variable = sb_zulu_swazi_play_scope var:sb_zulu_swazi_play_scope = scope:diplomatic_play }
+			}
+			c:ZUL = { set_variable = sb_zulu_swazi_goal_seen_pending_var }
 		}
-
+		else_if = {
+			limit = {
+				country_definition = cd:SWZ
+				scope:target ?= { country_definition = cd:ZUL }
+				scope:diplomatic_play ?= { is_diplomatic_play_type = dp_conquer_state }
+				c:ZUL ?= { has_variable = sb_zulu_swazi_play_scope var:sb_zulu_swazi_play_scope = scope:diplomatic_play }
+			}
+			c:ZUL = { set_variable = sb_swazi_goal_seen_pending_var }
+		}
+		if = {
+			limit = {
+				country_definition = cd:GBR
+				scope:target ?= { country_definition = cd:ZUL }
+				scope:diplomatic_play ?= { is_diplomatic_play_type = dp_annex_war initiator = c:GBR target = c:ZUL }
+				has_variable = sb_british_zulu_annex_play_scope
+				var:sb_british_zulu_annex_play_scope = scope:diplomatic_play
+			}
+			sb_british_archive_preannex_zulu_firearms = yes
+		}
 		if = {
 			limit = { NOT = { exists = scope:enforced_by_timer } }
 			# British-Zulu / Port Natal accepted-side records.
 			if = {
-				limit = { scope:diplomatic_play ?= { is_diplomatic_play_type = dp_annex_war } scope:target ?= { country_definition = cd:ZUL } ROOT = { sb_zululand_british_postwar_owner = yes } }
+				limit = {
+					c:GBR ?= { has_variable = sb_british_zulu_annex_play_scope var:sb_british_zulu_annex_play_scope = scope:diplomatic_play }
+					scope:diplomatic_play ?= { is_diplomatic_play_type = dp_annex_war initiator = c:GBR target = c:ZUL }
+					country_definition = cd:GBR
+					scope:target ?= { country_definition = cd:ZUL }
+				}
+				c:GBR = { set_variable = sb_british_zulu_goal_seen_var }
 				set_global_variable = sb_british_zulu_goal_accepted_global_var
 				c:NAL ?= { set_variable = sb_british_zulu_goal_accepted_pending_var }
 			}
 			else_if = {
-				limit = { scope:diplomatic_play ?= { is_diplomatic_play_type = dp_annex_war } country_definition = cd:ZUL scope:target ?= { country_definition = cd:GBR } has_variable = sb_port_natal_british_war_var }
+				limit = {
+					c:GBR ?= { has_variable = sb_british_zulu_annex_play_scope var:sb_british_zulu_annex_play_scope = scope:diplomatic_play }
+					scope:diplomatic_play ?= { is_diplomatic_play_type = dp_annex_war initiator = c:GBR target = c:ZUL }
+					country_definition = cd:ZUL
+					scope:target ?= { country_definition = cd:GBR }
+				}
 				set_variable = sb_zulu_port_natal_goal_accepted_pending_var
 			}
+
 
 			# Older Kimberley refusal routes still use territorial goals; record the
 			# accepted side and let the close handler inspect the final owner/relation.
@@ -740,17 +1101,36 @@ sb_on_spes_bona_wargoal_enforced = {
 			}
 
 			if = {
-				limit = { country_definition = cd:GZA has_variable = sb_gaza_eastern_transvaal_claim_if_zulu_defeated_var scope:target ?= { country_definition = cd:ZUL } }
+				limit = {
+					country_definition = cd:GZA
+					has_variable = sb_gaza_eastern_transvaal_claim_if_zulu_defeated_var
+					scope:target ?= { country_definition = cd:ZUL }
+					scope:diplomatic_play ?= { is_diplomatic_play_type = dp_annex_war }
+					c:ZUL ?= { has_variable = sb_gaza_zulu_play_scope var:sb_gaza_zulu_play_scope = scope:diplomatic_play }
+				}
 				set_variable = sb_gaza_claim_goal_accepted_pending_var
 			}
 
 			# Frontier-war policy records.
 			if = {
-				limit = { OR = { country_definition = cd:CAP country_definition = cd:ABY } scope:target ?= { country_definition = cd:XHO } scope:diplomatic_play ?= { OR = { is_diplomatic_play_type = dp_sb_xhosa_war_7 is_diplomatic_play_type = dp_sb_xhosa_war_8 is_diplomatic_play_type = dp_sb_xhosa_war_9 } } }
-				if = { limit = { scope:diplomatic_play ?= { is_diplomatic_play_type = dp_sb_xhosa_war_7 } } c:XHO ?= { set_variable = sb_xhosa_war_7_goal_accepted_pending_var } }
-				else_if = { limit = { scope:diplomatic_play ?= { is_diplomatic_play_type = dp_sb_xhosa_war_8 } } c:XHO ?= { set_variable = sb_xhosa_war_8_goal_accepted_pending_var } }
-				if = { limit = { country_definition = cd:CAP } c:CAP ?= { set_variable = sb_xhosa_cape_goal_accepted_pending_var } }
+			limit = {
+				c:XHO ?= {
+					has_variable = sb_xhosa_story_play_scope
+					var:sb_xhosa_story_play_scope = scope:diplomatic_play
+					has_variable = sb_xhosa_story_target_scope
+				}
 			}
+			c:XHO.var:sb_xhosa_story_target_scope = { save_temporary_scope_as = sb_xhosa_exact_target }
+			if = {
+				limit = { country_definition = cd:XHO scope:target ?= { this = scope:sb_xhosa_exact_target } }
+				c:XHO = { set_variable = sb_xhosa_native_goal_seen_var }
+			}
+			else_if = {
+				limit = { this = scope:sb_xhosa_exact_target scope:target ?= { country_definition = cd:XHO } }
+				c:XHO = { set_variable = sb_xhosa_colonial_goal_seen_var }
+			}
+		}
+
 			if = {
 				limit = {
 					country_definition = cd:ZUL
@@ -768,12 +1148,29 @@ sb_on_spes_bona_wargoal_enforced = {
 				c:ZUL = { set_variable = sb_zulu_generic_defeat_goal_accepted_pending_var }
 			}
 			if = {
-				limit = { scope:diplomatic_play ?= { is_diplomatic_play_type = dp_conquer_state } OR = { country_definition = cd:ZUL country_definition = cd:SWZ } scope:target ?= { OR = { country_definition = cd:ZUL country_definition = cd:SWZ } } c:ZUL ?= { has_variable = sb_zulu_swazi_war_active_var } }
+				limit = {
+					scope:diplomatic_play ?= { is_diplomatic_play_type = dp_conquer_state }
+					c:ZUL ?= {
+						has_variable = sb_zulu_swazi_war_active_var
+						has_variable = sb_zulu_swazi_play_scope
+						var:sb_zulu_swazi_play_scope = scope:diplomatic_play
+					}
+					OR = {
+						AND = { country_definition = cd:ZUL scope:target ?= { country_definition = cd:SWZ } }
+						AND = { country_definition = cd:SWZ scope:target ?= { country_definition = cd:ZUL } }
+					}
+				}
 				if = { limit = { country_definition = cd:ZUL } c:ZUL = { set_variable = sb_zulu_swazi_goal_accepted_pending_var } }
 				else = { c:ZUL = { set_variable = sb_swazi_goal_accepted_pending_var } }
 			}
 			if = {
-				limit = { country_definition = cd:ORA scope:target ?= { country_definition = cd:MTB } scope:diplomatic_play ?= { is_diplomatic_play_type = dp_native_uprising } }
+				limit = {
+					country_definition = cd:ORA
+					scope:target ?= { country_definition = cd:MTB }
+					scope:diplomatic_play ?= { is_diplomatic_play_type = dp_native_uprising }
+					has_variable = sb_great_trek_opening_play_scope
+					var:sb_great_trek_opening_play_scope = scope:diplomatic_play
+				}
 				set_variable = sb_great_trek_goal_accepted_pending_var
 			}
 		}

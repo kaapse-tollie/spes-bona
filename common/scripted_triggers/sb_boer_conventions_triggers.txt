@@ -482,3 +482,56 @@ sb_has_missing_boer_compact_for_root = {
 		sb_boer_compact_with_nal_incomplete = yes
 	}
 }
+
+# Route validity is deliberately distinct from launch availability. A live
+# route may be temporarily busy and must requeue rather than lose its held offer.
+sb_trn_zpb_crackdown_route_live_authority = {
+	country_definition = cd:TRN
+	is_country_alive = yes
+	is_subject = no
+	aggressive_diplomatic_plays_permitted = yes
+	any_scope_state = { always = yes }
+	has_variable = sb_zpb_crackdown_active_var
+	c:ZPB ?= {
+		is_country_alive = yes
+		is_subject = no
+		has_variable = sb_zpb_crackdown_appealed_var
+		any_scope_state = { state_region = s:STATE_NORTHERN_TRANSVAAL }
+	}
+}
+
+# Exact live authority immediately before a create-only lease is acquired.
+sb_trn_zpb_crackdown_preflight = {
+	sb_trn_zpb_crackdown_route_live_authority = yes
+	any_scope_state = { always = yes }
+	is_at_war = no
+	is_active_in_diplomatic_play = no
+	NOT = { has_truce_with = c:ZPB }
+	NOT = { has_variable = sb_zpb_crackdown_launch_lease_var }
+	NOT = { has_variable = sb_zpb_crackdown_play_scope }
+	NOT = {
+		any_diplomatic_play = {
+			is_diplomatic_play_type = dp_sb_trn_zpb_crackdown_locked
+			initiator = c:TRN
+			target = c:ZPB
+		}
+	}
+}
+
+# The receipt is a unique, generation-local owner for one held .150 delivery.
+sb_trn_zpb_crackdown_current_receipt_authority = {
+	sb_trn_zpb_crackdown_route_live_authority = yes
+	has_variable = sb_zpb_crackdown_generation_scope
+	var:sb_zpb_crackdown_generation_scope ?= {
+		has_variable = sb_zpb_crackdown_generation_active_var
+		has_variable = sb_zpb_crackdown_delivery_pending_var
+	}
+}
+
+sb_trn_zpb_crackdown_popup_authority = {
+	sb_trn_zpb_crackdown_current_receipt_authority = yes
+	var:sb_zpb_crackdown_generation_scope ?= {
+		has_variable = sb_zpb_crackdown_popup_authority_var
+	}
+	sb_trn_zpb_crackdown_preflight = yes
+}

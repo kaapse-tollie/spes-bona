@@ -18,6 +18,17 @@ on_diplo_play_back_down = {
 
 sb_on_bst_monthly_pulse_country = {
 	effect = {
+		# A delayed Gun War reservation cannot survive CAP retagging, death, or loss
+		# of the exact BST subject relation.
+		if = {
+			limit = {
+				country_definition = cd:BST
+				has_variable = sb_bst_cap_disarmament_pending_var
+				NOT = { c:CAP ?= { is_country_alive = yes root = { is_direct_subject_of = c:CAP } } }
+			}
+			remove_variable = sb_bst_cap_disarmament_pending_var
+			c:CAP ?= { if = { limit = { has_variable = sb_bst_gun_war_launch_lease_var } remove_variable = sb_bst_gun_war_launch_lease_var } }
+		}
 		if = {
 			limit = {
 				sb_bst_oranje_frontier_actor = yes
@@ -149,6 +160,9 @@ sb_on_bst_monthly_pulse_country = {
 			c:BST ?= {
 				remove_variable = sb_bst_cap_disarmament_pending_var
 			}
+			c:CAP ?= {
+				if = { limit = { has_variable = sb_bst_gun_war_launch_lease_var } remove_variable = sb_bst_gun_war_launch_lease_var }
+			}
 		}
 
 		if = {
@@ -180,13 +194,18 @@ sb_on_bst_monthly_pulse_country = {
 
 sb_on_bst_wargoal_enforced = {
 	effect = {
-		# Timer flips may be reversed. Record only; resolve from the live relation at war end.
+		# Diagnostic receipt only for the exact admitted Gun War. Final outcome is
+		# still derived from the authoritative live relation at exact war end.
 		if = {
 			limit = {
-				scope:diplomatic_play ?= { OR = { is_diplomatic_play_type = dp_annex_war is_diplomatic_play_type = dp_annex_subject is_diplomatic_play_type = dp_sb_basotho_gun_war } }
-				scope:target ?= { country_definition = cd:BST }
+				scope:diplomatic_play ?= { is_diplomatic_play_type = dp_sb_basotho_gun_war }
+				scope:target ?= {
+					country_definition = cd:BST
+					has_variable = sb_bst_gun_war_play_scope
+					var:sb_bst_gun_war_play_scope = scope:diplomatic_play
+				}
 			}
-			set_variable = sb_bst_story_goal_accepted_pending_var
+			scope:target = { set_variable = sb_bst_story_goal_accepted_pending_var }
 		}
 	}
 }
@@ -198,6 +217,8 @@ sb_on_bst_war_end = {
 				root = { is_diplomatic_play_type = dp_sb_basotho_gun_war }
 				c:BST ?= {
 					is_country_alive = yes
+					has_variable = sb_bst_gun_war_play_scope
+					var:sb_bst_gun_war_play_scope = root
 					has_variable = sb_bst_cap_annexation_crisis_var
 					NOT = { is_subject_of = c:CAP }
 					NOT = { has_variable = sb_bst_gun_war_resolution_guard_var }
@@ -209,8 +230,10 @@ sb_on_bst_war_end = {
 				else = { sb_bst_restore_gbr_protectorate = yes }
 			}
 		}
-		scope:actor ?= { if = { limit = { has_variable = sb_bst_story_goal_accepted_pending_var } remove_variable = sb_bst_story_goal_accepted_pending_var } }
-		scope:target ?= { if = { limit = { has_variable = sb_bst_story_goal_accepted_pending_var } remove_variable = sb_bst_story_goal_accepted_pending_var } }
+		if = {
+			limit = { root = { is_diplomatic_play_type = dp_sb_basotho_gun_war } c:BST ?= { has_variable = sb_bst_gun_war_play_scope var:sb_bst_gun_war_play_scope = root } }
+			root = { sb_cleanup_exact_bst_gun_war_runtime = yes }
+		}
 	}
 }
 
@@ -219,19 +242,22 @@ sb_on_bst_diplo_play_back_down = {
 		# A backing-down Boer aggressor is not awarded annexation of BST.
 		if = {
 			limit = {
-				root = { is_diplomatic_play_type = dp_annex_war }
+				root = { is_diplomatic_play_type = dp_annex_war initiator = scope:actor target = c:BST }
 				scope:actor ?= { sb_bst_oranje_frontier_actor = yes NOT = { has_variable = sb_settled_drakensberg_var } }
-				scope:target ?= { country_definition = cd:BST }
 			}
 			scope:actor = { set_variable = sb_bst_annexation_backdown_rejected_var }
 		}
 		if = {
 			limit = {
-				root = { OR = { is_diplomatic_play_type = dp_annex_subject is_diplomatic_play_type = dp_sb_basotho_gun_war } }
-				scope:actor ?= { country_definition = cd:CAP has_variable = sb_bst_cap_annexation_crisis_var }
-				scope:target ?= { country_definition = cd:BST has_variable = sb_bst_cap_annexation_crisis_var is_country_alive = yes NOT = { has_variable = sb_bst_gun_war_resolution_guard_var } }
+				root = { is_diplomatic_play_type = dp_sb_basotho_gun_war }
+				c:BST ?= { has_variable = sb_bst_gun_war_play_scope var:sb_bst_gun_war_play_scope = root }
 			}
-			scope:target = { set_variable = sb_bst_gun_war_resolution_guard_var sb_bst_restore_gbr_protectorate = yes }
+			if = {
+				limit = { scope:actor ?= { country_definition = cd:CAP } c:BST ?= { is_country_alive = yes NOT = { has_variable = sb_bst_gun_war_resolution_guard_var } } }
+				c:BST = { set_variable = sb_bst_gun_war_resolution_guard_var sb_bst_restore_gbr_protectorate = yes }
+			}
+			root = { sb_cleanup_exact_bst_gun_war_runtime = yes }
 		}
+
 	}
 }

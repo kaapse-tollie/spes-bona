@@ -178,113 +178,66 @@ class VictoriaThree114RegressionFixTests(unittest.TestCase):
             ),
         )
 
-    def test_frontier_target_selection_uses_the_exact_outer_candidate_predicate(self):
+    def test_frontier_target_selection_uses_the_saved_exact_target(self):
         path = "events/sb_frontier_ai_wars_events.txt"
         event_contracts = {
             "sb_frontier_ai_wars.100": (
                 "dp_sb_xhosa_war_7",
-                Counter(
-                    {
-                        ("sb_xhosa_frontier_war_target_is_launchable", "yes"): 1,
-                        ("has_variable", "sb_xhosa_frontier_war_7_scheduled_var"): 1,
-                        ("has_technology_researched", "colonization"): 1,
-                    }
-                ),
+                "sb_xhosa_frontier_war_7_scheduled_var",
+                None,
+                "sb_xho_owns_all_thembu_frontier_provinces",
             ),
             "sb_frontier_ai_wars.110": (
                 "dp_sb_xhosa_war_8",
-                Counter(
-                    {
-                        ("sb_xhosa_frontier_war_target_is_launchable", "yes"): 1,
-                        ("has_variable", "sb_xhosa_frontier_war_8_scheduled_var"): 1,
-                        ("has_variable", "sb_xhosa_frontier_war_7_resolved_var"): 1,
-                        ("has_technology_researched", "colonization"): 1,
-                    }
-                ),
+                "sb_xhosa_frontier_war_8_scheduled_var",
+                "sb_xhosa_frontier_war_7_resolved_var",
+                "sb_xho_owns_all_rharhabe_frontier_provinces",
             ),
             "sb_frontier_ai_wars.120": (
                 "dp_sb_xhosa_war_9",
-                Counter(
-                    {
-                        ("sb_xhosa_frontier_war_target_is_launchable", "yes"): 1,
-                        ("has_variable", "sb_xhosa_frontier_war_9_scheduled_var"): 1,
-                        ("has_variable", "sb_xhosa_frontier_war_8_resolved_var"): 1,
-                        ("has_technology_researched", "colonization"): 1,
-                    }
-                ),
+                "sb_xhosa_frontier_war_9_scheduled_var",
+                "sb_xhosa_frontier_war_8_resolved_var",
+                "sb_xho_owns_all_gcaleka_frontier_provinces",
             ),
         }
 
-        for event_id, (play, expected) in event_contracts.items():
+        for event_id, (play, scheduled, previous, ownership_guard) in event_contracts.items():
             with self.subTest(event=event_id):
                 event = block(path, event_id)
                 immediate = block_from_source(event, "immediate", event_id)
                 outer = nested_blocks(immediate, "if")[0]
                 outer_limit = block_from_source(outer, "limit", f"{event_id} outer gate")
-                outer_or = block_from_source(outer_limit, "OR", f"{event_id} outer gate")
+                target = block_from_source(
+                    outer_limit,
+                    "scope:sb_xhosa_delivery_target",
+                    f"{event_id} saved target gate",
+                )
 
-                selector_requirements = {}
-                for tag in ("ABY", "CAP"):
-                    outer_country = block_from_source(
-                        outer_or, f"c:{tag}", f"{event_id} outer candidate"
-                    )
-                    outer_requirements = simple_assignments(outer_country)
-                    actual = candidate_requirements(event, play, tag)
-                    self.assertEqual(expected, outer_requirements, f"{event_id}/{tag} outer")
-                    self.assertEqual(expected, actual, f"{event_id}/{tag} selector")
-                    selector_requirements[tag] = actual
+                self.assertIn("scope:sb_xhosa_delivery_target ?= {", outer_limit)
+                self.assertIn("is_country_alive = yes", target)
+                self.assertIn(
+                    "OR = { country_definition = cd:CAP country_definition = cd:ABY }",
+                    target,
+                )
+                self.assertIn(f"has_variable = {scheduled}", target)
+                if previous is not None:
+                    self.assertIn(f"has_variable = {previous}", target)
+                self.assertIn("has_technology_researched = colonization", target)
+                self.assertIn("sb_xhosa_frontier_war_target_is_launchable = yes", event)
+                self.assertIn(f"NOT = {{ {ownership_guard} = yes }}", outer_limit)
 
-                full = {tag: set(values) for tag, values in selector_requirements.items()}
-                none = {"ABY": set(), "CAP": set()}
-                matrix = {
-                    "CAP only": ({"ABY": set(), "CAP": full["CAP"]}, "CAP"),
-                    "ABY only": ({"ABY": full["ABY"], "CAP": set()}, "ABY"),
-                    "both": (full, "ABY"),
-                    "neither": (none, None),
-                }
-                for label, (facts, selected) in matrix.items():
-                    with self.subTest(event=event_id, case=label):
-                        self.assertEqual(
-                            selected,
-                            selected_target(selector_requirements, facts),
-                        )
-
-                for requirement in expected:
-                    if requirement[0] not in {"has_variable", "has_technology_researched"}:
-                        continue
-                    sequence_matrix = {
-                        "ABY missing": (
-                            {
-                                "ABY": full["ABY"] - {requirement},
-                                "CAP": full["CAP"],
-                            },
-                            "CAP",
-                        ),
-                        "CAP missing": (
-                            {
-                                "ABY": full["ABY"],
-                                "CAP": full["CAP"] - {requirement},
-                            },
-                            "ABY",
-                        ),
-                        "both missing": (
-                            {
-                                "ABY": full["ABY"] - {requirement},
-                                "CAP": full["CAP"] - {requirement},
-                            },
-                            None,
-                        ),
-                    }
-                    for label, (facts, selected) in sequence_matrix.items():
-                        with self.subTest(
-                            event=event_id,
-                            missing=requirement,
-                            case=label,
-                        ):
-                            self.assertEqual(
-                                selected,
-                                selected_target(selector_requirements, facts),
-                            )
+                self.assertNotIn("target_country = c:ABY", event)
+                self.assertNotIn("target_country = c:CAP", event)
+                self.assertIn(
+                    "set_variable = { name = sb_xhosa_story_target_scope value = scope:sb_xhosa_delivery_target }",
+                    event,
+                )
+                self.assertIn(
+                    f"create_diplomatic_play = {{ type = {play} target_country = scope:sb_xhosa_delivery_target }}",
+                    event,
+                )
+                self.assertIn("remove_variable = sb_xhosa_delivery_target_scope", event)
+                self.assertIn("remove_variable = sb_xhosa_delivery_generation_var", event)
 
 
 if __name__ == "__main__":

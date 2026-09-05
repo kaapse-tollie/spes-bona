@@ -1272,129 +1272,317 @@ sb_zpb_crackdown_withdraw_trn_compact_with_nal = {
 }
 
 sb_apply_zpb_player_trn_civil_war_support = {
+	# This grant is called only after exact on-start admission. The state guard
+	# keeps a delayed route from creating a formation in a lost footprint.
 	if = {
 		limit = {
 			NOT = { has_variable = sb_zpb_player_trn_civil_war_support_var }
+			any_scope_state = { state_region = s:STATE_NORTHERN_TRANSVAAL }
 		}
 		set_variable = sb_zpb_player_trn_civil_war_support_var
 		add_treasury = 10000
-		add_modifier = {
-			name = sb_zpb_civil_war_player_trn_support
-			months = 12
-		}
+		add_modifier = { name = sb_zpb_civil_war_player_trn_support months = 12 }
 		create_military_formation = {
 			type = army
 			hq_region = sr:region_southern_africa
 			name = zoutpansberg_frontier_commando
+			combat_unit = { type = unit_type:combat_unit_type_line_infantry state_region = s:STATE_NORTHERN_TRANSVAAL count = 1 }
+			combat_unit = { type = unit_type:combat_unit_type_dragoons state_region = s:STATE_NORTHERN_TRANSVAAL count = 1 }
+		}
+	}
+}
 
-			combat_unit = {
-				type = unit_type:combat_unit_type_line_infantry
-				state_region = s:STATE_NORTHERN_TRANSVAAL
-				count = 1
+# The generation receipt owns one held .150 delivery. It prevents an old popup
+# from acting after a retry has issued a newer delivery (ABA protection).
+sb_zpb_crackdown_clear_generation_receipt = {
+	# The receipt may be retired after either actor retags. These are volatile
+	# receipt markers, so sweep every live country rather than reselecting tags.
+	every_country = {
+		if = { limit = { has_variable = sb_zpb_crackdown_generation_scope } remove_variable = sb_zpb_crackdown_generation_scope }
+		if = { limit = { has_variable = sb_zpb_crackdown_launch_lease_var } remove_variable = sb_zpb_crackdown_launch_lease_var }
+		if = { limit = { has_variable = sb_zpb_crackdown_launch_ack_var } remove_variable = sb_zpb_crackdown_launch_ack_var }
+	}
+	# Frozen markers are state-local and ownership may have changed before an
+	# ambiguous terminal callback. Sweep every live owner before retiring receipt.
+	every_country = {
+		every_scope_state = {
+			if = { limit = { has_variable = sb_zpb_crackdown_frozen_target_state_var } remove_variable = sb_zpb_crackdown_frozen_target_state_var }
+			if = { limit = { has_variable = sb_zpb_crackdown_frozen_contested_state_var } remove_variable = sb_zpb_crackdown_frozen_contested_state_var }
+		}
+	}
+	if = { limit = { container_exists = sb_zpb_crackdown_generation_state } container:sb_zpb_crackdown_generation_state = { destroy_container = yes } }
+}
+
+# This is the atomic route-local close. It deliberately names only crackdown
+# markers, leaving general Boer compacts, laws, claims, and other routes alone.
+sb_zpb_crackdown_clear_route_runtime = {
+	sb_zpb_crackdown_clear_generation_receipt = yes
+	# The route is singleton. Sweep every country-scoped crackdown marker so a
+	# retagged/destroyed actor cannot leak delivery state into its replacement.
+	# Outcome history outside this route prefix is intentionally untouched.
+	every_country = {
+		if = { limit = { has_variable = sb_zpb_crackdown_active_var } remove_variable = sb_zpb_crackdown_active_var }
+		if = { limit = { has_variable = sb_zpb_crackdown_appealed_var } remove_variable = sb_zpb_crackdown_appealed_var }
+		if = { limit = { has_variable = sb_zpb_crackdown_backed_zpb_var } remove_variable = sb_zpb_crackdown_backed_zpb_var }
+		if = { limit = { has_variable = sb_zpb_crackdown_backer_resolved_var } remove_variable = sb_zpb_crackdown_backer_resolved_var }
+		if = { limit = { has_variable = sb_zpb_crackdown_play_scope } remove_variable = sb_zpb_crackdown_play_scope }
+		if = { limit = { has_variable = sb_zpb_crackdown_target_scope } remove_variable = sb_zpb_crackdown_target_scope }
+		if = { limit = { has_variable = sb_zpb_crackdown_trn_scope } remove_variable = sb_zpb_crackdown_trn_scope }
+		if = { limit = { has_variable = sb_zpb_crackdown_initiator_scope } remove_variable = sb_zpb_crackdown_initiator_scope }
+		if = { limit = { has_variable = sb_zpb_crackdown_contested_state_scope } remove_variable = sb_zpb_crackdown_contested_state_scope }
+		if = { limit = { has_variable = sb_zpb_crackdown_generation_scope } remove_variable = sb_zpb_crackdown_generation_scope }
+		if = { limit = { has_variable = sb_zpb_crackdown_launch_lease_var } remove_variable = sb_zpb_crackdown_launch_lease_var }
+		if = { limit = { has_variable = sb_zpb_crackdown_launch_ack_var } remove_variable = sb_zpb_crackdown_launch_ack_var }
+		if = { limit = { has_variable = sb_zpb_crackdown_receipt_launch_lease_var } remove_variable = sb_zpb_crackdown_receipt_launch_lease_var }
+		if = { limit = { has_variable = sb_zpb_crackdown_dispatch_lease_var } remove_variable = sb_zpb_crackdown_dispatch_lease_var }
+		if = { limit = { has_variable = sb_zpb_crackdown_popup_authority_var } remove_variable = sb_zpb_crackdown_popup_authority_var }
+		if = { limit = { has_variable = sb_zpb_crackdown_delivery_pending_var } remove_variable = sb_zpb_crackdown_delivery_pending_var }
+		if = { limit = { has_variable = sb_zpb_crackdown_total_conquest_route_var } remove_variable = sb_zpb_crackdown_total_conquest_route_var }
+		if = { limit = { has_variable = sb_zpb_crackdown_successor_pending_var } remove_variable = sb_zpb_crackdown_successor_pending_var }
+		if = { limit = { has_variable = sb_zpb_player_trn_civil_war_support_var } remove_variable = sb_zpb_player_trn_civil_war_support_var }
+	}
+}
+
+sb_zpb_crackdown_retire_permanently_invalid_delivery = {
+	sb_zpb_crackdown_clear_route_runtime = yes
+}
+
+# Route a current receipt to a held popup when launchable, or to one short
+# retry lease when merely busy. Permanent loss clears only this route receipt.
+sb_zpb_crackdown_prepare_held_delivery = {
+	if = {
+		limit = { NOT = { sb_trn_zpb_crackdown_route_live_authority = yes } }
+		sb_zpb_crackdown_retire_permanently_invalid_delivery = yes
+	}
+	else = {
+		if = {
+			limit = {
+				NOT = { has_variable = sb_zpb_crackdown_generation_scope }
+				NOT = { container_exists = sb_zpb_crackdown_generation_state }
 			}
-			combat_unit = {
-				type = unit_type:combat_unit_type_dragoons
-				state_region = s:STATE_NORTHERN_TRANSVAAL
-				count = 1
+			create_container = {
+				name = sb_zpb_crackdown_generation_state
+				tags = { sb_story sb_zpb_crackdown_generation }
+				parent = root
+				on_created = {
+					set_variable = sb_zpb_crackdown_generation_active_var
+					set_variable = sb_zpb_crackdown_delivery_pending_var
+				}
+			}
+		}
+		if = {
+			limit = { container_exists = sb_zpb_crackdown_generation_state }
+			container:sb_zpb_crackdown_generation_state = { save_temporary_scope_as = sb_zpb_crackdown_receipt }
+			set_variable = { name = sb_zpb_crackdown_generation_scope value = scope:sb_zpb_crackdown_receipt }
+		}
+		if = {
+			limit = { sb_trn_zpb_crackdown_current_receipt_authority = yes }
+			var:sb_zpb_crackdown_generation_scope = {
+				# Arrival consumes the short scheduling lease; an already-held popup
+				# remains authoritative until its separate four-month authority expires.
+				if = { limit = { has_variable = sb_zpb_crackdown_dispatch_lease_var } remove_variable = sb_zpb_crackdown_dispatch_lease_var }
+			}
+			if = {
+				limit = {
+					var:sb_zpb_crackdown_generation_scope ?= {
+						NOT = { has_variable = sb_zpb_crackdown_popup_authority_var }
+						NOT = { has_variable = sb_zpb_crackdown_dispatch_lease_var }
+					}
+					sb_trn_zpb_crackdown_preflight = yes
+				}
+				var:sb_zpb_crackdown_generation_scope = { set_variable = { name = sb_zpb_crackdown_popup_authority_var months = 4 } }
+			}
+			else_if = {
+				limit = {
+					var:sb_zpb_crackdown_generation_scope ?= {
+						NOT = { has_variable = sb_zpb_crackdown_popup_authority_var }
+						NOT = { has_variable = sb_zpb_crackdown_dispatch_lease_var }
+					}
+				}
+				var:sb_zpb_crackdown_generation_scope = { set_variable = { name = sb_zpb_crackdown_dispatch_lease_var days = 30 } }
+				trigger_event = { id = sb_boer_conventions.150 days = 30 popup = yes }
 			}
 		}
 	}
 }
 
-sb_open_trn_zpb_crackdown_play = {
-	sb_zpb_crackdown_break_compacts = yes
-	hidden_effect = {
-		if = {
-			limit = {
-				is_player = yes
-				sb_frontier_player_challenge_enabled = yes
-				c:ZPB ?= {
-					is_country_alive = yes
-				}
-			}
-			c:ZPB ?= {
-				sb_apply_zpb_player_trn_civil_war_support = yes
-			}
-		}
-	}
-	create_diplomatic_play = {
-		type = dp_sb_trn_zpb_crackdown_locked
-		target_country = c:ZPB
-		target_state = s:STATE_NORTHERN_TRANSVAAL.region_state:ZPB
-	}
-	random_diplomatic_play = {
-		limit = {
-			initiator = c:TRN
-			target = c:ZPB
-			is_diplomatic_play_type = dp_sb_trn_zpb_crackdown_locked
-		}
-		save_temporary_scope_as = sb_zpb_crackdown_play
-	}
+sb_zpb_crackdown_handle_invalid_held_delivery = {
 	if = {
-		limit = { exists = scope:sb_zpb_crackdown_play }
-		c:ZPB ?= { set_variable = sb_zpb_crackdown_total_conquest_route_var }
-		# Pretoria's defeat lets Zoutpansberg replace the republic rather than
-		# merely recover its northern district.
-		c:TRN ?= {
-			every_scope_state = {
-				scope:sb_zpb_crackdown_play = {
-					add_war_goal = {
-						holder = c:ZPB
-						type = conquer_state
-						target_country = c:TRN
-						target_state = prev
-						primary_demand = yes
+		limit = { sb_trn_zpb_crackdown_route_live_authority = yes }
+		# Retire the old receipt before retrying. A stale popup can therefore never
+		# regain authority when a later delivery opens (ABA-safe rotation).
+		sb_zpb_crackdown_clear_generation_receipt = yes
+		sb_zpb_crackdown_prepare_held_delivery = yes
+	}
+	else = { sb_zpb_crackdown_retire_permanently_invalid_delivery = yes }
+}
+
+# Root is the actual play supplied by on_diplomatic_play_started. The matched
+# receipt and its frozen pre-create footprint are the sole admission authority.
+sb_configure_started_trn_zpb_crackdown_play = {
+	if = {
+		limit = {
+			is_diplomatic_play_type = dp_sb_trn_zpb_crackdown_locked
+			scope:initiator ?= {
+				country_definition = cd:TRN
+				has_variable = sb_zpb_crackdown_launch_lease_var
+				has_variable = sb_zpb_crackdown_generation_scope
+				var:sb_zpb_crackdown_generation_scope ?= {
+					has_variable = sb_zpb_crackdown_generation_active_var
+					has_variable = sb_zpb_crackdown_delivery_pending_var
+					has_variable = sb_zpb_crackdown_receipt_launch_lease_var
+					has_variable = sb_zpb_crackdown_contested_state_scope
+					var:sb_zpb_crackdown_contested_state_scope ?= {
+						has_variable = sb_zpb_crackdown_frozen_contested_state_var
+						owner = scope:target
 					}
 				}
 			}
+			scope:target ?= {
+				country_definition = cd:ZPB
+				is_country_alive = yes
+				any_scope_state = { state_region = s:STATE_NORTHERN_TRANSVAAL }
+			}
 		}
+		scope:initiator.var:sb_zpb_crackdown_generation_scope = { save_temporary_scope_as = sb_zpb_crackdown_started_receipt }
+		scope:sb_zpb_crackdown_started_receipt.var:sb_zpb_crackdown_contested_state_scope = { save_temporary_scope_as = sb_zpb_crackdown_contested_state }
+		scope:initiator = {
+			set_variable = { name = sb_zpb_crackdown_play_scope value = root }
+			set_variable = { name = sb_zpb_crackdown_target_scope value = scope:target }
+			set_variable = { name = sb_zpb_crackdown_contested_state_scope value = scope:sb_zpb_crackdown_contested_state }
+			remove_variable = sb_zpb_crackdown_launch_lease_var
+			var:sb_zpb_crackdown_generation_scope = {
+				set_variable = { name = sb_zpb_crackdown_play_scope value = root }
+				set_variable = { name = sb_zpb_crackdown_initiator_scope value = scope:initiator }
+				set_variable = { name = sb_zpb_crackdown_target_scope value = scope:target }
+				remove_variable = sb_zpb_crackdown_receipt_launch_lease_var
+			}
+		}
+		scope:target = {
+			set_variable = { name = sb_zpb_crackdown_play_scope value = root }
+			set_variable = { name = sb_zpb_crackdown_trn_scope value = scope:initiator }
+			set_variable = { name = sb_zpb_crackdown_contested_state_scope value = scope:sb_zpb_crackdown_contested_state }
+			set_variable = { name = sb_zpb_crackdown_generation_scope value = scope:initiator.var:sb_zpb_crackdown_generation_scope }
+			set_variable = sb_zpb_crackdown_total_conquest_route_var
+		}
+		scope:initiator = { sb_zpb_crackdown_break_compacts = yes }
+		if = {
+			limit = { scope:initiator ?= { is_player = yes sb_frontier_player_challenge_enabled = yes } scope:target ?= { any_scope_state = { state_region = s:STATE_NORTHERN_TRANSVAAL } } }
+			scope:target = { sb_apply_zpb_player_trn_civil_war_support = yes }
+		}
+		# Do not rescan live TRN territory. Only states frozen before create receive
+		# the reciprocal goals, so joins/transfers cannot expand this attempt.
+		c:TRN = {
+			every_scope_state = {
+				limit = { has_variable = sb_zpb_crackdown_frozen_target_state_var }
+				root = { add_war_goal = { holder = c:ZPB type = conquer_state target_country = c:TRN target_state = prev primary_demand = yes } }
+			}
+		}
+		if = { limit = { c:ORA ?= { is_country_alive = yes is_at_war = no is_active_in_diplomatic_play = no has_variable = sb_zpb_crackdown_backed_zpb_var } } add_target_backers = { c:ORA } }
+		if = { limit = { c:LYD ?= { is_country_alive = yes is_at_war = no is_active_in_diplomatic_play = no has_variable = sb_zpb_crackdown_backed_zpb_var } } add_target_backers = { c:LYD } }
+		if = { limit = { c:NAL ?= { is_country_alive = yes is_at_war = no is_active_in_diplomatic_play = no has_variable = sb_zpb_crackdown_backed_zpb_var } } add_target_backers = { c:NAL } }
+		scope:initiator = { set_variable = sb_zpb_crackdown_launch_ack_var }
 	}
+}
+
+sb_zpb_crackdown_clear_bound_target_runtime = {
+	if = { limit = { has_variable = sb_zpb_crackdown_play_scope } remove_variable = sb_zpb_crackdown_play_scope }
+	if = { limit = { has_variable = sb_zpb_crackdown_trn_scope } remove_variable = sb_zpb_crackdown_trn_scope }
+	if = { limit = { has_variable = sb_zpb_crackdown_contested_state_scope } remove_variable = sb_zpb_crackdown_contested_state_scope }
+	if = { limit = { has_variable = sb_zpb_crackdown_generation_scope } remove_variable = sb_zpb_crackdown_generation_scope }
+	if = { limit = { has_variable = sb_zpb_crackdown_total_conquest_route_var } remove_variable = sb_zpb_crackdown_total_conquest_route_var }
+	if = { limit = { has_variable = sb_zpb_player_trn_civil_war_support_var } remove_variable = sb_zpb_player_trn_civil_war_support_var }
+	if = { limit = { has_variable = sb_zpb_crackdown_appealed_var } remove_variable = sb_zpb_crackdown_appealed_var }
+}
+
+sb_zpb_crackdown_clear_bound_initiator_runtime = {
+	if = { limit = { has_variable = sb_zpb_crackdown_play_scope } remove_variable = sb_zpb_crackdown_play_scope }
+	if = { limit = { has_variable = sb_zpb_crackdown_target_scope } remove_variable = sb_zpb_crackdown_target_scope }
+	if = { limit = { has_variable = sb_zpb_crackdown_contested_state_scope } remove_variable = sb_zpb_crackdown_contested_state_scope }
+}
+
+# Both terminal callbacks call this exact root resolver. Terminal table:
+# 0 = no exact receipt/root (no mutation); 1 = exact root without final proof
+# (cleanup only); 2 = exact root with frozen physical proof (succession, cleanup).
+# A live TRN subject is explicitly not success.
+sb_zpb_crackdown_resolve_bound_terminal = {
+	# on_diplo_play_back_down exposes only the DP root and scope:actor. Use the
+	# DP's documented initiator/target links, never callback-only aliases.
 	if = {
 		limit = {
-			c:ORA ?= {
-				is_country_alive = yes
-				has_variable = sb_zpb_crackdown_backed_zpb_var
-			}
+			is_diplomatic_play_type = dp_sb_trn_zpb_crackdown_locked
+			initiator = { country_definition = cd:TRN }
+			target = { country_definition = cd:ZPB }
 		}
-		random_diplomatic_play = {
+		initiator = { save_temporary_scope_as = sb_zpb_crackdown_terminal_initiator }
+		target = { save_temporary_scope_as = sb_zpb_crackdown_terminal_target }
+		if = {
 			limit = {
-				initiator = c:TRN
-				target = c:ZPB
-				is_diplomatic_play_type = dp_sb_trn_zpb_crackdown_locked
+				scope:sb_zpb_crackdown_terminal_initiator ?= {
+					has_variable = sb_zpb_crackdown_play_scope
+					var:sb_zpb_crackdown_play_scope = root
+					has_variable = sb_zpb_crackdown_generation_scope
+				}
+				scope:sb_zpb_crackdown_terminal_target ?= {
+					has_variable = sb_zpb_crackdown_play_scope
+					var:sb_zpb_crackdown_play_scope = root
+					has_variable = sb_zpb_crackdown_trn_scope
+					var:sb_zpb_crackdown_trn_scope = scope:sb_zpb_crackdown_terminal_initiator
+					has_variable = sb_zpb_crackdown_generation_scope
+					var:sb_zpb_crackdown_generation_scope = scope:sb_zpb_crackdown_terminal_initiator.var:sb_zpb_crackdown_generation_scope
+				}
+				scope:sb_zpb_crackdown_terminal_initiator.var:sb_zpb_crackdown_generation_scope ?= {
+					has_variable = sb_zpb_crackdown_generation_active_var
+					has_variable = sb_zpb_crackdown_play_scope
+					var:sb_zpb_crackdown_play_scope = root
+					has_variable = sb_zpb_crackdown_contested_state_scope
+				}
 			}
-			add_target_backers = { c:ORA }
+			scope:sb_zpb_crackdown_terminal_initiator.var:sb_zpb_crackdown_generation_scope = { save_temporary_scope_as = sb_zpb_crackdown_terminal_receipt }
+			if = {
+				limit = {
+					scope:sb_zpb_crackdown_terminal_receipt ?= {
+						has_variable = sb_zpb_crackdown_contested_state_scope
+						var:sb_zpb_crackdown_contested_state_scope ?= { has_variable = sb_zpb_crackdown_frozen_contested_state_var owner = scope:sb_zpb_crackdown_terminal_target }
+					}
+					NOT = { scope:sb_zpb_crackdown_terminal_target.var:sb_zpb_crackdown_trn_scope ?= { is_country_alive = yes } }
+				}
+				scope:sb_zpb_crackdown_terminal_target = { sb_zpb_assume_transvaal_after_crackdown_victory = yes }
+			}
+			scope:sb_zpb_crackdown_terminal_target = { sb_zpb_crackdown_clear_bound_target_runtime = yes }
+			scope:sb_zpb_crackdown_terminal_initiator = { sb_zpb_crackdown_clear_bound_initiator_runtime = yes }
+			# Exact terminal close clears every route-local active/appeal/backer/receipt
+			# marker together, without touching external treaty or story state.
+			sb_zpb_crackdown_clear_route_runtime = yes
 		}
 	}
+}
+# The only create path. It freezes the full TRN footprint before create, then
+# uses the actual-root callback as its acknowledgement. Failure rolls back only
+# the frozen attempt and requeues the same generation.
+sb_open_trn_zpb_crackdown_play = {
 	if = {
-		limit = {
-			c:LYD ?= {
-				is_country_alive = yes
-				has_variable = sb_zpb_crackdown_backed_zpb_var
-			}
+		limit = { sb_trn_zpb_crackdown_popup_authority = yes }
+		var:sb_zpb_crackdown_generation_scope = { remove_variable = sb_zpb_crackdown_popup_authority_var set_variable = sb_zpb_crackdown_receipt_launch_lease_var }
+		s:STATE_NORTHERN_TRANSVAAL.region_state:ZPB = { save_temporary_scope_as = sb_zpb_crackdown_launch_contested_state set_variable = sb_zpb_crackdown_frozen_contested_state_var }
+		var:sb_zpb_crackdown_generation_scope = { set_variable = { name = sb_zpb_crackdown_contested_state_scope value = scope:sb_zpb_crackdown_launch_contested_state } }
+		# This marker is only the pre-create TRN goal footprint, never the ZPB
+		# contested-state evidence kept separately on the receipt above.
+		every_scope_state = { set_variable = sb_zpb_crackdown_frozen_target_state_var }
+		set_variable = sb_zpb_crackdown_launch_lease_var
+		create_diplomatic_play = { type = dp_sb_trn_zpb_crackdown_locked target_country = c:ZPB target_state = s:STATE_NORTHERN_TRANSVAAL.region_state:ZPB }
+		if = {
+			limit = { has_variable = sb_zpb_crackdown_launch_ack_var }
+			remove_variable = sb_zpb_crackdown_launch_ack_var
+			var:sb_zpb_crackdown_generation_scope = { if = { limit = { has_variable = sb_zpb_crackdown_delivery_pending_var } remove_variable = sb_zpb_crackdown_delivery_pending_var } }
 		}
-		random_diplomatic_play = {
-			limit = {
-				initiator = c:TRN
-				target = c:ZPB
-				is_diplomatic_play_type = dp_sb_trn_zpb_crackdown_locked
-			}
-			add_target_backers = { c:LYD }
-		}
-	}
-	if = {
-		limit = {
-			c:NAL ?= {
-				is_country_alive = yes
-				has_variable = sb_zpb_crackdown_backed_zpb_var
-			}
-		}
-		random_diplomatic_play = {
-			limit = {
-				initiator = c:TRN
-				target = c:ZPB
-				is_diplomatic_play_type = dp_sb_trn_zpb_crackdown_locked
-			}
-			add_target_backers = { c:NAL }
+		else = {
+			if = { limit = { has_variable = sb_zpb_crackdown_launch_lease_var } remove_variable = sb_zpb_crackdown_launch_lease_var }
+			var:sb_zpb_crackdown_generation_scope = { if = { limit = { has_variable = sb_zpb_crackdown_receipt_launch_lease_var } remove_variable = sb_zpb_crackdown_receipt_launch_lease_var } }
+			every_scope_state = { limit = { has_variable = sb_zpb_crackdown_frozen_target_state_var } remove_variable = sb_zpb_crackdown_frozen_target_state_var }
+			s:STATE_NORTHERN_TRANSVAAL.region_state:ZPB ?= { if = { limit = { has_variable = sb_zpb_crackdown_frozen_contested_state_var } remove_variable = sb_zpb_crackdown_frozen_contested_state_var } }
+			var:sb_zpb_crackdown_generation_scope = { if = { limit = { has_variable = sb_zpb_crackdown_contested_state_scope } remove_variable = sb_zpb_crackdown_contested_state_scope } }
+			sb_zpb_crackdown_prepare_held_delivery = yes
 		}
 	}
 }
@@ -1404,12 +1592,14 @@ sb_zpb_assume_transvaal_after_crackdown_victory = {
 		limit = {
 			country_definition = cd:ZPB
 			has_variable = sb_zpb_crackdown_total_conquest_route_var
-			NOT = { exists = c:TRN }
-		}
-		remove_variable = sb_zpb_crackdown_total_conquest_route_var
-		if = {
-			limit = { has_variable = sb_zpb_crackdown_successor_pending_var }
-			remove_variable = sb_zpb_crackdown_successor_pending_var
+			has_variable = sb_zpb_crackdown_trn_scope
+			has_variable = sb_zpb_crackdown_generation_scope
+			var:sb_zpb_crackdown_generation_scope ?= {
+				has_variable = sb_zpb_crackdown_generation_active_var
+				has_variable = sb_zpb_crackdown_contested_state_scope
+				var:sb_zpb_crackdown_contested_state_scope ?= { has_variable = sb_zpb_crackdown_frozen_contested_state_var owner = root }
+			}
+			NOT = { var:sb_zpb_crackdown_trn_scope ?= { is_country_alive = yes } }
 		}
 		set_variable = sb_zpb_lawlessness_resolved_var
 		set_country_type = unrecognized

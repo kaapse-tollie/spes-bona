@@ -102,3 +102,144 @@ sb_cleanup_trn_frontier_deployment_train_for_play = {
 		remove_variable = sb_trn_frontier_deployment_train_active_var
 	}
 }
+
+
+# Exact terminal classifier for the authored 7th-9th Xhosa War plays.
+# root = the diplomatic play supplied by back-down / war-end on-actions.
+sb_xhosa_resolve_exact_story_war = {
+	if = {
+		limit = {
+			c:XHO ?= {
+				has_variable = sb_xhosa_story_play_scope
+				var:sb_xhosa_story_play_scope = root
+				has_variable = sb_xhosa_story_target_scope
+				has_variable = sb_xhosa_story_generation_var
+			}
+		}
+		c:XHO.var:sb_xhosa_story_target_scope = { save_temporary_scope_as = sb_xhosa_exact_target }
+		c:XHO = {
+			# Directional final pacts are authoritative for both ordinary and timer
+			# enforcement. Non-timer seen bits remain diagnostic only.
+			if = {
+				limit = {
+					any_scope_diplomatic_pact = {
+						is_diplomatic_action_type = colonization_rights
+						first_country = c:XHO
+						second_country = scope:sb_xhosa_exact_target
+					}
+				}
+				set_variable = sb_xhosa_native_final_evidence_var
+			}
+			if = {
+				limit = {
+					any_scope_diplomatic_pact = {
+						is_diplomatic_action_type = colonization_rights
+						first_country = scope:sb_xhosa_exact_target
+						second_country = c:XHO
+					}
+				}
+				set_variable = sb_xhosa_colonial_final_evidence_var
+			}
+			if = {
+				limit = { has_variable = sb_xhosa_native_final_evidence_var NOT = { has_variable = sb_xhosa_colonial_final_evidence_var } }
+				if = { limit = { var:sb_xhosa_story_generation_var = 7 } sb_xhosa_set_native_conscription_tier_9 = yes }
+				else_if = { limit = { var:sb_xhosa_story_generation_var = 8 } sb_xhosa_set_native_conscription_tier_12 = yes }
+			}
+			else_if = {
+				limit = { has_variable = sb_xhosa_colonial_final_evidence_var NOT = { has_variable = sb_xhosa_native_final_evidence_var } }
+				scope:sb_xhosa_exact_target = { add_modifier = { name = sb_cape_victory_against_xhosa months = 24 } }
+			}
+			if = { limit = { has_variable = sb_xhosa_native_goal_seen_var } remove_variable = sb_xhosa_native_goal_seen_var }
+			if = { limit = { has_variable = sb_xhosa_colonial_goal_seen_var } remove_variable = sb_xhosa_colonial_goal_seen_var }
+			if = { limit = { has_variable = sb_xhosa_native_final_evidence_var } remove_variable = sb_xhosa_native_final_evidence_var }
+			if = { limit = { has_variable = sb_xhosa_colonial_final_evidence_var } remove_variable = sb_xhosa_colonial_final_evidence_var }
+			remove_variable = sb_xhosa_story_play_scope
+			remove_variable = sb_xhosa_story_target_scope
+			remove_variable = sb_xhosa_story_generation_var
+		}
+	}
+}
+
+
+# ROOT/current scope = ORA, after the exact 1856 play is admitted.
+# Apply only route-owned support and mark every modifier introduced here.
+sb_add_ora_bst_1856_thaba_support = {
+	if = {
+		limit = { NOT = { has_modifier = sb_bst_scripted_thaba_bosiu } }
+		add_modifier = { name = sb_bst_scripted_thaba_bosiu months = 12 }
+		set_variable = sb_ora_bst_1856_thaba_added_var
+	}
+	c:ORA ?= {
+		if = {
+			limit = { NOT = { has_modifier = sb_ora_scripted_annex_war_overreach } }
+			add_modifier = { name = sb_ora_scripted_annex_war_overreach months = 12 }
+			set_variable = sb_ora_bst_1856_overreach_added_var
+		}
+	}
+}
+
+sb_add_ora_bst_1856_major_support = {
+	if = {
+		limit = { NOT = { has_modifier = sb_bst_scripted_frontier_major_edge } }
+		add_modifier = { name = sb_bst_scripted_frontier_major_edge months = 12 }
+		set_variable = sb_ora_bst_1856_major_added_var
+	}
+	c:ORA ?= {
+		if = {
+			limit = { NOT = { has_modifier = sb_ora_scripted_annex_war_overreach } }
+			add_modifier = { name = sb_ora_scripted_annex_war_overreach months = 12 }
+			set_variable = sb_ora_bst_1856_overreach_added_var
+		}
+	}
+}
+
+sb_add_ora_bst_1856_laager_support = {
+	if = {
+		limit = { NOT = { has_modifier = sb_laager_defence_ai } }
+		add_modifier = { name = sb_laager_defence_ai months = 15 }
+		set_variable = sb_ora_bst_1856_laager_added_var
+	}
+}
+
+sb_cleanup_ora_bst_1856_play_support = {
+	c:ORA ?= {
+		if = {
+			limit = { has_variable = sb_ora_bst_1856_overreach_added_var }
+			if = { limit = { has_modifier = sb_ora_scripted_annex_war_overreach } remove_modifier = sb_ora_scripted_annex_war_overreach }
+			remove_variable = sb_ora_bst_1856_overreach_added_var
+		}
+		if = {
+			limit = { has_variable = sb_ora_bst_1856_laager_added_var }
+			if = { limit = { has_modifier = sb_laager_defence_ai } remove_modifier = sb_laager_defence_ai }
+			remove_variable = sb_ora_bst_1856_laager_added_var
+		}
+	}
+	c:BST ?= {
+		if = {
+			limit = { has_variable = sb_ora_bst_1856_thaba_added_var }
+			if = { limit = { has_modifier = sb_bst_scripted_thaba_bosiu } remove_modifier = sb_bst_scripted_thaba_bosiu }
+			remove_variable = sb_ora_bst_1856_thaba_added_var
+		}
+		if = {
+			limit = { has_variable = sb_ora_bst_1856_major_added_var }
+			if = { limit = { has_modifier = sb_bst_scripted_frontier_major_edge } remove_modifier = sb_bst_scripted_frontier_major_edge }
+			remove_variable = sb_ora_bst_1856_major_added_var
+		}
+	}
+}
+
+sb_prepare_ora_bst_1856_play_support = {
+	c:BST ?= { sb_bst_kill_non_moshoeshoe_ai_generals = yes }
+	if = {
+		limit = { sb_frontier_ai_behavior_dynamic_historical = yes }
+		random_list = {
+			60 = { c:BST ?= { if = { limit = { NOT = { sb_bst_holds_vrystaat = yes } } sb_add_ora_bst_1856_thaba_support = yes } } }
+			20 = { c:BST ?= { if = { limit = { NOT = { sb_bst_holds_vrystaat = yes } } sb_add_ora_bst_1856_major_support = yes } } }
+			20 = { sb_add_ora_bst_1856_laager_support = yes }
+		}
+	}
+	if = {
+		limit = { sb_frontier_ai_behavior_strict_historical = yes }
+		c:BST ?= { if = { limit = { NOT = { sb_bst_holds_vrystaat = yes } } sb_add_ora_bst_1856_thaba_support = yes } }
+	}
+}

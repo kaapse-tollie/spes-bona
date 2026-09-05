@@ -2,15 +2,698 @@
 # The assent-required goal can only record a peace choice. The diplomatic play
 # itself owns the one 0/1/2-side truth table and resolves after the final peace.
 
+# Root = ZUL. The delayed guns-bargain reply carries this exact object as a
+# saved event scope. Never use a timed country bit as its authentication token.
+sb_natal_story_begin_guns_bargain_generation = {
+	# A prior expired or invalid receipt must not block a new exact generation.
+	if = { limit = { container_exists = sb_natal_guns_bargain_generation_state } sb_natal_story_recover_generation = yes }
+	if = {
+		limit = {
+			country_definition = cd:ZUL
+			is_country_alive = yes
+			is_subject = no
+			NOT = { container_exists = sb_natal_guns_bargain_generation_state }
+			NOT = { has_variable = sb_natal_guns_bargain_generation_scope }
+			c:ORA ?= { country_definition = cd:ORA is_country_alive = yes is_subject = no has_variable = sb_natal_guns_bargain_war_var }
+		}
+		ROOT = { save_scope_as = sb_natal_guns_bargain_generation_actor }
+		c:ORA = { save_scope_as = sb_natal_guns_bargain_generation_counterparty }
+		create_container = {
+			name = sb_natal_guns_bargain_generation_state
+			tags = { sb_story sb_natal_guns_bargain_generation }
+			parent = root
+			on_created = { set_variable = { name = sb_natal_guns_bargain_generation_pending_var days = 730 } }
+		}
+		container:sb_natal_guns_bargain_generation_state = {
+			set_variable = { name = sb_natal_guns_bargain_generation_actor_scope value = scope:sb_natal_guns_bargain_generation_actor }
+			set_variable = { name = sb_natal_guns_bargain_generation_counterparty_scope value = scope:sb_natal_guns_bargain_generation_counterparty }
+			save_scope_as = sb_natal_guns_bargain_receipt_scope
+		}
+		set_variable = { name = sb_natal_guns_bargain_generation_scope value = scope:sb_natal_guns_bargain_receipt_scope }
+		set_variable = { name = sb_natal_guns_bargain_delivery_queued_var days = 20 }
+		c:ORA = {
+			set_variable = { name = sb_natal_guns_bargain_generation_scope value = scope:sb_natal_guns_bargain_receipt_scope }
+			trigger_event = { id = sb_natal_crisis.098 days = 31 }
+		}
+		# `.025.b` owns the single `.026` dispatch. These are only watchdogs.
+		trigger_event = { id = sb_natal_crisis.098 days = 30 }
+		trigger_event = { id = sb_natal_crisis.098 days = 125 }
+		c:ORA ?= { if = { limit = { is_country_alive = yes } trigger_event = { id = sb_natal_crisis.098 days = 126 } } }
+		trigger_event = { id = sb_natal_crisis.098 days = 731 }
+		c:ORA ?= { if = { limit = { is_country_alive = yes } trigger_event = { id = sb_natal_crisis.098 days = 732 } } }
+	}
+	else_if = {
+		limit = { NOT = { container_exists = sb_natal_guns_bargain_generation_state } }
+		sb_natal_story_clear_guns_bargain_generation = yes
+	}
+}
+
+sb_natal_story_clear_guns_bargain_receipt = {
+	# The generation container remembers the exact pre-retag actors. Never use
+	# current c:ZUL/c:ORA here: either tag may now name an unrelated replacement.
+	if = {
+		limit = { container_exists = sb_natal_guns_bargain_generation_state }
+		container:sb_natal_guns_bargain_generation_state = {
+			var:sb_natal_guns_bargain_generation_actor_scope ?= {
+				if = { limit = { has_variable = sb_natal_guns_bargain_generation_scope } remove_variable = sb_natal_guns_bargain_generation_scope }
+				if = { limit = { has_variable = sb_natal_guns_bargain_delivery_queued_var } remove_variable = sb_natal_guns_bargain_delivery_queued_var }
+				if = { limit = { has_variable = sb_natal_story_launch_pending_var } remove_variable = sb_natal_story_launch_pending_var }
+				if = { limit = { has_variable = sb_natal_story_launch_retry_queued_var } remove_variable = sb_natal_story_launch_retry_queued_var }
+				if = { limit = { has_variable = sb_natal_story_launch_lease_var } remove_variable = sb_natal_story_launch_lease_var }
+				if = { limit = { has_variable = sb_natal_story_absorption_commit_var } remove_variable = sb_natal_story_absorption_commit_var }
+				if = { limit = { has_variable = sb_natal_guns_bargain_war_var } remove_variable = sb_natal_guns_bargain_war_var }
+			}
+			var:sb_natal_guns_bargain_generation_counterparty_scope ?= {
+				if = { limit = { has_variable = sb_natal_guns_bargain_generation_scope } remove_variable = sb_natal_guns_bargain_generation_scope }
+				if = { limit = { has_variable = sb_natal_story_launch_pending_var } remove_variable = sb_natal_story_launch_pending_var }
+				if = { limit = { has_variable = sb_natal_guns_bargain_war_var } remove_variable = sb_natal_guns_bargain_war_var }
+				if = { limit = { has_variable = sb_natal_diplomacy_started_var } remove_variable = sb_natal_diplomacy_started_var }
+			}
+			if = { limit = { has_variable = sb_natal_guns_bargain_popup_receipt_var } remove_variable = sb_natal_guns_bargain_popup_receipt_var }
+			destroy_container = yes
+		}
+	}
+}
+
+sb_natal_story_clear_guns_bargain_generation = {
+	# Receipt cleanup owns every exact actor link, including pre-launch leases.
+	sb_natal_story_clear_guns_bargain_receipt = yes
+}
+
+# Root = ORA. This receipt binds the delayed Retief-refusal response.
+sb_natal_story_begin_refusal_generation = {
+	# A prior expired or invalid receipt must not block a new exact generation.
+	if = { limit = { container_exists = sb_natal_refusal_generation_state } sb_natal_story_recover_generation = yes }
+	if = {
+		limit = {
+			country_definition = cd:ORA
+			is_country_alive = yes
+			is_subject = no
+			NOT = { container_exists = sb_natal_refusal_generation_state }
+			NOT = { has_variable = sb_natal_refusal_generation_scope }
+			c:ZUL ?= { country_definition = cd:ZUL is_country_alive = yes is_subject = no }
+		}
+		ROOT = { save_scope_as = sb_natal_refusal_generation_actor }
+		c:ZUL = { save_scope_as = sb_natal_refusal_generation_counterparty }
+		create_container = {
+			name = sb_natal_refusal_generation_state
+			tags = { sb_story sb_natal_refusal_generation }
+			parent = root
+			on_created = { set_variable = { name = sb_natal_refusal_generation_pending_var days = 730 } }
+		}
+		container:sb_natal_refusal_generation_state = {
+			set_variable = { name = sb_natal_refusal_generation_actor_scope value = scope:sb_natal_refusal_generation_actor }
+			set_variable = { name = sb_natal_refusal_generation_counterparty_scope value = scope:sb_natal_refusal_generation_counterparty }
+			save_scope_as = sb_natal_refusal_receipt_scope
+		}
+		set_variable = { name = sb_natal_refusal_generation_scope value = scope:sb_natal_refusal_receipt_scope }
+		set_variable = { name = sb_natal_refusal_delivery_queued_var days = 30 }
+		c:ZUL = {
+			set_variable = { name = sb_natal_refusal_generation_scope value = scope:sb_natal_refusal_receipt_scope }
+			trigger_event = { id = sb_natal_crisis.098 days = 31 }
+		}
+		# `.020.b` owns the single `.050` dispatch. These are only watchdogs.
+		trigger_event = { id = sb_natal_crisis.098 days = 30 }
+		trigger_event = { id = sb_natal_crisis.098 days = 45 }
+		c:ZUL ?= { if = { limit = { is_country_alive = yes } trigger_event = { id = sb_natal_crisis.098 days = 46 } } }
+		trigger_event = { id = sb_natal_crisis.098 days = 125 }
+		c:ZUL ?= { if = { limit = { is_country_alive = yes } trigger_event = { id = sb_natal_crisis.098 days = 126 } } }
+		trigger_event = { id = sb_natal_crisis.098 days = 731 }
+		c:ZUL ?= { if = { limit = { is_country_alive = yes } trigger_event = { id = sb_natal_crisis.098 days = 732 } } }
+	}
+	else_if = {
+		limit = { NOT = { container_exists = sb_natal_refusal_generation_state } }
+		sb_natal_story_clear_refusal_generation = yes
+	}
+}
+
+sb_natal_story_clear_refusal_generation = {
+	# As above, follow only the saved original actors. A new c:ORA/c:ZUL after
+	# retag is not part of this generation and must remain untouched.
+	if = {
+		limit = { container_exists = sb_natal_refusal_generation_state }
+		container:sb_natal_refusal_generation_state = {
+			var:sb_natal_refusal_generation_actor_scope ?= {
+				if = { limit = { has_variable = sb_natal_refusal_generation_scope } remove_variable = sb_natal_refusal_generation_scope }
+				if = { limit = { has_variable = sb_natal_refusal_delivery_queued_var } remove_variable = sb_natal_refusal_delivery_queued_var }
+				if = { limit = { has_variable = sb_natal_story_launch_pending_var } remove_variable = sb_natal_story_launch_pending_var }
+				if = { limit = { has_variable = sb_natal_diplomacy_started_var } remove_variable = sb_natal_diplomacy_started_var }
+			}
+			var:sb_natal_refusal_generation_counterparty_scope ?= {
+				if = { limit = { has_variable = sb_natal_refusal_generation_scope } remove_variable = sb_natal_refusal_generation_scope }
+				if = { limit = { has_variable = sb_natal_story_launch_pending_var } remove_variable = sb_natal_story_launch_pending_var }
+				if = { limit = { has_variable = sb_natal_story_launch_retry_queued_var } remove_variable = sb_natal_story_launch_retry_queued_var }
+				if = { limit = { has_variable = sb_natal_story_launch_lease_var } remove_variable = sb_natal_story_launch_lease_var }
+				if = { limit = { has_variable = sb_natal_story_absorption_commit_var } remove_variable = sb_natal_story_absorption_commit_var }
+			}
+			if = { limit = { has_variable = sb_natal_refusal_popup_receipt_var } remove_variable = sb_natal_refusal_popup_receipt_var }
+			destroy_container = yes
+		}
+	}
+}
+
+# Pre-launch scaffolding is symmetric but deliberately leaves an admitted play
+# alone. Exact terminal cleanup owns active/play identity.
+sb_natal_story_clear_launch_reservation = {
+	# This can run after a retagged receipt fails. Follow only a durable
+	# generation scope; fixed tags could now belong to a different country.
+	if = {
+		limit = { container_exists = sb_natal_guns_bargain_generation_state }
+		container:sb_natal_guns_bargain_generation_state = {
+			var:sb_natal_guns_bargain_generation_actor_scope ?= {
+				if = { limit = { has_variable = sb_natal_story_launch_pending_var } remove_variable = sb_natal_story_launch_pending_var }
+				if = { limit = { has_variable = sb_natal_story_launch_retry_queued_var } remove_variable = sb_natal_story_launch_retry_queued_var }
+				if = { limit = { has_variable = sb_natal_story_launch_lease_var } remove_variable = sb_natal_story_launch_lease_var }
+				if = { limit = { has_variable = sb_natal_story_absorption_commit_var } remove_variable = sb_natal_story_absorption_commit_var }
+			}
+			var:sb_natal_guns_bargain_generation_counterparty_scope ?= {
+				if = { limit = { has_variable = sb_natal_story_launch_pending_var } remove_variable = sb_natal_story_launch_pending_var }
+			}
+		}
+	}
+	if = {
+		limit = { container_exists = sb_natal_refusal_generation_state }
+		container:sb_natal_refusal_generation_state = {
+			var:sb_natal_refusal_generation_actor_scope ?= {
+				if = { limit = { has_variable = sb_natal_story_launch_pending_var } remove_variable = sb_natal_story_launch_pending_var }
+			}
+			var:sb_natal_refusal_generation_counterparty_scope ?= {
+				if = { limit = { has_variable = sb_natal_story_launch_pending_var } remove_variable = sb_natal_story_launch_pending_var }
+				if = { limit = { has_variable = sb_natal_story_launch_retry_queued_var } remove_variable = sb_natal_story_launch_retry_queued_var }
+				if = { limit = { has_variable = sb_natal_story_launch_lease_var } remove_variable = sb_natal_story_launch_lease_var }
+				if = { limit = { has_variable = sb_natal_story_absorption_commit_var } remove_variable = sb_natal_story_absorption_commit_var }
+			}
+		}
+	}
+}
+
+# A held delivery that is only temporarily busy is reissued with the same
+# unique receipt. Loss of a participant, ruler, route, or legal authority
+# clears the receipt instead of reviving a stale choice.
+sb_natal_story_requeue_guns_bargain_delivery = {
+	scope:sb_natal_guns_bargain_receipt_scope ?= { if = { limit = { has_variable = sb_natal_guns_bargain_popup_receipt_var } remove_variable = sb_natal_guns_bargain_popup_receipt_var } }
+	if = {
+		limit = {
+			sb_natal_story_guns_bargain_delivery_can_retry = yes
+			NOT = { has_variable = sb_natal_guns_bargain_delivery_queued_var }
+		}
+		set_variable = { name = sb_natal_guns_bargain_delivery_queued_var days = 45 }
+		trigger_event = { id = sb_natal_crisis.026 days = 30 popup = yes }
+		trigger_event = { id = sb_natal_crisis.098 days = 45 }
+		c:ORA ?= { if = { limit = { is_country_alive = yes } trigger_event = { id = sb_natal_crisis.098 days = 46 } } }
+		trigger_event = { id = sb_natal_crisis.098 days = 155 }
+		c:ORA ?= { if = { limit = { is_country_alive = yes } trigger_event = { id = sb_natal_crisis.098 days = 156 } } }
+	}
+	else_if = {
+		limit = { NOT = { sb_natal_story_guns_bargain_delivery_can_retry = yes } }
+		sb_natal_story_clear_launch_reservation = yes
+		sb_natal_story_clear_guns_bargain_generation = yes
+	}
+}
+
+sb_natal_story_requeue_refusal_delivery = {
+	scope:sb_natal_refusal_receipt_scope ?= { if = { limit = { has_variable = sb_natal_refusal_popup_receipt_var } remove_variable = sb_natal_refusal_popup_receipt_var } }
+	if = {
+		limit = {
+			sb_natal_story_refusal_delivery_can_retry = yes
+			NOT = { has_variable = sb_natal_refusal_delivery_queued_var }
+		}
+		set_variable = { name = sb_natal_refusal_delivery_queued_var days = 45 }
+		trigger_event = { id = sb_natal_crisis.050 days = 30 popup = yes }
+		trigger_event = { id = sb_natal_crisis.098 days = 45 }
+		c:ZUL ?= { if = { limit = { is_country_alive = yes } trigger_event = { id = sb_natal_crisis.098 days = 46 } } }
+		trigger_event = { id = sb_natal_crisis.098 days = 155 }
+		c:ZUL ?= { if = { limit = { is_country_alive = yes } trigger_event = { id = sb_natal_crisis.098 days = 156 } } }
+	}
+	else_if = {
+		limit = { NOT = { sb_natal_story_refusal_delivery_can_retry = yes } }
+		sb_natal_story_clear_launch_reservation = yes
+		sb_natal_story_clear_refusal_generation = yes
+	}
+}
+
+# Root may be either participant (or its retagged successor). A live admitted
+# play is terminal-owned. Otherwise the bounded receipt either requeues the
+# exact popup/launch or clears every permanent-invalid lock without reward.
+sb_natal_story_recover_generation = {
+	if = {
+		limit = {
+			NOT = {
+				OR = {
+					c:ZUL ?= { has_variable = sb_natal_story_play_scope }
+					c:ORA ?= { has_variable = sb_natal_story_play_scope }
+				}
+			}
+		}
+		if = {
+			limit = { container_exists = sb_natal_guns_bargain_generation_state }
+			if = {
+				limit = { sb_natal_story_guns_bargain_generation_is_valid = yes }
+				if = {
+					limit = { c:ZUL ?= { has_variable = sb_natal_story_launch_pending_var } }
+					c:ZUL = { sb_natal_story_queue_launch_retry = yes }
+				}
+				else_if = {
+					limit = {
+						c:ZUL ?= { NOT = { has_variable = sb_natal_guns_bargain_delivery_queued_var } }
+						container:sb_natal_guns_bargain_generation_state ?= { NOT = { has_variable = sb_natal_guns_bargain_popup_receipt_var } }
+					}
+					container:sb_natal_guns_bargain_generation_state = { save_scope_as = sb_natal_guns_bargain_receipt_scope }
+					c:ZUL = { sb_natal_story_requeue_guns_bargain_delivery = yes }
+				}
+			}
+			else = {
+				sb_natal_story_clear_launch_reservation = yes
+				sb_natal_story_clear_guns_bargain_generation = yes
+			}
+		}
+		else_if = {
+			limit = {
+				OR = {
+					c:ZUL ?= { has_variable = sb_natal_guns_bargain_generation_scope }
+					c:ORA ?= { has_variable = sb_natal_guns_bargain_generation_scope }
+				}
+			}
+			sb_natal_story_clear_launch_reservation = yes
+			sb_natal_story_clear_guns_bargain_generation = yes
+		}
+
+		if = {
+			limit = { container_exists = sb_natal_refusal_generation_state }
+			if = {
+				limit = { sb_natal_story_refusal_generation_is_valid = yes }
+				if = {
+					limit = { c:ZUL ?= { has_variable = sb_natal_story_launch_pending_var } }
+					c:ZUL = { sb_natal_story_queue_launch_retry = yes }
+				}
+				else_if = {
+					limit = {
+						c:ORA ?= { NOT = { has_variable = sb_natal_refusal_delivery_queued_var } }
+						container:sb_natal_refusal_generation_state ?= { NOT = { has_variable = sb_natal_refusal_popup_receipt_var } }
+					}
+					container:sb_natal_refusal_generation_state = { save_scope_as = sb_natal_refusal_receipt_scope }
+					c:ORA = { sb_natal_story_requeue_refusal_delivery = yes }
+				}
+			}
+			else = {
+				sb_natal_story_clear_launch_reservation = yes
+				sb_natal_story_clear_refusal_generation = yes
+			}
+		}
+		else_if = {
+			limit = {
+				OR = {
+					c:ORA ?= { has_variable = sb_natal_refusal_generation_scope }
+					c:ZUL ?= { has_variable = sb_natal_refusal_generation_scope }
+				}
+			}
+			sb_natal_story_clear_launch_reservation = yes
+			sb_natal_story_clear_refusal_generation = yes
+		}
+	}
+}
+
+# Root = ZUL. Keep the chosen Blood River escalation alive across a transient
+# diplomatic-play creation refusal without acknowledging an unbound play.
+sb_natal_story_queue_launch_retry = {
+	if = {
+		limit = {
+			country_definition = cd:ZUL
+			is_country_alive = yes
+			has_variable = sb_natal_story_launch_pending_var
+			NOT = { has_variable = sb_natal_story_launch_retry_queued_var }
+			c:ORA ?= { is_country_alive = yes has_variable = sb_natal_story_launch_pending_var }
+			OR = {
+				sb_natal_story_guns_bargain_generation_is_valid = yes
+				sb_natal_story_refusal_generation_is_valid = yes
+			}
+		}
+		set_variable = { name = sb_natal_story_launch_retry_queued_var days = 45 }
+		trigger_event = { id = sb_natal_crisis.099 days = 30 }
+		# The other participant survives a ZUL retag/death and clears the exact
+		# generation on the next bounded watchdog.
+		c:ORA = { trigger_event = { id = sb_natal_crisis.098 days = 46 } }
+	}
+	else_if = {
+		limit = {
+			NOT = {
+				OR = {
+					sb_natal_story_guns_bargain_generation_is_valid = yes
+					sb_natal_story_refusal_generation_is_valid = yes
+				}
+			}
+		}
+		sb_natal_story_clear_launch_reservation = yes
+		sb_natal_story_clear_guns_bargain_generation = yes
+		sb_natal_story_clear_refusal_generation = yes
+	}
+}
+
+# Root = ZUL. This is both the initial launcher and the hidden retry path.
+sb_natal_story_attempt_exact_launch = {
+	if = {
+		limit = {
+			country_definition = cd:ZUL
+			is_country_alive = yes
+			is_subject = no
+			is_at_war = no
+			is_active_in_diplomatic_play = no
+			aggressive_diplomatic_plays_permitted = yes
+			ruler = { is_character_alive = yes }
+			has_variable = sb_natal_story_launch_pending_var
+			NOT = { has_variable = sb_natal_story_play_scope }
+			NOT = { has_variable = sb_natal_war_active_var }
+			NOT = { has_global_variable = sb_natal_story_war_active_global_var }
+			NOT = { has_truce_with = c:ORA }
+			c:ORA ?= {
+				is_country_alive = yes
+				is_subject = no
+				is_at_war = no
+				is_active_in_diplomatic_play = no
+				ruler = { is_character_alive = yes }
+				has_variable = sb_natal_story_launch_pending_var
+				NOT = { has_variable = sb_natal_story_play_scope }
+			}
+			OR = {
+				sb_natal_story_guns_bargain_generation_is_valid = yes
+				sb_natal_story_refusal_generation_is_valid = yes
+			}
+			NOT = {
+				any_diplomatic_play = {
+					is_diplomatic_play_type = dp_sb_natal_crisis
+					initiator = root
+					target = c:ORA
+				}
+			}
+		}
+		set_variable = sb_natal_story_launch_lease_var
+		create_diplomatic_play = {
+			type = dp_sb_natal_crisis
+			target_country = c:ORA
+			add_war_goal = {
+				holder = c:ORA
+				type = sb_story_humiliation
+				target_country = root
+			}
+		}
+	}
+	# The admitted on-start path consumes the lease synchronously. A residual
+	# lease means no exact root was acknowledged, so keep the mandate and retry.
+	if = {
+		limit = { has_variable = sb_natal_story_launch_lease_var }
+		remove_variable = sb_natal_story_launch_lease_var
+		sb_natal_story_queue_launch_retry = yes
+	}
+	else_if = {
+		limit = {
+			has_variable = sb_natal_story_launch_pending_var
+			NOT = { has_variable = sb_natal_story_play_scope }
+		}
+		sb_natal_story_queue_launch_retry = yes
+	}
+}
+
+# Root = ZUL. Receipt-time option validation calls this before any durable
+# Blood River mutation. The timed paired reservation bounds participant death.
+sb_natal_story_begin_exact_launch = {
+	scope:sb_natal_guns_bargain_receipt_scope ?= { if = { limit = { has_variable = sb_natal_guns_bargain_popup_receipt_var } remove_variable = sb_natal_guns_bargain_popup_receipt_var } }
+	scope:sb_natal_refusal_receipt_scope ?= { if = { limit = { has_variable = sb_natal_refusal_popup_receipt_var } remove_variable = sb_natal_refusal_popup_receipt_var } }
+	if = {
+		limit = {
+			country_definition = cd:ZUL
+			is_country_alive = yes
+			is_subject = no
+			is_at_war = no
+			is_active_in_diplomatic_play = no
+			aggressive_diplomatic_plays_permitted = yes
+			ruler = { is_character_alive = yes }
+			NOT = { has_variable = sb_natal_story_launch_pending_var }
+			NOT = { has_variable = sb_natal_story_play_scope }
+			NOT = { has_variable = sb_natal_war_active_var }
+			NOT = { has_truce_with = c:ORA }
+			NOT = { has_global_variable = sb_natal_story_war_active_global_var }
+			c:ORA ?= {
+				is_country_alive = yes
+				is_subject = no
+				is_at_war = no
+				is_active_in_diplomatic_play = no
+				ruler = { is_character_alive = yes }
+				NOT = { has_variable = sb_natal_story_launch_pending_var }
+				NOT = { has_variable = sb_natal_story_play_scope }
+				NOT = { has_variable = sb_natal_war_active_var }
+			}
+			OR = {
+				sb_natal_story_guns_bargain_generation_is_valid = yes
+				sb_natal_story_refusal_generation_is_valid = yes
+			}
+			NOT = {
+				any_diplomatic_play = {
+					is_diplomatic_play_type = dp_sb_natal_crisis
+					initiator = root
+					target = c:ORA
+				}
+			}
+		}
+		set_variable = sb_natal_story_launch_pending_var
+		c:ORA = { set_variable = sb_natal_story_launch_pending_var }
+		sb_natal_story_attempt_exact_launch = yes
+	}
+	else = {
+		# A held option that has lost authority commits nothing and cannot leave a
+		# reusable receipt for a later route.
+		sb_natal_story_clear_guns_bargain_generation = yes
+		sb_natal_story_clear_refusal_generation = yes
+	}
+}
+
+# Called while the authenticated diplomatic-play root still exists. Assistance
+# cleanup must precede removal of the exact identity scopes.
+# Blood River terminal outcome receipt. The dispatch lease is deliberately short,
+# while the popup receipt outlives the full three-month event hold. The container
+# binds the terminal result and the exact recipient/counterparty country scopes so
+# a retagged survivor remains authoritative without reusing a later route.
+sb_natal_story_begin_terminal_ora_victory = {
+	if = {
+		limit = {
+			is_country_alive = yes
+			exists = scope:sb_natal_terminal_counterparty
+			NOT = { container_exists = sb_natal_terminal_outcome_state }
+		}
+		ROOT = { save_scope_as = sb_natal_terminal_recipient }
+		create_container = {
+			name = sb_natal_terminal_outcome_state
+			tags = { sb_story sb_natal_terminal_outcome }
+			parent = root
+			on_created = { set_variable = { name = sb_natal_terminal_outcome_pending_var days = 730 } }
+		}
+		container:sb_natal_terminal_outcome_state = {
+			set_variable = sb_natal_terminal_outcome_ora_victory_var
+			set_variable = { name = sb_natal_terminal_recipient_scope value = scope:sb_natal_terminal_recipient }
+			set_variable = { name = sb_natal_terminal_counterparty_scope value = scope:sb_natal_terminal_counterparty }
+		}
+		scope:sb_natal_terminal_counterparty ?= {
+			if = { limit = { has_variable = sb_natal_guns_bargain_war_var } container:sb_natal_terminal_outcome_state = { set_variable = sb_natal_terminal_guns_bargain_result_var } }
+		}
+		container:sb_natal_terminal_outcome_state = { save_scope_as = sb_natal_terminal_receipt_scope }
+		set_variable = { name = sb_natal_terminal_outcome_scope value = scope:sb_natal_terminal_receipt_scope }
+		set_variable = { name = sb_natal_terminal_outcome_pending_var days = 730 }
+		if = { limit = { has_variable = sb_natal_terminal_outcome_received_var } remove_variable = sb_natal_terminal_outcome_received_var }
+		scope:sb_natal_terminal_counterparty ?= { set_variable = { name = sb_natal_terminal_outcome_scope value = scope:sb_natal_terminal_receipt_scope } }
+		sb_natal_story_requeue_terminal_outcome = yes
+	}
+}
+
+sb_natal_story_begin_terminal_zulu_victory = {
+	if = {
+		limit = {
+			is_country_alive = yes
+			exists = scope:sb_natal_terminal_counterparty
+			NOT = { container_exists = sb_natal_terminal_outcome_state }
+		}
+		ROOT = { save_scope_as = sb_natal_terminal_recipient }
+		create_container = {
+			name = sb_natal_terminal_outcome_state
+			tags = { sb_story sb_natal_terminal_outcome }
+			parent = root
+			on_created = { set_variable = { name = sb_natal_terminal_outcome_pending_var days = 730 } }
+		}
+		container:sb_natal_terminal_outcome_state = {
+			set_variable = sb_natal_terminal_outcome_zulu_victory_var
+			set_variable = { name = sb_natal_terminal_recipient_scope value = scope:sb_natal_terminal_recipient }
+			set_variable = { name = sb_natal_terminal_counterparty_scope value = scope:sb_natal_terminal_counterparty }
+		}
+		container:sb_natal_terminal_outcome_state = { save_scope_as = sb_natal_terminal_receipt_scope }
+		set_variable = { name = sb_natal_terminal_outcome_scope value = scope:sb_natal_terminal_receipt_scope }
+		set_variable = { name = sb_natal_terminal_outcome_pending_var days = 730 }
+		if = { limit = { has_variable = sb_natal_terminal_outcome_received_var } remove_variable = sb_natal_terminal_outcome_received_var }
+		scope:sb_natal_terminal_counterparty ?= { set_variable = { name = sb_natal_terminal_outcome_scope value = scope:sb_natal_terminal_receipt_scope } }
+		sb_natal_story_requeue_terminal_outcome = yes
+	}
+}
+
+sb_natal_story_begin_terminal_zulu_neutral = {
+	if = {
+		limit = {
+			is_country_alive = yes
+			exists = scope:sb_natal_terminal_counterparty
+			NOT = { container_exists = sb_natal_terminal_outcome_state }
+		}
+		ROOT = { save_scope_as = sb_natal_terminal_recipient }
+		create_container = {
+			name = sb_natal_terminal_outcome_state
+			tags = { sb_story sb_natal_terminal_outcome }
+			parent = root
+			on_created = { set_variable = { name = sb_natal_terminal_outcome_pending_var days = 730 } }
+		}
+		container:sb_natal_terminal_outcome_state = {
+			set_variable = sb_natal_terminal_outcome_zulu_neutral_var
+			set_variable = { name = sb_natal_terminal_recipient_scope value = scope:sb_natal_terminal_recipient }
+			set_variable = { name = sb_natal_terminal_counterparty_scope value = scope:sb_natal_terminal_counterparty }
+		}
+		container:sb_natal_terminal_outcome_state = { save_scope_as = sb_natal_terminal_receipt_scope }
+		set_variable = { name = sb_natal_terminal_outcome_scope value = scope:sb_natal_terminal_receipt_scope }
+		set_variable = { name = sb_natal_terminal_outcome_pending_var days = 730 }
+		if = { limit = { has_variable = sb_natal_terminal_outcome_received_var } remove_variable = sb_natal_terminal_outcome_received_var }
+		scope:sb_natal_terminal_counterparty ?= { set_variable = { name = sb_natal_terminal_outcome_scope value = scope:sb_natal_terminal_receipt_scope } }
+		sb_natal_story_requeue_terminal_outcome = yes
+	}
+}
+
+sb_natal_story_requeue_terminal_outcome = {
+	if = {
+		limit = {
+			sb_natal_story_terminal_outcome_authority = yes
+			NOT = { has_variable = sb_natal_terminal_outcome_delivery_queued_var }
+			NOT = { has_variable = sb_natal_terminal_outcome_popup_receipt_var }
+		}
+		set_variable = { name = sb_natal_terminal_outcome_delivery_queued_var days = 20 }
+		if = {
+			limit = { var:sb_natal_terminal_outcome_scope ?= { has_variable = sb_natal_terminal_outcome_ora_victory_var } }
+			trigger_event = { id = sb_natal_crisis.070 days = 3 popup = yes }
+		}
+		else_if = {
+			limit = { var:sb_natal_terminal_outcome_scope ?= { has_variable = sb_natal_terminal_outcome_zulu_victory_var } }
+			trigger_event = { id = sb_natal_crisis.080 days = 3 popup = yes }
+		}
+		else_if = {
+			limit = { var:sb_natal_terminal_outcome_scope ?= { has_variable = sb_natal_terminal_outcome_zulu_neutral_var } }
+			trigger_event = { id = sb_natal_crisis.081 days = 3 popup = yes }
+		}
+		trigger_event = { id = sb_natal_crisis.098 days = 45 }
+		var:sb_natal_terminal_outcome_scope ?= {
+			var:sb_natal_terminal_counterparty_scope ?= { if = { limit = { is_country_alive = yes } trigger_event = { id = sb_natal_crisis.098 days = 46 } } }
+		}
+	}
+	else_if = {
+		limit = { NOT = { sb_natal_story_terminal_outcome_authority = yes } }
+		sb_natal_story_clear_terminal_outcome = yes
+	}
+}
+
+# The watchdog runs on either saved participant. A living receipt is retried;
+# a dead recipient is permanently invalid and is erased without a reward.
+sb_natal_story_recover_terminal_outcome = {
+	if = {
+		limit = { container_exists = sb_natal_terminal_outcome_state }
+		container:sb_natal_terminal_outcome_state = { save_scope_as = sb_natal_terminal_receipt_scope }
+		if = {
+			limit = { scope:sb_natal_terminal_receipt_scope.var:sb_natal_terminal_recipient_scope ?= { is_country_alive = yes } }
+			scope:sb_natal_terminal_receipt_scope.var:sb_natal_terminal_recipient_scope = {
+				if = {
+					limit = { sb_natal_story_terminal_outcome_authority = yes }
+					if = {
+						limit = { has_variable = sb_natal_terminal_outcome_popup_receipt_var }
+						trigger_event = { id = sb_natal_crisis.098 days = 100 }
+						scope:sb_natal_terminal_receipt_scope.var:sb_natal_terminal_counterparty_scope ?= { if = { limit = { is_country_alive = yes } trigger_event = { id = sb_natal_crisis.098 days = 101 } } }
+					}
+					else = { sb_natal_story_requeue_terminal_outcome = yes }
+				}
+				else = { sb_natal_story_clear_terminal_outcome = yes }
+			}
+		}
+		else = { sb_natal_story_clear_terminal_outcome = yes }
+	}
+	else_if = {
+		limit = { has_variable = sb_natal_terminal_outcome_scope }
+		if = { limit = { has_variable = sb_natal_terminal_outcome_scope } remove_variable = sb_natal_terminal_outcome_scope }
+		if = { limit = { has_variable = sb_natal_terminal_outcome_pending_var } remove_variable = sb_natal_terminal_outcome_pending_var }
+		if = { limit = { has_variable = sb_natal_terminal_outcome_delivery_queued_var } remove_variable = sb_natal_terminal_outcome_delivery_queued_var }
+		if = { limit = { has_variable = sb_natal_terminal_outcome_popup_receipt_var } remove_variable = sb_natal_terminal_outcome_popup_receipt_var }
+	}
+}
+
+sb_natal_story_consume_terminal_outcome = {
+	if = {
+		limit = {
+			sb_natal_story_terminal_outcome_authority = yes
+			has_variable = sb_natal_terminal_outcome_popup_receipt_var
+			NOT = { has_variable = sb_natal_terminal_outcome_received_var }
+		}
+		# Save the receipt before unlinking either actor. Consumption is one atomic
+		# terminal commit: both formation locks disappear before the container does.
+		var:sb_natal_terminal_outcome_scope ?= { save_scope_as = sb_natal_terminal_receipt_scope }
+		set_variable = { name = sb_natal_terminal_outcome_received_var days = 30 }
+		scope:sb_natal_terminal_receipt_scope ?= {
+			var:sb_natal_terminal_recipient_scope ?= {
+				if = { limit = { has_variable = sb_natal_terminal_outcome_scope } remove_variable = sb_natal_terminal_outcome_scope }
+				if = { limit = { has_variable = sb_natal_terminal_outcome_pending_var } remove_variable = sb_natal_terminal_outcome_pending_var }
+				if = { limit = { has_variable = sb_natal_terminal_outcome_delivery_queued_var } remove_variable = sb_natal_terminal_outcome_delivery_queued_var }
+				if = { limit = { has_variable = sb_natal_terminal_outcome_popup_receipt_var } remove_variable = sb_natal_terminal_outcome_popup_receipt_var }
+			}
+			var:sb_natal_terminal_counterparty_scope ?= {
+				if = { limit = { has_variable = sb_natal_terminal_outcome_scope } remove_variable = sb_natal_terminal_outcome_scope }
+			}
+		}
+		if = { limit = { container_exists = sb_natal_terminal_outcome_state } container:sb_natal_terminal_outcome_state = { destroy_container = yes } }
+	}
+}
+
+sb_natal_story_clear_terminal_outcome = {
+	if = {
+		limit = { container_exists = sb_natal_terminal_outcome_state }
+		container:sb_natal_terminal_outcome_state = {
+			var:sb_natal_terminal_recipient_scope ?= {
+				if = { limit = { has_variable = sb_natal_terminal_outcome_scope } remove_variable = sb_natal_terminal_outcome_scope }
+				if = { limit = { has_variable = sb_natal_terminal_outcome_pending_var } remove_variable = sb_natal_terminal_outcome_pending_var }
+				if = { limit = { has_variable = sb_natal_terminal_outcome_delivery_queued_var } remove_variable = sb_natal_terminal_outcome_delivery_queued_var }
+				if = { limit = { has_variable = sb_natal_terminal_outcome_popup_receipt_var } remove_variable = sb_natal_terminal_outcome_popup_receipt_var }
+			}
+			var:sb_natal_terminal_counterparty_scope ?= {
+				if = { limit = { has_variable = sb_natal_terminal_outcome_scope } remove_variable = sb_natal_terminal_outcome_scope }
+			}
+			destroy_container = yes
+		}
+	}
+	else = {
+		if = { limit = { has_variable = sb_natal_terminal_outcome_scope } remove_variable = sb_natal_terminal_outcome_scope }
+		if = { limit = { has_variable = sb_natal_terminal_outcome_pending_var } remove_variable = sb_natal_terminal_outcome_pending_var }
+		if = { limit = { has_variable = sb_natal_terminal_outcome_delivery_queued_var } remove_variable = sb_natal_terminal_outcome_delivery_queued_var }
+		if = { limit = { has_variable = sb_natal_terminal_outcome_popup_receipt_var } remove_variable = sb_natal_terminal_outcome_popup_receipt_var }
+	}
+}
+
 sb_story_humiliation_clear_natal_state = {
+	sb_cleanup_blood_river_assistance_for_play = yes
+	# The terminal receipt records the guns result before this exact-route cleanup.
+	sb_natal_story_clear_guns_bargain_receipt = yes
+	sb_natal_story_clear_refusal_generation = yes
 	if = { limit = { has_global_variable = sb_natal_story_initiator_demand_accepted_global_var } remove_global_variable = sb_natal_story_initiator_demand_accepted_global_var }
 	if = { limit = { has_global_variable = sb_natal_story_target_demand_accepted_global_var } remove_global_variable = sb_natal_story_target_demand_accepted_global_var }
 	if = { limit = { has_global_variable = sb_natal_story_war_active_global_var } remove_global_variable = sb_natal_story_war_active_global_var }
-	c:ORA ?= {
+	# Exact play actors, not fixed tags: the cleanup also reaches a retagged survivor.
+	initiator ?= {
 		if = { limit = { has_variable = sb_natal_war_active_var } remove_variable = sb_natal_war_active_var }
+		if = { limit = { has_variable = sb_natal_story_launch_pending_var } remove_variable = sb_natal_story_launch_pending_var }
+		if = { limit = { has_variable = sb_natal_story_launch_retry_queued_var } remove_variable = sb_natal_story_launch_retry_queued_var }
+		if = { limit = { has_variable = sb_natal_story_launch_lease_var } remove_variable = sb_natal_story_launch_lease_var }
+		if = { limit = { has_variable = sb_natal_story_absorption_commit_var } remove_variable = sb_natal_story_absorption_commit_var }
+		if = { limit = { has_variable = sb_natal_story_play_scope } remove_variable = sb_natal_story_play_scope }
 	}
-	c:ZUL ?= {
+	target ?= {
 		if = { limit = { has_variable = sb_natal_war_active_var } remove_variable = sb_natal_war_active_var }
+		if = { limit = { has_variable = sb_trn_joined_natal_war_var } remove_variable = sb_trn_joined_natal_war_var }
+		if = { limit = { has_variable = sb_natal_story_launch_pending_var } remove_variable = sb_natal_story_launch_pending_var }
+		if = { limit = { has_variable = sb_natal_story_play_scope } remove_variable = sb_natal_story_play_scope }
 	}
 	c:TRN ?= {
 		if = { limit = { has_variable = sb_trn_joined_natal_war_var } remove_variable = sb_trn_joined_natal_war_var }
@@ -21,6 +704,13 @@ sb_story_humiliation_clear_martinus_state = {
 	if = { limit = { has_global_variable = sb_martinus_story_initiator_demand_accepted_global_var } remove_global_variable = sb_martinus_story_initiator_demand_accepted_global_var }
 	if = { limit = { has_global_variable = sb_martinus_story_target_demand_accepted_global_var } remove_global_variable = sb_martinus_story_target_demand_accepted_global_var }
 	if = { limit = { has_global_variable = sb_martinus_story_war_active_global_var } remove_global_variable = sb_martinus_story_war_active_global_var }
+	c:TRN ?= {
+		if = { limit = { has_variable = sb_martinus_story_humiliation_route_var } remove_variable = sb_martinus_story_humiliation_route_var }
+		if = { limit = { has_variable = sb_martinus_story_play_scope } remove_variable = sb_martinus_story_play_scope }
+		if = { limit = { has_variable = sb_martinus_story_launch_lease_var } remove_variable = sb_martinus_story_launch_lease_var }
+		if = { limit = { has_variable = sb_martinus_include_natal_backer_var } remove_variable = sb_martinus_include_natal_backer_var }
+		sb_martinus_clear_coercive_chain_state = yes
+	}
 }
 
 sb_story_humiliation_martinus_stand_down = {
@@ -39,32 +729,27 @@ sb_story_humiliation_martinus_stand_down = {
 # Root = enforcing country; scope:target and scope:diplomatic_play come from
 # on_wargoal_enforced. Timer enforcement is diagnostic-only and cannot resolve.
 sb_story_humiliation_record_enforcement = {
+	# Timer callbacks are evidence of exhaustion only. They authorize no story
+	# demand and therefore leave no sticky outcome record.
 	if = {
 		limit = {
-			exists = scope:enforced_by_timer
-			scope:diplomatic_play ?= {
-				OR = {
-					is_diplomatic_play_type = dp_sb_natal_crisis
-					is_diplomatic_play_type = dp_sb_martinus_humiliation
-				}
-			}
-		}
-		set_global_variable = sb_story_humiliation_timer_seen_global_var
-	}
-	else_if = {
-		limit = {
+			NOT = { exists = scope:enforced_by_timer }
 			has_global_variable = sb_natal_story_war_active_global_var
-			scope:diplomatic_play ?= { is_diplomatic_play_type = dp_sb_natal_crisis }
+			scope:diplomatic_play ?= { is_diplomatic_play_type = dp_sb_natal_crisis initiator ?= { country_definition = cd:ZUL } target ?= { country_definition = cd:ORA } }
+			OR = {
+				c:ORA ?= { has_variable = sb_natal_story_play_scope var:sb_natal_story_play_scope = scope:diplomatic_play }
+				c:ZUL ?= { has_variable = sb_natal_story_play_scope var:sb_natal_story_play_scope = scope:diplomatic_play }
+			}
 			OR = {
 				AND = {
 					country_definition = cd:ORA
 					has_variable = sb_natal_war_active_var
-					scope:target ?= { country_definition = cd:ZUL has_variable = sb_natal_war_active_var }
+					scope:target_country ?= { country_definition = cd:ZUL has_variable = sb_natal_war_active_var }
 				}
 				AND = {
 					country_definition = cd:ZUL
 					has_variable = sb_natal_war_active_var
-					scope:target ?= { country_definition = cd:ORA has_variable = sb_natal_war_active_var }
+					scope:target_country ?= { country_definition = cd:ORA has_variable = sb_natal_war_active_var }
 				}
 			}
 		}
@@ -79,11 +764,16 @@ sb_story_humiliation_record_enforcement = {
 	}
 	else_if = {
 		limit = {
+			NOT = { exists = scope:enforced_by_timer }
 			has_global_variable = sb_martinus_story_war_active_global_var
 			scope:diplomatic_play ?= { is_diplomatic_play_type = dp_sb_martinus_humiliation }
+			c:TRN ?= {
+				has_variable = sb_martinus_story_play_scope
+				var:sb_martinus_story_play_scope = scope:diplomatic_play
+			}
 			OR = {
-				AND = { country_definition = cd:TRN scope:target ?= { country_definition = cd:ORA } }
-				AND = { country_definition = cd:ORA scope:target ?= { country_definition = cd:TRN } }
+				AND = { country_definition = cd:TRN scope:target_country ?= { country_definition = cd:ORA } }
+				AND = { country_definition = cd:ORA scope:target_country ?= { country_definition = cd:TRN } }
 			}
 		}
 		if = {
@@ -95,6 +785,24 @@ sb_story_humiliation_record_enforcement = {
 			set_global_variable = sb_martinus_story_target_demand_accepted_global_var
 		}
 	}
+	else_if = {
+		limit = {
+			NOT = { exists = scope:enforced_by_timer }
+			scope:diplomatic_play ?= { sb_bechuanaland_is_corridor_diplomatic_play = yes }
+			container:sb_bechuanaland_corridor_state ?= {
+				has_variable = sb_bechuanaland_crisis_play_scope
+				var:sb_bechuanaland_crisis_play_scope = scope:diplomatic_play
+			}
+		}
+		if = {
+			limit = { sb_bechuanaland_is_british_war_side_member = yes }
+			container:sb_bechuanaland_corridor_state = { set_variable = sb_bechuanaland_british_humiliation_accepted_var }
+		}
+		else_if = {
+			limit = { sb_bechuanaland_is_boer_swa_war_side_member = yes }
+			container:sb_bechuanaland_corridor_state = { set_variable = sb_bechuanaland_boer_humiliation_accepted_var }
+		}
+	}
 }
 
 # Root = diplomatic play; scope:actor is the country that backed down.
@@ -103,7 +811,13 @@ sb_story_humiliation_record_back_down = {
 	if = {
 		limit = {
 			is_diplomatic_play_type = dp_sb_natal_crisis
+			initiator = c:ZUL
+			target = c:ORA
 			has_global_variable = sb_natal_story_war_active_global_var
+			OR = {
+				c:ORA ?= { has_variable = sb_natal_story_play_scope var:sb_natal_story_play_scope = root }
+				c:ZUL ?= { has_variable = sb_natal_story_play_scope var:sb_natal_story_play_scope = root }
+			}
 		}
 		if = {
 			limit = { initiator = scope:actor }
@@ -118,6 +832,10 @@ sb_story_humiliation_record_back_down = {
 		limit = {
 			is_diplomatic_play_type = dp_sb_martinus_humiliation
 			has_global_variable = sb_martinus_story_war_active_global_var
+			c:TRN ?= {
+				has_variable = sb_martinus_story_play_scope
+				var:sb_martinus_story_play_scope = root
+			}
 		}
 		if = {
 			limit = { initiator = scope:actor }
@@ -136,49 +854,47 @@ sb_story_humiliation_resolve = {
 	if = {
 		limit = {
 			is_diplomatic_play_type = dp_sb_natal_crisis
+			initiator ?= { has_variable = sb_natal_story_play_scope var:sb_natal_story_play_scope = root }
+			target ?= { has_variable = sb_natal_story_play_scope var:sb_natal_story_play_scope = root }
 			has_global_variable = sb_natal_story_war_active_global_var
 			NOT = { has_global_variable = sb_natal_story_war_resolved_global_var }
 		}
 		set_global_variable = sb_natal_story_war_resolved_global_var
+		# The saved play actors are the only recipient authority. This remains true
+		# after a retag, while a dead recipient simply leaves an inert receipt.
 		# 2: a negotiated mutual stand-down grants neither exclusive victory.
 		if = {
 			limit = {
 				has_global_variable = sb_natal_story_initiator_demand_accepted_global_var
 				has_global_variable = sb_natal_story_target_demand_accepted_global_var
 			}
+			initiator = { save_scope_as = sb_natal_terminal_recipient }
+			target = { save_scope_as = sb_natal_terminal_counterparty }
+			scope:sb_natal_terminal_recipient = { sb_natal_story_begin_terminal_zulu_neutral = yes }
 			sb_story_humiliation_clear_natal_state = yes
-			c:ZUL ?= { if = { limit = { is_country_alive = yes } trigger_event = { id = sb_natal_crisis.081 days = 3 popup = yes } } }
 		}
-		# 1: only the initiator demand was accepted.
+		# 1: the initiator demand means the saved Zulu-side actor won.
 		else_if = {
 			limit = { has_global_variable = sb_natal_story_initiator_demand_accepted_global_var }
-			if = {
-				limit = { initiator = c:ORA }
-				sb_story_humiliation_clear_natal_state = yes
-				c:ORA ?= { if = { limit = { is_country_alive = yes } trigger_event = { id = sb_natal_crisis.070 days = 3 popup = yes } } }
-			}
-			else = {
-				sb_story_humiliation_clear_natal_state = yes
-				c:ZUL ?= { if = { limit = { is_country_alive = yes } trigger_event = { id = sb_natal_crisis.080 days = 3 popup = yes } } }
-			}
+			initiator = { save_scope_as = sb_natal_terminal_recipient }
+			target = { save_scope_as = sb_natal_terminal_counterparty }
+			scope:sb_natal_terminal_recipient = { sb_natal_story_begin_terminal_zulu_victory = yes }
+			sb_story_humiliation_clear_natal_state = yes
 		}
-		# 1: only the target demand was accepted.
+		# 1: the target demand means the saved Oranje-side actor won.
 		else_if = {
 			limit = { has_global_variable = sb_natal_story_target_demand_accepted_global_var }
-			if = {
-				limit = { target = c:ORA }
-				sb_story_humiliation_clear_natal_state = yes
-				c:ORA ?= { if = { limit = { is_country_alive = yes } trigger_event = { id = sb_natal_crisis.070 days = 3 popup = yes } } }
-			}
-			else = {
-				sb_story_humiliation_clear_natal_state = yes
-				c:ZUL ?= { if = { limit = { is_country_alive = yes } trigger_event = { id = sb_natal_crisis.080 days = 3 popup = yes } } }
-			}
+			target = { save_scope_as = sb_natal_terminal_recipient }
+			initiator = { save_scope_as = sb_natal_terminal_counterparty }
+			scope:sb_natal_terminal_recipient = { sb_natal_story_begin_terminal_ora_victory = yes }
+			sb_story_humiliation_clear_natal_state = yes
 		}
 		# 0: white peace uses the neutral follow-up, not Zulu triumph.
 		else = {
+			initiator = { save_scope_as = sb_natal_terminal_recipient }
+			target = { save_scope_as = sb_natal_terminal_counterparty }
+			scope:sb_natal_terminal_recipient = { sb_natal_story_begin_terminal_zulu_neutral = yes }
 			sb_story_humiliation_clear_natal_state = yes
-			c:ZUL ?= { if = { limit = { is_country_alive = yes } trigger_event = { id = sb_natal_crisis.081 days = 3 popup = yes } } }
 		}
 	}
 	else_if = {
@@ -186,6 +902,10 @@ sb_story_humiliation_resolve = {
 			is_diplomatic_play_type = dp_sb_martinus_humiliation
 			has_global_variable = sb_martinus_story_war_active_global_var
 			NOT = { has_global_variable = sb_martinus_story_war_resolved_global_var }
+			c:TRN ?= {
+				has_variable = sb_martinus_story_play_scope
+				var:sb_martinus_story_play_scope = root
+			}
 		}
 		set_global_variable = sb_martinus_story_war_resolved_global_var
 		# 2: both demands accepted; neither republic gets an exclusive result.
@@ -200,8 +920,12 @@ sb_story_humiliation_resolve = {
 		else_if = {
 			limit = { has_global_variable = sb_martinus_story_initiator_demand_accepted_global_var }
 			if = {
-				limit = { initiator = c:TRN }
-				c:TRN ?= { if = { limit = { is_country_alive = yes } sb_martinus_create_presidential_union_with_ora = yes } }
+				limit = {
+					initiator = c:TRN
+					c:TRN ?= { is_country_alive = yes }
+					c:ORA ?= { is_country_alive = yes is_subject = no }
+				}
+				c:TRN = { sb_martinus_begin_story_union_install = yes if = { limit = { NOT = { has_variable = sb_martinus_union_install_pending_var } NOT = { has_variable = sb_martinus_presidential_union_active_var } } sb_story_humiliation_clear_martinus_state = yes } }
 			}
 			else = { sb_story_humiliation_martinus_stand_down = yes }
 		}
@@ -209,13 +933,22 @@ sb_story_humiliation_resolve = {
 		else_if = {
 			limit = { has_global_variable = sb_martinus_story_target_demand_accepted_global_var }
 			if = {
-				limit = { target = c:TRN }
-				c:TRN ?= { if = { limit = { is_country_alive = yes } sb_martinus_create_presidential_union_with_ora = yes } }
+				limit = {
+					target = c:TRN
+					c:TRN ?= { is_country_alive = yes }
+					c:ORA ?= { is_country_alive = yes is_subject = no }
+				}
+				c:TRN = { sb_martinus_begin_story_union_install = yes if = { limit = { NOT = { has_variable = sb_martinus_union_install_pending_var } NOT = { has_variable = sb_martinus_presidential_union_active_var } } sb_story_humiliation_clear_martinus_state = yes } }
 			}
 			else = { sb_story_humiliation_martinus_stand_down = yes }
 		}
 		# 0: white peace leaves both republics independent.
 		else = { sb_story_humiliation_martinus_stand_down = yes }
-		sb_story_humiliation_clear_martinus_state = yes
+		# Exact TRN success transfers authority to a durable generation-bound
+		# install receipt. Every other terminal row cleans immediately.
+		if = {
+			limit = { NOT = { c:TRN ?= { sb_martinus_current_story_union_install_generation = yes } } }
+			sb_story_humiliation_clear_martinus_state = yes
+		}
 	}
 }

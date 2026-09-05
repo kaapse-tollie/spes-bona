@@ -50,4 +50,4 @@ This is an explicit deferred release gate, not permission to weaken either mod's
 
 ## Validation Authority
 
-Tiger is useful for parser validation, but a cold launch, fresh-start logs, and the focused engine cases in `1_13_11_runtime_matrix.md` remain authoritative for runtime and load-order behavior.
+Tiger is useful for advisory parser diagnostics, but a 1.14 Open Beta 1 cold launch, fresh-start logs, and the focused engine cases in `1_14_0_open_beta_1_runtime_matrix.md` are authoritative for current runtime and load-order behavior. The `1_13_11_runtime_matrix.md` evidence remains historical and separate.

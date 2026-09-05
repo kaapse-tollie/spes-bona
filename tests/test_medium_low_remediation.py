@@ -53,14 +53,79 @@ class MediumLowRemediationTests(unittest.TestCase):
 
     def test_martinus_chain_has_lease_and_central_cleanup(self):
         events = text("events/sb_martinus_confederation_events.txt")
+        effects = text("common/scripted_effects/sb_martinus_confederation_effects.txt")
         cleanup = object_block(
             "common/scripted_effects/sb_martinus_confederation_effects.txt",
             "sb_martinus_clear_coercive_chain_state",
         )
         monthly = text("common/on_actions/sb_boer_story_on_action_handlers.txt")
-        self.assertRegex(events, r"name\s*=\s*sb_martinus_coercive_chain_active_var\s+days\s*=\s*90")
+        self.assertIn("sb_martinus_bound_coercive_active_event_receipt", events)
+        self.assertIn("sb_martinus_coercive_generation_state", effects)
+        self.assertRegex(events, r"name\s*=\s*sb_martinus_stage_010_popup_receipt_var\s+months\s*=\s*4")
         self.assertIn("remove_variable = sb_martinus_coercive_chain_active_var", cleanup)
-        self.assertIn("sb_martinus_clear_coercive_chain_state = yes", monthly)
+        self.assertIn("destroy_container = yes", cleanup)
+        self.assertIn("sb_martinus_reconcile_coercive_generation = yes", monthly)
+
+    def test_martinus_exact_story_victory_can_install_after_on_start_marks_ambition(self):
+        install = object_block(
+            "common/scripted_effects/sb_martinus_confederation_effects.txt",
+            "sb_martinus_begin_story_union_install",
+        )
+        authority = object_block(
+            "common/scripted_triggers/sb_martinus_confederation_triggers.txt",
+            "sb_martinus_durable_story_union_install_authority",
+        )
+        structural = object_block(
+            "common/scripted_triggers/sb_martinus_confederation_triggers.txt",
+            "sb_martinus_union_install_structurally_valid",
+        )
+        started = text("common/on_actions/sb_diplomatic_play_on_action_handlers.txt")
+        resolver = text("common/scripted_effects/sb_story_war_effects.txt")
+
+        self.assertIn("sb_martinus_story_generation_scope", install)
+        self.assertIn("sb_martinus_durable_story_union_install_authority = yes", install)
+        self.assertNotIn("sb_martinus_durable_pretorius_union_authority = yes", install)
+        self.assertIn("NOT = { has_journal_entry = je_sb_great_trek }", authority)
+        self.assertIn("NOT = { has_variable = sb_early_republic_var }", authority)
+        self.assertIn("sb_martinus_trn_ruler_is_pretorius = yes", authority)
+        self.assertNotIn("sb_martinus_ambition_resolved_var", authority)
+        self.assertIn("has_variable = sb_martinus_union_install_source_story_var", structural)
+        self.assertIn("sb_martinus_durable_story_union_install_authority = yes", structural)
+        self.assertIn("set_variable = sb_martinus_ambition_resolved_var", started)
+        self.assertIn("sb_martinus_begin_story_union_install = yes", resolver)
+
+    def test_martinus_080_uses_a_generation_bound_popup_receipt_and_inert_stale_ack(self):
+        event = object_block(
+            "events/sb_martinus_confederation_events.txt",
+            "sb_martinus_confederation.080",
+        )
+        queue = object_block(
+            "common/scripted_effects/sb_martinus_confederation_effects.txt",
+            "sb_martinus_maybe_queue_legal_union_offer",
+        )
+        campaign = object_block(
+            "events/sb_martinus_confederation_events.txt",
+            "sb_martinus_confederation.081",
+        )
+
+        self.assertIn("sb_martinus_bound_legal_union_event_receipt = yes", event)
+        self.assertIn("sb_martinus_legal_offer_queued_var", event)
+        self.assertIn("NOT = { has_variable = sb_martinus_legal_offer_popup_receipt_var }", event)
+        self.assertIn(
+            "name = sb_martinus_legal_offer_popup_receipt_var months = 4", event
+        )
+        self.assertIn(
+            "name = sb_martinus_legal_campaign_queued_var days = 45", event
+        )
+        self.assertLess(
+            event.index("sb_martinus_bound_legal_union_offer_authority = yes"),
+            event.index("set_variable = { name = sb_martinus_legal_offer_popup_receipt_var"),
+        )
+        self.assertIn("var:sb_martinus_legal_union_generation_scope = scope:sb_martinus_legal_union_receipt_scope", event)
+        self.assertIn("sb_martinus_maybe_queue_legal_union_offer = yes", event)
+        self.assertEqual(1, event.count("default_option = yes"))
+        self.assertIn("NOT = { has_variable = sb_martinus_legal_offer_popup_receipt_var }", queue)
+        self.assertIn("sb_martinus_legal_campaign_delivered_var months = 4", campaign)
 
     def test_imperial_confederation_terminal_cleanup_is_persistent(self):
         effects_path = "common/scripted_effects/sb_eastern_sphere_effects.txt"
@@ -233,6 +298,9 @@ class MediumLowRemediationTests(unittest.TestCase):
                 "sb_on_namibia_monthly_pulse_country",
                 "sb_on_eastern_sphere_monthly_pulse_country",
                 "sb_on_griqualand_sequence_watchdog_monthly",
+                "sb_on_natal_story_orphan_monthly",
+                "sb_on_klip_river_orphan_monthly",
+                "sb_on_zululand_chiefdoms_orphan_monthly",
                 "sb_on_natal_colony_monthly_pulse_country",
                 "sb_on_port_natal_monthly_pulse_country",
                 "sb_on_frontier_force_monthly_pulse_country",
@@ -282,6 +350,149 @@ class MediumLowRemediationTests(unittest.TestCase):
             block = validate.extract_braced(router, router.index(f"{on_action} = {{"))
             registered = tuple(re.findall(r"\bsb_[a-z0-9_]+\b", block))
             self.assertEqual(handlers, registered, on_action)
+
+    def test_great_trek_and_swazi_popups_outlive_their_dispatch_leases(self):
+        great_trek = object_block("events/sb_great_trek_events.txt", "sb_great_trek.002")
+        swazi = object_block("events/sb_swazi_frontier_events.txt", "sb_swazi_frontier.094")
+        monthly = object_block(
+            "common/on_actions/sb_boer_story_on_action_handlers.txt",
+            "sb_on_trek_monthly_pulse_country",
+        )
+        trek_queue = object_block(
+            "common/scripted_effects/sb_trek_migration.txt",
+            "sb_great_trek_queue_outcome_delivery",
+        )
+
+        self.assertRegex(
+            great_trek,
+            r"name\s*=\s*sb_great_trek_outcome_popup_receipt_var\s+months\s*=\s*4",
+        )
+        self.assertRegex(
+            swazi,
+            r"name\s*=\s*sb_zulu_swazi_outcome_popup_receipt_var\s+months\s*=\s*4",
+        )
+        self.assertIn("name = sb_great_trek_outcome_delivery_queued_var days = 7", trek_queue)
+        self.assertIn("name = sb_zulu_swazi_outcome_delivery_queued_var days = 7", monthly)
+        self.assertGreaterEqual(
+            monthly.count("NOT = { has_variable = sb_great_trek_outcome_popup_receipt_var }"),
+            2,
+        )
+        self.assertGreaterEqual(
+            monthly.count("NOT = { has_variable = sb_zulu_swazi_outcome_popup_receipt_var }"),
+            2,
+        )
+        self.assertGreaterEqual(
+            great_trek.count("has_variable = sb_great_trek_outcome_popup_receipt_var"),
+            2,
+        )
+        self.assertGreaterEqual(
+            swazi.count("has_variable = sb_zulu_swazi_outcome_popup_receipt_var"),
+            3,
+        )
+        self.assertNotRegex(great_trek, r"popup_receipt_var\s+days\s*=\s*90")
+        self.assertNotRegex(swazi, r"popup_receipt_var\s+days\s*=\s*90")
+
+    def test_every_saf_formation_and_expansion_surface_uses_shared_story_lock(self):
+        lock = object_block(
+            "common/scripted_triggers/sb_saf_formation_triggers.txt",
+            "sb_southern_formation_has_blocking_story_transaction",
+        )
+        single_branch_surfaces = (
+            object_block("common/country_formation/sb_formable_countries.txt", "SAF"),
+            object_block("common/country_formation/sb_formable_countries.txt", "STA"),
+            object_block("common/decisions/sb_nguni_decisions.txt", "sb_proclaim_nguni_nation"),
+            object_block(
+                "common/scripted_buttons/sb_eastern_sphere_buttons.txt",
+                "je_sb_imperial_confederation_form_saf_button",
+            ),
+            object_block(
+                "common/scripted_buttons/sb_eastern_sphere_buttons.txt",
+                "je_sb_confederate_southern_africa_button",
+            ),
+        )
+        call = "NOT = { sb_southern_formation_has_blocking_story_transaction = yes }"
+        for surface in single_branch_surfaces:
+            self.assertEqual(1, surface.count(call))
+
+        for effect_name in (
+            "sb_imperial_confederation_form_saf",
+            "sb_confederated_south_africa_expand",
+        ):
+            surface = object_block(
+                "common/scripted_effects/sb_eastern_sphere_effects.txt",
+                effect_name,
+            )
+            self.assertEqual(2, surface.count(call))
+            self.assertEqual(
+                2,
+                len(
+                    re.findall(
+                        r"(?:if|else_if)\s*=\s*\{\s*limit\s*=\s*\{\s*"
+                        r"NOT\s*=\s*\{\s*sb_southern_formation_has_blocking_story_transaction\s*=\s*yes\s*\}",
+                        surface,
+                    )
+                ),
+            )
+
+        containers = {
+            "sb_bechuanaland_corridor_state",
+            "sb_griqualand_sequence_state",
+            "sb_klip_river_punitive_generation_state",
+            "sb_klip_river_secession_generation_state",
+            "sb_martinus_coercive_generation_state",
+            "sb_martinus_legal_union_generation_state",
+            "sb_natal_guns_bargain_generation_state",
+            "sb_natal_refusal_generation_state",
+            "sb_natal_terminal_outcome_state",
+            "sb_zpb_crackdown_generation_state",
+            "sb_zululand_chiefdoms_state",
+            "sb_zululand_terminal_generation_state",
+        }
+        for container in containers:
+            self.assertIn(f"container_exists = {container}", lock)
+
+        route_files = "\n".join(
+            text(path)
+            for path in (
+                "common/scripted_effects/sb_treaty_effects.txt",
+                "common/scripted_triggers/sb_boer_conventions_triggers.txt",
+                "events/sb_boer_conventions_events.txt",
+            )
+        )
+        zpb_runtime = set(re.findall(r"\bsb_zpb_crackdown_[a-z0-9_]+(?:var|scope)\b", route_files))
+        zpb_runtime -= {
+            "sb_zpb_crackdown_frozen_target_state_var",
+            "sb_zpb_crackdown_frozen_contested_state_var",
+        }
+        for marker in zpb_runtime:
+            self.assertIn(f"has_variable = {marker}", lock)
+
+        critical = {
+            "sb_great_trek_outcome_popup_receipt_var",
+            "sb_xhosa_delivery_pending_var",
+            "sb_xhosa_story_play_scope",
+            "sb_griqualand_ingress_popup_receipt_var",
+            "sb_griqualand_sequence_play_scope_global_var",
+            "sb_bst_gun_war_play_scope",
+            "sb_ora_bst_1856_play_scope",
+            "sb_zulu_swazi_outcome_popup_receipt_var",
+            "sb_gaza_zulu_play_scope",
+            "sb_klip_river_county_created_country_scope",
+            "sb_klip_river_county_created_this_attempt_var",
+            "sb_klip_river_county_original_xbb_owner_scope",
+            "sb_martinus_legal_offer_popup_receipt_var",
+            "sb_martinus_union_install_pending_var",
+            "sb_natal_diplomacy_started_var",
+            "sb_natal_guns_bargain_war_var",
+            "sb_natal_refusal_popup_receipt_var",
+            "sb_natal_terminal_outcome_popup_receipt_var",
+            "sb_british_zulu_annex_play_scope",
+            "sb_nrp_union_petition_response_pending_var",
+            "sb_zpb_crackdown_frozen_contested_state_var",
+            "sb_zpb_crackdown_frozen_target_state_var",
+        }
+        for marker in critical:
+            self.assertIn(marker, lock)
 
     def test_boer_restraint_uses_direct_tags_and_annual_watchdog(self):
         effects = text("common/scripted_effects/sb_british_boer_restraint_effects.txt")

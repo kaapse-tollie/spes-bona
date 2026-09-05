@@ -12,27 +12,47 @@ sb_great_trek.001 = {
 	type = country_event
 	hidden = yes
 
+	# Receipt is deliberately broad. Preflight belongs in the body so a busy
+	# day-90 delivery consumes its reservation and the monthly watchdog can retry.
 	trigger = {
 		country_definition = cd:MTB
-		NOT = { has_variable = sb_ndebele_opening_play_fired }
-		is_at_war = no
-		aggressive_diplomatic_plays_permitted = yes
 		is_country_alive = yes
-		c:ORA ?= {
-			is_country_alive = yes
-			is_at_war = no
-			aggressive_diplomatic_plays_permitted = yes
-		}
+		has_variable = sb_great_trek_opening_event_reserved_var
+		NOT = { has_variable = sb_ndebele_opening_play_fired }
 	}
 
 	immediate = {
-		set_variable = sb_ndebele_opening_play_fired
-		create_diplomatic_play = {
-			# Use the vanilla decentralized-native flow here. This play already
-			# carries the built-in colonization-rights article, so avoid adding
-			# custom opening articles on top or the presentation/order gets odd.
-			type = dp_native_uprising
-			target_country = c:ORA
+		remove_variable = sb_great_trek_opening_event_reserved_var
+		if = {
+			limit = {
+				is_at_war = no
+				is_active_in_diplomatic_play = no
+				aggressive_diplomatic_plays_permitted = yes
+				c:ORA ?= {
+					is_country_alive = yes
+					is_at_war = no
+					is_active_in_diplomatic_play = no
+					aggressive_diplomatic_plays_permitted = yes
+				}
+				NOT = {
+					OR = {
+						any_diplomatic_play = { initiator = root target = c:ORA is_diplomatic_play_type = dp_native_uprising }
+						any_scope_war = { diplomatic_play = { initiator = root target = c:ORA is_diplomatic_play_type = dp_native_uprising } }
+					}
+				}
+			}
+			set_variable = sb_ndebele_opening_play_fired
+			set_variable = sb_great_trek_opening_launch_lease_var
+			create_diplomatic_play = {
+				# Vanilla native uprising carries the colonization-rights article.
+				type = dp_native_uprising
+				target_country = c:ORA
+			}
+			if = {
+				limit = { has_variable = sb_great_trek_opening_launch_lease_var }
+				remove_variable = sb_great_trek_opening_launch_lease_var
+				remove_variable = sb_ndebele_opening_play_fired
+			}
 		}
 	}
 }
@@ -55,7 +75,14 @@ sb_great_trek.002 = {
 	icon = "gfx/interface/icons/event_icons/event_map.dds"
 
 	trigger = {
-		country_definition = cd:ORA
+		is_country_alive = yes
+		has_variable = sb_great_trek_outcome_delivery_pending_var
+		has_variable = sb_great_trek_outcome_delivery_queued_var
+		NOT = { has_variable = sb_great_trek_outcome_delivery_received_var }
+		c:MTB ?= {
+			is_country_alive = yes
+			has_diplomatic_pact = { who = root type = colonization_rights }
+		}
 	}
 
 	immediate = {
@@ -74,13 +101,28 @@ sb_great_trek.002 = {
 		s:STATE_TRANSVAAL = {
 			save_scope_as = transvaal_region
 		}
+		ROOT = { set_variable = { name = sb_great_trek_outcome_popup_receipt_var months = 4 } }
 	}
 
 	option = {
 		name = sb_great_trek.002.a
 		default_option = yes
+		trigger = {
+			is_country_alive = yes
+			has_variable = sb_great_trek_outcome_delivery_pending_var
+			has_variable = sb_great_trek_outcome_popup_receipt_var
+			NOT = { has_variable = sb_great_trek_outcome_delivery_received_var }
+			c:MTB ?= {
+				is_country_alive = yes
+				has_diplomatic_pact = { who = root type = colonization_rights }
+			}
+		}
 
 		hidden_effect = {
+			remove_variable = sb_great_trek_outcome_delivery_pending_var
+			remove_variable = sb_great_trek_outcome_delivery_queued_var
+			if = { limit = { has_variable = sb_great_trek_outcome_popup_receipt_var } remove_variable = sb_great_trek_outcome_popup_receipt_var }
+			set_variable = { name = sb_great_trek_outcome_delivery_received_var days = 30 }
 			if = {
 				limit = {
 					exists = c:MSH
@@ -96,7 +138,7 @@ sb_great_trek.002 = {
 			c:MTB ?= {
 				s:STATE_VRYSTAAT = {
 					set_owner_of_provinces = {
-					country = c:ORA
+					country = root
 					provinces = {
 						x52B31E xF17D3D xF075D7 x373E53 x9D6A16 xCEE3D2
 					}
@@ -161,6 +203,18 @@ sb_great_trek.002 = {
 		ai_chance = {
 			base = 100
 		}
+	}
+
+
+	option = {
+		name = sb_great_trek.002.a
+		trigger = {
+			has_variable = sb_great_trek_outcome_delivery_pending_var
+			has_variable = sb_great_trek_outcome_popup_receipt_var
+			NOT = { AND = { is_country_alive = yes NOT = { has_variable = sb_great_trek_outcome_delivery_received_var } c:MTB ?= { is_country_alive = yes has_diplomatic_pact = { who = root type = colonization_rights } } } }
+		}
+		remove_variable = sb_great_trek_outcome_delivery_queued_var
+		if = { limit = { has_variable = sb_great_trek_outcome_popup_receipt_var } remove_variable = sb_great_trek_outcome_popup_receipt_var }
 	}
 }
 

@@ -52,7 +52,8 @@ sb_initialize_bst_gun_war_defence_for_play = {
 	if = {
 		limit = {
 			is_diplomatic_play_type = dp_sb_basotho_gun_war
-			scope:target ?= { country_definition = cd:BST is_country_alive = yes is_ai = yes }
+			c:BST ?= { has_variable = sb_bst_gun_war_play_scope var:sb_bst_gun_war_play_scope = root }
+			target ?= { country_definition = cd:BST is_country_alive = yes is_ai = yes }
 		}
 		if = {
 			limit = {
@@ -100,7 +101,8 @@ sb_reconcile_bst_gun_war_defence_for_play = {
 	if = {
 		limit = {
 			is_diplomatic_play_type = dp_sb_basotho_gun_war
-			scope:target ?= { country_definition = cd:BST is_country_alive = yes is_ai = yes }
+			c:BST ?= { has_variable = sb_bst_gun_war_play_scope var:sb_bst_gun_war_play_scope = root }
+			target ?= { country_definition = cd:BST is_country_alive = yes is_ai = yes }
 		}
 		if = {
 			limit = {
@@ -131,7 +133,8 @@ sb_cleanup_bst_gun_war_defence_for_play = {
 	if = {
 		limit = {
 			is_diplomatic_play_type = dp_sb_basotho_gun_war
-			scope:target ?= { country_definition = cd:BST }
+			c:BST ?= { has_variable = sb_bst_gun_war_play_scope var:sb_bst_gun_war_play_scope = root }
+			target ?= { country_definition = cd:BST }
 		}
 		c:BST ?= {
 			sb_bst_remove_gun_war_defensive_muster = yes
@@ -329,6 +332,29 @@ sb_bst_centralize_sotho_tswana_clients = {
 				value = 50
 			}
 			add_liberty_desire = -50
+		}
+	}
+}
+
+
+# root = the exact Gun War diplomatic play.
+sb_cleanup_exact_bst_gun_war_runtime = {
+	if = {
+		limit = {
+			is_diplomatic_play_type = dp_sb_basotho_gun_war
+			c:BST ?= { has_variable = sb_bst_gun_war_play_scope var:sb_bst_gun_war_play_scope = root }
+		}
+		sb_cleanup_bst_gun_war_defence_for_play = yes
+		c:BST = {
+			remove_variable = sb_bst_gun_war_play_scope
+			if = { limit = { has_variable = sb_bst_cap_annexation_crisis_var } remove_variable = sb_bst_cap_annexation_crisis_var }
+			if = { limit = { has_variable = sb_bst_story_goal_accepted_pending_var } remove_variable = sb_bst_story_goal_accepted_pending_var }
+			if = { limit = { has_variable = sb_bst_gun_war_resolution_guard_var } remove_variable = sb_bst_gun_war_resolution_guard_var }
+		}
+		c:CAP ?= {
+			if = { limit = { has_variable = sb_bst_story_goal_accepted_pending_var } remove_variable = sb_bst_story_goal_accepted_pending_var }
+			if = { limit = { has_variable = sb_bst_cap_annexation_crisis_var } remove_variable = sb_bst_cap_annexation_crisis_var }
+			if = { limit = { has_variable = sb_bst_gun_war_launch_lease_var } remove_variable = sb_bst_gun_war_launch_lease_var }
 		}
 	}
 }

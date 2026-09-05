@@ -511,7 +511,11 @@ sb_clear_ora_blood_river_laager = {
 # affect routing. The original AI-AI roll is preserved across later joins.
 sb_reconcile_blood_river_assistance_for_play = {
 	if = {
-		limit = { is_diplomatic_play_type = dp_sb_natal_crisis }
+		limit = {
+			is_diplomatic_play_type = dp_sb_natal_crisis
+			c:ORA ?= { has_variable = sb_natal_story_play_scope var:sb_natal_story_play_scope = root }
+			c:ZUL ?= { has_variable = sb_natal_story_play_scope var:sb_natal_story_play_scope = root }
+		}
 		c:ORA ?= {
 			if = {
 				limit = {
@@ -669,7 +673,13 @@ sb_reconcile_blood_river_assistance_for_play = {
 # the ORA source marker prevents cleanup from removing another Laager source.
 sb_cleanup_blood_river_assistance_for_play = {
 	if = {
-		limit = { is_diplomatic_play_type = dp_sb_natal_crisis }
+		limit = {
+			is_diplomatic_play_type = dp_sb_natal_crisis
+			OR = {
+				c:ORA ?= { has_variable = sb_natal_story_play_scope var:sb_natal_story_play_scope = root }
+				c:ZUL ?= { has_variable = sb_natal_story_play_scope var:sb_natal_story_play_scope = root }
+			}
+		}
 		c:ORA ?= { sb_clear_ora_blood_river_laager = yes }
 		c:ZUL ?= {
 			if = {
@@ -703,39 +713,49 @@ sb_join_trn_to_active_natal_war = {
 			c:ORA ?= {
 				is_country_alive = yes
 				has_variable = sb_natal_war_active_var
+				has_variable = sb_natal_story_play_scope
+				var:sb_natal_story_play_scope ?= {
+					is_diplomatic_play_type = dp_sb_natal_crisis
+					initiator = c:ZUL
+					target = c:ORA
+					NOT = {
+						any_scope_play_involved = {
+							c:TRN ?= THIS
+							is_diplomatic_play_committed_participant = yes
+						}
+					}
+				}
 			}
 			c:ZUL ?= {
 				is_country_alive = yes
+				has_variable = sb_natal_story_play_scope
+				var:sb_natal_story_play_scope ?= {
+					is_diplomatic_play_type = dp_sb_natal_crisis
+					initiator = c:ZUL
+					target = c:ORA
+				}
 			}
 		}
-		c:TRN ?= { sb_ensure_boer_republic_compacts_for_root = yes }
-		c:TRN ?= {
-			set_variable = sb_trn_joined_natal_war_var
-			change_relations = {
-				country = c:ORA
-				value = 20
-			}
-		}
-		c:ORA ?= {
-			set_variable = sb_trn_joined_natal_war_var
-			change_relations = {
-				country = c:TRN
-				value = 20
-			}
-		}
-		random_diplomatic_play = {
+		# Consume the saved exact root directly; never scan for a same-type play.
+		c:ORA.var:sb_natal_story_play_scope = { add_target_backers = { c:TRN } }
+		if = {
 			limit = {
-				initiator = c:ZUL
-				target = c:ORA
-				is_diplomatic_play_type = dp_sb_natal_crisis
-				NOT = {
+				c:ORA.var:sb_natal_story_play_scope ?= {
 					any_scope_play_involved = {
 						c:TRN ?= THIS
 						is_diplomatic_play_committed_participant = yes
 					}
 				}
 			}
-			add_target_backers = { c:TRN }
+			c:TRN = {
+				sb_ensure_boer_republic_compacts_for_root = yes
+				set_variable = sb_trn_joined_natal_war_var
+				change_relations = { country = c:ORA value = 20 }
+			}
+			c:ORA = {
+				set_variable = sb_trn_joined_natal_war_var
+				change_relations = { country = c:TRN value = 20 }
+			}
 		}
 	}
 }

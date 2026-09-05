@@ -283,6 +283,28 @@ sb_on_cape_monthly_pulse_country = {
 				trigger_event = { id = sb_frontier_ai_wars.130 popup = yes }
 			}
 
+			# A dead XHO cannot receive or cancel its queued popup. Retire every
+			# target-owned generation outside the launchable gate so SAF formation
+			# never remains locked by an orphan scheduled marker.
+			if = {
+				limit = {
+					OR = { country_definition = cd:CAP country_definition = cd:ABY }
+					is_country_alive = yes
+					NOT = { c:XHO ?= { is_country_alive = yes } }
+				}
+				if = { limit = { has_variable = sb_xhosa_frontier_war_7_scheduled_var } remove_variable = sb_xhosa_frontier_war_7_scheduled_var set_variable = sb_xhosa_frontier_war_7_resolved_var }
+				if = { limit = { has_variable = sb_xhosa_frontier_war_8_scheduled_var } remove_variable = sb_xhosa_frontier_war_8_scheduled_var set_variable = sb_xhosa_frontier_war_8_resolved_var }
+				if = { limit = { has_variable = sb_xhosa_frontier_war_9_scheduled_var } remove_variable = sb_xhosa_frontier_war_9_scheduled_var set_variable = sb_xhosa_frontier_war_9_resolved_var }
+				c:XHO ?= {
+					if = {
+						limit = { has_variable = sb_xhosa_delivery_target_scope var:sb_xhosa_delivery_target_scope = ROOT }
+						if = { limit = { has_variable = sb_xhosa_delivery_pending_var } remove_variable = sb_xhosa_delivery_pending_var }
+						remove_variable = sb_xhosa_delivery_target_scope
+						if = { limit = { has_variable = sb_xhosa_delivery_generation_var } remove_variable = sb_xhosa_delivery_generation_var }
+					}
+				}
+			}
+
 			if = {
 				limit = {
 						OR = {
@@ -321,12 +343,22 @@ sb_on_cape_monthly_pulse_country = {
 							}
 						}
 						}
+						if = { limit = { has_variable = sb_xhosa_frontier_war_7_scheduled_var } remove_variable = sb_xhosa_frontier_war_7_scheduled_var }
 						set_variable = sb_xhosa_frontier_war_7_resolved_var
+						c:XHO ?= {
+							if = {
+								limit = { has_variable = sb_xhosa_delivery_target_scope var:sb_xhosa_delivery_target_scope = ROOT }
+								if = { limit = { has_variable = sb_xhosa_delivery_pending_var } remove_variable = sb_xhosa_delivery_pending_var }
+								remove_variable = sb_xhosa_delivery_target_scope
+								if = { limit = { has_variable = sb_xhosa_delivery_generation_var } remove_variable = sb_xhosa_delivery_generation_var }
+							}
+						}
 					}
 					else_if = {
 						limit = {
 								game_date >= 1845.1.1
 									NOT = { has_variable = sb_xhosa_frontier_war_7_scheduled_var }
+									c:XHO ?= { NOT = { has_variable = sb_xhosa_delivery_pending_var } }
 									has_technology_researched = colonization
 										c:XHO ?= {
 											is_country_alive = yes
@@ -340,7 +372,11 @@ sb_on_cape_monthly_pulse_country = {
 										}
 									}
 							set_variable = sb_xhosa_frontier_war_7_scheduled_var
+							save_temporary_scope_as = sb_xhosa_delivery_target
 							c:XHO ?= {
+								set_variable = sb_xhosa_delivery_pending_var
+								set_variable = { name = sb_xhosa_delivery_target_scope value = scope:sb_xhosa_delivery_target }
+								set_variable = { name = sb_xhosa_delivery_generation_var value = 7 }
 								random_list = {
 									1 = { trigger_event = { id = sb_frontier_ai_wars.100 days = 7 } }
 									1 = { trigger_event = { id = sb_frontier_ai_wars.100 days = 30 } }
@@ -370,13 +406,23 @@ sb_on_cape_monthly_pulse_country = {
 							}
 						}
 						}
+						if = { limit = { has_variable = sb_xhosa_frontier_war_8_scheduled_var } remove_variable = sb_xhosa_frontier_war_8_scheduled_var }
 						set_variable = sb_xhosa_frontier_war_8_resolved_var
+						c:XHO ?= {
+							if = {
+								limit = { has_variable = sb_xhosa_delivery_target_scope var:sb_xhosa_delivery_target_scope = ROOT }
+								if = { limit = { has_variable = sb_xhosa_delivery_pending_var } remove_variable = sb_xhosa_delivery_pending_var }
+								remove_variable = sb_xhosa_delivery_target_scope
+								if = { limit = { has_variable = sb_xhosa_delivery_generation_var } remove_variable = sb_xhosa_delivery_generation_var }
+							}
+						}
 					}
 					else_if = {
 						limit = {
 								game_date >= 1850.1.1
 									has_variable = sb_xhosa_frontier_war_7_resolved_var
 									NOT = { has_variable = sb_xhosa_frontier_war_8_scheduled_var }
+									c:XHO ?= { NOT = { has_variable = sb_xhosa_delivery_pending_var } }
 									has_technology_researched = colonization
 										c:XHO ?= {
 											is_country_alive = yes
@@ -390,7 +436,11 @@ sb_on_cape_monthly_pulse_country = {
 										}
 									}
 							set_variable = sb_xhosa_frontier_war_8_scheduled_var
+							save_temporary_scope_as = sb_xhosa_delivery_target
 							c:XHO ?= {
+								set_variable = sb_xhosa_delivery_pending_var
+								set_variable = { name = sb_xhosa_delivery_target_scope value = scope:sb_xhosa_delivery_target }
+								set_variable = { name = sb_xhosa_delivery_generation_var value = 8 }
 								random_list = {
 									1 = { trigger_event = { id = sb_frontier_ai_wars.110 days = 7 } }
 									1 = { trigger_event = { id = sb_frontier_ai_wars.110 days = 30 } }
@@ -420,13 +470,23 @@ sb_on_cape_monthly_pulse_country = {
 								}
 							}
 						}
+						if = { limit = { has_variable = sb_xhosa_frontier_war_9_scheduled_var } remove_variable = sb_xhosa_frontier_war_9_scheduled_var }
 						set_variable = sb_xhosa_frontier_war_9_resolved_var
+						c:XHO ?= {
+							if = {
+								limit = { has_variable = sb_xhosa_delivery_target_scope var:sb_xhosa_delivery_target_scope = ROOT }
+								if = { limit = { has_variable = sb_xhosa_delivery_pending_var } remove_variable = sb_xhosa_delivery_pending_var }
+								remove_variable = sb_xhosa_delivery_target_scope
+								if = { limit = { has_variable = sb_xhosa_delivery_generation_var } remove_variable = sb_xhosa_delivery_generation_var }
+							}
+						}
 					}
 					else_if = {
 						limit = {
 								game_date >= 1875.1.1
 									has_variable = sb_xhosa_frontier_war_8_resolved_var
 									NOT = { has_variable = sb_xhosa_frontier_war_9_scheduled_var }
+									c:XHO ?= { NOT = { has_variable = sb_xhosa_delivery_pending_var } }
 									has_technology_researched = colonization
 										c:XHO ?= {
 											is_country_alive = yes
@@ -440,7 +500,11 @@ sb_on_cape_monthly_pulse_country = {
 										}
 									}
 							set_variable = sb_xhosa_frontier_war_9_scheduled_var
+							save_temporary_scope_as = sb_xhosa_delivery_target
 							c:XHO ?= {
+								set_variable = sb_xhosa_delivery_pending_var
+								set_variable = { name = sb_xhosa_delivery_target_scope value = scope:sb_xhosa_delivery_target }
+								set_variable = { name = sb_xhosa_delivery_generation_var value = 9 }
 								random_list = {
 									1 = { trigger_event = { id = sb_frontier_ai_wars.120 days = 30 } }
 									1 = { trigger_event = { id = sb_frontier_ai_wars.120 days = 365 } }

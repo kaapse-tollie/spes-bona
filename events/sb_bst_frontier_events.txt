@@ -368,6 +368,7 @@ sb_bst_frontier.220 = {
 	trigger = {
 		country_definition = cd:CAP
 		is_at_war = no
+		is_active_in_diplomatic_play = no
 		aggressive_diplomatic_plays_permitted = yes
 		sb_cap_has_bst_subject_for_disarmament = yes
 		NOT = { has_variable = sb_bst_cap_annexation_crisis_var }
@@ -378,51 +379,34 @@ sb_bst_frontier.220 = {
 		}
 	}
 
-	immediate = {
-		c:BST ?= {
-			remove_variable = sb_bst_cap_disarmament_pending_var
-		}
-	}
+	immediate = { }
 
 	option = {
 		name = sb_bst_frontier.220.a
+		trigger = {
+			country_definition = cd:CAP
+			is_country_alive = yes
+			is_at_war = no
+			is_active_in_diplomatic_play = no
+			aggressive_diplomatic_plays_permitted = yes
+			sb_cap_has_bst_subject_for_disarmament = yes
+			NOT = { has_variable = sb_bst_cap_annexation_crisis_var }
+			c:BST ?= {
+				is_country_alive = yes
+				is_at_war = no
+				is_active_in_diplomatic_play = no
+				has_variable = sb_bst_cap_disarmament_pending_var
+				NOT = { has_variable = sb_bst_cap_annexation_crisis_var }
+				NOT = { has_variable = sb_bst_cap_disarmament_resolved_var }
+			}
+		}
 		default_option = yes
-		set_variable = sb_bst_cap_annexation_crisis_var
-		c:BST ?= {
-			set_variable = sb_bst_cap_annexation_crisis_var
-			set_variable = sb_bst_cap_disarmament_resolved_var
-		}
-		create_diplomatic_play = {
-			type = dp_sb_basotho_gun_war
-			target_country = c:BST
-			add_war_goal = {
-				holder = c:BST
-				target_country = root
-				type = increase_autonomy
-				primary_demand = yes
-			}
-		}
-		random_diplomatic_play = {
-			limit = {
-				initiator = root
-				target = c:BST
-				is_diplomatic_play_type = dp_sb_basotho_gun_war
-			}
-			sb_initialize_bst_gun_war_defence_for_play = yes
-			if = {
-				limit = {
-					c:BST ?= {
-						play_participant_has_war_goal_of_type_against = {
-							type = independence
-							target = c:CAP
-						}
-					}
-				}
-				remove_war_goal = {
-					who = target
-					type = independence
-				}
-			}
+		set_variable = sb_bst_gun_war_launch_lease_var
+		create_diplomatic_play = { type = dp_sb_basotho_gun_war target_country = c:BST }
+		if = {
+			limit = { has_variable = sb_bst_gun_war_launch_lease_var }
+			remove_variable = sb_bst_gun_war_launch_lease_var
+			trigger_event = { id = sb_bst_frontier.220 days = 30 }
 		}
 		ai_chance = {
 			base = 75
@@ -439,7 +423,9 @@ sb_bst_frontier.220 = {
 
 	option = {
 		name = sb_bst_frontier.220.b
+		trigger = { country_definition = cd:CAP c:BST ?= { is_country_alive = yes has_variable = sb_bst_cap_disarmament_pending_var NOT = { has_variable = sb_bst_cap_disarmament_resolved_var } } }
 		c:BST ?= {
+			remove_variable = sb_bst_cap_disarmament_pending_var
 			set_variable = sb_bst_cap_disarmament_resolved_var
 		}
 		ai_chance = {

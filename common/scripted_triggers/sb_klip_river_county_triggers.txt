@@ -49,3 +49,110 @@ sb_zulu_controls_initial_swaziland = {
 	p:x50A011.state.owner = root
 	p:x452304.state.owner = root
 }
+
+# Exact pre-create checks. Receipts and launchers both call these because an option can be held.
+sb_klip_river_secession_preflight = {
+	country_definition = cd:NAL
+	is_country_alive = yes
+	is_at_war = no
+	is_active_in_diplomatic_play = no
+	aggressive_diplomatic_plays_permitted = yes
+	NOT = { has_variable = sb_klip_river_secession_play_scope }
+	p:x279045.state.owner = root
+	c:KLR ?= {
+		is_country_alive = yes
+		is_at_war = no
+		is_active_in_diplomatic_play = no
+		p:xBBCA32.state.owner = this
+		p:xDE0EDE.state.owner = this
+		p:x552449.state.owner = this
+		NOT = { has_war_with = c:NAL }
+	}
+	c:ZUL ?= {
+		is_country_alive = yes
+		is_subject = no
+		aggressive_diplomatic_plays_permitted = yes
+		is_at_war = no
+		is_active_in_diplomatic_play = no
+		NOT = { has_war_with = c:NAL }
+		NOT = { has_war_with = c:KLR }
+		NOT = { any_diplomatic_play = { initiator = root target = c:NAL is_diplomatic_play_type = dp_sb_klip_river_secession } }
+	}
+}
+
+sb_klip_river_punitive_preflight = {
+	country_definition = cd:NAL
+	is_country_alive = yes
+	is_at_war = no
+	is_active_in_diplomatic_play = no
+	aggressive_diplomatic_plays_permitted = yes
+	NOT = { has_variable = sb_klip_river_punitive_play_scope }
+	exists = s:STATE_NATAL.region_state:NAL
+	p:x279045.state.owner = root
+	c:ZUL ?= {
+		is_country_alive = yes
+		is_subject = no
+		aggressive_diplomatic_plays_permitted = yes
+		is_at_war = no
+		is_active_in_diplomatic_play = no
+		NOT = { has_war_with = c:NAL }
+		NOT = { any_diplomatic_play = { initiator = c:NAL target = root is_diplomatic_play_type = dp_sb_klip_river_punitive_expedition } }
+	}
+}
+
+
+# A delivery receipt is a unique container object, never a timed country bit.
+# The event's saved receipt scope must equal NAL's currently live generation.
+sb_klip_river_secession_bound_delivery_receipt = {
+	exists = scope:sb_klip_river_secession_receipt_scope
+	country_definition = cd:NAL
+	is_country_alive = yes
+	has_variable = sb_klip_river_secession_delivery_pending_var
+	has_variable = sb_klip_river_secession_generation_scope
+	var:sb_klip_river_secession_generation_scope = scope:sb_klip_river_secession_receipt_scope
+	container_exists = sb_klip_river_secession_generation_state
+	scope:sb_klip_river_secession_receipt_scope ?= { has_variable = sb_klip_river_secession_generation_pending_var }
+}
+
+sb_klip_river_punitive_bound_delivery_receipt = {
+	exists = scope:sb_klip_river_punitive_receipt_scope
+	country_definition = cd:NAL
+	is_country_alive = yes
+	has_variable = sb_klip_river_punitive_delivery_pending_var
+	has_variable = sb_klip_river_punitive_generation_scope
+	var:sb_klip_river_punitive_generation_scope = scope:sb_klip_river_punitive_receipt_scope
+	container_exists = sb_klip_river_punitive_generation_state
+	scope:sb_klip_river_punitive_receipt_scope ?= { has_variable = sb_klip_river_punitive_generation_pending_var }
+}
+
+# Permanent invalidity is distinct from busy war/play occupancy. It cancels this
+# exact receipt rather than silently rearming it against a later route.
+sb_klip_river_secession_delivery_currently_permanently_invalid = {
+	country_definition = cd:NAL
+	OR = {
+		NOT = { aggressive_diplomatic_plays_permitted = yes }
+		NOT = { p:x279045.state.owner = root }
+		NOT = { c:KLR ?= { is_country_alive = yes is_subject = no p:xBBCA32.state.owner = this p:xDE0EDE.state.owner = this p:x552449.state.owner = this } }
+		NOT = { c:ZUL ?= { is_country_alive = yes is_subject = no aggressive_diplomatic_plays_permitted = yes } }
+	}
+}
+
+sb_klip_river_punitive_delivery_currently_permanently_invalid = {
+	country_definition = cd:NAL
+	OR = {
+		NOT = { aggressive_diplomatic_plays_permitted = yes }
+		NOT = { exists = s:STATE_NATAL.region_state:NAL }
+		NOT = { p:x279045.state.owner = root }
+		NOT = { c:ZUL ?= { is_country_alive = yes is_subject = no aggressive_diplomatic_plays_permitted = yes } }
+	}
+}
+
+sb_klip_river_secession_delivery_permanently_invalid = {
+	sb_klip_river_secession_bound_delivery_receipt = yes
+	sb_klip_river_secession_delivery_currently_permanently_invalid = yes
+}
+
+sb_klip_river_punitive_delivery_permanently_invalid = {
+	sb_klip_river_punitive_bound_delivery_receipt = yes
+	sb_klip_river_punitive_delivery_currently_permanently_invalid = yes
+}

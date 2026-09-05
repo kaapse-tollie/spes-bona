@@ -32,12 +32,18 @@ sb_bechuanaland_swa_direct_overlord = {
 # rank loss while it still directly owns SWA and remains outside Britain's
 # alliance/defensive-pact network.
 sb_bechuanaland_swa_overlord_candidate = {
+	NOT = { country_definition = cd:CAP }
+	NOT = { this = c:GBR }
+	NOT = { is_subject_of = c:GBR }
 	sb_bechuanaland_swa_direct_overlord = yes
 	country_rank = rank_value:great_power
 	sb_bechuanaland_has_no_british_security_treaty = yes
 }
 
 sb_bechuanaland_swa_active_sponsor = {
+	NOT = { country_definition = cd:CAP }
+	NOT = { this = c:GBR }
+	NOT = { is_subject_of = c:GBR }
 	sb_bechuanaland_swa_direct_overlord = yes
 	sb_bechuanaland_has_no_british_security_treaty = yes
 	OR = {
@@ -69,6 +75,34 @@ sb_bechuanaland_cap_is_swa_overlord_subject = {
 		trigger_else = { always = no }
 	}
 	trigger_else = { always = no }
+}
+
+sb_bechuanaland_cap_is_non_british_swa_overlord_subject = {
+	sb_bechuanaland_cap_is_swa_overlord_subject = yes
+	container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_swa_overlord_scope ?= {
+		sb_bechuanaland_swa_active_sponsor = yes
+		NOT = { this = c:GBR }
+		NOT = { is_subject_of = c:GBR }
+	}
+}
+
+sb_bechuanaland_cap_has_exact_boer_endpoint = {
+	c:CAP ?= { is_country_alive = yes }
+	OR = {
+		AND = {
+			container:sb_bechuanaland_corridor_state = {
+				has_variable = sb_bechuanaland_boer_transfer_recipient_scope
+				any_in_list = { variable = sb_bechuanaland_boer_transfer_goal_targets this = c:CAP }
+			}
+			c:CAP = { is_direct_subject_of = container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_boer_transfer_recipient_scope }
+		}
+		AND = {
+			container:sb_bechuanaland_corridor_state = {
+				any_in_list = { variable = sb_bechuanaland_boer_liberate_goal_targets this = c:CAP }
+			}
+			c:CAP = { is_subject = no }
+		}
+	}
 }
 
 # Root-agnostic: either GBR directly owns SWA or its current direct overlord
@@ -479,20 +513,24 @@ sb_bechuanaland_is_corridor_diplomatic_play = {
 		is_diplomatic_play_type = dp_sb_bechuanaland_proxy_intervention_locked
 		is_diplomatic_play_type = dp_sb_bechuanaland_proxy_namaqualand_locked
 		is_diplomatic_play_type = dp_sb_bechuanaland_cap_sgo_return
-		AND = {
-			is_diplomatic_play_type = dp_annex_war
-			initiator = c:CAP
-			target = c:SGO
-			container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_crisis_war_active_var }
-			c:CAP ?= { sb_bechuanaland_is_british_war_side_member = yes }
-			c:SGO ?= { sb_bechuanaland_is_boer_swa_war_side_member = yes }
-		}
 	}
 }
 
 sb_bechuanaland_has_active_corridor_diplomatic_play = {
-	any_country = {
-		any_diplomatic_play = { sb_bechuanaland_is_corridor_diplomatic_play = yes }
+	OR = {
+		container:sb_bechuanaland_corridor_state ?= {
+			has_variable = sb_bechuanaland_crisis_play_scope
+			var:sb_bechuanaland_crisis_play_scope ?= { sb_bechuanaland_is_corridor_diplomatic_play = yes }
+		}
+		AND = {
+			NOT = { container:sb_bechuanaland_corridor_state ?= { has_variable = sb_bechuanaland_crisis_play_scope } }
+			any_country = {
+				OR = {
+					any_diplomatic_play = { sb_bechuanaland_is_corridor_diplomatic_play = yes }
+					any_scope_war = { diplomatic_play = { sb_bechuanaland_is_corridor_diplomatic_play = yes } }
+				}
+			}
+		}
 	}
 }
 

@@ -4,7 +4,7 @@ Target game version: Victoria 3 `1.14.0` Open Beta 1 (Steam build `25081502`, St
 
 Pinned dependency: Community Mod Framework `1.66.0`, commit `807c32ff42b75714a3a0e090c0db3357b5e46ed7`. The launcher relationship is `1.66.*`. Static validation uses the official GitHub `release-1.66.0.zip` asset with SHA-256 `79dd0d434e6ffb617147ad1b91b73e6306139adfffcadf6774eeb32db3a09b8b`; it does not treat the temporarily reverted Workshop payload as authoritative.
 
-The canonical machine-readable inventory is `Docs/compatibility/override_inventory.json`. It records every exact-path collision and keyed override with ownership, intended delta, load-order semantics, review date, and pinned source hashes. The complete OB1 semantic decisions are recorded in `Docs/compatibility/1_14_0_open_beta_1_rebase.md`.
+The canonical machine-readable inventory is `Docs/compatibility/override_inventory.json`. It records every exact-path collision and keyed override with ownership, intended delta, load-order semantics, review date, and pinned source hashes. The complete OB1 semantic decisions are recorded in `Docs/compatibility/1_14_0_open_beta_1_rebase.md`. Schema version 3 also locks otherwise silent key/source collisions and non-shadowed upstream caller contracts.
 
 Run the complete local gate from the repository root:
 
@@ -27,7 +27,8 @@ The OB1 lock covers:
 - `109` keyed `REPLACE`, `TRY_REPLACE`, or `REPLACE_OR_CREATE` objects;
 - `18` intentionally changed state-region blocks;
 - one registered additive `zz_` override;
-- all eight localization replace files plus key-level, multi-source pins for the 20 previously silent Vanilla key collisions; and
+- all eight localization replace files plus key-level, multi-source pins for the 20 previously silent Vanilla key collisions;
+- two non-shadowed OB1 AI caller/scoring contracts (`ai_strategy_default` and `state_transfer`); and
 - no approved `replace_path` directives.
 
 The exact-path set includes Southern African history, the Highveld event baseline, the regional state file, the province raster, terrain, locators, and spline network. Generated and binary files use hash parity; textual files also require a reviewed source diff. Every OB1 source-only drift result is repinned only after a recorded semantic decision.
@@ -59,7 +60,7 @@ Vanilla's additive `on_company_disbanded` handler remains untouched. SB register
 
 The Armed Forces definition is a keyed OB1 rebase. Its executable token stream is unchanged upstream; the source drift is comments and formatting only. Its sole SB delta consumes Imperial Administration's displayed flat `+50` Aristocrat attraction modifier. CMF `1.66.0` does not replace this object. Source and object hashes are pinned so later military-interest-group changes require an explicit rebase.
 
-All three OB1 AI incorporation triggers are exact replacements around one narrow helper. `sb_regional_ai_should_incorporate` admits only AI NAL owning `STATE_ZULULAND`, AI CAP owning `STATE_BECHUANALAND` or `STATE_GRIQUALAND_WEST`, and AI ORA owning `STATE_DRAKENSBERG`; each match requires `owner = root`. It is intentionally independent of NAL's narrative lease, population, adjacency, full-state ownership, homeland time, and starting country type. Both ordinary and colonial `will` paths receive the helper because NAL and CAP can cross those country-type branches. `ai_can_incorporate_state` remains a value/transfer-scoring caller rather than the command that starts incorporation. The `will` overrides improve willingness and candidate priority but cannot bypass affordability or code-side candidate validity.
+All three OB1 AI incorporation triggers are exact replacements around one narrow helper. `sb_regional_ai_should_incorporate` admits only AI NAL owning `STATE_ZULULAND`, AI CAP owning `STATE_BECHUANALAND` or `STATE_GRIQUALAND_WEST`, and AI ORA owning `STATE_DRAKENSBERG`; each match requires `owner = root`. It is intentionally independent of NAL's narrative lease, population, adjacency, full-state ownership, homeland time, and starting country type. Both ordinary and colonial `will` paths receive the helper because NAL and CAP can cross those country-type branches. `ai_can_incorporate_state` remains a value/transfer-scoring caller rather than the command that starts incorporation. The `will` overrides improve willingness and candidate priority but cannot bypass affordability or code-side candidate validity. The unchanged `ai_strategy_default` caller and `state_transfer` scoring object are pinned as non-shadowed upstream contracts so their branch and valuation semantics cannot drift silently.
 
 The Colonial Racialism amendment is a keyed OB1 rebase. Its only SB delta permits Rural Folk carrying Settler Colonialist to sponsor the amendment; Vanilla's approval gate and existing Armed Forces and Industrialist sponsors remain unchanged.
 

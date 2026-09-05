@@ -325,7 +325,26 @@ sb_zulu_apply_swazi_campaign_victory = {
 		if = { limit = { has_modifier = sb_dingane_checked_by_swazi } remove_modifier = sb_dingane_checked_by_swazi }
 	}
 	s:STATE_EAST_TRANSVAAL = {
-		add_claim = root
+		add_claim = c:ZUL
+	}
+	# Preserve the pre-rebase post-Swazi policy: one AI-only dynamic-history
+	# 50/50 Gaza follow-up decision after an actual Swazi campaign victory.
+	if = {
+		limit = {
+			country_definition = cd:ZUL
+			is_ai = yes
+			sb_frontier_ai_scripting_enabled = yes
+			sb_frontier_ai_behavior_strict_historical = no
+			has_variable = sb_zulu_blood_river_victory_var
+			ruler = { has_template = ZUL_dingane }
+			c:GZA ?= { is_country_alive = yes is_ai = yes is_subject = no }
+			NOT = { has_variable = sb_zulu_gaza_followup_resolved_var }
+		}
+		set_variable = sb_zulu_gaza_followup_resolved_var
+		random_list = {
+			50 = { set_variable = sb_zulu_gaza_followup_pending_var }
+			50 = { }
+		}
 	}
 	trigger_event = { id = sb_swazi_frontier.097 days = 5 popup = yes }
 }
@@ -346,6 +365,56 @@ sb_zulu_apply_dingane_swazi_popularity_loss = {
 
 sb_zulu_apply_swazi_campaign_stalemate = {
 	sb_zulu_apply_dingane_swazi_popularity_loss = yes
+}
+
+# Resolve the authored Gaza counter-war only from a frozen goal target that
+# remains under Gaza ownership at the exact saved diplomatic-play close.
+sb_gaza_resolve_exact_terminal = {
+	if = {
+		limit = {
+			initiator ?= { has_variable = sb_gaza_zulu_play_scope var:sb_gaza_zulu_play_scope = root }
+			c:GZA ?= { is_country_alive = yes }
+			OR = {
+				initiator ?= { has_variable = sb_gaza_east_transvaal_goal_added_var var:sb_gaza_east_transvaal_target_state_scope ?= { owner = c:GZA } }
+				initiator ?= { has_variable = sb_gaza_zululand_goal_added_var var:sb_gaza_zululand_target_state_scope ?= { owner = c:GZA } }
+			}
+		}
+		c:GZA = {
+			if = {
+				limit = { has_variable = sb_gaza_eastern_transvaal_claim_if_zulu_defeated_var NOT = { has_claim = s:STATE_EAST_TRANSVAAL } }
+				s:STATE_EAST_TRANSVAAL = { add_claim = c:GZA }
+			}
+		}
+	}
+	c:GZA ?= {
+		if = { limit = { has_variable = sb_gaza_claim_goal_accepted_pending_var } remove_variable = sb_gaza_claim_goal_accepted_pending_var }
+		if = { limit = { has_variable = sb_gaza_eastern_transvaal_claim_if_zulu_defeated_var } remove_variable = sb_gaza_eastern_transvaal_claim_if_zulu_defeated_var }
+	}
+	initiator ?= {
+		if = { limit = { has_variable = sb_gaza_east_transvaal_goal_added_var } remove_variable = sb_gaza_east_transvaal_goal_added_var }
+		if = { limit = { has_variable = sb_gaza_east_transvaal_target_state_scope } remove_variable = sb_gaza_east_transvaal_target_state_scope }
+		if = { limit = { has_variable = sb_gaza_zululand_goal_added_var } remove_variable = sb_gaza_zululand_goal_added_var }
+		if = { limit = { has_variable = sb_gaza_zululand_target_state_scope } remove_variable = sb_gaza_zululand_target_state_scope }
+		if = { limit = { has_variable = sb_gaza_zulu_play_scope } remove_variable = sb_gaza_zulu_play_scope }
+		if = { limit = { has_variable = sb_gaza_zulu_launch_lease_var } remove_variable = sb_gaza_zulu_launch_lease_var }
+	}
+}
+
+sb_zulu_clear_swazi_campaign_runtime = {
+	c:ZUL ?= {
+		if = { limit = { has_variable = sb_zulu_swazi_launch_lease_var } remove_variable = sb_zulu_swazi_launch_lease_var }
+		if = { limit = { has_variable = sb_zulu_swazi_play_scope } remove_variable = sb_zulu_swazi_play_scope }
+		if = { limit = { has_variable = sb_zulu_swazi_target_state_scope } remove_variable = sb_zulu_swazi_target_state_scope }
+		if = { limit = { has_variable = sb_zulu_swazi_goal_accepted_pending_var } remove_variable = sb_zulu_swazi_goal_accepted_pending_var }
+		if = { limit = { has_variable = sb_zulu_swazi_goal_seen_pending_var } remove_variable = sb_zulu_swazi_goal_seen_pending_var }
+		if = { limit = { has_variable = sb_swazi_goal_accepted_pending_var } remove_variable = sb_swazi_goal_accepted_pending_var }
+		if = { limit = { has_variable = sb_swazi_goal_seen_pending_var } remove_variable = sb_swazi_goal_seen_pending_var }
+		if = { limit = { has_variable = sb_zulu_swazi_war_active_var } remove_variable = sb_zulu_swazi_war_active_var }
+	}
+	c:SWZ ?= {
+		if = { limit = { has_variable = sb_zulu_swazi_war_active_var } remove_variable = sb_zulu_swazi_war_active_var }
+		if = { limit = { has_variable = sb_swazi_ai_history_muster_selected_var } remove_variable = sb_swazi_ai_history_muster_selected_var }
+	}
 }
 
 sb_zulu_apply_swazi_campaign_defeat = {

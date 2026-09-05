@@ -21,42 +21,269 @@
 	}
 }
 
-sb_martinus_clear_coercive_chain_state = {
-	c:TRN ?= {
-		if = {
-			limit = { has_variable = sb_martinus_coercive_chain_active_var }
-			remove_variable = sb_martinus_coercive_chain_active_var
+# One container object is one coercive delivery generation. Saved event scopes
+# point at that object, so a held popup cannot authenticate against a replacement.
+sb_martinus_begin_coercive_generation = {
+	if = {
+		limit = {
+			country_definition = cd:TRN
+			NOT = { container_exists = sb_martinus_coercive_generation_state }
+			NOT = { container_exists = sb_martinus_legal_union_generation_state }
+			NOT = { has_variable = sb_martinus_legal_union_pending_var }
+			NOT = { has_variable = sb_martinus_union_install_pending_var }
+		}
+		create_container = {
+			name = sb_martinus_coercive_generation_state
+			tags = { sb_story sb_martinus_coercive_generation }
+			parent = root
+			on_created = {
+				set_variable = sb_martinus_generation_pending_var
+				set_variable = sb_martinus_stage_010_pending_var
+				set_variable = { name = sb_martinus_stage_010_queued_var days = 45 }
+			}
 		}
 		if = {
-			limit = { has_variable = sb_martinus_coercive_chain_pending_var }
-			remove_variable = sb_martinus_coercive_chain_pending_var
-		}
-	}
-	c:ORA ?= {
-		if = {
-			limit = { has_variable = sb_martinus_ora_union_pending_var }
-			remove_variable = sb_martinus_ora_union_pending_var
-		}
-	}
-	c:LYD ?= {
-		if = {
-			limit = { has_variable = sb_martinus_backed_ora_var }
-			remove_variable = sb_martinus_backed_ora_var
-		}
-	}
-	c:ZPB ?= {
-		if = {
-			limit = { has_variable = sb_martinus_backed_ora_var }
-			remove_variable = sb_martinus_backed_ora_var
-		}
-	}
-	c:NAL ?= {
-		if = {
-			limit = { has_variable = sb_martinus_backed_ora_var }
-			remove_variable = sb_martinus_backed_ora_var
+			limit = { container_exists = sb_martinus_coercive_generation_state }
+			container:sb_martinus_coercive_generation_state = { save_scope_as = sb_martinus_coercive_receipt_scope }
+			set_variable = { name = sb_martinus_coercive_generation_scope value = scope:sb_martinus_coercive_receipt_scope }
+			set_variable = sb_martinus_coercive_chain_pending_var
+			trigger_event = { id = sb_martinus_confederation.010 days = 30 popup = yes }
 		}
 	}
 }
+
+sb_martinus_begin_legal_union_generation = {
+	if = {
+		limit = {
+			country_definition = cd:TRN
+			NOT = { container_exists = sb_martinus_legal_union_generation_state }
+			NOT = { container_exists = sb_martinus_coercive_generation_state }
+			NOT = { has_variable = sb_martinus_coercive_chain_pending_var }
+			NOT = { has_variable = sb_martinus_coercive_chain_active_var }
+			NOT = { has_variable = sb_martinus_story_play_scope }
+			NOT = { has_variable = sb_martinus_union_install_pending_var }
+		}
+		create_container = {
+			name = sb_martinus_legal_union_generation_state
+			tags = { sb_story sb_martinus_legal_union_generation }
+			parent = root
+			on_created = { set_variable = sb_martinus_legal_generation_pending_var }
+		}
+		if = {
+			limit = { container_exists = sb_martinus_legal_union_generation_state }
+			container:sb_martinus_legal_union_generation_state = { save_scope_as = sb_martinus_legal_union_receipt_scope }
+			set_variable = { name = sb_martinus_legal_union_generation_scope value = scope:sb_martinus_legal_union_receipt_scope }
+			set_variable = { name = sb_martinus_legal_union_pending_var months = 12 }
+			sb_martinus_maybe_queue_legal_union_offer = yes
+		}
+	}
+}
+
+sb_martinus_maybe_queue_legal_union_offer = {
+	if = {
+		limit = {
+			country_definition = cd:TRN
+			sb_martinus_current_legal_union_offer_authority = yes
+			has_variable = sb_martinus_legal_union_generation_scope
+			var:sb_martinus_legal_union_generation_scope ?= {
+				has_variable = sb_martinus_legal_generation_pending_var
+				NOT = { has_variable = sb_martinus_legal_offer_queued_var }
+				NOT = { has_variable = sb_martinus_legal_offer_popup_receipt_var }
+			}
+		}
+		var:sb_martinus_legal_union_generation_scope = {
+			save_scope_as = sb_martinus_legal_union_receipt_scope
+			set_variable = { name = sb_martinus_legal_offer_queued_var days = 45 }
+		}
+		trigger_event = { id = sb_martinus_confederation.080 days = 1 popup = yes }
+	}
+}
+
+sb_martinus_maybe_queue_legal_campaign_notice = {
+	if = {
+		limit = {
+			country_definition = cd:TRN
+			sb_martinus_trn_can_complete_legal_union = yes
+			is_at_war = no
+			is_active_in_diplomatic_play = no
+			c:ORA ?= { sb_martinus_ora_is_independent_candidate = yes }
+			has_variable = sb_martinus_legal_union_generation_scope
+			var:sb_martinus_legal_union_generation_scope ?= {
+				has_variable = sb_martinus_legal_generation_active_var
+				NOT = { has_variable = sb_martinus_legal_campaign_queued_var }
+				NOT = { has_variable = sb_martinus_legal_campaign_delivered_var }
+			}
+		}
+		var:sb_martinus_legal_union_generation_scope = {
+			save_scope_as = sb_martinus_legal_union_receipt_scope
+			set_variable = { name = sb_martinus_legal_campaign_queued_var days = 45 }
+		}
+		c:ORA = { trigger_event = { id = sb_martinus_confederation.081 days = 1 popup = yes } }
+	}
+}
+
+sb_martinus_clear_union_install_state = {
+	c:TRN ?= {
+		if = { limit = { has_variable = sb_martinus_union_install_pending_var } remove_variable = sb_martinus_union_install_pending_var }
+		if = { limit = { has_variable = sb_martinus_union_install_source_coercive_var } remove_variable = sb_martinus_union_install_source_coercive_var }
+		if = { limit = { has_variable = sb_martinus_union_install_source_legal_var } remove_variable = sb_martinus_union_install_source_legal_var }
+		if = { limit = { has_variable = sb_martinus_union_install_source_story_var } remove_variable = sb_martinus_union_install_source_story_var }
+	}
+}
+
+sb_martinus_clear_legal_union_generation_state = {
+	c:TRN ?= {
+		if = { limit = { has_variable = sb_martinus_legal_union_pending_var } remove_variable = sb_martinus_legal_union_pending_var }
+		if = { limit = { has_variable = sb_martinus_legal_union_generation_scope } remove_variable = sb_martinus_legal_union_generation_scope }
+	}
+	c:ORA ?= {
+		if = { limit = { has_variable = sb_martinus_legal_union_pending_var } remove_variable = sb_martinus_legal_union_pending_var }
+		if = { limit = { has_variable = sb_martinus_trn_tooltip_var } remove_variable = sb_martinus_trn_tooltip_var }
+	}
+	if = { limit = { container_exists = sb_martinus_legal_union_generation_state } container:sb_martinus_legal_union_generation_state = { destroy_container = yes } }
+	if = { limit = { c:TRN ?= { has_variable = sb_martinus_union_install_source_legal_var } } sb_martinus_clear_union_install_state = yes }
+}
+
+# Reconcile only the current generation. Busy states retain the stage and rearm
+# after their delivery lease expires; durable political invalidity retires it.
+sb_martinus_reconcile_coercive_generation = {
+	if = {
+		limit = {
+			country_definition = cd:TRN
+			has_variable = sb_martinus_coercive_generation_scope
+			NOT = { has_variable = sb_martinus_union_install_pending_var }
+			var:sb_martinus_coercive_generation_scope ?= {
+				OR = { has_variable = sb_martinus_generation_pending_var has_variable = sb_martinus_generation_active_var }
+			}
+		}
+		if = {
+			limit = { NOT = { sb_martinus_durable_pretorius_union_authority = yes } }
+			sb_martinus_clear_coercive_chain_state = yes
+		}
+		else = {
+			var:sb_martinus_coercive_generation_scope = {
+				if = {
+					limit = { has_variable = sb_martinus_lyd_response_pending_var NOT = { c:LYD ?= { country_definition = cd:LYD is_country_alive = yes is_subject = no } } }
+					remove_variable = sb_martinus_lyd_response_pending_var
+					if = { limit = { has_variable = sb_martinus_lyd_response_queued_var } remove_variable = sb_martinus_lyd_response_queued_var }
+				}
+				if = {
+					limit = { has_variable = sb_martinus_zpb_response_pending_var NOT = { c:ZPB ?= { country_definition = cd:ZPB is_country_alive = yes is_subject = no } } }
+					remove_variable = sb_martinus_zpb_response_pending_var
+					if = { limit = { has_variable = sb_martinus_zpb_response_queued_var } remove_variable = sb_martinus_zpb_response_queued_var }
+				}
+				if = {
+					limit = { has_variable = sb_martinus_nal_response_pending_var NOT = { c:NAL ?= { country_definition = cd:NAL is_country_alive = yes is_subject = no country_has_primary_culture = cu:boer } } }
+					remove_variable = sb_martinus_nal_response_pending_var
+					if = { limit = { has_variable = sb_martinus_nal_response_queued_var } remove_variable = sb_martinus_nal_response_queued_var }
+				}
+				save_scope_as = sb_martinus_coercive_receipt_scope
+			}
+			if = {
+				limit = { sb_martinus_current_coercive_generation_authority = yes }
+				if = {
+					limit = { scope:sb_martinus_coercive_receipt_scope ?= { has_variable = sb_martinus_stage_010_pending_var NOT = { has_variable = sb_martinus_stage_010_queued_var } NOT = { has_variable = sb_martinus_stage_010_popup_receipt_var } } }
+					scope:sb_martinus_coercive_receipt_scope = { set_variable = { name = sb_martinus_stage_010_queued_var days = 45 } }
+					trigger_event = { id = sb_martinus_confederation.010 days = 1 popup = yes }
+				}
+				if = {
+					limit = { scope:sb_martinus_coercive_receipt_scope ?= { has_variable = sb_martinus_stage_020_pending_var NOT = { has_variable = sb_martinus_stage_020_queued_var } NOT = { has_variable = sb_martinus_stage_020_popup_receipt_var } } }
+					scope:sb_martinus_coercive_receipt_scope = { set_variable = { name = sb_martinus_stage_020_queued_var days = 45 } }
+					c:ORA ?= { trigger_event = { id = sb_martinus_confederation.020 days = 1 popup = yes } }
+				}
+				if = {
+					limit = { scope:sb_martinus_coercive_receipt_scope ?= { has_variable = sb_martinus_stage_021_pending_var NOT = { has_variable = sb_martinus_stage_021_queued_var } NOT = { has_variable = sb_martinus_stage_021_popup_receipt_var } } }
+					scope:sb_martinus_coercive_receipt_scope = { set_variable = { name = sb_martinus_stage_021_queued_var days = 45 } }
+					trigger_event = { id = sb_martinus_confederation.021 days = 1 popup = yes }
+				}
+				if = {
+					limit = { scope:sb_martinus_coercive_receipt_scope ?= { has_variable = sb_martinus_lyd_response_pending_var NOT = { has_variable = sb_martinus_lyd_response_queued_var } NOT = { has_variable = sb_martinus_lyd_response_popup_receipt_var } } }
+					scope:sb_martinus_coercive_receipt_scope = { set_variable = { name = sb_martinus_lyd_response_queued_var days = 45 } }
+					c:LYD ?= { trigger_event = { id = sb_martinus_confederation.030 days = 1 popup = yes } }
+				}
+				if = {
+					limit = { scope:sb_martinus_coercive_receipt_scope ?= { has_variable = sb_martinus_zpb_response_pending_var NOT = { has_variable = sb_martinus_zpb_response_queued_var } NOT = { has_variable = sb_martinus_zpb_response_popup_receipt_var } } }
+					scope:sb_martinus_coercive_receipt_scope = { set_variable = { name = sb_martinus_zpb_response_queued_var days = 45 } }
+					c:ZPB ?= { trigger_event = { id = sb_martinus_confederation.031 days = 1 popup = yes } }
+				}
+				if = {
+					limit = { scope:sb_martinus_coercive_receipt_scope ?= { has_variable = sb_martinus_nal_response_pending_var NOT = { has_variable = sb_martinus_nal_response_queued_var } NOT = { has_variable = sb_martinus_nal_response_popup_receipt_var } } }
+					scope:sb_martinus_coercive_receipt_scope = { set_variable = { name = sb_martinus_nal_response_queued_var days = 45 } }
+					c:NAL ?= { trigger_event = { id = sb_martinus_confederation.032 days = 1 popup = yes } }
+				}
+				sb_martinus_maybe_queue_final_offer = yes
+			}
+		}
+	}
+}
+
+# The final coercive choice waits for every requested ally reply. Invalid or lost
+# recipients are acknowledged by the monthly watchdog before this is called.
+sb_martinus_maybe_queue_final_offer = {
+	if = {
+		limit = {
+			exists = scope:sb_martinus_coercive_receipt_scope
+			c:TRN ?= {
+				sb_martinus_current_pretorius_union_authority = yes
+				NOT = { has_variable = sb_martinus_ambition_resolved_var }
+				has_variable = sb_martinus_coercive_generation_scope
+				var:sb_martinus_coercive_generation_scope = scope:sb_martinus_coercive_receipt_scope
+				has_variable = sb_martinus_coercive_chain_active_var
+			}
+			scope:sb_martinus_coercive_receipt_scope ?= {
+				has_variable = sb_martinus_generation_active_var
+				NOT = { has_variable = sb_martinus_stage_010_pending_var }
+				NOT = { has_variable = sb_martinus_stage_020_pending_var }
+				NOT = { has_variable = sb_martinus_stage_021_pending_var }
+				NOT = { has_variable = sb_martinus_lyd_response_pending_var }
+				NOT = { has_variable = sb_martinus_zpb_response_pending_var }
+				NOT = { has_variable = sb_martinus_nal_response_pending_var }
+				NOT = { has_variable = sb_martinus_final_offer_queued_var }
+				NOT = { has_variable = sb_martinus_final_offer_delivered_var }
+				NOT = { has_variable = sb_martinus_generation_union_install_pending_var }
+			}
+		}
+		scope:sb_martinus_coercive_receipt_scope = {
+			if = { limit = { has_variable = sb_martinus_final_lyd_support_var } remove_variable = sb_martinus_final_lyd_support_var }
+			if = { limit = { has_variable = sb_martinus_final_zpb_support_var } remove_variable = sb_martinus_final_zpb_support_var }
+			if = { limit = { has_variable = sb_martinus_final_nal_support_var } remove_variable = sb_martinus_final_nal_support_var }
+			set_variable = { name = sb_martinus_final_offer_queued_var days = 45 }
+		}
+		c:TRN = { trigger_event = { id = sb_martinus_confederation.040 days = 1 popup = no } }
+	}
+}
+
+sb_martinus_clear_coercive_chain_state = {
+	c:TRN ?= {
+		if = { limit = { has_variable = sb_martinus_coercive_chain_active_var } remove_variable = sb_martinus_coercive_chain_active_var }
+		if = { limit = { has_variable = sb_martinus_coercive_chain_pending_var } remove_variable = sb_martinus_coercive_chain_pending_var }
+		if = { limit = { has_variable = sb_martinus_coercive_generation_scope } remove_variable = sb_martinus_coercive_generation_scope }
+		if = { limit = { has_variable = sb_martinus_story_generation_scope } remove_variable = sb_martinus_story_generation_scope }
+		if = { limit = { has_variable = sb_martinus_story_humiliation_route_var } remove_variable = sb_martinus_story_humiliation_route_var }
+		if = { limit = { has_variable = sb_martinus_story_launch_lease_var } remove_variable = sb_martinus_story_launch_lease_var }
+		if = { limit = { has_variable = sb_martinus_story_play_scope } remove_variable = sb_martinus_story_play_scope }
+		if = { limit = { has_variable = sb_martinus_include_natal_backer_var } remove_variable = sb_martinus_include_natal_backer_var }
+	}
+	c:ORA ?= { if = { limit = { has_variable = sb_martinus_ora_union_pending_var } remove_variable = sb_martinus_ora_union_pending_var } }
+	c:LYD ?= {
+		if = { limit = { has_variable = sb_martinus_backed_ora_var } remove_variable = sb_martinus_backed_ora_var }
+		if = { limit = { has_variable = sb_martinus_backed_ora_generation_scope } remove_variable = sb_martinus_backed_ora_generation_scope }
+	}
+	c:ZPB ?= {
+		if = { limit = { has_variable = sb_martinus_backed_ora_var } remove_variable = sb_martinus_backed_ora_var }
+		if = { limit = { has_variable = sb_martinus_backed_ora_generation_scope } remove_variable = sb_martinus_backed_ora_generation_scope }
+	}
+	c:NAL ?= {
+		if = { limit = { has_variable = sb_martinus_backed_ora_var } remove_variable = sb_martinus_backed_ora_var }
+		if = { limit = { has_variable = sb_martinus_backed_ora_generation_scope } remove_variable = sb_martinus_backed_ora_generation_scope }
+	}
+	if = { limit = { container_exists = sb_martinus_coercive_generation_state } container:sb_martinus_coercive_generation_state = { destroy_container = yes } }
+	if = {
+		limit = { c:TRN ?= { OR = { has_variable = sb_martinus_union_install_source_coercive_var has_variable = sb_martinus_union_install_source_story_var } } }
+		sb_martinus_clear_union_install_state = yes
+	}
+}
+
 
 # A Presidential Union lasts only for the incumbent who held office when that
 # autonomy level began.
@@ -70,35 +297,127 @@ sb_martinus_record_presidential_union_president = {
 	}
 }
 
-sb_martinus_create_presidential_union_with_ora = {
-	set_variable = sb_martinus_ambition_resolved_var
-	set_variable = sb_martinus_presidential_union_active_var
-	sb_martinus_record_presidential_union_president = yes
-	sb_martinus_clear_coercive_chain_state = yes
+sb_martinus_finalize_verified_presidential_union_with_ora = {
 	if = {
 		limit = {
 			c:ORA ?= {
 				is_country_alive = yes
-				is_subject = no
+				is_direct_subject_of = root
+				is_subject_type = subject_type_sb_boer_presidential_union
 			}
 		}
-		create_diplomatic_pact = {
-			country = c:ORA
-			type = sb_boer_presidential_union
+		set_variable = sb_martinus_ambition_resolved_var
+		set_variable = sb_martinus_legal_union_resolved_var
+		set_variable = sb_martinus_presidential_union_active_var
+		sb_martinus_record_presidential_union_president = yes
+		c:ORA = {
+			set_variable = sb_martinus_presidential_union_junior_var
+			change_relations = { country = c:TRN value = 30 }
 		}
+		sb_story_humiliation_clear_martinus_state = yes
+		sb_martinus_clear_legal_union_generation_state = yes
+		sb_martinus_clear_coercive_chain_state = yes
+		sb_martinus_clear_union_install_state = yes
 	}
-	c:ORA ?= {
-		set_variable = sb_martinus_presidential_union_junior_var
+}
+
+# `create_diplomatic_pact` has no return value. Proof is the exact installed pact;
+# absence after the attempt leaves the durable, generation-bound receipt intact.
+sb_martinus_create_presidential_union_with_ora = {
+	if = {
+		limit = { sb_martinus_current_union_completion_authority = yes }
 		if = {
-			limit = { has_variable = sb_martinus_legal_union_pending_var }
-			remove_variable = sb_martinus_legal_union_pending_var
+			limit = { NOT = { c:ORA ?= { is_direct_subject_of = root is_subject_type = subject_type_sb_boer_presidential_union } } }
+			create_diplomatic_pact = { country = c:ORA type = sb_boer_presidential_union }
 		}
-		change_relations = {
-			country = c:TRN
-			value = 30
+		if = {
+			limit = { c:ORA ?= { is_direct_subject_of = root is_subject_type = subject_type_sb_boer_presidential_union } }
+			sb_martinus_finalize_verified_presidential_union_with_ora = yes
 		}
 	}
 }
+
+sb_martinus_begin_coercive_union_install = {
+	if = {
+		limit = { sb_martinus_bound_coercive_active_event_authority = yes }
+		scope:sb_martinus_coercive_receipt_scope = { set_variable = sb_martinus_generation_union_install_pending_var }
+		set_variable = sb_martinus_union_install_pending_var
+		set_variable = sb_martinus_union_install_source_coercive_var
+		sb_martinus_try_complete_pending_union_install = yes
+	}
+}
+
+sb_martinus_begin_legal_union_install = {
+	if = {
+		limit = {
+			country_definition = cd:TRN
+			has_variable = sb_martinus_legal_union_generation_scope
+			var:sb_martinus_legal_union_generation_scope ?= { has_variable = sb_martinus_legal_generation_active_var }
+			sb_martinus_trn_can_complete_legal_union = yes
+			c:ORA ?= { has_variable = sb_martinus_legal_union_pending_var sb_martinus_ora_ruler_is_pretorius = yes }
+		}
+		var:sb_martinus_legal_union_generation_scope = { set_variable = sb_martinus_generation_union_install_pending_var }
+		set_variable = sb_martinus_union_install_pending_var
+		set_variable = sb_martinus_union_install_source_legal_var
+		sb_martinus_try_complete_pending_union_install = yes
+	}
+}
+
+sb_martinus_begin_story_union_install = {
+	if = {
+		limit = {
+			country_definition = cd:TRN
+			has_variable = sb_martinus_story_humiliation_route_var
+			has_variable = sb_martinus_story_play_scope
+			sb_martinus_durable_story_union_install_authority = yes
+			has_variable = sb_martinus_story_generation_scope
+			var:sb_martinus_story_generation_scope ?= { has_variable = sb_martinus_generation_story_var }
+		}
+		var:sb_martinus_story_generation_scope = { set_variable = sb_martinus_generation_union_install_pending_var }
+		set_variable = sb_martinus_union_install_pending_var
+		set_variable = sb_martinus_union_install_source_story_var
+		sb_martinus_try_complete_pending_union_install = yes
+	}
+}
+
+sb_martinus_try_complete_pending_union_install = {
+	if = {
+		limit = {
+			country_definition = cd:TRN
+			has_variable = sb_martinus_union_install_pending_var
+			OR = {
+				sb_martinus_current_story_union_install_generation = yes
+				sb_martinus_current_coercive_union_install_generation = yes
+				sb_martinus_current_legal_union_install_generation = yes
+			}
+		}
+		if = {
+			limit = { c:ORA ?= { is_direct_subject_of = root is_subject_type = subject_type_sb_boer_presidential_union } }
+			sb_martinus_finalize_verified_presidential_union_with_ora = yes
+		}
+		else_if = {
+			limit = { NOT = { sb_martinus_union_install_structurally_valid = yes } }
+			if = {
+				limit = { has_variable = sb_martinus_union_install_source_story_var }
+				# Lost authority is cancellation, not a negotiated Martinus stand-down.
+				sb_story_humiliation_clear_martinus_state = yes
+				sb_martinus_clear_coercive_chain_state = yes
+			}
+			else_if = {
+				limit = { has_variable = sb_martinus_union_install_source_legal_var }
+				# An invalid generation must not manufacture the separate-republic result.
+				sb_martinus_clear_legal_union_generation_state = yes
+			}
+			else = { sb_martinus_clear_coercive_chain_state = yes }
+			sb_martinus_clear_union_install_state = yes
+		}
+		else_if = {
+			limit = { sb_martinus_union_install_ready_now = yes }
+			sb_martinus_create_presidential_union_with_ora = yes
+		}
+	}
+}
+
 
 sb_martinus_record_natalia_presidential_union_president = {
 	if = {
@@ -219,68 +538,72 @@ sb_martinus_restore_ora_historical_groot_boere_leader = {
 sb_martinus_resolve_legal_union_failure = {
 	sb_martinus_restore_ora_historical_groot_boere_leader = yes
 	set_variable = sb_martinus_ora_separate_republic_path_var
-	if = {
-		limit = { has_variable = sb_martinus_legal_union_pending_var }
-		remove_variable = sb_martinus_legal_union_pending_var
-	}
-	add_modifier = {
-		name = sb_ora_separate_republic
-		months = 120
-	}
+	add_modifier = { name = sb_ora_separate_republic months = 120 }
+	c:TRN ?= { set_variable = sb_martinus_legal_union_resolved_var }
+	sb_martinus_clear_legal_union_generation_state = yes
+}
+
+
+sb_martinus_resolve_legal_union_success = {
 	c:TRN ?= {
 		if = {
-			limit = { has_variable = sb_martinus_legal_union_pending_var }
-			remove_variable = sb_martinus_legal_union_pending_var
+			limit = {
+				has_variable = sb_martinus_legal_union_pending_var
+				has_variable = sb_martinus_legal_union_generation_scope
+				var:sb_martinus_legal_union_generation_scope ?= { has_variable = sb_martinus_legal_generation_active_var }
+				c:ORA ?= { has_variable = sb_martinus_legal_union_pending_var }
+			}
+			sb_martinus_begin_legal_union_install = yes
 		}
-		set_variable = sb_martinus_legal_union_resolved_var
 	}
 }
 
-sb_martinus_resolve_legal_union_success = {
-	if = {
-		limit = { has_variable = sb_martinus_legal_union_pending_var }
-		remove_variable = sb_martinus_legal_union_pending_var
+
+sb_martinus_retire_coercive_delivery_for_story = {
+	c:ORA ?= { if = { limit = { has_variable = sb_martinus_ora_union_pending_var } remove_variable = sb_martinus_ora_union_pending_var } }
+	c:LYD ?= {
+		if = { limit = { has_variable = sb_martinus_backed_ora_var } remove_variable = sb_martinus_backed_ora_var }
+		if = { limit = { has_variable = sb_martinus_backed_ora_generation_scope } remove_variable = sb_martinus_backed_ora_generation_scope }
 	}
-	c:TRN ?= {
-		if = {
-			limit = { has_variable = sb_martinus_legal_union_pending_var }
-			remove_variable = sb_martinus_legal_union_pending_var
-		}
-		set_variable = sb_martinus_legal_union_resolved_var
-		sb_martinus_create_presidential_union_with_ora = yes
+	c:ZPB ?= {
+		if = { limit = { has_variable = sb_martinus_backed_ora_var } remove_variable = sb_martinus_backed_ora_var }
+		if = { limit = { has_variable = sb_martinus_backed_ora_generation_scope } remove_variable = sb_martinus_backed_ora_generation_scope }
+	}
+	c:NAL ?= {
+		if = { limit = { has_variable = sb_martinus_backed_ora_var } remove_variable = sb_martinus_backed_ora_var }
+		if = { limit = { has_variable = sb_martinus_backed_ora_generation_scope } remove_variable = sb_martinus_backed_ora_generation_scope }
 	}
 }
 
 sb_martinus_coercive_compromise = {
-	set_variable = sb_martinus_ambition_resolved_var
-	sb_martinus_clear_coercive_chain_state = yes
-	add_modifier = {
-		name = sb_martinus_mutual_recognition
-		months = 120
-	}
-	change_relations = {
-		country = c:ORA
-		value = 20
-	}
-	c:ORA ?= {
-		add_modifier = {
-			name = sb_martinus_mutual_recognition
-			months = 120
+	if = {
+		limit = { sb_martinus_bound_coercive_active_event_authority = yes }
+		set_variable = sb_martinus_ambition_resolved_var
+		add_modifier = { name = sb_martinus_mutual_recognition months = 120 }
+		change_relations = { country = c:ORA value = 20 }
+		c:ORA = {
+			add_modifier = { name = sb_martinus_mutual_recognition months = 120 }
+			change_relations = { country = c:TRN value = 20 }
 		}
-		change_relations = {
-			country = c:TRN
-			value = 20
-		}
+		sb_martinus_clear_coercive_chain_state = yes
 	}
 }
+
 
 sb_martinus_break_boer_war_path_compacts = {
 	sb_martinus_withdraw_trn_compact_with_ora = yes
 	if = {
 		limit = {
 			c:LYD ?= {
+				country_definition = cd:LYD
 				is_country_alive = yes
+				is_subject = no
+				is_at_war = no
+				is_active_in_diplomatic_play = no
 				has_variable = sb_martinus_backed_ora_var
+				has_variable = sb_martinus_backed_ora_generation_scope
+				var:sb_martinus_backed_ora_generation_scope = c:TRN.var:sb_martinus_story_generation_scope
+				c:TRN.var:sb_martinus_story_generation_scope ?= { has_variable = sb_martinus_final_lyd_support_var }
 			}
 		}
 		sb_martinus_withdraw_trn_compact_with_lyd = yes
@@ -288,8 +611,15 @@ sb_martinus_break_boer_war_path_compacts = {
 	if = {
 		limit = {
 			c:ZPB ?= {
+				country_definition = cd:ZPB
 				is_country_alive = yes
+				is_subject = no
+				is_at_war = no
+				is_active_in_diplomatic_play = no
 				has_variable = sb_martinus_backed_ora_var
+				has_variable = sb_martinus_backed_ora_generation_scope
+				var:sb_martinus_backed_ora_generation_scope = c:TRN.var:sb_martinus_story_generation_scope
+				c:TRN.var:sb_martinus_story_generation_scope ?= { has_variable = sb_martinus_final_zpb_support_var }
 			}
 		}
 		sb_martinus_withdraw_trn_compact_with_zpb = yes
@@ -297,8 +627,16 @@ sb_martinus_break_boer_war_path_compacts = {
 	if = {
 		limit = {
 			c:NAL ?= {
+				country_definition = cd:NAL
 				is_country_alive = yes
+				is_subject = no
+				is_at_war = no
+				is_active_in_diplomatic_play = no
+				country_has_primary_culture = cu:boer
 				has_variable = sb_martinus_backed_ora_var
+				has_variable = sb_martinus_backed_ora_generation_scope
+				var:sb_martinus_backed_ora_generation_scope = c:TRN.var:sb_martinus_story_generation_scope
+				c:TRN.var:sb_martinus_story_generation_scope ?= { has_variable = sb_martinus_final_nal_support_var }
 			}
 		}
 		sb_martinus_withdraw_trn_compact_with_nal = yes
@@ -306,68 +644,48 @@ sb_martinus_break_boer_war_path_compacts = {
 }
 
 sb_martinus_force_pretorius_standoff = {
-	set_variable = sb_martinus_ambition_resolved_var
-	set_variable = sb_martinus_story_humiliation_route_var
-	sb_martinus_break_boer_war_path_compacts = yes
-	create_diplomatic_play = {
-		type = dp_sb_martinus_humiliation
-		target_country = c:ORA
-		add_war_goal = {
-			holder = c:ORA
-			target_country = root
-			type = sb_story_humiliation
-		}
-	}
 	if = {
 		limit = {
-			c:LYD ?= {
-				is_country_alive = yes
-				has_variable = sb_martinus_backed_ora_var
-			}
+			sb_martinus_bound_coercive_active_event_authority = yes
+			country_definition = cd:TRN
+			is_country_alive = yes
+			is_subject = no
+			is_at_war = no
+			is_active_in_diplomatic_play = no
+			aggressive_diplomatic_plays_permitted = yes
+			c:ORA ?= { sb_martinus_ora_is_independent_candidate = yes is_at_war = no is_active_in_diplomatic_play = no }
+			NOT = { any_diplomatic_play = { initiator = root target = c:ORA is_diplomatic_play_type = dp_sb_martinus_humiliation } }
+			NOT = { any_scope_war = { diplomatic_play = { initiator = root target = c:ORA is_diplomatic_play_type = dp_sb_martinus_humiliation } } }
 		}
-		random_diplomatic_play = {
-			limit = {
-				initiator = root
-				target = c:ORA
-				is_diplomatic_play_type = dp_sb_martinus_humiliation
-			}
-			add_target_backers = { c:LYD }
+		set_variable = sb_martinus_story_humiliation_route_var
+		set_variable = { name = sb_martinus_story_generation_scope value = scope:sb_martinus_coercive_receipt_scope }
+		# The lease is consumed only by the matching on-start callback. Backers and
+		# the counter-demand are configured on that actual diplomatic-play root.
+		set_variable = sb_martinus_story_launch_lease_var
+		set_variable = sb_martinus_include_natal_backer_var
+		create_diplomatic_play = { type = dp_sb_martinus_humiliation target_country = c:ORA }
+		if = {
+			limit = { has_variable = sb_martinus_story_launch_lease_var }
+			# Same-tick refusal is operational, not a terminal outcome. Roll back only
+			# this exact launch lease and rearm the same generation's final offer.
+			remove_variable = sb_martinus_story_launch_lease_var
+			if = { limit = { has_variable = sb_martinus_include_natal_backer_var } remove_variable = sb_martinus_include_natal_backer_var }
+			if = { limit = { has_variable = sb_martinus_story_humiliation_route_var } remove_variable = sb_martinus_story_humiliation_route_var }
+			if = { limit = { has_variable = sb_martinus_story_generation_scope } remove_variable = sb_martinus_story_generation_scope }
+			scope:sb_martinus_coercive_receipt_scope = { if = { limit = { has_variable = sb_martinus_final_offer_queued_var } remove_variable = sb_martinus_final_offer_queued_var } }
+			sb_martinus_maybe_queue_final_offer = yes
 		}
-	}
-	if = {
-		limit = {
-			c:ZPB ?= {
-				is_country_alive = yes
-				has_variable = sb_martinus_backed_ora_var
+		else = {
+			scope:sb_martinus_coercive_receipt_scope = {
+				if = { limit = { has_variable = sb_martinus_generation_active_var } remove_variable = sb_martinus_generation_active_var }
+				if = { limit = { has_variable = sb_martinus_final_offer_queued_var } remove_variable = sb_martinus_final_offer_queued_var }
+				set_variable = sb_martinus_generation_story_var
 			}
-		}
-		random_diplomatic_play = {
-			limit = {
-				initiator = root
-				target = c:ORA
-				is_diplomatic_play_type = dp_sb_martinus_humiliation
-			}
-			add_target_backers = { c:ZPB }
-		}
-	}
-	if = {
-		limit = {
-			c:NAL ?= {
-				is_country_alive = yes
-				has_variable = sb_martinus_backed_ora_var
-			}
-		}
-		random_diplomatic_play = {
-			limit = {
-				initiator = root
-				target = c:ORA
-				is_diplomatic_play_type = dp_sb_martinus_humiliation
-			}
-			add_target_backers = { c:NAL }
+			sb_martinus_retire_coercive_delivery_for_story = yes
 		}
 	}
-	sb_martinus_clear_coercive_chain_state = yes
 }
+
 
 sb_martinus_withdraw_trn_compact_with_ora = {
 	c:ORA ?= {

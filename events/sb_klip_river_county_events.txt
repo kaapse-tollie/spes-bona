@@ -208,9 +208,7 @@ sb_klip_river_county.020 = {
 					limit = { sb_klip_river_ora_can_receive_appeal = yes }
 					c:ORA ?= { trigger_event = { id = sb_klip_river_county.004 days = 6 popup = yes } }
 				}
-				else = {
-					trigger_event = { id = sb_klip_river_county.050 days = 1 popup = yes }
-				}
+				else = { sb_klip_river_queue_secession_delivery = yes }
 			}
 		}
 		ai_chance = {
@@ -261,7 +259,7 @@ sb_klip_river_county.020 = {
 					add_trait = ambitious
 				}
 			}
-				c:NAL ?= { trigger_event = { id = sb_klip_river_county.060 days = 2 popup = yes } }
+				c:NAL ?= { sb_klip_river_queue_punitive_delivery = yes }
 		}
 		ai_chance = {
 			base = 10
@@ -331,7 +329,7 @@ sb_klip_river_county.004 = {
 		custom_tooltip = sb_klip_river_county_004_a_tt
 		hidden_effect = {
 			sb_klip_river_record_ora_backing = yes
-				c:NAL ?= { trigger_event = { id = sb_klip_river_county.050 days = 4 popup = yes } }
+				c:NAL ?= { sb_klip_river_queue_secession_delivery = yes }
 		}
 		ai_chance = {
 			base = 60
@@ -345,9 +343,7 @@ sb_klip_river_county.004 = {
 	option = {
 		name = sb_klip_river_county.004.b
 		default_option = yes
-		hidden_effect = {
-				c:NAL ?= { trigger_event = { id = sb_klip_river_county.050 days = 4 popup = yes } }
-		}
+		hidden_effect = { c:NAL ?= { sb_klip_river_queue_secession_delivery = yes } }
 		ai_chance = {
 			base = 40
 			modifier = { trigger = { has_variable = sb_great_trek_completed_var } add = -15 }
@@ -390,7 +386,6 @@ sb_klip_river_county.030 = {
 sb_klip_river_county.050 = {
 	type = country_event
 	placement = root
-
 	title = sb_klip_river_county.050.t
 	desc = sb_klip_river_county.050.d
 	flavor = sb_klip_river_county.050.f
@@ -398,38 +393,41 @@ sb_klip_river_county.050 = {
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
 	icon = "gfx/interface/icons/event_icons/event_military.dds"
 	duration = 3
-
-	trigger = {
-		country_definition = cd:NAL
-		has_variable = sb_klip_river_secession_active_var
-		c:KLR ?= { is_country_alive = yes }
-	}
-
-	immediate = {
-		c:KLR ?= { save_scope_as = sb_klip_county_scope }
-		c:ZUL ?= { save_scope_as = sb_klip_zulu_scope }
-		c:GBR ?= { save_scope_as = sb_klip_britain_scope }
-		c:ORA ?= {
-			if = {
-				limit = { has_variable = sb_klip_river_ora_backed_var }
-				save_scope_as = sb_klip_oranje_scope
-			}
-		}
-	}
-
+	# Receipt stays broad. Its option must revalidate because it may have been held.
+	trigger = { country_definition = cd:NAL is_country_alive = yes has_variable = sb_klip_river_secession_delivery_pending_var NOT = { has_variable = sb_klip_river_county_resolved_var } }
+	immediate = { if = { limit = { has_variable = sb_klip_river_secession_delivery_queued_var } remove_variable = sb_klip_river_secession_delivery_queued_var } }
 	option = {
 		name = sb_klip_river_county.050.a
 		default_option = yes
+		trigger = { sb_klip_river_secession_bound_delivery_receipt = yes sb_klip_river_secession_preflight = yes }
 		custom_tooltip = sb_klip_river_county_050_tt
 		hidden_effect = { sb_klip_river_start_secession_play = yes }
 		ai_chance = { base = 100 }
+	}
+	# Busy war/play states retain this exact receipt and reissue it later.
+	option = {
+		name = sb_klip_river_county.050.a
+		trigger = { sb_klip_river_secession_bound_delivery_receipt = yes NOT = { sb_klip_river_secession_delivery_permanently_invalid = yes } NOT = { sb_klip_river_secession_preflight = yes } }
+		hidden_effect = { sb_klip_river_queue_secession_delivery = yes }
+		ai_chance = { base = 0 }
+	}
+	# Only the live generation may cancel itself. An older popup is inert.
+	option = {
+		name = sb_klip_river_county.050.a
+		trigger = { sb_klip_river_secession_delivery_permanently_invalid = yes }
+		hidden_effect = { sb_klip_river_cancel_secession_delivery = yes }
+		ai_chance = { base = 0 }
+	}
+	option = {
+		name = sb_klip_river_county.050.a
+		trigger = { NOT = { sb_klip_river_secession_bound_delivery_receipt = yes } }
+		ai_chance = { base = 0 }
 	}
 }
 
 sb_klip_river_county.060 = {
 	type = country_event
 	placement = root
-
 	title = sb_klip_river_county.060.t
 	desc = sb_klip_river_county.060.d
 	flavor = sb_klip_river_county.060.f
@@ -437,24 +435,32 @@ sb_klip_river_county.060 = {
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
 	icon = "gfx/interface/icons/event_icons/event_military.dds"
 	duration = 3
-
-	trigger = {
-		country_definition = cd:NAL
-		has_variable = sb_klip_river_county_pending_var
-		c:ZUL ?= { is_country_alive = yes }
-	}
-
-	immediate = {
-		c:ZUL ?= { save_scope_as = sb_klip_zulu_scope }
-		c:GBR ?= { save_scope_as = sb_klip_britain_scope }
-	}
-
+	trigger = { country_definition = cd:NAL is_country_alive = yes has_variable = sb_klip_river_punitive_delivery_pending_var NOT = { has_variable = sb_klip_river_county_resolved_var } }
+	immediate = { if = { limit = { has_variable = sb_klip_river_punitive_delivery_queued_var } remove_variable = sb_klip_river_punitive_delivery_queued_var } }
 	option = {
 		name = sb_klip_river_county.060.a
 		default_option = yes
+		trigger = { sb_klip_river_punitive_bound_delivery_receipt = yes sb_klip_river_punitive_preflight = yes }
 		custom_tooltip = sb_klip_river_county_060_tt
 		hidden_effect = { sb_klip_river_start_punitive_play = yes }
 		ai_chance = { base = 100 }
+	}
+	option = {
+		name = sb_klip_river_county.060.a
+		trigger = { sb_klip_river_punitive_bound_delivery_receipt = yes NOT = { sb_klip_river_punitive_delivery_permanently_invalid = yes } NOT = { sb_klip_river_punitive_preflight = yes } }
+		hidden_effect = { sb_klip_river_queue_punitive_delivery = yes }
+		ai_chance = { base = 0 }
+	}
+	option = {
+		name = sb_klip_river_county.060.a
+		trigger = { sb_klip_river_punitive_delivery_permanently_invalid = yes }
+		hidden_effect = { sb_klip_river_cancel_punitive_delivery = yes }
+		ai_chance = { base = 0 }
+	}
+	option = {
+		name = sb_klip_river_county.060.a
+		trigger = { NOT = { sb_klip_river_punitive_bound_delivery_receipt = yes } }
+		ai_chance = { base = 0 }
 	}
 }
 
@@ -518,14 +524,9 @@ sb_klip_river_county.080 = {
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
 	icon = "gfx/interface/icons/event_icons/event_military.dds"
 	duration = 3
-	trigger = { country_definition = cd:NAL has_variable = sb_klip_river_county_resolved_var }
-	option = {
-		name = sb_klip_river_county.080.a
-		default_option = yes
-		custom_tooltip = sb_natal_refugee_boer_pop_move_tt
-		hidden_effect = { sb_klip_river_execute_standard_boer_flight = yes }
-		ai_chance = { base = 100 }
-	}
+	trigger = { country_definition = cd:NAL is_country_alive = yes has_variable = sb_klip_river_county_resolved_var has_variable = sb_klip_river_punitive_outcome_delivery_pending_var has_variable = sb_klip_river_final_evidence_1_var }
+	immediate = { if = { limit = { has_variable = sb_klip_river_punitive_outcome_delivery_queued_var } remove_variable = sb_klip_river_punitive_outcome_delivery_queued_var } }
+	option = { name = sb_klip_river_county.080.a default_option = yes custom_tooltip = sb_natal_refugee_boer_pop_move_tt hidden_effect = { sb_klip_river_execute_standard_boer_flight = yes } ai_chance = { base = 100 } }
 }
 
 sb_klip_river_county.081 = {
@@ -538,14 +539,9 @@ sb_klip_river_county.081 = {
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
 	icon = "gfx/interface/icons/event_icons/event_default.dds"
 	duration = 3
-	trigger = { country_definition = cd:NAL has_variable = sb_klip_river_county_resolved_var }
-	option = {
-		name = sb_klip_river_county.081.a
-		default_option = yes
-		custom_tooltip = sb_natal_refugee_boer_pop_move_tt
-		hidden_effect = { sb_klip_river_execute_standard_boer_flight = yes }
-		ai_chance = { base = 100 }
-	}
+	trigger = { country_definition = cd:NAL is_country_alive = yes has_variable = sb_klip_river_county_resolved_var has_variable = sb_klip_river_punitive_outcome_delivery_pending_var OR = { has_variable = sb_klip_river_final_evidence_0_var has_variable = sb_klip_river_final_evidence_2_var } }
+	immediate = { if = { limit = { has_variable = sb_klip_river_punitive_outcome_delivery_queued_var } remove_variable = sb_klip_river_punitive_outcome_delivery_queued_var } }
+	option = { name = sb_klip_river_county.081.a default_option = yes custom_tooltip = sb_natal_refugee_boer_pop_move_tt hidden_effect = { sb_klip_river_execute_standard_boer_flight = yes } ai_chance = { base = 100 } }
 }
 
 sb_klip_river_county.082 = {

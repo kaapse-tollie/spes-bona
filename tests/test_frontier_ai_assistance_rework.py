@@ -292,23 +292,26 @@ class FrontierAiAssistanceReworkTests(unittest.TestCase):
             "common/on_actions/sb_diplomatic_play_on_action_handlers.txt",
             "sb_on_spes_bona_war_end",
         )
-        routes = {
-            "dp_sb_xhosa_war_7": (
-                "sb_xhosa_war_7_goal_accepted_pending_var",
-                "sb_xhosa_set_native_conscription_tier_9 = yes",
-            ),
-            "dp_sb_xhosa_war_8": (
-                "sb_xhosa_war_8_goal_accepted_pending_var",
-                "sb_xhosa_set_native_conscription_tier_12 = yes",
-            ),
-        }
-        for play, (pending, effect) in routes.items():
-            self.assertIn(f"is_diplomatic_play_type = {play}", enforced)
-            self.assertIn(pending, enforced)
-            self.assertNotIn(effect, enforced)
-            self.assertIn(f"is_diplomatic_play_type = {play}", war_end)
-            self.assertIn(pending, war_end)
-            self.assertIn(effect, war_end)
+        # Goal enforcement only records the accepted side for the exact saved
+        # Xhosa play. Tier effects run once from the terminal resolver.
+        self.assertIn("has_variable = sb_xhosa_story_play_scope", enforced)
+        self.assertIn("var:sb_xhosa_story_play_scope = scope:diplomatic_play", enforced)
+        self.assertIn(
+            "c:XHO.var:sb_xhosa_story_target_scope = { save_temporary_scope_as = sb_xhosa_exact_target }",
+            enforced,
+        )
+        self.assertIn("set_variable = sb_xhosa_native_goal_seen_var", enforced)
+        self.assertIn("set_variable = sb_xhosa_colonial_goal_seen_var", enforced)
+        self.assertNotIn("sb_xhosa_set_native_conscription_tier_9 = yes", enforced)
+        self.assertNotIn("sb_xhosa_set_native_conscription_tier_12 = yes", enforced)
+        self.assertIn(
+            "root = { sb_xhosa_resolve_exact_story_war = yes }",
+            war_end,
+        )
+        self.assertIn(
+            "root = { OR = { is_diplomatic_play_type = dp_sb_xhosa_war_7 is_diplomatic_play_type = dp_sb_xhosa_war_8 is_diplomatic_play_type = dp_sb_xhosa_war_9 } }",
+            war_end,
+        )
 
     def test_mtb_opening_uprising_capacity_is_vrystaat_only(self):
         opening = block("events/sb_great_trek_events.txt", "sb_great_trek.001")
@@ -330,7 +333,14 @@ class FrontierAiAssistanceReworkTests(unittest.TestCase):
         ora_bst = block(path, "sb_frontier_ai_wars.020")
         bst_trn = block(path, "sb_frontier_ai_wars.025")
         bst_zpb = block(path, "sb_frontier_ai_wars.026")
-        annex = block(path, "sb_frontier_ai_wars.030")
+        support = block(
+            "common/scripted_effects/sb_frontier_ai_deployment_effects.txt",
+            "sb_prepare_ora_bst_1856_play_support",
+        )
+        started = block(
+            "common/on_actions/sb_diplomatic_play_on_action_handlers.txt",
+            "sb_on_spes_bona_diplomatic_play_started",
+        )
 
         self.assertIn("95 = {", ora_phl)
         self.assertIn("5 = { }", ora_phl)
@@ -342,8 +352,31 @@ class FrontierAiAssistanceReworkTests(unittest.TestCase):
         for event in (bst_trn, bst_zpb):
             self.assertIn("90 = {", event)
             self.assertIn("10 = {", event)
-        for weight in ("60 = {", "20 = {"):
-            self.assertIn(weight, annex)
+
+        # The 1856 support roll is authenticated after the exact annexation
+        # play starts, not in the delivery event itself.
+        self.assertIn("sb_frontier_ai_behavior_dynamic_historical = yes", support)
+        self.assertEqual(1, support.count("60 = {"))
+        self.assertEqual(2, support.count("20 = {"))
+        self.assertIn("sb_prepare_ora_bst_1856_play_support = yes", started)
+        self.assertIn("sb_ora_bst_1856_launch_lease_var", started)
+        self.assertIn("sb_ora_bst_1856_play_scope", started)
+        cleanup = block(
+            "common/scripted_effects/sb_frontier_ai_deployment_effects.txt",
+            "sb_cleanup_ora_bst_1856_play_support",
+        )
+        for marker in (
+            "sb_ora_bst_1856_overreach_added_var",
+            "sb_ora_bst_1856_laager_added_var",
+            "sb_ora_bst_1856_thaba_added_var",
+            "sb_ora_bst_1856_major_added_var",
+        ):
+            self.assertIn(marker, cleanup)
+        event_1856 = block(path, "sb_frontier_ai_wars.030")
+        self.assertIn("s:STATE_VRYSTAAT.region_state:ORA ?= { owner = c:ORA }", event_1856)
+        self.assertIn("sb_cleanup_ora_bst_1856_play_support = yes", event_1856)
+        handlers = text("common/on_actions/sb_diplomatic_play_on_action_handlers.txt")
+        self.assertEqual(2, handlers.count("sb_cleanup_ora_bst_1856_play_support = yes"))
 
     def test_blood_river_routes_without_material_injections_or_double_help(self):
         resolver = block("events/sb_natal_crisis_events.txt", "sb_natal_crisis.019")
@@ -431,8 +464,11 @@ class FrontierAiAssistanceReworkTests(unittest.TestCase):
             "sb_route_swazi_defensive_muster_for_play",
         )
         for token in (
-            "scope:target ?= {",
-            "country_definition = cd:SWZ",
+            "is_diplomatic_play_type = dp_conquer_state",
+            "initiator = c:ZUL",
+            "target = c:SWZ",
+            "c:ZUL ?= { has_variable = sb_zulu_swazi_play_scope var:sb_zulu_swazi_play_scope = root }",
+            "c:SWZ ?= { is_country_alive = yes is_ai = yes }",
             "sb_frontier_play_has_committed_player_enemy = { RECIPIENT = c:SWZ }",
             "sb_frontier_player_challenge_enabled = yes",
             "sb_frontier_ai_scripting_enabled = yes",
@@ -465,7 +501,7 @@ class FrontierAiAssistanceReworkTests(unittest.TestCase):
             "sb_initialize_bst_gun_war_defence_for_play",
         )
         for token in (
-            "scope:target ?= { country_definition = cd:BST",
+            "target ?= { country_definition = cd:BST is_country_alive = yes is_ai = yes }",
             "sb_frontier_play_has_committed_player_enemy = { RECIPIENT = c:BST }",
             "sb_frontier_player_challenge_enabled = yes",
             "sb_frontier_ai_behavior_strict_historical = yes",
@@ -475,9 +511,15 @@ class FrontierAiAssistanceReworkTests(unittest.TestCase):
         ):
             self.assertIn(token, gun)
         gun_event = block("events/sb_bst_frontier_events.txt", "sb_bst_frontier.220")
-        self.assertIn("sb_initialize_bst_gun_war_defence_for_play = yes", gun_event)
+        self.assertIn("set_variable = sb_bst_gun_war_launch_lease_var", gun_event)
+        self.assertIn("create_diplomatic_play = { type = dp_sb_basotho_gun_war target_country = c:BST }", gun_event)
         self.assertNotIn("sb_bst_apply_gun_war_ai_defence", gun_event)
         self.assertIn("add = 1000", gun_event)
+        started = block(
+            "common/on_actions/sb_diplomatic_play_on_action_handlers.txt",
+            "sb_on_spes_bona_diplomatic_play_started",
+        )
+        self.assertIn("sb_initialize_bst_gun_war_defence_for_play = yes", started)
         self.assertIn("add = -1000", gun_event)
 
         handlers = text("common/on_actions/sb_diplomatic_play_on_action_handlers.txt")
@@ -530,7 +572,7 @@ class FrontierAiAssistanceReworkTests(unittest.TestCase):
     def test_zoutpansberg_anti_player_support_is_challenge_gated(self):
         crackdown = block(
             "common/scripted_effects/sb_treaty_effects.txt",
-            "sb_open_trn_zpb_crackdown_play",
+            "sb_configure_started_trn_zpb_crackdown_play",
         )
         self.assertIn("is_player = yes", crackdown)
         self.assertIn("sb_frontier_player_challenge_enabled = yes", crackdown)

@@ -229,3 +229,111 @@ sb_zululand_nal_can_annex_subject = {
 		is_active_in_diplomatic_play = no
 	}
 }
+
+
+# ROOT = NRP. Revalidates the saved diplomatic initiator and every state scope
+# needed by the exact boundary play before a held choice can mutate anything.
+sb_nrp_boundary_current_launch_authority = {
+	country_definition = cd:NRP
+	is_country_alive = yes
+	is_at_war = no
+	is_active_in_diplomatic_play = no
+	has_variable = sb_nrp_boundary_initiator_scope
+	var:sb_nrp_boundary_initiator_scope ?= {
+		is_country_alive = yes
+		is_at_war = no
+		is_active_in_diplomatic_play = no
+		aggressive_diplomatic_plays_permitted = yes
+		OR = { this = c:NAL this = c:GBR }
+	}
+	exists = s:STATE_ZULULAND.region_state:NRP
+	trigger_if = {
+		limit = { has_variable = sb_nrp_direct_annexation_rebellion_var }
+		c:NAL ?= { is_country_alive = yes }
+		exists = s:STATE_ZULULAND.region_state:NAL
+	}
+	trigger_else = {
+		c:ZUL ?= { is_country_alive = yes }
+		exists = s:STATE_ZULULAND.region_state:ZUL
+	}
+	trigger_if = {
+		limit = { is_direct_subject_of = c:TRN is_subject_type = subject_type_sb_boer_confederal_partner }
+		c:TRN ?= { is_country_alive = yes is_subject = no is_at_war = no is_active_in_diplomatic_play = no }
+		var:sb_nrp_boundary_initiator_scope ?= { NOT = { has_truce_with = c:TRN } }
+	}
+	trigger_else = {
+		is_subject = no
+		var:sb_nrp_boundary_initiator_scope ?= { NOT = { has_truce_with = c:NRP } }
+	}
+}
+
+
+sb_nrp_boundary_current_political_authority = {
+	country_definition = cd:NRP
+	is_country_alive = yes
+	has_variable = sb_nrp_boundary_initiator_scope
+	var:sb_nrp_boundary_initiator_scope ?= { is_country_alive = yes OR = { this = c:NAL this = c:GBR } }
+	exists = s:STATE_ZULULAND.region_state:NRP
+	trigger_if = {
+		limit = { has_variable = sb_nrp_direct_annexation_rebellion_var }
+		c:NAL ?= { is_country_alive = yes }
+		exists = s:STATE_ZULULAND.region_state:NAL
+	}
+	trigger_else = {
+		c:ZUL ?= { is_country_alive = yes }
+		exists = s:STATE_ZULULAND.region_state:ZUL
+	}
+	trigger_if = {
+		limit = { is_direct_subject_of = c:TRN is_subject_type = subject_type_sb_boer_confederal_partner }
+		c:TRN ?= { is_country_alive = yes is_subject = no }
+	}
+	trigger_else = { is_subject = no }
+}
+
+
+# A terminal chiefdoms choice must still describe this exact, live situation.
+# The saved receipt scope is a unique container object, not a reusable timer.
+sb_zululand_current_terminal_authority = {
+	country_definition = cd:NAL
+	is_country_alive = yes
+	sb_zululand_chiefdoms_runtime_valid = yes
+	has_variable = sb_zululand_thirteen_chiefdoms_route_var
+	has_variable = sb_zululand_terminal_event_pending_var
+	ruler = { is_character_alive = yes }
+	exists = s:STATE_ZULULAND.region_state:ZUL
+	s:STATE_ZULULAND.region_state:ZUL ?= { owner = c:ZUL }
+	c:ZUL ?= {
+		is_country_alive = yes
+		is_direct_subject_of = c:NAL
+		is_subject_type = subject_type_sb_zulu_chiefdoms
+		ruler = { is_character_alive = yes }
+	}
+	container:sb_zululand_chiefdoms_state ?= {
+		has_variable = sb_zululand_nal_scope
+		var:sb_zululand_nal_scope = c:NAL
+		has_variable = sb_zululand_zul_scope
+		var:sb_zululand_zul_scope = c:ZUL
+	}
+}
+
+sb_zululand_bound_zibhebhu_terminal_event_authority = {
+	exists = scope:sb_zululand_terminal_receipt_scope
+	sb_zululand_current_terminal_authority = yes
+	has_variable = sb_zululand_terminal_generation_scope
+	var:sb_zululand_terminal_generation_scope = scope:sb_zululand_terminal_receipt_scope
+	scope:sb_zululand_terminal_receipt_scope ?= {
+		has_variable = sb_zululand_terminal_generation_pending_var
+		has_variable = sb_zululand_terminal_zibhebhu_outcome_var
+	}
+}
+
+sb_zululand_bound_crown_terminal_event_authority = {
+	exists = scope:sb_zululand_terminal_receipt_scope
+	sb_zululand_current_terminal_authority = yes
+	has_variable = sb_zululand_terminal_generation_scope
+	var:sb_zululand_terminal_generation_scope = scope:sb_zululand_terminal_receipt_scope
+	scope:sb_zululand_terminal_receipt_scope ?= {
+		has_variable = sb_zululand_terminal_generation_pending_var
+		has_variable = sb_zululand_terminal_crown_outcome_var
+	}
+}
