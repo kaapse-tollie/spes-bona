@@ -83,25 +83,17 @@ sb_on_griqualand_sequence_watchdog_monthly = {
 # Recover generation containers even when their fixed-tag event recipients died.
 # The first live country pulse performs idempotent cleanup; valid held receipts
 # are left to their saved recipient and timed popup watchdogs.
-# Klip River generations carry their original actor scopes. This global pulse
-# removes only orphaned saved actors; it never adopts a replacement c:NAL.
+# Klip River cleanup runs only on the retagged marker holder.
+
 sb_on_klip_river_orphan_monthly = {
 	trigger = {
 		is_country_alive = yes
+		NOT = { country_definition = cd:NAL }
 		OR = {
-			AND = {
-				container_exists = sb_klip_river_secession_generation_state
-				NOT = { container:sb_klip_river_secession_generation_state ?= { has_variable = sb_klip_river_secession_generation_actor_scope var:sb_klip_river_secession_generation_actor_scope ?= { is_country_alive = yes country_definition = cd:NAL } } }
-			}
-			AND = {
-				container_exists = sb_klip_river_punitive_generation_state
-				NOT = { container:sb_klip_river_punitive_generation_state ?= { has_variable = sb_klip_river_punitive_generation_actor_scope var:sb_klip_river_punitive_generation_actor_scope ?= { is_country_alive = yes country_definition = cd:NAL } } }
-			}
-			any_country = {
-				is_country_alive = yes
-				NOT = { country_definition = cd:NAL }
-				OR = { has_variable = sb_klip_river_county_creation_lease_var has_variable = sb_klip_river_county_created_this_attempt_var }
-			}
+			has_variable = sb_klip_river_county_creation_lease_var
+			has_variable = sb_klip_river_county_created_this_attempt_var
+			has_variable = sb_klip_river_secession_delivery_pending_var
+			has_variable = sb_klip_river_punitive_delivery_pending_var
 		}
 	}
 	effect = { sb_klip_river_recover_orphaned_generations = yes }
@@ -302,4 +294,9 @@ sb_on_frontier_force_monthly_pulse_country = {
 	effect = {
 		sb_restore_ai_frontier_force_floor = yes
 	}
+}
+
+sb_on_zibhebhu_death = {
+	trigger = { has_template = ZUL_zibhebhu_kamaphitha }
+	effect = { set_global_variable = sb_zululand_zibhebhu_died_var }
 }

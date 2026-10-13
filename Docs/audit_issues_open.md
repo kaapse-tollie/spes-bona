@@ -1,18 +1,20 @@
 # Spes Bona Audit Issues — Open
 
-Last refreshed: 2026-09-04
+Last refreshed: 2026-10-13
 
 Approved implementation baseline: `51c98bf32fc9f9049c99f858f5a558bdfde0dffe`
 
-Target: Victoria 3 `1.14.0` Open Beta 1, Steam build `25081502`, branch `1.14-openbeta`, core depot manifest `3868129321396195520`
+Target: Victoria 3 `1.14.3` Open Beta Update 2, Steam build `25347710`, branch `1.14-openbeta`, core depot manifest `5228357714133991559`
 
-Dependency baseline: Community Mod Framework `1.66.0`, commit `807c32ff42b75714a3a0e090c0db3357b5e46ed7`
+Dependency baseline: Community Mod Framework `1.66.0`, commit `807c32ff42b75714a3a0e090c0db3357b5e46ed7`, plus `sb-1.14.3-r1`
 
 ## Status
 
 This register tracks **open work only**: the six deferred gates below, the remaining FA-round items, the OB1 follow-up findings, and content-design decisions awaiting DP. Closed tickets from every audit round live in [audit_issues_completed.md](audit_issues_completed.md).
 
-Static success is not runtime certification. Strict release certification remains contingent on every engine-only case in `Docs/compatibility/1_14_0_open_beta_1_runtime_matrix.md`; every unrun row remains `Engine pending`. The unchanged `Docs/compatibility/1_13_11_runtime_matrix.md` is historical evidence only.
+The [2026-10-13 checkpoint review](compatibility/checkpoint_review_2026_10_13.md) records four unit-test failures, one error, and five historical skips, plus compatibility drift against the installed 1.14.5 game. These are open validation issues; this checkpoint is not a certified release.
+
+Static success is not runtime certification. Strict release certification remains contingent on every engine-only case in `Docs/compatibility/1_14_3_runtime_matrix.md`; every unrun row remains `Engine pending`. Earlier runtime matrices remain historical evidence.
 
 ## Deferred Gates
 
@@ -75,6 +77,7 @@ These findings were exposed or rechecked during the exact OB1 rebase. They are o
 | `OB1-05` | Runtime entitlement follow-up | Seven event-image calls resolve on the all-DLC installation but have no matching entitlement gates: `sb_klip_river_county.010` at `events/sb_klip_river_county_events.txt:43` (`ep1_redcoats`); `sb_nam.140` at `events/sb_namibia_events.txt:1253` (`votp_french_algeria`); `sb_natal_crisis.110` at `events/sb_natal_crisis_events.txt:1535` (`votp_gunboat_diplomacy`); `sb_natal_crisis.115` at `events/sb_natal_crisis_events.txt:2104` (`ep1_transfer_of_authority`); `sb_natal_interwar.005` at `events/sb_natal_interwar_events.txt:63` (`ip4_colonial_exploitation_going_well`); `sb_natal_interwar.030` at `events/sb_natal_interwar_events.txt:153` (`ep1_transfer_of_authority`); and `sb_pink_map.040` at `events/sb_pink_map_events.txt:305` (`ep1_printing_press`). | Run each exact event with its relevant DLC disabled and record image/error-log evidence before changing DP-selected art or adding gates. |
 | `OB1-06` | Runtime/design follow-up | ORA/TRN have no explicit `stance_colonize_region`, while OB1's default excludes unrecognized countries. It is unknown whether adjacency or another engine path still produces the intended behavior. | Observe fresh ORA/TRN cases under OB1, then decide whether an explicit stance is needed. |
 | `OB1-07` | Static war-launch architecture follow-up | Four launch/support paths outside the approved Step 8 file set still select a play through `random_diplomatic_play`: `sb_boer_conventions.142`, `sb_natal_crisis.114`, `sb_imperial_confederation.031`, and `sb_join_natalia_against_britain`. The first three perform post-create mutation; the support helper can still select ambiguously if matching plays coexist. | Give each route a pre-create lease and actual-root on-start configuration, or bind the support helper to one saved exact play identity. Add failed-create, duplicate-play, back-down, and cleanup tests before removing this follow-up. |
+| `OB1-08` | Failed launch — fixes awaiting engine verification | The 2026-09-05 OB1 launch exposed malformed preset entries, script/building/law/name errors, and stale spline identities. Targeted source and local-preset repairs are applied; see `Docs/compatibility/1_14_0_launch_debug_2026_09_05.md`. | Cold-launch a new 1836 campaign and verify `OB1-CF-01`, `OB1-CF-10`, and `OB1-MAP-01`. If harbor-node errors persist, compare a Vanilla-only launch before changing the generated naval network. |
 
 Existing `FA-26R` remains open. The Kimberley historical-date fallback must stay in scope when the Griqualand pipeline receives later content work.
 
@@ -85,7 +88,7 @@ Existing `FA-26R` remains open. The Kimberley historical-date fallback must stay
 
 ## Validation Contract
 
-The `0.20.0` static release candidate must pass all of these gates on the same integrated tree before a new completed-audit section is added:
+The `0.20.1` static release candidate must pass all of these gates on the same integrated tree before a new completed-audit section is added:
 
 ```sh
 python3 -B -m unittest discover -s tests -q
@@ -100,8 +103,10 @@ python3 -B tools/check_override_inventory.py \
 git diff --check
 ```
 
-The direct checker must report zero drift against build `25081502`, branch `1.14-openbeta`, core depot manifest `3868129321396195520`, and CMF `1.66.0`. The suite must also verify the depot delta, structured spline merge, localisation review boundaries and queue, subject/war contracts, AI-incorporation overrides, naval-port connectivity, delayed-event lifecycle, changed-file BOM state, and absence of stale live-baseline labels.
+The direct checker must report zero drift against build `25347710`, branch `1.14-openbeta`, core depot manifest `5228357714133991559`, and CMF `1.66.0` plus `sb-1.14.3-r1`. The suite must also verify the depot delta, structured spline merge, localisation review boundaries and queue, subject/war contracts, AI-incorporation overrides, naval-port connectivity, delayed-event lifecycle, changed-file BOM state, and absence of stale live-baseline labels.
 
 Tiger currently advertises older schema support, so any Victoria 3 `1.14` Tiger diagnostic is advisory unless its schema has been updated. Repository semantic gates remain mandatory. A test that actually fails is a blocker; it cannot be relabelled `Engine pending`.
 
-Release support becomes strict only after every runtime-matrix row is recorded with a fresh OB1 run, exact command/save/load order, UTC timestamp, and rotated-log hashes, and fresh logs contain no new SB-authored errors.
+Release support becomes strict only after every runtime-matrix row is recorded with a fresh campaign on the target build, exact command/save/load order, UTC timestamp, and rotated-log hashes, and fresh logs contain no new SB-authored errors.
+
+Current dependency: CMF `1.66.0` plus `sb-1.14.3-r1`. The patch manifest and expected installed-tree digest are pinned by the compatibility inventory. See `Docs/compatibility/1_14_3_rebase.md` and `Docs/compatibility/1_14_3_runtime_matrix.md`; earlier matrices remain historical evidence.

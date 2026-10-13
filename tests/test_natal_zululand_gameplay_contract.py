@@ -171,7 +171,7 @@ class NatalZululandGameplayContractTests(unittest.TestCase):
         packet = validate.extract_braced(setup, packet_match.start())
         packet_buildings = nested_blocks(packet, "create_building")
         self.assertEqual(
-            1,
+            0,
             sum("building = building_maize_farm" in building for building in packet_buildings),
         )
         self.assertEqual(
@@ -184,9 +184,7 @@ class NatalZululandGameplayContractTests(unittest.TestCase):
         for building in packet_buildings:
             self.assertIn("add_ownership", building)
             self.assertNotRegex(building, r"(?m)^\s*level\s*=")
-        self.assertIn('"pm_simple_farming"', packet)
-        self.assertIn('"pm_no_secondary"', packet)
-        self.assertIn('"pm_tools_disabled"', packet)
+        self.assertNotIn("building_maize_farm", packet)
         self.assertIn('"pm_open_air_stockyards"', packet)
         self.assertIn('"pm_simple_ranch"', packet)
         self.assertIn('"pm_standard_fences"', packet)
@@ -809,7 +807,7 @@ class NatalZululandGameplayContractTests(unittest.TestCase):
             'sb_natal_shepstone_repeal_lock_tt:0 "The Shepstone System has been in force for at least #v 25 years#!."',
             localization,
         )
-        self.assertIn("je_sb_natal_indenture_program_v2_goal:0", localization)
+        self.assertNotIn("je_sb_natal_indenture_program_v2_goal:0", localization)
 
     def test_representative_southern_and_northern_content_uses_the_right_state(self):
         natal_blocks = (

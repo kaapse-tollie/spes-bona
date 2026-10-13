@@ -77,7 +77,8 @@ class ZululandPostwarSettlementTests(unittest.TestCase):
 
         self.assertEqual(ZULULAND_PROVINCES, province_values(direct))
         self.assertIn("type = protectorate", normalize)
-        self.assertIn("sb_natal_schedule_zulu_settlement = yes", normalize)
+        self.assertNotIn("sb_natal_schedule_zulu_settlement = yes", normalize)
+        self.assertIn("sb_natal_schedule_zulu_settlement = yes", object_block(path, "sb_zululand_handoff_to_natal"))
         self.assertNotIn("set_owner_of_provinces", normalize)
 
         self.assertIn("save_scope_as = sb_zululand_restoration_state", restore)
@@ -173,7 +174,7 @@ class ZululandPostwarSettlementTests(unittest.TestCase):
         self.assertIn("sb_zululand_open_chiefdoms_situation = yes", chiefdoms)
 
         self.assertIn("change_subject_type = subject_type_protectorate", crown)
-        self.assertIn("sb_zululand_restore_preannexation_royal_house = yes", crown)
+        self.assertNotIn("sb_zululand_restore_preannexation_royal_house = yes", crown)
         self.assertEqual(2, crown.count("add_loyalists = { value = 0.10 culture = cu:zulu }"))
         self.assertNotIn("incorporation", crown)
 
@@ -219,7 +220,10 @@ class ZululandPostwarSettlementTests(unittest.TestCase):
             self.assertIn(f"remove_variable = {variable}", discard)
         self.assertNotIn("sb_zulu_install_summoned_claimant_as_ruler", discard)
         self.assertNotIn("sb_zulu_assign_new_heir_scope", discard)
-        self.assertIn("sb_zululand_restore_preannexation_royal_house = yes", baseline)
+        self.assertNotIn("sb_zululand_restore_preannexation_royal_house = yes", baseline)
+        creation = object_block(effects_path, "sb_zululand_restore_protectorate_for_natal")
+        self.assertGreater(creation.index("sb_zululand_restore_preannexation_royal_house = yes"),
+                           creation.index("sb_zululand_normalize_live_subject_for_natal = yes"))
 
         started_routes = [
             block
@@ -300,7 +304,7 @@ class ZululandPostwarSettlementTests(unittest.TestCase):
 
         self.assertIn("scripted_progress_bar = sb_zululand_chiefdom_balance_bar", journal)
         self.assertIn("scripted_progress_bar = sb_zululand_boer_commitment_bar", journal)
-        self.assertEqual(8, journal.count("scripted_button ="))
+        self.assertEqual(10, journal.count("scripted_button ="))
         for country in ("NAL", "ZUL", "GBR", "TRN"):
             self.assertIn(f"country_definition = cd:{country}", involved)
         self.assertIn("state_region = s:STATE_EAST_TRANSVAAL", involved)
@@ -317,111 +321,50 @@ class ZululandPostwarSettlementTests(unittest.TestCase):
         self.assertIn("limit = { sb_zululand_chiefdoms_runtime_valid = yes }", housekeeping)
         self.assertIn("sb_zululand_cleanup_situation = yes", housekeeping)
 
-    def test_situation_math_and_resolution_windows_match_the_design(self):
+    def test_liberty_tooltip_reads_native_factors_without_advancing_the_bar(self):
+        ui = text("gui/sb_zululand_chiefdoms_progress_bars.gui")
+        loc = text("localization/english/sb_zululand_settlement_l_english.yml")
+        self.assertIn("GetLibertyDesireRaw", ui)
+        self.assertIn("GetWeeklyLibertyDesireChangeDesc", loc)
+        self.assertIn("GetScriptValueDesc('sb_zululand_monthly_commitment')", loc)
+        self.assertNotIn("sb_zululand_balance_var", text("common/scripted_effects/sb_zululand_settlement_effects.txt"))
+        bar = object_block("common/scripted_progress_bars/sb_progress_bars.txt", "sb_zululand_chiefdom_balance_bar")
+        self.assertNotIn("monthly_progress", bar)
+        for mutation in ("set_variable", "change_variable", "set_bar_progress"):
+            self.assertNotIn(mutation, text("common/script_values/sb_zululand_drift_values.txt"))
+
+    def test_movement_and_ten_year_resolution_replace_authority_math(self):
         path = "common/scripted_effects/sb_zululand_settlement_effects.txt"
         create = object_block(path, "sb_zululand_create_chiefdoms_container")
-        economic = object_block(path, "sb_zululand_update_economic_dependence_drift")
-        bureaucracy = object_block(path, "sb_zululand_update_bureaucracy_drift")
         terminal = object_block(path, "sb_zululand_queue_terminal_outcome")
-
-        self.assertIn("name = sb_zululand_balance_var value = 60", create)
         self.assertIn("name = sb_zululand_boer_commitment_var value = 0", create)
-        self.assertIn('value = "c:ZUL.economic_dependence(c:NAL)"', economic)
-        self.assertIn("subtract = 1", economic)
-        self.assertIn("min = -1 max = 1", economic)
-        self.assertIn("multiply = 0.5", economic)
+        self.assertIn("political_movement_radicalism >= 0.99", terminal)
+        self.assertIn("NOT = { has_variable = sb_zululand_contest_deadline_var }", terminal)
+        self.assertNotIn("sb_zululand_balance_var", text(path))
+        self.assertNotIn("sb_zululand_update_economic_dependence_drift", text(path))
+        self.assertNotIn("sb_zululand_update_bureaucracy_drift", text(path))
+        self.assertLess(terminal.index("id = sb_zululand_settlement.121"), terminal.index("id = sb_zululand_settlement.120"))
 
-        self.assertIn("value = c:NAL.relative_bureaucracy", bureaucracy)
-        self.assertIn("multiply = 2", bureaucracy)
-        self.assertIn("subtract = var:sb_zululand_bureaucracy_square_var", bureaucracy)
-        self.assertIn("multiply = 0.9", bureaucracy)
-        self.assertIn("add = 0.1", bureaucracy)
-        self.assertIn("min = 0 max = 1", bureaucracy)
-
-        self.assertEqual(2, terminal.count("sb_zululand_situation_months_var >= 18"))
-        for flag in (
-            "sb_zululand_skirmish_fired_var",
-            "sb_zululand_hut_tax_fired_var",
-            "sb_zululand_defection_fired_var",
-        ):
-            self.assertEqual(2, terminal.count(f"has_variable = {flag}"))
-        self.assertIn("sb_zululand_situation_months_var >= 60", terminal)
-        self.assertIn("sb_zululand_balance_var > 50", terminal)
-        self.assertIn("sb_zululand_begin_zibhebhu_terminal_generation = yes", terminal)
-        self.assertIn("sb_zululand_begin_crown_terminal_generation = yes", terminal)
-        zibhebhu_generation = object_block(path, "sb_zululand_begin_zibhebhu_terminal_generation")
-        crown_generation = object_block(path, "sb_zululand_begin_crown_terminal_generation")
-        self.assertIn("id = sb_zululand_settlement.120", zibhebhu_generation)
-        self.assertIn("id = sb_zululand_settlement.121", crown_generation)
-        for guard in (
-            "NOT = { has_variable = sb_zululand_event_spacing_var }",
-            "NOT = { has_variable = sb_zululand_incident_pending_var }",
-            "NOT = { has_variable = sb_zululand_claimant_fate_pending_var }",
-        ):
-            self.assertEqual(3, terminal.count(guard))
-
-    def test_player_actions_have_the_agreed_costs_and_monthly_drift(self):
-        modifiers = text("common/static_modifiers/sb_modifiers.txt")
-        subject_pact = object_block(
-            "common/diplomatic_actions/sb_subject_relationships.txt",
-            "sb_zulu_chiefdoms",
-        )
-        full_hut_tax = object_block(
-            "common/scripted_effects/sb_zululand_settlement_effects.txt",
-            "sb_zululand_apply_full_hut_tax",
-        )
-        relaxed_hut_tax = object_block(
-            "common/scripted_effects/sb_zululand_settlement_effects.txt",
-            "sb_zululand_relax_hut_tax",
-        )
-        relaxed_transfer = object_block(
-            "common/static_modifiers/sb_modifiers.txt",
-            "sb_zululand_relaxed_hut_tax_transfer",
-        )
-        drift = object_block(
-            "common/scripted_effects/sb_zululand_settlement_effects.txt",
-            "sb_zululand_apply_monthly_action_drift",
-        )
-        unload_trigger = object_block(
-            "common/scripted_triggers/sb_zululand_settlement_triggers.txt",
-            "sb_zululand_can_unload_refugees",
-        )
-        unload = object_block(
-            "common/scripted_effects/sb_zululand_settlement_effects.txt",
-            "sb_zululand_unload_zulu_refugees",
-        )
-        claimant = object_block(
-            "common/scripted_effects/sb_zululand_settlement_effects.txt",
-            "sb_zululand_return_exiled_claimant",
-        )
-
-        self.assertIn("country_authority_add = -100", modifiers)
-        self.assertIn("country_expenses_add = 250", modifiers)
-        self.assertIn("state_soldiers_mortality_mult = 0.01", modifiers)
-        self.assertIn("income_transfer = 0.3", subject_pact)
-        self.assertIn("income_transfer_based_on_second_country = yes", subject_pact)
-        self.assertIn("country_subject_income_transfer_mult = -0.50", relaxed_transfer)
-        self.assertNotIn("country_tax_income_add", full_hut_tax + relaxed_hut_tax)
-        self.assertNotIn("c:NAL", full_hut_tax + relaxed_hut_tax)
-        for value in ("add = 0.5", "subtract = 0.5", "subtract = 0.25"):
-            self.assertIn(value, drift)
-        self.assertIn("name = sb_zululand_boer_commitment_var add = 2", drift)
-        self.assertIn("name = sb_zululand_boer_commitment_var add = 3", drift)
-        self.assertIn("set_variable = sb_zululand_boer_committed_var", drift)
-
-        self.assertNotIn("has_journal_entry = je_sb_natal_indenture_program_v2", unload_trigger)
-        self.assertIn(
-            "NOT = { has_variable = sb_natal_shepstone_repeal_locked_var }",
-            unload_trigger,
-        )
-        self.assertIn("population_ratio = 0.05", unload)
+    def test_actions_target_native_movement_and_remaining_refugees(self):
+        path = "common/scripted_effects/sb_zululand_settlement_effects.txt"
+        mods = "common/static_modifiers/sb_modifiers.txt"
+        self.assertIn("country_expenses_add = 500", object_block(mods, "sb_zululand_chief_patronage_cost"))
+        self.assertIn("political_movement_pop_attraction_mult = -0.50", object_block(mods, "sb_usuthu_chief_patronage"))
+        self.assertIn("political_movement_radicalism_add = -0.20", object_block(mods, "sb_usuthu_policing"))
+        self.assertIn("political_movement_radicalism_add = 0.20", object_block(mods, "sb_usuthu_volunteers"))
+        self.assertNotIn("sb_zululand_relaxed_hut_tax_transfer", text(mods) + text(path))
+        drift = object_block(path, "sb_zululand_apply_monthly_commitment")
+        self.assertIn("add_liberty_desire = 0.1", drift)
+        for amount in (2, 3):
+            self.assertIn(f"name = sb_zululand_boer_commitment_var add = {amount}", drift)
+        unload = object_block(path, "sb_zululand_unload_zulu_refugees")
+        self.assertIn("population_ratio = 0.20", unload)
+        self.assertLess(unload.index("move_partial_pop"), unload.index("add_loyalists = { value = 0.20 culture = cu:zulu }"))
+        self.assertNotIn("add_radicals", unload)
+        self.assertNotIn("sb_natal_apply_repealed_shepstone_consequences = yes", unload)
         self.assertIn("remove_amendment = yes", unload)
-        self.assertIn("sb_natal_apply_repealed_shepstone_consequences = yes", unload)
-        self.assertIn("sb_zululand_shift_balance_usuthu_5 = yes", unload)
-
-        self.assertIn("add_loyalists = { value = 0.20 culture = cu:zulu }", claimant)
-        self.assertIn("sb_zululand_claimant_returned_var", claimant)
-        self.assertIn("sb_zululand_claimant_fate_not_before_var days = 180", claimant)
+        valid = object_block("common/scripted_triggers/sb_natal_interwar_triggers.txt", "sb_natal_indenture_program_is_valid")
+        self.assertIn("OR = { sb_natal_has_shepstone_system = yes has_journal_entry = je_sb_natal_indenture_program_v2 }", valid)
 
     def test_incidents_claimant_fate_and_boer_appeal_are_bounded(self):
         events_path = "events/sb_zululand_settlement_events.txt"
@@ -434,42 +377,40 @@ class ZululandPostwarSettlementTests(unittest.TestCase):
         move = object_block(effects_path, "sb_zululand_move_boer_volunteers_to_zululand")
 
         self.assertIn("days = 60", spacing)
-        for event_id in (".110", ".111", ".112"):
+        for event_id in (".110", ".112"):
             self.assertIn(f"sb_zululand_settlement{event_id}", text(effects_path))
         self.assertEqual(2, fate.count("80 = { sb_zululand_claimant_is_killed = yes }"))
         self.assertIn("50 = { sb_zululand_claimant_is_killed = yes }", fate)
         self.assertIn("sb_frontier_ai_behavior_strict_historical = yes", fate)
-        self.assertIn("change_variable = { name = sb_zululand_balance_var add = 10 }", death)
+        self.assertIn("add_liberty_desire = -10", death)
         self.assertIn("sb_zululand_prepare_crown_successor = yes", death)
 
         self.assertIn("population = 500", move)
         self.assertIn("name = sb_zululand_boer_commitment_var add = 20", aid)
-        self.assertIn("name = sb_zululand_balance_var subtract = 7", aid)
+        self.assertIn("add_liberty_desire = 7", aid)
         self.assertIn("sb_frontier_ai_behavior_strict_historical = yes", appeal)
         self.assertIn("sb_frontier_ai_behavior_dynamic_historical = yes", appeal)
         self.assertIn("sb_frontier_ai_behavior_off = yes", appeal)
 
     def test_terminal_outcomes_and_later_incorporation_are_distinct(self):
         path = "common/scripted_effects/sb_zululand_settlement_effects.txt"
-        zibhebhu = object_block(path, "sb_zululand_apply_zibhebhu_victory")
+        suppressed = object_block(path, "sb_zululand_apply_zibhebhu_victory")
         crown = object_block(path, "sb_zululand_apply_crown_victory")
-        incorporation = object_block(path, "sb_zululand_apply_post_annex_incorporation")
-        modifiers = text("common/static_modifiers/sb_modifiers.txt")
-
-        self.assertIn("change_subject_type = subject_type_puppet", zibhebhu)
-        self.assertEqual(2, zibhebhu.count("add_radicals = { value = 0.10 culture = cu:zulu }"))
-        self.assertIn("country_liberty_desire_add = -0.10", modifiers)
-        self.assertIn("state_incorporation_speed_mult = 1.00", modifiers)
-
-        self.assertIn("change_subject_type = subject_type_puppet", crown)
-        self.assertEqual(2, crown.count("add_loyalists = { value = 0.10 culture = cu:zulu }"))
-        self.assertIn("country_liberty_desire_add = 0.05", modifiers)
-        self.assertIn("state_incorporation_speed_mult = 0.50", modifiers)
+        self.assertIn("change_subject_type = subject_type_puppet", suppressed)
+        self.assertIn("name = sb_usuthu_suppressed years = 10 is_decaying = yes", suppressed)
+        self.assertNotIn("activate_law", suppressed)
+        for law in ("monarchy", "autocracy"):
+            self.assertIn(f"activate_law = law_type:law_{law}", crown)
+        self.assertLess(crown.index("activate_law"), crown.index("sb_zululand_restore_dynastic_ruler = yes"))
+        self.assertIn("name = sb_zululand_crown_restored_autonomy years = 5", crown)
         self.assertIn("has_variable = sb_zululand_boer_committed_var", crown)
         self.assertIn("sb_nrp_create_greater_republic = yes", crown)
-
+        incorporation = object_block(path, "sb_zululand_apply_post_annex_incorporation")
+        self.assertIn("NOT = { c:ZUL ?= { is_country_alive = yes } }", incorporation)
+        self.assertIn("p:x1A084B.state.owner = c:NAL", incorporation)
         self.assertEqual(2, incorporation.count("months = 120"))
-        self.assertIn("sb_zululand_begin_natal_incorporation = yes", incorporation)
+        for key, value in (("zibhebhu", "0.50"), ("crown", "0.25")):
+            self.assertIn(f"state_incorporation_speed_mult = {value}", object_block("common/static_modifiers/sb_modifiers.txt", f"sb_zululand_{key}_incorporation_legacy"))
 
     def test_natal_incorporation_request_uses_the_normal_ai_interaction(self):
         effects_path = "common/scripted_effects/sb_zululand_settlement_effects.txt"
@@ -630,56 +571,46 @@ class ZululandPostwarSettlementTests(unittest.TestCase):
             finalize.count("remove_variable = sb_nrp_direct_annexation_rebellion_pending_var"),
             2,
         )
-        self.assertIn("sb_nrp_zulu_victory_honored_var", handlers)
+        self.assertIn("remove_variable = sb_nrp_direct_annexation_rebellion_var", handlers)
+        self.assertIn("remove_variable = sb_nrp_boundary_pending_var", handlers)
         self.assertIn("sb_nrp_boundary_pending_var", handlers)
         self.assertIn("sb_nrp_boundary_not_before_var days = 30", handlers)
         self.assertIn("id = sb_zululand_settlement.209 days = 30 popup = no", handlers)
 
-    def test_chiefdoms_delayed_events_revalidate_the_live_subject_relationship(self):
-        events_path = "events/sb_zululand_settlement_events.txt"
-        for event_id in (110, 111, 112, 113):
-            event = object_block(events_path, f"sb_zululand_settlement.{event_id}")
-            self.assertIn("sb_zululand_chiefdoms_runtime_valid = yes", event)
-        for event_id, authority in (
-            (120, "sb_zululand_bound_zibhebhu_terminal_event_authority"),
-            (121, "sb_zululand_bound_crown_terminal_event_authority"),
-        ):
-            event = object_block(events_path, f"sb_zululand_settlement.{event_id}")
-            # Delivery is intentionally broad; each option authenticates the
-            # exact saved terminal receipt and stale deliveries only clean up.
-            self.assertIn("trigger = { country_definition = cd:NAL }", event)
-            self.assertIn(f"{authority} = yes", event)
-            self.assertIn(f"NOT = {{ {authority} = yes }}", event)
-
-        trn_eligibility = object_block(
-            "common/scripted_triggers/sb_zululand_settlement_triggers.txt",
-            "sb_zululand_trn_is_eligible_participant",
-        )
-        self.assertIn("c:NAL ?=", trn_eligibility)
-        self.assertIn("sb_zululand_chiefdoms_runtime_valid = yes", trn_eligibility)
-
-    def test_normal_endpoints_wait_for_claimant_fate_and_boer_appeal(self):
-        queue = object_block(
+    def test_resolved_union_petition_is_not_scheduled_again(self):
+        monthly = object_block(
             "common/scripted_effects/sb_zululand_settlement_effects.txt",
-            "sb_zululand_queue_terminal_outcome",
+            "sb_nrp_monthly_housekeeping",
         )
-        hard_timeout = queue.rfind(
-            "container:sb_zululand_chiefdoms_state.var:sb_zululand_situation_months_var >= 60"
+        scheduler = next(block for block in nested_blocks(monthly, "if")
+                         if "id = sb_zululand_settlement.220" in block)
+        self.assertIn(
+            "NOT = { has_variable = sb_nrp_union_petition_lapsed_var }",
+            nested_blocks(scheduler, "limit")[0],
         )
-        self.assertGreater(hard_timeout, 0)
-        normal_endpoints = queue[:hard_timeout]
-        self.assertEqual(
-            2,
-            normal_endpoints.count(
-                "NOT = { has_variable = sb_zululand_boer_appeal_pending_var }"
-            ),
-        )
-        self.assertEqual(
-            2,
-            normal_endpoints.count(
-                "has_variable = sb_zululand_claimant_fate_resolved_var"
-            ),
-        )
+        response = object_block("events/sb_zululand_settlement_events.txt", "sb_zululand_settlement.221")
+        refusal = next(block for block in nested_blocks(response, "option")
+                       if "is_player = yes" in block)
+        self.assertIn("set_variable = sb_nrp_union_petition_lapsed_var", refusal)
+        self.assertIn("remove_variable = sb_nrp_union_petition_response_pending_var", refusal)
+
+    def test_chiefdoms_events_validate_before_immediate_once_only_settlement(self):
+        path = "events/sb_zululand_settlement_events.txt"
+        for event_id in (110, 112, 113, 120, 121):
+            event = object_block(path, f"sb_zululand_settlement.{event_id}")
+            self.assertIn("sb_zululand_chiefdoms_runtime_valid = yes", event)
+        for event_id, outcome in ((120, "zibhebhu"), (121, "crown")):
+            event = object_block(path, f"sb_zululand_settlement.{event_id}")
+            self.assertIn("has_variable = sb_zululand_terminal_event_pending_var", event)
+            self.assertIn(f"immediate = {{ sb_zululand_apply_{outcome}_victory = yes }}", event)
+            self.assertEqual(1, len(nested_blocks(event, "option")))
+            self.assertNotIn("sb_zululand_apply_", option(event, f"sb_zululand_settlement.{event_id}.a"))
+
+    def test_resolution_has_no_unagreed_incident_or_minimum_time_gate(self):
+        queue = object_block("common/scripted_effects/sb_zululand_settlement_effects.txt", "sb_zululand_queue_terminal_outcome")
+        for unwanted in ("is_at_war", "is_active_in_diplomatic_play", "months_var >= 18", "event_spacing_var", "claimant_fate_resolved_var", "skirmish_fired_var", "political_movement_support"):
+            self.assertNotIn(unwanted, queue)
+        self.assertIn("NOT = { has_variable = sb_zululand_terminal_event_pending_var }", queue)
 
     def test_boundary_timers_ai_safety_and_return_state_goals_are_fixed(self):
         path = "common/scripted_effects/sb_zululand_settlement_effects.txt"

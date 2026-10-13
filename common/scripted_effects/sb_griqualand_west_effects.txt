@@ -1123,17 +1123,6 @@ sb_griqualand_record_claim_revocation = {
 			set_global_variable = sb_griqualand_boer_claim_revocation_accepted_global_var
 			set_global_variable = sb_griqualand_trn_claim_revocation_accepted_global_var
 		}
-		if = {
-			limit = { container_exists = sb_griqualand_sequence_state }
-			container:sb_griqualand_sequence_state = {
-				set_variable = { name = sb_griqualand_last_record_holder_scope value = root }
-				if = {
-					limit = { has_global_variable = sb_griqualand_ora_claim_revocation_accepted_global_var }
-					set_variable = { name = sb_griqualand_last_record_claim_target_scope value = c:ORA }
-				}
-				else = { set_variable = { name = sb_griqualand_last_record_claim_target_scope value = scope:target_country } }
-			}
-		}
 	}
 }
 
@@ -1167,7 +1156,6 @@ sb_griqualand_sequence_cleanup = {
 	sb_griqualand_clear_launch_leases = yes
 	if = { limit = { container_exists = sb_griqualand_sequence_state } container:sb_griqualand_sequence_state = { destroy_container = yes } }
 	if = { limit = { has_global_variable = sb_griqualand_sequence_active_global_var } remove_global_variable = sb_griqualand_sequence_active_global_var }
-	if = { limit = { has_global_variable = sb_griqualand_sequence_launch_refused_global_var } remove_global_variable = sb_griqualand_sequence_launch_refused_global_var }
 	if = { limit = { has_global_variable = sb_griqualand_sequence_generation_global_var } remove_global_variable = sb_griqualand_sequence_generation_global_var }
 	if = { limit = { has_global_variable = sb_griqualand_sequence_play_scope_global_var } remove_global_variable = sb_griqualand_sequence_play_scope_global_var }
 	if = { limit = { has_global_variable = sb_griqualand_phase_a_pending_global_var } remove_global_variable = sb_griqualand_phase_a_pending_global_var }
@@ -1180,14 +1168,12 @@ sb_griqualand_sequence_cleanup = {
 	if = { limit = { has_global_variable = sb_griqualand_phase_b_active_global_var } remove_global_variable = sb_griqualand_phase_b_active_global_var }
 	if = { limit = { has_global_variable = sb_griqualand_phase_b_acknowledged_global_var } remove_global_variable = sb_griqualand_phase_b_acknowledged_global_var }
 	if = { limit = { has_global_variable = sb_griqualand_phase_b_close_handled_global_var } remove_global_variable = sb_griqualand_phase_b_close_handled_global_var }
-	if = { limit = { has_global_variable = sb_griqualand_phase_b_retry_used_global_var } remove_global_variable = sb_griqualand_phase_b_retry_used_global_var }
 	if = { limit = { has_global_variable = sb_griqualand_phase_b_creation_failed_global_var } remove_global_variable = sb_griqualand_phase_b_creation_failed_global_var }
 	if = { limit = { has_global_variable = sb_griqualand_phase_b_launch_attempted_global_var } remove_global_variable = sb_griqualand_phase_b_launch_attempted_global_var }
 	if = { limit = { has_global_variable = sb_griqualand_cap_claim_revocation_accepted_global_var } remove_global_variable = sb_griqualand_cap_claim_revocation_accepted_global_var }
 	if = { limit = { has_global_variable = sb_griqualand_boer_claim_revocation_accepted_global_var } remove_global_variable = sb_griqualand_boer_claim_revocation_accepted_global_var }
 	if = { limit = { has_global_variable = sb_griqualand_ora_claim_revocation_accepted_global_var } remove_global_variable = sb_griqualand_ora_claim_revocation_accepted_global_var }
 	if = { limit = { has_global_variable = sb_griqualand_trn_claim_revocation_accepted_global_var } remove_global_variable = sb_griqualand_trn_claim_revocation_accepted_global_var }
-	if = { limit = { has_global_variable = sb_griqualand_phase_a_creation_failed_global_var } remove_global_variable = sb_griqualand_phase_a_creation_failed_global_var }
 	c:CAP ?= { if = { limit = { has_variable = sb_griqualand_west_hardline_path_var } remove_variable = sb_griqualand_west_hardline_path_var } }
 	c:WBL ?= { if = { limit = { has_variable = sb_griqualand_west_wbl_independent_var } remove_variable = sb_griqualand_west_wbl_independent_var } }
 }
@@ -1694,13 +1680,11 @@ sb_griqualand_sequence_begin = {
 		# Refuse synchronously and finish from the live owner/subject state. Do not
 		# leave a one-shot diagnostic that no watchdog can consume.
 		sb_griqualand_clear_launch_leases = yes
-		if = { limit = { has_global_variable = sb_griqualand_sequence_launch_refused_global_var } remove_global_variable = sb_griqualand_sequence_launch_refused_global_var }
 		c:CAP ?= { if = { limit = { has_variable = sb_griqualand_west_hardline_path_var } remove_variable = sb_griqualand_west_hardline_path_var } }
 		c:WBL ?= { if = { limit = { has_variable = sb_griqualand_west_wbl_independent_var } remove_variable = sb_griqualand_west_wbl_independent_var } }
 		sb_griqualand_west_finalize_refusal_contest = yes
 	}
 	else = {
-		if = { limit = { has_global_variable = sb_griqualand_sequence_launch_refused_global_var } remove_global_variable = sb_griqualand_sequence_launch_refused_global_var }
 		if = { limit = { container_exists = sb_griqualand_sequence_state } container:sb_griqualand_sequence_state = { destroy_container = yes } }
 		sb_griqualand_clear_launch_leases = yes
 		set_global_variable = { name = sb_griqualand_sequence_generation_global_var value = 1 }

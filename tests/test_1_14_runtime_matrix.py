@@ -34,13 +34,14 @@ class OpenBetaRuntimeMatrixTests(unittest.TestCase):
             self.assertIn(token, self.text)
         self.assertNotRegex(self.text, r"\|\s*(?:Pass|PASS)\s*\|")
 
-    def test_all_52_runtime_rows_are_unique_and_engine_pending(self):
+    def test_all_52_runtime_rows_preserve_observed_failures(self):
         identifiers = [identifier for identifier, _ in self.rows]
         self.assertEqual(52, len(identifiers))
         self.assertEqual(52, len(set(identifiers)))
         for identifier, body in self.rows:
             with self.subTest(identifier=identifier):
-                self.assertEqual("Engine pending", body.rsplit("|", 1)[-1].strip())
+                expected = "Fail — blocker" if identifier in {"OB1-CF-01", "OB1-CF-10", "OB1-MAP-01", "OB1-WAR-09"} else "Engine pending"
+                self.assertEqual(expected, body.rsplit("|", 1)[-1].strip())
 
     def test_carried_cases_and_griqualand_sequence_rows_are_complete(self):
         carried = {

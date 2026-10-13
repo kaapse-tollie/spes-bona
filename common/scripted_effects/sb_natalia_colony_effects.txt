@@ -737,75 +737,79 @@ sb_trigger_natal_refugee_migration_effect = {
 			add = 1
 		}
 	}
+	# Tooltip evaluation does not execute the counter initialization above.
 	if = {
-		limit = {
-			exists = scope:natalia_source
-			scope:natal_refugee_coordinator.var:sb_natal_refugee_receiver_count_var > 0
-		}
-		c:NAL ?= {
-			every_scope_state = {
-				every_scope_pop = {
-					limit = {
-						culture = cu:boer
-					}
-					if = {
+		limit = { scope:natal_refugee_coordinator ?= { has_variable = sb_natal_refugee_receiver_count_var } }
+		if = {
+			limit = {
+				exists = scope:natalia_source
+				scope:natal_refugee_coordinator.var:sb_natal_refugee_receiver_count_var > 0
+			}
+			c:NAL ?= {
+				every_scope_state = {
+					every_scope_pop = {
 						limit = {
-							scope:natal_refugee_coordinator.var:sb_natal_refugee_receiver_count_var == 1
+							culture = cu:boer
 						}
-						move_partial_pop = {
-							state = scope:natal_refugee_receiver_a
-							population_ratio = 0.95
+						if = {
+							limit = {
+								scope:natal_refugee_coordinator.var:sb_natal_refugee_receiver_count_var == 1
+							}
+							move_partial_pop = {
+								state = scope:natal_refugee_receiver_a
+								population_ratio = 0.95
+							}
 						}
-					}
-					else_if = {
-						limit = {
-							scope:natal_refugee_coordinator.var:sb_natal_refugee_receiver_count_var == 2
+						else_if = {
+							limit = {
+								scope:natal_refugee_coordinator.var:sb_natal_refugee_receiver_count_var == 2
+							}
+							move_partial_pop = {
+								state = scope:natal_refugee_receiver_a
+								population_ratio = 0.475
+							}
+							move_partial_pop = {
+								state = scope:natal_refugee_receiver_b
+								population_ratio = 0.9048
+							}
 						}
-						move_partial_pop = {
-							state = scope:natal_refugee_receiver_a
-							population_ratio = 0.475
+						else_if = {
+							limit = {
+								scope:natal_refugee_coordinator.var:sb_natal_refugee_receiver_count_var == 3
+							}
+							move_partial_pop = {
+								state = scope:natal_refugee_receiver_a
+								population_ratio = 0.3167
+							}
+							move_partial_pop = {
+								state = scope:natal_refugee_receiver_b
+								population_ratio = 0.4634
+							}
+							move_partial_pop = {
+								state = scope:natal_refugee_receiver_c
+								population_ratio = 0.8636
+							}
 						}
-						move_partial_pop = {
-							state = scope:natal_refugee_receiver_b
-							population_ratio = 0.9048
-						}
-					}
-					else_if = {
-						limit = {
-							scope:natal_refugee_coordinator.var:sb_natal_refugee_receiver_count_var == 3
-						}
-						move_partial_pop = {
-							state = scope:natal_refugee_receiver_a
-							population_ratio = 0.3167
-						}
-						move_partial_pop = {
-							state = scope:natal_refugee_receiver_b
-							population_ratio = 0.4634
-						}
-						move_partial_pop = {
-							state = scope:natal_refugee_receiver_c
-							population_ratio = 0.8636
-						}
-					}
-					else_if = {
-						limit = {
-							scope:natal_refugee_coordinator.var:sb_natal_refugee_receiver_count_var >= 4
-						}
-						move_partial_pop = {
-							state = scope:natal_refugee_receiver_a
-							population_ratio = 0.2375
-						}
-						move_partial_pop = {
-							state = scope:natal_refugee_receiver_b
-							population_ratio = 0.3115
-						}
-						move_partial_pop = {
-							state = scope:natal_refugee_receiver_c
-							population_ratio = 0.4524
-						}
-						move_partial_pop = {
-							state = scope:natal_refugee_receiver_d
-							population_ratio = 0.8261
+						else_if = {
+							limit = {
+								scope:natal_refugee_coordinator.var:sb_natal_refugee_receiver_count_var >= 4
+							}
+							move_partial_pop = {
+								state = scope:natal_refugee_receiver_a
+								population_ratio = 0.2375
+							}
+							move_partial_pop = {
+								state = scope:natal_refugee_receiver_b
+								population_ratio = 0.3115
+							}
+							move_partial_pop = {
+								state = scope:natal_refugee_receiver_c
+								population_ratio = 0.4524
+							}
+							move_partial_pop = {
+								state = scope:natal_refugee_receiver_d
+								population_ratio = 0.8261
+							}
 						}
 					}
 				}

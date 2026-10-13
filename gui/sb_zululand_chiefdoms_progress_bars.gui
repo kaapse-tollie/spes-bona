@@ -1,0 +1,117 @@
+﻿# Local presentation of the two Chiefdoms bars, following CMF's existing styles.
+# LD is read directly from ZUL; commitment is projected from the shared situation.
+flowcontainer = {
+	name = sb_zululand_chiefdoms_progress_bars
+	parentanchor = hcenter
+	direction = vertical
+	spacing = 15
+	textbox = {
+		text = "sb_usuthu_live_readout"
+		tooltip = "sb_usuthu_influence_tooltip"
+		size = { 504 100 }
+		multiline = yes
+	}
+	datamodel = "[JournalEntry.GetScriptedProgressBars]"
+	visible = "[Not( IsDataModelEmpty( JournalEntry.GetScriptedProgressBars ) )]"
+	item = {
+		container = {
+			default_progressbar_horizontal = {
+				visible = "[ScriptedProgressBar.IsDoubleSidedBad]"
+				block "progressbar_size" {
+					size = { 504 30 }
+				}
+				tooltip = "sb_zululand_chiefdom_balance_bar_tooltip"
+
+				blockoverride "noprogresstexture" {
+					noprogresstexture = "gfx/interface/progressbar/progressbar_bad.dds"
+				}
+
+				blockoverride "values" {
+					value = "[GetGlobalVariable('sb_zululand_live_zul_scope').GetCountry.GetLibertyDesireRaw]"
+					min = 0
+					max = 100
+				}
+				textbox = {
+					text = "[ScriptedProgressBar.GetDesc]"
+					autoresize = yes
+					align = nobaseline
+					margin_left = 10
+					parentanchor = vcenter
+				}
+				textbox = {
+					text = "[ScriptedProgressBar.GetSecondDesc]"
+					autoresize = yes
+					align = right|nobaseline
+					margin_right = 10
+					parentanchor = right|vcenter
+				}
+
+				#this is hack to get an extra marker on top of the frame (progressbar properties are copied)
+				blockoverride "on_top_of_the_progressbar" {
+					progressbar = {
+						noprogresstexture = "gfx/interface/icons/generic_icons/transparent.dds"
+						progresstexture = "gfx/interface/icons/generic_icons/transparent.dds"
+						size = { 100% 100% }
+						spriteType = Corneredtiled
+						spriteborder = { 4 4 }
+						texture_density = 2
+						skip_initial_animation = yes
+
+						block "values" {}
+						block "direction" {
+							direction = horizontal
+						}
+						block "progress_changed_animation" {
+							using = progressbar_changed_animation
+						}
+						block "animate_negative_change" {
+							animate_negative_changes = yes
+						}
+						marker = {
+
+							widget = {
+								size = { 50 50 }
+								icon = {
+									size = { 65 65 }
+									widgetanchor = center
+									position = { 0 12 }
+
+									block "progress_icon" {
+										texture = "[JournalEntry.GetIcon]"
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			green_progressbar_horizontal = {
+				visible = "[ScriptedProgressBar.IsDefaultGreen]"
+				block "progressbar_size" {
+					size = { 504 30 }
+				}
+
+				tooltip = "sb_zululand_boer_commitment_bar_tooltip"
+				blockoverride "values" {
+					value = "[JournalEntry.GetCurrentBarProgress(ScriptedProgressBar.Self)]"
+					min = 0
+					max = 1
+				}
+				textbox = {
+					text = "[ScriptedProgressBar.GetDesc]"
+					autoresize = yes
+					align = nobaseline
+					margin_left = 10
+					parentanchor = vcenter
+				}
+				textbox = {
+					text = "[ScriptedProgressBar.GetSecondDesc]"
+					autoresize = yes
+					align = right|nobaseline
+					margin_right = 10
+					parentanchor = right|vcenter
+				}
+			}
+		}
+	}
+}

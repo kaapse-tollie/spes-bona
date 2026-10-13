@@ -1,0 +1,488 @@
+﻿# Reuse the native movement for ZUL: retain identity/support; CMF bodies otherwise preserved.
+REPLACE:movement_royalist_absolutist = {
+	category = movement_category_ideological
+	
+	ideology = ideology_absolutist_movement
+	character_ideologies = {
+		ideology_royalist
+		ideology_authoritarian
+		ideology_gbbf_bavarocrat #GOTB
+	}
+	
+	disband_trigger = {
+		NOT = { has_variable = sb_zululand_usuthu_contest_var }
+		OR = {
+			AND = {
+				NOT = {
+					has_variable = king_in_parliament_possible
+				}
+				country_has_voting_franchise = yes
+			}
+			has_variable = monarchy_stamped_out_var
+			any_political_movement = {
+				OR = {
+					is_political_movement_type = movement_carlist
+					is_political_movement_type = movement_miguelist
+				}
+			}
+			has_law = law_type:law_bakufu
+		}
+	}
+	on_disbanded = {
+		if = {
+			limit = {
+				owner ?= {
+					country_has_voting_franchise = yes
+					NOT = {
+						has_variable = monarchy_stamped_out_var
+					}
+					NOT = {
+						any_political_movement = {
+							is_political_movement_type = movement_royalist_constitutional
+						}
+					}
+				}
+			}
+			owner ?= {
+				create_political_movement = { type = movement_royalist_constitutional }
+			}
+		}
+	}
+	
+	creation_trigger = {
+		OR = {
+			has_law = law_type:law_monarchy
+			AND = { country_definition = cd:ZUL has_variable = sb_zululand_usuthu_context_var has_law = law_type:law_chiefdom }
+		}
+		country_has_voting_franchise = no
+		NOT = {
+			any_political_movement = {
+				is_political_movement_type = movement_royalist_constitutional
+			}
+		}
+		NOT = {
+			any_political_movement = {
+				OR = {
+					is_political_movement_type = movement_carlist
+					is_political_movement_type = movement_miguelist
+				}
+			}
+		}
+		NOT = { c:FRA ?= this }
+		NOR = {
+			has_law = law_type:law_bakufu
+			AND = {
+				c:JAP ?= this
+				NOT = { has_variable = japan_restoration_complete }
+			}
+		}
+	}
+	creation_weight = {
+		value = 100
+		if = {
+			limit = {
+				owner ?= { # If a movement of this type exists in a neighbouring country, make it more likely to spawn here as well
+					any_neighbouring_state = {
+						owner = {
+							prestige > ROOT.owner.prestige
+							any_political_movement = {
+								is_political_movement_type = movement_royalist_absolutist
+							}
+						}
+					}
+				}
+			}
+			multiply = {
+				value = 2
+			}
+		}
+	}
+	on_created = {
+		sb_zululand_configure_usuthu_movement = yes
+		add_movement_enthusiasm_modifier = yes
+	}
+	
+	character_support_trigger = {
+		OR = {
+			has_ideology = ideology:ideology_royalist
+			AND = {
+				has_ideology = ideology:ideology_authoritarian
+				scope:interest_group ?= {
+					law_stance = {
+						law = law_type:law_monarchy
+						value > neutral
+					}
+				}
+			}
+			AND = {
+				scope:interest_group ?= {
+					law_stance = {
+						law = law_type:law_monarchy
+						value > neutral
+					}
+				}
+				NOT = {
+					law_stance = {
+						law = law_type:law_monarchy
+						value < approve
+					}
+					law_stance = {
+						law = law_type:law_autocracy
+						value < approve
+					}
+				}
+			}
+		}
+	}
+	character_support_weight = {
+		value = 200
+		if = {
+			limit = {
+				exists = scope:interest_group
+				scope:interest_group ?= { owner = { country_definition = cd:ZUL has_variable = sb_zululand_usuthu_context_var } }
+				OR = { has_variable = sb_zululand_exiled_claimant_var has_variable = sb_zululand_crown_successor_var }
+			}
+			add = 10000
+		}
+		if = {
+			limit = {
+				has_ideology = ideology:ideology_royalist
+			}
+			multiply = {
+				value = 5
+			}
+		}
+	}
+	
+	pop_support_trigger = {
+		NOT = {
+			is_pop_type = slaves
+		}
+		mog_plp_movement_mainland_general_pop_support_trigger = yes    # Grey_PLP
+	}
+	
+	pop_support_factors = {
+		movement_support_ruler_popularity
+		movement_support_low_urbanization
+		movement_support_high_literacy
+		movement_support_aristocrats
+		movement_support_farmers
+		movement_support_peasants
+		movement_support_clergymen
+		movement_support_officers
+	}
+	
+	pop_support_weight = {
+		if = {
+			limit = {
+				exists = scope:political_movement
+				scope:political_movement ?= {
+					OR = {
+						is_being_suppressed = yes
+						is_being_bolstered = yes
+					}
+				}
+			}
+			if = {
+				limit = {
+					scope:political_movement = {
+						is_being_suppressed = yes
+					}
+				}
+				add = {
+					value = suppression_base_value
+					multiply = {
+						value = -0.5
+						add = owner.modifier:country_suppression_attraction_factor
+					}
+					desc = "concept_suppressed"
+				}
+			}
+			else = {
+				add = {
+					value = bolstering_base_value
+					multiply = {
+						value = 0.5
+						add = owner.modifier:country_bolster_attraction_factor
+					}
+					desc = "concept_bolstered"
+				}
+			}
+		}
+		add = {
+			desc = "URBAN_STATE" # Increases support in rural states, decreases in urban
+			value = 0.5
+			subtract = state.state_urbanization_rate
+			multiply = 10
+		}
+		
+		add = {
+			value = 5
+			desc = "POP_BASE_SUPPORT"
+		}
+		
+		if = {
+			limit = {
+				is_pop_type = aristocrats
+			}
+			add = {
+				value = 50
+				desc = "POP_ARISTOCRATS"
+			}
+		}
+		else_if = {
+			limit = {
+				is_pop_type = farmers
+			}
+			add = {
+				value = 20
+				desc = "POP_FARMERS"
+			}
+		}
+		else_if = {
+			limit = {
+				is_pop_type = peasants
+			}
+			add = {
+				value = 20
+				desc = "POP_PEASANTS"
+			}
+		}
+		else_if = {
+			limit = {
+				is_pop_type = clergymen
+			}
+			add = {
+				value = 20
+				desc = "POP_CLERGYMEN"
+			}
+		}
+		else_if = {
+			limit = {
+				is_pop_type = officers
+			}
+			add = {
+				value = 25
+				desc = "POP_OFFICERS"
+			}
+		}
+		else_if = {
+			limit = {
+				is_pop_type = soldiers
+			}
+			add = {
+				value = 10
+				desc = "POP_SOLDIERS"
+			}
+		}
+		
+		if = {
+			limit = {
+				owner ?= {
+					has_law = law_type:law_monarchy
+				}
+				owner.ruler ?= {
+					NOT = { has_trait = trait_child }
+					law_stance = {
+						law = law_type:law_autocracy
+						value > neutral
+					}
+				}
+			}
+			multiply = { # Absolutist are more reliant on the monarchs popularity than constitutionalists
+				add = owner.ruler.popularity
+				multiply = 0.01
+				add = 1
+				min = 0.2
+				max = 1.8
+				desc = "RULER_POPULARITY"
+			}
+		}
+		else_if = {
+			limit = {
+				owner ?= {
+					has_law = law_type:law_monarchy
+				}
+				owner.ruler ?= {
+					has_trait = trait_child
+					law_stance = {
+						law = law_type:law_autocracy
+						value > neutral
+					}
+				}
+			}
+			multiply = {
+				value = 0.75
+				desc = "RULER_IS_CHILD"
+			}
+		}
+		else_if = {
+			limit = {
+				owner ?= {
+					has_law = law_type:law_monarchy
+				}
+				owner.ruler ?= {
+					law_stance = {
+						law = law_type:law_autocracy
+						value < neutral
+					}
+				}
+			}
+			multiply = {
+				value = 0.75
+				desc = "RULER_IS_LIBERAL"
+			}
+		}
+		
+		multiply = { # Illiterate pops participate at 1/10 the rate of fully literate pops
+			desc = "POP_LITERACY"
+			value = literacy_rate
+			add = 0.2
+			max = 0.7 # Starts more powerful but caps out early
+		}
+		
+		# Grey_PLP
+		multiply = {
+			value = mog_plp_movement_mainland_general_pop_support_weight_incorporation_percent_mult
+		}
+	}
+	
+	revolution = {
+		possible = { owner = { NOT = { has_variable = sb_zululand_usuthu_contest_var } } }
+		weight = {
+			value = 100
+		}
+		
+		state_weight = {
+			value = 1
+			add = scope:clout
+
+			subtract = state_urbanization_rate
+			
+			if = {
+				limit = { is_capital = yes }
+				if = {
+					limit = { owner ?= { has_law = law_type:law_monarchy } }
+					multiply = 10.0
+				}
+				else = {
+					multiply = 0.1
+				}
+			}
+			# Grey_PLP - always put last
+			multiply = {
+				value = mog_plp_movement_all_general_state_weight_mult
+			}
+		}
+	}
+	
+	secession = {
+		possible = {
+			owner = { NOT = { has_variable = sb_zululand_usuthu_contest_var } }
+			political_movement_support >= 0.05
+			scope:clout <= 0
+		}
+		
+		weight = {
+			value = 1000
+		}
+		
+		state_weight = {
+			value = 1
+			
+			subtract = state_urbanization_rate
+			
+			if = {
+				limit = { is_capital = yes }
+				if = {
+					limit = { owner ?= { has_law = law_type:law_monarchy } }
+					multiply = 10.0
+				}
+				else = {
+					multiply = 0.1
+				}
+			}
+			# Grey_PLP - always put last
+			multiply = {
+				value = mog_plp_movement_all_general_state_weight_mult
+			}
+		}
+		
+		forced_tags = {
+			BHT = {
+				trigger = {
+					owner ?= { c:BIC ?= this }
+				}
+				weight = 1000
+			}
+		}
+	}
+	
+	additional_radicalism_factors = {
+		owner ?= {
+			if = {
+				limit = {
+					has_law = law_type:law_monarchy
+				}
+				
+				if = {
+					limit = {
+						OR = {
+							is_enacting_law = law_type:law_presidential_republic
+							is_enacting_law = law_type:law_parliamentary_republic
+							is_enacting_law = law_type:law_corporate_state
+							is_enacting_law = law_type:law_theocracy
+							is_enacting_law = law_type:law_council_republic
+						}
+					}
+					
+					add = {
+						value = 0.25
+						desc = "MONARCHY_BEING_ABOLISHED"
+					}
+				}
+				else = {
+					add = { # Only care about legitimacy in the context of a monarchy that isn't under direct threat
+						value = 50
+						subtract = legitimacy
+						multiply = 0.005
+						desc = "concept_legitimacy"
+					}
+				}
+			}
+		}
+		
+		if = {
+			limit = {
+				owner = {
+					any_neighbouring_state = {
+						owner = {
+							NOT = { THIS = ROOT.owner }
+							any_political_movement = {
+								is_political_movement_type = movement_royalist_absolutist
+								is_insurrectionary = yes
+							}
+						}
+					}
+				}
+			}
+			add = {
+				desc = "NEIGHBOURING_COUNTRY_WITH_REVOLUTION"
+				value = 0.15
+			}
+		}
+        if = {
+            limit = {
+                this.days_since_movement_defeated <= very_long_modifier_time
+            }
+            add = { # (x-y)/y - ([1, 7300]-7300)/7300
+                desc = "movement_suppressed_after_civil_war"
+                value = this.days_since_movement_defeated
+                subtract = very_long_modifier_time
+                divide = {
+                    value = very_long_modifier_time
+                }
+            }
+        }
+	}
+}

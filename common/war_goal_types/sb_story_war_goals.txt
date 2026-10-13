@@ -33,3 +33,57 @@
 
 	ai = { is_significant_demand = no }
 }
+
+# Blood River is decided in Natal; the terminal story settlement owns land changes.
+sb_natal_defend = {
+	icon = "gfx/interface/icons/war_goals/return_state.dds"
+	kind = custom
+	settings = {
+		require_target_be_part_of_war
+		assent_required
+		skip_build_list
+	}
+	execution_priority = 18
+	contestion_type = control_own_state
+	target_type = country
+	possible = { always = no }
+	valid = {
+		country_definition = cd:ZUL
+		scope:target_country ?= { country_definition = cd:ORA }
+		scope:target_state ?= { state_region = s:STATE_NATAL }
+	}
+	maneuvers = {
+		value = 0
+		add = { desc = "MANEUVERS_BASE_VALUE" value = 10 }
+	}
+	infamy = { value = 0 }
+	on_enforced = { sb_story_humiliation_record_enforcement = yes }
+	ai = { is_significant_demand = no }
+}
+
+# Blood River is decided in Natal; the terminal story settlement owns land changes.
+sb_natal_control = {
+	icon = "gfx/interface/icons/war_goals/return_state.dds"
+	kind = custom
+	settings = {
+		require_target_be_part_of_war
+		assent_required
+		skip_build_list
+	}
+	execution_priority = 18
+	contestion_type = control_target_state
+	target_type = state
+	possible = { always = no }
+	valid = {
+		country_definition = cd:ORA
+		scope:target_country ?= { country_definition = cd:ZUL }
+		scope:target_state ?= { state_region = s:STATE_NATAL }
+	}
+	maneuvers = {
+		value = 0
+		add = { desc = "MANEUVERS_BASE_VALUE" value = 10 }
+	}
+	infamy = { value = 0 }
+	on_enforced = { sb_story_humiliation_record_enforcement = yes }
+	ai = { is_significant_demand = no }
+}

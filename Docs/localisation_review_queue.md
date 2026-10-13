@@ -60,3 +60,90 @@ This is the pending review register for new or changed non-event/JE localisation
 | `localization/english/sb_war_goal_contracts_l_english.yml` | `war_goal_sb_story_humiliation_sway_desc` | Technical 1.14 story-war goal UI text. |
 | `localization/english/sb_war_goal_contracts_l_english.yml` | `war_goal_sb_story_humiliation_type_desc` | Technical 1.14 story-war goal UI text. |
 | `localization/english/sb_war_goal_contracts_l_english.yml` | `war_goal_sb_story_humiliation_type_name` | Technical 1.14 story-war goal UI text. |
+| `localization/english/sb_zulu_dynasty_extra_l_english.yml` | `Sigananda` | Preserve the character template's supplied first name instead of random-name fallback. |
+| `localization/english/sb_war_goal_contracts_l_english.yml` | `war_goal_sb_natal_defend_type_name` | Blood River Natal control objective. |
+| `localization/english/sb_war_goal_contracts_l_english.yml` | `war_goal_sb_natal_defend_type_desc` | Blood River Natal control objective. |
+| `localization/english/sb_war_goal_contracts_l_english.yml` | `war_goal_sb_natal_defend` | Blood River Natal control objective. |
+| `localization/english/sb_war_goal_contracts_l_english.yml` | `war_goal_sb_natal_defend_desc` | Blood River Natal control objective. |
+| `localization/english/sb_war_goal_contracts_l_english.yml` | `war_goal_sb_natal_defend_sway_desc` | Blood River Natal control objective. |
+| `localization/english/sb_war_goal_contracts_l_english.yml` | `war_goal_sb_natal_control_type_name` | Blood River Natal control objective. |
+| `localization/english/sb_war_goal_contracts_l_english.yml` | `war_goal_sb_natal_control_type_desc` | Blood River Natal control objective. |
+| `localization/english/sb_war_goal_contracts_l_english.yml` | `war_goal_sb_natal_control` | Blood River Natal control objective. |
+| `localization/english/sb_war_goal_contracts_l_english.yml` | `war_goal_sb_natal_control_desc` | Blood River Natal control objective. |
+| `localization/english/sb_war_goal_contracts_l_english.yml` | `war_goal_sb_natal_control_sway_desc` | Blood River Natal control objective. |
+| `localization/english/sb_l_english.yml` | `dp_sb_natal_crisis_desc` | Replace humiliation with the Blood River Natal control objective. |
+| `localization/english/sb_l_english.yml` | `dp_sb_natal_crisis_tooltip` | Replace humiliation with the Blood River Natal control objective. |
+| `localization/english/sb_l_english.yml` | `sb_natalia_port_natal_before_ultimatum_tt` | Disable Seize Port Natal once Britain dispatches its ultimatum. |
+
+## Natal-owned Zululand settlement — 13 September 2026
+
+| File | Key | Reason |
+|---|---|---|
+| `localization/english/sb_natal_crisis_l_english.yml` | `sb_klip_river_county_060_tt` | Two Vanilla demands replace punitive annexation; event prose remains DP-reviewed. |
+
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_zululand_boer_commitment_bar_tooltip` | Boer Commitment sources, threshold, and conditional settlement explanation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_zululand_chiefdom_balance_bar_tooltip` | Authority in Zululand live monthly drift breakdown. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_zululand_drift_sponsorship` | Authority in Zululand live monthly drift breakdown. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_zululand_drift_volunteers` | Authority in Zululand live monthly drift breakdown. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_zululand_chiefdom_balance_bar` | Chiefdoms movement contest implementation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_zululand_chiefdom_balance_bar_usuthu` | Chiefdoms movement contest implementation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_zululand_chiefdom_balance_bar_zibhebhu` | Chiefdoms movement contest implementation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `je_sb_zululand_increase_policing_button_desc` | Chiefdoms movement contest implementation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `je_sb_zululand_unload_refugees_effect_tt` | Chiefdoms movement contest implementation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `je_sb_zululand_return_claimant_effect_tt` | Chiefdoms movement contest implementation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `je_sb_zululand_sponsor_usuthu_button_desc` | Chiefdoms movement contest implementation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `je_sb_zululand_sanction_volunteers_button_desc` | Chiefdoms movement contest implementation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_zululand_crown_restored_autonomy` | Chiefdoms movement contest implementation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_zululand_crown_restored_autonomy_desc` | Chiefdoms movement contest implementation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_zululand_zibhebhu_incorporation_legacy` | Chiefdoms movement contest implementation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_zululand_zibhebhu_incorporation_legacy_desc` | Chiefdoms movement contest implementation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_zululand_policing_cost_desc` | Chiefdoms movement contest implementation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `je_sb_zululand_support_chiefs_button` | Chiefdoms movement contest implementation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `je_sb_zululand_support_chiefs_button_desc` | Chiefdoms movement contest implementation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `je_sb_zululand_end_chief_support_button` | Chiefdoms movement contest implementation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `je_sb_zululand_end_chief_support_button_desc` | Chiefdoms movement contest implementation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `movement_sb_usuthu` | Chiefdoms movement contest implementation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `ideology_sb_usuthu` | Chiefdoms movement contest implementation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `ideology_sb_usuthu_desc` | Chiefdoms movement contest implementation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_zululand_loyalist_lobby_name` | Chiefdoms movement contest implementation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_zululand_restorationist_lobby_name` | Chiefdoms movement contest implementation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_usuthu_royalist_networks` | Chiefdoms movement contest implementation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_usuthu_sponsorship` | Chiefdoms movement contest implementation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_usuthu_volunteers` | Chiefdoms movement contest implementation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_usuthu_policing` | Chiefdoms movement contest implementation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_usuthu_chief_patronage` | Chiefdoms movement contest implementation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_usuthu_suppressed` | Chiefdoms movement contest implementation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_zululand_chief_patronage_cost` | Chiefdoms movement contest implementation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `concept_sb_zulu_chiefdoms` | Chiefdoms movement contest implementation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `concept_sb_zulu_chiefdoms_desc` | Chiefdoms movement contest implementation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_usuthu_live_readout` | Chiefdoms movement contest implementation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_usuthu_influence_tooltip` | Chiefdoms movement contest implementation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `je_sb_zululand_end_policing_button` | Chiefdoms movement contest implementation; preserved labels or revised explanation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `je_sb_zululand_end_policing_button_desc` | Chiefdoms movement contest implementation; preserved labels or revised explanation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `je_sb_zululand_end_usuthu_sponsorship_button` | Chiefdoms movement contest implementation; preserved labels or revised explanation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `je_sb_zululand_end_usuthu_sponsorship_button_desc` | Chiefdoms movement contest implementation; preserved labels or revised explanation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `je_sb_zululand_end_volunteers_button` | Chiefdoms movement contest implementation; preserved labels or revised explanation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `je_sb_zululand_end_volunteers_button_desc` | Chiefdoms movement contest implementation; preserved labels or revised explanation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `je_sb_zululand_increase_policing_possible_tt` | Chiefdoms movement contest implementation; preserved labels or revised explanation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `je_sb_zululand_return_claimant_button` | Chiefdoms movement contest implementation; preserved labels or revised explanation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `je_sb_zululand_return_claimant_button_desc` | Chiefdoms movement contest implementation; preserved labels or revised explanation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `je_sb_zululand_return_claimant_possible_tt` | Chiefdoms movement contest implementation; preserved labels or revised explanation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `je_sb_zululand_sanction_volunteers_button` | Chiefdoms movement contest implementation; preserved labels or revised explanation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `je_sb_zululand_sponsor_usuthu_button` | Chiefdoms movement contest implementation; preserved labels or revised explanation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `je_sb_zululand_unload_refugees_button` | Chiefdoms movement contest implementation; preserved labels or revised explanation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `je_sb_zululand_unload_refugees_button_desc` | Chiefdoms movement contest implementation; preserved labels or revised explanation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `je_sb_zululand_unload_refugees_possible_tt` | Chiefdoms movement contest implementation; preserved labels or revised explanation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_zululand_boer_commitment_bar` | Chiefdoms movement contest implementation; preserved labels or revised explanation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_zululand_boer_commitment_bar_high` | Chiefdoms movement contest implementation; preserved labels or revised explanation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_zululand_boer_commitment_bar_low` | Chiefdoms movement contest implementation; preserved labels or revised explanation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_zululand_boer_volunteer_mortality` | Chiefdoms movement contest implementation; preserved labels or revised explanation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_zululand_boer_volunteer_mortality_desc` | Chiefdoms movement contest implementation; preserved labels or revised explanation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_zululand_chiefdom_reserves` | Chiefdoms movement contest implementation; preserved labels or revised explanation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_zululand_chiefdom_reserves_desc` | Chiefdoms movement contest implementation; preserved labels or revised explanation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_zululand_crown_incorporation_legacy` | Chiefdoms movement contest implementation; preserved labels or revised explanation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_zululand_crown_incorporation_legacy_desc` | Chiefdoms movement contest implementation; preserved labels or revised explanation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_zululand_policing_cost` | Chiefdoms movement contest implementation; preserved labels or revised explanation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_zululand_usuthu_sponsorship_cost` | Chiefdoms movement contest implementation; preserved labels or revised explanation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_zululand_usuthu_sponsorship_cost_desc` | Chiefdoms movement contest implementation; preserved labels or revised explanation. |
+
+| `localization/english/replace/sb_usuthu_movement_l_english.yml` | `movement_royalist_absolutist_name` | Country-scoped name for the existing Absolutist movement; preserves the existing uSuthu and Vanilla labels. |

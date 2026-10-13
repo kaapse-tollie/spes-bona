@@ -393,35 +393,30 @@ sb_klip_river_county.050 = {
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
 	icon = "gfx/interface/icons/event_icons/event_military.dds"
 	duration = 3
-	# Receipt stays broad. Its option must revalidate because it may have been held.
+	# Revalidate the choice on selection; keep the popup reserved while it is open.
 	trigger = { country_definition = cd:NAL is_country_alive = yes has_variable = sb_klip_river_secession_delivery_pending_var NOT = { has_variable = sb_klip_river_county_resolved_var } }
-	immediate = { if = { limit = { has_variable = sb_klip_river_secession_delivery_queued_var } remove_variable = sb_klip_river_secession_delivery_queued_var } }
+	immediate = {
+		# Replace the short dispatch timeout with a reservation until answered.
+		if = { limit = { has_variable = sb_klip_river_secession_delivery_queued_var } remove_variable = sb_klip_river_secession_delivery_queued_var }
+		set_variable = sb_klip_river_secession_delivery_queued_var
+		c:ZUL ?= { save_scope_as = sb_klip_zulu_scope }
+	}
 	option = {
 		name = sb_klip_river_county.050.a
 		default_option = yes
-		trigger = { sb_klip_river_secession_bound_delivery_receipt = yes sb_klip_river_secession_preflight = yes }
 		custom_tooltip = sb_klip_river_county_050_tt
-		hidden_effect = { sb_klip_river_start_secession_play = yes }
+		hidden_effect = {
+			if = {
+				limit = { sb_klip_river_secession_bound_delivery_receipt = yes }
+				remove_variable = sb_klip_river_secession_delivery_queued_var
+				if = {
+					limit = { sb_klip_river_secession_delivery_currently_permanently_invalid = yes }
+					sb_klip_river_cancel_secession_delivery = yes
+				}
+				else = { sb_klip_river_start_secession_play = yes }
+			}
+		}
 		ai_chance = { base = 100 }
-	}
-	# Busy war/play states retain this exact receipt and reissue it later.
-	option = {
-		name = sb_klip_river_county.050.a
-		trigger = { sb_klip_river_secession_bound_delivery_receipt = yes NOT = { sb_klip_river_secession_delivery_permanently_invalid = yes } NOT = { sb_klip_river_secession_preflight = yes } }
-		hidden_effect = { sb_klip_river_queue_secession_delivery = yes }
-		ai_chance = { base = 0 }
-	}
-	# Only the live generation may cancel itself. An older popup is inert.
-	option = {
-		name = sb_klip_river_county.050.a
-		trigger = { sb_klip_river_secession_delivery_permanently_invalid = yes }
-		hidden_effect = { sb_klip_river_cancel_secession_delivery = yes }
-		ai_chance = { base = 0 }
-	}
-	option = {
-		name = sb_klip_river_county.050.a
-		trigger = { NOT = { sb_klip_river_secession_bound_delivery_receipt = yes } }
-		ai_chance = { base = 0 }
 	}
 }
 
@@ -436,31 +431,28 @@ sb_klip_river_county.060 = {
 	icon = "gfx/interface/icons/event_icons/event_military.dds"
 	duration = 3
 	trigger = { country_definition = cd:NAL is_country_alive = yes has_variable = sb_klip_river_punitive_delivery_pending_var NOT = { has_variable = sb_klip_river_county_resolved_var } }
-	immediate = { if = { limit = { has_variable = sb_klip_river_punitive_delivery_queued_var } remove_variable = sb_klip_river_punitive_delivery_queued_var } }
+	immediate = {
+		# Replace the short dispatch timeout with a reservation until answered.
+		if = { limit = { has_variable = sb_klip_river_punitive_delivery_queued_var } remove_variable = sb_klip_river_punitive_delivery_queued_var }
+		set_variable = sb_klip_river_punitive_delivery_queued_var
+		c:ZUL ?= { save_scope_as = sb_klip_zulu_scope }
+	}
 	option = {
 		name = sb_klip_river_county.060.a
 		default_option = yes
-		trigger = { sb_klip_river_punitive_bound_delivery_receipt = yes sb_klip_river_punitive_preflight = yes }
 		custom_tooltip = sb_klip_river_county_060_tt
-		hidden_effect = { sb_klip_river_start_punitive_play = yes }
+		hidden_effect = {
+			if = {
+				limit = { sb_klip_river_punitive_bound_delivery_receipt = yes }
+				remove_variable = sb_klip_river_punitive_delivery_queued_var
+				if = {
+					limit = { sb_klip_river_punitive_delivery_currently_permanently_invalid = yes }
+					sb_klip_river_cancel_punitive_delivery = yes
+				}
+				else = { sb_klip_river_start_punitive_play = yes }
+			}
+		}
 		ai_chance = { base = 100 }
-	}
-	option = {
-		name = sb_klip_river_county.060.a
-		trigger = { sb_klip_river_punitive_bound_delivery_receipt = yes NOT = { sb_klip_river_punitive_delivery_permanently_invalid = yes } NOT = { sb_klip_river_punitive_preflight = yes } }
-		hidden_effect = { sb_klip_river_queue_punitive_delivery = yes }
-		ai_chance = { base = 0 }
-	}
-	option = {
-		name = sb_klip_river_county.060.a
-		trigger = { sb_klip_river_punitive_delivery_permanently_invalid = yes }
-		hidden_effect = { sb_klip_river_cancel_punitive_delivery = yes }
-		ai_chance = { base = 0 }
-	}
-	option = {
-		name = sb_klip_river_county.060.a
-		trigger = { NOT = { sb_klip_river_punitive_bound_delivery_receipt = yes } }
-		ai_chance = { base = 0 }
 	}
 }
 

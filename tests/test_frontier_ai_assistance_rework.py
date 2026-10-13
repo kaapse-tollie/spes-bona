@@ -590,13 +590,14 @@ class FrontierAiAssistanceReworkTests(unittest.TestCase):
         creation = block(effects_path, "sb_klip_river_create_county")
         for token in (
             "xBBCA32 xDE0EDE x552449",
-            "building = building_maize_farm",
+            "building = building_livestock_ranch",
             "combat_unit_type_dragoons",
             "combat_unit_type_irregular_infantry",
         ):
             self.assertIn(token, creation)
         self.assertNotIn("sb_frontier_ai_scripting_enabled", creation)
         self.assertNotIn("sb_frontier_player_challenge_enabled", creation)
+        self.assertNotIn("building_maize_farm", creation)
 
         coalition = block(effects_path, "sb_klip_river_roll_coalition_boost")
         coalition_laager = block(effects_path, "sb_klip_river_apply_coalition_laager")

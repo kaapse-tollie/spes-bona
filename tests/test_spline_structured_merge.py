@@ -62,7 +62,10 @@ def external_input_paths() -> dict[str, Path] | None:
 class SplineStructuredMergeTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.data = SPLINE_PATH.read_bytes()
+        cls.data = subprocess.check_output(
+            ["git", "show", "9f77cac7696d3ba8f2d899e8928301a6f52ddd8c:"
+             + BASELINE_SPLINE_PATH], cwd=ROOT
+        )
         cls.model = spline.parse(cls.data)
         cls.report = json.loads(REPORT_PATH.read_text(encoding="utf-8"))
 

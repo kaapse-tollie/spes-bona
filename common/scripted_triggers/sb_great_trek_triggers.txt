@@ -4,6 +4,15 @@
 # higher-level JE/event logic so the content can ask for "west Transvaal core"
 # or "Transvaal except the Swazi carve-out" without repeating province lists.
 
+# Country scope = ORA. Colonization rights is a one-sided pact: the holder
+# must be the current country, with MTB as the target of the lookup.
+sb_great_trek_opening_victory_is_valid = {
+	country_definition = cd:ORA
+	is_country_alive = yes
+	c:MTB ?= { is_country_alive = yes }
+	has_diplomatic_pact = { who = c:MTB type = colonization_rights is_initiator = yes }
+}
+
 sb_can_use_frontier_colonization = {
 	OR = {
 		AND = {

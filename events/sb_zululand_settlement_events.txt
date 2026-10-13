@@ -52,41 +52,18 @@ sb_zululand_settlement.110 = {
 	trigger = { country_definition = cd:NAL sb_zululand_chiefdoms_runtime_valid = yes }
 	immediate = {
 		random_list = {
-			50 = { set_variable = sb_zululand_skirmish_zibhebhu_var sb_zululand_shift_balance_zibhebhu_5 = yes }
-			50 = { set_variable = sb_zululand_skirmish_usuthu_var sb_zululand_shift_balance_usuthu_5 = yes }
+			50 = { set_variable = sb_zululand_skirmish_zibhebhu_var }
+			50 = {  }
 		}
 	}
 	option = {
 		name = sb_zululand_settlement.110.a
 		default_option = yes
-		sb_zululand_finish_situation_event = yes
-	}
-}
-
-sb_zululand_settlement.111 = {
-	type = country_event
-	placement = root
-	title = sb_zululand_settlement.111.t
-	desc = sb_zululand_settlement.111.d
-	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
-	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-	icon = "gfx/interface/icons/event_icons/event_trade.dds"
-	duration = 3
-
-	trigger = { country_definition = cd:NAL sb_zululand_chiefdoms_runtime_valid = yes }
-	option = {
-		name = sb_zululand_settlement.111.a
-		default_option = yes
-		custom_tooltip = sb_zululand_settlement.111.a.tt
-		sb_zululand_apply_full_hut_tax = yes
-		sb_zululand_shift_balance_usuthu_5 = yes
-		sb_zululand_finish_situation_event = yes
-	}
-	option = {
-		name = sb_zululand_settlement.111.b
-		custom_tooltip = sb_zululand_settlement.111.b.tt
-		sb_zululand_relax_hut_tax = yes
-		sb_zululand_shift_balance_zibhebhu_5 = yes
+		if = {
+			limit = { sb_zululand_chiefdoms_runtime_valid = yes }
+			if = { limit = { has_variable = sb_zululand_skirmish_zibhebhu_var } sb_zululand_shift_liberty_zibhebhu_5 = yes }
+			else = { sb_zululand_shift_liberty_usuthu_5 = yes }
+		}
 		sb_zululand_finish_situation_event = yes
 	}
 }
@@ -111,16 +88,16 @@ sb_zululand_settlement.112 = {
 		if = {
 			limit = { sb_zululand_defection_favors_zibhebhu = yes }
 			set_variable = sb_zululand_defection_zibhebhu_var
-			sb_zululand_shift_balance_zibhebhu_5 = yes
-		}
-		else = {
-			set_variable = sb_zululand_defection_usuthu_var
-			sb_zululand_shift_balance_usuthu_5 = yes
 		}
 	}
 	option = {
 		name = sb_zululand_settlement.112.a
 		default_option = yes
+		if = {
+			limit = { sb_zululand_chiefdoms_runtime_valid = yes }
+			if = { limit = { has_variable = sb_zululand_defection_zibhebhu_var } sb_zululand_shift_liberty_zibhebhu_5 = yes }
+			else = { sb_zululand_shift_liberty_usuthu_5 = yes }
+		}
 		sb_zululand_finish_situation_event = yes
 	}
 }
@@ -198,7 +175,7 @@ sb_zululand_settlement.115 = {
 					sb_frontier_ai_behavior_dynamic_historical = yes
 					NOT = { in_default = yes }
 					NOT = { has_modifier = declared_bankruptcy }
-					container:sb_zululand_chiefdoms_state.var:sb_zululand_balance_var < 50
+					c:ZUL = { liberty_desire >= 50 }
 				}
 				add = 80
 			}
@@ -207,7 +184,7 @@ sb_zululand_settlement.115 = {
 					sb_frontier_ai_behavior_dynamic_historical = yes
 					NOT = { in_default = yes }
 					NOT = { has_modifier = declared_bankruptcy }
-					container:sb_zululand_chiefdoms_state.var:sb_zululand_balance_var >= 50
+					c:ZUL = { liberty_desire < 50 }
 				}
 				add = 60
 			}
@@ -232,7 +209,7 @@ sb_zululand_settlement.115 = {
 					sb_frontier_ai_behavior_dynamic_historical = yes
 					NOT = { in_default = yes }
 					NOT = { has_modifier = declared_bankruptcy }
-					container:sb_zululand_chiefdoms_state.var:sb_zululand_balance_var < 50
+					c:ZUL = { liberty_desire >= 50 }
 				}
 				add = 20
 			}
@@ -241,7 +218,7 @@ sb_zululand_settlement.115 = {
 					sb_frontier_ai_behavior_dynamic_historical = yes
 					NOT = { in_default = yes }
 					NOT = { has_modifier = declared_bankruptcy }
-					container:sb_zululand_chiefdoms_state.var:sb_zululand_balance_var >= 50
+					c:ZUL = { liberty_desire < 50 }
 				}
 				add = 40
 			}
@@ -259,26 +236,12 @@ sb_zululand_settlement.120 = {
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
 	icon = "gfx/interface/icons/event_icons/event_map.dds"
 	duration = 3
-	# Receipt remains broad so a stale delivery can take its cleanup-only option.
-	trigger = { country_definition = cd:NAL }
+	trigger = { country_definition = cd:NAL sb_zululand_chiefdoms_runtime_valid = yes has_variable = sb_zululand_terminal_event_pending_var }
+	immediate = { sb_zululand_apply_zibhebhu_victory = yes }
 	option = {
 		name = sb_zululand_settlement.120.a
 		default_option = yes
-		# sb_zululand_chiefdoms_runtime_valid = yes is included by the bound authority.
-		trigger = { sb_zululand_bound_zibhebhu_terminal_event_authority = yes }
 		custom_tooltip = sb_zululand_settlement.120.a.tt
-		hidden_effect = {
-			if = {
-				limit = { sb_zululand_bound_zibhebhu_terminal_event_authority = yes }
-				sb_zululand_apply_zibhebhu_victory = yes
-			}
-			else = { sb_zululand_clear_terminal_generation = yes }
-		}
-	}
-	option = {
-		name = sb_zululand_settlement.120.a
-		trigger = { NOT = { sb_zululand_bound_zibhebhu_terminal_event_authority = yes } }
-		hidden_effect = { sb_zululand_clear_terminal_generation = yes }
 	}
 }
 
@@ -292,26 +255,12 @@ sb_zululand_settlement.121 = {
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
 	icon = "gfx/interface/icons/event_icons/event_map.dds"
 	duration = 3
-	# Receipt remains broad so a stale delivery can take its cleanup-only option.
-	trigger = { country_definition = cd:NAL }
+	trigger = { country_definition = cd:NAL sb_zululand_chiefdoms_runtime_valid = yes has_variable = sb_zululand_terminal_event_pending_var }
+	immediate = { sb_zululand_apply_crown_victory = yes }
 	option = {
 		name = sb_zululand_settlement.121.a
 		default_option = yes
-		# sb_zululand_chiefdoms_runtime_valid = yes is included by the bound authority.
-		trigger = { sb_zululand_bound_crown_terminal_event_authority = yes }
 		custom_tooltip = sb_zululand_settlement.121.a.tt
-		hidden_effect = {
-			if = {
-				limit = { sb_zululand_bound_crown_terminal_event_authority = yes }
-				sb_zululand_apply_crown_victory = yes
-			}
-			else = { sb_zululand_clear_terminal_generation = yes }
-		}
-	}
-	option = {
-		name = sb_zululand_settlement.121.a
-		trigger = { NOT = { sb_zululand_bound_crown_terminal_event_authority = yes } }
-		hidden_effect = { sb_zululand_clear_terminal_generation = yes }
 	}
 }
 
@@ -359,7 +308,6 @@ sb_zululand_settlement.130 = {
 			}
 			remove_variable = sb_zululand_incorporation_complete_pending_var
 			set_variable = sb_zululand_incorporation_complete_var
-			sb_zululand_remove_hut_tax = yes
 			s:STATE_ZULULAND.region_state:NAL ?= {
 				if = { limit = { has_modifier = sb_zululand_chiefdom_reserves } remove_modifier = sb_zululand_chiefdom_reserves }
 				if = { limit = { has_modifier = sb_zululand_zibhebhu_incorporation_legacy } remove_modifier = sb_zululand_zibhebhu_incorporation_legacy }

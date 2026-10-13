@@ -1554,7 +1554,9 @@ class NatalInterwarTests(unittest.TestCase):
         self.assertIn("country = c:ZUL", normalize)
         self.assertIn("type = protectorate", normalize)
         self.assertIn("sb_natal_restore_archived_zulu_firearms = yes", normalize)
-        self.assertIn("sb_natal_schedule_zulu_settlement = yes", normalize)
+        self.assertNotIn("sb_natal_schedule_zulu_settlement = yes", normalize)
+        self.assertIn("sb_natal_schedule_zulu_settlement = yes",
+                      object_block(effects_path, "sb_zululand_handoff_to_natal"))
         self.assertIn("sb_zululand_restore_protectorate_for_natal = yes", handoff)
         self.assertIn("sb_zululand_normalized_nal_protectorate = yes", handoff)
 

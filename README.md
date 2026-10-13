@@ -24,8 +24,12 @@ Spes Bona is a Victoria 3 regional flavor mod for greater Southern Africa built 
 
 ## Requirements
 
-- Victoria 3 `1.14.0` Open Beta 1 (Steam build `25081502`, branch `1.14-openbeta`)
-- Community Mod Framework `1.66.x`
+- Victoria 3 `1.14.3` Open Beta Update 2 (Steam build `25347710`, branch `1.14-openbeta`)
+- Community Mod Framework `1.66.0` with patch `sb-1.14.3-r1`
+
+The 2026-10-13 checkpoint retains this target. The development machine now has
+Victoria 3 `1.14.5`; its compatibility drift and the outstanding validation
+failures are recorded in the [checkpoint review](Docs/compatibility/checkpoint_review_2026_10_13.md).
 
 ## Compatibility
 
@@ -61,7 +65,7 @@ Run the validation suite from the repository root:
 python3 tools/validate.py
 ```
 
-Validation fetches GitHub's exact CMF `1.66.0` release tag, requires `release-1.66.0.zip`, verifies its pinned SHA-256, and only then synchronizes the canonical sibling directory `../Community Mod Framework`. It never follows a newer “latest” release during normal validation. Use `--skip-cmf-sync` only for an intentional offline run; `tools/sync_cmf.py --latest` is an explicit maintainer-only discovery mode.
+Validation checks the pinned CMF `1.66.0` + `sb-1.14.3-r1` installation without changing it. Install or repair the canonical sibling directory `../Community Mod Framework` with `python3 -B tools/sync_cmf.py`: it verifies the exact release archive, applies the pinned patch in staging, verifies the resulting tree, and installs with rollback. `--check` is read-only; `--force` retains the patch; `--latest` is rejected for this pinned dependency. `--skip-cmf-sync` omits the synchronizer check but retains the installed-tree integrity check.
 
 When the proprietary dependencies are available, include explicit Vanilla/CMF comparison and Tiger validation:
 
@@ -75,7 +79,7 @@ Missing proprietary dependencies report `SKIP`; CI does not require them. Tiger 
 
 Release validation is pinned to CMF `1.66.0`, commit `807c32ff42b75714a3a0e090c0db3357b5e46ed7`, and GitHub asset SHA-256 `79dd0d434e6ffb617147ad1b91b73e6306139adfffcadf6774eeb32db3a09b8b`. The launcher dependency is `1.66.*`. During the 1.14 beta audit, the Workshop change log reported a reversion to its 1.13 payload, so use the exact GitHub asset until the Workshop copy is unambiguous.
 
-On the primary development machine, the canonical GitHub release is installed without local edits at `/Users/depro/Documents/Paradox Interactive/Victoria 3/mod/Community Mod Framework`.
+On the primary development machine, the verified release plus the pinned compatibility patch is installed at `/Users/depro/Documents/Paradox Interactive/Victoria 3/mod/Community Mod Framework`.
 
 ## Current Priority
 
@@ -87,3 +91,5 @@ What still matters most:
 - debugger cleanup if any new issues appear
 - AI balance and branch reliability
 - small presentation and content polish
+
+The current dependency is the verified CMF release **plus** `sb-1.14.3-r1`; an unpatched release is unsupported. Install with `python3 -B tools/sync_cmf.py`. `--check` verifies the complete patched file tree without modifying it. See [the 1.14.3 rebase](Docs/compatibility/1_14_3_rebase.md).

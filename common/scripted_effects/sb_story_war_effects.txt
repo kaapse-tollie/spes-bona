@@ -353,6 +353,7 @@ sb_natal_story_queue_launch_retry = {
 sb_natal_story_attempt_exact_launch = {
 	if = {
 		limit = {
+			any_scope_state = { state_region = s:STATE_NATAL }
 			country_definition = cd:ZUL
 			is_country_alive = yes
 			is_subject = no
@@ -390,11 +391,6 @@ sb_natal_story_attempt_exact_launch = {
 		create_diplomatic_play = {
 			type = dp_sb_natal_crisis
 			target_country = c:ORA
-			add_war_goal = {
-				holder = c:ORA
-				type = sb_story_humiliation
-				target_country = root
-			}
 		}
 	}
 	# The admitted on-start path consumes the lease synchronously. A residual
@@ -472,6 +468,8 @@ sb_natal_story_begin_exact_launch = {
 # while the popup receipt outlives the full three-month event hold. The container
 # binds the terminal result and the exact recipient/counterparty country scopes so
 # a retagged survivor remains authoritative without reusing a later route.
+# The current scope is the recipient country, but ROOT can still be the closing
+# diplomatic play. Capture the current country and parent its receipt explicitly.
 sb_natal_story_begin_terminal_ora_victory = {
 	if = {
 		limit = {
@@ -479,11 +477,11 @@ sb_natal_story_begin_terminal_ora_victory = {
 			exists = scope:sb_natal_terminal_counterparty
 			NOT = { container_exists = sb_natal_terminal_outcome_state }
 		}
-		ROOT = { save_scope_as = sb_natal_terminal_recipient }
+		save_scope_as = sb_natal_terminal_recipient
 		create_container = {
 			name = sb_natal_terminal_outcome_state
 			tags = { sb_story sb_natal_terminal_outcome }
-			parent = root
+			parent = scope:sb_natal_terminal_recipient
 			on_created = { set_variable = { name = sb_natal_terminal_outcome_pending_var days = 730 } }
 		}
 		container:sb_natal_terminal_outcome_state = {
@@ -510,11 +508,11 @@ sb_natal_story_begin_terminal_zulu_victory = {
 			exists = scope:sb_natal_terminal_counterparty
 			NOT = { container_exists = sb_natal_terminal_outcome_state }
 		}
-		ROOT = { save_scope_as = sb_natal_terminal_recipient }
+		save_scope_as = sb_natal_terminal_recipient
 		create_container = {
 			name = sb_natal_terminal_outcome_state
 			tags = { sb_story sb_natal_terminal_outcome }
-			parent = root
+			parent = scope:sb_natal_terminal_recipient
 			on_created = { set_variable = { name = sb_natal_terminal_outcome_pending_var days = 730 } }
 		}
 		container:sb_natal_terminal_outcome_state = {
@@ -538,11 +536,11 @@ sb_natal_story_begin_terminal_zulu_neutral = {
 			exists = scope:sb_natal_terminal_counterparty
 			NOT = { container_exists = sb_natal_terminal_outcome_state }
 		}
-		ROOT = { save_scope_as = sb_natal_terminal_recipient }
+		save_scope_as = sb_natal_terminal_recipient
 		create_container = {
 			name = sb_natal_terminal_outcome_state
 			tags = { sb_story sb_natal_terminal_outcome }
-			parent = root
+			parent = scope:sb_natal_terminal_recipient
 			on_created = { set_variable = { name = sb_natal_terminal_outcome_pending_var days = 730 } }
 		}
 		container:sb_natal_terminal_outcome_state = {

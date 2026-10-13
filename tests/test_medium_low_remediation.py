@@ -437,8 +437,6 @@ class MediumLowRemediationTests(unittest.TestCase):
         containers = {
             "sb_bechuanaland_corridor_state",
             "sb_griqualand_sequence_state",
-            "sb_klip_river_punitive_generation_state",
-            "sb_klip_river_secession_generation_state",
             "sb_martinus_coercive_generation_state",
             "sb_martinus_legal_union_generation_state",
             "sb_natal_guns_bargain_generation_state",
@@ -446,7 +444,6 @@ class MediumLowRemediationTests(unittest.TestCase):
             "sb_natal_terminal_outcome_state",
             "sb_zpb_crackdown_generation_state",
             "sb_zululand_chiefdoms_state",
-            "sb_zululand_terminal_generation_state",
         }
         for container in containers:
             self.assertIn(f"container_exists = {container}", lock)

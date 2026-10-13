@@ -1,0 +1,93 @@
+﻿# Country scope: ZUL. Uses native lobby types so native LD sees their IG clout.
+sb_zululand_setup_usuthu_politics = {
+	set_global_variable = { name = sb_zululand_live_zul_scope value = c:ZUL }
+	c:ZUL = {
+		if = { limit = { NOT = { any_political_movement = { is_political_movement_type = movement_royalist_absolutist } } } create_political_movement = { type = movement_royalist_absolutist } }
+		every_political_movement = {
+			limit = { is_political_movement_type = movement_royalist_absolutist }
+			sb_zululand_configure_usuthu_movement = yes
+		}
+		every_political_lobby = {
+			limit = { target = c:NAL NOT = { is_political_lobby_type = lobby_pro_overlord } }
+			if = { limit = { any_lobby_member = { is_interest_group_type = ig_industrialists } } remove_lobby_member = c:ZUL.ig:ig_industrialists }
+			if = { limit = { any_lobby_member = { is_interest_group_type = ig_intelligentsia } } remove_lobby_member = c:ZUL.ig:ig_intelligentsia }
+			if = { limit = { any_lobby_member = { is_interest_group_type = ig_petty_bourgeoisie } } remove_lobby_member = c:ZUL.ig:ig_petty_bourgeoisie }
+		}
+		if = {
+			limit = { NOT = { any_political_lobby = { is_political_lobby_type = lobby_pro_overlord target = c:NAL } } }
+			create_political_lobby = {
+				type = lobby_pro_overlord
+				target = c:NAL
+				add_interest_group = ig:ig_industrialists
+				add_interest_group = ig:ig_intelligentsia
+				add_interest_group = ig:ig_petty_bourgeoisie
+				lobby_formation_reason = diplomacy
+			}
+		}
+		every_political_lobby = {
+			limit = { is_political_lobby_type = lobby_pro_overlord target = c:NAL }
+			set_variable = sb_zululand_loyalist_lobby_var
+			if = { limit = { NOT = { any_lobby_member = { is_interest_group_type = ig_industrialists } } } add_lobby_member = c:ZUL.ig:ig_industrialists }
+			if = { limit = { NOT = { any_lobby_member = { is_interest_group_type = ig_intelligentsia } } } add_lobby_member = c:ZUL.ig:ig_intelligentsia }
+			if = { limit = { NOT = { any_lobby_member = { is_interest_group_type = ig_petty_bourgeoisie } } } add_lobby_member = c:ZUL.ig:ig_petty_bourgeoisie }
+		}
+		every_political_lobby = {
+			limit = { target = c:NAL NOT = { is_political_lobby_type = lobby_anti_overlord } }
+			if = { limit = { any_lobby_member = { is_interest_group_type = ig_landowners } } remove_lobby_member = c:ZUL.ig:ig_landowners }
+			if = { limit = { any_lobby_member = { is_interest_group_type = ig_armed_forces } } remove_lobby_member = c:ZUL.ig:ig_armed_forces }
+			if = { limit = { any_lobby_member = { is_interest_group_type = ig_devout } } remove_lobby_member = c:ZUL.ig:ig_devout }
+		}
+		if = {
+			limit = { NOT = { any_political_lobby = { is_political_lobby_type = lobby_anti_overlord target = c:NAL } } }
+			create_political_lobby = {
+				type = lobby_anti_overlord
+				target = c:NAL
+				add_interest_group = ig:ig_landowners
+				add_interest_group = ig:ig_armed_forces
+				add_interest_group = ig:ig_devout
+				lobby_formation_reason = diplomacy
+			}
+		}
+		every_political_lobby = {
+			limit = { is_political_lobby_type = lobby_anti_overlord target = c:NAL }
+			set_variable = sb_zululand_restorationist_lobby_var
+			if = { limit = { NOT = { any_lobby_member = { is_interest_group_type = ig_landowners } } } add_lobby_member = c:ZUL.ig:ig_landowners }
+			if = { limit = { NOT = { any_lobby_member = { is_interest_group_type = ig_armed_forces } } } add_lobby_member = c:ZUL.ig:ig_armed_forces }
+			if = { limit = { NOT = { any_lobby_member = { is_interest_group_type = ig_devout } } } add_lobby_member = c:ZUL.ig:ig_devout }
+		}
+	}
+}
+
+sb_zululand_start_chief_patronage = {
+	set_variable = sb_zululand_chief_patronage_active_var
+	add_modifier = { name = sb_zululand_chief_patronage_cost }
+	c:ZUL ?= { every_political_movement = { limit = { is_political_movement_type = movement_royalist_absolutist } add_modifier = { name = sb_usuthu_chief_patronage } } }
+}
+sb_zululand_stop_chief_patronage = {
+	if = { limit = { has_variable = sb_zululand_chief_patronage_active_var } remove_variable = sb_zululand_chief_patronage_active_var }
+	if = { limit = { has_modifier = sb_zululand_chief_patronage_cost } remove_modifier = sb_zululand_chief_patronage_cost }
+	c:ZUL ?= { every_political_movement = { limit = { is_political_movement_type = movement_royalist_absolutist has_modifier = sb_usuthu_chief_patronage } remove_modifier = sb_usuthu_chief_patronage } }
+}
+sb_zululand_mark_boer_commitment = {
+	container:sb_zululand_chiefdoms_state ?= {
+		if = {
+			limit = { var:sb_zululand_boer_commitment_var >= 100 NOT = { has_variable = sb_zululand_boer_committed_var } }
+			set_variable = sb_zululand_boer_committed_var
+		}
+	}
+}
+
+# Political movement scope. Reconfigure in place; do not reset support/activism.
+sb_zululand_configure_usuthu_movement = {
+	if = {
+		limit = { owner = { country_definition = cd:ZUL has_variable = sb_zululand_usuthu_context_var } }
+		set_core_ideology = ideology_sb_usuthu
+		if = {
+			limit = {
+				owner = { has_variable = sb_zululand_usuthu_contest_var }
+				NOT = { has_modifier = sb_usuthu_royalist_networks }
+			}
+			add_modifier = { name = sb_usuthu_royalist_networks }
+		}
+	}
+}

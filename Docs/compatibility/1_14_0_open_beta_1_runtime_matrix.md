@@ -1,6 +1,6 @@
 # Victoria 3 1.14.0 Open Beta 1 Runtime Matrix
 
-Certification status: **not runtime-certified**. Every case below is unrun and remains `Engine pending`.
+Certification status: **not runtime-certified**. The 2026-09-05 launch failed `OB1-CF-01`, `OB1-CF-10`, and `OB1-MAP-01`; these remain `Fail — blocker` until a fresh launch verifies the fixes. The reported Great Trek postwar delivery failure also leaves `OB1-WAR-09` at `Fail — blocker` pending an engine retest. Other cases remain `Engine pending`.
 
 Runtime identity:
 
@@ -31,7 +31,7 @@ These cases remain relevant from the historical matrix and receive new OB1 IDs.
 
 | ID | Former ID | Scenario | Acceptance condition | Status |
 |---|---|---|---|---|
-| `OB1-CF-01` | `RV-01` | Cold-launch a fresh 1836 game with CMF 1.66.0 and SB 0.20.0, then save and reload. | The process identifies the exact OB1 build; no new parser, missing-scope, stale-JE, duplicate Situation-widget, or save/reload error appears. | Engine pending |
+| `OB1-CF-01` | `RV-01` | Cold-launch a fresh 1836 game with CMF 1.66.0 and SB 0.20.0, then save and reload. | The process identifies the exact OB1 build; no new parser, missing-scope, stale-JE, duplicate Situation-widget, or save/reload error appears. | Fail — blocker |
 | `OB1-CF-02` | `RV-02` | Open Bechuanaland, inspect `com_container`, save/reload, replace an actor, then resolve or invalidate the story. | Exactly one `sb_bechuanaland_corridor_state` exists while active; scopes, lists, score, drift, JE handles, and title boxes survive reload; no container remains after terminal cleanup. | Engine pending |
 | `OB1-CF-03` | `RV-03` | Exercise every Warren/Caprivi direct and proxy route, support/neutrality choice, back-down, white peace, negotiated peace, and mixed enforcement. | Intended participants and each scripted goal appear once; no self-transfer, invalid transfer, early terminal result, stranded phase, stale lease, or duplicate settlement occurs. | Engine pending |
 | `OB1-CF-04` | `RV-04` | Establish, disband, and re-establish the Mozambique Company and a generic prestige-good company. | Vanilla HQ/assets remain valid, SB MZQ cleanup runs once, and Vanilla restores the eligible prestige-good JE once. | Engine pending |
@@ -40,7 +40,7 @@ These cases remain relevant from the historical matrix and receive new OB1 IDs.
 | `OB1-CF-07` | `RV-07` | Open Stake Colonial Claim with and without sufficient interest. | The action is unavailable without the required interest and never opens an empty target picker. | Engine pending |
 | `OB1-CF-08` | `RV-08` | Inspect country selection/history for XHO, CAP, and the retired XHG/XHR/XHT tags. | Retired tags are absent, XHO remains valid, and John Philip is created only through CAP's authoritative template. | Engine pending |
 | `OB1-CF-09` | `RV-09` | Use SB-modified starting fleets for recruitment, embarkation, invasion, cancellation, rerouting, transfer, retrofit, and repair. | OB1 naval-network, pathfinding, transport, and Supply Ship rules work; no uncrewed mission, destroyed reroute, stuck repair, or 99% invasion occurs. | Engine pending |
-| `OB1-CF-10` | `RV-10` | Run Tiger and review fresh `error.log`, `debug.log`, and `game.log`. | No new SB-authored error remains. External diagnostics and Tiger's currently incomplete 1.14 schema coverage are recorded with exact evidence rather than silently ignored. | Engine pending |
+| `OB1-CF-10` | `RV-10` | Run Tiger and review fresh `error.log`, `debug.log`, and `game.log`. | No new SB-authored error remains. External diagnostics and Tiger's currently incomplete 1.14 schema coverage are recorded with exact evidence rather than silently ignored. | Fail — blocker |
 | `OB1-CF-11` | `RV-11` | Take the Pink Map decision before BC, while BC is active, and after invalid, British, Boer, exact-zero, and SWA outcomes. | The decision is disabled only while BC is active; pre-BC and invalid routes grant all three claims, Boer/zero grants Kazembe and Zambia, and British/SWA routes reach the recorded arbiter. Later BC rewards never duplicate a pre-BC basin package. | Engine pending |
 | `OB1-CF-12` | `RV-12` | Resolve British and SWA Pink Map arbitration through outright acceptance, favour, rejection/back-down, and defiance, including a held event whose arbiter disappears. | Dynamic names and tooltips render; acceptance transfers the intended claim package, the favour transaction targets the saved arbiter, defiance preserves competing claims with the authored relation/aggression effects, and a missing arbiter falls back cleanly. | Engine pending |
 | `OB1-CF-13` | `RV-13` | Let MZQ colonize a basin target, then form IBE from POR before and during the Pink Map lifecycle; save and reload both states. | Subject colonization enables the decision, claims remain on POR/IBE rather than MZQ, tag formation preserves pending state and claims, and no stale arbiter or hostility marker survives JE closure. | Engine pending |
@@ -63,7 +63,7 @@ These cases remain relevant from the historical matrix and receive new OB1 IDs.
 | `OB1-WAR-06` | Use the non-hardline live-ORA-as-TRN-subject route. Add CAP's counter across holders and close each accepted-demand combination. | `can_add_for_other_country` permits the proxy counter; the durable record targets ORA's legal claim, not a fictitious TRN claim. | Engine pending |
 | `OB1-WAR-07` | In both Natal and Martinus, occupy both opposing `sb_story_humiliation` objectives for at least 25 weeks. Resolve with initiator-only, target-only, neither, and both demands accepted. | Neither goal timer-enforces. The shared 0/1/2 truth table chooses one side, white-peace cleanup, or mutual stand-down exactly once; the dual grants no exclusive victory, annexation, or union. | Engine pending |
 | `OB1-WAR-08` | Back down once as initiator and once as target before war in Natal, Martinus, Klip River, Gaza–Zulu, Swazi–Zulu, and Great Trek routes. Force each scripted launch to fail while an unrelated/old same-type play exists. | The exact non-backing side enters the route's terminal resolver immediately; no state waits for `on_war_end`; no goal/backer is added to the unrelated play; residual launch leases follow the documented retry or neutral-cleanup path. | Engine pending |
-| `OB1-WAR-09` | Repeat capitulation, negotiated peace, and white peace across Natal crisis, British–Zulu annexation/handoff, Gaza–Zulu, Klip River, Martinus, Kimberley, Xhosa/frontier wars, Swazi/Zulu, Great Trek, BST, NRP boundary, and every Bechuanaland route including Warren and CAP–SGO total war. | Every dispatch requires its play type, exact primary participants, and saved authored-play identity. Timer callbacks are nonterminal, unambiguous final subject/owner predicates own the result, and each route resolves idempotently without unrelated-war cleanup. | Engine pending |
+| `OB1-WAR-09` | Repeat capitulation, negotiated peace, and white peace across Natal crisis, British–Zulu annexation/handoff, Gaza–Zulu, Klip River, Martinus, Kimberley, Xhosa/frontier wars, Swazi/Zulu, Great Trek, BST, NRP boundary, and every Bechuanaland route including Warren and CAP–SGO total war. | Every dispatch requires its play type, exact primary participants, and saved authored-play identity. Timer callbacks are nonterminal, unambiguous final subject/owner predicates own the result, and each route resolves idempotently without unrelated-war cleanup. | Fail — blocker |
 
 ## Sequential `sb_griqualand_west.254`
 
@@ -102,7 +102,7 @@ The approved route is a two-stage three-party struggle. It does not restore the 
 
 | ID | Scenario | Acceptance condition | Status |
 |---|---|---|---|
-| `OB1-MAP-01` | Cold-load a fresh game on the structured merged spline, save, and reload. | No map, spline, travel-network, port-node, or save corruption appears. | Engine pending |
+| `OB1-MAP-01` | Cold-load a fresh game on the structured merged spline, save, and reload. | No map, spline, travel-network, port-node, or save corruption appears. | Fail — blocker |
 | `OB1-MAP-02` | Build/use rail and move HQ/front forces across Natal and Zululand. | SB's split-state anchors and OB1 pathfinding route correctly across both states. | Engine pending |
 | `OB1-MAP-03` | At every changed Southern African port, recruit, crew, supply, embark, invade, cancel, reroute, transfer, retrofit, and repair. | Every port, including `STATE_LOURENCO_MARQUES.port = x54CDC5`, reaches a connected naval node and completes each operation without a stuck or invalid mission. | Engine pending |
 | `OB1-MAP-04` | Spot-check OB1's Scania and French Low Countries/Picardy routes. | The structured merge retains the upstream geometry/anchor corrections outside SB's region. | Engine pending |
@@ -138,3 +138,11 @@ Add one ledger row for every executed matrix ID. Keep raw rotated logs or a dura
 | Matrix ID(s) | UTC start/end | Exact launch command or launcher action; save; mod load order/checksum | Installed build/branch/depot and CMF identity | `error.log` / `debug.log` / `game.log` SHA-256 | Result and evidence path |
 |---|---|---|---|---|---|
 | — | — (not run) | — | — | — | All rows remain `Engine pending`. |
+
+### 2026-09-05 launch-error evidence
+
+The supplied launch logs identify executable `release/1.14.x : 9941f8100` and the canonical CMF/SB load order. They expose script validation, starting setup, and spline failures before a save/reload pass was established. See [the diagnostic and repair record](1_14_0_launch_debug_2026_09_05.md) for exact log hashes, source attribution, fixes, and remaining diagnostics. Static repair does not pass these three failed rows.
+
+### 2026-09-05 Great Trek outcome failure
+
+DP observed ORA winning the opening MTB war without receiving `sb_great_trek.002`. The September/October 1836 saves establish a bound opening play followed by colonization rights but no delivery reservation. The [follow-up diagnosis and retest procedure](1_14_0_launch_debug_2026_09_05.md#great-trek-follow-up-missing-ndebele-retreat-event) records save hashes and the deferred settlement check. `OB1-WAR-09` remains failed after the source repair; static checks cannot certify event delivery.

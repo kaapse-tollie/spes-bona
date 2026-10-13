@@ -773,7 +773,7 @@ sb_natal_crisis.070 = {
 		else = {
 			sb_found_natalia_after_blood_river = yes
 		}
-		sb_natal_story_consume_terminal_outcome = yes
+		hidden_effect = { sb_natal_story_consume_terminal_outcome = yes }
 		ai_chance = {
 			base = 100
 		}
@@ -801,7 +801,7 @@ sb_natal_crisis.070 = {
 		else = {
 			sb_found_natalia_after_blood_river = yes
 		}
-		sb_natal_story_consume_terminal_outcome = yes
+		hidden_effect = { sb_natal_story_consume_terminal_outcome = yes }
 		play_as = c:NAL
 		ai_chance = {
 			base = 0
@@ -1214,6 +1214,8 @@ sb_natal_crisis.100 = {
 		set_variable = sb_british_natal_ultimatum_var
 		scope:natalia ?= {
 			set_variable = sb_british_natal_ultimatum_var
+			# Dispatch closes the pre-ultimatum seizure route permanently.
+			set_variable = sb_natalia_port_natal_raid_closed_var
 			trigger_event = { id = sb_natal_crisis.109 days = sb_travel_london_southern_africa_message_days popup = no }
 		}
 		ai_chance = {
@@ -1963,44 +1965,85 @@ sb_natal_crisis.114 = {
 				scope:natalia ?= {
 					is_country_alive = yes
 					is_subject = no
-					is_at_war = no
-					is_active_in_diplomatic_play = no
 					NOT = { has_diplomatic_pact = { who = c:GBR type = colony } }
 					NOT = { has_variable = sb_natalia_british_colony_resolved_var }
 				}
-				c:CAP ?= {
-					is_country_alive = yes
-					is_subject_of = root
-					p:x279045.state.owner = this
-				}
-			}
-			scope:natalia = {
-				if = {
-					limit = {
-						has_variable = sb_natalia_ultimatum_truce_var
-						has_truce_with = root
+				OR = {
+					# A seizure has already moved the port out of Cape hands.
+					AND = {
+						scope:natalia = { has_variable = sb_natalia_port_natal_raid_taken_var }
+						p:x279045.state.owner = scope:natalia
 					}
-					end_truce = root
+					c:CAP ?= {
+						is_country_alive = yes
+						is_subject_of = root
+						p:x279045.state.owner = this
+					}
+				}
+			}
+			# Britain may be fighting elsewhere; only an existing Natal confrontation
+			# blocks this route. Failed engine admission is retried below.
+			if = {
+				limit = {
+					NOT = { has_war_with = scope:natalia }
+					NOT = {
+						any_diplomatic_play = { initiator = root target = scope:natalia }
+					}
+					aggressive_diplomatic_plays_permitted = yes
+					scope:natalia = { is_at_war = no is_active_in_diplomatic_play = no }
+					OR = {
+						NOT = { has_truce_with = scope:natalia }
+						scope:natalia = { has_variable = sb_natalia_ultimatum_truce_var }
+					}
+				}
+				scope:natalia = {
+					if = {
+						limit = {
+							has_variable = sb_natalia_ultimatum_truce_var
+							has_truce_with = root
+						}
+						end_truce = root
+					}
+					if = {
+						limit = { has_variable = sb_natalia_ultimatum_truce_var }
+						remove_variable = sb_natalia_ultimatum_truce_var
+					}
+					set_variable = sb_natalia_ultimatum_truce_consumed_var
 				}
 				if = {
-					limit = { has_variable = sb_natalia_ultimatum_truce_var }
-					remove_variable = sb_natalia_ultimatum_truce_var
+					limit = { p:x279045.state.owner = scope:natalia }
+					# Use the normal opening-phase defensive-demand selection after
+					# seizure; Natalia cannot demand the return of its own port.
+					create_diplomatic_play = {
+						type = dp_make_protectorate
+						target_country = scope:natalia
+					}
 				}
-				set_variable = sb_natalia_ultimatum_truce_consumed_var
-			}
-			create_diplomatic_play = {
-				type = dp_make_protectorate
-				target_country = scope:natalia
-				add_war_goal = {
-					holder = scope:natalia
-					type = return_state
-					target_country = c:CAP
-					target_state = s:STATE_NATAL.region_state:CAP
-					primary_demand = yes
+				else = {
+					create_diplomatic_play = {
+						type = dp_make_protectorate
+						target_country = scope:natalia
+						add_war_goal = {
+							holder = scope:natalia
+							type = return_state
+							target_country = c:CAP
+							target_state = s:STATE_NATAL.region_state:CAP
+							primary_demand = yes
+						}
+					}
 				}
 			}
+		random_diplomatic_play = {
+			limit = {
+				is_diplomatic_play_type = dp_make_protectorate
+				initiator = root
+				target = scope:natalia
+			}
+			save_temporary_scope_as = natalia_british_play
+		}
 		if = {
 			limit = {
+				exists = scope:natalia_british_play
 				scope:natalia ?= {
 					is_ai = yes
 					has_variable = sb_natalia_player_boer_support_pledged_var
@@ -2013,14 +2056,6 @@ sb_natal_crisis.114 = {
 				}
 				set_strategy = ai_strategy_sb_natalia_resistance
 			}
-		}
-		random_diplomatic_play = {
-			limit = {
-				is_diplomatic_play_type = dp_make_protectorate
-				initiator = root
-				target = scope:natalia
-			}
-			save_scope_as = natalia_british_play
 		}
 		if = {
 			limit = {
@@ -2061,6 +2096,13 @@ sb_natal_crisis.114 = {
 					remove_variable = sb_natalia_player_boer_support_pledged_var
 				}
 		}
+			if = {
+				limit = {
+					NOT = { exists = scope:natalia_british_play }
+					NOT = { has_war_with = scope:natalia }
+				}
+				trigger_event = { id = sb_natal_crisis.114 days = 30 popup = yes }
+			}
 		}
 		else = {
 			scope:natalia ?= {

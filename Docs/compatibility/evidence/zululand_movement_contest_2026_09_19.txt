@@ -1,0 +1,217 @@
+Zululand movement contest — 2026-09-19
+
+Focused command: python3 -B -m unittest tests.test_usuthu_movement_contest tests.test_zululand_postwar_settlement tests.test_zululand_cape_exile tests.test_1_14_0_rebase
+.......................................................
+----------------------------------------------------------------------
+Ran 55 tests in 0.277s
+
+OK
+
+Full command: python3 -B tools/validate.py --skip-cmf-sync --tiger
+[PASS] CMF release pin: exact tag 1.66.0, SHA-256 79dd0d434e6ffb617147ad1b91b73e6306139adfffcadf6774eeb32db3a09b8b
+[SKIP] CMF release sync: disabled by --skip-cmf-sync
+[PASS] CMF compatibility
+[FAIL] unit tests: "localization: reviewed localization namespace missing from baseline: ('event', 'sb_boer_conventions.141', 'localization/english/sb_boer_conventions_l_english.yml'); event/JE review coverage: 107 reviewed, 171 to review"
+Ran 464 tests in 48.926s
+FAILED (failures=2, errors=1, skipped=5)
+[PASS] local override inventory
+[PASS] map data
+[FAIL] localization: reviewed localization namespace missing from baseline: ('event', 'sb_boer_conventions.141', 'localization/english/sb_boer_conventions_l_english.yml'); event/JE review coverage: 107 reviewed, 171 to review
+[PASS] on-action router
+[PASS] stale symbols
+[PASS] unused symbols: 3 reviewed definition-only symbols
+[PASS] runtime script contracts: no known engine-rejected script forms
+[WARN] deferred release gates: 5 unresolved gates: BC-20, BC-22, CP-07, QUAL-09, SUP-05
+[PASS] 1.14.3 release invariants: 86 complete scripted war-goal blocks
+[PASS] delayed-event lifecycle
+[PASS] naval network connectivity
+[PASS] Vanilla/CMF override comparison
+[WARN] vic3-tiger: Using Vic3 directory: /Users/depro/Library/Application Support/Steam/steamapps/common/Victoria 3
+fatal: 0, error: 1055, warning: 112, untidy: 1, tips: 1
+15/17 checks passed, warned, or skipped; 2 failed.
+
+Full suite: 464 run = 456 passed + 5 skipped + 2 failures + 1 error.
+Unrelated failures retained: missing historical 1.14.2 manifest; existing indenture goal-localisation assertion; reviewed Boer Convention .141 absent from review baseline.
+No game launch or save migration. CMF unchanged; installed-tree compatibility verified without syncing.
+
+Relevant Tiger diagnostics (complete blocks, schema targets 1.13.5):
+error(validation): unknown prefix `container`
+  --> [MOD] common/journal_entries/1-14_sb_zululand_chiefdoms.txt
+50 |                 trigger = { container:sb_zululand_chiefdoms_state.var:sb_zululand_boer_commitment_var >= 100 }
+   |                             ^^^^^^^^^ 
+
+error(unknown-field): unknown token `days_since_movement_defeated`
+   --> [MOD] common/political_movements/sb_usuthu_movement.txt
+468 |                 this.days_since_movement_defeated <= very_long_modifier_time
+    |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+
+error(unknown-field): unknown token `days_since_movement_defeated`
+   --> [MOD] common/political_movements/sb_usuthu_movement.txt
+472 |                 value = this.days_since_movement_defeated
+    |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+
+error(unknown-field): unknown token `container_exists`
+  --> [MOD] common/script_values/sb_zululand_drift_values.txt
+12 |     if = { limit = { container_exists = sb_zululand_chiefdoms_state } subtract = container:sb_zululand_chiefdoms_state.var:sb_zululand_situation_months_var }
+   |                      ^^^^^^^^^^^^^^^^ 
+
+error(validation): unknown prefix `container`
+  --> [MOD] common/script_values/sb_zululand_drift_values.txt
+12 |     if = { limit = { container_exists = sb_zululand_chiefdoms_state } subtract = container:sb_zululand_chiefdoms_state.var:sb_zululand_situation_months_var }
+   |                                                                                  ^^^^^^^^^ 
+
+error(validation): unknown prefix `container:`
+  --> [MOD] common/scripted_effects/sb_usuthu_politics_effects.txt
+68 |     container:sb_zululand_chiefdoms_state ?= {
+   |     ^^^^^^^^^ 
+
+error(unknown-field): unknown token `container_exists`
+   --> [MOD] common/scripted_effects/sb_zululand_settlement_effects.txt
+687 |             NOT = { container_exists = sb_zululand_chiefdoms_state }
+    |                     ^^^^^^^^^^^^^^^^ 
+
+error(unknown-field): unknown token `create_container`
+   --> [MOD] common/scripted_effects/sb_zululand_settlement_effects.txt
+690 |         create_container = {
+    |         ^^^^^^^^^^^^^^^^ 
+
+error(unknown-field): unknown token `container_exists`
+   --> [MOD] common/scripted_effects/sb_zululand_settlement_effects.txt
+708 |         limit = { container_exists = sb_zululand_chiefdoms_state global_var:sb_zululand_live_zul_scope ?= { is_country_alive = yes } }
+    |                   ^^^^^^^^^^^^^^^^ 
+
+error(validation): unknown prefix `container`
+   --> [MOD] common/scripted_effects/sb_zululand_settlement_effects.txt
+710 |         set_bar_progress = { name = sb_zululand_boer_commitment_bar value = container:sb_zululand_chiefdoms_state.var:sb_zululand_boer_commitment_var }
+    |                                                                             ^^^^^^^^^ 
+
+error(validation): unknown prefix `container:`
+    --> [MOD] common/scripted_effects/sb_zululand_settlement_effects.txt
+1092 |         container:sb_zululand_chiefdoms_state ?= {
+     |         ^^^^^^^^^ 
+
+error(validation): unknown prefix `container:`
+    --> [MOD] common/scripted_effects/sb_zululand_settlement_effects.txt
+1208 |     container:sb_zululand_chiefdoms_state ?= {
+     |     ^^^^^^^^^ 
+
+error(validation): unknown prefix `container:`
+    --> [MOD] common/scripted_effects/sb_zululand_settlement_effects.txt
+1243 |         container:sb_zululand_chiefdoms_state = {
+     |         ^^^^^^^^^ 
+
+error(validation): unknown prefix `container:`
+    --> [MOD] common/scripted_effects/sb_zululand_settlement_effects.txt
+1372 |     container:sb_zululand_chiefdoms_state ?= { destroy_container = yes }
+     |     ^^^^^^^^^ 
+
+error(validation): unknown prefix `container`
+    --> [MOD] common/scripted_effects/sb_zululand_settlement_effects.txt
+1394 |         limit = { container:sb_zululand_chiefdoms_state ?= { has_variable = sb_zululand_boer_committed_var } }
+     |                   ^^^^^^^^^ 
+
+error(unknown-field): unknown token `container_exists`
+  --> [MOD] common/scripted_triggers/sb_saf_formation_triggers.txt
+17 |         container_exists = sb_zululand_chiefdoms_state
+   |         ^^^^^^^^^^^^^^^^ 
+
+error(unknown-field): unknown token `container_exists`
+  --> [MOD] common/scripted_triggers/sb_zululand_settlement_triggers.txt
+59 |     container_exists = sb_zululand_chiefdoms_state
+   |     ^^^^^^^^^^^^^^^^ 
+
+warning(duplicate-field): `widget` is redefined in a following line
+  --> [MOD] common/journal_entries/1-14_sb_zululand_chiefdoms.txt
+ 8 |     widget = {
+   |     ^ 
+13 |     widget = {
+   |     ^ <-- the other one is here
+
+warning(duplicate-field): `widget` is redefined in a following line
+  --> [MOD] common/journal_entries/1-14_sb_zululand_chiefdoms.txt
+13 |     widget = {
+   |     ^ 
+18 |     widget = {
+   |     ^ <-- the other one is here
+
+warning(strict-scopes): `ai_has_enact_weight_modifier_journal_entries` expects scope:donghak_desired_law_1 to be set
+   --> [MOD] common/laws/zz_sb_law_chiefdom_override.txt
+ 26 |             limit = { ai_has_enact_weight_modifier_journal_entries = yes }
+    |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+   --> [Vic3] common/scripted_triggers/00_ai_triggers.txt
+162 |                 scope:law = scope:donghak_desired_law_1
+    |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^ <-- here
+   --> [MOD] common/laws/zz_sb_law_chiefdom_override.txt
+ 22 |     ai_enact_weight_modifier = { #Petitions
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^ <-- scopes initialized here
+
+warning(strict-scopes): `ai_has_enact_weight_modifier_journal_entries` expects scope:donghak_desired_law_2 to be set
+   --> [MOD] common/laws/zz_sb_law_chiefdom_override.txt
+ 26 |             limit = { ai_has_enact_weight_modifier_journal_entries = yes }
+    |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+   --> [Vic3] common/scripted_triggers/00_ai_triggers.txt
+163 |                 scope:law = scope:donghak_desired_law_2
+    |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^ <-- here
+   --> [MOD] common/laws/zz_sb_law_chiefdom_override.txt
+ 22 |     ai_enact_weight_modifier = { #Petitions
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^ <-- scopes initialized here
+
+warning(strict-scopes): `ai_has_enact_weight_modifier_journal_entries` expects scope:donghak_desired_law_3 to be set
+   --> [MOD] common/laws/zz_sb_law_chiefdom_override.txt
+ 26 |             limit = { ai_has_enact_weight_modifier_journal_entries = yes }
+    |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+   --> [Vic3] common/scripted_triggers/00_ai_triggers.txt
+164 |                 scope:law = scope:donghak_desired_law_3
+    |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^ <-- here
+   --> [MOD] common/laws/zz_sb_law_chiefdom_override.txt
+ 22 |     ai_enact_weight_modifier = { #Petitions
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^ <-- scopes initialized here
+
+warning(strict-scopes): `ai_has_enact_weight_modifier_journal_entries` expects scope:donghak_desired_law_1 to be set
+   --> [MOD] common/laws/zz_sb_law_elder_council_override.txt
+ 55 |             limit = { ai_has_enact_weight_modifier_journal_entries = yes }
+    |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+   --> [Vic3] common/scripted_triggers/00_ai_triggers.txt
+162 |                 scope:law = scope:donghak_desired_law_1
+    |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^ <-- here
+   --> [MOD] common/laws/zz_sb_law_elder_council_override.txt
+ 51 |     ai_enact_weight_modifier = { #Petitions
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^ <-- scopes initialized here
+
+warning(strict-scopes): `ai_has_enact_weight_modifier_journal_entries` expects scope:donghak_desired_law_2 to be set
+   --> [MOD] common/laws/zz_sb_law_elder_council_override.txt
+ 55 |             limit = { ai_has_enact_weight_modifier_journal_entries = yes }
+    |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+   --> [Vic3] common/scripted_triggers/00_ai_triggers.txt
+163 |                 scope:law = scope:donghak_desired_law_2
+    |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^ <-- here
+   --> [MOD] common/laws/zz_sb_law_elder_council_override.txt
+ 51 |     ai_enact_weight_modifier = { #Petitions
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^ <-- scopes initialized here
+
+warning(strict-scopes): `ai_has_enact_weight_modifier_journal_entries` expects scope:donghak_desired_law_3 to be set
+   --> [MOD] common/laws/zz_sb_law_elder_council_override.txt
+ 55 |             limit = { ai_has_enact_weight_modifier_journal_entries = yes }
+    |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+   --> [Vic3] common/scripted_triggers/00_ai_triggers.txt
+164 |                 scope:law = scope:donghak_desired_law_3
+    |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^ <-- here
+   --> [MOD] common/laws/zz_sb_law_elder_council_override.txt
+ 51 |     ai_enact_weight_modifier = { #Petitions
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^ <-- scopes initialized here
+
+warning(scopes): `ig_trait:com_situation_background_africa_construction_colony` produces interest group trait but expected flag
+   --> [CMF] common/scripted_effects/com_international_situation_effects.txt
+147 |         value = ig_trait:$texture$
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+   --> [MOD] common/journal_entries/1-14_sb_zululand_chiefdoms.txt
+ 26 |             com_set_situation_illustration_background_effect = { texture = com_situation_background_africa_construction_colony }
+    |             ^ <-- from here
+
+warning(scopes): var:com_situation_illustration_var was deduced to be flag but scope seems to be interest group trait
+   --> [CMF] common/scripted_effects/com_international_situation_effects.txt
+146 |         name = com_situation_illustration_var
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+   --> [MOD] common/journal_entries/1-14_sb_zululand_chiefdoms.txt
+ 26 |             com_set_situation_illustration_background_effect = { texture = com_situation_background_africa_construction_colony }
+    |             ^ <-- from here

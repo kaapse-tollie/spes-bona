@@ -207,6 +207,8 @@ sb_apply_natalia_boer_republic_setup = {
 		remove_primary_culture = cu:anglo_african
 	}
 	effect_starting_politics_conservative = yes
+	# Low-tech frontier countries cannot retain the preset's Censorship law.
+	if = { limit = { NOT = { has_technology_researched = law_enforcement } } activate_law = law_type:law_right_of_assembly }
 	sb_apply_boer_commandant_general_baseline = yes
 	activate_law = law_type:law_national_supremacy
 	sb_ensure_boer_supremacist_movement = yes
@@ -218,22 +220,6 @@ sb_apply_natalia_boer_republic_setup = {
 	activate_law = law_type:law_discrete_inboekstelsel
 	activate_law = law_type:law_frontier_colonization
 	s:STATE_NATAL.region_state:NAL ?= {
-		if = {
-			limit = { NOT = { has_building = building_maize_farm } }
-			create_building = {
-				building = building_maize_farm
-				add_ownership = {
-					building = {
-						type = building_manor_house
-						country = c:NAL
-						levels = 1
-						region = "STATE_NATAL"
-					}
-				}
-				reserves = 1
-				activate_production_methods = { "pm_simple_farming" "pm_no_secondary" "pm_tools_disabled" }
-			}
-		}
 		if = {
 			limit = { NOT = { has_building = building_livestock_ranch } }
 			create_building = {
@@ -394,6 +380,8 @@ sb_seed_british_natal_colony_shell = {
 	}
 	# The seed state is Zulu-populated, so establish the colonial identity first.
 	effect_starting_politics_conservative = yes
+	# Low-tech frontier countries cannot retain the preset's Censorship law.
+	if = { limit = { NOT = { has_technology_researched = law_enforcement } } activate_law = law_type:law_right_of_assembly }
 }
 
 # -----------------------------------------------------------------------------

@@ -24,7 +24,7 @@ sb_natal_has_shepstone_system = {
 sb_natal_indenture_program_is_valid = {
 	sb_natal_is_british_colony = yes
 	sb_natal_bic_has_indenture_origin = yes
-	sb_natal_has_shepstone_system = yes
+	OR = { sb_natal_has_shepstone_system = yes has_journal_entry = je_sb_natal_indenture_program_v2 }
 	NOT = { has_law = law_type:law_closed_borders }
 }
 
@@ -153,6 +153,10 @@ sb_natal_gandhi_catalyst_available = {
 
 sb_natal_zulu_settlement_ready = {
 	sb_zululand_normalized_nal_protectorate = yes
+	OR = {
+		NOT = { has_variable = sb_natal_klip_river_settlement_var }
+		sb_klip_river_punitive_demands_fulfilled = yes
+	}
 	NOT = { has_variable = sb_natal_zulu_settlement_resolved_var }
 }
 
@@ -404,7 +408,9 @@ sb_natal_story_terminal_outcome_authority = {
 	has_variable = sb_natal_terminal_outcome_scope
 	var:sb_natal_terminal_outcome_scope ?= {
 		has_variable = sb_natal_terminal_outcome_pending_var
-		var:sb_natal_terminal_recipient_scope = root
+		# PREV is the country being checked, even under a play-root callback
+		# or a watchdog dispatched to the other participant.
+		var:sb_natal_terminal_recipient_scope = PREV
 	}
 }
 

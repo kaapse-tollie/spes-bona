@@ -21,6 +21,11 @@ from urllib.parse import quote
 from urllib.request import Request, urlopen
 import zipfile
 
+try:
+    from . import cmf_patch
+except ImportError:
+    import cmf_patch
+
 
 CMF_ID = "com.github.Victoria-3-Modding-Co-op.Community-Mod-Framework"
 REPOSITORY = "Victoria-3-Modding-Co-op/Community-Mod-Framework"
@@ -259,7 +264,7 @@ def path_exists(path: Path) -> bool:
     return path.exists() or path.is_symlink()
 
 
-def install_release(target: Path, release: dict, archive: bytes) -> None:
+def install_release(target: Path, release: dict, archive: bytes, *, patch_manifest: Path | None = None) -> None:
     if "steamapps/workshop" in target.as_posix().lower():
         raise SyncError("refusing to overwrite a Steam Workshop installation")
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -278,6 +283,11 @@ def install_release(target: Path, release: dict, archive: bytes) -> None:
     try:
         extract_release(archive, staging, release["version"])
         payload = staging / "payload"
+        if patch_manifest is not None:
+            try:
+                cmf_patch.apply_patch(payload, patch_manifest)
+            except (ValueError, OSError) as exc:
+                raise SyncError(str(exc)) from exc
         backup = staging / "previous"
         had_target = path_exists(target)
         try:
@@ -318,8 +328,29 @@ def synchronize(
     check_only: bool = False,
     force: bool = False,
     opener: Callable = urlopen,
+    patch_manifest: Path | None = None,
 ) -> tuple[str, str]:
     target = target.expanduser().absolute()
+    if target == DEFAULT_TARGET.absolute() and patch_manifest is None:
+        patch_manifest = cmf_patch.DEFAULT_MANIFEST
+    patch = None
+    if patch_manifest is not None:
+        try:
+            patch = cmf_patch.load_patch(patch_manifest)
+        except (ValueError, OSError) as exc:
+            raise SyncError(str(exc)) from exc
+        if latest:
+            raise SyncError("--latest cannot replace the pinned patched CMF dependency")
+        if (tag or PINNED_TAG) != patch["base_tag"] or (expected_sha256 or PINNED_SHA256) != patch["base_asset_sha256"]:
+            raise SyncError("CMF release does not match patch base")
+        try:
+            cmf_patch.verify_install(target, patch_manifest)
+        except (ValueError, OSError) as exc:
+            if check_only:
+                raise SyncError(str(exc)) from exc
+        else:
+            if check_only or not force:
+                return "current", patch["base_tag"]
     if latest:
         if tag is not None or expected_sha256 is not None:
             raise SyncError("latest maintenance mode cannot be combined with an exact tag or digest")
@@ -334,6 +365,9 @@ def synchronize(
         release = tagged_release(exact_tag, expected_sha256, opener)
         expectation = f"exact release {exact_tag}"
 
+    if patch is not None and (release["version"] != patch["base_tag"] or release["sha256"] != patch["base_asset_sha256"]):
+        raise SyncError("CMF release does not match patch base")
+
     installed = load_installed_metadata(target)
     current = (
         installed.get("id") == CMF_ID
@@ -341,19 +375,29 @@ def synchronize(
         and (target / "common").is_dir()
         and (target / "gui").is_dir()
     )
+    if current and patch_manifest is not None:
+        try:
+            cmf_patch.verify_install(target, patch_manifest)
+        except (ValueError, OSError):
+            current = False
     if current and not force:
         return "current", release["version"]
     if check_only:
         installed_version = installed.get("version", "not installed")
-        raise SyncError(f"CMF {installed_version} is not {expectation}")
+        raise SyncError(f"CMF {installed_version} is not {expectation}" + (f" with patch {patch['revision']}" if patch else ""))
     archive = download_release(release["download_url"], opener)
-    install_release(target, release, archive)
+    if patch_manifest is None:
+        install_release(target, release, archive)
+    else:
+        install_release(target, release, archive, patch_manifest=patch_manifest)
     return "updated", release["version"]
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--target", type=Path, default=DEFAULT_TARGET)
+    parser.add_argument("--patch-manifest", type=Path, default=cmf_patch.DEFAULT_MANIFEST,
+                        help="Exact SB CMF compatibility manifest")
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument(
         "--tag",
@@ -383,12 +427,13 @@ def main() -> int:
             latest=args.latest,
             check_only=args.check,
             force=args.force,
+            patch_manifest=args.patch_manifest,
         )
     except SyncError as exc:
         print(f"CMF synchronization FAILED: {exc}")
         return 1
     verb = "is current at" if status == "current" else "updated to"
-    print(f"Community Mod Framework {verb} {version}: {args.target.expanduser().absolute()}")
+    print(f"Community Mod Framework {verb} {version} + {cmf_patch.REVISION}: {args.target.expanduser().absolute()}")
     return 0
 
 

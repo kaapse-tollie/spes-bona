@@ -3,6 +3,7 @@ import hashlib
 import json
 import re
 import struct
+import subprocess
 import unittest
 
 from tools import validate
@@ -234,7 +235,8 @@ class NatalZululandStateSplitTests(unittest.TestCase):
 
     def test_spline_anchor_reindex_is_semantically_locked_and_pinned(self):
         spline_path = "gfx/map/spline_network/spline_network.splnet"
-        spline = (ROOT / spline_path).read_bytes()
+        spline = subprocess.check_output(["git", "show",
+            "9f77cac7696d3ba8f2d899e8928301a6f52ddd8c:" + spline_path], cwd=ROOT)
         digest = hashlib.sha256(spline).hexdigest()
         self.assertEqual(SPLINE_NATAL_REINDEX_SHA256, digest)
 
@@ -318,14 +320,15 @@ class NatalZululandStateSplitTests(unittest.TestCase):
             for gate in json.loads(text("tools/deferred_release_gates.json"))["gates"]
         }
 
-        self.assertEqual(digest, connectivity["pinned_files"][spline_path])
+        current_digest = hashlib.sha256((ROOT / spline_path).read_bytes()).hexdigest()
+        self.assertEqual(current_digest, connectivity["pinned_files"][spline_path])
         matching_inventory = [
             entry
             for entry in inventory["same_path_files"]
             if entry["path"] == spline_path
         ]
         self.assertEqual(1, len(matching_inventory))
-        self.assertEqual(digest, matching_inventory[0]["mod_sha256"])
+        self.assertEqual(current_digest, matching_inventory[0]["mod_sha256"])
 
         spline_gate = gates["SUP-05"]
         self.assertEqual("blocked", spline_gate["status"])

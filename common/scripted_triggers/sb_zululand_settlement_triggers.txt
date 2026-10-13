@@ -1,6 +1,7 @@
 ﻿# Spes Bona - postwar Zululand settlement and Nieuwe Republiek triggers
 
 sb_zululand_british_postwar_owner = {
+	NOT = { country_definition = cd:NAL }
 	OR = {
 		this = c:GBR
 		AND = {
@@ -38,6 +39,8 @@ sb_zululand_under_british_postwar_control = {
 		}
 	}
 }
+
+
 
 sb_zululand_normalized_nal_protectorate = {
 	country_definition = cd:NAL
@@ -288,52 +291,4 @@ sb_nrp_boundary_current_political_authority = {
 		c:TRN ?= { is_country_alive = yes is_subject = no }
 	}
 	trigger_else = { is_subject = no }
-}
-
-
-# A terminal chiefdoms choice must still describe this exact, live situation.
-# The saved receipt scope is a unique container object, not a reusable timer.
-sb_zululand_current_terminal_authority = {
-	country_definition = cd:NAL
-	is_country_alive = yes
-	sb_zululand_chiefdoms_runtime_valid = yes
-	has_variable = sb_zululand_thirteen_chiefdoms_route_var
-	has_variable = sb_zululand_terminal_event_pending_var
-	ruler = { is_character_alive = yes }
-	exists = s:STATE_ZULULAND.region_state:ZUL
-	s:STATE_ZULULAND.region_state:ZUL ?= { owner = c:ZUL }
-	c:ZUL ?= {
-		is_country_alive = yes
-		is_direct_subject_of = c:NAL
-		is_subject_type = subject_type_sb_zulu_chiefdoms
-		ruler = { is_character_alive = yes }
-	}
-	container:sb_zululand_chiefdoms_state ?= {
-		has_variable = sb_zululand_nal_scope
-		var:sb_zululand_nal_scope = c:NAL
-		has_variable = sb_zululand_zul_scope
-		var:sb_zululand_zul_scope = c:ZUL
-	}
-}
-
-sb_zululand_bound_zibhebhu_terminal_event_authority = {
-	exists = scope:sb_zululand_terminal_receipt_scope
-	sb_zululand_current_terminal_authority = yes
-	has_variable = sb_zululand_terminal_generation_scope
-	var:sb_zululand_terminal_generation_scope = scope:sb_zululand_terminal_receipt_scope
-	scope:sb_zululand_terminal_receipt_scope ?= {
-		has_variable = sb_zululand_terminal_generation_pending_var
-		has_variable = sb_zululand_terminal_zibhebhu_outcome_var
-	}
-}
-
-sb_zululand_bound_crown_terminal_event_authority = {
-	exists = scope:sb_zululand_terminal_receipt_scope
-	sb_zululand_current_terminal_authority = yes
-	has_variable = sb_zululand_terminal_generation_scope
-	var:sb_zululand_terminal_generation_scope = scope:sb_zululand_terminal_receipt_scope
-	scope:sb_zululand_terminal_receipt_scope ?= {
-		has_variable = sb_zululand_terminal_generation_pending_var
-		has_variable = sb_zululand_terminal_crown_outcome_var
-	}
 }

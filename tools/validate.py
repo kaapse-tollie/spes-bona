@@ -43,7 +43,7 @@ LOCATOR_INSTANCE_RE = re.compile(
     r"\{\s*id=(\d+)\s*position=\{\s*([-0-9.]+)\s+[-0-9.]+\s+([-0-9.]+)\s*\}",
     re.DOTALL,
 )
-REVIEW_MARKER_RE = re.compile(r"^\s*#\s*###\s+(TO REVIEW|REVIEWED)\s+###\s*$")
+REVIEW_MARKER_RE = re.compile(r"^\s*#\s*###\s+(?:\(DP\)\s+)?(TO REVIEW|REVIEWED)\s+###\s*$")
 GENERAL_REVIEW_MARKER = "# TO REVIEW (non-event/JE keys)"
 REVIEW_QUEUE_ROW_RE = re.compile(r"^\|\s*`([^`]+)`\s*\|\s*`([^`]+)`\s*\|", re.MULTILINE)
 LOC_LINE_KEY_RE = re.compile(r"^[ \t]*(?!l_english:)([^#\s:][^:\r\n]*):\d*(?:[ \t]|$)")
@@ -267,6 +267,13 @@ def runtime_script_hazards(root: Path = ROOT) -> list[str]:
                                 f"{relative}:{line}: temporary delta variable {variable} "
                                 "is not removed by its scripted effect"
                             )
+
+            for match in re.finditer(r"\bcreate_building\s*=\s*\{", masked):
+                block = extract_braced(masked, match.start())
+                body = block[block.index("{") + 1:-1]
+                if not top_level_matches(re.compile(r"\b(?:level|add_ownership)\s*="), body):
+                    line = masked.count("\n", 0, match.start()) + 1
+                    errors.append(f"{relative}:{line}: create_building requires level or add_ownership")
 
             for match in ADD_JOURNAL_ENTRY_RE.finditer(masked):
                 block = extract_braced(masked, match.start())
@@ -595,6 +602,28 @@ def check_map_data() -> Check:
         y = raster_height - 1 - round(position[1])
         sample_points.add((x, y))
         pending_samples.append((state, kind, identifier, expected, (x, y)))
+
+    if manifest.get("spline_samples"):
+        try:
+            from tools import spline_structured_merge, repair_launch_spline
+        except ModuleNotFoundError:
+            import spline_structured_merge
+            import repair_launch_spline
+        try:
+            spline_model = spline_structured_merge.parse(
+                (ROOT / "gfx/map/spline_network/spline_network.splnet").read_bytes()
+            )
+            repair_launch_spline.validate_link_endpoints(spline_model)
+            spline_points = spline_structured_merge.record_map(spline_model.points)
+            for sample in manifest["spline_samples"]:
+                state, kind, identifier = sample["state"], sample["kind"], sample["anchor"]
+                hubs = dict(HUB_RE.findall(blocks[state]))
+                position = spline_points[identifier].payload
+                coordinate = (round(position[0]), raster_height - 1 - round(position[1]))
+                sample_points.add(coordinate)
+                pending_samples.append((state, kind + " spline", identifier, hubs[kind], coordinate))
+        except (OSError, ValueError, KeyError) as error:
+            errors.append(f"invalid spline network: {error}")
 
     try:
         width, height, raster_colors, raster_samples = decode_rgb_png(province_map, sample_points)
@@ -1029,6 +1058,25 @@ def check_stale_symbols() -> Check:
         "sb_bst_cap_transfer_resolved_var",
         "sb_bst_frontier.200",
         "sb_bst_frontier.205",
+        # Retired write-only state from the OB1 launch diagnostics (2026-09-05).
+        "sb_zululand_direct_british_administration_var",
+        "sb_zululand_crown_led_route_var",
+        "sb_zululand_defection_usuthu_var",
+        "sb_nrp_scripted_frontier_setup_var",
+        "sb_griqualand_last_record_claim_target_scope",
+        "sb_zululand_boer_patron_scope",
+        "sb_bst_annexation_backdown_rejected_var",
+        "sb_griqualand_last_record_holder_scope",
+        "sb_zululand_boer_aid_delivered_var",
+        "sb_nrp_boundary_demand_lapsed_var",
+        "sb_nrp_zulu_victory_honored_var",
+        "sb_natal_zulu_secession_configuration_failed_var",
+        "sb_zululand_exiled_successor_var",
+        "sb_zululand_gbr_scope",
+        "sb_zulu_generic_war_resolution_recent_var",
+        "sb_nrp_greater_concession_var",
+        "sb_dinuzulu_ever_created_global_var",
+        "sb_zululand_skirmish_usuthu_var",
     }
     hits: list[str] = []
     for base in TEXT_ROOTS:
@@ -1256,7 +1304,7 @@ def check_release_invariants() -> Check:
                 )
 
     detail = f"{war_goal_count} complete scripted war-goal blocks"
-    return Check("1.14.0 release invariants", "FAIL" if errors else "PASS", "; ".join(errors or [detail]))
+    return Check("1.14.3 release invariants", "FAIL" if errors else "PASS", "; ".join(errors or [detail]))
 
 
 def check_local_override_inventory() -> Check:
@@ -1495,6 +1543,14 @@ def check_cmf_install(
     ):
         if not (cmf_root / relative).is_file():
             errors.append(f"missing CMF API file {relative}")
+    try:
+        from tools import cmf_patch
+    except ImportError:
+        import cmf_patch
+    try:
+        cmf_patch.verify_install(cmf_root)
+    except (ValueError, OSError) as exc:
+        errors.append(str(exc))
     return Check("CMF compatibility", "FAIL" if errors else "PASS", "; ".join(errors))
 
 

@@ -21,6 +21,18 @@ SKIP_TOP_LEVEL = {".git", ".claude", ".prime"}
 STEAM_APP_ID = "529340"
 CORE_DEPOT_ID = "529341"
 SUPPORTED_TARGETS = {
+    "1.14.3": {
+        "build": "25347710",
+        "branch": "1.14-openbeta",
+        "core_depot": CORE_DEPOT_ID,
+        "core_manifest": "5228357714133991559",
+    },
+    "1.14.2": {
+        "build": "25207758",
+        "branch": "1.14-openbeta",
+        "core_depot": CORE_DEPOT_ID,
+        "core_manifest": "2887980275526736263",
+    },
     "1.14.0": {
         "build": "25081502",
         "branch": "1.14-openbeta",
@@ -155,6 +167,10 @@ def current_collisions(root: Path, game_root: Path) -> dict[str, Path]:
 def current_keyed_overrides(root: Path) -> dict[tuple[str, str, str], str]:
     result: dict[tuple[str, str, str], str] = {}
     for rel in listed_repo_files(root):
+        # Dependency payloads are verified by their own patch/tree contract and
+        # are not loaded as SB script by the engine.
+        if rel.parts[0] == "patches":
+            continue
         if rel.suffix not in {".txt", ".gui"}:
             continue
         path = root / rel
@@ -712,6 +728,23 @@ def validate(
     validate_release_metadata(root, inventory, errors, steam_app_manifest)
     if cmf_root is not None:
         validate_cmf_checkout(cmf_root, errors)
+    if inventory.get("target_game_version") in {"1.14.2", "1.14.3"}:
+        try:
+            from tools import cmf_patch
+        except ImportError:
+            import cmf_patch
+        try:
+            dependency = next(d for d in inventory["dependencies"] if d["name"] == CMF_NAME)
+            manifest = cmf_patch.DEFAULT_MANIFEST
+            if dependency.get("patch_revision") != cmf_patch.REVISION or dependency.get("patch_manifest") != manifest.relative_to(Path(__file__).resolve().parents[1]).as_posix():
+                raise ValueError("CMF patch identity mismatch")
+            if sha256(manifest) != dependency.get("patch_manifest_sha256"):
+                raise ValueError("CMF patch manifest hash mismatch")
+            cmf_patch.verify_upstream(game_root, manifest)
+            if cmf_root is not None:
+                cmf_patch.verify_install(cmf_root, manifest)
+        except (OSError, ValueError, KeyError, StopIteration) as exc:
+            errors.append(f"CMF compatibility patch: {exc}")
     validate_upstream_api_surface(game_root, cmf_root, errors)
     validate_upstream_contracts(game_root, inventory, target, errors)
     descriptor = (root / "descriptor.mod").read_text(encoding="utf-8-sig")

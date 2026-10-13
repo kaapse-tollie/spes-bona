@@ -1,6 +1,6 @@
 # Spes Bona Override Manifest
 
-Target game version: Victoria 3 `1.14.0` Open Beta 1 (Steam build `25081502`, Steam branch `1.14-openbeta`, core depot manifest `3868129321396195520`).
+Target game version: Victoria 3 `1.14.3` Open Beta Update 2 (Steam build `25347710`, Steam branch `1.14-openbeta`, core depot manifest `5228357714133991559`).
 
 Pinned dependency: Community Mod Framework `1.66.0`, commit `807c32ff42b75714a3a0e090c0db3357b5e46ed7`. The launcher relationship is `1.66.*`. Static validation uses the official GitHub `release-1.66.0.zip` asset with SHA-256 `79dd0d434e6ffb617147ad1b91b73e6306139adfffcadf6774eeb32db3a09b8b`; it does not treat the temporarily reverted Workshop payload as authoritative.
 
@@ -15,16 +15,16 @@ python3 -B tools/validate.py \
   --tiger
 ```
 
-The validator reads the exact CMF tag, asset, and digest from the inventory and synchronizes only that verified GitHub release. It fails closed on a different tag, asset, digest, metadata version, installed Steam build, branch, or core depot manifest. `--skip-cmf-sync` is available for offline work only. Tiger's current Victoria 3 `1.14` schema coverage is advisory; the repository's semantic and hash gates remain authoritative.
+The validator reads the exact CMF tag, asset, and digest from the inventory and verifies that release plus the pinned compatibility patch. It fails closed on a different tag, asset, digest, metadata version, installed Steam build, branch, or core depot manifest. `--skip-cmf-sync` is available for offline work only. Tiger's current Victoria 3 `1.14` schema coverage is advisory; the repository's semantic and hash gates remain authoritative.
 
-On Depro's development machine, the canonical CMF path is `/Users/depro/Documents/Paradox Interactive/Victoria 3/mod/Community Mod Framework`. Its contents remain byte-for-byte from the verified GitHub release asset rather than carrying launcher-specific local metadata edits.
+On Depro's development machine, the canonical CMF path is `/Users/depro/Documents/Paradox Interactive/Victoria 3/mod/Community Mod Framework`. Its contents are rebuilt from the verified GitHub release asset plus patch `sb-1.14.3-r1`. Upstream metadata remains unchanged; the patch revision and full installed-tree hash are locked separately.
 
 ## Inventory Surface
 
-The OB1 lock covers:
+The current lock covers:
 
-- `37` exact-path files;
-- `109` keyed `REPLACE`, `TRY_REPLACE`, or `REPLACE_OR_CREATE` objects;
+- `39` exact-path files;
+- `112` keyed `REPLACE`, `TRY_REPLACE`, or `REPLACE_OR_CREATE` objects;
 - `18` intentionally changed state-region blocks;
 - one registered additive `zz_` override;
 - all eight localization replace files plus key-level, multi-source pins for the 20 previously silent Vanilla key collisions;
@@ -33,7 +33,7 @@ The OB1 lock covers:
 
 The exact-path set includes Southern African history, the Highveld event baseline, the regional state file, the province raster, terrain, locators, and spline network. Generated and binary files use hash parity; textual files also require a reviewed source diff. Every OB1 source-only drift result is repinned only after a recorded semantic decision.
 
-`common/history/treaties/00_historical_treaties.txt` remains an exact-path Vanilla shadow because startup treaty rows cannot be removed additively. It is pinned to the exact `1.14.0` OB1 payload; uniquely named third-party treaty files remain additive. SB does not replace or register `on_treaty_ports_inherited`, leaving Vanilla's inheritance prompt and market reconnection path untouched.
+`common/history/treaties/00_historical_treaties.txt` remains an exact-path Vanilla shadow because startup treaty rows cannot be removed additively. Its unchanged payload is pinned against `1.14.3`; uniquely named third-party treaty files remain additive. SB does not replace or register `on_treaty_ports_inherited`, leaving Vanilla's inheritance prompt and market reconnection path untouched.
 
 `common/history/diplomacy/00_relations.txt` retains the OB1 relation baseline except for three explicit startup corrections: it disables the whole Vanilla `c:SAF` block, removes ORA's relation to TRN, and disables the whole Vanilla `c:TRN` block because SAF and TRN do not exist in 1836. Later TRN relations remain story-authored.
 
@@ -49,7 +49,7 @@ The checker fails on any unregistered `zz_` override-style file, unregistered `r
 
 ## Dependency Rebases
 
-The five retained political-movement replacements are pinned to CMF `1.66.0` and reviewed against Victoria 3 `1.14.0` OB1. Their CMF source files and object bodies are unchanged across this dependency rebase. Cultural Supremacy retains the upstream unowned-homeland and neighbouring-movement scope fixes; the only SB-specific delta is CAP creation/disband exclusion. The other retained movement deltas remain the documented CAP exclusion or Anglo-African utilitarian eligibility.
+The five retained political-movement replacements are pinned to CMF `1.66.0` and reviewed against Victoria 3 `1.14.3`. Cultural Supremacy migrates six primary-culture comparisons and one value accessor to Vanilla 1.14.3's explicit-country API in both CMF and SB. Other movement bodies and CMF extensions are preserved; the shared source-file pins are refreshed. Cultural Supremacy retains the upstream unowned-homeland and neighbouring-movement scope fixes; the only SB-specific delta is CAP creation/disband exclusion. The other retained movement deltas remain the documented CAP exclusion or Anglo-African utilitarian eligibility.
 
 The company replacements are intentionally narrow:
 
@@ -60,7 +60,7 @@ Vanilla's additive `on_company_disbanded` handler remains untouched. SB register
 
 The Armed Forces definition is a keyed OB1 rebase. Its executable token stream is unchanged upstream; the source drift is comments and formatting only. Its sole SB delta consumes Imperial Administration's displayed flat `+50` Aristocrat attraction modifier. CMF `1.66.0` does not replace this object. Source and object hashes are pinned so later military-interest-group changes require an explicit rebase.
 
-All three OB1 AI incorporation triggers are exact replacements around one narrow helper. `sb_regional_ai_should_incorporate` admits only AI NAL owning `STATE_ZULULAND`, AI CAP owning `STATE_BECHUANALAND` or `STATE_GRIQUALAND_WEST`, and AI ORA owning `STATE_DRAKENSBERG`; each match requires `owner = root`. It is intentionally independent of NAL's narrative lease, population, adjacency, full-state ownership, homeland time, and starting country type. Both ordinary and colonial `will` paths receive the helper because NAL and CAP can cross those country-type branches. `ai_can_incorporate_state` remains a value/transfer-scoring caller rather than the command that starts incorporation. The `will` overrides improve willingness and candidate priority but cannot bypass affordability or code-side candidate validity. The unchanged `ai_strategy_default` caller and `state_transfer` scoring object are pinned as non-shadowed upstream contracts so their branch and valuation semantics cannot drift silently.
+All three OB1 AI incorporation triggers are exact replacements around one narrow helper. `sb_regional_ai_should_incorporate` admits only AI NAL owning `STATE_ZULULAND`, AI CAP owning `STATE_BECHUANALAND` or `STATE_GRIQUALAND_WEST`, and AI ORA owning `STATE_DRAKENSBERG`; each match requires `owner = root`. It is intentionally independent of NAL's narrative lease, population, adjacency, full-state ownership, homeland time, and starting country type. Both ordinary and colonial `will` paths receive the helper because NAL and CAP can cross those country-type branches. `ai_can_incorporate_state` remains a value/transfer-scoring caller rather than the command that starts incorporation. The `will` overrides improve willingness and candidate priority but cannot bypass affordability or code-side candidate validity. The rebased `ai_strategy_default` caller/scoring object and unchanged `state_transfer` scoring object are pinned as non-shadowed upstream contracts so their branch and valuation semantics cannot drift silently.
 
 The Colonial Racialism amendment is a keyed OB1 rebase. Its only SB delta permits Rural Folk carrying Settler Colonialist to sponsor the amendment; Vanilla's approval gate and existing Armed Forces and Industrialist sponsors remain unchanged.
 
@@ -81,6 +81,10 @@ The focused override decisions are:
 - The Zulu chiefdom diplomatic action uses the existing OB1 `puppet_15.dds` icon. No missing `puppet.dds` path remains.
 
 ## CMF 1.66 Integration
+
+CMF `1.66.0` is installed with `sb-1.14.3-r1`. Its Annex Country, Conquer State, and Return State definitions match Vanilla 1.14.3, including the new infamy formulas and territorial mirrors, with only CMF's land-grab validity hook added. SB has no duplicate territorial-goal shadows. The seven patched ideology categories are retained unchanged, and the cultural-majority movement uses the explicit-country API. Five replacement payloads, sixteen Vanilla source/object contracts, both tree digests, and three upstream-reviewable diffs live under `patches/cmf/sb-1.14.3-r1`. No SB-specific country or state rule is added to CMF.
+
+`tools/sync_cmf.py` verifies the original archive and stages the complete patch before installation. Repeated sync, `--check`, and `--force` retain the patch; `--latest` is rejected for this dependency. A local unpatched or altered 1.66.0 tree fails validation. Metadata's upstream version and the launcher relationship remain unchanged; this is explicitly a patched distribution, not a new official CMF release.
 
 The Bechuanaland Corridor uses CMF `1.66.0`'s journal-scope and International Situation interfaces:
 
@@ -117,4 +121,49 @@ CMF-style detection remains available through:
 - `spes_bona_southern_africa_map_rework_active`
 - `spes_bona_population_rework_active`
 
-Static parity does not certify engine behavior. Required OB1 launch checks are maintained in `Docs/compatibility/1_14_0_open_beta_1_runtime_matrix.md`. `Docs/compatibility/1_13_11_runtime_matrix.md` remains unchanged as historical evidence and is not evidence for this target.
+Static parity does not certify engine behavior. Current launch checks are maintained in `Docs/compatibility/1_14_3_runtime_matrix.md`. `Docs/compatibility/1_13_11_runtime_matrix.md` remains unchanged as historical evidence and is not evidence for this target.
+
+## 1.14.2 review (historical)
+
+The new depot report contains 69 changed files, one addition, and no removals. No exact-path SB override or map asset changed upstream. The three AI incorporation trigger bodies are unchanged; the default strategy now also tests incorporation eligibility when calculating owned-state cession reluctance, alongside owned/foreign state values. SB keeps its owner/root guard and four existing priorities. Dominions' localisation source files changed globally; the documented custom dominion policy remains authoritative. DP's Boer Drakensberg naming edit is retained.
+
+The historical target report and fresh-game checklist are `1_14_2_rebase.md` and `1_14_2_runtime_matrix.md`. Earlier OB1 evidence does not certify this build.
+
+## 1.14.3 review
+
+The separate depot report records 92 changed files, three additions, and no removals. Exact-path SB overrides and map assets are unchanged. The required runtime ports are CMF's three territorial infamy formulas and the cultural-majority primary-culture API in both CMF and SB. AI strategy changes are inherited; incorporation trigger bodies and ideology-category bodies are unchanged. CMF's construction-interaction map-list type retains its production-method customization and gains a pinned source contract. Dominion source pins are refreshed without rewriting SB prose.
+
+The current report and DP engine checklist are `1_14_3_rebase.md` and `1_14_3_runtime_matrix.md`. All game launches remain with DP. ORA–BST stays on hold; no custom enforcement or save migration is introduced.
+
+## Chiefdoms movement contest (19 September 2026)
+
+Three new keyed replacements retain the effective 1.14.3/CMF bodies except for the
+Chiefdom/Elder Council allowance in ZUL's historical Chiefdoms context and the
+native absolutist movement's exclusion of that context. The ZUL-only uSuthu
+derivative supplies the movement there. CMF’s Bavarocrat eligibility and Grey PLP
+support/state-weight hooks are retained in both movement definitions; the native
+replacement is checked against CMF after removing only SB’s four lifecycle gates.
+Other countries retain their existing behaviour.
+
+`common/customizable_localization/00_ep1_custom_loc.txt` is an exact-path shadow:
+customizable localization does not accept `REPLACE:`. Only the two overlord-lobby
+name functions differ, adding a marked-ZUL contest branch before their native
+fallbacks. All other functions are byte-preserved; the native lobby types remain
+unchanged so their IG clout continues to enter native Liberty Desire. CMF has no
+same-path file. The focused tests compare all functions and both fallback bodies
+against installed Vanilla; the inventory pins the complete upstream/result files.
+
+See [implementation and verification](zululand_movement_contest_2026_09_19.md).
+
+## Goods Transfer crash safeguard (20 September 2026)
+
+`common/treaty_articles/13_goods_transfer.txt` now shadows Vanilla. Only `possible`
+changes: a `trigger_if` checks live parties and valid personal/market-owner
+market-capital scopes before evaluating the complete original eligibility body.
+The invalid-scope branch rejects the proposal. Valid countries retain native
+reachability, adjacency, port, pricing and treaty rules; maintenance and existing
+articles are unchanged. CMF has no same-path or keyed replacement. Whole-file
+parity after undoing this one wrapper is regression-tested and both hashes pinned.
+This is a mitigation for a repeated native AI treaty crash, awaiting DP's replay;
+it is not a confirmed diagnosis of the invalidated country or Zulu capitulation.
+See [crash investigation](zul_war_crash_2026_09_19.md).

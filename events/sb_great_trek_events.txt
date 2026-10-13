@@ -75,14 +75,10 @@ sb_great_trek.002 = {
 	icon = "gfx/interface/icons/event_icons/event_map.dds"
 
 	trigger = {
-		is_country_alive = yes
+		sb_great_trek_opening_victory_is_valid = yes
 		has_variable = sb_great_trek_outcome_delivery_pending_var
 		has_variable = sb_great_trek_outcome_delivery_queued_var
 		NOT = { has_variable = sb_great_trek_outcome_delivery_received_var }
-		c:MTB ?= {
-			is_country_alive = yes
-			has_diplomatic_pact = { who = root type = colonization_rights }
-		}
 	}
 
 	immediate = {
@@ -108,14 +104,10 @@ sb_great_trek.002 = {
 		name = sb_great_trek.002.a
 		default_option = yes
 		trigger = {
-			is_country_alive = yes
+			sb_great_trek_opening_victory_is_valid = yes
 			has_variable = sb_great_trek_outcome_delivery_pending_var
 			has_variable = sb_great_trek_outcome_popup_receipt_var
 			NOT = { has_variable = sb_great_trek_outcome_delivery_received_var }
-			c:MTB ?= {
-				is_country_alive = yes
-				has_diplomatic_pact = { who = root type = colonization_rights }
-			}
 		}
 
 		hidden_effect = {
@@ -211,7 +203,7 @@ sb_great_trek.002 = {
 		trigger = {
 			has_variable = sb_great_trek_outcome_delivery_pending_var
 			has_variable = sb_great_trek_outcome_popup_receipt_var
-			NOT = { AND = { is_country_alive = yes NOT = { has_variable = sb_great_trek_outcome_delivery_received_var } c:MTB ?= { is_country_alive = yes has_diplomatic_pact = { who = root type = colonization_rights } } } }
+			NOT = { AND = { sb_great_trek_opening_victory_is_valid = yes NOT = { has_variable = sb_great_trek_outcome_delivery_received_var } } }
 		}
 		remove_variable = sb_great_trek_outcome_delivery_queued_var
 		if = { limit = { has_variable = sb_great_trek_outcome_popup_receipt_var } remove_variable = sb_great_trek_outcome_popup_receipt_var }

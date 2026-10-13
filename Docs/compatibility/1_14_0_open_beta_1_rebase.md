@@ -103,8 +103,7 @@ The post-convergence tree was validated after all route and formation fixes:
   such as `container_exists`; completed diagnostics are therefore advisory warnings,
   not runtime certification.
 
-All 52 engine scenarios remain `Engine pending`; none of these static results is
-reported as a cold-launch or save/load pass.
+At the rebase baseline, all 52 engine scenarios were `Engine pending`. The 2026-09-05 launch subsequently failed three rows; see [the launch-error repair record](1_14_0_launch_debug_2026_09_05.md). No static result is a cold-launch or save/load pass.
 
 ## Sources
 

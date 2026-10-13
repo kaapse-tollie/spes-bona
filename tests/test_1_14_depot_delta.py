@@ -8,6 +8,8 @@ import sys
 import tempfile
 import unittest
 
+from tools import check_override_inventory as inventory
+
 
 ROOT = Path(__file__).resolve().parents[1]
 MODULE_PATH = ROOT / "tools/build_steam_depot_delta.py"
@@ -206,6 +208,15 @@ class DepotDeltaEvidenceTests(unittest.TestCase):
     def test_installed_new_side_matches_manifest_when_ob1_is_present(self):
         if not GAME_ROOT.is_dir():
             self.skipTest("Victoria 3 game root is not installed")
+        settings = GAME_ROOT.parent / "launcher/launcher-settings.json"
+        if not settings.is_file() or json.loads(settings.read_text())["rawVersion"] != "1.14.0":
+            self.skipTest("historical OB1 payload is not the installed build")
+        app_path = inventory.find_steam_app_manifest(GAME_ROOT)
+        if app_path is None:
+            self.skipTest("historical Steam build identity unavailable")
+        app = inventory.parse_vdf(app_path.read_text())["AppState"]
+        if app.get("buildid") != "25081502" or app.get("InstalledDepots", {}).get("529341", {}).get("manifest") != "3868129321396195520":
+            self.skipTest("exact historical OB1 Steam build is not installed")
         for entry in self.entries:
             evidence = entry["new"]
             if evidence["size"] is None:

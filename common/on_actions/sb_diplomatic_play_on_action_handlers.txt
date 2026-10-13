@@ -228,6 +228,25 @@ sb_on_spes_bona_diplomatic_play_started = {
 				set_variable = sb_natal_war_active_var
 				remove_variable = sb_natal_story_launch_pending_var
 			}
+			# Bind reciprocal goals to the admitted play's actors, not ROOT in a
+			# nested create_diplomatic_play payload. Select Natal after NGI absorption.
+			s:STATE_NATAL.region_state:ZUL = { save_temporary_scope_as = sb_blood_river_objective_state }
+			add_war_goal = {
+				holder = scope:initiator
+				target_country = scope:target
+				target_state = scope:sb_blood_river_objective_state
+				type = sb_natal_defend
+				primary_demand = yes
+			}
+			add_war_goal = {
+				holder = scope:target
+				target_country = scope:initiator
+				target_state = scope:sb_blood_river_objective_state
+				type = sb_natal_control
+				primary_demand = yes
+			}
+			# Keep a primary demand installed while replacing the creation placeholder.
+			remove_war_goal = { who = initiator type = sb_story_humiliation }
 			if = { limit = { has_global_variable = sb_natal_story_initiator_demand_accepted_global_var } remove_global_variable = sb_natal_story_initiator_demand_accepted_global_var }
 			if = { limit = { has_global_variable = sb_natal_story_target_demand_accepted_global_var } remove_global_variable = sb_natal_story_target_demand_accepted_global_var }
 			if = { limit = { has_global_variable = sb_natal_story_war_resolved_global_var } remove_global_variable = sb_natal_story_war_resolved_global_var }
@@ -321,7 +340,13 @@ sb_on_spes_bona_diplomatic_play_started = {
 					has_variable = sb_zulu_swazi_launch_lease_var
 					has_variable = sb_zulu_swazi_target_state_scope
 				}
-				scope:target ?= { country_definition = cd:SWZ has_variable = sb_zulu_swazi_war_active_var }
+			scope:target ?= { country_definition = cd:SWZ has_variable = sb_zulu_swazi_war_active_var }
+			}
+			# SWZ seeks humiliation, not a conquest selected as the default counter-demand.
+			add_war_goal = { holder = scope:target target_country = scope:initiator type = humiliation primary_demand = yes }
+			if = {
+				limit = { scope:target ?= { play_participant_has_war_goal_of_type_against = { type = conquer_state target = scope:initiator } } }
+				remove_war_goal = { who = target type = conquer_state }
 			}
 			scope:initiator = {
 				if = { limit = { has_variable = sb_zulu_swazi_goal_accepted_pending_var } remove_variable = sb_zulu_swazi_goal_accepted_pending_var }
@@ -676,6 +701,8 @@ sb_on_spes_bona_diplo_play_back_down = {
 		}
 
 		# The opening Great Trek play never reaches war-end after a pre-war back-down.
+		# Queue from the bound play; the delayed event checks the settled pact,
+		# which need not exist yet while this terminal callback is running.
 		if = {
 			limit = {
 				root = { is_diplomatic_play_type = dp_native_uprising }
@@ -684,8 +711,7 @@ sb_on_spes_bona_diplo_play_back_down = {
 			}
 			if = {
 				limit = {
-					scope:actor = c:ORA
-					c:MTB ?= { is_country_alive = yes has_diplomatic_pact = { who = c:ORA type = colonization_rights } }
+					c:MTB ?= { is_country_alive = yes }
 					c:ORA ?= { is_country_alive = yes }
 				}
 				c:ORA = {
@@ -943,6 +969,8 @@ sb_on_spes_bona_war_end = {
 			sb_cleanup_swazi_defensive_muster_for_play = yes
 			sb_zulu_clear_swazi_campaign_runtime = yes
 		}
+		# Reserve delivery before clearing the exact play. Check colonization
+		# rights in the delayed event, after the peace settlement has been applied.
 		if = {
 			limit = {
 				root = { is_diplomatic_play_type = dp_native_uprising }
@@ -953,10 +981,7 @@ sb_on_spes_bona_war_end = {
 			if = {
 				limit = {
 					c:ORA ?= { is_country_alive = yes }
-					c:MTB ?= {
-						is_country_alive = yes
-						has_diplomatic_pact = { who = c:ORA type = colonization_rights }
-					}
+					c:MTB ?= { is_country_alive = yes }
 				}
 				c:ORA = { sb_great_trek_queue_outcome_delivery = yes }
 			}
@@ -1034,8 +1059,8 @@ sb_on_spes_bona_war_end = {
 # War-goal hooks for the Phase 1 frontier wars.
 sb_on_spes_bona_wargoal_enforced = {
 	effect = {
-		# OB1 timer enforcement is reversible. All hooks below only record an
-		# authored route result; terminal mutations run once from on_war_end.
+		# Klip's punitive path checks both actual demands; other story routes
+		# retain their provisional enforcement records and terminal resolvers.
 		sb_klip_river_handle_wargoal_enforced = yes
 		sb_bechuanaland_track_crisis_wargoal_enforcement = yes
 		# Timer and assent callbacks are provisional. The terminal resolver also

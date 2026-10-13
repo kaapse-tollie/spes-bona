@@ -1,0 +1,30 @@
+﻿# Every viewer reads the same actual country and political movement.
+sb_usuthu_activism = {
+	value = 0
+	c:ZUL ?= { every_political_movement = { limit = { is_political_movement_type = movement_royalist_absolutist } add = political_movement_radicalism } }
+}
+sb_usuthu_support = {
+	value = 0
+	c:ZUL ?= { every_political_movement = { limit = { is_political_movement_type = movement_royalist_absolutist } add = political_movement_support } }
+}
+sb_zululand_months_remaining = {
+	value = 120
+	if = { limit = { container_exists = sb_zululand_chiefdoms_state } subtract = container:sb_zululand_chiefdoms_state.var:sb_zululand_situation_months_var }
+	min = 0
+}
+sb_zululand_monthly_commitment = {
+	value = 0
+	if = { limit = { c:TRN ?= { has_variable = sb_zululand_usuthu_sponsorship_active_var } } add = { value = 2 desc = sb_zululand_drift_sponsorship } }
+	if = { limit = { c:TRN ?= { has_variable = sb_zululand_boer_volunteers_active_var } } add = { value = 3 desc = sb_zululand_drift_volunteers } }
+}
+sb_usuthu_action_attraction = {
+	value = 0
+	if = { limit = { c:ZUL ?= { has_variable = sb_zululand_usuthu_contest_var } } add = { value = 0.5 desc = sb_usuthu_royalist_networks } }
+	if = { limit = { c:TRN ?= { has_variable = sb_zululand_usuthu_sponsorship_active_var } } add = { value = 0.5 desc = sb_usuthu_sponsorship } }
+	if = { limit = { c:NAL ?= { has_variable = sb_zululand_chief_patronage_active_var } } add = { value = -0.5 desc = sb_usuthu_chief_patronage } }
+}
+sb_usuthu_action_activism = {
+	value = 0
+	if = { limit = { c:TRN ?= { has_variable = sb_zululand_boer_volunteers_active_var } } add = { value = 0.2 desc = sb_usuthu_volunteers } }
+	if = { limit = { c:NAL ?= { has_variable = sb_zululand_policing_active_var } } add = { value = -0.2 desc = sb_usuthu_policing } }
+}
