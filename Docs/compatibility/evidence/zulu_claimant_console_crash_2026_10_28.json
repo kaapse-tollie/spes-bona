@@ -1,0 +1,79 @@
+{
+  "date": "2026-10-28",
+  "crash_time": "11:51:16",
+  "game_version": "1.14.5",
+  "inputs": [
+    {
+      "source": "/Users/depro/Documents/Paradox Interactive/Victoria 3/crashes/victoria3_01260928_115116/exception.txt",
+      "path": "exception.txt",
+      "bytes": 4988,
+      "sha256": "7b3afdb5e50335550102fc5c2d10d07cfcae4488dd8a78b3d5f530a47ac8252c"
+    },
+    {
+      "source": "/Users/depro/Documents/Paradox Interactive/Victoria 3/crashes/victoria3_01260928_115116/logs/debug.log",
+      "path": "logs/debug.log",
+      "bytes": 252537,
+      "sha256": "685e30f57e7e6f01843f73cfb9083af0c7c990a01e0c439320b994d694040924"
+    },
+    {
+      "source": "/Users/depro/Documents/Paradox Interactive/Victoria 3/crashes/victoria3_01260928_115116/logs/error.log",
+      "path": "logs/error.log",
+      "bytes": 11432,
+      "sha256": "fa90d79fcc2a31a99e8f755b46a5c6e904f24703da7806103ef1f4ee1d203fe0"
+    },
+    {
+      "source": "/Users/depro/Documents/Paradox Interactive/Victoria 3/crashes/victoria3_01260928_115116/logs/game.log",
+      "path": "logs/game.log",
+      "bytes": 76451,
+      "sha256": "01e4800aba89327c9de321b99487f205baffd4261bfbf150cd679a732907ea26"
+    },
+    {
+      "source": "/Users/depro/Documents/Paradox Interactive/Victoria 3/crashes/victoria3_01260928_115116/logs/system.log",
+      "path": "logs/system.log",
+      "bytes": 1058,
+      "sha256": "fd125f3e74595e6b9b7752c91ab261c4c2a8d2c63c3dcb6c0c0efd409d92db5a"
+    },
+    {
+      "source": "/Users/depro/Documents/Paradox Interactive/Victoria 3/crashes/victoria3_01260928_115116/meta.yml",
+      "path": "meta.yml",
+      "bytes": 1287,
+      "sha256": "f46b0b7749cbb158493412c2a44242997f731d5656c0532ec877fa7b8056a3e2"
+    },
+    {
+      "source": "/Users/depro/Documents/Paradox Interactive/Victoria 3/crashes/victoria3_01260928_115116/pdx_settings.json",
+      "path": "pdx_settings.json",
+      "bytes": 2194,
+      "sha256": "8291b6cc6d08a73a83f64c3c3203f7c60259f26b07a9a2b834e23ef58c2ccc5b"
+    }
+  ],
+  "console_command": "event sb_court_succession.990",
+  "diagnosis": "Native global-random access collision between manual console invocation and a daily harvest-condition task.",
+  "assertion_location": "consolecmdimpl.cpp:1391",
+  "stack": [
+    "NRandom::CGlobalRandom::GetInteger",
+    "CTickTask_StartHarvestConditions::Prepare",
+    "GameStateTick",
+    "CGameState::HandleDailyTick"
+  ],
+  "native_inspection": {
+    "binary": "/Users/depro/Library/Application Support/Steam/steamapps/common/Victoria 3/binaries/victoria3.app/Contents/MacOS/victoria3",
+    "binary_sha256": "e4806a9b315c9ed40bdafd5e6a9e3e46aca741a0a0890bded906ebcc295e2a13",
+    "wrapper_symbol": "__Z22OnExecute_ExecuteEventRK9CPdxArrayI7CStringiEPv",
+    "acquire_access_instruction": "0x100271a9c",
+    "event_dispatch_instruction": "0x100271aac",
+    "method": "Read-only arm64 llvm-objdump disassembly; no game execution.",
+    "files": {
+      "native-console-event.txt": "07760172a54c7b27e35706d9c10061693975a26804e0baaf64a7c4f5f855ff7f",
+      "native-console-wrapper.txt": "c402d69af58cee310ea1cd64c8aeef7e39cde9de5f0b531296d85884dd1ee486"
+    }
+  },
+  "latest_autosave": {
+    "path": "/Users/depro/Documents/Paradox Interactive/Victoria 3/save games/autosave.v3",
+    "mtime_local": "2026-10-28T11:13:39.326537",
+    "sha256": "388eb3572a610a0b24566a9b864265dd469af5e2c8d3fd0189a3f5e8e6bced3a",
+    "game_date": "1839.9.1",
+    "limitation": "Predates this crash; no snapshot of the failed invocation."
+  },
+  "next_test": "Restart from pre-crisis checkpoint; pause until date stops; call .990 once; select side and resume.",
+  "validation_limit": "Paused replay pending DP. One crashing-thread stack cannot establish how much event script completed on the concurrent console thread. No gameplay changes or new test-suite run."
+}

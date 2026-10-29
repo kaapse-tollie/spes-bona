@@ -12,8 +12,14 @@
 - Leave launching Victoria 3 to check launch errors to DP. Do not launch the game for this purpose.
 - Run static validation and inspect existing logs as needed. Record launch checks awaiting DP as pending.
 
+# DLC Policy
+
+- SB requires all Victoria 3 DLC, including DLC whose content SB does not directly use. Design against that baseline; do not add no-DLC alternatives unless DP changes this policy.
+
 # Localisation Review Authority
 
+- Use British English spelling in player-facing text and documentation, including recognise, patronise, organise, and colour. Preserve script identifiers and quoted upstream names.
+- Before writing event or journal flavour prose, read comparable installed DLC examples. Match their concrete actors, period voice and clear stakes; write original text for SB's circumstances. Keep implementation details in development documentation and gameplay explanations in tooltips.
 - Treat every existing `# ### REVIEWED ###` marker as DP-authored approval. Never remove, downgrade, or reinterpret it.
 - A `# ### REVIEWED ###` or `# ### TO REVIEW ###` marker classifies only the event or journal-entry namespace of the first non-comment localisation key after it. It never carries into a later event, journal entry, diplomatic play, or general localisation namespace.
 - A numbered event namespace is exactly `<namespace>.<number>`. Only that exact ID and its period-suffixed keys, such as `.t`, `.d`, `.f`, and `.a`, belong to it; an underscore-suffixed or otherwise unrelated key does not.

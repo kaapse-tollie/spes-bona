@@ -103,6 +103,26 @@ class NatalInterwarTests(unittest.TestCase):
         )
         self.assertNotIn("move_partial_pop", finalize)
 
+    def test_british_natal_preserves_governor_through_native_government_refresh(self):
+        setup = object_block(
+            "common/scripted_effects/sb_natalia_colony_effects.txt",
+            "sb_apply_british_natal_colony_setup",
+        )
+        # Native gov_crown_colony's post-change callback otherwise selects a
+        # presidential ruler after the scripted appointment. Protect the current
+        # country (NAL), including when GBR remains the event root.
+        protection = "set_variable = { name = keep_current_ruler_var days = 7 }"
+        self.assertRegex(setup, r"(?m)^\t" + re.escape(protection) + r"$")
+        self.assertLess(
+            setup.index(protection),
+            setup.index("sb_convert_natalia_to_british_crown_colony = yes"),
+        )
+        self.assertLess(
+            setup.index("activate_law = law_type:law_colonial_administration"),
+            setup.index("sb_install_british_natal_governor = yes"),
+        )
+        self.assertNotIn("remove_variable = keep_current_ruler_var", setup)
+
     def test_dingane_kills_piet_retief_before_the_blood_river_war(self):
         event = object_block("events/sb_natal_crisis_events.txt", "sb_natal_crisis.020")
         options = [
@@ -112,8 +132,11 @@ class NatalInterwarTests(unittest.TestCase):
         rejection = next(
             option for option in options if "name = sb_natal_crisis.020.b" in option
         )
-        self.assertIn("has_template = ORA_piet_retief", rejection)
-        self.assertIn("is_character_alive = yes", rejection)
+        selection = validate.extract_braced(event, re.search(r"immediate\s*=\s*\{", event).start())
+        self.assertIn("has_template = ORA_piet_retief", selection)
+        self.assertIn("is_character_alive = yes", selection)
+        self.assertIn("save_scope_as = sb_retief_envoy", selection)
+        self.assertIn("scope:sb_retief_envoy ?=", rejection)
         self.assertIn("kill_character = { hidden = yes }", rejection)
         self.assertLess(
             rejection.index("kill_character = { hidden = yes }"),
@@ -1236,9 +1259,12 @@ class NatalInterwarTests(unittest.TestCase):
         self.assertNotIn("service_type = conscript", military)
         self.assertNotIn("combat_unit_type_line_infantry", military)
         self.assertIn("save_scope_as = sb_natalia_commando_scope", military)
-        self.assertIn(
-            "transfer_to_formation = scope:sb_natalia_commando_scope", military
-        )
+        # Formation creation precedes commander setup; both founders assign the
+        # final ruler afterwards, including Retief on the guns-bargain route.
+        for founder in (direct, peaceful):
+            self.assertIn(
+                "transfer_to_formation = scope:sb_natalia_commando_scope", founder
+            )
         self.assertEqual(
             1, direct.count("sb_apply_natalia_blood_river_military_setup = yes")
         )

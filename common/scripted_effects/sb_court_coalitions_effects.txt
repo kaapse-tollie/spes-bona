@@ -1,0 +1,243 @@
+﻿# Recognition carries roughly half the incumbent's supporting prominence into
+# future pledges. Whole houses stay together; existing rival promises are retained.
+sb_court_back_recognized_heir = {
+ hidden_effect = {
+  save_scope_as = sb_court_country
+  sb_court_calculate_backing = yes
+  set_variable = { name = sb_court_recognition_remaining_var value = 0 }
+  set_variable = { name = sb_court_recognition_pledged_var value = 0 }
+  ruler ?= {
+   every_in_list = {
+    variable = sb_court_current_supporters
+    limit = { sb_court_member_of_country = yes sb_court_recruitable_backer = yes NOT = { sb_court_dynastic_candidate = yes } }
+    scope:sb_court_country = { change_variable = { name = sb_court_recognition_remaining_var add = prev.var:sb_court_represented_weight_var } }
+    if = {
+     limit = { var:sb_court_successor_pledge_scope ?= scope:sb_court_country.var:sb_court_recognized_heir_scope }
+     scope:sb_court_country = { change_variable = { name = sb_court_recognition_pledged_var add = prev.var:sb_court_represented_weight_var } }
+    }
+   }
+  }
+  # Twice the remaining target: accept a whole house only if it brings the
+  # pledged total closer to half. Largest houses are considered first; a tie
+  # leaves room for a smaller house rather than overshooting the target.
+  set_variable = { name = sb_court_recognition_remaining_var value = { value = var:sb_court_recognition_remaining_var subtract = { value = var:sb_court_recognition_pledged_var multiply = 2 } } }
+  ruler ?= {
+   ordered_in_list = {
+    variable = sb_court_current_supporters
+    limit = { sb_court_member_of_country = yes sb_court_recruitable_backer = yes NOT = { sb_court_dynastic_candidate = yes } NOT = { has_variable = sb_court_successor_pledge_scope } }
+    order_by = var:sb_court_represented_weight_var
+    if = {
+     limit = { scope:sb_court_country = { var:sb_court_recognition_remaining_var > 0 } var:sb_court_represented_weight_var < scope:sb_court_country.var:sb_court_recognition_remaining_var }
+     set_variable = { name = sb_court_successor_pledge_scope value = scope:sb_court_country.var:sb_court_recognized_heir_scope }
+     scope:sb_court_country = {
+      set_variable = { name = sb_court_recognition_remaining_var value = { value = var:sb_court_recognition_remaining_var subtract = { value = prev.var:sb_court_represented_weight_var multiply = 2 } } }
+     }
+    }
+   }
+  }
+  remove_variable = sb_court_recognition_remaining_var
+  remove_variable = sb_court_recognition_pledged_var
+  sb_court_calculate_coalitions = yes
+ }
+}
+
+# Country scope, called after representative selection. Lists are projections, not extra votes.
+sb_court_calculate_coalitions = {
+ save_scope_as = sb_court_country
+ set_variable = { name = sb_court_unpledged_weight_var value = 0 }
+ set_variable = { name = sb_court_pledged_weight_var value = 0 }
+ set_variable = { name = sb_court_current_unpledged_weight_var value = 0 }
+ set_variable = { name = sb_court_current_pledged_weight_var value = 0 }
+ set_variable = { name = sb_court_external_opposition_var value = 0 }
+ every_in_list = {
+  variable = sb_court_members
+  limit = { var:sb_court_home_scope ?= scope:sb_court_country }
+  if = {
+   limit = { has_variable = sb_court_successor_pledge_scope NOT = { var:sb_court_successor_pledge_scope ?= { sb_court_dynastic_candidate = yes } } }
+   remove_variable = sb_court_successor_pledge_scope
+  }
+  if = {
+   limit = { has_variable = sb_court_council_promise_scope NOT = { var:sb_court_council_promise_scope ?= { sb_court_dynastic_candidate = yes } } }
+   remove_variable = sb_court_council_promise_scope
+  }
+  set_variable = { name = sb_court_coalition_weight_var value = 0 }
+  set_variable = { name = sb_court_coalition_share_var value = 0 }
+  set_variable = { name = sb_court_pledged_share_var value = 0 }
+  set_variable = { name = sb_court_current_weight_var value = 0 }
+  set_variable = { name = sb_court_current_share_var value = 0 }
+  set_variable = { name = sb_court_rival_weight_var value = 0 }
+  clear_variable_list = sb_court_supporters
+  clear_variable_list = sb_court_current_supporters
+ }
+ every_in_list = {
+  variable = sb_court_members
+  limit = { sb_court_member_of_country = yes has_variable = sb_court_representative_var has_variable = sb_court_represented_weight_var }
+  save_scope_as = sb_court_backer
+  # Present allegiance is independent of a promise about the next succession.
+  # Use the same valid endorsements as the Prerogative numerator.
+  if = {
+   limit = { sb_court_member_endorsement > 0 }
+   scope:sb_court_country.ruler ?= {
+    change_variable = { name = sb_court_current_weight_var add = scope:sb_court_backer.var:sb_court_represented_weight_var }
+    if = { limit = { NOT = { this = scope:sb_court_backer } } add_to_variable_list = { name = sb_court_current_supporters target = scope:sb_court_backer } }
+   }
+  }
+  else_if = {
+   limit = { sb_court_member_endorsement < 0 }
+   var:sb_court_claimant_scope = {
+    if = {
+     limit = { var:sb_court_home_scope ?= scope:sb_court_country }
+     change_variable = { name = sb_court_current_weight_var add = scope:sb_court_backer.var:sb_court_represented_weight_var }
+     if = { limit = { NOT = { this = scope:sb_court_backer } } add_to_variable_list = { name = sb_court_current_supporters target = scope:sb_court_backer } }
+    }
+    # Constitutional rebels may carry the patron into another court. Retain the
+    # opposition at home without overwriting the other country's projection.
+    else = { scope:sb_court_country = { change_variable = { name = sb_court_external_opposition_var add = scope:sb_court_backer.var:sb_court_represented_weight_var } } }
+   }
+  }
+  else = { scope:sb_court_country = { change_variable = { name = sb_court_current_unpledged_weight_var add = prev.var:sb_court_represented_weight_var } } }
+  if = {
+   limit = { sb_court_royal_candidate = yes NOT = { is_ruler_of_own_country = yes } }
+   change_variable = { name = sb_court_coalition_weight_var add = var:sb_court_represented_weight_var }
+   change_variable = { name = sb_court_rival_weight_var add = var:sb_court_represented_weight_var }
+  }
+  else_if = {
+   limit = { var:sb_court_successor_pledge_scope ?= { sb_court_dynastic_candidate = yes NOT = { is_ruler_of_own_country = yes } var:sb_court_home_scope ?= scope:sb_court_country } }
+   var:sb_court_successor_pledge_scope = {
+    change_variable = { name = sb_court_coalition_weight_var add = scope:sb_court_backer.var:sb_court_represented_weight_var }
+    change_variable = { name = sb_court_rival_weight_var add = scope:sb_court_backer.var:sb_court_represented_weight_var }
+    add_to_variable_list = { name = sb_court_supporters target = scope:sb_court_backer }
+   }
+  }
+  else = { scope:sb_court_country = { change_variable = { name = sb_court_unpledged_weight_var add = prev.var:sb_court_represented_weight_var } } }
+  # Threatening a prince also concerns his present adherents. Count a following only
+  # once when it both endorses him now and promises his future accession.
+  if = {
+   limit = { var:sb_court_endorsement_var = -1 var:sb_court_claimant_scope ?= { sb_court_dynastic_candidate = yes var:sb_court_home_scope ?= scope:sb_court_country } NOT = { var:sb_court_claimant_scope ?= this } }
+   # Optional equality protects its left scope, not an absent right-hand pledge.
+   if = {
+    limit = { exists = var:sb_court_successor_pledge_scope }
+    if = {
+     limit = { NOT = { var:sb_court_claimant_scope = var:sb_court_successor_pledge_scope } }
+     var:sb_court_claimant_scope = { change_variable = { name = sb_court_rival_weight_var add = scope:sb_court_backer.var:sb_court_represented_weight_var } }
+    }
+   }
+   else = { var:sb_court_claimant_scope = { change_variable = { name = sb_court_rival_weight_var add = scope:sb_court_backer.var:sb_court_represented_weight_var } } }
+  }
+ }
+ set_variable = { name = sb_court_pledged_weight_var value = { value = var:sb_court_weight_var subtract = var:sb_court_unpledged_weight_var } }
+ set_variable = { name = sb_court_current_pledged_weight_var value = { value = var:sb_court_weight_var subtract = var:sb_court_current_unpledged_weight_var } }
+ if = {
+  limit = { var:sb_court_weight_var > 0 }
+  every_in_list = {
+   variable = sb_court_members
+   limit = { var:sb_court_home_scope ?= scope:sb_court_country }
+   set_variable = { name = sb_court_coalition_share_var value = { value = var:sb_court_coalition_weight_var divide = scope:sb_court_country.var:sb_court_weight_var multiply = 100 } }
+   if = {
+    limit = { scope:sb_court_country = { var:sb_court_current_pledged_weight_var > 0 } }
+    set_variable = { name = sb_court_current_share_var value = { value = var:sb_court_current_weight_var divide = scope:sb_court_country.var:sb_court_current_pledged_weight_var multiply = 100 } }
+   }
+   if = {
+    limit = { scope:sb_court_country = { var:sb_court_pledged_weight_var > 0 } }
+    set_variable = { name = sb_court_pledged_share_var value = { value = var:sb_court_coalition_weight_var divide = scope:sb_court_country.var:sb_court_pledged_weight_var multiply = 100 } }
+   }
+  }
+ }
+}
+
+
+
+# Character scope; interaction supplies the actual actor country.
+sb_court_open_pledge_quote = {
+ save_scope_as = sb_court_offer_character
+ save_scope_as = sb_court_actor
+ scope:actor = {
+  save_scope_as = sb_court_country
+  set_variable = sb_court_action_open_var
+  set_variable = { name = sb_court_action_actor_scope value = scope:sb_court_offer_character }
+  set_variable = { name = sb_court_offer_ruler_scope value = ruler }
+  ruler = { save_scope_as = sb_court_quote_ruler }
+  set_variable = { name = sb_court_offer_price_var value = sb_court_patronage_price }
+  trigger_event = { id = sb_court_politics.002 popup = yes }
+ }
+}
+sb_court_confirm_pledge = {
+ save_scope_as = sb_court_country
+ sb_court_calculate_backing = yes
+ if = {
+  limit = { sb_court_quoted_pledge_valid = yes }
+  # Honour the displayed quote; reserve capacity and prominence can change while reading.
+  add_treasury = sb_court_patronage_payment
+  var:sb_court_action_actor_scope = {
+   set_variable = { name = sb_court_endorsement_var value = 1 }
+   remove_variable = sb_court_claimant_scope
+   sb_court_reconcile_personal_promise = yes
+   sb_court_sync_allegiance_traits = yes
+  }
+ }
+ sb_court_action_cleanup = yes
+ sb_institutions_recalculate = yes
+}
+
+# Record a future promise without changing co-operation with today's ruler.
+sb_court_record_successor_pledge = {
+ var:sb_court_episode_actor_scope ?= {
+  if = {
+   limit = { sb_court_present_member = yes has_variable = sb_court_representative_var NOT = { sb_court_dynastic_candidate = yes } scope:sb_court_country.var:sb_court_episode_candidate_scope ?= { sb_court_dynastic_candidate = yes } }
+   set_variable = { name = sb_court_successor_pledge_scope value = scope:sb_court_country.var:sb_court_episode_candidate_scope }
+  }
+ }
+}
+
+# Promises belong to their named backer and beneficiary, including before accession.
+sb_court_chiefly_bargain = {
+ save_scope_as = sb_court_country
+ if = {
+  limit = { sb_court_episode_valid = yes var:sb_court_episode_actor_scope ?= { sb_court_episode_house = yes } OR = { ruler ?= var:sb_court_episode_candidate_scope var:sb_court_episode_candidate_scope ?= { sb_court_dynastic_candidate = yes } } }
+  if = {
+   limit = { always = $COUNCIL$ var:sb_court_episode_actor_scope ?= { prominence >= 50 } NOT = { has_law = law_type:law_sb_chiefly_council } }
+   if = {
+    limit = { ruler ?= var:sb_court_episode_candidate_scope }
+    var:sb_court_episode_actor_scope = {
+     set_variable = { name = sb_court_personal_council_scope value = scope:sb_court_country.ruler }
+     sb_court_commit_to_patron = { PATRON = scope:sb_court_country.ruler }
+    }
+    activate_law = law_type:law_sb_chiefly_council
+   }
+   else = {
+    sb_court_record_successor_pledge = yes
+    var:sb_court_episode_actor_scope = { set_variable = { name = sb_court_council_promise_scope value = scope:sb_court_country.var:sb_court_episode_candidate_scope } }
+   }
+  }
+  else_if = {
+   limit = { always = $PRIVILEGES$ NOT = { has_variable = sb_court_privileges_this_reign_var } }
+   set_variable = sb_court_privileges_this_reign_var
+   sb_court_grant_chiefly_concession = { RECEIPT = sb_court_privileges_until_var DAYS = 3650 }
+   if = { limit = { ruler ?= var:sb_court_episode_candidate_scope } var:sb_court_episode_actor_scope = { sb_court_commit_to_patron = { PATRON = scope:sb_court_country.ruler } } }
+   else = { sb_court_record_successor_pledge = yes }
+  }
+ }
+}
+sb_court_reconcile_bargains = {
+ save_scope_as = sb_court_country
+ remove_variable = sb_court_breach_detected_var
+ every_in_list = {
+  variable = sb_court_members
+  limit = { sb_court_member_of_country = yes }
+  sb_court_reconcile_personal_promise = yes
+  sb_court_reconcile_future_promise = yes
+  if = {
+   limit = { var:sb_court_personal_council_scope ?= scope:sb_court_country.ruler NOT = { scope:sb_court_country = { has_law = law_type:law_sb_chiefly_council } } }
+   sb_court_withdraw_personal = yes
+   add_modifier = { name = sb_court_broken_undertaking years = 5 }
+   scope:sb_court_country = { set_variable = sb_court_breach_detected_var }
+  }
+ }
+ if = {
+  limit = { has_variable = sb_court_breach_detected_var }
+  # One decision, one ruler reaction; do not multiply by the number of affected houses.
+  ruler ?= { add_modifier = { name = sb_court_public_discredit years = 5 } }
+  trigger_event = { id = sb_zulu_court.201 popup = yes }
+  remove_variable = sb_court_breach_detected_var
+ }
+}

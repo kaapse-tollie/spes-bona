@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from tools import validate
 
@@ -145,6 +146,40 @@ class RepositoryValidatorTests(unittest.TestCase):
         failures = [f"{check.name}: {check.detail}" for check in checks if check.status != "PASS"]
         self.assertEqual([], failures)
         self.assertEqual("WARN", deferred.status, deferred.detail)
+
+    def test_scoped_script_value_counts_as_usage_but_real_orphan_still_fails(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "tools").mkdir()
+            (root / "common/script_values").mkdir(parents=True)
+            (root / "tools/unused_symbol_allowlist.json").write_text('{"symbols": []}')
+            source = root / "common/script_values/example.txt"
+            source.write_text("sb_value = { value = 1 }\nsb_orphan = { value = 2 }\nconsumer = { value = scope:sb_actor.sb_value }\n")
+            with patch.object(validate, "ROOT", root):
+                result = validate.check_unused_symbols()
+            self.assertEqual("FAIL", result.status)
+            self.assertIn("symbol: sb_orphan", result.detail)
+            self.assertNotIn("symbol: sb_value", result.detail)
+
+    def test_gui_scripted_gui_calls_count_as_usage_but_real_orphans_fail(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "tools").mkdir()
+            (root / "common/scripted_guis").mkdir(parents=True)
+            (root / "gui").mkdir()
+            (root / "tools/unused_symbol_allowlist.json").write_text('{"symbols": []}')
+            (root / "common/scripted_guis/example.txt").write_text(
+                'sb_visible = { scope = character is_shown = { always = yes } }\n'
+                'sb_unused = { scope = character is_shown = { always = yes } }\n'
+            )
+            (root / "gui/example.gui").write_text(
+                'widget = { visible = "[GetScriptedGui(\'sb_visible\').IsShown(GuiScope.SetRoot(Character.MakeScope).End)]" }\n'
+            )
+            with patch.object(validate, "ROOT", root):
+                result = validate.check_unused_symbols()
+            self.assertEqual("FAIL", result.status)
+            self.assertIn("symbol: sb_unused", result.detail)
+            self.assertNotIn("symbol: sb_visible", result.detail)
 
     def test_delayed_inventory_counts_duplicate_dispatches(self):
         first = ("events/a.txt", "example.1", (("days", "3"),), "yes")

@@ -1,0 +1,71 @@
+﻿# Contested Crown is an independent law, so native parent-family checks are insufficient.
+sb_court_has_royal_law = {
+ OR = {
+  has_law_or_variant = law_type:law_monarchy
+  sb_court_has_social_monarchy = yes
+  has_law = law_type:law_sb_contested_crown
+ }
+}
+sb_court_has_social_monarchy = {
+ OR = { has_law_or_variant = law_type:law_social_monarchy has_law = law_type:law_sb_contested_social_crown }
+}
+sb_court_has_contested_crown = {
+ OR = { has_law = law_type:law_sb_contested_crown has_law = law_type:law_sb_contested_social_crown }
+}
+# DP enabled normal claimant crises after the successful AI replay (28 October 2026).
+sb_court_dynastic_enabled = { sb_institutions_profile_country = yes }
+# Frozen backing decides the homeland; a tie retains Zululand for the incumbent.
+sb_court_dynastic_rebels_stronger = {
+ OR = {
+  AND = {
+   has_variable = sb_court_dynastic_back_claimant_var
+   var:sb_court_dynastic_incumbent_weight_var >= var:sb_court_dynastic_rival_weight_var
+  }
+  AND = {
+   NOT = { has_variable = sb_court_dynastic_back_claimant_var }
+   var:sb_court_dynastic_rival_weight_var > var:sb_court_dynastic_incumbent_weight_var
+  }
+ }
+}
+sb_court_dynastic_conflict_free = {
+ OR = { NOT = { has_variable = coup_event_active } has_variable = sb_court_dynastic_owns_coup_lock_var }
+ NOT = { has_journal_entry = je_ip4_coup }
+ NOT = { has_variable = sb_court_civil_war_var }
+ NOT = { any_civil_war = { always = yes } }
+}
+sb_court_dynastic_law_available = {
+ sb_institutions_profile_country = yes
+ has_variable = sb_court_dynastic_crisis_var
+ sb_court_dynastic_enabled = yes
+}
+sb_court_dynastic_pair_valid = {
+ sb_court_dynastic_country = yes
+ has_variable = sb_court_dynastic_crisis_var
+ var:sb_court_dynastic_nominee_scope ?= { sb_court_dynastic_candidate = yes }
+ var:sb_court_dynastic_rival_scope ?= { sb_court_dynastic_candidate = yes }
+ trigger_if = {
+  limit = { exists = var:sb_court_dynastic_nominee_scope exists = var:sb_court_dynastic_rival_scope }
+  NOT = { var:sb_court_dynastic_nominee_scope = var:sb_court_dynastic_rival_scope }
+ }
+}
+sb_court_dynastic_can_challenge = {
+ sb_court_dynastic_enabled = yes
+ sb_court_dynastic_country = yes
+ sb_court_dynastic_conflict_free = yes
+ var:sb_prerogative_var <= -50
+ ruler ?= { sb_court_dynastic_candidate = yes }
+ NOT = { has_variable = sb_court_dynastic_crisis_var }
+ NOT = { has_variable = sb_court_dynastic_victory_cooldown_var }
+ NOT = { has_variable = sb_court_accession_open_var }
+ NOT = { has_variable = sb_court_action_open_var }
+ NOT = { has_variable = sb_court_selecting_head_var }
+}
+# Event scope contains the two people actually shown, not a freshly selected replacement.
+sb_court_displayed_dynastic_pair = {
+ sb_court_dynastic_pair_valid = yes
+ trigger_if = {
+  limit = { exists = var:sb_court_dynastic_nominee_scope exists = var:sb_court_dynastic_rival_scope }
+  scope:sb_court_nominee ?= var:sb_court_dynastic_nominee_scope
+  scope:sb_court_rival ?= var:sb_court_dynastic_rival_scope
+ }
+}

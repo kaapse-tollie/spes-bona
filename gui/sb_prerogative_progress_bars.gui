@@ -1,0 +1,242 @@
+﻿# Projected presentation only. Monthly progression is calculated once on the country.
+flowcontainer = {
+ name = sb_prerogative_progress_bars
+ parentanchor = hcenter
+ direction = vertical
+ ignoreinvisible = yes
+ spacing = 10
+ textbox = {
+  text = "sb_prerogative_live_readout"
+  tooltip = "sb_prerogative_breakdown"
+  size = { 504 80 }
+  multiline = yes
+ }
+ flowcontainer = {
+  datamodel = "[JournalEntry.GetScriptedProgressBars]"
+  item = {
+   bad_progressbar_horizontal = {
+    block "progressbar_size" { size = { 504 30 } }
+    tooltip = "sb_prerogative_breakdown"
+    blockoverride "noprogresstexture" {
+     noprogresstexture = "gfx/interface/progressbar/progressbar_green.dds"
+    }
+    # A fixed red/green scale; only the native CAP-style marker moves with P.
+    blockoverride "values" { value = 0.5 min = 0 max = 1 }
+    textbox = {
+     text = "[ScriptedProgressBar.GetDesc]"
+     autoresize = yes
+     align = nobaseline
+     parentanchor = vcenter
+     margin_left = 10
+    }
+    textbox = {
+     text = "[ScriptedProgressBar.GetSecondDesc]"
+     autoresize = yes
+     align = right|nobaseline
+     parentanchor = right|vcenter
+     margin_right = 10
+    }
+    blockoverride "on_top_of_the_progressbar" {
+     progressbar = {
+      noprogresstexture = "gfx/interface/icons/generic_icons/transparent.dds"
+      progresstexture = "gfx/interface/icons/generic_icons/transparent.dds"
+      size = { 100% 100% }
+      spriteType = Corneredtiled
+      spriteborder = { 4 4 }
+      texture_density = 2
+      skip_initial_animation = yes
+      value = "[JournalEntry.GetCurrentBarProgress(ScriptedProgressBar.Self)]"
+      min = 0
+      max = 1
+      direction = horizontal
+      using = progressbar_changed_animation
+      animate_negative_changes = yes
+      marker = {
+       icon = {
+        size = { 65 33 }
+        parentanchor = vcenter
+        widgetanchor = center
+        texture = "gfx/interface/progressbar/progressbar_marker.dds"
+        using = shimmer
+       }
+      }
+     }
+    }
+   }
+  }
+ }
+ textbox = {
+  text = "sb_institutional_reach_readout"
+  tooltip = "sb_institutional_reach_breakdown"
+  size = { 504 30 }
+ }
+ textbox = {
+  text = "sb_court_movements_readout"
+  tooltip = "sb_court_movements_breakdown"
+  size = { 504 60 }
+  multiline = yes
+ }
+ divider_clean = { }
+ # Native expand/collapse controls make this visibly interactive.
+ section_header_button = {
+  size = { 504 42 }
+  tooltip = "sb_court_roster_explanation"
+  blockoverride "layout" { }
+  blockoverride "left_text" { text = "sb_court_roster_heading" }
+  blockoverride "onclick" { onclick = "[GetVariableSystem.Toggle('sb_court_window_open')]" }
+  blockoverride "onclick_showmore" { visible = "[Not(GetVariableSystem.Exists('sb_court_window_open'))]" }
+  blockoverride "onclick_showless" { visible = "[GetVariableSystem.Exists('sb_court_window_open')]" }
+ }
+ # A bounded inline panel retains the viewed JournalEntry context. A popup layer
+ # inside this flow would still enlarge it and displace the entire journal.
+ scrollbox = {
+  name = sb_court_panel
+  visible = "[GetVariableSystem.Exists('sb_court_window_open')]"
+  size = { 504 560 }
+  blockoverride "scrollbox_margins" { margin = { 10 10 } spacing = 12 }
+  blockoverride "scrollbox_expand" { }
+  blockoverride "scrollbox_content" {
+   flowcontainer = {
+    direction = vertical ignoreinvisible = yes spacing = 12
+     textbox = { text = "sb_court_window_incumbent" autoresize = yes multiline = yes minimumsize = { 464 -1 } maximumsize = { 464 -1 } }
+     textbox = { text = "[JournalEntry.GetCountry.GetCustom('sb_court_heir_display')]" autoresize = yes multiline = yes minimumsize = { 464 -1 } maximumsize = { 464 -1 } }
+     textbox = { text = "sb_court_window_levers" autoresize = yes multiline = yes minimumsize = { 464 -1 } maximumsize = { 464 -1 } }
+     textbox = { text = "sb_prerogative_live_readout" tooltip = "sb_prerogative_breakdown" autoresize = yes multiline = yes minimumsize = { 464 -1 } maximumsize = { 464 -1 } }
+     textbox = { text = "[JournalEntry.GetCountry.GetCustom('sb_prerogative_current_effects')]" autoresize = yes multiline = yes minimumsize = { 464 -1 } maximumsize = { 464 -1 } }
+     divider_clean = { }
+     textbox = { text = "sb_court_current_heading" size = { 464 35 } }
+     textbox = { text = "sb_court_current_pool_summary" autoresize = yes multiline = yes minimumsize = { 464 -1 } maximumsize = { 464 -1 } }
+     textbox = {
+      visible = "[GetScriptedGui('sb_court_external_opposition').IsShown(GuiScope.SetRoot(JournalEntry.GetCountry.MakeScope).End)]"
+      text = "sb_court_external_opposition_summary" autoresize = yes multiline = yes minimumsize = { 464 -1 } maximumsize = { 464 -1 }
+     }
+     flowcontainer = {
+      direction = vertical ignoreinvisible = yes spacing = 8
+      datamodel = "[JournalEntry.GetCountry.MakeScope.GetList('sb_court_members')]"
+      item = {
+       flowcontainer = {
+        datacontext = "[Scope.GetCharacter]"
+        visible = "[And(Scope.GetCharacter.IsValid, GetScriptedGui('sb_court_roster_allegiance').IsShown(GuiScope.SetRoot(JournalEntry.GetCountry.MakeScope).AddScope('sb_court_country', JournalEntry.GetCountry.MakeScope).AddScope('sb_court_character', Character.MakeScope).End))]"
+        direction = vertical spacing = 4
+        sb_court_character_button = {
+         size = { 464 50 }
+        }
+        textbox = { text = "sb_court_current_roles" autoresize = yes multiline = yes minimumsize = { 464 -1 } maximumsize = { 464 -1 } }
+        textbox = { text = "sb_court_current_coalition_summary" autoresize = yes multiline = yes minimumsize = { 464 -1 } maximumsize = { 464 -1 } }
+        flowcontainer = {
+         direction = vertical ignoreinvisible = yes
+         datamodel = "[Character.MakeScope.GetList('sb_court_current_supporters')]"
+         item = { textbox = { datacontext = "[Scope.GetCharacter]" text = "sb_court_supporter_row" autoresize = yes multiline = yes minimumsize = { 464 -1 } maximumsize = { 464 -1 } } }
+        }
+       }
+      }
+     }
+     divider_clean = { }
+     textbox = { text = "sb_court_candidates_heading" size = { 464 35 } }
+     textbox = { text = "sb_court_unpledged_summary" autoresize = yes multiline = yes minimumsize = { 464 -1 } maximumsize = { 464 -1 } }
+     flowcontainer = {
+      direction = vertical ignoreinvisible = yes spacing = 8
+      datamodel = "[JournalEntry.GetCountry.MakeScope.GetList('sb_court_members')]"
+      item = {
+       flowcontainer = {
+        datacontext = "[Scope.GetCharacter]"
+        visible = "[And(Scope.GetCharacter.IsValid, GetScriptedGui('sb_court_roster_candidate').IsShown(GuiScope.SetRoot(JournalEntry.GetCountry.MakeScope).AddScope('sb_court_country', JournalEntry.GetCountry.MakeScope).AddScope('sb_court_character', Character.MakeScope).End))]"
+        direction = vertical spacing = 4
+        sb_court_character_button = {
+         size = { 464 50 }
+        }
+        textbox = { text = "sb_court_current_roles" autoresize = yes multiline = yes minimumsize = { 464 -1 } maximumsize = { 464 -1 } }
+        textbox = { text = "sb_court_candidate_summary" autoresize = yes multiline = yes minimumsize = { 464 -1 } maximumsize = { 464 -1 } }
+        flowcontainer = {
+         direction = vertical ignoreinvisible = yes spacing = 4
+         datamodel = "[Character.MakeScope.GetList('sb_court_house_members')]"
+         item = {
+          flowcontainer = {
+           datacontext = "[Scope.GetCharacter]"
+           direction = vertical spacing = 2
+           sb_court_character_button = {
+            size = { 464 35 }
+           }
+           textbox = { text = "sb_court_house_member_summary" autoresize = yes multiline = yes minimumsize = { 464 -1 } maximumsize = { 464 -1 } }
+           textbox = { text = "sb_court_current_roles" autoresize = yes multiline = yes minimumsize = { 464 -1 } maximumsize = { 464 -1 } }
+          }
+         }
+        }
+        flowcontainer = {
+         direction = vertical ignoreinvisible = yes
+         datamodel = "[Character.MakeScope.GetList('sb_court_supporters')]"
+         item = { textbox = { datacontext = "[Scope.GetCharacter]" text = "sb_court_supporter_row" autoresize = yes multiline = yes minimumsize = { 464 -1 } maximumsize = { 464 -1 } } }
+        }
+       }
+      }
+     }
+     divider_clean = { }
+     textbox = { text = "sb_court_followings_heading" size = { 464 35 } }
+     flowcontainer = {
+      direction = vertical ignoreinvisible = yes spacing = 8
+      datamodel = "[JournalEntry.GetCountry.MakeScope.GetList('sb_court_members')]"
+      item = {
+       flowcontainer = {
+        datacontext = "[Scope.GetCharacter]"
+        visible = "[And(Scope.GetCharacter.IsValid, GetScriptedGui('sb_court_roster_member').IsShown(GuiScope.SetRoot(JournalEntry.GetCountry.MakeScope).AddScope('sb_court_country', JournalEntry.GetCountry.MakeScope).AddScope('sb_court_character', Character.MakeScope).End))]"
+        direction = vertical
+        sb_court_character_button = {
+         size = { 464 35 }
+        }
+        textbox = { text = "sb_court_member_summary" autoresize = yes multiline = yes minimumsize = { 464 -1 } maximumsize = { 464 -1 } }
+        flowcontainer = {
+         direction = vertical ignoreinvisible = yes spacing = 4
+         datamodel = "[Character.MakeScope.GetList('sb_court_house_members')]"
+         item = {
+          flowcontainer = {
+           datacontext = "[Scope.GetCharacter]"
+           direction = vertical spacing = 2
+           sb_court_character_button = {
+            size = { 464 35 }
+           }
+           textbox = { text = "sb_court_house_member_summary" autoresize = yes multiline = yes minimumsize = { 464 -1 } maximumsize = { 464 -1 } }
+           textbox = { text = "sb_court_current_roles" autoresize = yes multiline = yes minimumsize = { 464 -1 } maximumsize = { 464 -1 } }
+          }
+         }
+        }
+        textbox = { text = "sb_court_roster_commitments" autoresize = yes multiline = yes minimumsize = { 464 -1 } maximumsize = { 464 -1 } }
+        textbox = { text = "sb_court_current_roles" autoresize = yes multiline = yes minimumsize = { 464 -1 } maximumsize = { 464 -1 } }
+       }
+      }
+     }
+     divider_clean = { }
+     textbox = { text = "sb_court_councillors_heading" size = { 464 35 } }
+     flowcontainer = {
+      direction = vertical ignoreinvisible = yes spacing = 8
+      datamodel = "[JournalEntry.GetCountry.MakeScope.GetList('sb_court_members')]"
+      item = {
+       flowcontainer = {
+        datacontext = "[Scope.GetCharacter]"
+        visible = "[And(Scope.GetCharacter.IsValid, GetScriptedGui('sb_court_roster_councillor').IsShown(GuiScope.SetRoot(JournalEntry.GetCountry.MakeScope).AddScope('sb_court_country', JournalEntry.GetCountry.MakeScope).AddScope('sb_court_character', Character.MakeScope).End))]"
+        direction = vertical spacing = 4
+        sb_court_character_button = {
+         size = { 464 35 }
+        }
+        textbox = { text = "sb_court_individual_prominence" autoresize = yes multiline = yes minimumsize = { 464 -1 } maximumsize = { 464 -1 } }
+        textbox = { text = "sb_court_current_roles" autoresize = yes multiline = yes minimumsize = { 464 -1 } maximumsize = { 464 -1 } }
+        textbox = { text = "sb_court_roster_commitments" autoresize = yes multiline = yes minimumsize = { 464 -1 } maximumsize = { 464 -1 } }
+       }
+      }
+     }
+     divider_clean = { }
+     textbox = { text = "sb_court_commanders_heading" autoresize = yes multiline = yes minimumsize = { 464 -1 } maximumsize = { 464 -1 } }
+     flowcontainer = {
+      direction = vertical ignoreinvisible = yes spacing = 4
+      datamodel = "[JournalEntry.GetCountry.MakeScope.GetList('sb_court_members')]"
+      item = {
+       textbox = {
+        datacontext = "[Scope.GetCharacter]"
+        visible = "[And(Scope.GetCharacter.IsValid, GetScriptedGui('sb_court_roster_commander').IsShown(GuiScope.SetRoot(JournalEntry.GetCountry.MakeScope).AddScope('sb_court_country', JournalEntry.GetCountry.MakeScope).AddScope('sb_court_character', Character.MakeScope).End))]"
+        text = "sb_court_commander_summary" autoresize = yes multiline = yes minimumsize = { 464 -1 } maximumsize = { 464 -1 }
+       }
+      }
+     }
+   }
+  }
+ }
+}

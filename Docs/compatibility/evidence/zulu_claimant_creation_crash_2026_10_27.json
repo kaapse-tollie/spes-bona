@@ -1,0 +1,113 @@
+{
+  "date": "2026-10-27",
+  "game_version": "1.14.5",
+  "crashes": [
+    {
+      "directory": "victoria3_01260927_185138",
+      "exception_sha256": "b3d71a72e7a2dd34a82f39644b998d77e2a6a9aa142b085528fee0758a7acaa5",
+      "relevant_frames": [
+        "5   victoria3                           0x000000010329faa0 CJournalEntry::OnActivated() const       + 336",
+        "9   victoria3                           0x0000000103ffd200 CAddJournalEntry::ExecuteDerived(SJominiEffectScopes const&) const + 156",
+        "32  victoria3                           0x000000010280c844 CCountryLawManager::ActivateCountryLaw(CCountry&, CLawType const*, bool) + 1152",
+        "33  victoria3                           0x000000010280cffc CCountryLawManager::InheritLawsFrom(CCountry&, CCountry const&) + 1068",
+        "34  victoria3                           0x000000010283845c CCountryManager::CreateCountry(SCountryCreationData const&) + 1784",
+        "35  victoria3                           0x00000001026bf574 CCivilWarManager::CreateNonDynamicCivilWarCountry(CCivilWar&, CCountryDefinition const&, CPdxArray<SUprisingStateInfo, int> const&) const + 828",
+        "36  victoria3                           0x00000001026bd5cc CCivilWarManager::CreateCivilWarCountry(CCivilWar&, CCountryDefinition const&) + 152"
+      ]
+    },
+    {
+      "directory": "victoria3_01260927_194214",
+      "exception_sha256": "b73f35c463f44691d1bdf867b663c7987f7fe0ff02e78cf758dde51f3151561e",
+      "relevant_frames": [
+        "5   victoria3                           0x0000000100f5baa0 CJournalEntry::OnActivated() const       + 336",
+        "9   victoria3                           0x0000000101cb9200 CAddJournalEntry::ExecuteDerived(SJominiEffectScopes const&) const + 156",
+        "32  victoria3                           0x00000001004c8844 CCountryLawManager::ActivateCountryLaw(CCountry&, CLawType const*, bool) + 1152",
+        "33  victoria3                           0x00000001004c8ffc CCountryLawManager::InheritLawsFrom(CCountry&, CCountry const&) + 1068",
+        "34  victoria3                           0x00000001004f445c CCountryManager::CreateCountry(SCountryCreationData const&) + 1784",
+        "35  victoria3                           0x000000010037b574 CCivilWarManager::CreateNonDynamicCivilWarCountry(CCivilWar&, CCountryDefinition const&, CPdxArray<SUprisingStateInfo, int> const&) const + 828",
+        "36  victoria3                           0x00000001003795cc CCivilWarManager::CreateCivilWarCountry(CCivilWar&, CCountryDefinition const&) + 152"
+      ]
+    }
+  ],
+  "snapshot": {
+    "path": "/private/tmp/sb-claimant-crash-2026-10-27/autosave.v3",
+    "sha256": "1415f9de102e490f0511c38ed09b4398c057daa597ea7765f132121eccbba12a",
+    "date": "1839.8.1",
+    "country": 481,
+    "contenders": {
+      "4477": "Dingane Zulu",
+      "4479": "Gqugqu kaSenzangakhona"
+    },
+    "court_variables": {
+      "sb_prerogative_var": -55.51594,
+      "sb_court_dynastic_crisis_var": true,
+      "sb_court_dynastic_owns_coup_lock_var": true,
+      "sb_court_dynastic_reason_var": 1.0,
+      "sb_court_dynastic_nominee_scope": 4477,
+      "sb_court_dynastic_rival_scope": 4479,
+      "sb_court_dynastic_original_law_var": 1.0,
+      "sb_court_dynastic_original_law_scope": "law_monarchy",
+      "sb_court_dynastic_incumbent_weight_var": 378.0,
+      "sb_court_dynastic_rival_weight_var": 284.0,
+      "sb_court_dynastic_share_var": 0.429,
+      "sb_court_dynastic_target_var": 0.429,
+      "sb_court_dynastic_test_pending_var": true,
+      "sb_court_dynastic_movement_scope": 16778297,
+      "sb_court_dynastic_demand_verified_var": true,
+      "sb_court_dynastic_poll_queued_var": true
+    },
+    "movement": {
+      "id": 16778297,
+      "type": "movement_sb_dynastic_test",
+      "created": "1839.7.27",
+      "activism": 0.25
+    },
+    "armed_forces": {
+      "id": 1888,
+      "approval": -20,
+      "has_sponsor_modifier": true,
+      "has_crisis_ideology": true
+    },
+    "limit": "The snapshot precedes the organising object/split. The subsequent exception establishes entry into native rebel-country creation; it does not prove completed allocation or resolution."
+  },
+  "native_binary": {
+    "path": "/Users/depro/Library/Application Support/Steam/steamapps/common/Victoria 3/binaries/victoria3.app/Contents/MacOS/victoria3",
+    "sha256": "e4806a9b315c9ed40bdafd5e6a9e3e46aca741a0a0890bded906ebcc295e2a13",
+    "architecture": "arm64"
+  },
+  "cause": {
+    "script": "common/on_actions/sb_institutions_on_actions.txt:sb_on_institutions_law",
+    "chain": "Inherited law -> Law.owner institutional reconciliation -> add je_sb_zulu_kingdom -> OnActivated accesses the not-yet-created country AI.",
+    "native_order": [
+      "InheritLawsFrom",
+      "TransferLandToCountry",
+      "SetCapitalFromDefinition",
+      "OnCreateCountry / CreateAIFor",
+      "InitCountryContextJournalEntries"
+    ],
+    "guard_evidence": "is_country_alive reads the country state count at +0xc4c (adjusted x19+0xc3c after x19 +=0x10), the same count checked after land transfer by CreateCountry. Before inherited-law callbacks it is zero.",
+    "crash_offset": "OnActivated +336; the instruction sequence at +332..+340 accesses CCountryAI and writes its JE update flag."
+  },
+  "change": "Require a live law owner before synchronous institutional reconciliation. The existing post-creation revolution-start handoff initialises both actual courts. No new timer, movement/IG/troop change or save rewrite.",
+  "validation": {
+    "focused_tests": 52,
+    "regression": "The pre-change test hits journal activation before country AI creation for both ZUL and an inherited-profile rebel. The guarded path skips all side effects, then creates exactly one JE after country creation. Existing reform/re-entry, foreign-root and claimant tests pass.",
+    "engine_replay": "Pending DP. No launch performed.",
+    "full_tests": 793,
+    "passed": 784,
+    "historical_skips": 8,
+    "existing_failures": 1,
+    "errors": 0,
+    "static_gates": "15/17 passed, warned or skipped; two existing localisation-related failures",
+    "tiger": {
+      "errors": 1073,
+      "warnings": 149,
+      "schema": "1.13.5; advisory for installed 1.14.5"
+    },
+    "reports": {
+      "regression-before.txt": "237eb2befe34d0102ad298d4fb64c92e6bb7c88502f575b4e19e3f93409a3baa",
+      "focused.txt": "f68b1f7246b0bac66a13bd2a8986ed2daad810248298628a549e04ed2d4ab37a",
+      "static.txt": "017ab730777d89abe7e46d7a9d92e7ff96d4eb44dfa44e3ce81aca6bb5bd5c48"
+    }
+  }
+}

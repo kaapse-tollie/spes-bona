@@ -60,9 +60,9 @@ sb_zululand_settlement.110 = {
 		name = sb_zululand_settlement.110.a
 		default_option = yes
 		if = {
-			limit = { sb_zululand_chiefdoms_runtime_valid = yes }
-			if = { limit = { has_variable = sb_zululand_skirmish_zibhebhu_var } sb_zululand_shift_liberty_zibhebhu_5 = yes }
-			else = { sb_zululand_shift_liberty_usuthu_5 = yes }
+			limit = { sb_zululand_contest_interventions_available = yes }
+			if = { limit = { has_variable = sb_zululand_skirmish_zibhebhu_var } sb_zululand_chiefly_mobilization = yes }
+			else = { sb_zululand_royal_mobilization = yes }
 		}
 		sb_zululand_finish_situation_event = yes
 	}
@@ -85,6 +85,7 @@ sb_zululand_settlement.112 = {
 
 	trigger = { country_definition = cd:NAL sb_zululand_chiefdoms_runtime_valid = yes }
 	immediate = {
+		var:sb_zululand_defector_scope ?= { save_scope_as = sb_zululand_defector }
 		if = {
 			limit = { sb_zululand_defection_favors_zibhebhu = yes }
 			set_variable = sb_zululand_defection_zibhebhu_var
@@ -94,58 +95,20 @@ sb_zululand_settlement.112 = {
 		name = sb_zululand_settlement.112.a
 		default_option = yes
 		if = {
-			limit = { sb_zululand_chiefdoms_runtime_valid = yes }
-			if = { limit = { has_variable = sb_zululand_defection_zibhebhu_var } sb_zululand_shift_liberty_zibhebhu_5 = yes }
-			else = { sb_zululand_shift_liberty_usuthu_5 = yes }
+			limit = { sb_zululand_contest_interventions_available = yes }
+			if = {
+				limit = { var:sb_zululand_defector_scope ?= { sb_zululand_neutral_chief = yes } }
+				if = { limit = { has_variable = sb_zululand_defection_zibhebhu_var } var:sb_zululand_defector_scope = { sb_court_align_chiefly = yes } }
+				else = { var:sb_zululand_defector_scope = { sb_court_align_royal = yes } }
+				global_var:sb_zululand_live_zul_scope = { sb_institutions_recalculate = yes }
+			}
+			remove_variable = sb_zululand_defector_scope
 		}
 		sb_zululand_finish_situation_event = yes
 	}
 }
 
-sb_zululand_settlement.113 = {
-	type = country_event
-	placement = root
-	title = sb_zululand_settlement.113.t
-	desc = {
-		first_valid = {
-			triggered_desc = { trigger = { has_variable = sb_zululand_claimant_killed_var } desc = sb_zululand_settlement.113.d.death }
-			desc = sb_zululand_settlement.113.d.survival
-		}
-	}
-	event_image = { video = "gfx/event_pictures/africa_soldiers_breaking_protest.bk2" }
-	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-	icon = "gfx/interface/icons/event_icons/event_default.dds"
-	duration = 3
 
-	trigger = {
-		country_definition = cd:NAL
-		sb_zululand_chiefdoms_runtime_valid = yes
-		has_variable = sb_zululand_claimant_returned_var
-		NOT = { has_variable = sb_zululand_claimant_fate_resolved_var }
-	}
-	immediate = {
-		if = {
-			limit = { is_player = yes }
-			random_list = { 80 = { sb_zululand_claimant_is_killed = yes } 20 = { sb_zululand_claimant_survives = yes } }
-		}
-		else_if = {
-			limit = { sb_frontier_ai_behavior_strict_historical = yes }
-			sb_zululand_claimant_is_killed = yes
-		}
-		else_if = {
-			limit = { sb_frontier_ai_behavior_off = yes }
-			random_list = { 50 = { sb_zululand_claimant_is_killed = yes } 50 = { sb_zululand_claimant_survives = yes } }
-		}
-		else = {
-			random_list = { 80 = { sb_zululand_claimant_is_killed = yes } 20 = { sb_zululand_claimant_survives = yes } }
-		}
-	}
-	option = {
-		name = sb_zululand_settlement.113.a
-		default_option = yes
-		sb_zululand_finish_situation_event = yes
-	}
-}
 
 sb_zululand_settlement.115 = {
 	type = country_event
@@ -175,7 +138,7 @@ sb_zululand_settlement.115 = {
 					sb_frontier_ai_behavior_dynamic_historical = yes
 					NOT = { in_default = yes }
 					NOT = { has_modifier = declared_bankruptcy }
-					c:ZUL = { liberty_desire >= 50 }
+					sb_usuthu_support >= sb_zululand_chiefly_support
 				}
 				add = 80
 			}
@@ -184,7 +147,7 @@ sb_zululand_settlement.115 = {
 					sb_frontier_ai_behavior_dynamic_historical = yes
 					NOT = { in_default = yes }
 					NOT = { has_modifier = declared_bankruptcy }
-					c:ZUL = { liberty_desire < 50 }
+					sb_usuthu_support < sb_zululand_chiefly_support
 				}
 				add = 60
 			}
@@ -209,7 +172,7 @@ sb_zululand_settlement.115 = {
 					sb_frontier_ai_behavior_dynamic_historical = yes
 					NOT = { in_default = yes }
 					NOT = { has_modifier = declared_bankruptcy }
-					c:ZUL = { liberty_desire >= 50 }
+					sb_usuthu_support >= sb_zululand_chiefly_support
 				}
 				add = 20
 			}
@@ -218,7 +181,7 @@ sb_zululand_settlement.115 = {
 					sb_frontier_ai_behavior_dynamic_historical = yes
 					NOT = { in_default = yes }
 					NOT = { has_modifier = declared_bankruptcy }
-					c:ZUL = { liberty_desire < 50 }
+					sb_usuthu_support < sb_zululand_chiefly_support
 				}
 				add = 40
 			}
@@ -236,8 +199,8 @@ sb_zululand_settlement.120 = {
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
 	icon = "gfx/interface/icons/event_icons/event_map.dds"
 	duration = 3
-	trigger = { country_definition = cd:NAL sb_zululand_chiefdoms_runtime_valid = yes has_variable = sb_zululand_terminal_event_pending_var }
-	immediate = { sb_zululand_apply_zibhebhu_victory = yes }
+	trigger = { country_definition = cd:NAL has_variable = sb_zululand_zibhebhu_victory_var NOT = { has_variable = sb_zululand_result_notice_seen_var } }
+	immediate = { set_variable = sb_zululand_result_notice_seen_var }
 	option = {
 		name = sb_zululand_settlement.120.a
 		default_option = yes
@@ -255,8 +218,8 @@ sb_zululand_settlement.121 = {
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
 	icon = "gfx/interface/icons/event_icons/event_map.dds"
 	duration = 3
-	trigger = { country_definition = cd:NAL sb_zululand_chiefdoms_runtime_valid = yes has_variable = sb_zululand_terminal_event_pending_var }
-	immediate = { sb_zululand_apply_crown_victory = yes }
+	trigger = { country_definition = cd:NAL has_variable = sb_zululand_crown_restored_victory_var NOT = { has_variable = sb_zululand_result_notice_seen_var } }
+	immediate = { set_variable = sb_zululand_result_notice_seen_var }
 	option = {
 		name = sb_zululand_settlement.121.a
 		default_option = yes
@@ -310,8 +273,6 @@ sb_zululand_settlement.130 = {
 			set_variable = sb_zululand_incorporation_complete_var
 			s:STATE_ZULULAND.region_state:NAL ?= {
 				if = { limit = { has_modifier = sb_zululand_chiefdom_reserves } remove_modifier = sb_zululand_chiefdom_reserves }
-				if = { limit = { has_modifier = sb_zululand_zibhebhu_incorporation_legacy } remove_modifier = sb_zululand_zibhebhu_incorporation_legacy }
-				if = { limit = { has_modifier = sb_zululand_crown_incorporation_legacy } remove_modifier = sb_zululand_crown_incorporation_legacy }
 			}
 		}
 		else = {
@@ -591,4 +552,72 @@ sb_zululand_settlement.221 = {
 		trigger = { NOT = { AND = { country_definition = cd:TRN is_country_alive = yes is_subject = no c:NRP ?= { is_country_alive = yes has_variable = sb_nrp_union_petition_response_pending_var sb_nrp_is_reduced_republic = yes } } } }
 		c:NRP ?= { if = { limit = { has_variable = sb_nrp_union_petition_response_pending_var } remove_variable = sb_nrp_union_petition_response_pending_var } set_variable = sb_nrp_union_petition_lapsed_var }
 	}
+}
+
+sb_zululand_settlement.116 = {
+	type = country_event
+	placement = root
+	title = sb_zululand_settlement.116.t
+	desc = sb_zululand_settlement.116.d
+	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+	trigger = { has_variable = sb_zululand_bribe_open_var }
+	immediate = { var:sb_zululand_bribe_target_scope ?= { save_scope_as = sb_chief_bribe_candidate } }
+	option = {
+		name = sb_zululand_settlement.116.a
+		trigger = {
+			sb_zululand_contest_interventions_available = yes
+			gold_reserves >= var:sb_zululand_bribe_cost_var
+			var:sb_zululand_bribe_target_scope ?= { sb_zululand_neutral_chief = yes }
+		}
+		custom_tooltip = sb_zululand_settlement.116.a.tt
+		hidden_effect = {
+			if = {
+				limit = {
+					sb_zululand_contest_interventions_available = yes
+					gold_reserves >= var:sb_zululand_bribe_cost_var
+					var:sb_zululand_bribe_target_scope ?= { sb_zululand_neutral_chief = yes }
+				}
+				add_treasury = sb_zululand_bribe_payment
+				if = { limit = { country_definition = cd:NAL } var:sb_zululand_bribe_target_scope = { sb_court_align_chiefly = yes } }
+				else = { var:sb_zululand_bribe_target_scope = { sb_court_align_royal = yes } }
+				global_var:sb_zululand_live_zul_scope = { sb_institutions_recalculate = yes }
+			}
+			sb_zululand_close_bribe_offer = yes
+		}
+		ai_chance = { base = 0 }
+	}
+	option = {
+		name = sb_zululand_settlement.116.b
+		default_option = yes
+		hidden_effect = { sb_zululand_close_bribe_offer = yes }
+		ai_chance = { base = 100 }
+	}
+}
+
+sb_zululand_settlement.122 = {
+	type = country_event
+	placement = root
+	title = sb_zululand_settlement.122.t
+	desc = sb_zululand_settlement.122.d
+	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+	trigger = { has_variable = sb_zululand_contest_result_var var:sb_zululand_contest_result_var = 2 NOT = { has_variable = sb_zululand_result_notice_seen_var } }
+	immediate = { set_variable = sb_zululand_result_notice_seen_var }
+	option = { name = sb_zululand_settlement.122.a default_option = yes }
+}
+
+sb_zululand_settlement.123 = {
+	type = country_event
+	placement = root
+	title = sb_zululand_settlement.123.t
+	desc = sb_zululand_settlement.123.d
+	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+	trigger = { has_variable = sb_zululand_contest_result_var var:sb_zululand_contest_result_var = 1 NOT = { has_variable = sb_zululand_result_notice_seen_var } }
+	immediate = { set_variable = sb_zululand_result_notice_seen_var }
+	option = { name = sb_zululand_settlement.123.a default_option = yes }
 }

@@ -111,6 +111,8 @@ def static_resources(state_block: str) -> dict[str, int]:
             result[resource] = int(value)
     for block in nested_blocks(state_block, "resource"):
         resource = re.search(r"\btype\s*=\s*\"?(building_[A-Za-z0-9_]+)\"?", block).group(1)
+        if resource.startswith("building_sb_diamond_mine_"):
+            resource = DIAMOND
         amounts = re.findall(r"\b(?:undiscovered_amount|discovered_amount)\s*=\s*(\d+)", block)
         result[resource] = result.get(resource, 0) + sum(map(int, amounts))
     return result
@@ -131,7 +133,7 @@ class ResourceReworkImplementationTests(unittest.TestCase):
         }
         effect = object_block(self.gates, "sb_apply_resource_technology_gates")
         stages = nested_blocks(effect, "if")
-        self.assertEqual(23, len(stages))
+        self.assertEqual(15, len(stages))
         for stage in stages:
             state = re.search(r"s:(STATE_[A-Z0-9_]+)", stage).group(1)
             resource = re.search(r"\btype\s*=\s*(building_[A-Za-z0-9_]+)", stage).group(1)
@@ -174,18 +176,18 @@ class ResourceReworkImplementationTests(unittest.TestCase):
 
         effect = object_block(self.gates, "sb_apply_resource_technology_gates")
         stages = nested_blocks(effect, "if")
-        self.assertEqual(23, len(re.findall(r"\bset_global_variable\s*=", effect)))
-        self.assertEqual(23, len(set(re.findall(r"\bset_global_variable\s*=\s*([A-Za-z0-9_]+)", effect))))
+        self.assertEqual(15, len(re.findall(r"\bset_global_variable\s*=", effect)))
+        self.assertEqual(15, len(set(re.findall(r"\bset_global_variable\s*=\s*([A-Za-z0-9_]+)", effect))))
         self.assertNotIn("force_resource_discovery", effect)
 
-        discoverable = []
+        legacy_gold_oil = []
         direct = []
         for stage in stages:
             resource = re.search(r"\btype\s*=\s*(building_[A-Za-z0-9_]+)", stage).group(1)
-            (discoverable if resource in {GOLD, OIL} else direct).append(stage)
-        self.assertEqual(8, len(discoverable))
-        self.assertEqual(15, len(direct))
-        self.assertTrue(all("post_notification" not in stage for stage in discoverable))
+            (legacy_gold_oil if resource in {GOLD, OIL} else direct).append(stage)
+        self.assertEqual(8, len(legacy_gold_oil))
+        self.assertEqual(7, len(direct))
+        self.assertTrue(all("post_notification" not in stage for stage in legacy_gold_oil))
         self.assertTrue(all("post_notification" in stage for stage in direct))
 
         posted = set(re.findall(r"\bpost_notification\s*=\s*(sb_resource_[A-Za-z0-9_]+)", effect))

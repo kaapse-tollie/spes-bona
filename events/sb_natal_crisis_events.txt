@@ -191,12 +191,13 @@ sb_natal_crisis.020 = {
 	desc = sb_natal_crisis.020.d
 	flavor = sb_natal_crisis.020.f
 
-	event_image = {
-		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
-	}
+	gui_window = event_window_2char
+	left_icon = scope:sb_court_frontier_sovereign
+	right_icon = scope:sb_retief_envoy
 
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	on_opened_soundeffect = "event:/SFX/Events/misc/2Characters"
+	icon = "gfx/interface/icons/event_icons/event_portrait.dds"
 	duration = 3
 
 	trigger = {
@@ -204,19 +205,26 @@ sb_natal_crisis.020 = {
 	}
 
 	immediate = {
+		sb_court_prepare_frontier_choice = yes
+		ruler ?= { save_scope_as = sb_court_frontier_sovereign }
 		c:ORA ?= {
 			save_scope_as = boer_republic
+			random_scope_character = {
+				limit = {
+					has_template = ORA_piet_retief
+					is_character_alive = yes
+				}
+				save_scope_as = sb_retief_envoy
+			}
 		}
 	}
 
 	# Honour the bargain
 	option = {
 		name = sb_natal_crisis.020.a
-		custom_tooltip = sb_zulu_dynasty_lose_stability_5
-		hidden_effect = {
-			sb_zulu_remove_dynastic_stability_5 = yes
-		}
+		#custom_tooltip = sb_court_retief_honour_tt
 		ruler = {
+			if = { limit = { has_trait = ruthless } remove_trait = ruthless }
 			if = {
 				limit = {
 					NOT = { has_trait = honorable }
@@ -228,7 +236,10 @@ sb_natal_crisis.020 = {
 			remove_variable = sb_retief_petition_var
 			trigger_event = { id = sb_natal_crisis.030 days = 21 }
 		}
-		trigger_event = { id = sb_natal_crisis.021 days = 30 }
+		hidden_effect = {
+			sb_zulu_mark_swazi_question_after_honour_deal = yes
+			sb_zulu_maybe_open_swazi_question = yes
+		}
 		ai_chance = {
 			base = 20
 		}
@@ -238,10 +249,12 @@ sb_natal_crisis.020 = {
 	option = {
 		name = sb_natal_crisis.020.b
 		default_option = yes
-		custom_tooltip = sb_zulu_dynasty_gain_stability_15
+		if = {
+			limit = { scope:sb_court_frontier_neutral ?= { sb_court_episode_neutral = yes } }
+			custom_tooltip = sb_court_frontier_support_named_tt
+		}
 		hidden_effect = {
-			sb_zulu_add_dynastic_stability_10 = yes
-			sb_zulu_add_dynastic_stability_5 = yes
+			sb_court_frontier_support = yes
 		}
 		ruler = {
 			if = {
@@ -250,37 +263,29 @@ sb_natal_crisis.020 = {
 				}
 				add_trait = wrathful
 			}
-			else_if = {
-				limit = {
-					NOT = { has_trait = cruel }
-				}
-				add_trait = cruel
+		}
+		if = {
+			limit = { exists = c:NGI }
+			c:ZUL = {
+				annex = c:NGI
 			}
 		}
-		custom_tooltip = sb_natalia_chiefdoms_absorbed_tt
-		hidden_effect = {
-			if = {
-				limit = { exists = c:NGI }
-				c:ZUL = {
-					annex = c:NGI
-				}
-			}
-		}
+		custom_tooltip = sb_court_retief_refusal_tt
+
 		scope:boer_republic = {
 			remove_variable = sb_retief_petition_var
-			random_scope_character = {
-				limit = {
-					has_template = ORA_piet_retief
-					is_character_alive = yes
-				}
+			scope:sb_retief_envoy ?= {
 				kill_character = { hidden = yes }
 			}
-			sb_natal_story_begin_refusal_generation = yes
-			if = {
-				limit = { has_variable = sb_natal_refusal_generation_scope }
-				trigger_event = { id = sb_natal_crisis.050 days = 21 }
+			hidden_effect = {
+				sb_natal_story_begin_refusal_generation = yes
+				if = {
+					limit = { has_variable = sb_natal_refusal_generation_scope }
+					trigger_event = { id = sb_natal_crisis.050 days = 21 }
+				}
 			}
 		}
+
 		ai_chance = {
 			base = 70
 		}
@@ -289,9 +294,17 @@ sb_natal_crisis.020 = {
 	# Natalia for guns
 	option = {
 		name = sb_natal_crisis.020.c
-		custom_tooltip = sb_zulu_dynasty_gain_stability_5
+		custom_tooltip = sb_court_retief_guns_amaKhosi_tt
+		if = {
+			limit = {
+				scope:sb_court_frontier_neutral ?= { sb_court_episode_neutral = yes }
+				scope:sb_court_frontier_rival ?= { sb_court_episode_prince = yes }
+			}
+			custom_tooltip = sb_court_frontier_allegiance_tt
+		}
 		hidden_effect = {
-			sb_zulu_add_dynastic_stability_5 = yes
+			sb_court_frontier_opposition = yes
+			sb_court_grant_chiefly_concession = { RECEIPT = sb_court_retief_guns_until_var DAYS = 3650 }
 		}
 		scope:boer_republic = {
 			remove_variable = sb_retief_petition_var
@@ -299,37 +312,6 @@ sb_natal_crisis.020 = {
 		}
 		ai_chance = {
 			base = 10
-		}
-	}
-}
-
-sb_natal_crisis.021 = {
-	type = country_event
-	placement = root
-
-	title = sb_natal_crisis.021.t
-	desc = sb_natal_crisis.021.d
-	flavor = sb_natal_crisis.021.f
-
-	event_image = {
-		video = "gfx/event_pictures/africa_soldiers_breaking_protest.bk2"
-	}
-
-	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-	icon = "gfx/interface/icons/event_icons/event_default.dds"
-	duration = 3
-
-	trigger = {
-		country_definition = cd:ZUL
-	}
-
-	option = {
-		name = sb_natal_crisis.021.a
-		default_option = yes
-		sb_zulu_mark_swazi_question_after_honour_deal = yes
-		sb_zulu_maybe_open_swazi_question = yes
-		ai_chance = {
-			base = 100
 		}
 	}
 }
@@ -416,12 +398,11 @@ sb_natal_crisis.026 = {
 	desc = sb_natal_crisis.026.d
 	flavor = sb_natal_crisis.026.f
 
-	event_image = {
-		video = "gfx/event_pictures/africa_soldiers_breaking_protest.bk2"
-	}
+	gui_window = event_window_1char_tabloid
+	left_icon = scope:sb_court_frontier_sovereign
 
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	icon = "gfx/interface/icons/event_icons/event_portrait.dds"
 	duration = 3
 
 	trigger = {
@@ -429,6 +410,7 @@ sb_natal_crisis.026 = {
 	}
 
 	immediate = {
+		ruler ?= { save_scope_as = sb_court_frontier_sovereign }
 		if = { limit = { has_variable = sb_natal_guns_bargain_delivery_queued_var } remove_variable = sb_natal_guns_bargain_delivery_queued_var }
 		scope:sb_natal_guns_bargain_receipt_scope ?= { set_variable = { name = sb_natal_guns_bargain_popup_receipt_var months = 4 } }
 	}
@@ -436,18 +418,17 @@ sb_natal_crisis.026 = {
 	option = {
 		name = sb_natal_crisis.026.a
 		default_option = yes
-		# Exact receipt identity and mutation-time launchability are separate:
-		# temporary war/play occupancy requeues rather than choosing an outcome.
-		trigger = {
-			sb_natal_story_bound_guns_bargain_event_authority = yes
-			sb_natal_story_current_launch_authority = yes
-		}
+		# Choosing escalation records it once, including on popup expiry.
+		# The exact launcher retries internally if creation is delayed.
+		trigger = { sb_natal_story_bound_guns_bargain_event_authority = yes }
 		custom_tooltip = sb_natalia_chiefdoms_absorbed_tt
 		custom_tooltip = sb_zulu_dynasty_gain_stability_10
 		# The chiefdom absorption and Dingane reward commit only after the exact
 		# diplomatic-play root is admitted by on_diplomatic_play_started.
-		set_variable = { name = sb_natal_story_absorption_commit_var days = 730 }
-		sb_natal_story_begin_exact_launch = yes
+		hidden_effect = {
+			set_variable = { name = sb_natal_story_absorption_commit_var days = 730 }
+			sb_natal_story_begin_exact_launch = yes
+		}
 		ai_chance = {
 			base = 100
 		}
@@ -485,18 +466,6 @@ sb_natal_crisis.026 = {
 		ai_chance = {
 			base = 0
 		}
-	}
-
-	# A still-authentic receipt that is only temporarily unlaunchable keeps the
-	# chosen route and reissues the same generation instead of defaulting to peace.
-	option = {
-		name = sb_natal_crisis.026.a
-		trigger = {
-			sb_natal_story_bound_guns_bargain_event_authority = yes
-			NOT = { sb_natal_story_current_launch_authority = yes }
-		}
-		hidden_effect = { sb_natal_story_requeue_guns_bargain_delivery = yes }
-		ai_chance = { base = 100 }
 	}
 
 	# An expired or replaced delivery is inert. It cannot accept the bargain or
@@ -604,27 +573,12 @@ sb_natal_crisis.050 = {
 	option = {
 		name = sb_natal_crisis.050.b
 		default_option = yes
-		trigger = {
-			sb_natal_story_bound_refusal_event_authority = yes
-			sb_natal_story_current_refusal_authority = yes
-		}
+		trigger = { sb_natal_story_bound_refusal_event_authority = yes }
 		# Persist the selected escalation, then let the exact launcher own retries.
 		scope:zulu_kingdom = { sb_natal_story_begin_exact_launch = yes }
 		ai_chance = {
 			base = 100
 		}
-	}
-
-	# Temporary war/play occupancy preserves the refusal decision and reissues
-	# this exact generation rather than forcing either substantive outcome.
-	option = {
-		name = sb_natal_crisis.050.b
-		trigger = {
-			sb_natal_story_bound_refusal_event_authority = yes
-			NOT = { sb_natal_story_current_refusal_authority = yes }
-		}
-		hidden_effect = { sb_natal_story_requeue_refusal_delivery = yes }
-		ai_chance = { base = 100 }
 	}
 
 	# The refusal receipt is permanent-invalid if its exact route was replaced.
@@ -758,14 +712,6 @@ sb_natal_crisis.070 = {
 		name = sb_natal_crisis.070.a
 		default_option = yes
 		trigger = { sb_natal_story_terminal_ora_victory_event_authority = yes }
-		hidden_effect = {
-			scope:sb_natal_terminal_counterparty_scope ?= {
-				sb_zulu_apply_blood_river_defeat = yes
-				set_variable = sb_zulu_blood_river_resolved_var
-				sb_zulu_mark_swazi_question_after_blood_river_loss = yes
-				sb_zulu_maybe_open_swazi_question = yes
-			}
-		}
 		if = {
 			limit = { scope:sb_natal_terminal_receipt_scope ?= { has_variable = sb_natal_terminal_guns_bargain_result_var } }
 			sb_found_natalia_after_guns_bargain_rejection = yes
@@ -773,7 +719,7 @@ sb_natal_crisis.070 = {
 		else = {
 			sb_found_natalia_after_blood_river = yes
 		}
-		hidden_effect = { sb_natal_story_consume_terminal_outcome = yes }
+		hidden_effect = { sb_natal_story_handoff_zulu_defeat = yes }
 		ai_chance = {
 			base = 100
 		}
@@ -785,15 +731,6 @@ sb_natal_crisis.070 = {
 			is_player = yes
 			sb_natal_story_terminal_ora_victory_event_authority = yes
 		}
-		# custom_tooltip = sb_natal_crisis_070_zulu_defeat_tt
-		hidden_effect = {
-			scope:sb_natal_terminal_counterparty_scope ?= {
-				sb_zulu_apply_blood_river_defeat = yes
-				set_variable = sb_zulu_blood_river_resolved_var
-				sb_zulu_mark_swazi_question_after_blood_river_loss = yes
-				sb_zulu_maybe_open_swazi_question = yes
-			}
-		}
 		if = {
 			limit = { scope:sb_natal_terminal_receipt_scope ?= { has_variable = sb_natal_terminal_guns_bargain_result_var } }
 			sb_found_natalia_after_guns_bargain_rejection = yes
@@ -801,7 +738,7 @@ sb_natal_crisis.070 = {
 		else = {
 			sb_found_natalia_after_blood_river = yes
 		}
-		hidden_effect = { sb_natal_story_consume_terminal_outcome = yes }
+		hidden_effect = { sb_natal_story_handoff_zulu_defeat = yes }
 		play_as = c:NAL
 		ai_chance = {
 			base = 0
@@ -876,12 +813,11 @@ title = sb_natal_crisis.080.t
 desc = sb_natal_crisis.080.d
 flavor = sb_natal_crisis.080.f
 
-event_image = {
-	video = "gfx/event_pictures/africa_soldiers_breaking_protest.bk2"
-}
+gui_window = event_window_1char_tabloid
+	left_icon = scope:sb_court_outcome_portrait
 
 on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-icon = "gfx/interface/icons/event_icons/event_military.dds"
+icon = "gfx/interface/icons/event_icons/event_portrait.dds"
 duration = 3
 
 trigger = {
@@ -896,6 +832,14 @@ trigger = {
 	}
 }
 immediate = {
+	# Reserve the preview; all campaign rewards are applied by the option.
+	sb_court_prepare_campaign_result = { CAMPAIGN = blood_river WON = yes }
+	save_scope_as = sb_court_country
+	ruler ?= { save_scope_as = sb_court_outcome_portrait }
+	var:sb_court_blood_river_ruler_scope ?= { save_scope_as = sb_court_campaign_ruler
+		if = { limit = { is_character_alive = yes } save_scope_as = sb_court_outcome_portrait }
+	}
+	var:sb_court_blood_river_patron_scope ?= { save_scope_as = sb_court_campaign_patron }
 	var:sb_natal_terminal_outcome_scope ?= { save_scope_as = sb_natal_terminal_receipt_scope }
 	scope:sb_natal_terminal_receipt_scope ?= {
 		var:sb_natal_terminal_counterparty_scope ?= { save_scope_as = sb_natal_terminal_counterparty_scope }
@@ -912,32 +856,15 @@ option = {
 		name = sb_zulu_natal_triumph
 		months = 120
 	}
-	random_scope_character = {
-		limit = {
-			has_template = ZUL_dingane
-			is_character_alive = yes
-		}
-		if = { limit = { has_modifier = sb_dingane_humbled } remove_modifier = sb_dingane_humbled }
-		if = { limit = { has_modifier = sb_dingane_checked_by_swazi } remove_modifier = sb_dingane_checked_by_swazi }
-		add_modifier = {
-			name = sb_dingane_triumphant
-		}
-		if = {
-			limit = {
-				NOT = { has_trait = brave }
-			}
-			add_trait = brave
-		}
-	}
-	custom_tooltip = sb_desc_firearms_gain_10
-	custom_tooltip = sb_zulu_dynasty_gain_stability_20
+	custom_tooltip = sb_court_campaign_firearms_tt
+	if = { limit = { scope:sb_court_campaign_ruler ?= { is_character_alive = yes } } custom_tooltip = sb_court_campaign_ruler_tt }
+	show_as_tooltip = { every_in_list = { variable = sb_court_blood_river_changes limit = { sb_court_episode_neutral = yes scope:sb_court_campaign_patron ?= { is_character_alive = yes } } custom_tooltip = sb_court_campaign_supporter_tt } }
 
+	hidden_effect = { sb_zulu_apply_blood_river_victory = yes sb_boost_firearms_progress_minor = yes }
 	hidden_effect = {
-		sb_zulu_apply_blood_river_victory = yes
 		set_variable = sb_zulu_blood_river_resolved_var
 		set_variable = sb_zulu_port_natal_raid_available_var
 		sb_zulu_mark_swazi_question_after_blood_river_win = yes
-		sb_zulu_maybe_open_swazi_question = yes
 	}
 
 	scope:sb_natal_terminal_counterparty_scope ?= {
@@ -955,7 +882,10 @@ option = {
 			remove_variable = sb_trn_joined_natal_war_var
 		}
 	}
-	sb_natal_story_consume_terminal_outcome = yes
+	hidden_effect = {
+		sb_natal_story_consume_terminal_outcome = yes
+		sb_zulu_maybe_open_swazi_question = yes
+	}
 	ai_chance = {
 		base = 100
 	}
@@ -973,7 +903,7 @@ option = {
 }
 
 # Neutral close for a white peace or a negotiated mutual stand-down. This keeps
-# the authored frontier/Port Natal follow-up without granting either war result.
+# firearms learning and frontier/Port Natal follow-up without a political war result.
 sb_natal_crisis.081 = {
 	type = country_event
 	placement = root
@@ -982,7 +912,7 @@ sb_natal_crisis.081 = {
 	desc = sb_natal_crisis.081.d
 	flavor = sb_natal_crisis.081.f
 
-	event_image = { video = "gfx/event_pictures/africa_soldiers_breaking_protest.bk2" }
+	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
 	icon = "gfx/interface/icons/event_icons/event_military.dds"
 	duration = 3
@@ -1011,10 +941,13 @@ sb_natal_crisis.081 = {
 		name = sb_natal_crisis.081.a
 		default_option = yes
 		trigger = { sb_natal_story_terminal_zulu_neutral_event_authority = yes }
+		custom_tooltip = sb_court_campaign_firearms_tt
 		hidden_effect = {
+			sb_zulu_apply_blood_river_neutral = yes
 			set_variable = sb_zulu_blood_river_resolved_var
 			set_variable = sb_zulu_port_natal_raid_available_var
-			sb_zulu_maybe_open_swazi_question = yes
+			sb_zulu_clear_swazi_question_ai_context = yes
+			set_variable = sb_zulu_swazi_ai_white_peace_var
 			scope:sb_natal_terminal_counterparty_scope ?= {
 				set_variable = sb_natal_path_resolved_var
 				if = { limit = { has_variable = sb_natal_diplomacy_started_var } remove_variable = sb_natal_diplomacy_started_var }
@@ -1027,7 +960,10 @@ sb_natal_crisis.081 = {
 				if = { limit = { has_variable = sb_trn_joined_natal_war_var } remove_variable = sb_trn_joined_natal_war_var }
 			}
 		}
-		sb_natal_story_consume_terminal_outcome = yes
+		hidden_effect = {
+			sb_natal_story_consume_terminal_outcome = yes
+			sb_zulu_maybe_open_swazi_question = yes
+		}
 		ai_chance = { base = 100 }
 	}
 
@@ -1036,6 +972,79 @@ sb_natal_crisis.081 = {
 		trigger = {
 			has_variable = sb_natal_terminal_outcome_pending_var
 			NOT = { sb_natal_story_terminal_zulu_neutral_event_authority = yes }
+		}
+		hidden_effect = { sb_natal_story_clear_terminal_outcome = yes }
+		ai_chance = { base = 0 }
+	}
+}
+
+# The Boer settlement hands its existing receipt to ZUL for the defeat outcome.
+# Backdown, capitulation and negotiated defeat all reach this same event.
+sb_natal_crisis.082 = {
+	type = country_event
+	placement = root
+	title = sb_natal_crisis.082.t
+	desc = sb_natal_crisis.082.d
+	flavor = sb_natal_crisis.082.f
+	gui_window = event_window_1char_tabloid
+	left_icon = scope:sb_court_outcome_portrait
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_portrait.dds"
+	duration = 3
+
+	trigger = {
+		is_country_alive = yes
+		has_variable = sb_natal_terminal_outcome_pending_var
+		has_variable = sb_natal_terminal_outcome_delivery_queued_var
+		has_variable = sb_natal_terminal_outcome_scope
+		var:sb_natal_terminal_outcome_scope ?= {
+			has_variable = sb_natal_terminal_outcome_pending_var
+			has_variable = sb_natal_terminal_outcome_zulu_defeat_var
+			var:sb_natal_terminal_recipient_scope = root
+		}
+	}
+	immediate = {
+		sb_court_prepare_campaign_result = { CAMPAIGN = blood_river WON = no }
+		save_scope_as = sb_court_country
+		ruler ?= { save_scope_as = sb_court_outcome_portrait }
+		var:sb_court_blood_river_ruler_scope ?= {
+			save_scope_as = sb_court_campaign_ruler
+			if = { limit = { is_character_alive = yes } save_scope_as = sb_court_outcome_portrait }
+		}
+		var:sb_court_blood_river_patron_scope ?= { save_scope_as = sb_court_campaign_patron }
+		var:sb_natal_terminal_outcome_scope ?= { save_scope_as = sb_natal_terminal_receipt_scope }
+		if = { limit = { has_variable = sb_natal_terminal_outcome_delivery_queued_var } remove_variable = sb_natal_terminal_outcome_delivery_queued_var }
+		set_variable = { name = sb_natal_terminal_outcome_popup_receipt_var months = 4 }
+	}
+	option = {
+		name = sb_natal_crisis.082.a
+		default_option = yes
+		trigger = { sb_natal_story_terminal_zulu_defeat_event_authority = yes }
+		custom_tooltip = sb_court_campaign_firearms_tt
+		if = { limit = { scope:sb_court_campaign_ruler ?= { is_character_alive = yes } } custom_tooltip = sb_court_campaign_defeated_ruler_tt }
+		custom_tooltip = sb_court_campaign_defeat_prerogative_tt
+		show_as_tooltip = {
+			every_in_list = { variable = sb_court_blood_river_changes limit = { sb_court_episode_neutral = yes scope:sb_court_campaign_patron ?= { is_character_alive = yes } } custom_tooltip = sb_court_campaign_opposition_tt }
+			every_in_list = {
+				variable = sb_court_blood_river_defectors
+				limit = { sb_court_campaign_defector = yes scope:sb_court_country = { has_variable = sb_institutions_active_var } scope:sb_court_campaign_ruler ?= { is_character_alive = yes is_ruler_of_own_country = yes owner = scope:sb_court_country } scope:sb_court_campaign_patron ?= { is_character_alive = yes } }
+				custom_tooltip = sb_court_campaign_defector_tt
+			}
+		}
+		hidden_effect = { sb_zulu_apply_blood_river_defeat = yes sb_boost_firearms_progress_minor = yes }
+		hidden_effect = {
+			set_variable = sb_zulu_blood_river_resolved_var
+			sb_zulu_mark_swazi_question_after_blood_river_loss = yes
+			sb_natal_story_consume_terminal_outcome = yes
+			sb_zulu_maybe_open_swazi_question = yes
+		}
+		ai_chance = { base = 100 }
+	}
+	option = {
+		name = sb_natal_crisis.082.a
+		trigger = {
+			has_variable = sb_natal_terminal_outcome_pending_var
+			NOT = { sb_natal_story_terminal_zulu_defeat_event_authority = yes }
 		}
 		hidden_effect = { sb_natal_story_clear_terminal_outcome = yes }
 		ai_chance = { base = 0 }

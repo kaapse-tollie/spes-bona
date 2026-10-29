@@ -1,27 +1,10 @@
-﻿# Spes Bona - Zulu Succession and Collapse Effects
-#
-# These helpers are split out from `sb_zulu_dynasty_effects.txt` so the main
-# file can stay focused on the dynastic-stability bar and monthly upkeep while
-# this one owns the actual claimant preparation, ruler swaps, and collapse
-# resolution.
-
-sb_zulu_kill_current_heir = {
-	if = {
-		limit = {
-			exists = heir
-			heir = {
-				is_character_alive = yes
-			}
-		}
-		heir = {
-			kill_character = {
-				hidden = yes
-			}
-		}
-	}
-}
+﻿# Shared royal identity installation and historical frontier reactions.
+# Ongoing court politics and succession commitments live in sb_court_* files.
 
 sb_zulu_assign_new_heir_scope = {
+	save_scope_as = sb_zulu_install_country
+	# Temporarily release this court's CMF block for the authored appointment.
+	sb_court_release_heir_blocker = yes
 	set_heir = scope:new_heir_scope
 	if = {
 		limit = {
@@ -52,179 +35,13 @@ sb_zulu_assign_new_heir_scope = {
 		}
 	}
 	scope:new_heir_scope ?= {
-		set_interest_group = c:ZUL.ig:ig_landowners
+		set_interest_group = scope:sb_zulu_install_country.ig:ig_landowners
 	}
-}
-
-sb_zulu_prepare_uthumbu_heir = {
-	if = {
-		limit = {
-			NOT = {
-				any_scope_character = {
-					has_template = ZUL_uthumbu_claimed_son
-					is_character_alive = yes
-				}
-			}
-		}
-		create_character = {
-			template = ZUL_uthumbu_claimed_son
-			on_created = {
-				save_scope_as = new_heir_scope
-			}
-		}
-	}
-	else = {
-		random_scope_character = {
-			limit = {
-				has_template = ZUL_uthumbu_claimed_son
-				is_character_alive = yes
-			}
-			save_scope_as = new_heir_scope
-		}
-	}
-	sb_zulu_assign_new_heir_scope = yes
-}
-
-sb_zulu_prepare_gqugqu_heir = {
-	if = {
-		limit = {
-			NOT = {
-				any_scope_character = {
-					has_template = ZUL_gqugqu_claimant
-					is_character_alive = yes
-				}
-			}
-		}
-		create_character = {
-			template = ZUL_gqugqu_claimant
-			on_created = {
-				save_scope_as = new_heir_scope
-			}
-		}
-	}
-	else = {
-		random_scope_character = {
-			limit = {
-				has_template = ZUL_gqugqu_claimant
-				is_character_alive = yes
-			}
-			save_scope_as = new_heir_scope
-		}
-	}
-	sb_zulu_assign_new_heir_scope = yes
-}
-
-sb_zulu_prepare_cetshwayo_heir = {
-	if = {
-		limit = {
-			NOT = {
-				any_scope_character = {
-					has_template = ZUL_cetshwayo_heir
-					is_character_alive = yes
-				}
-			}
-		}
-		create_character = {
-			template = ZUL_cetshwayo_heir
-			on_created = {
-				save_scope_as = new_heir_scope
-			}
-		}
-	}
-	else = {
-		random_scope_character = {
-			limit = {
-				has_template = ZUL_cetshwayo_heir
-				is_character_alive = yes
-			}
-			save_scope_as = new_heir_scope
-		}
-	}
-	sb_zulu_assign_new_heir_scope = yes
-}
-
-sb_zulu_prepare_mbuyazi_heir = {
-	if = {
-		limit = {
-			NOT = {
-				any_scope_character = {
-					has_template = ZUL_mbuyazi_heir
-					is_character_alive = yes
-				}
-			}
-		}
-		create_character = {
-			template = ZUL_mbuyazi_heir
-			on_created = {
-				save_scope_as = new_heir_scope
-			}
-		}
-	}
-	else = {
-		random_scope_character = {
-			limit = {
-				has_template = ZUL_mbuyazi_heir
-				is_character_alive = yes
-			}
-			save_scope_as = new_heir_scope
-		}
-	}
-	sb_zulu_assign_new_heir_scope = yes
-}
-
-sb_zulu_prepare_dinuzulu_heir = {
-	if = {
-		limit = { NOT = { has_global_variable = sb_zulu_mbuyazi_succession_global_var } }
-		if = {
-			limit = {
-				NOT = {
-					any_scope_character = {
-						has_template = ZUL_dinuzulu_heir
-						is_character_alive = yes
-					}
-				}
-			}
-			create_character = {
-				template = ZUL_dinuzulu_heir
-				on_created = {
-					save_scope_as = new_heir_scope
-				}
-			}
-		}
-		else = {
-			random_scope_character = {
-				limit = {
-					has_template = ZUL_dinuzulu_heir
-					is_character_alive = yes
-				}
-				save_scope_as = new_heir_scope
-			}
-		}
-		sb_zulu_assign_new_heir_scope = yes
-	}
-}
-
-
-sb_zulu_prepare_random_good_heir = {
-	create_character = {
-		culture = cu:zulu
-		religion = rel:animist
-		age = 24
-		interest_group = ig_landowners
-		ideology = ideology_traditionalist
-		traits = {
-			ambitious
-			tactful
-			basic_political_operator
-		}
-		on_created = {
-			save_scope_as = new_heir_scope
-		}
-	}
-	sb_zulu_assign_new_heir_scope = yes
+	sb_court_update_heir_blocker = yes
 }
 
 sb_zulu_install_summoned_claimant_as_ruler = {
+	save_scope_as = sb_zulu_install_country
 	scope:summoned_character_scope ?= {
 		if = {
 			limit = {
@@ -254,7 +71,7 @@ sb_zulu_install_summoned_claimant_as_ruler = {
 			}
 			add_character_role = politician
 		}
-		set_interest_group = c:ZUL.ig:ig_landowners
+		set_interest_group = scope:sb_zulu_install_country.ig:ig_landowners
 		hidden_effect = {
 			cleanup_ruler_character_roles = yes
 		}
@@ -262,59 +79,34 @@ sb_zulu_install_summoned_claimant_as_ruler = {
 	}
 }
 
+sb_zulu_apply_generic_war_victory = { sb_court_generic_war_result = { WON = yes } }
 
-sb_zulu_prepare_cetshwayo_claimant = {
-	if = {
-		limit = {
-			NOT = {
-				any_scope_character = {
-					has_template = ZUL_cetshwayo_heir
-					is_character_alive = yes
-				}
-			}
-		}
-		create_character = {
-			template = ZUL_cetshwayo_heir
-			on_created = {
-				save_scope_as = summoned_character_scope
-			}
-		}
-	}
-	else = {
-		random_scope_character = {
-			limit = {
-				has_template = ZUL_cetshwayo_heir
-				is_character_alive = yes
-			}
-			save_scope_as = summoned_character_scope
-		}
-	}
-	sb_zulu_install_summoned_claimant_as_ruler = yes
-}
+sb_zulu_apply_generic_war_defeat = { sb_court_generic_war_result = { WON = no } }
 
-
-
-sb_zulu_apply_generic_war_victory = {
-	sb_zulu_add_dynastic_stability_20 = yes
-}
-
-sb_zulu_apply_generic_war_defeat = {
-	sb_zulu_remove_dynastic_stability_10 = yes
-	sb_zulu_remove_dynastic_stability_10 = yes
+# Called only by the bound play's terminal resolver. Reserve before scheduling;
+# the Zulu event owns the political consequences, including for backdown.
+sb_zulu_queue_swazi_campaign_outcome = {
+ if = {
+  limit = { NOR = { has_variable = sb_court_swazi_result_var has_variable = sb_court_swazi_outcome_pending_var } }
+  save_scope_as = sb_court_country
+  set_variable = { name = sb_court_swazi_outcome_pending_var value = $RESULT$ }
+  if = {
+   limit = { NOT = { has_variable = sb_court_swazi_ruler_scope } }
+   ruler ?= { scope:sb_court_country = { set_variable = { name = sb_court_swazi_ruler_scope value = prev } } }
+  }
+  if = {
+   limit = { var:sb_court_swazi_outcome_pending_var = 1 }
+   trigger_event = { id = sb_swazi_frontier.097 days = 1 popup = yes }
+  }
+  else = { trigger_event = { id = sb_swazi_frontier.098 days = 1 popup = yes } }
+ }
 }
 
 sb_zulu_apply_swazi_campaign_victory = {
-	if = { limit = { has_variable = sb_zulu_dynastic_collapse_pending_var } remove_variable = sb_zulu_dynastic_collapse_pending_var }
-	sb_zulu_add_dynastic_stability_20 = yes
-	sb_zulu_add_dynastic_stability_10 = yes
-	random_scope_character = {
-		limit = {
-			has_template = ZUL_dingane
-			is_character_alive = yes
-		}
-		if = { limit = { has_modifier = sb_dingane_humbled } remove_modifier = sb_dingane_humbled }
-		if = { limit = { has_modifier = sb_dingane_checked_by_swazi } remove_modifier = sb_dingane_checked_by_swazi }
-	}
+ if = {
+  limit = { NOT = { has_variable = sb_court_swazi_result_var } }
+  sb_court_campaign_result = { CAMPAIGN = swazi OUTCOME = victory WON = yes DEFEAT_PREROGATIVE = -30 }
+
 	s:STATE_EAST_TRANSVAAL = {
 		add_claim = c:ZUL
 	}
@@ -337,7 +129,7 @@ sb_zulu_apply_swazi_campaign_victory = {
 			50 = { }
 		}
 	}
-	trigger_event = { id = sb_swazi_frontier.097 days = 5 popup = yes }
+ }
 }
 
 sb_zulu_apply_dingane_swazi_popularity_loss = {
@@ -409,400 +201,11 @@ sb_zulu_clear_swazi_campaign_runtime = {
 }
 
 sb_zulu_apply_swazi_campaign_defeat = {
-	sb_zulu_remove_dynastic_stability_10 = yes
-	sb_zulu_remove_dynastic_stability_10 = yes
-	sb_zulu_remove_dynastic_stability_10 = yes
-	sb_zulu_apply_dingane_swazi_popularity_loss = yes
+ if = {
+  limit = { has_variable = sb_zulu_blood_river_defeat_var }
+  sb_court_campaign_result = { CAMPAIGN = swazi OUTCOME = defeat WON = no DEFEAT_PREROGATIVE = -50 }
+ }
+ else = { sb_court_campaign_result = { CAMPAIGN = swazi OUTCOME = defeat WON = no DEFEAT_PREROGATIVE = -30 } }
 }
 
-# The dynasty JE chooses Mpande's immediate heir, but Vanilla resumes generic
-# heir generation after that character dies. Preserve the selected line once:
-# Mbuyazi's counterfactual line passes to its defined fictional successor,
-# while Cetshwayo's line passes to Dinuzulu. Template-use checks distinguish a
-# dead claimant from an initial assignment failure and prevent resurrection.
-sb_zulu_reconcile_secured_mpande_line = {
-	if = {
-		limit = {
-			OR = {
-				NOT = { exists = heir }
-				heir ?= {
-					NOR = {
-						has_template = $HEIR$
-						has_template = $SUCCESSOR$
-					}
-				}
-			}
-		}
-		if = {
-			limit = {
-				OR = {
-					any_scope_character = {
-						has_template = $HEIR$
-						is_character_alive = yes
-					}
-					NOT = { is_template_used = $HEIR$ }
-				}
-			}
-			sb_zulu_kill_current_heir = yes
-			country_summon_heir_effect = { TEMPLATE = $HEIR$ }
-		}
-		else_if = {
-			limit = {
-				any_scope_character = {
-					has_template = $SUCCESSOR$
-					is_character_alive = yes
-				}
-			}
-			sb_zulu_kill_current_heir = yes
-			country_summon_heir_effect = { TEMPLATE = $SUCCESSOR$ }
-			set_variable = { name = $SUCCESSOR_MARKER$ }
-		}
-		else_if = {
-			limit = {
-				NOT = { has_variable = $SUCCESSOR_MARKER$ }
-				NOT = { is_template_used = $SUCCESSOR$ }
-				game_date >= $SUCCESSOR_BIRTH_DATE$
-			}
-			sb_zulu_kill_current_heir = yes
-			country_summon_heir_effect = { TEMPLATE = $SUCCESSOR$ }
-			if = {
-				limit = {
-					exists = heir
-					heir = { has_template = $SUCCESSOR$ }
-				}
-				set_variable = { name = $SUCCESSOR_MARKER$ }
-			}
-		}
-		else_if = {
-			limit = { is_template_used = $SUCCESSOR$ }
-			set_variable = { name = $SUCCESSOR_MARKER$ }
-		}
-	}
-	if = {
-		limit = {
-			NOT = { has_variable = $SUCCESSOR_MARKER$ }
-			exists = heir
-			heir = { has_template = $SUCCESSOR$ }
-		}
-		set_variable = { name = $SUCCESSOR_MARKER$ }
-	}
-}
-
-sb_zulu_reconcile_secured_mpande_heir = {
-	if = {
-		limit = {
-			country_definition = cd:ZUL
-			is_country_alive = yes
-			has_variable = sb_zulu_dynasty_secured_var
-			has_variable = sb_zulu_mpande_mbuyazi_heir_var
-			ruler = { has_template = ZUL_mpande_zulu }
-		}
-		sb_zulu_reconcile_secured_mpande_line = {
-			HEIR = ZUL_mbuyazi_heir
-			SUCCESSOR = ZUL_mbuyazi_successor
-			SUCCESSOR_BIRTH_DATE = 1852.1.1
-			SUCCESSOR_MARKER = sb_zulu_mbuyazi_successor_installed_var
-		}
-	}
-	else_if = {
-		limit = {
-			country_definition = cd:ZUL
-			is_country_alive = yes
-			has_variable = sb_zulu_dynasty_secured_var
-			has_variable = sb_zulu_mpande_cetshwayo_heir_var
-			NOT = { has_variable = sb_zulu_mpande_mbuyazi_heir_var }
-			ruler = { has_template = ZUL_mpande_zulu }
-		}
-		sb_zulu_reconcile_secured_mpande_line = {
-			HEIR = ZUL_cetshwayo_heir
-			SUCCESSOR = ZUL_dinuzulu_heir
-			SUCCESSOR_BIRTH_DATE = 1868.1.1
-			SUCCESSOR_MARKER = sb_zulu_cetshwayo_successor_installed_var
-		}
-	}
-}
-
-sb_zulu_monthly_dynasty_housekeeping = {
-	if = {
-		limit = { has_variable = sb_zulu_mpande_mbuyazi_heir_var }
-		set_global_variable = sb_zulu_mbuyazi_succession_global_var
-	}
-	else_if = {
-		limit = {
-			has_variable = sb_zulu_mpande_cetshwayo_heir_var
-			has_global_variable = sb_zulu_mbuyazi_succession_global_var
-		}
-		remove_global_variable = sb_zulu_mbuyazi_succession_global_var
-	}
-	sb_zulu_update_dynastic_stability_modifiers = yes
-	sb_zulu_maybe_open_swazi_question = yes
-	if = {
-		limit = {
-			has_variable = sb_zulu_mpande_succession_secured_var
-			has_variable = sb_zulu_mpande_cetshwayo_heir_var
-			NOT = { has_variable = sb_zulu_mpande_mbuyazi_heir_var }
-			NOT = { has_variable = sb_zulu_mpande_withdrawal_delay_var }
-			NOT = { has_variable = sb_zulu_mpande_withdrawal_fired_var }
-			ruler = {
-				has_template = ZUL_mpande_zulu
-			}
-		}
-		trigger_event = { id = sb_zulu_dynasty.094 days = 1 popup = yes }
-	}
-	if = {
-		limit = {
-			NOT = { has_variable = sb_zulu_dynasty_secured_var }
-		}
-		if = {
-			limit = {
-				average_sol < average_expected_sol
-			}
-			sb_zulu_remove_dynastic_stability_1 = yes
-		}
-		# 2% monthly per eligible court event with a 12-month per-event cooldown
-		# averages about 0.77 court events per year across the four-event pool.
-		if = {
-			limit = {
-				NOT = { has_variable = sb_zulu_court_200_cooldown_var }
-			}
-			random_list = {
-				2 = {
-					set_variable = {
-						name = sb_zulu_court_200_cooldown_var
-						months = 12
-					}
-					trigger_event = { id = sb_zulu_court.200 days = 7 popup = yes }
-				}
-				98 = { }
-			}
-		}
-		if = {
-			limit = {
-				NOT = { has_variable = sb_zulu_court_201_cooldown_var }
-			}
-			random_list = {
-				2 = {
-					set_variable = {
-						name = sb_zulu_court_201_cooldown_var
-						months = 12
-					}
-					trigger_event = { id = sb_zulu_court.201 days = 7 popup = yes }
-				}
-				98 = { }
-			}
-		}
-		if = {
-			limit = {
-				NOT = { has_variable = sb_zulu_court_202_cooldown_var }
-			}
-			random_list = {
-				2 = {
-					set_variable = {
-						name = sb_zulu_court_202_cooldown_var
-						months = 12
-					}
-					trigger_event = { id = sb_zulu_court.202 days = 7 popup = yes }
-				}
-				98 = { }
-			}
-		}
-		if = {
-			limit = {
-				NOT = { has_variable = sb_zulu_court_203_cooldown_var }
-				OR = {
-					is_player = yes
-					has_variable = sb_zulu_blood_river_resolved_var
-				}
-			}
-			random_list = {
-				2 = {
-					set_variable = {
-						name = sb_zulu_court_203_cooldown_var
-						months = 12
-					}
-					trigger_event = { id = sb_zulu_court.203 days = 7 popup = yes }
-				}
-				98 = { }
-			}
-		}
-	}
-}
-
-sb_resolve_zulu_dynastic_collapse = {
-	if = {
-		limit = {
-			has_variable = sb_zulu_dynastic_collapse_pending_var
-		}
-		remove_variable = sb_zulu_dynastic_collapse_pending_var
-	}
-	sb_zulu_disable_dynastic_claims = yes
-	sb_zulu_clear_dynastic_stability_modifiers = yes
-	sb_zulu_set_dynastic_stability_33 = yes
-	capital = {
-		add_radicals_in_state = {
-			value = large_radicals
-		}
-	}
-	if = {
-		limit = {
-			ruler = {
-				has_template = ZUL_dingane
-			}
-		}
-		set_variable = sb_zulu_mpande_pretender_heir_pending_var
-		trigger_event = { id = sb_zulu_dynasty.095 days = 7 popup = yes }
-	}
-	heir ?= {
-		add_modifier = {
-			name = sb_zulu_dynastic_crisis
-			months = 120
-			is_decaying = yes
-		}
-	}
-	ruler = {
-		kill_character = { hidden = yes }
-	}
-}
-
-sb_resolve_zulu_dynasty_secured = {
-	ruler = {
-		if = {
-			limit = {
-				has_modifier = sb_zulu_dynastic_crisis
-			}
-			remove_modifier = sb_zulu_dynastic_crisis
-		}
-	}
-	if = {
-		limit = {
-			has_variable = sb_zulu_dynastic_collapse_pending_var
-		}
-		remove_variable = sb_zulu_dynastic_collapse_pending_var
-	}
-	set_variable = sb_zulu_dynasty_secured_var
-	sb_zulu_disable_dynastic_claims = yes
-	sb_zulu_clear_dynastic_stability_modifiers = yes
-	ruler = {
-		if = {
-			limit = {
-				NOT = { has_modifier = sb_zulu_secured_the_throne }
-			}
-			add_modifier = { name = sb_zulu_secured_the_throne }
-		}
-	}
-	if = {
-		limit = {
-			ruler = {
-				has_template = ZUL_dingane
-			}
-		}
-		if = {
-			limit = {
-				exists = heir
-				heir = {
-					NOT = { has_template = ZUL_uthumbu_claimed_son }
-				}
-			}
-			heir = {
-				kill_character = { hidden = yes }
-			}
-		}
-		sb_zulu_prepare_uthumbu_heir = yes
-	}
-	else_if = {
-		limit = {
-			ruler = {
-				has_template = ZUL_mpande_zulu
-			}
-		}
-		if = {
-			limit = {
-				exists = heir
-				heir = {
-					NOT = { has_template = ZUL_cetshwayo_heir }
-				}
-			}
-			heir = {
-				kill_character = { hidden = yes }
-			}
-		}
-		sb_zulu_prepare_cetshwayo_heir = yes
-	}
-	else = {
-		sb_zulu_kill_current_heir = yes
-		sb_zulu_prepare_random_good_heir = yes
-	}
-}
-
-sb_resolve_zulu_dynasty_secured_mbuyazi = {
-	ruler = {
-		if = {
-			limit = {
-				has_modifier = sb_zulu_dynastic_crisis
-			}
-			remove_modifier = sb_zulu_dynastic_crisis
-		}
-	}
-	if = {
-		limit = {
-			has_variable = sb_zulu_dynastic_collapse_pending_var
-		}
-		remove_variable = sb_zulu_dynastic_collapse_pending_var
-	}
-	set_variable = sb_zulu_dynasty_secured_var
-	set_variable = sb_zulu_mpande_succession_secured_var
-	set_variable = sb_zulu_mpande_mbuyazi_heir_var
-	set_global_variable = sb_zulu_mbuyazi_succession_global_var
-	if = {
-		limit = {
-			has_variable = sb_zulu_mpande_cetshwayo_heir_var
-		}
-		remove_variable = sb_zulu_mpande_cetshwayo_heir_var
-	}
-	set_variable = {
-		name = sb_zulu_mpande_withdrawal_delay_var
-		months = 60
-	}
-	sb_zulu_disable_dynastic_claims = yes
-	sb_zulu_clear_dynastic_stability_modifiers = yes
-	ruler = {
-		if = {
-			limit = {
-				NOT = { has_modifier = sb_zulu_secured_the_throne }
-			}
-			add_modifier = { name = sb_zulu_secured_the_throne }
-		}
-	}
-	if = {
-		limit = {
-			exists = heir
-			heir = {
-				NOT = { has_template = ZUL_mbuyazi_heir }
-			}
-		}
-		heir = {
-			kill_character = { hidden = yes }
-		}
-	}
-	sb_zulu_prepare_mbuyazi_heir = yes
-}
-
-sb_resolve_zulu_dynasty_secured_cetshwayo_for_mpande = {
-	sb_resolve_zulu_dynasty_secured = yes
-	set_variable = sb_zulu_mpande_succession_secured_var
-	set_variable = sb_zulu_mpande_cetshwayo_heir_var
-	if = {
-		limit = { has_global_variable = sb_zulu_mbuyazi_succession_global_var }
-		remove_global_variable = sb_zulu_mbuyazi_succession_global_var
-	}
-	if = {
-		limit = {
-			has_variable = sb_zulu_mpande_mbuyazi_heir_var
-		}
-		remove_variable = sb_zulu_mpande_mbuyazi_heir_var
-	}
-	set_variable = {
-		name = sb_zulu_mpande_withdrawal_delay_var
-		months = 60
-	}
-}
+sb_zulu_monthly_dynasty_housekeeping = { sb_zulu_maybe_open_swazi_question = yes }

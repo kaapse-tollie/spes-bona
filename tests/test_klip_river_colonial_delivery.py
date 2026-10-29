@@ -15,7 +15,7 @@ EFFECTS = 'common/scripted_effects/sb_klip_river_county_effects.txt'
 
 
 def expression(source):
-    tokens = iter(re.findall(r'\?=|=|[{}]|[^\s{}=]+',
+    tokens = iter(re.findall(r'\?=|>=|<=|!=|[=<>]|[{}]|[^\s{}=<>]+',
                             re.sub(r'#[^\n]*', '', source)))
 
     def body():
@@ -23,7 +23,10 @@ def expression(source):
         for key in tokens:
             if key == '}':
                 return result
-            assert next(tokens) in ('=', '?=')
+            operator = next(tokens)
+            assert operator in ('=', '?=', '>', '<', '>=', '<=', '!=')
+            if operator not in ('=', '?='):
+                key += ' ' + operator
             value = next(tokens)
             result.append((key, body() if value == '{' else value))
         return result

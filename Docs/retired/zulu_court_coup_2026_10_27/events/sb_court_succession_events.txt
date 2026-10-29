@@ -1,0 +1,90 @@
+﻿namespace = sb_court_succession
+sb_court_succession.001 = {
+ type = country_event
+ placement = root
+ title = sb_court_succession.001.t
+ desc = sb_court_succession.001.d
+ flavor = sb_court_succession.001.f
+ event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+ icon = "gfx/interface/icons/event_icons/event_portrait.dds"
+ duration = 3
+ trigger = { sb_court_dynastic_country = yes has_variable = sb_court_accession_open_var }
+ immediate = { save_scope_as = sb_court_country var:sb_court_accession_nominee_scope ?= { save_scope_as = sb_court_nominee } var:sb_court_accession_rival_scope ?= { save_scope_as = sb_court_rival } }
+ option = {
+  name = sb_court_succession.001.a default_option = yes
+  hidden_effect = { sb_court_answer_accession = yes }
+ }
+ option = {
+  name = sb_court_succession.001.b
+  trigger = { var:sb_court_accession_rival_scope ?= { sb_court_dynastic_candidate = yes } has_variable = sb_court_dynasty_test_var }
+  hidden_effect = {
+   if = {
+    limit = { sb_court_dynastic_country = yes has_variable = sb_court_accession_open_var scope:sb_court_rival ?= { sb_court_dynastic_candidate = yes } }
+    # The selected rebel must still be the displayed rival after revalidation.
+    sb_court_refresh_accession = yes
+    if = {
+     limit = { var:sb_court_accession_rival_scope ?= scope:sb_court_rival }
+     set_variable = sb_court_play_rebels_var
+     sb_court_answer_accession = yes
+    }
+    else = { remove_variable = sb_court_accession_popup_var sb_court_reconcile_succession = yes }
+   }
+   else = { remove_variable = sb_court_accession_popup_var sb_court_reconcile_succession = yes }
+  }
+ }
+}
+sb_court_succession.002 = {
+ type = country_event
+ placement = root
+ title = sb_court_succession.002.t
+ desc = sb_court_succession.002.d
+ 
+ event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+ icon = "gfx/interface/icons/event_icons/event_portrait.dds"
+ duration = 3
+ trigger = { has_variable = sb_court_dynastic_war_scope }
+ immediate = { save_scope_as = sb_court_country var:sb_court_dynastic_candidate_scope ?= { save_scope_as = sb_court_nominee } var:sb_court_dynastic_opponent_scope ?= { var:sb_court_dynastic_candidate_scope ?= { save_scope_as = sb_court_rival } } }
+ option = {
+  name = sb_court_succession.002.a default_option = yes
+  hidden_effect = {
+   if = { limit = { is_player = yes has_variable = sb_court_play_rebels_var var:sb_court_dynastic_opponent_scope ?= { is_country_alive = yes } } play_as = var:sb_court_dynastic_opponent_scope }
+   remove_variable = sb_court_play_rebels_var
+  }
+ }
+}
+# The allegiance is already recorded by the adulthood pulse; this reports it once.
+sb_court_succession.003 = {
+ type = country_event
+ placement = root
+ title = sb_court_succession.003.t
+ desc = sb_court_succession.003.d
+ flavor = sb_court_succession.003.f
+ gui_window = event_window_2char
+ left_icon = scope:sb_court_adult_son
+ right_icon = scope:sb_court_father
+ on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+ on_opened_soundeffect = "event:/SFX/Events/misc/2Characters"
+ icon = "gfx/interface/icons/event_icons/event_portrait.dds"
+ duration = 3
+ trigger = {
+  scope:sb_court_adult_son ?= { is_character_alive = yes is_adult = yes }
+  scope:sb_court_father ?= { is_character_alive = yes }
+ }
+ option = {
+  name = sb_court_succession.003.a
+  default_option = yes
+  custom_tooltip = sb_court_succession.003.a.tt
+ }
+}
+
+# Invoke explicitly with event sb_court_succession.990 from a disposable ZUL campaign.
+sb_court_succession.990 = {
+ orphan = yes # Manual console prototype, following Vanilla debug events.
+ type = country_event hidden = yes
+ trigger = { sb_institutions_profile_country = yes has_variable = sb_institutions_active_var }
+ immediate = {
+  set_variable = sb_court_dynasty_test_var
+  if = { limit = { has_variable = sb_court_accession_deferred_var } remove_variable = sb_court_accession_deferred_var set_variable = sb_court_accession_open_var }
+  sb_court_reconcile_succession = yes
+ }
+}

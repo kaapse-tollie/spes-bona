@@ -1,0 +1,49 @@
+﻿# The interacting country is scope:actor; never charge a foreign event ROOT.
+sb_court_secure_pledge = {
+ icon = "gfx/interface/icons/generic_icons/ig_bolster.dds"
+ show_requirements = yes
+ potential = { has_variable = sb_court_registered_var var:sb_court_home_scope ?= scope:actor scope:actor = { has_variable = sb_institutions_active_var } }
+ possible = {
+  custom_tooltip = { text = sb_court_pledge_representative_tt sb_court_pledge_target = yes }
+  scope:actor = { sb_court_can_negotiate = yes }
+ }
+ effect = { hidden_effect = { sb_court_open_pledge_quote = yes } }
+ should_ai_evaluate = { has_variable = sb_institutions_active_var }
+ ai_chance = { value = 2 }
+}
+
+sb_court_confront_rival = {
+ icon = "gfx/interface/character_panel/grant_command_not.dds"
+ show_requirements = yes
+ potential = {
+  has_variable = sb_court_registered_var var:sb_court_home_scope ?= scope:actor
+  scope:actor = { has_variable = sb_institutions_active_var }
+  is_ruler_of_own_country = no
+ }
+ possible = {
+  custom_tooltip = {
+   text = sb_court_confrontation_available_tt
+   sb_court_coercion_target_valid = yes
+   owner ?= scope:actor
+   is_in_void = no
+   is_in_exile_pool = no
+  }
+  scope:actor = {
+   sb_court_can_negotiate = yes
+  }
+  OR = { sb_court_can_request_renunciation = yes sb_court_can_attempt_purge = yes }
+ }
+ effect = {
+  hidden_effect = {
+   save_scope_as = sb_court_offer_character
+   scope:actor = {
+    set_variable = sb_court_action_open_var
+    set_variable = { name = sb_court_action_actor_scope value = scope:sb_court_offer_character }
+    set_variable = { name = sb_court_offer_ruler_scope value = ruler }
+    sb_court_quote_confrontation = yes
+   }
+  }
+ }
+ should_ai_evaluate = { has_variable = sb_institutions_active_var }
+ ai_chance = { value = 1 }
+}

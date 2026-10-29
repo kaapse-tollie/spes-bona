@@ -1,0 +1,167 @@
+﻿# Country scope. A chief can lead without becoming a fictional general.
+sb_court_try_start_coup = {
+ save_scope_as = sb_court_country
+ ordered_in_list = {
+  variable = sb_court_members
+  limit = { sb_court_opposing_member = yes sb_court_character_coup_strength >= { value = scope:sb_court_country.country_coup_resistance multiply = 0.9 } }
+  order_by = prominence position = 0
+  scope:sb_court_country = {
+   set_variable = { name = sb_court_coup_actor_scope value = prev }
+   set_variable = { name = sb_court_coup_alignment_var value = prev.var:sb_court_alignment_var }
+   if = { limit = { prev = { var:sb_court_claimant_scope ?= { is_character_alive = yes } } } set_variable = { name = sb_court_coup_beneficiary_scope value = prev.var:sb_court_claimant_scope } }
+   else_if = {
+    limit = { var:sb_court_coup_alignment_var = 1 }
+    if = { limit = { var:sb_court_restoration_claimant_scope ?= { sb_court_royal_candidate = yes } } set_variable = { name = sb_court_coup_beneficiary_scope value = var:sb_court_restoration_claimant_scope } }
+    else = {
+     ordered_in_list = { variable = sb_court_members limit = { sb_court_royal_candidate = yes NOT = { is_ruler_of_own_country = yes } } order_by = prominence position = 0 scope:sb_court_country = { set_variable = { name = sb_court_coup_beneficiary_scope value = prev } } }
+    }
+   }
+   else = { set_variable = { name = sb_court_coup_beneficiary_scope value = prev } }
+   if = {
+    limit = { exists = var:sb_court_coup_beneficiary_scope }
+    # Reservation lasts through JE and confrontation, including an unanswered popup.
+    set_variable = coup_event_active
+    set_variable = { name = sb_court_coup_original_alignment_var value = 0 }
+    if = { limit = { has_law_or_variant = law_type:law_monarchy has_law_or_variant = law_type:law_autocracy } set_variable = { name = sb_court_coup_original_alignment_var value = 1 } }
+    if = { limit = { has_law = law_type:law_sb_federated_chiefdoms has_law = law_type:law_sb_chiefly_council } set_variable = { name = sb_court_coup_original_alignment_var value = 2 } }
+    add_journal_entry = { type = je_sb_court_coup }
+    trigger_event = { id = sb_court_politics.100 popup = yes }
+   }
+   else = { sb_court_coup_cleanup = yes }
+  }
+ }
+}
+sb_court_coup_cleanup = {
+ if = { limit = { has_variable = sb_court_coup_actor_scope } set_variable = { name = coup_cooldown_var days = normal_modifier_time } }
+ remove_variable = sb_court_coup_actor_scope
+ remove_variable = sb_court_coup_beneficiary_scope
+ remove_variable = sb_court_coup_alignment_var
+ remove_variable = sb_court_coup_original_alignment_var
+ remove_variable = sb_court_coup_confrontation_var
+ remove_variable = coup_event_active
+ if = { limit = { has_modifier = sb_court_coup_resistance_campaign } remove_modifier = sb_court_coup_resistance_campaign }
+}
+sb_court_coup_victory = {
+ save_scope_as = sb_court_country
+ if = {
+  limit = { has_variable = sb_institutions_active_var NOT = { has_variable = sb_court_dynastic_war_scope } NOT = { has_variable = sb_court_accession_open_var } sb_court_coup_actor_valid = yes NOT = { has_variable = sb_court_civil_war_var } var:sb_court_coup_beneficiary_scope ?= { is_character_alive = yes } }
+  if = {
+   limit = { var:sb_court_coup_alignment_var = 2 }
+   activate_law = law_type:law_sb_federated_chiefdoms
+   activate_law = law_type:law_sb_chiefly_council
+   set_variable = { name = sb_court_chiefly_head_scope value = var:sb_court_coup_beneficiary_scope }
+   sb_court_select_chiefly_head = yes
+   if = { limit = { NOT = { var:sb_court_coup_original_alignment_var = 2 } } sb_zululand_resolve_chiefly_contest = yes }
+  }
+  else = {
+   set_variable = { name = sb_court_restoration_claimant_scope value = var:sb_court_coup_beneficiary_scope }
+   activate_law = law_type:law_monarchy
+   activate_law = law_type:law_autocracy
+   sb_court_install_royal_claimant = yes
+   if = { limit = { NOT = { var:sb_court_coup_original_alignment_var = 1 } } sb_zululand_resolve_royal_contest = yes }
+  }
+  sb_institutions_recalculate = yes
+ }
+ sb_court_coup_cleanup = yes
+}
+sb_court_coup_resist = {
+ if = {
+  limit = { has_variable = sb_institutions_active_var NOT = { has_variable = sb_court_dynastic_war_scope } NOT = { has_variable = sb_court_accession_open_var } sb_court_coup_actor_valid = yes NOT = { has_variable = sb_court_civil_war_var } }
+  random_list = {
+   0 = { modifier = { add = { value = sb_court_coup_strength } min = 0 } sb_court_coup_victory = yes trigger_event = { id = sb_court_politics.103 popup = yes } }
+   0 = { modifier = { add = { value = sb_court_coup_resistance } min = 0 } sb_court_coup_cleanup = yes trigger_event = { id = sb_court_politics.102 popup = yes } }
+  }
+ }
+ else = { sb_court_coup_cleanup = yes }
+}
+# on_revolution_start: current scope is original country; native target is the rebels.
+sb_court_track_revolution = {
+ save_scope_as = sb_court_country
+ scope:target ?= { save_scope_as = sb_court_rebels }
+ random_civil_war = {
+  limit = { is_civil_war_type = revolution political_movement = { OR = { is_political_movement_type = movement_sb_zulu_royal is_political_movement_type = movement_sb_zulu_chiefly } } }
+  save_scope_as = sb_court_tracked_war
+  political_movement = {
+   if = { limit = { is_political_movement_type = movement_sb_zulu_royal } scope:sb_court_country = { set_variable = { name = sb_court_rebel_alignment_var value = 1 } } }
+   else = { scope:sb_court_country = { set_variable = { name = sb_court_rebel_alignment_var value = 2 } } }
+  }
+ }
+ if = {
+  limit = { exists = scope:sb_court_tracked_war exists = scope:sb_court_rebels }
+  if = { limit = { has_variable = sb_court_coup_actor_scope } sb_court_coup_cleanup = yes }
+  remove_variable = sb_court_war_ended_var
+  set_variable = { name = sb_court_civil_war_var value = scope:sb_court_rebels }
+  set_variable = { name = sb_court_war_alignment_var value = 1 }
+  if = { limit = { has_law = law_type:law_sb_federated_chiefdoms } set_variable = { name = sb_court_war_alignment_var value = 2 } }
+  scope:sb_court_rebels = {
+   remove_variable = sb_court_war_ended_var
+   set_variable = sb_institutions_zulu_profile_var
+   set_variable = { name = sb_court_civil_war_var value = scope:sb_court_country }
+   set_variable = { name = sb_court_war_alignment_var value = scope:sb_court_country.var:sb_court_rebel_alignment_var }
+   set_variable = sb_institutions_initialized_var
+   set_variable = { name = sb_prerogative_var value = scope:sb_court_country.var:sb_prerogative_var }
+   set_variable = { name = sb_prerogative_last_change_var value = scope:sb_court_country.var:sb_prerogative_last_change_var }
+   set_variable = { name = sb_prerogative_cooperation_var value = 0 }
+   if = { limit = { scope:sb_court_country = { has_variable = sb_institutions_movements_seeded_var } } set_variable = sb_institutions_movements_seeded_var }
+   if = { limit = { scope:sb_court_country = { has_variable = sb_zululand_contest_result_var } } set_variable = { name = sb_zululand_contest_result_var value = scope:sb_court_country.var:sb_zululand_contest_result_var } }
+   if = { limit = { scope:sb_court_country = { has_variable = sb_zululand_usuthu_context_var } } set_variable = sb_zululand_usuthu_context_var }
+   if = { limit = { scope:sb_court_country = { exists = var:sb_court_recognized_heir_scope } } set_variable = { name = sb_court_recognized_heir_scope value = scope:sb_court_country.var:sb_court_recognized_heir_scope } }
+   if = { limit = { scope:sb_court_country = { has_variable = sb_zululand_usuthu_contest_var } } set_variable = sb_zululand_usuthu_contest_var }
+   if = { limit = { scope:sb_court_country = { exists = var:sb_court_restoration_claimant_scope } } set_variable = { name = sb_court_restoration_claimant_scope value = scope:sb_court_country.var:sb_court_restoration_claimant_scope } }
+  }
+  every_in_list = {
+   variable = sb_court_members
+   # Both sides retain the bounded identity record, including exiles.
+   scope:sb_court_rebels = { if = { limit = { NOT = { is_target_in_variable_list = { name = sb_court_members target = prev } } } add_to_variable_list = { name = sb_court_members target = prev } } }
+   if = {
+    limit = { sb_court_adult_member = yes var:sb_court_alignment_var = scope:sb_court_country.var:sb_court_rebel_alignment_var }
+    set_variable = { name = sb_court_home_scope value = scope:sb_court_rebels }
+    # Exiles remain exiles unless selected as the actual royal beneficiary.
+    if = { limit = { is_in_exile_pool = no OR = { owner ?= scope:sb_court_country owner ?= scope:sb_court_rebels } } transfer_character = scope:sb_court_rebels }
+   }
+   else = { set_variable = { name = sb_court_home_scope value = scope:sb_court_country } if = { limit = { sb_court_adult_member = yes owner ?= scope:sb_court_rebels } transfer_character = scope:sb_court_country } }
+  }
+  scope:sb_court_rebels = {
+   if = { limit = { var:sb_court_war_alignment_var = 1 } activate_law = law_type:law_monarchy activate_law = law_type:law_autocracy sb_court_install_royal_claimant = yes }
+   else = { activate_law = law_type:law_sb_federated_chiefdoms activate_law = law_type:law_sb_chiefly_council sb_court_select_chiefly_head = yes }
+   sb_institutions_recalculate = yes
+  }
+  remove_variable = sb_court_rebel_alignment_var
+ }
+}
+# The engine invokes this immediately before on_civil_war_won. Match the recorded pair.
+sb_court_record_war_end = {
+ if = {
+  limit = { var:sb_court_civil_war_var ?= scope:target }
+  set_variable = sb_court_war_ended_var
+  scope:target ?= { set_variable = sb_court_war_ended_var }
+ }
+}
+sb_court_resolve_won_war = {
+ if = {
+  limit = { has_variable = sb_court_war_ended_var has_variable = sb_court_war_alignment_var }
+  # Capture and clear the defeated side too; a later revival must not replay this outcome.
+  var:sb_court_civil_war_var ?= {
+   save_scope_as = sb_court_defeated_country
+   remove_variable = sb_court_war_ended_var
+   remove_variable = sb_court_civil_war_var
+   remove_variable = sb_court_war_alignment_var
+  }
+  # Set the terminal receipt before presentation; do not gate an actual win on Prerogative.
+  remove_variable = sb_court_war_ended_var
+  remove_variable = sb_court_civil_war_var
+  if = { limit = { var:sb_court_war_alignment_var = 1 } activate_law = law_type:law_monarchy activate_law = law_type:law_autocracy sb_court_install_royal_claimant = yes sb_zululand_resolve_royal_contest = yes }
+  else = { activate_law = law_type:law_sb_federated_chiefdoms activate_law = law_type:law_sb_chiefly_council sb_court_select_chiefly_head = yes sb_zululand_resolve_chiefly_contest = yes }
+  remove_variable = sb_court_war_alignment_var
+  save_scope_as = sb_court_country
+  if = {
+   limit = { has_variable = sb_zululand_contest_result_var }
+   scope:sb_court_defeated_country ?= {
+    set_variable = { name = sb_zululand_contest_result_var value = scope:sb_court_country.var:sb_zululand_contest_result_var }
+    remove_variable = sb_zululand_usuthu_contest_var
+   }
+  }
+  every_in_list = { variable = sb_court_members set_variable = { name = sb_court_home_scope value = scope:sb_court_country } }
+  sb_institutions_recalculate = yes
+ }
+}

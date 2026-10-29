@@ -1,0 +1,267 @@
+﻿# Character scope. Registry membership survives CAP exile and country retagging.
+sb_court_adult_member = {
+ has_variable = sb_court_registered_var
+ is_character_alive = yes
+ is_adult = yes
+}
+# Home assignment distinguishes two revolutionary sides while retaining CAP exiles.
+sb_court_member_of_country = {
+ sb_court_adult_member = yes
+ var:sb_court_home_scope ?= scope:sb_court_country
+}
+sb_court_present_member = {
+ sb_court_member_of_country = yes
+ owner ?= scope:sb_court_country
+ is_in_exile_pool = no
+ is_in_void = no
+}
+# Character scope. These IGs retain personal allegiances, but do not join court constitutional factions.
+sb_court_alignment_eligible = {
+ NOT = {
+  interest_group ?= {
+   OR = {
+    is_interest_group_type = ig_industrialists
+    is_interest_group_type = ig_intelligentsia
+    is_interest_group_type = ig_trade_unions
+   }
+  }
+ }
+}
+sb_court_royal_candidate = {
+ sb_court_adult_member = yes
+ sb_court_dynastic_candidate = yes
+}
+# Recognition can designate a child without making every child a contender in a war.
+sb_court_recognisable_successor = {
+ sb_court_living_dynast = yes
+ var:sb_court_home_scope ?= scope:sb_court_country
+ var:sb_court_home_scope = { NOT = { has_variable = sb_court_brothers_choice_var } }
+ NOT = { is_ruler_of_own_country = yes }
+ trigger_if = {
+  limit = { var:sb_court_home_scope = { is_ai = yes } }
+  sb_court_ai_recognition_candidate = yes
+ }
+}
+# Character scope; shared by the AI button weight and final recognition validation.
+sb_court_ai_recognition_candidate = {
+ var:sb_court_home_scope = { NOT = { ruler ?= { has_template = ZUL_dingane } } NOT = { has_variable = sb_court_brothers_choice_var } }
+ trigger_if = {
+  limit = { var:sb_court_home_scope = { ruler ?= { has_template = ZUL_mpande_zulu } } }
+  OR = { has_template = ZUL_cetshwayo_heir has_template = ZUL_mbuyazi_heir }
+  var:sb_court_home_scope = { NOT = { var:sb_court_recognized_heir_scope ?= { is_character_alive = yes } } }
+ }
+}
+# Country scope. The birthday choice keeps its original pair and any already recognised heir.
+sb_court_brothers_choice_valid = {
+ has_variable = sb_institutions_active_var
+ has_variable = sb_court_brothers_choice_var
+ ruler ?= { has_template = ZUL_mpande_zulu is_character_alive = yes }
+ var:sb_court_brothers_cetshwayo_scope ?= { sb_court_living_dynast = yes is_adult = yes var:sb_court_home_scope ?= prev }
+ var:sb_court_brothers_mbuyazi_scope ?= { sb_court_living_dynast = yes is_adult = yes var:sb_court_home_scope ?= prev }
+ trigger_if = {
+  limit = { has_variable = sb_court_brothers_choice_var }
+  trigger_if = {
+   limit = { var:sb_court_brothers_choice_var = 1 }
+   NOT = { var:sb_court_recognized_heir_scope ?= { is_character_alive = yes } }
+  }
+  trigger_if = {
+   limit = { var:sb_court_brothers_choice_var = 2 }
+   var:sb_court_brothers_heir_scope ?= { prev = { var:sb_court_recognized_heir_scope ?= prev } }
+  }
+ }
+}
+# Character scope. An unpledged future succession does not imply disloyalty to today's king.
+sb_court_brothers_available_backer = {
+ sb_court_episode_house = yes
+ sb_court_recruitable_backer = yes
+ NOT = { has_variable = sb_court_successor_pledge_scope }
+}
+# Country scope. Known lines use dated births rather than an invented replacement.
+sb_court_can_introduce_son = {
+ has_variable = sb_institutions_active_var
+ sb_court_has_royal_law = yes
+ NOT = { has_variable = sb_court_minor_sovereign_scope }
+ ruler ?= {
+  is_character_alive = yes is_adult = yes
+  NOT = { has_variable = sb_court_presented_son_scope }
+  NOR = { has_template = ZUL_mpande_zulu has_template = ZUL_cetshwayo_heir has_template = ZUL_dinuzulu_heir }
+ }
+ trigger_if = {
+  limit = { ruler ?= { has_template = ZUL_dingane } }
+  NOT = { has_variable = sb_court_uthumbu_introduced_var }
+ }
+}
+# Living authored dynasts include children whose future must not be replaced by generated heirs.
+sb_court_living_dynast = {
+ has_variable = sb_court_registered_var
+ is_character_alive = yes
+ OR = {
+  var:sb_court_alignment_var = 1
+  sb_court_alignment_eligible = no
+ }
+ NOT = { has_variable = sb_court_claim_renounced_var }
+ NOT = { has_variable = sb_court_retired_var }
+ OR = {
+  has_template = ZUL_dingane
+  has_template = ZUL_mpande_zulu
+  has_template = ZUL_gqugqu_claimant
+  has_template = ZUL_uthumbu_claimed_son
+  has_template = SB_ZUL_newborn_son
+  has_template = ZUL_cetshwayo_heir
+  has_template = ZUL_mbuyazi_heir
+  has_template = ZUL_dinuzulu_heir
+  has_template = ZUL_solomon_heir
+  has_template = ZUL_mbuyazi_successor
+  has_template = ZUL_uthumbu_successor
+  has_template = SB_ZUL_hamu
+  has_variable = sb_zululand_exiled_claimant_var
+ }
+}
+# Minor candidates require explicit acknowledgement; only adults contribute their own prominence.
+sb_court_dynastic_candidate = {
+ sb_court_living_dynast = yes
+ OR = {
+  is_adult = yes
+  var:sb_court_home_scope ?= { var:sb_court_recognized_heir_scope ?= prev }
+  var:sb_court_home_scope ?= { var:sb_court_minor_sovereign_scope ?= prev }
+ }
+}
+sb_court_opposing_member = {
+ sb_court_present_member = yes
+ NOT = { is_ruler_of_own_country = yes }
+ OR = {
+  AND = { var:sb_court_endorsement_var = -1 var:sb_court_claimant_scope ?= { is_character_alive = yes } }
+  AND = { var:sb_court_alignment_var = 1 scope:sb_court_country = { has_law = law_type:law_sb_federated_chiefdoms } }
+  AND = { var:sb_court_alignment_var = 2 scope:sb_court_country = { NOT = { has_law = law_type:law_sb_federated_chiefdoms } } }
+ }
+}
+# Country scope. A tracked ideological war must not masquerade as missing opposition.
+sb_court_can_negotiate = {
+ custom_tooltip = {
+  text = sb_court_institutions_active_tt
+  has_variable = sb_institutions_active_var
+ }
+ custom_tooltip = {
+  text = sb_court_no_constitutional_war_tt
+  NOT = { has_variable = sb_court_civil_war_var }
+ }
+ custom_tooltip = {
+  text = sb_court_no_pending_negotiation_tt
+  NOT = { has_variable = sb_court_action_open_var }
+ }
+ custom_tooltip = {
+  text = sb_court_no_accession_tt
+  NOT = { has_variable = sb_court_dynastic_crisis_var }
+  NOT = { has_variable = sb_court_accession_open_var }
+  NOT = { has_variable = sb_court_dynastic_war_scope }
+ }
+}
+
+
+sb_court_representative_eligible = {
+ sb_court_member_of_country = yes
+ NOT = { has_variable = sb_court_retired_var }
+}
+# Character interaction actor is the paying country, not the event's ROOT.
+sb_court_recruitable_backer = {
+ prominence > 0
+ NOT = { has_role_of_type = agitator }
+}
+sb_court_pledge_target = {
+ sb_court_adult_member = yes
+ sb_court_recruitable_backer = yes
+ owner ?= scope:actor
+ var:sb_court_home_scope ?= scope:actor
+ has_variable = sb_court_representative_var
+ NOT = { sb_court_dynastic_candidate = yes }
+ is_in_exile_pool = no
+ is_in_void = no
+ is_ruler_of_own_country = no
+ NOT = { var:sb_court_endorsement_var = 1 }
+ NOT = { has_variable = sb_court_retired_var }
+}
+sb_court_quoted_pledge_valid = {
+ has_variable = sb_institutions_active_var
+ has_variable = sb_court_offer_price_var
+ ruler ?= var:sb_court_offer_ruler_scope
+ ruler ?= scope:sb_court_quote_ruler
+ var:sb_court_action_actor_scope ?= scope:sb_court_actor
+ var:sb_court_action_actor_scope ?= {
+  sb_court_present_member = yes
+  sb_court_recruitable_backer = yes
+  has_variable = sb_court_representative_var
+  NOT = { sb_court_dynastic_candidate = yes }
+  NOT = { var:sb_court_endorsement_var = 1 }
+  NOT = { is_ruler_of_own_country = yes }
+ }
+}
+sb_court_major_candidate = {
+ sb_court_dynastic_candidate = yes
+ var:sb_court_coalition_share_var >= 25
+}
+sb_court_organised_rival = {
+ sb_court_dynastic_candidate = yes
+ var:sb_court_current_share_var >= 25
+}
+
+# Character scope; each action retains its own allowance against this person.
+sb_court_coercion_target_valid = {
+ sb_court_royal_candidate = yes
+ is_in_exile_pool = no is_in_void = no
+ NOT = { is_ruler_of_own_country = yes }
+ # Historical AI Mpande preserves his sons' succession contest; Gqugqu remains eligible.
+ trigger_if = {
+  limit = {
+   owner = {
+    is_ai = yes
+    ruler ?= { has_template = ZUL_mpande_zulu }
+    OR = {
+     has_game_rule = sb_frontier_ai_behavior_strict_historical
+     has_game_rule = sb_frontier_ai_behavior_dynamic_historical
+    }
+   }
+  }
+  NOR = { has_template = ZUL_cetshwayo_heir has_template = ZUL_mbuyazi_heir }
+ }
+}
+sb_court_can_request_renunciation = {
+ custom_tooltip = { text = sb_court_renunciation_cooldown_tt NOT = { has_variable = sb_court_renunciation_cooldown_var } }
+ owner = { custom_tooltip = { text = sb_court_prerogative_25_tt var:sb_prerogative_var >= 25 } }
+}
+sb_court_can_attempt_purge = {
+ custom_tooltip = { text = sb_court_purge_unused_tt NOT = { is_target_in_variable_list = { name = sb_court_purge_rulers target = owner.ruler } } }
+ owner = { custom_tooltip = { text = sb_court_prerogative_50_tt var:sb_prerogative_var >= 50 } }
+ custom_tooltip = {
+  text = sb_court_purge_war_available_tt
+  OR = { NOT = { sb_court_organised_rival = yes } owner = { sb_court_dynastic_enabled = yes } }
+ }
+}
+# Country scope; the popup's actor and ruler must still be the quoted participants.
+sb_court_coercion_session_valid = {
+ has_variable = sb_institutions_active_var
+ has_variable = sb_court_action_open_var
+ has_variable = sb_court_offer_ruler_scope
+ var:sb_court_offer_ruler_scope ?= ruler
+ NOT = { has_variable = sb_court_civil_war_var }
+ NOT = { has_variable = sb_court_dynastic_crisis_var }
+ NOT = { has_variable = sb_court_accession_open_var }
+ NOT = { has_variable = sb_court_dynastic_war_scope }
+ var:sb_court_action_actor_scope ?= {
+  sb_court_coercion_target_valid = yes
+  owner ?= scope:sb_court_country
+  var:sb_court_home_scope ?= scope:sb_court_country
+ }
+}
+
+sb_court_episode_valid = {
+ has_variable = sb_institutions_active_var
+ has_variable = sb_court_episode_open_var
+ ruler ?= var:sb_court_episode_ruler_scope
+ var:sb_court_episode_actor_scope ?= { sb_court_present_member = yes }
+}
+
+# Country scope; the constitutional succession machinery does not apply after institutional exit.
+sb_court_dynastic_country = {
+ has_variable = sb_institutions_active_var
+ sb_court_has_royal_law = yes
+}

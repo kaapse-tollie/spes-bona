@@ -17,17 +17,7 @@ sb_on_zulu_mpande_new_ruler = {
 	}
 }
 
-sb_on_zulu_secured_succession_yearly_pulse_country = {
-	trigger = {
-		country_definition = cd:ZUL
-		is_country_alive = yes
-		has_variable = sb_zulu_dynasty_secured_var
-		ruler = { has_template = ZUL_mpande_zulu }
-	}
-	effect = {
-		sb_zulu_reconcile_secured_mpande_heir = yes
-	}
-}
+
 
 sb_on_eastern_sphere_monthly_pulse_country = {
 	trigger = {
@@ -103,6 +93,11 @@ sb_on_natal_story_orphan_monthly = {
 	trigger = {
 		is_country_alive = yes
 		OR = {
+			AND = {
+				has_global_variable = sb_natal_story_war_active_global_var
+				has_variable = sb_natal_story_play_scope
+				NOT = { exists = var:sb_natal_story_play_scope }
+			}
 			AND = { container_exists = sb_natal_guns_bargain_generation_state NOT = { sb_natal_story_guns_bargain_generation_is_valid = yes } }
 			AND = { container_exists = sb_natal_refusal_generation_state NOT = { sb_natal_story_refusal_generation_is_valid = yes } }
 			AND = {
@@ -169,6 +164,8 @@ sb_on_zululand_incorporation_state_owner_change = {
 	effect = {
 		if = {
 			limit = { NOT = { owner ?= { country_definition = cd:NAL } } }
+			if = { limit = { has_modifier = sb_zululand_zibhebhu_incorporation_legacy } remove_modifier = sb_zululand_zibhebhu_incorporation_legacy }
+			if = { limit = { has_modifier = sb_zululand_crown_incorporation_legacy } remove_modifier = sb_zululand_crown_incorporation_legacy }
 			c:NAL ?= {
 				if = { limit = { has_variable = sb_zululand_incorporation_requested_var } remove_variable = sb_zululand_incorporation_requested_var }
 				if = { limit = { has_variable = sb_zululand_incorporation_started_var } remove_variable = sb_zululand_incorporation_started_var }
@@ -176,6 +173,7 @@ sb_on_zululand_incorporation_state_owner_change = {
 				if = { limit = { has_variable = sb_zululand_incorporation_complete_pending_var } remove_variable = sb_zululand_incorporation_complete_pending_var }
 			}
 		}
+		c:NAL ?= { sb_zululand_apply_post_annex_incorporation = yes }
 	}
 }
 
@@ -294,9 +292,4 @@ sb_on_frontier_force_monthly_pulse_country = {
 	effect = {
 		sb_restore_ai_frontier_force_floor = yes
 	}
-}
-
-sb_on_zibhebhu_death = {
-	trigger = { has_template = ZUL_zibhebhu_kamaphitha }
-	effect = { set_global_variable = sb_zululand_zibhebhu_died_var }
 }

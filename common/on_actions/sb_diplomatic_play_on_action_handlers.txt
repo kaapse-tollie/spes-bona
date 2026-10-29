@@ -691,10 +691,10 @@ sb_on_spes_bona_diplo_play_back_down = {
 				}
 				root = { initiator = c:ZUL target = c:SWZ }
 			}
-			if = { limit = { scope:actor ?= { country_definition = cd:ZUL } } c:ZUL = { sb_zulu_apply_swazi_campaign_defeat = yes } }
+			if = { limit = { scope:actor ?= { country_definition = cd:ZUL } } c:ZUL = { sb_zulu_queue_swazi_campaign_outcome = { RESULT = 2 } } }
 			else_if = {
 				limit = { c:ZUL ?= { has_variable = sb_zulu_swazi_target_state_scope var:sb_zulu_swazi_target_state_scope ?= { owner = c:ZUL } } }
-				c:ZUL = { sb_zulu_apply_swazi_campaign_victory = yes }
+				c:ZUL = { sb_zulu_queue_swazi_campaign_outcome = { RESULT = 1 } }
 			}
 			sb_cleanup_swazi_defensive_muster_for_play = yes
 			sb_zulu_clear_swazi_campaign_runtime = yes
@@ -938,7 +938,7 @@ sb_on_spes_bona_war_end = {
 							}
 						}
 					}
-					sb_zulu_apply_swazi_campaign_victory = yes
+					sb_zulu_queue_swazi_campaign_outcome = { RESULT = 1 }
 				}
 				else_if = {
 					limit = {
@@ -958,7 +958,7 @@ sb_on_spes_bona_war_end = {
 							}
 						}
 					}
-					sb_zulu_apply_swazi_campaign_defeat = yes
+					sb_zulu_queue_swazi_campaign_outcome = { RESULT = 2 }
 				}
 				else_if = {
 					limit = { is_country_alive = yes }
@@ -1057,6 +1057,16 @@ sb_on_spes_bona_war_end = {
 }
 
 # War-goal hooks for the Phase 1 frontier wars.
+# 1.14.5 separates reversible timer flips from final enforcement. This marker
+# belongs to this adapter, not to the engine's final-enforcement callback.
+sb_on_spes_bona_wargoal_enforced_by_timer = {
+	effect = {
+		save_temporary_scope_as = enforced_by_timer
+		sb_klip_river_handle_wargoal_enforced = yes
+		sb_bechuanaland_track_crisis_wargoal_enforcement = yes
+	}
+}
+
 sb_on_spes_bona_wargoal_enforced = {
 	effect = {
 		# Klip's punitive path checks both actual demands; other story routes

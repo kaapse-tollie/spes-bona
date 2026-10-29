@@ -1,11 +1,22 @@
-﻿# Keep the small Southern African AI economies on their scripted opening path.
-# Players and every country outside SB's AI-economy roster remain unrestricted.
+﻿# GDP gates for SB-authored countries; players retain normal construction rules.
+# Count completed and queued levels nationally before permitting the first sector.
 INJECT:building_construction_sector = {
 	possible = {
 		owner ?= {
 			OR = {
 				is_ai = no
-				game_date >= 1850.1.1
+				AND = {
+					gdp >= 100000
+					OR = {
+						gdp >= 1000000
+						NOT = {
+							any_scope_building = {
+								is_building_type = building_construction_sector
+								level_after_queued_constructions > 0
+							}
+						}
+					}
+				}
 				NOR = {
 					country_definition = cd:CAP
 					country_definition = cd:ORA
@@ -17,6 +28,32 @@ INJECT:building_construction_sector = {
 					country_definition = cd:WBL
 					country_definition = cd:BST
 					country_definition = cd:ZUL
+					country_definition = cd:SWZ
+					country_definition = cd:GZA
+					country_definition = cd:NGN
+					country_definition = cd:NGI
+					country_definition = cd:STA
+					country_definition = cd:TSW
+					country_definition = cd:XHO
+					country_definition = cd:MTB
+					country_definition = cd:PDI
+					country_definition = cd:TSO
+					country_definition = cd:VND
+					country_definition = cd:SGO
+					country_definition = cd:KLR
+					country_definition = cd:NRP
+					country_definition = cd:SAF
+					country_definition = cd:ABY
+					country_definition = cd:GLE
+					country_definition = cd:RHB
+					country_definition = cd:ORL
+					country_definition = cd:SWA
+					country_definition = cd:NAM
+					country_definition = cd:HRO
+					country_definition = cd:OVB
+					country_definition = cd:SAN
+					country_definition = cd:BSA
+					country_definition = cd:MZQ
 				}
 			}
 		}

@@ -1,0 +1,259 @@
+﻿# Country scope. Participant and reigning sovereign are revalidated before committing a roll.
+sb_court_quote_confrontation = {
+ save_scope_as = sb_court_country
+ sb_court_calculate_backing = yes
+ if = {
+  limit = { has_variable = sb_court_action_actor_scope has_variable = sb_court_offer_ruler_scope sb_court_coercion_pair_backing > 0 }
+  var:sb_court_action_actor_scope = { save_scope_as = sb_court_actor }
+  set_variable = { name = sb_court_offer_king_backing_var value = sb_court_coercion_king_backing }
+  set_variable = { name = sb_court_offer_rival_backing_var value = sb_court_coercion_rival_backing }
+  set_variable = { name = sb_court_offer_rival_share_var value = var:sb_court_action_actor_scope.var:sb_court_current_share_var }
+  set_variable = { name = sb_court_offer_submission_var value = sb_court_submission_chance }
+  set_variable = { name = sb_court_offer_refusal_var value = sb_court_submission_refusal }
+  set_variable = { name = sb_court_offer_capture_var value = sb_court_capture_chance }
+  set_variable = { name = sb_court_offer_escape_var value = sb_court_capture_failure }
+  trigger_event = { id = sb_court_politics.003 popup = yes }
+ }
+}
+sb_court_confrontation = {
+ save_scope_as = sb_court_country
+ sb_court_calculate_backing = yes
+ if = {
+  limit = {
+   sb_court_coercion_session_valid = yes
+   has_variable = sb_court_offer_king_backing_var has_variable = sb_court_offer_rival_backing_var has_variable = sb_court_offer_rival_share_var
+   has_variable = sb_court_offer_submission_var has_variable = sb_court_offer_refusal_var has_variable = sb_court_offer_capture_var has_variable = sb_court_offer_escape_var
+   sb_court_coercion_pair_backing > 0
+  }
+  if = {
+   limit = {
+    OR = {
+     AND = { always = $PURGE$ var:sb_court_action_actor_scope = { sb_court_can_attempt_purge = yes } }
+     AND = { NOT = { always = $PURGE$ } var:sb_court_action_actor_scope = { sb_court_can_request_renunciation = yes } }
+    }
+   }
+   if = {
+    limit = {
+     sb_court_coercion_king_backing = var:sb_court_offer_king_backing_var
+     sb_court_coercion_rival_backing = var:sb_court_offer_rival_backing_var
+     var:sb_court_action_actor_scope.var:sb_court_current_share_var = var:sb_court_offer_rival_share_var
+    }
+    var:sb_court_action_actor_scope = { save_scope_as = sb_court_actor }
+    if = {
+     limit = { always = $PURGE$ }
+     var:sb_court_action_actor_scope = { add_to_variable_list = { name = sb_court_purge_rulers target = scope:sb_court_country.ruler } }
+     sb_court_commit_coercion_cost = { PREROGATIVE = -50 AUTHORITY = 200 }
+     trigger_event = { id = sb_court_politics.009 days = 3650 }
+     random_list = {
+      0 = { modifier = { add = { value = var:sb_court_offer_capture_var } } sb_court_purge_captured = yes }
+      0 = { modifier = { add = { value = var:sb_court_offer_escape_var } } sb_court_coercion_exposed = yes }
+     }
+    }
+    else = {
+     var:sb_court_action_actor_scope = { set_variable = { name = sb_court_renunciation_cooldown_var years = 10 } }
+     sb_court_commit_coercion_cost = { PREROGATIVE = -25 AUTHORITY = 100 }
+     trigger_event = { id = sb_court_politics.008 days = 3650 }
+     random_list = {
+      0 = { modifier = { add = { value = var:sb_court_offer_submission_var } } sb_court_claim_revoked = yes }
+      0 = {
+       modifier = { add = { value = var:sb_court_offer_refusal_var } }
+       var:sb_court_action_actor_scope = { add_modifier = { name = sb_court_claim_defended years = 10 } }
+       post_notification = sb_court_renunciation_refused
+      }
+     }
+    }
+    sb_court_action_cleanup = yes
+   }
+   else = { sb_court_quote_confrontation = yes }
+  }
+  else = { sb_court_action_cleanup = yes }
+ }
+ else = { sb_court_action_cleanup = yes }
+ sb_institutions_recalculate = yes
+}
+
+# Aggregate only the outstanding Authority commitments. Each valid attempt schedules
+# its own expiry; targets, rulers and the institutional JE may disappear beforehand.
+sb_court_commit_coercion_cost = {
+ change_variable = { name = sb_prerogative_var add = $PREROGATIVE$ }
+ if = { limit = { NOT = { has_variable = sb_court_authority_commitment_var } } set_variable = { name = sb_court_authority_commitment_var value = 0 } }
+ if = {
+  limit = { has_variable = sb_court_authority_commitment_var }
+  change_variable = { name = sb_court_authority_commitment_var add = $AUTHORITY$ }
+  sb_court_refresh_committed_authority = yes
+ }
+}
+sb_court_release_coercion_authority = {
+ if = {
+  limit = { has_variable = sb_court_authority_commitment_var }
+  set_variable = { name = sb_court_authority_commitment_var value = { value = var:sb_court_authority_commitment_var subtract = $AUTHORITY$ min = 0 } }
+  sb_court_refresh_committed_authority = yes
+ }
+}
+sb_court_refresh_committed_authority = {
+ if = { limit = { has_modifier = sb_court_committed_authority } remove_modifier = sb_court_committed_authority }
+ if = {
+  limit = { has_variable = sb_court_authority_commitment_var }
+  if = { limit = { var:sb_court_authority_commitment_var > 0 } add_modifier = { name = sb_court_committed_authority multiplier = var:sb_court_authority_commitment_var } }
+  else = { remove_variable = sb_court_authority_commitment_var }
+ }
+}
+
+sb_court_release_claimant_backing = {
+ save_scope_as = sb_court_country
+ every_in_list = {
+  variable = sb_court_members
+  limit = { var:sb_court_home_scope ?= scope:sb_court_country }
+  if = {
+   limit = { var:sb_court_claimant_scope ?= scope:sb_court_country.var:sb_court_action_actor_scope }
+   set_variable = { name = sb_court_endorsement_var value = 0 }
+   remove_variable = sb_court_claimant_scope
+  }
+  if = { limit = { var:sb_court_successor_pledge_scope ?= scope:sb_court_country.var:sb_court_action_actor_scope } remove_variable = sb_court_successor_pledge_scope }
+  if = { limit = { var:sb_court_council_promise_scope ?= scope:sb_court_country.var:sb_court_action_actor_scope } remove_variable = sb_court_council_promise_scope }
+ }
+ var:sb_court_action_actor_scope = {
+  if = { limit = { has_role_of_type = heir } remove_character_role = heir }
+  scope:sb_court_country = {
+   if = { limit = { var:sb_court_recognized_heir_scope ?= prev } remove_variable = sb_court_recognized_heir_scope }
+  }
+ }
+}
+sb_court_claim_revoked = {
+ sb_court_release_claimant_backing = yes
+ var:sb_court_action_actor_scope = { set_variable = sb_court_claim_renounced_var set_variable = { name = sb_court_endorsement_var value = 0 } }
+ post_notification = sb_court_rival_submitted
+}
+sb_court_purge_captured = {
+ sb_court_release_claimant_backing = yes
+ post_notification = sb_court_rival_killed
+ var:sb_court_action_actor_scope = { kill_character = yes }
+}
+sb_court_coercion_exposed = {
+ if = { limit = { var:sb_court_offer_rival_share_var >= 25 } sb_court_confrontation_war = yes }
+ else = {
+  var:sb_court_action_actor_scope = { exile_character_with_role_cleanup = yes }
+  post_notification = sb_court_rival_fled
+ }
+}
+sb_court_confrontation_war = {
+ if = {
+  limit = { has_variable = sb_court_dynasty_test_var }
+  post_notification = sb_court_rival_resisted
+  set_variable = sb_court_accession_open_var
+  set_variable = sb_court_dynastic_current_allegiance_var
+  set_variable = { name = sb_court_accession_nominee_scope value = ruler }
+  set_variable = { name = sb_court_accession_rival_scope value = var:sb_court_action_actor_scope }
+  sb_court_start_dynastic_prototype = yes
+ }
+}
+
+# TEST ONLY: native political-movement escalation with unchanged royal institutions.
+# No exposed direct same-constitution war creation effect has been verified in 1.14.5.
+sb_court_start_dynastic_prototype = {
+ if = {
+  limit = { sb_court_dynastic_country = yes has_variable = sb_court_dynasty_test_var var:sb_court_accession_rival_scope ?= { sb_court_dynastic_candidate = yes } NOT = { has_variable = sb_court_dynastic_test_pending_var } NOT = { has_variable = sb_court_dynastic_war_scope } }
+  set_variable = sb_court_dynastic_test_pending_var
+  if = {
+   limit = { NOT = { any_political_movement = { is_political_movement_type = movement_sb_dynastic_test } } }
+   create_political_movement = { type = movement_sb_dynastic_test }
+  }
+ }
+}
+sb_court_track_dynastic_prototype = {
+ save_scope_as = sb_court_country
+ if = {
+  limit = { has_variable = sb_court_dynasty_test_var has_variable = sb_court_dynastic_test_pending_var exists = scope:target }
+  random_civil_war = {
+   limit = { is_civil_war_type = revolution political_movement = { is_political_movement_type = movement_sb_dynastic_test } }
+   save_scope_as = sb_court_dynastic_conflict
+  }
+  if = {
+   limit = { exists = scope:sb_court_dynastic_conflict }
+   scope:target = { save_scope_as = sb_court_dynastic_rebels }
+   set_variable = { name = sb_court_dynastic_war_scope value = scope:sb_court_dynastic_conflict }
+   set_variable = { name = sb_court_dynastic_opponent_scope value = scope:sb_court_dynastic_rebels }
+   set_variable = { name = sb_court_dynastic_candidate_scope value = var:sb_court_accession_nominee_scope }
+   scope:sb_court_dynastic_rebels = {
+    set_variable = sb_institutions_zulu_profile_var
+    sb_institutions_initialize = yes
+    if = { limit = { sb_institutions_eligible = yes } set_variable = sb_institutions_active_var }
+    set_variable = { name = sb_court_dynastic_war_scope value = scope:sb_court_dynastic_conflict }
+    set_variable = { name = sb_court_dynastic_opponent_scope value = scope:sb_court_country }
+    set_variable = { name = sb_court_dynastic_candidate_scope value = scope:sb_court_country.var:sb_court_accession_rival_scope }
+    set_variable = sb_court_dynasty_test_var
+    set_variable = sb_court_accession_open_var
+   }
+   every_in_list = {
+    variable = sb_court_members
+    scope:sb_court_dynastic_rebels = { add_to_variable_list = { name = sb_court_members target = prev } }
+    if = {
+     limit = {
+      OR = {
+       this = scope:sb_court_country.var:sb_court_accession_rival_scope
+       AND = {
+        scope:sb_court_country = { has_variable = sb_court_dynastic_current_allegiance_var }
+        OR = {
+         var:sb_court_house_leader_scope ?= { var:sb_court_claimant_scope ?= scope:sb_court_country.var:sb_court_accession_rival_scope }
+         AND = { NOT = { has_variable = sb_court_house_leader_scope } var:sb_court_claimant_scope ?= scope:sb_court_country.var:sb_court_accession_rival_scope }
+        }
+       }
+       AND = {
+        scope:sb_court_country = { NOT = { has_variable = sb_court_dynastic_current_allegiance_var } }
+        OR = { var:sb_court_successor_pledge_scope ?= scope:sb_court_country.var:sb_court_accession_rival_scope var:sb_court_claimant_scope ?= scope:sb_court_country.var:sb_court_accession_rival_scope }
+       }
+      }
+     }
+     set_variable = { name = sb_court_home_scope value = scope:sb_court_dynastic_rebels }
+     if = { limit = { is_character_alive = yes is_in_exile_pool = no } transfer_character = scope:sb_court_dynastic_rebels }
+    }
+    else = {
+     set_variable = { name = sb_court_home_scope value = scope:sb_court_country }
+     if = { limit = { is_character_alive = yes owner ?= scope:sb_court_dynastic_rebels } transfer_character = scope:sb_court_country }
+    }
+   }
+   remove_variable = sb_court_dynastic_test_pending_var
+   # Native side-switch prompt follows the actual split, not a fabricated country.
+   trigger_event = { id = sb_court_succession.002 popup = yes }
+  }
+ }
+}
+sb_court_record_dynastic_end = {
+ save_scope_as = sb_court_country
+ if = {
+  limit = { has_variable = sb_court_dynastic_war_scope var:sb_court_dynastic_opponent_scope ?= scope:target scope:target = { var:sb_court_dynastic_war_scope ?= scope:sb_court_country.var:sb_court_dynastic_war_scope } }
+  set_variable = sb_court_dynastic_ended_var
+  scope:target = { set_variable = sb_court_dynastic_ended_var }
+ }
+}
+sb_court_resolve_dynastic_win = {
+ save_scope_as = sb_court_country
+ if = {
+  limit = { has_variable = sb_court_dynastic_ended_var var:sb_court_dynastic_candidate_scope ?= { is_character_alive = yes } }
+  var:sb_court_dynastic_candidate_scope = { save_scope_as = sb_court_successor }
+  var:sb_court_dynastic_opponent_scope ?= {
+   var:sb_court_dynastic_candidate_scope ?= { save_scope_as = sb_court_defeated_prince }
+   remove_variable = sb_court_dynastic_current_allegiance_var
+   remove_variable = sb_court_dynastic_ended_var
+   remove_variable = sb_court_dynastic_war_scope
+   remove_variable = sb_court_dynastic_opponent_scope
+   remove_variable = sb_court_dynastic_candidate_scope
+   sb_court_accession_cleanup = yes
+  }
+  remove_variable = sb_court_dynastic_current_allegiance_var
+  remove_variable = sb_court_dynastic_ended_var
+  remove_variable = sb_court_dynastic_war_scope
+  remove_variable = sb_court_dynastic_opponent_scope
+  remove_variable = sb_court_dynastic_candidate_scope
+  every_in_list = {
+   variable = sb_court_members
+   set_variable = { name = sb_court_home_scope value = scope:sb_court_country }
+   if = { limit = { is_character_alive = yes is_in_exile_pool = no NOT = { owner ?= scope:sb_court_country } } transfer_character = scope:sb_court_country }
+  }
+  set_variable = sb_court_selecting_head_var
+  scope:sb_court_defeated_prince ?= { if = { limit = { is_character_alive = yes is_in_exile_pool = no } kill_character = yes } }
+  remove_variable = sb_court_selecting_head_var
+  sb_court_install_successor = yes
+  # Deliberately no Thirteen Chiefs dispatcher, annexation or incorporation reward.
+ }
+}

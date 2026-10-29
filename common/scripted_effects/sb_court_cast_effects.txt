@@ -1,0 +1,157 @@
+﻿# Following 0 = individual prominence; positive IDs identify explicitly shared houses.
+sb_court_register_expanded_cast = {
+ save_scope_as = sb_court_country
+ every_scope_character = { limit = { has_template = SB_ZUL_dambuza NOT = { has_variable = sb_court_registered_var } } sb_court_register_character = { FOLLOWING = 0 ALIGNMENT = 0 ENDORSEMENT = 1 } }
+ every_scope_character = { limit = { has_template = SB_ZUL_mawa NOT = { has_variable = sb_court_registered_var } } sb_court_register_character = { FOLLOWING = 10 ALIGNMENT = 1 ENDORSEMENT = 0 } }
+ every_scope_character = { limit = { has_template = SB_ZUL_nongalaza NOT = { has_variable = sb_court_registered_var } } sb_court_register_character = { FOLLOWING = 11 ALIGNMENT = 0 ENDORSEMENT = 0 } }
+ every_scope_character = { limit = { has_template = SB_ZUL_sotobe NOT = { has_variable = sb_court_registered_var } } sb_court_register_character = { FOLLOWING = 0 ALIGNMENT = 0 ENDORSEMENT = 0 } }
+ every_scope_character = { limit = { has_template = SB_ZUL_masiphula NOT = { has_variable = sb_court_registered_var } } sb_court_register_character = { FOLLOWING = 12 ALIGNMENT = 0 ENDORSEMENT = 0 } }
+ every_scope_character = { limit = { has_template = SB_ZUL_maphitha NOT = { has_variable = sb_court_registered_var } } sb_court_register_character = { FOLLOWING = 9 ALIGNMENT = 0 ENDORSEMENT = 0 } }
+ every_scope_character = { limit = { has_template = SB_ZUL_langazana NOT = { has_variable = sb_court_registered_var } } sb_court_register_character = { FOLLOWING = 13 ALIGNMENT = 1 ENDORSEMENT = 0 } }
+ every_scope_character = { limit = { has_template = SB_ZUL_sigananda_kazokufa NOT = { has_variable = sb_court_registered_var } } sb_court_register_character = { FOLLOWING = 14 ALIGNMENT = 0 ENDORSEMENT = 0 } }
+ if = {
+  limit = { ruler ?= { has_template = ZUL_mpande_zulu } NOT = { has_global_variable = sb_court_masiphula_created_var } }
+  set_global_variable = sb_court_masiphula_created_var
+  create_character = { template = SB_ZUL_masiphula on_created = { owner = { save_scope_as = sb_court_country } add_character_role = politician sb_court_register_character = { FOLLOWING = 12 ALIGNMENT = 0 ENDORSEMENT = 0 } } }
+ }
+ if = {
+  limit = { year >= 1850 NOT = { has_global_variable = sb_court_maphitha_created_var } }
+  set_global_variable = sb_court_maphitha_created_var
+  create_character = { template = SB_ZUL_maphitha on_created = { owner = { save_scope_as = sb_court_country } add_character_role = politician sb_court_register_character = { FOLLOWING = 9 ALIGNMENT = 0 ENDORSEMENT = 0 } } }
+ }
+}
+
+# Local cast only. Authored registrations run first and retain their identities/commitments.
+sb_court_register_unpledged_cast = {
+ save_scope_as = sb_court_country
+ every_scope_character = {
+  limit = {
+   is_character_alive = yes is_adult = yes
+   owner ?= scope:sb_court_country is_in_void = no is_in_exile_pool = no
+   NOT = { has_variable = sb_court_registered_var }
+   OR = {
+    has_role_of_type = politician has_role_of_type = general has_role_of_type = admiral
+    has_role_of_type = agitator has_role_of_type = magnate has_role_of_type = executive
+   }
+  }
+  sb_court_register_character = { FOLLOWING = 0 ALIGNMENT = 0 ENDORSEMENT = 0 }
+ }
+}
+
+# First adult pulse only: a later change of ruler must not replay the declaration.
+sb_court_mpande_sons_come_of_age = {
+ save_scope_as = sb_court_country
+ if = {
+  limit = { sb_is_zulu_dynasty_country = yes has_variable = sb_institutions_active_var }
+  every_in_list = {
+   variable = sb_court_members
+   limit = {
+    sb_court_member_of_country = yes
+    OR = { has_template = ZUL_cetshwayo_heir has_template = ZUL_mbuyazi_heir }
+    NOT = { has_variable = sb_court_adulthood_checked_var }
+   }
+   set_variable = sb_court_adulthood_checked_var
+   save_scope_as = sb_court_adult_son
+   if = {
+    limit = { has_template = ZUL_mbuyazi_heir scope:sb_court_country = { ruler ?= { has_template = ZUL_mpande_zulu } } }
+    scope:sb_court_country = { sb_court_prepare_brothers_choice = yes }
+   }
+   if = {
+    limit = { NOT = { is_ruler_of_own_country = yes } }
+    scope:sb_court_country = {
+     every_in_list = {
+      variable = sb_court_members
+      limit = {
+       var:sb_court_home_scope ?= scope:sb_court_country
+       has_template = ZUL_mpande_zulu is_character_alive = yes
+       NOT = { is_ruler_of_own_country = yes }
+      }
+      save_scope_as = sb_court_father
+      scope:sb_court_adult_son = { sb_court_commit_to_patron = { PATRON = scope:sb_court_father } }
+      scope:sb_court_country = {
+       sb_court_calculate_backing = yes
+       trigger_event = { id = sb_court_succession.003 }
+      }
+     }
+    }
+   }
+  }
+ }
+}
+
+# Mbuyazi's first adult pulse under Mpande; other successions retain their existing routes.
+sb_court_prepare_brothers_choice = {
+ save_scope_as = sb_court_country
+ sb_court_clear_brothers_choice = yes
+ every_in_list = {
+  variable = sb_court_members
+  limit = { sb_court_member_of_country = yes sb_court_living_dynast = yes }
+  if = { limit = { has_template = ZUL_cetshwayo_heir } scope:sb_court_country = { set_variable = { name = sb_court_brothers_cetshwayo_scope value = prev } } }
+  else_if = { limit = { has_template = ZUL_mbuyazi_heir } scope:sb_court_country = { set_variable = { name = sb_court_brothers_mbuyazi_scope value = prev } } }
+ }
+ if = {
+  limit = { NOT = { var:sb_court_recognized_heir_scope ?= { is_character_alive = yes } } }
+  set_variable = { name = sb_court_brothers_choice_var value = 1 }
+ }
+ else_if = {
+  limit = { var:sb_court_recognized_heir_scope ?= { OR = { has_template = ZUL_cetshwayo_heir has_template = ZUL_mbuyazi_heir } } }
+  set_variable = { name = sb_court_brothers_choice_var value = 2 }
+  set_variable = { name = sb_court_brothers_heir_scope value = var:sb_court_recognized_heir_scope }
+ }
+ if = {
+  limit = { sb_court_brothers_choice_valid = yes }
+  sb_court_calculate_backing = yes
+  ordered_in_list = {
+   variable = sb_court_members
+   limit = { sb_court_brothers_available_backer = yes }
+   order_by = prominence position = 0 check_range_bounds = no
+   scope:sb_court_country = { set_variable = { name = sb_court_brothers_backer_scope value = prev } }
+  }
+  if = { limit = { var:sb_court_brothers_choice_var = 1 } trigger_event = { id = sb_court_succession.006 popup = yes } }
+  else = { trigger_event = { id = sb_court_succession.007 popup = yes } }
+ }
+ else = { sb_court_clear_brothers_choice = yes }
+}
+
+# Selection is frozen for the tooltip. Never replace a dead or newly pledged house silently.
+sb_court_answer_brothers_choice = {
+ save_scope_as = sb_court_country
+ if = {
+  limit = { sb_court_brothers_choice_valid = yes }
+  # Reserve resolution before trait/heir callbacks or the Prerogative recalculation.
+  remove_variable = sb_court_brothers_choice_var
+  $OTHER$ = { if = { limit = { NOT = { has_trait = ambitious } } add_trait = ambitious } }
+  if = {
+   limit = {
+    NOT = { any_in_list = { variable = sb_court_members sb_court_episode_house = yes sb_court_recruitable_backer = yes var:sb_court_successor_pledge_scope ?= $OTHER$ } }
+    var:sb_court_brothers_backer_scope ?= { sb_court_brothers_available_backer = yes }
+   }
+   # Give the rival his house first; recognition preserves this promise when allocating royal backing.
+   var:sb_court_brothers_backer_scope = { set_variable = { name = sb_court_successor_pledge_scope value = $OTHER$ } }
+  }
+  if = {
+   limit = { always = $RECOGNISE$ }
+   sb_change_prerogative = { VALUE = -25 }
+   $HEIR$ = { save_scope_as = new_heir_scope }
+   sb_court_install_recognized_successor = yes
+  }
+  sb_institutions_recalculate = yes
+ }
+ sb_court_clear_brothers_choice = yes
+}
+
+sb_court_clear_brothers_choice = {
+ remove_variable = sb_court_brothers_choice_var
+ remove_variable = sb_court_brothers_cetshwayo_scope
+ remove_variable = sb_court_brothers_mbuyazi_scope
+ remove_variable = sb_court_brothers_heir_scope
+ remove_variable = sb_court_brothers_backer_scope
+}
+
+sb_court_preview_brother_backing = {
+ if = {
+  limit = { NOT = { any_in_list = { variable = sb_court_members sb_court_episode_house = yes sb_court_recruitable_backer = yes var:sb_court_successor_pledge_scope ?= $OTHER$ } } }
+  if = { limit = { var:sb_court_brothers_backer_scope ?= { sb_court_brothers_available_backer = yes } } custom_tooltip = $TEXT$ }
+  else = { custom_tooltip = sb_court_succession.006.no_backer }
+ }
+}

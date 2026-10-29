@@ -1,0 +1,146 @@
+﻿# Character scope. A bounded roster is weighted by native prominence, never IG clout twice.
+sb_court_member_weight = { value = prominence min = 0 }
+sb_court_member_endorsement = {
+ value = 0
+ if = { limit = { var:sb_court_endorsement_var = 1 } value = var:sb_court_represented_weight_var multiply = 100 }
+ else_if = { limit = { var:sb_court_endorsement_var = -1 var:sb_court_claimant_scope ?= { is_character_alive = yes } } value = var:sb_court_represented_weight_var multiply = -100 }
+}
+# Country scope. Only personally uncommitted prominence receives the trial discount.
+# Future succession pledges and the major-challenger denominator retain full weight.
+sb_court_backing_denominator = {
+ value = var:sb_court_current_pledged_weight_var
+ add = { value = var:sb_court_current_unpledged_weight_var multiply = 0.25 }
+}
+sb_court_cooperation_value = {
+ value = 0
+ if = { limit = { sb_court_backing_denominator > 0 } value = var:sb_court_weighted_endorsement_var divide = sb_court_backing_denominator }
+ ruler ?= { add = { value = popularity divide = 2 } }
+ min = -100
+ max = 100
+}
+sb_court_royal_support = { value = 0 every_political_movement = { limit = { is_political_movement_type = movement_sb_zulu_royal } add = political_movement_support } }
+sb_court_chiefly_support = { value = 0 every_political_movement = { limit = { is_political_movement_type = movement_sb_zulu_chiefly } add = political_movement_support } }
+sb_court_royal_alignment_chance = { value = sb_court_royal_support multiply = 30 }
+sb_court_chiefly_alignment_chance = { value = sb_court_chiefly_support multiply = 30 }
+sb_court_neutral_alignment_chance = { value = 100 subtract = sb_court_royal_alignment_chance subtract = sb_court_chiefly_alignment_chance min = 0 }
+sb_court_royal_following_attraction = {
+ value = 0
+ if = { limit = { var:sb_court_weight_var > 0 } value = var:sb_court_royal_weight_var divide = var:sb_court_weight_var multiply = 0.5 }
+ max = 0.5
+}
+sb_court_chiefly_following_attraction = {
+ value = 0
+ if = { limit = { var:sb_court_weight_var > 0 } value = var:sb_court_chiefly_weight_var divide = var:sb_court_weight_var multiply = 0.5 }
+ max = 0.5
+}
+
+# Country projection: eligibility, displayed progress and confrontation share this formula.
+
+
+
+sb_court_negotiation_acceptance = {
+ value = 50
+ add = { value = var:sb_prerogative_var divide = 2 }
+ var:sb_court_action_actor_scope ?= { subtract = { value = popularity divide = 4 } }
+ min = 10
+ max = 90
+}
+sb_court_negotiation_refusal = { value = 100 subtract = sb_court_negotiation_acceptance }
+# Country scope. Quote against the payer's reserve capacity, not current reserves.
+sb_court_patronage_price = {
+ value = gold_reserves_limit
+ multiply = var:sb_court_action_actor_scope.sb_court_pledge_fraction
+}
+sb_court_patronage_payment = { value = 0 if = { limit = { has_variable = sb_court_offer_price_var } value = var:sb_court_offer_price_var multiply = -1 } }
+
+# Character scope. Doubled playtest prices: 40% at 10, 100% at 50, 160% at 100.
+sb_court_pledge_prominence = { value = prominence min = 10 max = 100 }
+sb_court_pledge_fraction = {
+ value = sb_court_pledge_prominence
+ if = { limit = { sb_court_pledge_prominence <= 50 } subtract = 10 multiply = 0.015 add = 0.4 }
+ else = { subtract = 50 multiply = 0.012 add = 1 }
+}
+
+
+# Country scope. Current allegiance only; future succession promises are not rebels.
+sb_court_coercion_king_backing = {
+ value = 0
+ if = { limit = { has_variable = sb_court_incumbent_weight_var } value = var:sb_court_incumbent_weight_var }
+}
+sb_court_coercion_rival_backing = {
+ value = 0
+ var:sb_court_action_actor_scope ?= {
+  if = { limit = { has_variable = sb_court_current_weight_var } add = var:sb_court_current_weight_var }
+ }
+}
+sb_court_coercion_pair_backing = { value = sb_court_coercion_king_backing add = sb_court_coercion_rival_backing }
+sb_court_submission_chance = {
+ value = 50
+ if = {
+  limit = { sb_court_coercion_pair_backing > 0 }
+  value = sb_court_coercion_king_backing divide = sb_court_coercion_pair_backing multiply = 100
+ }
+ min = 10 max = 90
+ multiply = 10 round = yes divide = 10
+}
+sb_court_capture_chance = {
+ value = 25
+ if = {
+  limit = { sb_court_coercion_pair_backing > 0 }
+  value = sb_court_coercion_king_backing multiply = 0.5
+  divide = { value = sb_court_coercion_king_backing multiply = 0.5 add = sb_court_coercion_rival_backing }
+  multiply = 100
+ }
+ min = 5 max = 85
+ multiply = 10 round = yes divide = 10
+}
+sb_court_capture_failure = { value = 100 subtract = sb_court_capture_chance }
+sb_court_submission_refusal = { value = 100 subtract = sb_court_submission_chance }
+sb_court_available_authority = { value = authority }
+
+# Undo only our house-rank penalty when choosing the head, avoiding self-reinforcing selection.
+sb_court_house_leadership_score = {
+ value = prominence
+ if = { limit = { has_modifier = sb_court_junior_status } add = 10 }
+}
+
+# Annual model B. Snapshot attractiveness is a fraction; transition weights are percentages.
+sb_court_patron_attraction = { value = popularity add = 100 divide = 200 min = 0 max = 1 }
+sb_court_join_chance = { value = var:sb_court_roll_best_var multiply = 20 }
+sb_court_withdraw_chance = { value = 1 subtract = { value = var:sb_court_roll_current_var multiply = 0.5 } }
+sb_court_switch_chance = {
+ value = 0
+ if = {
+  limit = { var:sb_court_roll_alternative_var > 0 }
+  value = var:sb_court_roll_alternative_var subtract = var:sb_court_roll_current_var min = 0 multiply = 3 add = 1
+ }
+}
+sb_court_stay_chance = { value = 100 subtract = sb_court_withdraw_chance subtract = sb_court_switch_chance }
+
+# add_modifier durations resolve named values, not bare variable links.
+sb_court_concession_remaining_days = { value = var:sb_court_concession_days_var }
+
+sb_court_episode_payment = { value = 0 if = { limit = { has_variable = sb_court_episode_price_var } value = var:sb_court_episode_price_var multiply = -1 } }
+
+# Stable identity order breaks exact coalition ties only.
+sb_court_claimant_identity_order = {
+ value = 0
+ if = { limit = { has_template = ZUL_mpande_zulu } value = 100 }
+ if = { limit = { has_template = ZUL_gqugqu_claimant } value = 99 }
+ if = { limit = { has_template = ZUL_cetshwayo_heir } value = 98 }
+ if = { limit = { has_template = ZUL_mbuyazi_heir } value = 97 }
+ if = { limit = { has_template = ZUL_uthumbu_claimed_son } value = 96 }
+ if = { limit = { has_template = SB_ZUL_hamu } value = 95 }
+ if = { limit = { has_template = ZUL_dinuzulu_heir } value = 94 }
+ if = { limit = { has_template = ZUL_solomon_heir } value = 93 }
+ if = { limit = { has_template = ZUL_mbuyazi_successor } value = 92 }
+ if = { limit = { has_template = ZUL_uthumbu_successor } value = 91 }
+}
+
+sb_court_episode_current_price = {
+ value = gold_reserves_limit
+ if = { limit = { var:sb_court_episode_card_var ?= 211 } multiply = 0.2 }
+ else_if = { limit = { var:sb_court_episode_card_var ?= 214 } multiply = 0.3 }
+ else_if = { limit = { var:sb_court_episode_card_var ?= 215 } multiply = 0.4 }
+ else = { value = 0 }
+}

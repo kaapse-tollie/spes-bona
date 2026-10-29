@@ -1,0 +1,111 @@
+﻿# Frozen country-scoped totals; neither unpledged influence nor the H discount belongs here.
+sb_court_dynastic_pair_weight = {
+ value = var:sb_court_dynastic_incumbent_weight_var
+ add = var:sb_court_dynastic_rival_weight_var
+}
+sb_court_dynastic_claimant_share = {
+ value = 0
+ if = {
+  limit = { sb_court_dynastic_pair_weight > 0 }
+  value = var:sb_court_dynastic_rival_weight_var
+  divide = sb_court_dynastic_pair_weight
+ }
+}
+sb_court_dynastic_target_fraction = {
+ value = sb_court_dynastic_claimant_share
+ if = {
+  limit = { has_variable = sb_court_dynastic_back_claimant_var }
+  value = 1
+  subtract = sb_court_dynastic_claimant_share
+ }
+ min = 0.10
+ max = 0.75
+}
+
+# State scope. Zero protects the original country's homeland from native rebel selection.
+# Only use this geography while the origin still owns both authored state portions.
+sb_court_dynastic_state_weight = {
+ value = 1
+ if = {
+  limit = {
+   owner = {
+    has_variable = sb_court_dynastic_test_pending_var
+    any_scope_state = { state_region = s:STATE_ZULULAND }
+    any_scope_state = { state_region = s:STATE_NATAL }
+   }
+  }
+  if = {
+   limit = { owner = { sb_court_dynastic_rebels_stronger = yes } }
+   if = { limit = { state_region = s:STATE_NATAL } value = 0 }
+   else_if = { limit = { state_region = s:STATE_ZULULAND } value = 1000000 }
+  }
+  else = {
+   if = { limit = { state_region = s:STATE_ZULULAND } value = 0 }
+   else_if = { limit = { state_region = s:STATE_NATAL } value = 1000000 }
+  }
+ }
+}
+
+# Country scope. Retain the inherited bounded popularity factor, using the actual claimant.
+sb_court_claimant_popularity_attraction = {
+ value = 1
+ if = {
+  limit = { var:sb_court_dynastic_rival_scope ?= { is_character_alive = yes } }
+  value = var:sb_court_dynastic_rival_scope.popularity
+  multiply = 0.01
+  add = 1
+ }
+ min = 0.2
+ max = 1.8
+}
+
+# Reserve one existing barracks level for the weaker coalition, then divide the
+# remainder. On a tie the claimant is the weaker/Natal side, as in the state weights.
+sb_court_dynastic_regular_allocation = {
+ value = 0
+ if = {
+  limit = { var:sb_court_regular_total_var > 0 }
+  value = var:sb_court_regular_total_var
+  subtract = 1
+  if = {
+   limit = { var:sb_court_dynastic_rival_weight_var > var:sb_court_dynastic_incumbent_weight_var }
+   multiply = { value = 1 subtract = sb_court_dynastic_claimant_share }
+   add = 1
+   round = yes
+   multiply = -1
+   add = var:sb_court_regular_total_var
+  }
+  else = {
+   multiply = sb_court_dynastic_claimant_share
+   add = 1
+   round = yes
+  }
+ }
+}
+
+# Staff follows the actual integer regular quotas, including the weaker side's floor.
+# With no barracks, retain the coalition ratio for any existing military households.
+sb_court_dynastic_staff_share = {
+ value = sb_court_dynastic_claimant_share
+ if = {
+  limit = { var:sb_court_regular_total_var > 0 }
+  value = var:sb_court_regular_claimant_var
+  divide = var:sb_court_regular_total_var
+ }
+}
+
+# Only two competing coalitions; preserve the total exactly after rounding.
+sb_court_dynastic_conscript_allocation = {
+ value = var:sb_court_conscript_total_var
+ multiply = sb_court_dynastic_claimant_share
+ round = yes
+}
+
+# State scope; follows Vanilla's barracks_levels_to_leave_unburned building iterator.
+sb_court_state_recruitment_levels = {
+ value = 0
+ every_scope_building = {
+  limit = { OR = { is_building_type = building_barrack is_building_type = building_conscription_center } }
+  add = this.level
+ }
+}

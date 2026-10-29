@@ -1,0 +1,49 @@
+Installed 1.14.5 arm64: country civil-war list ownership
+Read-only inspection, 27 October 2026. No binary or save edits.
+Executable: /Users/depro/Library/Application Support/Steam/steamapps/common/Victoria 3/binaries/victoria3.app/Contents/MacOS/victoria3
+SHA-256: e4806a9b315c9ed40bdafd5e6a9e3e46aca741a0a0890bded906ebcc295e2a13
+Reproduce with /Library/Developer/CommandLineTools/usr/bin/llvm-objdump --macho --arch=arm64 --disassemble --dis-symname=__ZNK25CScopeCivilWarListBuilder12BuildIDArrayER9CPdxArrayI21CScopeObjectReferenceiERK19SJominiScriptScopes '<executable>'
+
+The country argument is passed to CollectCivilWarsForOriginCountry.
+An uprising country does not have the origin country's organising/active-war list.
+
+/Users/depro/Library/Application Support/Steam/steamapps/common/Victoria 3/binaries/victoria3.app/Contents/MacOS/victoria3:
+(__TEXT,__text) section
+__ZNK25CScopeCivilWarListBuilder12BuildIDArrayER9CPdxArrayI21CScopeObjectReferenceiERK19SJominiScriptScopes:
+103a2fc84:	ff 83 03 d1	sub	sp, sp, #0xe0
+103a2fc88:	e9 23 09 6d	stp	d9, d8, [sp, #0x90]
+103a2fc8c:	f8 5f 0a a9	stp	x24, x23, [sp, #0xa0]
+103a2fc90:	f6 57 0b a9	stp	x22, x21, [sp, #0xb0]
+103a2fc94:	f4 4f 0c a9	stp	x20, x19, [sp, #0xc0]
+103a2fc98:	fd 7b 0d a9	stp	x29, x30, [sp, #0xd0]
+103a2fc9c:	fd 43 03 91	add	x29, sp, #0xd0
+103a2fca0:	f4 03 02 aa	mov	x20, x2
+103a2fca4:	f3 03 01 aa	mov	x19, x1
+103a2fca8:	f5 43 00 91	add	x21, sp, #0x10
+103a2fcac:	a8 62 00 91	add	x8, x21, #0x18
+103a2fcb0:	ff 7f 01 a9	stp	xzr, xzr, [sp, #0x10]
+103a2fcb4:	49 0b 02 f0	adrp	x9, 16747 ; 0x107b9a000
+103a2fcb8:	29 a1 30 91	add	x9, x9, #0xc28
+103a2fcbc:	e8 27 02 a9	stp	x8, x9, [sp, #0x20]
+103a2fcc0:	80 55 02 b0	adrp	x0, 19121 ; 0x1084e0000
+103a2fcc4:	00 00 1c 91	add	x0, x0, #0x700
+103a2fcc8:	e0 47 00 f9	str	x0, [sp, #0x88]
+103a2fccc:	08 00 40 f9	ldr	x8, [x0]
+103a2fcd0:	08 0d 40 f9	ldr	x8, [x8, #0x18]
+103a2fcd4:	01 00 80 d2	mov	x1, #0x0
+103a2fcd8:	00 01 3f d6	blr	x8
+103a2fcdc:	a8 82 00 91	add	x8, x21, #0x20
+103a2fce0:	e8 0b 00 f9	str	x8, [sp, #0x10]
+103a2fce4:	68 01 80 52	mov	w8, #0xb
+103a2fce8:	e8 1b 00 b9	str	w8, [sp, #0x18]
+103a2fcec:	88 02 40 f9	ldr	x8, [x20]
+103a2fcf0:	15 01 40 79	ldrh	w21, [x8]
+103a2fcf4:	14 09 40 b9	ldr	w20, [x8, #0x8]
+103a2fcf8:	a7 09 48 97	bl	__Z24LogicGetCurrentGameStatev
+103a2fcfc:	9d 08 48 97	bl	__ZN10CGameState21AccessCivilWarManagerEv
+103a2fd00:	bf 16 00 71	cmp	w21, #0x5
+103a2fd04:	08 00 80 12	mov	w8, #-0x1
+103a2fd08:	82 02 88 9a	csel	x2, x20, x8, eq
+103a2fd0c:	e1 43 00 91	add	x1, sp, #0x10
+103a2fd10:	42 3b 1e 97	bl	__ZNK16CCivilWarManager32CollectCivilWarsForOriginCountryER9CPdxArrayIP9CCivilWariE7TPdxRefI8CCountryE
+103a2fd14:	f4 0b 40 f9	ldr	x20, [sp, #0x10]

@@ -17,10 +17,18 @@ applies the maintainer's explicit gameplay layer below. These entries are balanc
 state-specialisation choices; they must not be cited later as revised historical
 estimates.
 
-“Configured horizon” means the 1836 static capacity plus every one-time technology
-stage. Gold and oil stages add undiscovered potential and still require normal engine
-discovery. Diamond, iron, and coal stages add usable capacity and post an owner-visible
-notification when their technology gate resolves.
+"Configured horizon" includes static capacity, native undiscovered reserves, and every
+one-time scripted stage. On 18 October 2026 the eight technology-gated diamond deposits
+were converted to native undiscovered reserves without changing any capacity or
+technology threshold. Discovery now requires the corresponding mine technology and
+the normal engine discovery roll. Kimberley retains its event-driven 1 + 19 route.
+Iron and coal stages still add usable capacity with an owner-visible notification.
+
+The eight legacy gold/oil callbacks are unchanged. Inspection of the installed native
+capacity effect found that it changes capped capacity rather than undiscovered
+reserves; the earlier description of those callbacks was incorrect. Their separate
+follow-up and verification limits are recorded in the open audit register and the
+[diamond discovery implementation](compatibility/diamond_discovery_2026_10_18.md).
 
 ## Approved overrides
 
@@ -110,14 +118,18 @@ Vanilla counts each unsplit parent state once. Old SB includes its scripted addi
 
 - Static caps and crop slots live in
   [`map_data/state_regions/04_subsaharan_africa.txt`](../map_data/state_regions/04_subsaharan_africa.txt).
-- Technology stages live in
+- Native diamond reserves live in the state-region file; three otherwise equivalent
+  mine definitions in `common/buildings/sb_diamond_mines.txt` provide their different
+  technology requirements. Their discoverable group inherits ordinary mining bonuses.
+- The remaining scripted technology stages live in
   [`common/scripted_effects/sb_resource_technology_gates_effects.txt`](../common/scripted_effects/sb_resource_technology_gates_effects.txt).
 - Technology acquisition, starting-technology catch-up, and later ownership changes
   all call the same idempotent gate effect through
   [`common/on_actions/sb_mineral_discoveries_on_actions.txt`](../common/on_actions/sb_mineral_discoveries_on_actions.txt).
-- Seven gold stages and the Lourenço Marques oil stage never force discovery. Their
-  later discovery uses the standard Vanilla resource toast.
-- Fifteen direct diamond/iron/coal stages use one-time custom notifications naming
+- Seven gold stages and the Lourenço Marques oil stage retain their existing effects;
+  they do not populate the native undiscovered-reserve field. No gold/oil mechanic
+  changes are included in the diamond revision.
+- Seven direct iron/coal stages use one-time custom notifications naming
   the state, resource, capacity increase, and technology.
 - Kimberley retains its existing event-led 1 + 19 diamond design.
 - Static-map changes require a fresh campaign; filewatcher reload and existing saves
@@ -126,4 +138,7 @@ Vanilla counts each unsplit parent state once. Old SB includes its scripted addi
 The executable contract is locked by
 [`tests/test_resource_rework_implementation.py`](../tests/test_resource_rework_implementation.py),
 which reconstructs every configured state value and the regional totals from the live
-state file, gate stages, and Kimberley event.
+state file, gate stages, and Kimberley event. `tests/test_diamond_discovery.py` checks
+the eight undiscovered reserves, native technology requirements, unchanged mine
+economics, Kimberley's separate route, and De Beers support. Engine rolls remain
+pending DP's fresh-game verification.

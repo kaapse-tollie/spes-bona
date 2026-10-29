@@ -1,0 +1,138 @@
+{
+  "date": "2026-10-18",
+  "game": "1.14.5",
+  "dependency": "CMF 1.66.0 + sb-1.14.3-r1 (unchanged)",
+  "scope": "DP launch diagnostics for Zulu institutions and movement-modifier restoration",
+  "input_log": {
+    "path": "/Users/depro/Documents/Paradox Interactive/Victoria 3/logs/error.log",
+    "sha256": "6cf21fc5b431ae09ec1dd75ae5706c6534da77cafba19d7ee9de442284d1f460",
+    "snapshot": "/private/tmp/sb-zulu-launch-error-2026-10-18.txt",
+    "lines": 1762,
+    "grouped_diagnostics": {
+      "[pdx_persistent_reader.cpp:268]: Error: \"Named value not found: var:sb_natal_movement_remaining_days_var: var:sb_natal_movement_remaining_days_var, near line: 1528\" in file: \"common/scripted_effects/sb_natal_interwar_effects.txt\" near line: 1531": 3,
+      "[jomini_eventmanager.cpp:440]: Duplicated event ID 'regency.1' found. New Location: 'events/00_com_regency_event_blocker.txt:7', Previous Location: 'events/iberia_events/regency_events.txt:4'": 1,
+      "[jomini_onaction.cpp:124]: There is more than one 'effect' defined using most recent:common/on_actions/cmf_heir_blocker.txt:4": 1,
+      "[jomini_onaction.cpp:124]: There is more than one 'effect' defined using most recent:common/on_actions/com_formation_event_blocker.txt:4": 1,
+      "[pdx_persistent_reader.cpp:268]: Error: \"Unexpected token: should_be_pinned_by_default, near line: 22\" in file: \"common/journal_entries/sb_court_coup.txt\" near line: 22": 1,
+      "[ideology.cpp:96]: Law law_sb_federated_chiefdoms has a parent law and should not be explicitly scripted into ideology stances": 4,
+      "[ideology.cpp:96]: Law law_sb_chiefly_council has a parent law and should not be explicitly scripted into ideology stances": 4,
+      "[ideology.cpp:96]: Law law_sb_amabutho_system has a parent law and should not be explicitly scripted into ideology stances": 1,
+      "[journal_entry_type.cpp:476]: Journal entry has redundant loc for je_sb_natal_indenture_program_v2_goal": 1,
+      "[journal_entry_type.cpp:476]: Journal entry has redundant loc for je_sb_court_coup_goal": 1,
+      "[travel_network_definition.cpp:1195]: Naval node from spline anchor 8414308 is related to a port province that is not coastal land - discarding it": 1,
+      "[travel_network_definition.cpp:1489]: Harbor node <id> has no port node to dock with": 15,
+      "[jomini_effect.cpp:1139]: Event target 'enforced_by_timer' is used but is never set. Setting it in an unused scripted trigger or effect does not count": 1,
+      "[jomini_eventmanager.cpp:376]: Event portuguese_colonialism.4 is orphaned": 1,
+      "[coastal_graphics.cpp:69]: Cannot find a port node for harbor in 'STATE_BENGUELA_COAST' (755)": 12,
+      "[coastal_graphics.cpp:69]: Cannot find a port node for harbor in 'STATE_CAPE_OF_GOOD_HOPE' (757)": 3,
+      "[journal_entry_manager.cpp:370]: Zulu already has a journal entry of type je_sb_zulu_kingdom": 2,
+      "[pdxfilewatcher.cpp:199]: No filewatcher listeners were added for the following directories: gfx/map/environment/": 92,
+      "[pdxfilewatcher.cpp:199]: No filewatcher listeners were added for the following directories: gui/scripted_widgets": 2,
+      "[pdxfilewatcher.cpp:199]: No filewatcher listeners were added for the following directories: gfx/map/textures/": 3,
+      "[jomini_script_system.cpp:247]: Script system error!": 168,
+      "[jomini_scriptlists.cpp:406]: Given position was bigger than the list, capping at list size at common/scripted_effects/sb_court_actions_effects.txt:<line>": 940
+    }
+  },
+  "stance_decision": "DP approved Traditionalist strong approval for the shared Peasant Levies family. Replaced the rejected explicit Amabutho stance with law_peasant_levies = strongly_approve; Amabutho retains its parent and inherits this stance. Fresh-launch confirmation remains pending DP.",
+  "engine_verification": "DP supplied the failing launch. No launch performed by Codex; corrected launch and movement-expiry replay remain pending.",
+  "native_duration_evidence": {
+    "read": "/private/tmp/sb-zulu-movement-2026-10-17/preserve-duration-read.txt",
+    "formula_reader": "/private/tmp/sb-launch-named-value-formula.txt",
+    "scope_evaluation": "/private/tmp/sb-launch-duration-scopes.txt",
+    "finding": "Duration parser resolves numeric/named values, not a bare var: link; named formulas evaluate with execution scopes."
+  },
+  "validation": {
+    "stance_decision_followup": {
+      "modules": [
+        "tests.test_zulu_institutions_laws",
+        "tests.test_zulu_institutions_core",
+        "tests.test_zulu_court_politics"
+      ],
+      "tests": 45,
+      "passed": 45,
+      "whitespace": "git diff --check passes",
+      "scope": "Run after the approved shared-family stance change; broader validation below predates this follow-up."
+    },
+    "focused": {
+      "tests": 90,
+      "passed": 90
+    },
+    "final_unit_discovery": {
+      "tests": 576,
+      "passed": 567,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 8,
+      "failure": "Pre-existing reviewed-localisation baseline drift for sb_natal_crisis.050, sb_klip_river_county.060 and .080"
+    },
+    "passed_gates": [
+      "CMF release pin",
+      "CMF compatibility",
+      "local override inventory",
+      "map data",
+      "on-action router",
+      "stale symbols",
+      "unused symbols",
+      "runtime script contracts",
+      "1.14.5 release invariants",
+      "delayed-event lifecycle",
+      "naval network connectivity",
+      "Vanilla/CMF override comparison"
+    ],
+    "failed_gates": [
+      "unit tests",
+      "localization"
+    ],
+    "failed_gates_cause": "Existing reviewed-localisation approval baseline mismatch; preserved rather than silently repinned.",
+    "post_full_validation_correction": "The removed government override changed current keyed inventory to 118; its stale count assertion was fixed after the last full validator run, then the 14-test rebase module and complete unit discovery were rerun.",
+    "historical_skips": 8,
+    "deferred_release_gates": [
+      "BC-20",
+      "BC-22",
+      "CP-07",
+      "QUAL-09",
+      "SUP-05"
+    ],
+    "dependency": "Installed tree and installation/rollback tests pass; synchronization skipped; no dependency mutation.",
+    "advisory_tiger": {
+      "schema": "1.13.5",
+      "target": "1.14.5",
+      "fatal": 0,
+      "errors": 1066,
+      "warnings": 146,
+      "untidy": 1,
+      "tips": 1,
+      "new_warning": "Named-value file lacked UTF-8 BOM; corrected and bytes verified after the run. Full Tiger was not rerun after this and removal of the redundant government override."
+    },
+    "raw_outputs": [
+      {
+        "path": "/private/tmp/sb-zulu-launch-validation-2026-10-18.txt",
+        "sha256": "c6e4b506c6bf5a996c080c780d893bac1ca6eddbeb70e710c5a01a75068adf7e"
+      },
+      {
+        "path": "/private/tmp/sb-zulu-launch-validation-final-2026-10-18.txt",
+        "sha256": "8cd0729dcdb50066d9d657a68ebd161bb0b1e59efd9d0cacbad279fc06bd5601"
+      },
+      {
+        "path": "/private/tmp/sb-zulu-launch-units-final-2026-10-18.txt",
+        "sha256": "f3064cc4c2716e87efd2706e4501ce5007bf20ad03c191cf01b3f870445f7092"
+      }
+    ],
+    "whitespace": "git diff --check passes",
+    "ui_followup": {
+      "scope": "DP screenshots: named court/decree requirements, remove duplicate button widget, Japan gavel, British spelling",
+      "focused_tests": 48,
+      "passed": 48,
+      "semantic_comparison": "Parsed button/negotiation/decree conditions and effects are identical after removing tooltip wrappers; JE changes are icon and redundant widget removal only.",
+      "override_inventory": "PASS: 38 same-path, 118 keyed, 8 localisation replacement files; only local decree hash changed after comparison.",
+      "localisation": "Existing reviewed-baseline drift for sb_natal_crisis.050, sb_klip_river_county.060 and .080 only; ten new general tooltip keys queued.",
+      "engine": "No launch; tooltip and layout confirmation pending DP."
+    }
+  },
+  "inventory": {
+    "same_path_files": 38,
+    "keyed_replacements": 118,
+    "localization_replacement_files": 8
+  },
+  "report": "Docs/compatibility/zulu_institutions_launch_2026_10_18.md"
+}

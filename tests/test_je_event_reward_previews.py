@@ -15,11 +15,6 @@ COMPLETION_PREVIEWS = {
         "event_effects_sb_cape.104_tt",
         "event_effects_sb_cape.125_tt",
     ),
-    "je_sb_zulu_kingdom": (
-        "event_effects_sb_zulu_dynasty.093_dingane_tt",
-        "event_effects_sb_zulu_dynasty.093_mpande_tt",
-        "event_effects_sb_zulu_dynasty.093_other_tt",
-    ),
     "je_sb_adopt_firearms": ("event_effects_sb_firearms.001_tt",),
     "je_sb_transvaal_unity": ("event_effects_sb_transvaal_unity_tt",),
     "je_sb_bst_ora_frontier": ("sb_bst_frontier_300_boer_settlers_tt",),

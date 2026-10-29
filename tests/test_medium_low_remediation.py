@@ -221,7 +221,6 @@ class MediumLowRemediationTests(unittest.TestCase):
         self.assertNotIn("on_monthly_pulse_country", subject_actions)
         self.assertIn("on_yearly_pulse_country", subject_actions)
         for path, variable in (
-            ("common/scripted_effects/sb_zulu_dynasty_effects.txt", "sb_zulu_dynastic_stability_applied_tier_var"),
             ("common/scripted_effects/sb_namibia_effects.txt", "sb_nam_consolidation_applied_tier_var"),
             ("common/scripted_effects/sb_cape_politics_effects.txt", "sb_cape_balance_applied_band_var"),
         ):
@@ -310,7 +309,6 @@ class MediumLowRemediationTests(unittest.TestCase):
                 "sb_on_cape_yearly_pulse_country",
                 "sb_on_modifier_cache_yearly_repair",
                 "sb_on_boer_restraint_yearly_repair",
-                "sb_on_zulu_secured_succession_yearly_pulse_country",
                 "sb_on_natal_shepstone_yearly_pulse_country",
                 "sb_on_natal_indian_consolidation_yearly_pulse_country",
             ),
@@ -335,6 +333,7 @@ class MediumLowRemediationTests(unittest.TestCase):
             ),
             "on_revolution_end": ("sb_on_cape_secession_end",),
             "on_wargoal_enforced": ("sb_on_spes_bona_wargoal_enforced",),
+            "on_wargoal_enforced_by_timer": ("sb_on_spes_bona_wargoal_enforced_by_timer",),
             "on_war_end": ("sb_on_spes_bona_war_end",),
             "on_law_activated": (
                 "sb_on_boer_convention_law_activated",

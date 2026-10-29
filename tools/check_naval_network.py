@@ -12,9 +12,9 @@ import re
 
 
 ROOT = Path(__file__).resolve().parents[1]
-EXPECTED_OB1_SHA256 = "bca18518598f55d7f1b2b07d04ed88e8389d4db807fa49bdcd53d8bc48ca061f"
-EXPECTED_OB1_NODE_COUNT = 6641
-EXPECTED_OB1_CONNECTION_COUNT = 7191
+EXPECTED_1_14_5_SHA256 = "e19541f8334abb62db079b2cff4120df208db229ec5f7a7de58bfdbfc8d6f636"
+EXPECTED_1_14_5_NODE_COUNT = 6641
+EXPECTED_1_14_5_CONNECTION_COUNT = 7192
 HARBOR_NODE_TYPES = {"harbor", "harbor_from_spline"}
 STATE_RE = re.compile(r"^(STATE_[A-Z0-9_]+)\s*=\s*\{", re.MULTILINE)
 ASSIGNMENT_RE = re.compile(
@@ -336,7 +336,7 @@ def main() -> int:
     )
     parser.add_argument(
         "--expected-sha256",
-        default=EXPECTED_OB1_SHA256,
+        default=EXPECTED_1_14_5_SHA256,
         help="required naval_network.txt SHA-256",
     )
     args = parser.parse_args()

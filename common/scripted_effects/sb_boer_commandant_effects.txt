@@ -93,10 +93,10 @@ sb_refresh_boer_commandant_general_government = {
 			has_law = law_type:law_sb_commandant_general_republic
 			NOT = { has_government_type = gov_boer_commandant_general_republic }
 		}
-		set_variable = keep_current_ruler_var
+		# Keep protection through the native post-government-change callback.
+		set_variable = { name = keep_current_ruler_var days = 7 }
 		activate_law = law_type:law_presidential_republic
 		activate_law = law_type:law_sb_commandant_general_republic
-		remove_variable = keep_current_ruler_var
 	}
 }
 
@@ -205,6 +205,8 @@ sb_ensure_boer_anti_british_lobby = {
 }
 
 sb_apply_boer_republic_spawn_setup = {
+	# ZPB/LYD need their commando before the baseline commissions a ruler.
+	sb_ensure_boer_republic_starting_commando = yes
 	sb_apply_boer_commandant_general_baseline = yes
 	sb_apply_boer_republic_interest_group_identity = yes
 	sb_ensure_boer_supremacist_movement = yes
@@ -259,7 +261,6 @@ sb_apply_boer_republic_spawn_setup = {
 			}
 		}
 	}
-	sb_ensure_boer_republic_starting_commando = yes
 	sb_ensure_boer_anti_british_lobby = yes
 	every_interest_group = {
 		remove_ruling_interest_group = yes

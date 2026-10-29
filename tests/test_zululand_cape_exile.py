@@ -15,12 +15,13 @@ class ZululandCapeExileTests(unittest.TestCase):
             ref = re.search(r'transfer_character = (\S+)', branch)[1]
             for event_root in ('NAL', 'ZUL'):
                 self.assertEqual('CAP', resolve(ref, role, event_root, {}))
-        for name in ('sb_zululand_return_exiled_claimant', 'sb_zululand_restore_dynastic_ruler'):
-            route = object_block(EFFECTS, name)
-            cape = object_block_from_source(route, 'c:CAP ?')
-            self.assertIn('has_variable = sb_zululand_exiled_claimant_var', cape)
-            self.assertIn('transfer_character = c:ZUL', cape)
-            self.assertLess(route.index('c:CAP ?'), route.index('any_character_in_exile_pool'))
+        route = object_block(EFFECTS, 'sb_zululand_return_exiled_claimant')
+        self.assertIn('var:sb_court_restoration_claimant_scope ?=',route)
+        self.assertIn('transfer_character = scope:sb_zululand_claimant_destination',route)
+        self.assertIn('free_from_exile_effect = yes',route)
+        self.assertNotIn('create_character',route)
+        self.assertLess(exile.index('sb_court_prepare_partition = yes'),exile.index('exile_character_with_role_cleanup'))
+
 
 
 if __name__ == '__main__':

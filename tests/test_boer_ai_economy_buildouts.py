@@ -38,36 +38,55 @@ def called_effects(segment: str) -> tuple[str, ...]:
 
 
 class BoerAIEconomyBuildoutTests(unittest.TestCase):
-    def test_managed_ai_countries_cannot_build_construction_sectors_before_1850(self):
-        guard = (ROOT / "common/buildings/sb_construction_sector_guard.txt").read_text(
-            encoding="utf-8-sig"
-        )
-        injection = re.search(
-            r"^INJECT:building_construction_sector\s*=\s*\{",
-            guard,
-            re.MULTILINE,
-        )
-        self.assertIsNotNone(injection)
-        block = validate.extract_braced(guard, injection.start())
-        self.assertIn("possible = {", block)
-        self.assertIn("owner ?= {", block)
-        self.assertIn("is_ai = no", block)
-        self.assertIn("game_date >= 1850.1.1", block)
-        self.assertEqual(
-            {
-                "CAP",
-                "ORA",
-                "TRN",
-                "ZPB",
-                "LYD",
-                "NAL",
-                "PHL",
-                "WBL",
-                "BST",
-                "ZUL",
-            },
-            set(re.findall(r"country_definition\s*=\s*cd:([A-Z0-9_]+)", block)),
-        )
+    def test_construction_limits_match_sb_country_roster(self):
+        guard = (ROOT / "common/buildings/sb_construction_sector_guard.txt").read_text(encoding="utf-8-sig")
+        roster = set()
+        for path in (ROOT / "common/country_definitions").glob("*.txt"):
+            roster.update(re.findall(r"(?m)^(?:REPLACE:)?([A-Z0-9]+) = \{", path.read_text(encoding="utf-8-sig")))
+        roster.update(path.name[:3].upper() for path in (ROOT / "common/history/countries").glob("*.txt"))
+        self.assertEqual(roster, set(re.findall(r"country_definition = cd:([A-Z0-9]+)", guard)))
+        self.assertNotIn("game_date", guard)
+        self.assertIn("INJECT:building_construction_sector", guard)
+
+    def test_gdp_and_national_completed_or_queued_sector_boundaries(self):
+        from tests.test_zulu_institutions_laws import statements
+        guard = (ROOT / "common/buildings/sb_construction_sector_guard.txt").read_text(encoding="utf-8-sig")
+        nodes = statements(guard)[0][2]  # possible, evaluated in the proposed state
+        def evaluate(nodes, obj):
+            for key, op, val in nodes:
+                if key == "owner": result = evaluate(val, obj["owner"])
+                elif key == "OR": result = any(evaluate([n], obj) for n in val)
+                elif key == "NOR": result = not any(evaluate([n], obj) for n in val)
+                elif key == "AND": result = evaluate(val, obj)
+                elif key == "NOT": result = not evaluate(val, obj)
+                elif key == "is_ai": result = obj["ai"] == (val == "yes")
+                elif key == "country_definition": result = obj["tag"] == val.removeprefix("cd:")
+                elif key == "any_scope_building": result = any(evaluate(val, b) for b in obj["buildings"])
+                elif key == "is_building_type": result = obj["type"] == val
+                elif key in ("gdp", "level_after_queued_constructions"):
+                    result = obj[key] >= float(val) if op == ">=" else obj[key] > float(val)
+                else: raise AssertionError(key)
+                if not result: return False
+            return True
+        def allowed(gdp, levels=0, queued=0, tag="ZUL", ai=True):
+            country = dict(tag=tag, ai=ai, gdp=gdp, buildings=[
+                dict(type="building_construction_sector", level_after_queued_constructions=levels+queued),
+                dict(type="building_logging_camp", level_after_queued_constructions=10),
+            ])
+            # Both locations query the owner's entire building/queue collection.
+            return evaluate(nodes, dict(owner=country))
+        for gdp, first, second in ((99999,False,False),(100000,True,False),
+                                   (999999,True,False),(1000000,True,True)):
+            with self.subTest(gdp=gdp):
+                self.assertEqual(first, allowed(gdp))
+                self.assertEqual(second, allowed(gdp, levels=1))
+                self.assertEqual(second, allowed(gdp, queued=1))
+                self.assertEqual(second, allowed(gdp, levels=2, queued=1))
+        for tag in ("ZUL", "SWZ", "GZA", "BST", "NAL", "NGN", "SAF", "SWA"):
+            self.assertFalse(allowed(99999, tag=tag))
+            self.assertTrue(allowed(1, tag=tag, ai=False))
+        for tag in ("GBR", "FRA", "POR", "JAP"):
+            self.assertTrue(allowed(1, levels=2, tag=tag))
 
     def test_oranje_schedule(self):
         block = effect_block("sb_boer_ai_economy_ora_yearly_pulse")

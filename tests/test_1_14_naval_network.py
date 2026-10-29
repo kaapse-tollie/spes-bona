@@ -62,19 +62,19 @@ class NavalNetworkTests(unittest.TestCase):
         self.assertAlmostEqual(4838.494629, float(locator_match.group(1)), places=5)
         self.assertAlmostEqual(907.506287, float(locator_match.group(2)), places=5)
 
-    def test_every_sb_state_port_has_a_connected_ob1_harbor_node(self):
+    def test_every_sb_state_port_has_a_connected_current_harbor_node(self):
         if self.game_root is None:
-            self.skipTest("vanilla game root unavailable")
+            self.fail("current 1.14.5 naval validation requires the installed game")
         network_path = (
             self.game_root / "common/travel_network/naval_network.txt"
         )
         self.assertTrue(network_path.is_file())
-        self.assertEqual(naval.EXPECTED_OB1_SHA256, naval.sha256(network_path))
+        self.assertEqual(naval.EXPECTED_1_14_5_SHA256, naval.sha256(network_path))
 
         network = naval.parse_naval_network(network_path)
-        self.assertEqual(naval.EXPECTED_OB1_NODE_COUNT, len(network.nodes))
+        self.assertEqual(naval.EXPECTED_1_14_5_NODE_COUNT, len(network.nodes))
         self.assertEqual(
-            naval.EXPECTED_OB1_CONNECTION_COUNT, len(network.connections)
+            naval.EXPECTED_1_14_5_CONNECTION_COUNT, len(network.connections)
         )
         self.assertEqual((), naval.validate_state_ports(network, self.ports))
 

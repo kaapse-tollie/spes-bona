@@ -4,6 +4,12 @@ Closed tickets from every audit round, newest first. Nothing here requires actio
 as provenance for what was found and how each item was resolved. Open work lives in
 [audit_issues_open.md](audit_issues_open.md).
 
+## Playtest correction — 2026-10-17
+
+| ID | Outcome |
+|---|---|
+| `PT-20261016-04` | **Closed — mistaken observation, confirmed by DP.** The completed technology was Academia, not Empiricism. Academia is present in ORA, NAL and TRN's identical completed-technology sets. DP asked to clear the flag; no inheritance fix or further bug investigation is required. Native inheritance remains unchanged. See the [spawn audit](compatibility/boer_spawn_setup_2026_10_17.md). |
+
 ## Full Repository Audit — 2026-08-21 (FA round, closed after DP review)
 
 Method: four parallel read-only audit tracks (script integrity, engineering/consistency, semantic drift, historical accuracy) plus direct tooling verification against the working tree at `de97d34`. Every medium-or-higher claim was re-verified against source before inclusion. This section records findings only; no repository content outside this register was changed.

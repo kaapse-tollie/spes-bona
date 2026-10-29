@@ -2,8 +2,8 @@
 # The assent-required goal can only record a peace choice. The diplomatic play
 # itself owns the one 0/1/2-side truth table and resolves after the final peace.
 
-# Root = ZUL. The delayed guns-bargain reply carries this exact object as a
-# saved event scope. Never use a timed country bit as its authentication token.
+# Current country = ZUL; the calling event's ROOT is ORA. The reply carries the
+# exact container as a saved scope, not a timed country bit as its identity.
 sb_natal_story_begin_guns_bargain_generation = {
 	# A prior expired or invalid receipt must not block a new exact generation.
 	if = { limit = { container_exists = sb_natal_guns_bargain_generation_state } sb_natal_story_recover_generation = yes }
@@ -16,12 +16,12 @@ sb_natal_story_begin_guns_bargain_generation = {
 			NOT = { has_variable = sb_natal_guns_bargain_generation_scope }
 			c:ORA ?= { country_definition = cd:ORA is_country_alive = yes is_subject = no has_variable = sb_natal_guns_bargain_war_var }
 		}
-		ROOT = { save_scope_as = sb_natal_guns_bargain_generation_actor }
+		save_scope_as = sb_natal_guns_bargain_generation_actor
 		c:ORA = { save_scope_as = sb_natal_guns_bargain_generation_counterparty }
 		create_container = {
 			name = sb_natal_guns_bargain_generation_state
 			tags = { sb_story sb_natal_guns_bargain_generation }
-			parent = root
+			parent = scope:sb_natal_guns_bargain_generation_actor
 			on_created = { set_variable = { name = sb_natal_guns_bargain_generation_pending_var days = 730 } }
 		}
 		container:sb_natal_guns_bargain_generation_state = {
@@ -80,7 +80,7 @@ sb_natal_story_clear_guns_bargain_generation = {
 	sb_natal_story_clear_guns_bargain_receipt = yes
 }
 
-# Root = ORA. This receipt binds the delayed Retief-refusal response.
+# Current country = ORA; ROOT remains ZUL in Dingane's response event.
 sb_natal_story_begin_refusal_generation = {
 	# A prior expired or invalid receipt must not block a new exact generation.
 	if = { limit = { container_exists = sb_natal_refusal_generation_state } sb_natal_story_recover_generation = yes }
@@ -93,33 +93,37 @@ sb_natal_story_begin_refusal_generation = {
 			NOT = { has_variable = sb_natal_refusal_generation_scope }
 			c:ZUL ?= { country_definition = cd:ZUL is_country_alive = yes is_subject = no }
 		}
-		ROOT = { save_scope_as = sb_natal_refusal_generation_actor }
+		save_scope_as = sb_natal_refusal_generation_actor
 		c:ZUL = { save_scope_as = sb_natal_refusal_generation_counterparty }
 		create_container = {
 			name = sb_natal_refusal_generation_state
 			tags = { sb_story sb_natal_refusal_generation }
-			parent = root
+			parent = scope:sb_natal_refusal_generation_actor
 			on_created = { set_variable = { name = sb_natal_refusal_generation_pending_var days = 730 } }
 		}
-		container:sb_natal_refusal_generation_state = {
-			set_variable = { name = sb_natal_refusal_generation_actor_scope value = scope:sb_natal_refusal_generation_actor }
-			set_variable = { name = sb_natal_refusal_generation_counterparty_scope value = scope:sb_natal_refusal_generation_counterparty }
-			save_scope_as = sb_natal_refusal_receipt_scope
-		}
-		set_variable = { name = sb_natal_refusal_generation_scope value = scope:sb_natal_refusal_receipt_scope }
-		set_variable = { name = sb_natal_refusal_delivery_queued_var days = 30 }
-		c:ZUL = {
+		# Tooltip previews do not create containers; guard every dependent read.
+		if = {
+			limit = { container_exists = sb_natal_refusal_generation_state }
+			container:sb_natal_refusal_generation_state = {
+				set_variable = { name = sb_natal_refusal_generation_actor_scope value = scope:sb_natal_refusal_generation_actor }
+				set_variable = { name = sb_natal_refusal_generation_counterparty_scope value = scope:sb_natal_refusal_generation_counterparty }
+				save_scope_as = sb_natal_refusal_receipt_scope
+			}
 			set_variable = { name = sb_natal_refusal_generation_scope value = scope:sb_natal_refusal_receipt_scope }
-			trigger_event = { id = sb_natal_crisis.098 days = 31 }
+			set_variable = { name = sb_natal_refusal_delivery_queued_var days = 30 }
+			c:ZUL = {
+				set_variable = { name = sb_natal_refusal_generation_scope value = scope:sb_natal_refusal_receipt_scope }
+				trigger_event = { id = sb_natal_crisis.098 days = 31 }
+			}
+			# `.020.b` owns the single `.050` dispatch. These are only watchdogs.
+			trigger_event = { id = sb_natal_crisis.098 days = 30 }
+			trigger_event = { id = sb_natal_crisis.098 days = 45 }
+			c:ZUL ?= { if = { limit = { is_country_alive = yes } trigger_event = { id = sb_natal_crisis.098 days = 46 } } }
+			trigger_event = { id = sb_natal_crisis.098 days = 125 }
+			c:ZUL ?= { if = { limit = { is_country_alive = yes } trigger_event = { id = sb_natal_crisis.098 days = 126 } } }
+			trigger_event = { id = sb_natal_crisis.098 days = 731 }
+			c:ZUL ?= { if = { limit = { is_country_alive = yes } trigger_event = { id = sb_natal_crisis.098 days = 732 } } }
 		}
-		# `.020.b` owns the single `.050` dispatch. These are only watchdogs.
-		trigger_event = { id = sb_natal_crisis.098 days = 30 }
-		trigger_event = { id = sb_natal_crisis.098 days = 45 }
-		c:ZUL ?= { if = { limit = { is_country_alive = yes } trigger_event = { id = sb_natal_crisis.098 days = 46 } } }
-		trigger_event = { id = sb_natal_crisis.098 days = 125 }
-		c:ZUL ?= { if = { limit = { is_country_alive = yes } trigger_event = { id = sb_natal_crisis.098 days = 126 } } }
-		trigger_event = { id = sb_natal_crisis.098 days = 731 }
-		c:ZUL ?= { if = { limit = { is_country_alive = yes } trigger_event = { id = sb_natal_crisis.098 days = 732 } } }
 	}
 	else_if = {
 		limit = { NOT = { container_exists = sb_natal_refusal_generation_state } }
@@ -187,8 +191,8 @@ sb_natal_story_clear_launch_reservation = {
 	}
 }
 
-# A held delivery that is only temporarily busy is reissued with the same
-# unique receipt. Loss of a participant, ruler, route, or legal authority
+# An unanswered delivery can be recovered with the same unique receipt.
+# Loss of a participant, ruler, route, or legal authority
 # clears the receipt instead of reviving a stale choice.
 sb_natal_story_requeue_guns_bargain_delivery = {
 	scope:sb_natal_guns_bargain_receipt_scope ?= { if = { limit = { has_variable = sb_natal_guns_bargain_popup_receipt_var } remove_variable = sb_natal_guns_bargain_popup_receipt_var } }
@@ -232,10 +236,58 @@ sb_natal_story_requeue_refusal_delivery = {
 	}
 }
 
+# A deleted play can leave a typed variable behind. Reconcile only an admitted
+# generation with an accepted demand; a timer or disappearance alone is no win.
+sb_natal_story_recover_finished_play = {
+	if = {
+		limit = {
+			has_global_variable = sb_natal_story_war_active_global_var
+			NOT = { has_global_variable = sb_natal_story_war_resolved_global_var }
+			NOT = { container_exists = sb_natal_terminal_outcome_state }
+			OR = {
+				has_global_variable = sb_natal_story_initiator_demand_accepted_global_var
+				has_global_variable = sb_natal_story_target_demand_accepted_global_var
+			}
+			OR = { container_exists = sb_natal_guns_bargain_generation_state container_exists = sb_natal_refusal_generation_state }
+		}
+		if = {
+			limit = { container_exists = sb_natal_guns_bargain_generation_state }
+			container:sb_natal_guns_bargain_generation_state = {
+				var:sb_natal_guns_bargain_generation_actor_scope ?= { save_scope_as = sb_natal_resolved_initiator }
+				var:sb_natal_guns_bargain_generation_counterparty_scope ?= { save_scope_as = sb_natal_resolved_target }
+			}
+		}
+		else = {
+			container:sb_natal_refusal_generation_state = {
+				var:sb_natal_refusal_generation_counterparty_scope ?= { save_scope_as = sb_natal_resolved_initiator }
+				var:sb_natal_refusal_generation_actor_scope ?= { save_scope_as = sb_natal_resolved_target }
+			}
+		}
+		if = {
+			limit = {
+				exists = scope:sb_natal_resolved_initiator
+				exists = scope:sb_natal_resolved_target
+				scope:sb_natal_resolved_initiator = {
+					has_variable = sb_natal_war_active_var
+					has_variable = sb_natal_story_play_scope
+					NOT = { exists = var:sb_natal_story_play_scope }
+				}
+				scope:sb_natal_resolved_target = {
+					has_variable = sb_natal_war_active_var
+					has_variable = sb_natal_story_play_scope
+					NOT = { exists = var:sb_natal_story_play_scope }
+				}
+			}
+			sb_natal_story_resolve_bound_result = yes
+		}
+	}
+}
+
 # Root may be either participant (or its retagged successor). A live admitted
 # play is terminal-owned. Otherwise the bounded receipt either requeues the
 # exact popup/launch or clears every permanent-invalid lock without reward.
 sb_natal_story_recover_generation = {
+	sb_natal_story_recover_finished_play = yes
 	if = {
 		limit = {
 			NOT = {
@@ -349,7 +401,8 @@ sb_natal_story_queue_launch_retry = {
 	}
 }
 
-# Root = ZUL. This is both the initial launcher and the hidden retry path.
+# Current country = ZUL. Unrelated wars/plays do not block Blood River.
+# Only an existing ORA-ZUL confrontation or truce delays the selected launch.
 sb_natal_story_attempt_exact_launch = {
 	if = {
 		limit = {
@@ -357,8 +410,8 @@ sb_natal_story_attempt_exact_launch = {
 			country_definition = cd:ZUL
 			is_country_alive = yes
 			is_subject = no
-			is_at_war = no
-			is_active_in_diplomatic_play = no
+			NOT = { has_war_with = c:ORA }
+			NOT = { is_diplomatic_play_enemy_of = c:ORA }
 			aggressive_diplomatic_plays_permitted = yes
 			ruler = { is_character_alive = yes }
 			has_variable = sb_natal_story_launch_pending_var
@@ -369,8 +422,6 @@ sb_natal_story_attempt_exact_launch = {
 			c:ORA ?= {
 				is_country_alive = yes
 				is_subject = no
-				is_at_war = no
-				is_active_in_diplomatic_play = no
 				ruler = { is_character_alive = yes }
 				has_variable = sb_natal_story_launch_pending_var
 				NOT = { has_variable = sb_natal_story_play_scope }
@@ -382,7 +433,7 @@ sb_natal_story_attempt_exact_launch = {
 			NOT = {
 				any_diplomatic_play = {
 					is_diplomatic_play_type = dp_sb_natal_crisis
-					initiator = root
+					initiator = c:ZUL
 					target = c:ORA
 				}
 			}
@@ -409,8 +460,8 @@ sb_natal_story_attempt_exact_launch = {
 	}
 }
 
-# Root = ZUL. Receipt-time option validation calls this before any durable
-# Blood River mutation. The timed paired reservation bounds participant death.
+# Current country = ZUL. Record the selected escalation once; the launcher owns
+# transient creation failures. An answered popup must not be delivered again.
 sb_natal_story_begin_exact_launch = {
 	scope:sb_natal_guns_bargain_receipt_scope ?= { if = { limit = { has_variable = sb_natal_guns_bargain_popup_receipt_var } remove_variable = sb_natal_guns_bargain_popup_receipt_var } }
 	scope:sb_natal_refusal_receipt_scope ?= { if = { limit = { has_variable = sb_natal_refusal_popup_receipt_var } remove_variable = sb_natal_refusal_popup_receipt_var } }
@@ -419,20 +470,15 @@ sb_natal_story_begin_exact_launch = {
 			country_definition = cd:ZUL
 			is_country_alive = yes
 			is_subject = no
-			is_at_war = no
-			is_active_in_diplomatic_play = no
 			aggressive_diplomatic_plays_permitted = yes
 			ruler = { is_character_alive = yes }
 			NOT = { has_variable = sb_natal_story_launch_pending_var }
 			NOT = { has_variable = sb_natal_story_play_scope }
 			NOT = { has_variable = sb_natal_war_active_var }
-			NOT = { has_truce_with = c:ORA }
 			NOT = { has_global_variable = sb_natal_story_war_active_global_var }
 			c:ORA ?= {
 				is_country_alive = yes
 				is_subject = no
-				is_at_war = no
-				is_active_in_diplomatic_play = no
 				ruler = { is_character_alive = yes }
 				NOT = { has_variable = sb_natal_story_launch_pending_var }
 				NOT = { has_variable = sb_natal_story_play_scope }
@@ -441,13 +487,6 @@ sb_natal_story_begin_exact_launch = {
 			OR = {
 				sb_natal_story_guns_bargain_generation_is_valid = yes
 				sb_natal_story_refusal_generation_is_valid = yes
-			}
-			NOT = {
-				any_diplomatic_play = {
-					is_diplomatic_play_type = dp_sb_natal_crisis
-					initiator = root
-					target = c:ORA
-				}
 			}
 		}
 		set_variable = sb_natal_story_launch_pending_var
@@ -497,6 +536,13 @@ sb_natal_story_begin_terminal_ora_victory = {
 		set_variable = { name = sb_natal_terminal_outcome_pending_var days = 730 }
 		if = { limit = { has_variable = sb_natal_terminal_outcome_received_var } remove_variable = sb_natal_terminal_outcome_received_var }
 		scope:sb_natal_terminal_counterparty ?= { set_variable = { name = sb_natal_terminal_outcome_scope value = scope:sb_natal_terminal_receipt_scope } }
+		# Preserve the responsible sovereign; the Zulu outcome event applies the consequences.
+		scope:sb_natal_terminal_counterparty = {
+			if = {
+				limit = { NOT = { has_variable = sb_court_blood_river_ruler_scope } }
+				ruler ?= { scope:sb_natal_terminal_counterparty = { set_variable = { name = sb_court_blood_river_ruler_scope value = prev } } }
+			}
+		}
 		sb_natal_story_requeue_terminal_outcome = yes
 	}
 }
@@ -525,6 +571,10 @@ sb_natal_story_begin_terminal_zulu_victory = {
 		set_variable = { name = sb_natal_terminal_outcome_pending_var days = 730 }
 		if = { limit = { has_variable = sb_natal_terminal_outcome_received_var } remove_variable = sb_natal_terminal_outcome_received_var }
 		scope:sb_natal_terminal_counterparty ?= { set_variable = { name = sb_natal_terminal_outcome_scope value = scope:sb_natal_terminal_receipt_scope } }
+		if = {
+			limit = { NOT = { has_variable = sb_court_blood_river_ruler_scope } }
+			ruler ?= { scope:sb_natal_terminal_recipient = { set_variable = { name = sb_court_blood_river_ruler_scope value = prev } } }
+		}
 		sb_natal_story_requeue_terminal_outcome = yes
 	}
 }
@@ -577,6 +627,10 @@ sb_natal_story_requeue_terminal_outcome = {
 			limit = { var:sb_natal_terminal_outcome_scope ?= { has_variable = sb_natal_terminal_outcome_zulu_neutral_var } }
 			trigger_event = { id = sb_natal_crisis.081 days = 3 popup = yes }
 		}
+		else_if = {
+			limit = { var:sb_natal_terminal_outcome_scope ?= { has_variable = sb_natal_terminal_outcome_zulu_defeat_var } }
+			trigger_event = { id = sb_natal_crisis.082 days = 3 popup = yes }
+		}
 		trigger_event = { id = sb_natal_crisis.098 days = 45 }
 		var:sb_natal_terminal_outcome_scope ?= {
 			var:sb_natal_terminal_counterparty_scope ?= { if = { limit = { is_country_alive = yes } trigger_event = { id = sb_natal_crisis.098 days = 46 } } }
@@ -618,6 +672,36 @@ sb_natal_story_recover_terminal_outcome = {
 		if = { limit = { has_variable = sb_natal_terminal_outcome_delivery_queued_var } remove_variable = sb_natal_terminal_outcome_delivery_queued_var }
 		if = { limit = { has_variable = sb_natal_terminal_outcome_popup_receipt_var } remove_variable = sb_natal_terminal_outcome_popup_receipt_var }
 	}
+}
+
+# ORA has settled Natalia. Keep the same receipt until ZUL receives its own
+# consequences, so watchdogs cannot repeat the Boer settlement or lose the loser.
+sb_natal_story_handoff_zulu_defeat = {
+	if = {
+		limit = {
+			sb_natal_story_terminal_ora_victory_event_authority = yes
+			scope:sb_natal_terminal_counterparty_scope ?= { is_country_alive = yes }
+		}
+		save_scope_as = sb_natal_boer_recipient
+		scope:sb_natal_terminal_counterparty_scope = { save_scope_as = sb_natal_zulu_recipient }
+		set_variable = { name = sb_natal_terminal_outcome_received_var days = 30 }
+		remove_variable = sb_natal_terminal_outcome_pending_var
+		remove_variable = sb_natal_terminal_outcome_delivery_queued_var
+		remove_variable = sb_natal_terminal_outcome_popup_receipt_var
+		scope:sb_natal_terminal_receipt_scope = {
+			remove_variable = sb_natal_terminal_outcome_ora_victory_var
+			set_variable = sb_natal_terminal_outcome_zulu_defeat_var
+			set_variable = { name = sb_natal_terminal_outcome_pending_var days = 730 }
+			set_variable = { name = sb_natal_terminal_recipient_scope value = scope:sb_natal_zulu_recipient }
+			set_variable = { name = sb_natal_terminal_counterparty_scope value = scope:sb_natal_boer_recipient }
+		}
+		scope:sb_natal_zulu_recipient = {
+			set_variable = { name = sb_natal_terminal_outcome_pending_var days = 730 }
+			if = { limit = { has_variable = sb_natal_terminal_outcome_received_var } remove_variable = sb_natal_terminal_outcome_received_var }
+			sb_natal_story_requeue_terminal_outcome = yes
+		}
+	}
+	else = { sb_natal_story_consume_terminal_outcome = yes }
 }
 
 sb_natal_story_consume_terminal_outcome = {
@@ -671,7 +755,12 @@ sb_natal_story_clear_terminal_outcome = {
 }
 
 sb_story_humiliation_clear_natal_state = {
-	sb_cleanup_blood_river_assistance_for_play = yes
+	scope:sb_natal_resolved_initiator ?= {
+		if = { limit = { has_modifier = sb_blood_river_zulu_no_relief } remove_modifier = sb_blood_river_zulu_no_relief }
+		if = { limit = { has_modifier = sb_blood_river_zulu_limited_support } remove_modifier = sb_blood_river_zulu_limited_support }
+		if = { limit = { has_modifier = sb_blood_river_zulu_relief_mobilization } remove_modifier = sb_blood_river_zulu_relief_mobilization }
+	}
+	scope:sb_natal_resolved_target ?= { sb_clear_ora_blood_river_laager = yes }
 	# The terminal receipt records the guns result before this exact-route cleanup.
 	sb_natal_story_clear_guns_bargain_receipt = yes
 	sb_natal_story_clear_refusal_generation = yes
@@ -679,7 +768,7 @@ sb_story_humiliation_clear_natal_state = {
 	if = { limit = { has_global_variable = sb_natal_story_target_demand_accepted_global_var } remove_global_variable = sb_natal_story_target_demand_accepted_global_var }
 	if = { limit = { has_global_variable = sb_natal_story_war_active_global_var } remove_global_variable = sb_natal_story_war_active_global_var }
 	# Exact play actors, not fixed tags: the cleanup also reaches a retagged survivor.
-	initiator ?= {
+	scope:sb_natal_resolved_initiator ?= {
 		if = { limit = { has_variable = sb_natal_war_active_var } remove_variable = sb_natal_war_active_var }
 		if = { limit = { has_variable = sb_natal_story_launch_pending_var } remove_variable = sb_natal_story_launch_pending_var }
 		if = { limit = { has_variable = sb_natal_story_launch_retry_queued_var } remove_variable = sb_natal_story_launch_retry_queued_var }
@@ -687,7 +776,7 @@ sb_story_humiliation_clear_natal_state = {
 		if = { limit = { has_variable = sb_natal_story_absorption_commit_var } remove_variable = sb_natal_story_absorption_commit_var }
 		if = { limit = { has_variable = sb_natal_story_play_scope } remove_variable = sb_natal_story_play_scope }
 	}
-	target ?= {
+	scope:sb_natal_resolved_target ?= {
 		if = { limit = { has_variable = sb_natal_war_active_var } remove_variable = sb_natal_war_active_var }
 		if = { limit = { has_variable = sb_trn_joined_natal_war_var } remove_variable = sb_trn_joined_natal_war_var }
 		if = { limit = { has_variable = sb_natal_story_launch_pending_var } remove_variable = sb_natal_story_launch_pending_var }
@@ -749,6 +838,14 @@ sb_story_humiliation_record_enforcement = {
 					has_variable = sb_natal_war_active_var
 					scope:target_country ?= { country_definition = cd:ORA has_variable = sb_natal_war_active_var }
 				}
+			}
+		}
+		# Preserve the sovereign when the demand is accepted, before a delayed
+		# recovery can encounter a different ruler.
+		scope:diplomatic_play.initiator ?= {
+			if = {
+				limit = { NOT = { has_variable = sb_court_blood_river_ruler_scope } }
+				ruler ?= { scope:diplomatic_play.initiator = { set_variable = { name = sb_court_blood_river_ruler_scope value = prev } } }
 			}
 		}
 		if = {
@@ -846,6 +943,48 @@ sb_story_humiliation_record_back_down = {
 	}
 }
 
+# Both callers authenticate the original actors before entering this dispatcher.
+# Keep callback and deleted-play recovery on the same demand-result truth table.
+sb_natal_story_resolve_bound_result = {
+	set_global_variable = sb_natal_story_war_resolved_global_var
+	# The saved play actors are the only recipient authority. This remains true
+	# after a retag, while a dead recipient simply leaves an inert receipt.
+	# 2: a negotiated mutual stand-down grants neither exclusive victory.
+	if = {
+		limit = {
+			has_global_variable = sb_natal_story_initiator_demand_accepted_global_var
+			has_global_variable = sb_natal_story_target_demand_accepted_global_var
+		}
+		scope:sb_natal_resolved_initiator = { save_scope_as = sb_natal_terminal_recipient }
+		scope:sb_natal_resolved_target = { save_scope_as = sb_natal_terminal_counterparty }
+		scope:sb_natal_terminal_recipient = { sb_natal_story_begin_terminal_zulu_neutral = yes }
+		sb_story_humiliation_clear_natal_state = yes
+	}
+	# 1: the initiator demand means the saved Zulu-side actor won.
+	else_if = {
+		limit = { has_global_variable = sb_natal_story_initiator_demand_accepted_global_var }
+		scope:sb_natal_resolved_initiator = { save_scope_as = sb_natal_terminal_recipient }
+		scope:sb_natal_resolved_target = { save_scope_as = sb_natal_terminal_counterparty }
+		scope:sb_natal_terminal_recipient = { sb_natal_story_begin_terminal_zulu_victory = yes }
+		sb_story_humiliation_clear_natal_state = yes
+	}
+	# 1: the target demand means the saved Oranje-side actor won.
+	else_if = {
+		limit = { has_global_variable = sb_natal_story_target_demand_accepted_global_var }
+		scope:sb_natal_resolved_target = { save_scope_as = sb_natal_terminal_recipient }
+		scope:sb_natal_resolved_initiator = { save_scope_as = sb_natal_terminal_counterparty }
+		scope:sb_natal_terminal_recipient = { sb_natal_story_begin_terminal_ora_victory = yes }
+		sb_story_humiliation_clear_natal_state = yes
+	}
+	# 0: white peace uses the neutral follow-up, not Zulu triumph.
+	else = {
+		scope:sb_natal_resolved_initiator = { save_scope_as = sb_natal_terminal_recipient }
+		scope:sb_natal_resolved_target = { save_scope_as = sb_natal_terminal_counterparty }
+		scope:sb_natal_terminal_recipient = { sb_natal_story_begin_terminal_zulu_neutral = yes }
+		sb_story_humiliation_clear_natal_state = yes
+	}
+}
+
 # Root = diplomatic play. Each route uses the same mutually exclusive truth table:
 # both accepted -> mutual stand-down; initiator only; target only; neither -> status quo.
 sb_story_humiliation_resolve = {
@@ -857,43 +996,9 @@ sb_story_humiliation_resolve = {
 			has_global_variable = sb_natal_story_war_active_global_var
 			NOT = { has_global_variable = sb_natal_story_war_resolved_global_var }
 		}
-		set_global_variable = sb_natal_story_war_resolved_global_var
-		# The saved play actors are the only recipient authority. This remains true
-		# after a retag, while a dead recipient simply leaves an inert receipt.
-		# 2: a negotiated mutual stand-down grants neither exclusive victory.
-		if = {
-			limit = {
-				has_global_variable = sb_natal_story_initiator_demand_accepted_global_var
-				has_global_variable = sb_natal_story_target_demand_accepted_global_var
-			}
-			initiator = { save_scope_as = sb_natal_terminal_recipient }
-			target = { save_scope_as = sb_natal_terminal_counterparty }
-			scope:sb_natal_terminal_recipient = { sb_natal_story_begin_terminal_zulu_neutral = yes }
-			sb_story_humiliation_clear_natal_state = yes
-		}
-		# 1: the initiator demand means the saved Zulu-side actor won.
-		else_if = {
-			limit = { has_global_variable = sb_natal_story_initiator_demand_accepted_global_var }
-			initiator = { save_scope_as = sb_natal_terminal_recipient }
-			target = { save_scope_as = sb_natal_terminal_counterparty }
-			scope:sb_natal_terminal_recipient = { sb_natal_story_begin_terminal_zulu_victory = yes }
-			sb_story_humiliation_clear_natal_state = yes
-		}
-		# 1: the target demand means the saved Oranje-side actor won.
-		else_if = {
-			limit = { has_global_variable = sb_natal_story_target_demand_accepted_global_var }
-			target = { save_scope_as = sb_natal_terminal_recipient }
-			initiator = { save_scope_as = sb_natal_terminal_counterparty }
-			scope:sb_natal_terminal_recipient = { sb_natal_story_begin_terminal_ora_victory = yes }
-			sb_story_humiliation_clear_natal_state = yes
-		}
-		# 0: white peace uses the neutral follow-up, not Zulu triumph.
-		else = {
-			initiator = { save_scope_as = sb_natal_terminal_recipient }
-			target = { save_scope_as = sb_natal_terminal_counterparty }
-			scope:sb_natal_terminal_recipient = { sb_natal_story_begin_terminal_zulu_neutral = yes }
-			sb_story_humiliation_clear_natal_state = yes
-		}
+		initiator = { save_scope_as = sb_natal_resolved_initiator }
+		target = { save_scope_as = sb_natal_resolved_target }
+		sb_natal_story_resolve_bound_result = yes
 	}
 	else_if = {
 		limit = {

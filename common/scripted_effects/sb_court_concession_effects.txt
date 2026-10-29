@@ -1,0 +1,61 @@
+﻿# Country scope: a concession is not a movement creation or an enthusiasm refresh.
+sb_court_grant_chiefly_concession = {
+ if = {
+  limit = { NOT = { has_variable = $RECEIPT$ } }
+  set_variable = { name = $RECEIPT$ value = game_date }
+  change_variable = { name = $RECEIPT$ add = $DAYS$ }
+  sb_court_sync_chiefly_concessions = yes
+ }
+}
+sb_court_sync_chiefly_concession = {
+ if = {
+  limit = { has_variable = $RECEIPT$ }
+  if = {
+   limit = { var:$RECEIPT$ > game_date }
+   every_political_movement = {
+    limit = { is_political_movement_type = movement_sb_zulu_chiefly NOT = { has_modifier = $MODIFIER$ } }
+    set_variable = { name = sb_court_concession_days_var value = owner.var:$RECEIPT$ }
+    change_variable = { name = sb_court_concession_days_var subtract = game_date }
+    add_modifier = { name = $MODIFIER$ days = sb_court_concession_remaining_days }
+    remove_variable = sb_court_concession_days_var
+   }
+  }
+  else = { remove_variable = $RECEIPT$ }
+ }
+}
+sb_court_sync_chiefly_concessions = {
+ sb_court_sync_chiefly_concession = { RECEIPT = sb_court_privileges_until_var MODIFIER = sb_court_chiefly_privileges }
+ sb_court_sync_chiefly_concession = { RECEIPT = sb_court_guns_until_var MODIFIER = sb_court_chiefly_gun_contacts }
+ sb_court_sync_chiefly_concession = { RECEIPT = sb_court_retief_guns_until_var MODIFIER = sb_court_chiefly_retief_contacts }
+}
+# Character scope; release only the promise whose specific commitment has ended.
+sb_court_reconcile_personal_promise = {
+ if = {
+  limit = { has_variable = sb_court_personal_council_scope NOT = { AND = { var:sb_court_endorsement_var = 1 var:sb_court_personal_council_scope ?= scope:sb_court_country.ruler } } }
+  remove_variable = sb_court_personal_council_scope
+ }
+}
+sb_court_reconcile_future_promise = {
+ if = {
+  limit = {
+   has_variable = sb_court_council_promise_scope
+   trigger_if = {
+    limit = { exists = var:sb_court_successor_pledge_scope }
+    NOT = { var:sb_court_council_promise_scope ?= var:sb_court_successor_pledge_scope }
+   }
+  }
+  remove_variable = sb_court_council_promise_scope
+ }
+}
+sb_court_commit_to_patron = {
+ if = { limit = { $PATRON$ ?= scope:sb_court_country.ruler } set_variable = { name = sb_court_endorsement_var value = 1 } remove_variable = sb_court_claimant_scope }
+ else = { set_variable = { name = sb_court_endorsement_var value = -1 } set_variable = { name = sb_court_claimant_scope value = $PATRON$ } }
+ sb_court_reconcile_personal_promise = yes
+ sb_court_sync_allegiance_traits = yes
+}
+sb_court_withdraw_personal = {
+ set_variable = { name = sb_court_endorsement_var value = 0 }
+ remove_variable = sb_court_claimant_scope
+ sb_court_reconcile_personal_promise = yes
+ sb_court_sync_allegiance_traits = yes
+}

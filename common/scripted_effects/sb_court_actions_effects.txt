@@ -1,0 +1,145 @@
+﻿sb_court_prepare_succession_choice = {
+ save_scope_as = sb_court_country
+ sb_court_action_cleanup = yes
+ set_variable = sb_court_action_open_var
+ set_variable = { name = sb_court_candidate_index_var value = 0 }
+ # Visit each eligible candidate once; missing positions must never repeat the last actor.
+ ordered_in_list = {
+  variable = sb_court_members
+  limit = { sb_court_recognisable_successor = yes }
+  order_by = prominence
+  max = 12
+  check_range_bounds = no
+  scope:sb_court_country = {
+   # Tooltip previews do not execute the counter initialisation above.
+   if = {
+    limit = { has_variable = sb_court_candidate_index_var }
+    change_variable = { name = sb_court_candidate_index_var add = 1 }
+    if = { limit = { var:sb_court_candidate_index_var = 1 } set_variable = { name = sb_court_action_actor_scope value = prev } }
+    else_if = { limit = { var:sb_court_candidate_index_var = 2 } set_variable = { name = sb_court_second_candidate_scope value = prev } }
+    else_if = { limit = { var:sb_court_candidate_index_var = 3 } set_variable = { name = sb_court_third_candidate_scope value = prev } }
+    else_if = { limit = { var:sb_court_candidate_index_var = 4 } set_variable = { name = sb_court_candidate_4_scope value = prev } }
+    else_if = { limit = { var:sb_court_candidate_index_var = 5 } set_variable = { name = sb_court_candidate_5_scope value = prev } }
+    else_if = { limit = { var:sb_court_candidate_index_var = 6 } set_variable = { name = sb_court_candidate_6_scope value = prev } }
+    else_if = { limit = { var:sb_court_candidate_index_var = 7 } set_variable = { name = sb_court_candidate_7_scope value = prev } }
+    else_if = { limit = { var:sb_court_candidate_index_var = 8 } set_variable = { name = sb_court_candidate_8_scope value = prev } }
+    else_if = { limit = { var:sb_court_candidate_index_var = 9 } set_variable = { name = sb_court_candidate_9_scope value = prev } }
+    else_if = { limit = { var:sb_court_candidate_index_var = 10 } set_variable = { name = sb_court_candidate_10_scope value = prev } }
+    else_if = { limit = { var:sb_court_candidate_index_var = 11 } set_variable = { name = sb_court_candidate_11_scope value = prev } }
+    else_if = { limit = { var:sb_court_candidate_index_var = 12 } set_variable = { name = sb_court_candidate_12_scope value = prev } }
+   }
+  }
+ }
+ remove_variable = sb_court_candidate_index_var
+ trigger_event = { id = sb_court_politics.001 popup = yes }
+}
+sb_court_recognize_candidate = {
+ save_scope_as = sb_court_country
+ if = {
+  limit = { has_variable = sb_institutions_active_var var:sb_prerogative_var >= 25 $CANDIDATE$ ?= { sb_court_recognisable_successor = yes } }
+  sb_change_prerogative = { VALUE = -25 }
+  $CANDIDATE$ = { save_scope_as = new_heir_scope }
+  sb_court_install_recognized_successor = yes
+ }
+ sb_court_action_cleanup = yes
+ sb_institutions_recalculate = yes
+}
+
+# The calling choice validates and pays; appointments share native identity and backing handling.
+sb_court_install_recognized_successor = {
+ sb_zulu_assign_new_heir_scope = yes
+ scope:new_heir_scope = {
+  if = { limit = { NOT = { owner ?= scope:sb_court_country } } transfer_character = scope:sb_court_country }
+ }
+ set_variable = { name = sb_court_recognized_heir_scope value = scope:new_heir_scope }
+ sb_court_back_recognized_heir = yes
+ if = { limit = { scope:new_heir_scope = { has_template = ZUL_mbuyazi_heir } } set_variable = sb_zulu_mpande_mbuyazi_heir_var remove_variable = sb_zulu_mpande_cetshwayo_heir_var }
+ else_if = { limit = { scope:new_heir_scope = { has_template = ZUL_cetshwayo_heir } } set_variable = sb_zulu_mpande_cetshwayo_heir_var remove_variable = sb_zulu_mpande_mbuyazi_heir_var }
+}
+
+sb_court_prepare_opposition_offer = {
+ save_scope_as = sb_court_country
+ set_variable = sb_court_action_open_var
+ ordered_in_list = {
+  variable = sb_court_members limit = { sb_court_opposing_member = yes }
+  order_by = prominence position = 0
+  scope:sb_court_country = { set_variable = { name = sb_court_action_actor_scope value = prev } }
+ }
+ if = {
+  limit = { has_law = law_type:law_sb_federated_chiefdoms var:sb_court_restoration_claimant_scope ?= { sb_court_royal_candidate = yes } }
+  set_variable = { name = sb_court_action_actor_scope value = var:sb_court_restoration_claimant_scope }
+ }
+ trigger_event = { id = $EVENT$ popup = yes }
+}
+sb_court_action_cleanup = {
+ remove_variable = sb_court_offer_king_backing_var
+ remove_variable = sb_court_offer_rival_backing_var
+ remove_variable = sb_court_offer_rival_share_var
+ remove_variable = sb_court_offer_submission_var
+ remove_variable = sb_court_offer_refusal_var
+ remove_variable = sb_court_offer_capture_var
+ remove_variable = sb_court_offer_escape_var
+ remove_variable = sb_court_offer_price_var
+ remove_variable = sb_court_offer_ruler_scope
+ remove_variable = sb_court_action_open_var
+ remove_variable = sb_court_action_actor_scope
+ remove_variable = sb_court_second_candidate_scope
+ remove_variable = sb_court_third_candidate_scope
+ remove_variable = sb_court_candidate_4_scope
+ remove_variable = sb_court_candidate_5_scope
+ remove_variable = sb_court_candidate_6_scope
+ remove_variable = sb_court_candidate_7_scope
+ remove_variable = sb_court_candidate_8_scope
+ remove_variable = sb_court_candidate_9_scope
+ remove_variable = sb_court_candidate_10_scope
+ remove_variable = sb_court_candidate_11_scope
+ remove_variable = sb_court_candidate_12_scope
+
+}
+
+sb_court_accept_accommodation = {
+ if = {
+  limit = {
+   has_variable = sb_institutions_active_var
+   var:sb_court_action_actor_scope ?= { is_character_alive = yes }
+   OR = {
+    NOT = { has_law = law_type:law_sb_federated_chiefdoms }
+    NOT = { var:sb_court_restoration_claimant_scope ?= { sb_court_royal_candidate = yes } }
+    var:sb_court_action_actor_scope ?= var:sb_court_restoration_claimant_scope
+   }
+  }
+  if = { limit = { has_law = law_type:law_sb_federated_chiefdoms has_law = law_type:law_sb_chiefly_council } set_variable = { name = sb_court_accommodation_var value = 2 } }
+  else_if = { limit = { has_law_or_variant = law_type:law_monarchy has_law_or_variant = law_type:law_autocracy } set_variable = { name = sb_court_accommodation_var value = 1 } }
+  var:sb_court_action_actor_scope = { set_variable = { name = sb_court_endorsement_var value = 1 } }
+  # A royal settlement cannot be accepted while its named claimant still pursues the crown.
+  if = {
+   limit = { has_variable = sb_court_accommodation_var var:sb_court_accommodation_var = 2 var:sb_court_action_actor_scope ?= var:sb_court_restoration_claimant_scope }
+   var:sb_court_restoration_claimant_scope ?= { set_variable = sb_court_claim_renounced_var set_variable = { name = sb_court_endorsement_var value = 1 } }
+  }
+ }
+ sb_court_action_cleanup = yes
+ sb_institutions_recalculate = yes
+ sb_zululand_check_political_settlement = yes
+ trigger_event = { id = sb_court_politics.006 popup = yes }
+}
+sb_court_refuse_offer = {
+ sb_court_action_cleanup = yes
+ trigger_event = { id = sb_court_politics.005 popup = yes }
+}
+
+# Called only when the institutional system exits. Ordinary politics and commitments survive.
+sb_court_suspend = {
+ save_scope_as = sb_court_country
+ every_in_list = {
+  variable = sb_court_members
+  limit = { var:sb_court_home_scope ?= scope:sb_court_country }
+  if = { limit = { has_trait = sb_court_claimant_trait } remove_trait = sb_court_claimant_trait }
+  if = { limit = { has_modifier = sb_court_junior_status } remove_modifier = sb_court_junior_status }
+ }
+ sb_court_release_heir_blocker = yes
+ if = { limit = { has_variable = sb_court_dynastic_crisis_var NOT = { has_variable = sb_court_dynastic_war_scope } } sb_court_cancel_dynastic_crisis = yes }
+ sb_court_action_cleanup = yes
+ sb_court_episode_cleanup = yes
+ if = { limit = { NOT = { has_variable = sb_court_dynastic_war_scope } } sb_court_accession_cleanup = yes }
+ remove_variable = sb_court_dynastic_test_pending_var
+}

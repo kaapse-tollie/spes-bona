@@ -1,0 +1,172 @@
+﻿# A bounded annual snapshot: no monthly probability reuse or ordering cascade.
+# Current and future records roll independently. Civil-war/accession commitments are reserved.
+sb_court_annual_allegiances = {
+ save_scope_as = sb_court_country
+ if = {
+  limit = {
+   has_variable = sb_institutions_active_var exists = ruler month = 1 game_date >= 1837.1.1
+   NOR = { has_variable = sb_court_annual_checked_var has_variable = sb_court_accession_open_var has_variable = sb_court_dynastic_war_scope has_variable = sb_court_civil_war_var has_variable = sb_court_dynastic_crisis_var }
+  }
+  set_variable = { name = sb_court_annual_checked_var months = 11 }
+  sb_court_annual_alignment = yes
+  clear_variable_list = sb_court_current_patrons
+  clear_variable_list = sb_court_future_patrons
+  clear_variable_list = sb_court_annual_current_changes
+  clear_variable_list = sb_court_annual_future_changes
+  ruler = { set_variable = { name = sb_court_annual_attraction_var value = sb_court_patron_attraction } }
+  add_to_variable_list = { name = sb_court_current_patrons target = ruler }
+  every_in_list = {
+   variable = sb_court_members
+   limit = { sb_court_member_of_country = yes sb_court_royal_candidate = yes NOT = { is_ruler_of_own_country = yes } }
+   set_variable = { name = sb_court_annual_attraction_var value = sb_court_patron_attraction }
+   scope:sb_court_country = {
+    add_to_variable_list = { name = sb_court_current_patrons target = prev }
+    add_to_variable_list = { name = sb_court_future_patrons target = prev }
+   }
+  }
+  every_in_list = {
+   variable = sb_court_members
+   limit = { sb_court_representative_eligible = yes has_variable = sb_court_representative_var }
+   remove_variable = sb_court_annual_old_current_scope
+   remove_variable = sb_court_annual_new_current_scope
+   remove_variable = sb_court_annual_old_future_scope
+   remove_variable = sb_court_annual_new_future_scope
+   set_variable = { name = sb_court_annual_weight_var value = var:sb_court_represented_weight_var }
+   if = { limit = { var:sb_court_endorsement_var = 1 } set_variable = { name = sb_court_annual_old_current_scope value = scope:sb_court_country.ruler } }
+   else_if = { limit = { var:sb_court_claimant_scope ?= { is_character_alive = yes } var:sb_court_endorsement_var = -1 } set_variable = { name = sb_court_annual_old_current_scope value = var:sb_court_claimant_scope } }
+   if = { limit = { exists = var:sb_court_successor_pledge_scope } set_variable = { name = sb_court_annual_old_future_scope value = var:sb_court_successor_pledge_scope } set_variable = { name = sb_court_annual_new_future_scope value = var:sb_court_successor_pledge_scope } }
+  }
+  every_in_list = {
+   variable = sb_court_members
+   limit = { sb_court_representative_eligible = yes has_variable = sb_court_representative_var NOR = { is_ruler_of_own_country = yes sb_court_dynastic_candidate = yes } }
+   save_scope_as = sb_court_annual_actor
+   sb_court_roll_record = { RECORD = current PATRONS = sb_court_current_patrons }
+   if = { limit = { NOT = { var:sb_court_annual_old_future_scope ?= { is_adult = no } } } sb_court_roll_record = { RECORD = future PATRONS = sb_court_future_patrons } }
+  }
+  # Commit only rolled actors. Claimants remain patrons, not ordinary allegiance recruits.
+  every_in_list = {
+   variable = sb_court_members
+   limit = { sb_court_representative_eligible = yes has_variable = sb_court_representative_var NOR = { is_ruler_of_own_country = yes sb_court_dynastic_candidate = yes } }
+   if = {
+    limit = {
+     trigger_if = {
+      limit = { exists = var:sb_court_annual_old_current_scope exists = var:sb_court_annual_new_current_scope }
+      NOT = { var:sb_court_annual_old_current_scope = var:sb_court_annual_new_current_scope }
+     }
+     trigger_else = { OR = { exists = var:sb_court_annual_old_current_scope exists = var:sb_court_annual_new_current_scope } }
+    }
+    set_variable = { name = sb_court_endorsement_var value = 0 }
+    remove_variable = sb_court_claimant_scope
+    if = { limit = { var:sb_court_annual_new_current_scope ?= scope:sb_court_country.ruler } set_variable = { name = sb_court_endorsement_var value = 1 } }
+    else_if = { limit = { exists = var:sb_court_annual_new_current_scope } set_variable = { name = sb_court_endorsement_var value = -1 } set_variable = { name = sb_court_claimant_scope value = var:sb_court_annual_new_current_scope } }
+    sb_court_reconcile_personal_promise = yes
+    sb_court_sync_allegiance_traits = yes
+    scope:sb_court_country = { add_to_variable_list = { name = sb_court_annual_current_changes target = prev } }
+   }
+   if = {
+    limit = {
+     trigger_if = {
+      limit = { exists = var:sb_court_annual_old_future_scope exists = var:sb_court_annual_new_future_scope }
+      NOT = { var:sb_court_annual_old_future_scope = var:sb_court_annual_new_future_scope }
+     }
+     trigger_else = { OR = { exists = var:sb_court_annual_old_future_scope exists = var:sb_court_annual_new_future_scope } }
+    }
+    remove_variable = sb_court_successor_pledge_scope
+    if = { limit = { exists = var:sb_court_annual_new_future_scope } set_variable = { name = sb_court_successor_pledge_scope value = var:sb_court_annual_new_future_scope } }
+    sb_court_reconcile_future_promise = yes
+    scope:sb_court_country = { add_to_variable_list = { name = sb_court_annual_future_changes target = prev } }
+   }
+  }
+  sb_institutions_recalculate = yes
+  if = {
+   limit = {
+    OR = {
+     any_in_list = { variable = sb_court_annual_current_changes always = yes }
+     any_in_list = { variable = sb_court_annual_future_changes always = yes }
+    }
+   }
+   trigger_event = { id = sb_zulu_court.200 popup = yes }
+  }
+ }
+}
+
+# Character-scope preview. Keep THIS in the outer tooltip; nested GetCustom loses it.
+sb_court_report_annual_record = {
+ if = {
+  limit = { exists = var:sb_court_annual_old_$RECORD$_scope exists = var:sb_court_annual_new_$RECORD$_scope }
+  custom_tooltip = sb_court_annual_$RECORD$_change_tt
+ }
+ else_if = {
+  limit = { exists = var:sb_court_annual_new_$RECORD$_scope }
+  custom_tooltip = sb_court_annual_$RECORD$_joined_tt
+ }
+ else_if = {
+  limit = { exists = var:sb_court_annual_old_$RECORD$_scope }
+  custom_tooltip = sb_court_annual_$RECORD$_withdrew_tt
+ }
+}
+
+# Character scope. Weighted reservoir selection gives each eligible patron a/sum(a),
+# without fixed candidate slots or extra rolls for a large house.
+# Native random-list weights are integers: preserve five-decimal script precision
+# by scaling every competing weight equally before the engine truncates it.
+sb_court_roll_record = {
+ remove_variable = sb_court_annual_new_$RECORD$_scope
+ if = { limit = { exists = var:sb_court_annual_old_$RECORD$_scope } set_variable = { name = sb_court_annual_new_$RECORD$_scope value = var:sb_court_annual_old_$RECORD$_scope } }
+ set_variable = { name = sb_court_roll_best_var value = 0 }
+ set_variable = { name = sb_court_roll_alternative_var value = 0 }
+ set_variable = { name = sb_court_roll_current_var value = 0 }
+ scope:sb_court_country = {
+  every_in_list = {
+   variable = $PATRONS$
+   save_scope_as = sb_court_roll_patron
+   scope:sb_court_annual_actor = {
+    set_variable = { name = sb_court_roll_best_var value = { value = var:sb_court_roll_best_var min = scope:sb_court_roll_patron.var:sb_court_annual_attraction_var } }
+    if = { limit = { var:sb_court_annual_old_$RECORD$_scope ?= scope:sb_court_roll_patron } set_variable = { name = sb_court_roll_current_var value = scope:sb_court_roll_patron.var:sb_court_annual_attraction_var } }
+    else = { set_variable = { name = sb_court_roll_alternative_var value = { value = var:sb_court_roll_alternative_var min = scope:sb_court_roll_patron.var:sb_court_annual_attraction_var } } }
+   }
+  }
+ }
+ if = {
+  limit = { NOT = { has_variable = sb_court_annual_old_$RECORD$_scope } }
+  if = {
+   limit = { sb_court_recruitable_backer = yes }
+   random_list = {
+    0 = { modifier = { add = { value = sb_court_join_chance multiply = 100000 } } sb_court_draw_patron = { RECORD = $RECORD$ PATRONS = $PATRONS$ } }
+    0 = { modifier = { add = { value = 100 subtract = sb_court_join_chance multiply = 100000 } } }
+   }
+  }
+ }
+ else = {
+  random_list = {
+   0 = { modifier = { add = { value = sb_court_withdraw_chance multiply = 100000 } } remove_variable = sb_court_annual_new_$RECORD$_scope }
+   0 = { modifier = { add = { value = sb_court_switch_chance multiply = 100000 } } sb_court_draw_patron = { RECORD = $RECORD$ PATRONS = $PATRONS$ } }
+   0 = { modifier = { add = { value = sb_court_stay_chance multiply = 100000 } } }
+  }
+ }
+ remove_variable = sb_court_roll_best_var
+ remove_variable = sb_court_roll_alternative_var
+ remove_variable = sb_court_roll_current_var
+}
+sb_court_draw_patron = {
+ scope:sb_court_country = {
+  set_variable = { name = sb_court_draw_weight_var value = 0 }
+  every_in_list = {
+   variable = $PATRONS$
+   limit = {
+    var:sb_court_annual_attraction_var > 0
+    trigger_if = {
+     limit = { exists = scope:sb_court_annual_actor.var:sb_court_annual_old_$RECORD$_scope }
+     NOT = { this = scope:sb_court_annual_actor.var:sb_court_annual_old_$RECORD$_scope }
+    }
+   }
+   save_scope_as = sb_court_roll_patron
+   random_list = {
+    0 = { modifier = { add = { value = var:sb_court_annual_attraction_var multiply = 100000 } } scope:sb_court_annual_actor = { set_variable = { name = sb_court_annual_new_$RECORD$_scope value = scope:sb_court_roll_patron } } }
+    0 = { modifier = { add = { value = scope:sb_court_country.var:sb_court_draw_weight_var multiply = 100000 } } }
+   }
+   scope:sb_court_country = { change_variable = { name = sb_court_draw_weight_var add = prev.var:sb_court_annual_attraction_var } }
+  }
+  remove_variable = sb_court_draw_weight_var
+ }
+}

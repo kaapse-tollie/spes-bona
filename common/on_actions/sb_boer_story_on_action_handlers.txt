@@ -34,6 +34,7 @@ sb_on_trek_monthly_pulse_country = {
 				NOT = { has_variable = sb_zulu_swazi_outcome_popup_receipt_var }
 				OR = {
 					NOT = { has_journal_entry = je_sb_zulu_kingdom }
+					NOT = { sb_zulu_swazi_question_is_due = yes }
 					ruler = { NOT = { has_template = ZUL_dingane } }
 					NOT = { c:SWZ ?= { is_country_alive = yes is_subject = no any_scope_state = { state_region = s:STATE_EAST_TRANSVAAL } } }
 				}
@@ -41,7 +42,8 @@ sb_on_trek_monthly_pulse_country = {
 			remove_variable = sb_zulu_swazi_outcome_delivery_pending_var
 			if = { limit = { has_variable = sb_zulu_swazi_outcome_delivery_queued_var } remove_variable = sb_zulu_swazi_outcome_delivery_queued_var }
 			if = { limit = { has_variable = sb_zulu_swazi_outcome_popup_receipt_var } remove_variable = sb_zulu_swazi_outcome_popup_receipt_var }
-			sb_zulu_clear_swazi_question_ai_context = yes
+			# Keep the Natal outcome when an undelivered offer loses eligibility.
+			if = { limit = { has_variable = sb_zulu_swazi_question_opened_var } remove_variable = sb_zulu_swazi_question_opened_var }
 		}
 		else_if = {
 			limit = {
@@ -90,8 +92,8 @@ sb_on_trek_monthly_pulse_country = {
 				sb_frontier_ai_behavior_strict_historical = no
 				has_variable = sb_zulu_gaza_followup_pending_var
 				has_variable = sb_zulu_blood_river_victory_var
-				has_variable = sb_zulu_dynasty_secured_var
-				NOT = { has_journal_entry = je_sb_zulu_kingdom }
+				has_variable = sb_institutions_active_var
+				var:sb_prerogative_var >= 50
 				ruler = {
 					has_template = ZUL_dingane
 				}

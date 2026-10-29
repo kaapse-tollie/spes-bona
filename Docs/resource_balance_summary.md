@@ -17,12 +17,15 @@ tables are indexed in the external
 ## Live rules
 
 - Static caps implement the final 17-state design.
-- Gold and oil technology stages add undiscovered potential; engine discovery still
-  controls when usable capacity appears and supplies the standard discovery toast.
-- Technology-gated diamond, iron, and coal additions become usable immediately and
-  post a one-time owner notification.
-- The gate system includes technology-acquisition, game-start, and state-owner-change
-  paths and uses one geographical flag per stage.
+- Eight diamond deposits contain 95 levels of native undiscovered reserves. Their
+  mine definitions require the existing Dynamite, Pumpjacks, or Pneumatic Tools gate;
+  engine discovery determines when capacity appears. Kimberley's event-led 20 levels
+  remain separate and unchanged.
+- Iron and coal additions remain immediately usable and post one-time notifications.
+- The remaining scripted gates retain technology-acquisition, game-start, and
+  state-owner-change hooks. The eight legacy gold/oil stages are unchanged: native
+  inspection found that their capacity effect does not add undiscovered reserves.
+  That separate issue is recorded in the open audit register.
 - Natal coffee, Zululand cotton, and Lourenço Marques cotton remain deliberate crop
   abstractions. Griqualand West and Bechuanaland receive the two approved one-grain
   corrections.

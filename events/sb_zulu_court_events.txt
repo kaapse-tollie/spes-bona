@@ -1,61 +1,34 @@
 ﻿namespace = sb_zulu_court
 
-# =============================================================================
-# Spes Bona - Zulu Court Events
-# =============================================================================
-# Ownership: ZUL court randoms that move dynastic stability and firearms politics.
-# TOC: 200-203 court randoms.
-# Cross-ref: common/scripted_effects/sb_zulu_dynasty_succession_effects.txt
-# =============================================================================
-
 sb_zulu_court.200 = {
 	type = country_event
 	placement = root
-
 	title = sb_zulu_court.200.t
-	desc = sb_zulu_court.200.d
+	desc = {
+		first_valid = {
+			triggered_desc = { trigger = { has_law = law_type:law_sb_federated_chiefdoms } desc = sb_zulu_court.200.d.chiefs }
+			desc = sb_zulu_court.200.d
+		}
+	}
 	flavor = sb_zulu_court.200.f
-
-	event_image = {
-		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
-	}
-
-	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	gui_window = event_window_1char_tabloid
+	left_icon = scope:sb_court_episode_ruler
+	icon = "gfx/interface/icons/event_icons/event_portrait.dds"
 	duration = 3
-
-	trigger = {
-		sb_is_zulu_dynasty_country = yes
-		has_journal_entry = je_sb_zulu_kingdom
-	}
-
+	immediate = { save_scope_as = sb_court_country ruler ?= { save_scope_as = sb_court_episode_ruler } }
 	option = {
-		name = sb_zulu_court.200.a
-		default_option = yes
-		custom_tooltip = sb_zulu_dynasty_gain_stability_5
-		hidden_effect = {
-			sb_zulu_add_dynastic_stability_5 = yes
-		}
-		add_treasury = -1500
-		ai_chance = {
-			base = 55
-		}
-	}
-
-	option = {
-		name = sb_zulu_court.200.b
-		custom_tooltip = sb_zulu_dynasty_lose_stability_5
-		hidden_effect = {
-			sb_zulu_remove_dynastic_stability_5 = yes
-		}
-		capital = {
-			add_loyalists_in_state = {
-				value = medium_radicals
+		name = sb_zulu_court.200.a default_option = yes
+		show_as_tooltip = {
+			every_in_list = {
+				variable = sb_court_annual_current_changes
+				sb_court_report_annual_record = { RECORD = current }
 			}
 		}
-		add_treasury = 500
-		ai_chance = {
-			base = 45
+		show_as_tooltip = {
+			every_in_list = {
+				variable = sb_court_annual_future_changes
+				sb_court_report_annual_record = { RECORD = future }
+			}
 		}
 	}
 }
@@ -63,171 +36,286 @@ sb_zulu_court.200 = {
 sb_zulu_court.201 = {
 	type = country_event
 	placement = root
-
 	title = sb_zulu_court.201.t
 	desc = sb_zulu_court.201.d
 	flavor = sb_zulu_court.201.f
-
-	event_image = {
-		video = "gfx/event_pictures/africa_soldiers_breaking_protest.bk2"
-	}
-
-	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	gui_window = event_window_1char_tabloid
+	left_icon = scope:sb_court_episode_ruler
+	icon = "gfx/interface/icons/event_icons/event_portrait.dds"
 	duration = 3
-
-	trigger = {
-		sb_is_zulu_dynasty_country = yes
-		has_journal_entry = je_sb_zulu_kingdom
-	}
-
+	immediate = { save_scope_as = sb_court_country ruler ?= { save_scope_as = sb_court_episode_ruler } }
 	option = {
-		name = sb_zulu_court.201.a
-		default_option = yes
-		custom_tooltip = sb_zulu_court_201_a_tt
-		hidden_effect = {
-			sb_zulu_add_dynastic_stability_5 = yes
-			kill_population = {
-				pop_type = officers
-				value = 50
-			}
-			kill_population = {
-				pop_type = soldiers
-				value = 500
-			}
-		}
-		add_modifier = {
-			name = sb_zulu_impis_purged
-			months = 12
-		}
-		ai_chance = {
-			base = 60
-		}
-	}
-
-	option = {
-		name = sb_zulu_court.201.b
-		custom_tooltip = sb_zulu_dynasty_lose_stability_5
-		hidden_effect = {
-			sb_zulu_remove_dynastic_stability_5 = yes
-		}
-		add_modifier = {
-			name = sb_zulu_impis_placated
-			months = 12
-		}
-		ai_chance = {
-			base = 40
-		}
+		name = sb_zulu_court.201.a default_option = yes
 	}
 }
 
-sb_zulu_court.202 = {
+sb_zulu_court.210 = {
 	type = country_event
 	placement = root
-
-	title = sb_zulu_court.202.t
-	desc = sb_zulu_court.202.d
-	flavor = sb_zulu_court.202.f
-
-	event_image = {
-		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
-	}
-
-	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	title = sb_zulu_court.210.t
+	desc = sb_zulu_court.210.d
+	flavor = sb_zulu_court.210.f
+	gui_window = event_window_1char_tabloid
+	left_icon = scope:sb_court_episode_actor
+	icon = "gfx/interface/icons/event_icons/event_portrait.dds"
 	duration = 3
-
-	trigger = {
-		sb_is_zulu_dynasty_country = yes
-		has_journal_entry = je_sb_zulu_kingdom
+	immediate = {
+		save_scope_as = sb_court_country
+		var:sb_court_episode_actor_scope ?= { save_scope_as = sb_court_episode_actor }
+		var:sb_court_episode_other_scope ?= { save_scope_as = sb_court_episode_other }
+		var:sb_court_episode_candidate_scope ?= { save_scope_as = sb_court_episode_candidate }
+		var:sb_court_episode_other_candidate_scope ?= { save_scope_as = sb_court_episode_other_candidate }
+		var:sb_court_episode_ruler_scope ?= { save_scope_as = sb_court_episode_ruler }
 	}
-
 	option = {
-		name = sb_zulu_court.202.a
+		name = sb_zulu_court.210.a
 		default_option = yes
-		custom_tooltip = sb_zulu_court_202_a_tt
-		hidden_effect = {
-			sb_zulu_add_dynastic_stability_5 = yes
-		}
-		add_modifier = {
-			name = sb_zulu_upper_strata_exactions_authority
-			months = 12
-		}
-		capital = {
-			add_modifier = {
-				name = sb_zulu_upper_strata_exactions_sol
-				months = 12
-			}
-		}
-		add_radicals = {
-			value = 0.20
-			strata = upper
-		}
-		ai_chance = {
-			base = 50
-		}
+		trigger = { hidden_trigger = { sb_court_card_210_valid = yes  } }
+		custom_tooltip = sb_court_undertaking_tt
+		hidden_effect = { if = { limit = { sb_court_card_210_valid = yes  } sb_court_record_successor_pledge = yes } }
+		ai_chance = { base = 30 }
 	}
-
 	option = {
-		name = sb_zulu_court.202.b
-		custom_tooltip = sb_zulu_court_202_b_tt
-		hidden_effect = {
-			sb_zulu_remove_dynastic_stability_2 = yes
-		}
-		add_loyalists = {
-			value = 0.20
-			strata = upper
-		}
-		ai_chance = {
-			base = 50
-		}
+		name = sb_zulu_court.210.b
+		trigger = { hidden_trigger = { sb_court_card_210_valid = yes var:sb_court_episode_other_candidate_scope ?= { sb_court_episode_prince = yes } NOT = { has_variable = sb_court_privileges_this_reign_var } } }
+		custom_tooltip = sb_court_redirect_privileges_tt
+		custom_tooltip = sb_court_chiefly_privileges_tt
+		hidden_effect = { if = { limit = { sb_court_card_210_valid = yes var:sb_court_episode_other_candidate_scope ?= { sb_court_episode_prince = yes } NOT = { has_variable = sb_court_privileges_this_reign_var } } set_variable = { name = sb_court_episode_candidate_scope value = var:sb_court_episode_other_candidate_scope } sb_court_chiefly_bargain = { COUNCIL = no PRIVILEGES = yes } } }
+		ai_chance = { base = 30 }
 	}
+	option = {
+		name = sb_zulu_court.210.c
+		trigger = { hidden_trigger = { sb_court_card_210_valid = yes var:sb_court_episode_actor_scope ?= { prominence >= 50 } var:sb_court_episode_other_candidate_scope ?= { sb_court_episode_prince = yes } NOT = { has_law = law_type:law_sb_chiefly_council } } }
+		custom_tooltip = sb_court_redirect_council_tt
+		custom_tooltip = sb_court_future_council_tt
+		hidden_effect = { if = { limit = { sb_court_card_210_valid = yes var:sb_court_episode_actor_scope ?= { prominence >= 50 } var:sb_court_episode_other_candidate_scope ?= { sb_court_episode_prince = yes } NOT = { has_law = law_type:law_sb_chiefly_council } } set_variable = { name = sb_court_episode_candidate_scope value = var:sb_court_episode_other_candidate_scope } sb_court_chiefly_bargain = { COUNCIL = yes PRIVILEGES = no } } }
+		ai_chance = { base = 30 }
+	}
+	option = {
+		name = sb_zulu_court.210.z
+		trigger = { hidden_trigger = { OR = { sb_court_card_210_valid = no var:sb_prerogative_var >= 10 } } }
+		if = { limit = { sb_court_card_210_valid = yes } custom_tooltip = sb_court_block_successor_pledge_tt }
+		hidden_effect = { if = { limit = { sb_court_card_210_valid = yes var:sb_prerogative_var >= 10 } sb_change_prerogative = { VALUE = -10 } } }
+		ai_chance = { base = 20 }
+	}
+	after = { hidden_effect = { sb_court_episode_cleanup = yes sb_institutions_recalculate = yes } }
 }
 
-sb_zulu_court.203 = {
+sb_zulu_court.211 = {
 	type = country_event
 	placement = root
-
-	title = sb_zulu_court.203.t
-	desc = sb_zulu_court.203.d
-	flavor = sb_zulu_court.203.f
-
-	event_image = {
-		video = "gfx/event_pictures/africa_diplomats_negotiating.bk2"
-	}
-
-	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	title = sb_zulu_court.211.t
+	desc = sb_zulu_court.211.d
+	flavor = sb_zulu_court.211.f
+	gui_window = event_window_1char_tabloid
+	left_icon = scope:sb_court_episode_actor
+	icon = "gfx/interface/icons/event_icons/event_portrait.dds"
 	duration = 3
-
-	trigger = {
-		sb_is_zulu_dynasty_country = yes
-		has_journal_entry = je_sb_zulu_kingdom
-		OR = {
-			is_player = yes
-			has_variable = sb_zulu_blood_river_resolved_var
-		}
+	immediate = {
+		save_scope_as = sb_court_country
+		var:sb_court_episode_actor_scope ?= { save_scope_as = sb_court_episode_actor }
+		var:sb_court_episode_other_scope ?= { save_scope_as = sb_court_episode_other }
+		var:sb_court_episode_candidate_scope ?= { save_scope_as = sb_court_episode_candidate }
+		var:sb_court_episode_other_candidate_scope ?= { save_scope_as = sb_court_episode_other_candidate }
+		var:sb_court_episode_ruler_scope ?= { save_scope_as = sb_court_episode_ruler }
 	}
-
 	option = {
-		name = sb_zulu_court.203.a
+		name = sb_zulu_court.211.a
 		default_option = yes
-		custom_tooltip = sb_zulu_dynasty_lose_stability_10_firearms
-		hidden_effect = {
-			sb_zulu_remove_dynastic_stability_10 = yes
-			sb_boost_firearms_progress_minor = yes
-		}
-		ai_chance = {
-			base = 55
-		}
+		trigger = { hidden_trigger = { sb_court_card_211_valid = yes  } }
+		custom_tooltip = sb_court_service_tt
+		hidden_effect = { if = { limit = { sb_court_card_211_valid = yes  } var:sb_court_episode_actor_scope = { add_modifier = { name = sb_court_service_recognised years = 5 } } } }
+		ai_chance = { base = 30 }
 	}
-
 	option = {
-		name = sb_zulu_court.203.b
-		custom_tooltip = sb_zulu_dynasty_gain_stability_5
-		sb_zulu_add_dynastic_stability_5 = yes
-		ai_chance = {
-			base = 45
+		name = sb_zulu_court.211.b
+		trigger = { hidden_trigger = { sb_court_card_211_valid = yes has_variable = sb_court_episode_price_var } }
+		custom_tooltip = sb_court_episode_cost_tt
+		custom_tooltip = sb_court_discredit_tt
+		custom_tooltip = sb_court_discredit_ruler_tt
+		if = {
+			limit = { scope:sb_court_episode_actor ?= { var:sb_court_endorsement_var = 1 } }
+			custom_tooltip = sb_court_discredit_withdrawal_tt
 		}
+		hidden_effect = { if = { limit = { sb_court_card_211_valid = yes has_variable = sb_court_episode_price_var } add_treasury = sb_court_episode_payment var:sb_court_episode_actor_scope = { add_modifier = { name = sb_court_service_discredited years = 5 } if = { limit = { var:sb_court_endorsement_var = 1 } sb_court_withdraw_personal = yes } } ruler = { add_modifier = { name = sb_court_petulant_discredit years = 5 } } } }
+		ai_chance = { base = 30 }
 	}
+	option = { name = sb_zulu_court.211.z trigger = { hidden_trigger = { sb_court_card_211_valid = no } } ai_chance = { base = 20 } }
+	after = { hidden_effect = { sb_court_episode_cleanup = yes sb_institutions_recalculate = yes } }
 }
+
+sb_zulu_court.212 = {
+	type = country_event
+	placement = root
+	title = sb_zulu_court.212.t
+	desc = sb_zulu_court.212.d
+	flavor = sb_zulu_court.212.f
+	gui_window = event_window_1char_tabloid
+	left_icon = scope:sb_court_episode_actor
+	icon = "gfx/interface/icons/event_icons/event_portrait.dds"
+	duration = 3
+	immediate = {
+		save_scope_as = sb_court_country
+		var:sb_court_episode_actor_scope ?= { save_scope_as = sb_court_episode_actor }
+		var:sb_court_episode_other_scope ?= { save_scope_as = sb_court_episode_other }
+		var:sb_court_episode_candidate_scope ?= { save_scope_as = sb_court_episode_candidate }
+		var:sb_court_episode_other_candidate_scope ?= { save_scope_as = sb_court_episode_other_candidate }
+		var:sb_court_episode_ruler_scope ?= { save_scope_as = sb_court_episode_ruler }
+	}
+	option = {
+		name = sb_zulu_court.212.a
+		trigger = { hidden_trigger = { sb_court_card_212_valid = yes NOT = { has_variable = sb_court_privileges_this_reign_var } } }
+		custom_tooltip = sb_court_privileges_tt
+		custom_tooltip = sb_court_chiefly_privileges_tt
+		hidden_effect = { if = { limit = { sb_court_card_212_valid = yes NOT = { has_variable = sb_court_privileges_this_reign_var } } sb_court_chiefly_bargain = { COUNCIL = no PRIVILEGES = yes } } }
+		ai_chance = { base = 30 }
+	}
+	option = {
+		name = sb_zulu_court.212.b
+		trigger = { hidden_trigger = { sb_court_card_212_valid = yes var:sb_court_episode_actor_scope ?= { prominence >= 50 } NOT = { has_law = law_type:law_sb_chiefly_council } } }
+		custom_tooltip = sb_court_current_council_tt
+		custom_tooltip = sb_court_council_repeal_tt
+		hidden_effect = { if = { limit = { sb_court_card_212_valid = yes var:sb_court_episode_actor_scope ?= { prominence >= 50 } NOT = { has_law = law_type:law_sb_chiefly_council } } sb_court_chiefly_bargain = { COUNCIL = yes PRIVILEGES = no } } }
+		ai_chance = { base = 30 }
+	}
+	option = {
+		name = sb_zulu_court.212.z
+		default_option = yes
+		if = { limit = { sb_court_card_212_valid = yes } custom_tooltip = sb_court_refusal_prerogative_tt }
+		hidden_effect = { if = { limit = { sb_court_card_212_valid = yes } sb_change_prerogative = { VALUE = -5 } } }
+		ai_chance = { base = 20 }
+	}
+	after = { hidden_effect = { sb_court_episode_cleanup = yes sb_institutions_recalculate = yes } }
+}
+
+sb_zulu_court.213 = {
+	type = country_event
+	placement = root
+	title = sb_zulu_court.213.t
+	desc = sb_zulu_court.213.d
+	flavor = sb_zulu_court.213.f
+	gui_window = event_window_2char
+	left_icon = scope:sb_court_episode_actor
+	right_icon = scope:sb_court_episode_other
+	on_opened_soundeffect = "event:/SFX/Events/misc/2Characters"
+	icon = "gfx/interface/icons/event_icons/event_portrait.dds"
+	duration = 3
+	immediate = {
+		save_scope_as = sb_court_country
+		var:sb_court_episode_actor_scope ?= { save_scope_as = sb_court_episode_actor }
+		var:sb_court_episode_other_scope ?= { save_scope_as = sb_court_episode_other }
+		var:sb_court_episode_candidate_scope ?= { save_scope_as = sb_court_episode_candidate }
+		var:sb_court_episode_other_candidate_scope ?= { save_scope_as = sb_court_episode_other_candidate }
+		var:sb_court_episode_ruler_scope ?= { save_scope_as = sb_court_episode_ruler }
+	}
+	option = {
+		name = sb_zulu_court.213.a
+		trigger = { hidden_trigger = { sb_court_card_213_valid = yes  } }
+		custom_tooltip = sb_court_exchange_patrons_tt
+		custom_tooltip = sb_court_exchange_withdrawal_tt
+		hidden_effect = { if = { limit = { sb_court_card_213_valid = yes  } var:sb_court_episode_actor_scope = { sb_court_commit_to_patron = { PATRON = scope:sb_court_country.ruler } } var:sb_court_episode_other_scope = { sb_court_withdraw_personal = yes } } }
+		ai_chance = { base = 30 }
+	}
+	option = {
+		name = sb_zulu_court.213.z
+		default_option = yes
+		if = { limit = { sb_court_card_213_valid = yes } custom_tooltip = sb_court_refusal_prerogative_tt }
+		hidden_effect = { if = { limit = { sb_court_card_213_valid = yes } sb_change_prerogative = { VALUE = -5 } } }
+		ai_chance = { base = 20 }
+	}
+	after = { hidden_effect = { sb_court_episode_cleanup = yes sb_institutions_recalculate = yes } }
+}
+
+sb_zulu_court.214 = {
+	type = country_event
+	placement = root
+	title = sb_zulu_court.214.t
+	desc = sb_zulu_court.214.d
+	flavor = sb_zulu_court.214.f
+	gui_window = event_window_2char
+	left_icon = scope:sb_court_episode_actor
+	right_icon = scope:sb_court_episode_other
+	on_opened_soundeffect = "event:/SFX/Events/misc/2Characters"
+	icon = "gfx/interface/icons/event_icons/event_portrait.dds"
+	duration = 3
+	immediate = {
+		save_scope_as = sb_court_country
+		var:sb_court_episode_actor_scope ?= { save_scope_as = sb_court_episode_actor }
+		var:sb_court_episode_other_scope ?= { save_scope_as = sb_court_episode_other }
+		var:sb_court_episode_candidate_scope ?= { save_scope_as = sb_court_episode_candidate }
+		var:sb_court_episode_other_candidate_scope ?= { save_scope_as = sb_court_episode_other_candidate }
+		var:sb_court_episode_ruler_scope ?= { save_scope_as = sb_court_episode_ruler }
+	}
+	option = {
+		name = sb_zulu_court.214.a
+		default_option = yes
+		trigger = { hidden_trigger = { sb_court_card_214_valid = yes  } }
+		custom_tooltip = sb_court_dispute_a_tt
+		custom_tooltip = sb_court_dispute_a_opposition_tt
+		hidden_effect = { if = { limit = { sb_court_card_214_valid = yes  } var:sb_court_episode_actor_scope = { sb_court_commit_to_patron = { PATRON = scope:sb_court_country.ruler } } var:sb_court_episode_other_scope = { sb_court_commit_to_patron = { PATRON = scope:sb_court_country.var:sb_court_episode_candidate_scope } } } }
+		ai_chance = { base = 30 }
+	}
+	option = {
+		name = sb_zulu_court.214.b
+		trigger = { hidden_trigger = { sb_court_card_214_valid = yes  } }
+		custom_tooltip = sb_court_dispute_b_tt
+		custom_tooltip = sb_court_dispute_b_opposition_tt
+		hidden_effect = { if = { limit = { sb_court_card_214_valid = yes  } var:sb_court_episode_other_scope = { sb_court_commit_to_patron = { PATRON = scope:sb_court_country.ruler } } var:sb_court_episode_actor_scope = { sb_court_commit_to_patron = { PATRON = scope:sb_court_country.var:sb_court_episode_candidate_scope } } } }
+		ai_chance = { base = 30 }
+	}
+	option = {
+		name = sb_zulu_court.214.c
+		trigger = { hidden_trigger = { sb_court_card_214_valid = yes has_variable = sb_court_episode_price_var } }
+		custom_tooltip = sb_court_episode_cost_tt
+		custom_tooltip = sb_court_dispute_pay_tt
+		hidden_effect = { if = { limit = { sb_court_card_214_valid = yes has_variable = sb_court_episode_price_var } add_treasury = sb_court_episode_payment } }
+		ai_chance = { base = 30 }
+	}
+	option = { name = sb_zulu_court.214.z trigger = { hidden_trigger = { sb_court_card_214_valid = no } } ai_chance = { base = 20 } }
+	after = { hidden_effect = { sb_court_episode_cleanup = yes sb_institutions_recalculate = yes } }
+}
+
+sb_zulu_court.215 = {
+	type = country_event
+	placement = root
+	title = sb_zulu_court.215.t
+	desc = sb_zulu_court.215.d
+	flavor = sb_zulu_court.215.f
+	gui_window = event_window_1char_tabloid
+	left_icon = scope:sb_court_episode_actor
+	icon = "gfx/interface/icons/event_icons/event_portrait.dds"
+	duration = 3
+	immediate = {
+		save_scope_as = sb_court_country
+		var:sb_court_episode_actor_scope ?= { save_scope_as = sb_court_episode_actor }
+		var:sb_court_episode_other_scope ?= { save_scope_as = sb_court_episode_other }
+		var:sb_court_episode_candidate_scope ?= { save_scope_as = sb_court_episode_candidate }
+		var:sb_court_episode_other_candidate_scope ?= { save_scope_as = sb_court_episode_other_candidate }
+		var:sb_court_episode_ruler_scope ?= { save_scope_as = sb_court_episode_ruler }
+	}
+	option = {
+		name = sb_zulu_court.215.a
+		trigger = { hidden_trigger = { sb_court_card_215_valid = yes  } }
+		custom_tooltip = sb_court_guns_central_tt
+		custom_tooltip = sb_court_guns_chiefs_tt
+		hidden_effect = { if = { limit = { sb_court_card_215_valid = yes  } set_variable = sb_court_firearms_reward_var sb_boost_firearms_progress_minor = yes sb_court_grant_chiefly_concession = { RECEIPT = sb_court_guns_until_var DAYS = 1825 } } }
+		ai_chance = { base = 30 }
+	}
+	option = {
+		name = sb_zulu_court.215.b
+		trigger = { hidden_trigger = { sb_court_card_215_valid = yes has_variable = sb_court_episode_price_var } }
+		custom_tooltip = sb_court_episode_cost_tt
+		custom_tooltip = sb_court_guns_central_tt
+		hidden_effect = { if = { limit = { sb_court_card_215_valid = yes has_variable = sb_court_episode_price_var } add_treasury = sb_court_episode_payment set_variable = sb_court_firearms_reward_var sb_boost_firearms_progress_minor = yes } }
+		ai_chance = { base = 30 }
+	}
+	option = {
+		name = sb_zulu_court.215.z
+		default_option = yes
+		if = { limit = { sb_court_card_215_valid = yes } custom_tooltip = sb_court_refusal_prerogative_tt }
+		hidden_effect = { if = { limit = { sb_court_card_215_valid = yes } sb_change_prerogative = { VALUE = -5 } } }
+		ai_chance = { base = 20 }
+	}
+	after = { hidden_effect = { sb_court_episode_cleanup = yes sb_institutions_recalculate = yes } }
+}
+

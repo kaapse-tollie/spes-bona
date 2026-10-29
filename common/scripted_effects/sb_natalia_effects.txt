@@ -149,9 +149,6 @@ sb_apply_natalia_blood_river_military_setup = {
 			count = 1
 		}
 	}
-	ruler ?= {
-		transfer_to_formation = scope:sb_natalia_commando_scope
-	}
 }
 
 sb_apply_natalia_boer_republic_setup = {
@@ -418,6 +415,7 @@ sb_ensure_ora_ai_natal_front_commitment = {
 		every_military_formation = {
 			limit = {
 				is_army = yes
+				is_mobilized = no
 			}
 			fully_mobilize_army = yes
 		}
@@ -759,6 +757,35 @@ sb_found_natalia_peacefully = {
 	sb_create_natalia_frontier_republic_if_missing = yes
 	sb_assign_natalia_frontier_territory = yes
 	c:NAL ?= {
+		set_variable = { name = keep_current_ruler_var days = 7 }
+		# Muster before commissioning or transferring generals, which otherwise
+		# receive an automatic empty army before the authored commando exists.
+		if = {
+			limit = {
+				scope:sb_natalia_peaceful_founder_scope ?= {
+					has_variable = sb_natalia_blood_river_military_setup_pending_var
+				}
+			}
+			sb_apply_natalia_blood_river_military_setup = yes
+		}
+		else = {
+			create_military_formation = {
+				type = army
+				hq_region = sr:region_southern_africa
+				name = natalia_commando
+				save_scope_as = sb_natalia_commando_scope
+				combat_unit = {
+					type = unit_type:combat_unit_type_line_infantry
+					state_region = s:STATE_NATAL
+					count = 2
+				}
+				combat_unit = {
+					type = unit_type:combat_unit_type_dragoons
+					state_region = s:STATE_NATAL
+					count = 1
+				}
+			}
+		}
 		sb_apply_natalia_boer_republic_setup = yes
 		change_relations = {
 			country = scope:sb_natalia_peaceful_founder_scope
@@ -809,34 +836,8 @@ sb_found_natalia_peacefully = {
 				months = 120
 			}
 		}
-		if = {
-			limit = {
-				scope:sb_natalia_peaceful_founder_scope ?= {
-					has_variable = sb_natalia_blood_river_military_setup_pending_var
-				}
-			}
-			sb_apply_natalia_blood_river_military_setup = yes
-		}
-		else = {
-			create_military_formation = {
-				type = army
-				hq_region = sr:region_southern_africa
-				name = natalia_commando
-				save_scope_as = sb_natalia_commando_scope
-				combat_unit = {
-					type = unit_type:combat_unit_type_line_infantry
-					state_region = s:STATE_NATAL
-					count = 2
-				}
-				combat_unit = {
-					type = unit_type:combat_unit_type_dragoons
-					state_region = s:STATE_NATAL
-					count = 1
-				}
-			}
-			ruler ?= {
-				transfer_to_formation = scope:sb_natalia_commando_scope
-			}
+		ruler ?= {
+			transfer_to_formation = scope:sb_natalia_commando_scope
 		}
 	}
 	if = {
@@ -852,6 +853,11 @@ sb_found_natalia_peacefully = {
 sb_found_natalia_after_blood_river = {
 	sb_create_natalia_republic_if_missing = yes
 	sb_assign_natalia_republic_territory = yes
+	# The commando must exist before Pretorius arrives or is commissioned.
+	c:NAL ?= {
+		set_variable = { name = keep_current_ruler_var days = 7 }
+		sb_apply_natalia_blood_river_military_setup = yes
+	}
 	# If TRN already exists when Natalia is founded, Natalia should inherit
 	# Andries while Marthinus takes over the inland republic. This now covers
 	# both older compatibility saves and the live V2 "TRN formed before NAL"
@@ -925,7 +931,9 @@ sb_found_natalia_after_blood_river = {
 			country = root
 			value = 60
 		}
-		sb_apply_natalia_blood_river_military_setup = yes
+		ruler ?= {
+			transfer_to_formation = scope:sb_natalia_commando_scope
+		}
 		create_bidirectional_truce = {
 			country = c:ZUL
 			months = 120

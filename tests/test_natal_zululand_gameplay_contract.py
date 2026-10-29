@@ -499,11 +499,8 @@ class NatalZululandGameplayContractTests(unittest.TestCase):
             "common/scripted_progress_bars/sb_progress_bars.txt",
             "sb_zulu_dynastic_stability_bar",
         )
-        brave_drift = shortest_named_block_containing(
-            stability_bar, "if", "ruler = { has_trait = brave }"
-        )
-        self.assertIn('desc = "sb_zulu_drift_brave"', brave_drift)
-        self.assertIn("value = 1", brave_drift)
+        # Historical personality persists; ongoing drift comes only from court backing.
+        self.assertNotIn("monthly_progress", stability_bar)
 
         self.assertIn("c:ORA ?=", cede)
         self.assertIn("sb_found_natalia_peacefully = yes", cede)
@@ -537,7 +534,7 @@ class NatalZululandGameplayContractTests(unittest.TestCase):
         loc = text("localization/english/sb_natal_crisis_l_english.yml")
         self.assertIn("sb_natal_crisis.026.b:0", loc)
         self.assertNotIn("sb_natal_crisis.051.", loc)
-        self.assertIn(
+        self.assertNotIn(
             "sb_zulu_drift_brave:0", text("localization/english/sb_l_english.yml")
         )
 
@@ -807,7 +804,26 @@ class NatalZululandGameplayContractTests(unittest.TestCase):
             'sb_natal_shepstone_repeal_lock_tt:0 "The Shepstone System has been in force for at least #v 25 years#!."',
             localization,
         )
-        self.assertNotIn("je_sb_natal_indenture_program_v2_goal:0", localization)
+
+    def test_indenture_goal_reports_the_existing_population_target(self):
+        journal = object_block(
+            "common/journal_entries/1-13_sb_natal_interwar.txt",
+            "je_sb_natal_indenture_program_v2",
+        )
+        self.assertIn("goal_add_value = { value = 100000 }", journal)
+        self.assertIn("var:sb_natal_indian_origin_population_var >= 100000", journal)
+        self.assertIn("var:sb_natal_indian_origin_population_var", object_block_from_source(
+            journal, "current_value", "je_sb_natal_indenture_program_v2"
+        ))
+        localization = text("localization/english/sb_natal_interwar_l_english.yml")
+        # Explicit completion triggers use the progress description; _goal is redundant.
+        self.assertIn('progress_desc = je_sb_natal_indenture_program_progress', journal)
+        self.assertNotIn('je_sb_natal_indenture_program_v2_goal:', localization)
+        goal = [line for line in localization.splitlines()
+                if line.strip().startswith("je_sb_natal_indenture_program_progress:0")]
+        self.assertEqual(1, len(goal))
+        self.assertIn("Var('sb_natal_indian_origin_population_var').GetValue|K", goal[0])
+        self.assertIn("/ #v 100K#!", goal[0])
 
     def test_representative_southern_and_northern_content_uses_the_right_state(self):
         natal_blocks = (

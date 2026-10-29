@@ -1,0 +1,51 @@
+﻿sb_court_roster_member = {
+ scope = country
+ saved_scopes = { sb_court_country sb_court_character }
+ is_shown = {
+  exists = scope:sb_court_character
+  scope:sb_court_character ?= { sb_court_member_of_country = yes var:sb_court_following_var > 0 has_variable = sb_court_house_leader_var NOT = { sb_court_dynastic_candidate = yes } NOT = { is_ruler_of_own_country = yes } }
+ }
+}
+
+sb_court_roster_allegiance = {
+ scope = country saved_scopes = { sb_court_country sb_court_character }
+ is_shown = {
+  exists = scope:sb_court_character
+  scope:sb_court_character ?= {
+   var:sb_court_home_scope ?= scope:sb_court_country is_character_alive = yes
+   OR = { is_ruler_of_own_country = yes var:sb_court_current_weight_var > 0 sb_court_royal_candidate = yes }
+  }
+ }
+}
+
+sb_court_external_opposition = {
+ scope = country
+ is_shown = { var:sb_court_external_opposition_var > 0 }
+}
+
+sb_court_roster_candidate = {
+ scope = country saved_scopes = { sb_court_country sb_court_character }
+ is_shown = {
+  exists = scope:sb_court_character
+  scope:sb_court_character ?= { var:sb_court_home_scope ?= scope:sb_court_country sb_court_dynastic_candidate = yes NOT = { is_ruler_of_own_country = yes } NOT = { has_variable = sb_court_retired_var } }
+ }
+}
+sb_court_roster_commander = {
+ scope = country saved_scopes = { sb_court_country sb_court_character }
+ is_shown = {
+  exists = scope:sb_court_character
+  scope:sb_court_character ?= { sb_court_member_of_country = yes OR = { has_role_of_type = general has_role_of_type = admiral } }
+ }
+}
+
+sb_court_roster_councillor = {
+ scope = country saved_scopes = { sb_court_country sb_court_character }
+ is_shown = {
+  exists = scope:sb_court_character
+  scope:sb_court_character ?= {
+   sb_court_member_of_country = yes var:sb_court_following_var = 0
+   NOT = { sb_court_dynastic_candidate = yes } NOT = { is_ruler_of_own_country = yes }
+   NOT = { has_variable = sb_court_retired_var }
+  }
+ }
+}

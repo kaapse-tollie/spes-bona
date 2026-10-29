@@ -139,18 +139,20 @@ sb_cleanup_swazi_defensive_muster_for_play = {
 	if = {
 		limit = {
 			is_diplomatic_play_type = dp_conquer_state
-			c:ZUL ?= { has_variable = sb_zulu_swazi_play_scope var:sb_zulu_swazi_play_scope = root }
-			initiator = c:ZUL
-			target = c:SWZ
+			exists = initiator
+			exists = target
+			initiator ?= { country_definition = cd:ZUL has_variable = sb_zulu_swazi_play_scope var:sb_zulu_swazi_play_scope = root }
+			target ?= { country_definition = cd:SWZ }
 		}
-		c:SWZ ?= {
+		# The play retains its participants even when conquest removes the SWZ tag.
+		target ?= {
 			sb_swazi_end_defensive_muster = yes
 			if = {
 				limit = { has_variable = sb_swazi_ai_history_muster_selected_var }
 				remove_variable = sb_swazi_ai_history_muster_selected_var
 			}
 		}
-		c:ZUL ?= {
+		initiator ?= {
 			if = {
 				limit = { has_variable = sb_zulu_swazi_disarray_from_muster_var }
 				remove_variable = sb_zulu_swazi_disarray_from_muster_var
@@ -164,48 +166,17 @@ sb_cleanup_swazi_defensive_muster_for_play = {
 }
 
 sb_swazi_apply_guns_for_land_bonus = {
-	add_modifier = {
-		name = sb_swazi_frontier_rearmed
-		months = 60
-	}
-
+	add_modifier = { name = sb_swazi_frontier_rearmed months = 60 }
 	if = {
 		limit = {
 			has_journal_entry = je_sb_adopt_firearms
 			NOT = { has_variable = sb_firearms_modernized_var }
 		}
 		if = {
-			limit = {
-				NOT = { has_variable = sb_firearms_treaty_progress_months_var }
-			}
-			set_variable = {
-				name = sb_firearms_treaty_progress_months_var
-				value = 0
-			}
+			limit = { NOT = { has_variable = sb_firearms_supply_weeks_var } }
+			set_variable = { name = sb_firearms_supply_weeks_var value = 0 }
 		}
-		if = {
-			limit = {
-				NOT = { has_variable = sb_firearms_industry_progress_months_var }
-			}
-			set_variable = {
-				name = sb_firearms_industry_progress_months_var
-				value = 0
-			}
-		}
-		if = {
-			limit = { var:sb_firearms_treaty_progress_months_var < 24 }
-			change_variable = {
-				name = sb_firearms_treaty_progress_months_var
-				add = 9.6
-			}
-		}
-		if = {
-			limit = { var:sb_firearms_industry_progress_months_var < 24 }
-			change_variable = {
-				name = sb_firearms_industry_progress_months_var
-				add = 9.6
-			}
-		}
+		change_variable = { name = sb_firearms_supply_weeks_var add = 41.6 }
 		sb_update_firearms_progress = yes
 		sb_sync_iron_age_weapons_penalty = yes
 	}

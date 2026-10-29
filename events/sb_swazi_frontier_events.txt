@@ -40,18 +40,22 @@ sb_swazi_frontier.094 = {
 	}
 	flavor = sb_swazi_frontier.094.f
 
-	event_image = {
-		video = "gfx/event_pictures/africa_soldiers_breaking_protest.bk2"
-	}
+	gui_window = event_window_1char_tabloid
+	left_icon = scope:sb_court_frontier_sovereign
 
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-	icon = "gfx/interface/icons/event_icons/event_military.dds"
+	icon = "gfx/interface/icons/event_icons/event_portrait.dds"
 	duration = 3
 
-	immediate = { set_variable = { name = sb_zulu_swazi_outcome_popup_receipt_var months = 4 } }
+	immediate = {
+		sb_court_prepare_frontier_choice = yes
+		ruler ?= { save_scope_as = sb_court_frontier_sovereign }
+		set_variable = { name = sb_zulu_swazi_outcome_popup_receipt_var months = 4 }
+	}
 
 
 	trigger = {
+		sb_zulu_swazi_question_is_due = yes
 		has_variable = sb_zulu_swazi_outcome_delivery_pending_var
 		has_variable = sb_zulu_swazi_outcome_delivery_queued_var
 		NOT = { has_variable = sb_zulu_swazi_outcome_delivery_received_var }
@@ -155,6 +159,7 @@ sb_swazi_frontier.094 = {
 			if = { limit = { has_variable = sb_zulu_swazi_outcome_popup_receipt_var } remove_variable = sb_zulu_swazi_outcome_popup_receipt_var }
 		}
 		else = {
+			if = { limit = { NOT = { has_variable = sb_court_swazi_launch_support_var } } set_variable = sb_court_swazi_launch_support_var sb_court_frontier_support = yes }
 			remove_variable = sb_zulu_swazi_outcome_delivery_pending_var
 			if = { limit = { has_variable = sb_zulu_swazi_outcome_delivery_queued_var } remove_variable = sb_zulu_swazi_outcome_delivery_queued_var }
 			if = { limit = { has_variable = sb_zulu_swazi_outcome_popup_receipt_var } remove_variable = sb_zulu_swazi_outcome_popup_receipt_var }
@@ -204,9 +209,11 @@ sb_swazi_frontier.094 = {
 		if = { limit = { has_variable = sb_zulu_swazi_outcome_popup_receipt_var } remove_variable = sb_zulu_swazi_outcome_popup_receipt_var }
 		set_variable = { name = sb_zulu_swazi_outcome_delivery_received_var days = 30 }
 		sb_zulu_clear_swazi_question_ai_context = yes
-		custom_tooltip = sb_zulu_dynasty_lose_stability_5
+		custom_tooltip = sb_court_frontier_opposition_tt
+		if = { limit = { exists = scope:sb_court_frontier_neutral } custom_tooltip = sb_court_frontier_neutral_named_tt }
+		if = { limit = { exists = scope:sb_court_frontier_rival } custom_tooltip = sb_court_frontier_rival_named_tt }
 		hidden_effect = {
-			sb_zulu_remove_dynastic_stability_5 = yes
+			sb_court_frontier_opposition = yes
 		}
 		ai_chance = {
 			base = 50
@@ -267,33 +274,103 @@ sb_swazi_frontier.097 = {
 	desc = sb_swazi_frontier.097.d
 	flavor = sb_swazi_frontier.097.f
 
-	event_image = {
-		video = "gfx/event_pictures/africa_soldiers_breaking_protest.bk2"
-	}
+	gui_window = event_window_1char_tabloid
+	left_icon = scope:sb_court_outcome_portrait
 
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
-	icon = "gfx/interface/icons/event_icons/event_military.dds"
+	icon = "gfx/interface/icons/event_icons/event_portrait.dds"
 	duration = 3
 
 	trigger = {
 		sb_is_zulu_dynasty_country = yes
+		var:sb_court_swazi_outcome_pending_var ?= 1
+		NOR = { has_variable = sb_court_swazi_result_var has_variable = sb_court_swazi_outcome_open_var }
 	}
 
+	immediate = {
+		sb_court_prepare_campaign_result = { CAMPAIGN = swazi WON = yes }
+		set_variable = { name = sb_court_swazi_outcome_open_var months = 4 }
+		save_scope_as = sb_court_country
+		var:sb_court_swazi_patron_scope ?= { save_scope_as = sb_court_campaign_patron }
+		ruler ?= { save_scope_as = sb_court_outcome_portrait }
+		var:sb_court_swazi_ruler_scope ?= {
+			save_scope_as = sb_court_campaign_ruler
+			if = { limit = { is_character_alive = yes } save_scope_as = sb_court_outcome_portrait }
+		}
+	}
 	option = {
 		name = sb_swazi_frontier.097.a
 		default_option = yes
-		random_scope_character = {
-			limit = {
-				has_template = ZUL_dingane
-				is_character_alive = yes
-			}
-			add_modifier = {
-				name = sb_dingane_breaks_swazi
+		if = {
+			limit = { var:sb_court_swazi_outcome_pending_var ?= 1 NOT = { has_variable = sb_court_swazi_result_var } }
+			if = { limit = { scope:sb_court_campaign_ruler ?= { is_character_alive = yes } } custom_tooltip = sb_court_campaign_ruler_tt }
+			show_as_tooltip = { every_in_list = { variable = sb_court_swazi_changes limit = { sb_court_episode_neutral = yes scope:sb_court_campaign_patron ?= { is_character_alive = yes } } custom_tooltip = sb_court_campaign_supporter_tt } }
+			hidden_effect = {
+				sb_zulu_apply_swazi_campaign_victory = yes
+				remove_variable = sb_court_swazi_outcome_pending_var
+				remove_variable = sb_court_swazi_outcome_open_var
 			}
 		}
 		ai_chance = {
 			base = 100
 		}
+	}
+}
+
+sb_swazi_frontier.098 = {
+	type = country_event
+	placement = root
+	title = sb_swazi_frontier.098.t
+	desc = sb_swazi_frontier.098.d
+	flavor = sb_swazi_frontier.098.f
+	gui_window = event_window_1char_tabloid
+	left_icon = scope:sb_court_outcome_portrait
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_portrait.dds"
+	duration = 3
+
+	trigger = {
+		sb_is_zulu_dynasty_country = yes
+		var:sb_court_swazi_outcome_pending_var ?= 2
+		NOR = { has_variable = sb_court_swazi_result_var has_variable = sb_court_swazi_outcome_open_var }
+	}
+	immediate = {
+		sb_court_prepare_campaign_result = { CAMPAIGN = swazi WON = no }
+		set_variable = { name = sb_court_swazi_outcome_open_var months = 4 }
+		save_scope_as = sb_court_country
+		ruler ?= { save_scope_as = sb_court_outcome_portrait }
+		var:sb_court_swazi_ruler_scope ?= {
+			save_scope_as = sb_court_campaign_ruler
+			if = { limit = { is_character_alive = yes } save_scope_as = sb_court_outcome_portrait }
+		}
+		var:sb_court_swazi_patron_scope ?= { save_scope_as = sb_court_campaign_patron }
+	}
+	option = {
+		name = sb_swazi_frontier.098.a
+		default_option = yes
+		if = {
+			limit = { var:sb_court_swazi_outcome_pending_var ?= 2 NOT = { has_variable = sb_court_swazi_result_var } }
+			if = { limit = { scope:sb_court_campaign_ruler ?= { is_character_alive = yes } } custom_tooltip = sb_court_campaign_defeated_ruler_tt }
+			if = {
+				limit = { has_variable = sb_zulu_blood_river_defeat_var }
+				custom_tooltip = sb_swazi_frontier.098.prerogative_after_blood_river
+			}
+			else = { custom_tooltip = sb_swazi_frontier.098.prerogative }
+			show_as_tooltip = {
+				every_in_list = { variable = sb_court_swazi_changes limit = { sb_court_episode_neutral = yes scope:sb_court_campaign_patron ?= { is_character_alive = yes } } custom_tooltip = sb_court_campaign_opposition_tt }
+				every_in_list = {
+					variable = sb_court_swazi_defectors
+					limit = { sb_court_campaign_defector = yes scope:sb_court_country = { has_variable = sb_institutions_active_var } scope:sb_court_campaign_ruler ?= { is_character_alive = yes is_ruler_of_own_country = yes owner = scope:sb_court_country } scope:sb_court_campaign_patron ?= { is_character_alive = yes } }
+					custom_tooltip = sb_court_campaign_defector_tt
+				}
+			}
+			hidden_effect = {
+				sb_zulu_apply_swazi_campaign_defeat = yes
+				remove_variable = sb_court_swazi_outcome_pending_var
+				remove_variable = sb_court_swazi_outcome_open_var
+			}
+		}
+		ai_chance = { base = 100 }
 	}
 }
 

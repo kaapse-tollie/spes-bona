@@ -21,6 +21,12 @@ SKIP_TOP_LEVEL = {".git", ".claude", ".prime"}
 STEAM_APP_ID = "529340"
 CORE_DEPOT_ID = "529341"
 SUPPORTED_TARGETS = {
+    "1.14.5": {
+        "build": "25629520",
+        "branch": "1.14-openbeta",
+        "core_depot": CORE_DEPOT_ID,
+        "core_manifest": "5521822647051867164",
+    },
     "1.14.3": {
         "build": "25347710",
         "branch": "1.14-openbeta",
@@ -726,9 +732,18 @@ def validate(
         return errors
     target = inventory.get("target_game_version")
     validate_release_metadata(root, inventory, errors, steam_app_manifest)
+    if target == "1.14.5":
+        try:
+            from tools import build_1_14_5_depot_delta
+        except ImportError:
+            import build_1_14_5_depot_delta
+        try:
+            build_1_14_5_depot_delta.verify_current_target(game_root)
+        except (OSError, ValueError, KeyError) as exc:
+            errors.append(f"current 1.14.5 depot evidence: {exc}")
     if cmf_root is not None:
         validate_cmf_checkout(cmf_root, errors)
-    if inventory.get("target_game_version") in {"1.14.2", "1.14.3"}:
+    if inventory.get("target_game_version") in {"1.14.2", "1.14.3", "1.14.5"}:
         try:
             from tools import cmf_patch
         except ImportError:

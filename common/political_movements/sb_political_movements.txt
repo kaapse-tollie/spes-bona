@@ -609,10 +609,15 @@ movement_sb_cape_liberal = {
 		}
 	}
 
-	# Spawns for CAP while racial_segregation law is active (at start).
+	# Allow natural recreation under the Cape's opening citizenship law while its contest is active.
 	creation_trigger = {
 		country_definition = cd:CAP
-		has_law = law_type:law_racial_segregation
+		has_journal_entry = je_sb_cape_politics
+		NOT = { has_variable = sb_cape_liberal_resolved_var }
+		OR = {
+			has_law = law_type:law_subjecthood
+			has_law = law_type:law_racial_segregation
+		}
 	}
 
 	# Lower creation weight than ECSL (80 vs 100) — liberals are initially

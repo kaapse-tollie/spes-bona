@@ -1,0 +1,23 @@
+﻿# Country pulses, law changes, and a one-time post-history bootstrap.
+on_game_started_after_lobby = { on_actions = { sb_on_institutions_after_lobby } }
+on_monthly_pulse_country = { on_actions = { sb_on_institutions_monthly } }
+on_law_activated = { on_actions = { sb_on_institutions_law } }
+sb_on_institutions_after_lobby = {
+ effect = {
+  set_global_variable = sb_institutions_lobby_ready_global_var
+  every_country = { limit = { sb_institutions_profile_country = yes } sb_institutions_reconcile = yes }
+ }
+}
+sb_on_institutions_monthly = {
+ trigger = { sb_institutions_profile_country = yes is_country_alive = yes }
+ effect = { sb_institutions_monthly_update = yes }
+}
+
+# Native law activation has a Law root; route to its current owner.
+# Starting laws run before history adds the opening JE; reconcile only after history.
+# Rebel law inheritance also precedes land transfer and AI creation. Wait for a live
+# country; the existing revolution-start handoff reconciles the completed rebel court.
+sb_on_institutions_law = {
+ trigger = { has_global_variable = sb_institutions_lobby_ready_global_var owner ?= { is_country_alive = yes sb_institutions_profile_country = yes } }
+ effect = { owner ?= { sb_institutions_reconcile = yes } }
+}

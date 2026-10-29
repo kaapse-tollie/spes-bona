@@ -151,7 +151,14 @@ sb_klip_river_punitive_demands_fulfilled = {
 	p:x279045.state.owner = c:NAL
 	c:ZUL ?= {
 		is_country_alive = yes
-		is_direct_subject_of = c:NAL
 		is_subject_type = subject_type_protectorate
+		# Britain can hold the enforced goal before handing its protectorate to Natal.
+		OR = {
+			is_direct_subject_of = c:NAL
+			AND = {
+				is_direct_subject_of = c:GBR
+				c:NAL ?= { is_subject_of = c:GBR }
+			}
+		}
 	}
 }

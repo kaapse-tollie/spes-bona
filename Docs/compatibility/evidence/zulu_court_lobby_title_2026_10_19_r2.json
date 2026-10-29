@@ -1,0 +1,118 @@
+{
+  "date": "2026-10-19",
+  "revision": 2,
+  "supersedes_implementation": "zulu_court_lobby_title_2026_10_19.json",
+  "report": "DP verified lobby title; live title fails because nested SelectLocalization loses temporary script SCOPE.",
+  "log": {
+    "path": "/private/tmp/sb-court-lobby-error-2026-10-19-r2.log",
+    "sha256": "f3f1bfa1ee502e923a8ea95a3c71d1f9338b9e6c2429405137d2f9200dbc8502",
+    "lines": 2775,
+    "messages": {
+      "Promote 'SCOPE' returned nullptr, in 'SCOPE.GetRootScope.GetCountry.GetCustom('sb_prerogative_title')'": 925,
+      "FetchData failed for 'SCOPE.GetRootScope.GetCountry.GetCustom('sb_prerogative_title')'": 925,
+      "Data error in loc string 'sb_prerogative_country_title'": 925
+    }
+  },
+  "changes": [
+    {
+      "path": "localization/english/sb_institutions_l_english.yml",
+      "sha256": "ef38aeb501b97760e59d12f809212d489bbd0e24a2846e849f9ddf5ae4867338"
+    },
+    {
+      "path": "tests/test_zulu_institutions_core.py",
+      "sha256": "8afd9d8ca6ebd4baaf0d77f06285c2a8c8ec4fb29c6c1f92ec2a5b57eaf3c33a"
+    }
+  ],
+  "runtime_change": "sb_prerogative_country_title now uses [JournalEntry.GetCountry.GetCustom('sb_prerogative_title')]. The existing IsInGame lobby gate is unchanged.",
+  "native_sources": [
+    {
+      "path": "gui/multiplayer_lobby_types.gui",
+      "sha256": "87532678021af2db1d751dbe86e7e1ce12ab297af3ec015b0b9ab86f6b2819f4"
+    },
+    {
+      "path": "gui/journal_entry.gui",
+      "sha256": "003e16b9032099e5880c8a21c8efde2e2475fcf741c4d0d43868db85cb7ff33c"
+    },
+    {
+      "path": "gui/custom_tooltip.gui",
+      "sha256": "8bad795f0ede25bb9c4032071ec6cac3142006f1192f58407dcc9f6afa2d3096"
+    },
+    {
+      "path": "localization/english/interfaces_l_english.yml",
+      "sha256": "d5650c82653a0e0bd563580b5244690ec783364039c1045fa1aca43494c50ff8"
+    }
+  ],
+  "cmf_sources": [
+    {
+      "path": "gui/com_gui_journal_entry.gui",
+      "sha256": "9aa7a4006c593dd657a24870f23912216a8547c6db4c6fc5757b759300483ff8"
+    },
+    {
+      "path": "gui/com_gui_journal.gui",
+      "sha256": "6356db904ff70fd7c12c53a2d597e9ff9eadd72b96783deb8d1983e32034f1cd"
+    }
+  ],
+  "read_only_binary_inspection": {
+    "architecture": "arm64",
+    "function": "NPdxDataUtilityFunctions::SelectLocalization",
+    "extract": {
+      "path": "/private/tmp/sb-select-localization-2026-10-19.txt",
+      "sha256": "4b8398116e162b0e4db8a5ba5d95b9f7347a14853a09105041992cdb32b3f277"
+    },
+    "finding": "Selected key is parsed in a fresh localisation container without forwarding caller key/value pairs. The temporary script ROOT/SCOPE from JournalEntry.GetName is not available in the nested key.",
+    "gui_precedent": "Vanilla JOURNAL_ENTRY_TOOLTIP selects JOURNAL_ENTRY_STATUS, which reads JournalEntry.GetStatusDesc from the GUI binding."
+  },
+  "verification": {
+    "regression_failed_on_nested_scope_version": true,
+    "regression_limit": "Source-driven model of the observed context boundary; not an engine rendering test.",
+    "focused_tests_passed": 60,
+    "full_tests": {
+      "run": 592,
+      "passed": 583,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 8
+    },
+    "validator": {
+      "passed_warned_skipped": 15,
+      "total": 17,
+      "failed_gates": [
+        "unit tests",
+        "localization"
+      ],
+      "known_reviewed_prose_drift": [
+        "sb_klip_river_county.060",
+        "sb_klip_river_county.080",
+        "sb_natal_crisis.050"
+      ]
+    },
+    "tiger": {
+      "advisory": true,
+      "parser_game_version": "1.13.5",
+      "installed_game_version": "1.14.5",
+      "fatal": 0,
+      "errors": 1066,
+      "warnings": 141,
+      "added_diagnostic_messages": {
+        "warning(strict-scopes): `sb_bechuanaland_try_launch_pending_crisis` expects scope:sb_bechuanaland_warren_target to be set": 1
+      },
+      "removed_diagnostic_messages": {
+        "warning(strict-scopes): `sb_bechuanaland_configure_started_story_play` expects scope:sb_bechuanaland_container to be set": 1,
+        "warning(strict-scopes): `sb_bechuanaland_configure_started_story_play` expects scope:sb_bechuanaland_direct_initiator to be set": 1,
+        "warning(strict-scopes): `sb_bechuanaland_configure_started_story_play` expects scope:sb_bechuanaland_warren_target to be set": 1,
+        "warning(strict-scopes): `sb_bechuanaland_configure_started_story_play` expects scope:sb_bechuanaland_warren_direct_supporter to be set": 1,
+        "warning(strict-scopes): `sb_bechuanaland_configure_started_story_play` expects scope:sb_bechuanaland_total_war_target to be set": 1
+      }
+    },
+    "whitespace_check": "pass",
+    "raw_validation": {
+      "path": "/private/tmp/sb-court-lobby-2026-10-19-r2-validation.txt",
+      "sha256": "2244cb0e971722773387c44374f9f0fcf16cd174095f1b8ef5c28796d7c70cea"
+    }
+  },
+  "game_launched": false,
+  "engine_rendering": {
+    "lobby": "Verified by DP before this correction; gate unchanged.",
+    "live_title": "Pending DP: live panel, journal row and pinned JE tooltip, including Chiefly Prerogative after a constitution change."
+  }
+}

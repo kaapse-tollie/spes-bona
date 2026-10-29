@@ -63,18 +63,15 @@ sb_zululand_chiefdoms_runtime_valid = {
 	country_definition = cd:NAL
 	is_country_alive = yes
 	sb_zululand_chiefdoms_situation_active = yes
-	c:ZUL ?= {
-		is_country_alive = yes
-		is_direct_subject_of = c:NAL
-		is_subject_type = subject_type_sb_zulu_chiefdoms
-	}
+	global_var:sb_zululand_live_zul_scope ?= { is_country_alive = yes }
+
 }
 
 sb_zululand_chiefdoms_involved_actor = {
 	sb_zululand_chiefdoms_situation_active = yes
 	OR = {
 		country_definition = cd:NAL
-		country_definition = cd:ZUL
+		this = global_var:sb_zululand_live_zul_scope
 		country_definition = cd:GBR
 		AND = {
 			country_definition = cd:TRN
@@ -85,11 +82,11 @@ sb_zululand_chiefdoms_involved_actor = {
 
 sb_zululand_can_unload_refugees = {
 	country_definition = cd:NAL
-	sb_zululand_chiefdoms_situation_active = yes
+	sb_zululand_contest_interventions_available = yes
 	NOT = { has_variable = sb_zululand_refugees_unloaded_var }
 	NOT = { has_variable = sb_natal_shepstone_repeal_locked_var }
 	sb_natal_has_shepstone_system = yes
-	c:ZUL ?= {
+	global_var:sb_zululand_live_zul_scope ?= {
 		is_country_alive = yes
 		owns_entire_state_region = STATE_ZULULAND
 	}
@@ -97,12 +94,12 @@ sb_zululand_can_unload_refugees = {
 
 sb_zululand_can_return_claimant = {
 	country_definition = cd:NAL
-	sb_zululand_chiefdoms_situation_active = yes
+	sb_zululand_contest_interventions_available = yes
 	NOT = { has_variable = sb_zululand_claimant_returned_var }
-	c:ZUL ?= {
-		is_country_alive = yes
-		is_direct_subject_of = c:NAL
+	global_var:sb_zululand_live_zul_scope ?= {
+		var:sb_court_restoration_claimant_scope ?= { is_character_alive = yes }
 	}
+
 }
 
 sb_zululand_trn_is_eligible_participant = {
@@ -120,7 +117,9 @@ sb_zululand_defection_favors_zibhebhu = {
 			value >= 50
 		}
 	}
-	"c:NAL.average_sol_for_culture(cu:zulu)" >= "c:ZUL.average_sol_for_culture(cu:zulu)"
+	global_var:sb_zululand_live_zul_scope ?= {
+		"average_sol_for_culture(cu:zulu)" <= "c:NAL.average_sol_for_culture(cu:zulu)"
+	}
 }
 
 sb_zululand_nal_is_self_governing = {
@@ -165,8 +164,8 @@ sb_nrp_boundary_demand_can_open = {
 	OR = {
 		AND = {
 			NOT = { has_variable = sb_nrp_direct_annexation_rebellion_var }
-			exists = s:STATE_ZULULAND.region_state:ZUL
-			c:ZUL ?= {
+			global_var:sb_zululand_live_zul_scope ?= { any_scope_state = { state_region = s:STATE_ZULULAND } }
+			global_var:sb_zululand_live_zul_scope ?= {
 				is_country_alive = yes
 				is_at_war = no
 				is_active_in_diplomatic_play = no
@@ -174,7 +173,7 @@ sb_nrp_boundary_demand_can_open = {
 		}
 		AND = {
 			has_variable = sb_nrp_direct_annexation_rebellion_var
-			NOT = { c:ZUL ?= { is_country_alive = yes } }
+			NOT = { global_var:sb_zululand_live_zul_scope ?= { is_country_alive = yes } }
 			exists = s:STATE_ZULULAND.region_state:NAL
 		}
 	}
@@ -256,8 +255,8 @@ sb_nrp_boundary_current_launch_authority = {
 		exists = s:STATE_ZULULAND.region_state:NAL
 	}
 	trigger_else = {
-		c:ZUL ?= { is_country_alive = yes }
-		exists = s:STATE_ZULULAND.region_state:ZUL
+		global_var:sb_zululand_live_zul_scope ?= { is_country_alive = yes }
+		global_var:sb_zululand_live_zul_scope ?= { any_scope_state = { state_region = s:STATE_ZULULAND } }
 	}
 	trigger_if = {
 		limit = { is_direct_subject_of = c:TRN is_subject_type = subject_type_sb_boer_confederal_partner }
@@ -283,12 +282,38 @@ sb_nrp_boundary_current_political_authority = {
 		exists = s:STATE_ZULULAND.region_state:NAL
 	}
 	trigger_else = {
-		c:ZUL ?= { is_country_alive = yes }
-		exists = s:STATE_ZULULAND.region_state:ZUL
+		global_var:sb_zululand_live_zul_scope ?= { is_country_alive = yes }
+		global_var:sb_zululand_live_zul_scope ?= { any_scope_state = { state_region = s:STATE_ZULULAND } }
 	}
 	trigger_if = {
 		limit = { is_direct_subject_of = c:TRN is_subject_type = subject_type_sb_boer_confederal_partner }
 		c:TRN ?= { is_country_alive = yes is_subject = no }
 	}
 	trigger_else = { is_subject = no }
+}
+
+# Institutional exit suspends interventions, not the unresolved political record.
+sb_zululand_contest_interventions_available = {
+	sb_zululand_chiefdoms_situation_active = yes
+	c:NAL ?= { sb_zululand_chiefdoms_runtime_valid = yes }
+	global_var:sb_zululand_live_zul_scope ?= { has_variable = sb_institutions_active_var }
+}
+
+sb_zululand_can_bribe_chief = {
+	sb_zululand_contest_interventions_available = yes
+	OR = { country_definition = cd:NAL country_definition = cd:TRN }
+	NOT = { has_variable = sb_zululand_bribe_open_var }
+	global_var:sb_zululand_live_zul_scope ?= {
+		any_in_list = { variable = sb_court_members sb_zululand_neutral_chief = yes }
+	}
+}
+
+# Character scope in a foreign action or tooltip: never relies on a saved ROOT.
+sb_zululand_neutral_chief = {
+	sb_court_adult_member = yes
+	sb_court_alignment_eligible = yes
+	owner ?= global_var:sb_zululand_live_zul_scope
+	is_in_exile_pool = no
+	is_in_void = no
+	var:sb_court_alignment_var = 0
 }

@@ -1,0 +1,187 @@
+﻿# Country helpers capture the actor; callback ROOT can remain the exact diplomatic play.
+sb_court_choose_opposition_patron = {
+ # Opposition to the living ruler uses current backing, not future succession promises.
+ save_scope_as = sb_court_country
+ remove_variable = sb_court_selected_patron_scope
+ set_variable = { name = sb_court_largest_rival_var value = 0 }
+ every_in_list = {
+  variable = sb_court_members limit = { sb_court_episode_prince = yes }
+  scope:sb_court_country = { set_variable = { name = sb_court_largest_rival_var value = { value = var:sb_court_largest_rival_var min = prev.var:sb_court_current_weight_var } } }
+ }
+ ordered_in_list = {
+  variable = sb_court_members
+  limit = { sb_court_episode_prince = yes var:sb_court_current_weight_var = scope:sb_court_country.var:sb_court_largest_rival_var }
+  order_by = sb_court_claimant_identity_order position = 0
+  scope:sb_court_country = { set_variable = { name = sb_court_selected_patron_scope value = prev } }
+ }
+ remove_variable = sb_court_largest_rival_var
+}
+sb_court_recruit_neutral = {
+ # A repeated invocation chooses a different house because the first is now committed.
+ if = {
+  limit = { has_variable = sb_institutions_active_var $PATRON$ ?= { is_character_alive = yes } }
+  $PATRON$ = { save_scope_as = sb_court_recruit_patron }
+  random_in_list = {
+   variable = sb_court_members limit = { sb_court_episode_neutral = yes }
+   sb_court_commit_to_patron = { PATRON = scope:sb_court_recruit_patron }
+   scope:sb_court_country = { add_to_variable_list = { name = $LIST$ target = prev } }
+  }
+ }
+}
+# Reserve named houses for the popup without changing allegiance, popularity or P.
+sb_court_plan_campaign_house = {
+ if = {
+  limit = { has_variable = sb_institutions_active_var var:sb_court_$CAMPAIGN$_patron_scope ?= { is_character_alive = yes } }
+  random_in_list = {
+   variable = sb_court_members
+   limit = {
+    sb_court_episode_neutral = yes
+    NOT = { scope:sb_court_country = { is_target_in_variable_list = { name = sb_court_$CAMPAIGN$_changes target = prev } } }
+   }
+   scope:sb_court_country = { add_to_variable_list = { name = sb_court_$CAMPAIGN$_changes target = prev } }
+  }
+ }
+}
+sb_court_plan_campaign_defeat = {
+ if = {
+  limit = { has_variable = sb_institutions_active_var var:sb_court_$CAMPAIGN$_patron_scope ?= { is_character_alive = yes } }
+  ordered_in_list = {
+   variable = sb_court_members
+   limit = { sb_court_episode_neutral = yes }
+   order_by = var:sb_court_represented_weight_var position = 0 check_range_bounds = no
+   scope:sb_court_country = { add_to_variable_list = { name = sb_court_$CAMPAIGN$_changes target = prev } }
+  }
+  if = {
+   # Do not attribute a predecessor's defeat to the new sovereign's supporters.
+   limit = { var:sb_court_$CAMPAIGN$_ruler_scope ?= { is_character_alive = yes is_ruler_of_own_country = yes owner = scope:sb_court_country } }
+   ordered_in_list = {
+    variable = sb_court_members
+    limit = { sb_court_campaign_defector = yes }
+    order_by = { value = var:sb_court_represented_weight_var multiply = -1 }
+    max = 2 check_range_bounds = no
+    scope:sb_court_country = { add_to_variable_list = { name = sb_court_$CAMPAIGN$_defectors target = prev } }
+   }
+  }
+ }
+}
+sb_court_prepare_campaign_result = {
+ save_scope_as = sb_court_country
+ if = {
+  limit = { NOR = { has_variable = sb_court_$CAMPAIGN$_result_var has_variable = sb_court_$CAMPAIGN$_prepared_var } }
+  set_variable = sb_court_$CAMPAIGN$_prepared_var
+  clear_variable_list = sb_court_$CAMPAIGN$_changes
+  clear_variable_list = sb_court_$CAMPAIGN$_defectors
+  sb_court_calculate_backing = yes
+  if = {
+   limit = { NOT = { has_variable = sb_court_$CAMPAIGN$_ruler_scope } }
+   ruler ?= { scope:sb_court_country = { set_variable = { name = sb_court_$CAMPAIGN$_ruler_scope value = prev } } }
+  }
+  if = {
+   limit = { always = $WON$ }
+   var:sb_court_$CAMPAIGN$_ruler_scope ?= { scope:sb_court_country = { set_variable = { name = sb_court_$CAMPAIGN$_patron_scope value = prev } } }
+   sb_court_plan_campaign_house = { CAMPAIGN = $CAMPAIGN$ }
+   sb_court_plan_campaign_house = { CAMPAIGN = $CAMPAIGN$ }
+  }
+  else = {
+   sb_court_choose_opposition_patron = yes
+   var:sb_court_selected_patron_scope ?= { scope:sb_court_country = { set_variable = { name = sb_court_$CAMPAIGN$_patron_scope value = prev } } }
+   sb_court_plan_campaign_defeat = { CAMPAIGN = $CAMPAIGN$ }
+  }
+ }
+}
+sb_court_campaign_result = {
+ save_scope_as = sb_court_country
+ if = {
+  limit = { NOT = { has_variable = sb_court_$CAMPAIGN$_result_var } }
+  if = { limit = { always = $WON$ } sb_court_prepare_campaign_result = { CAMPAIGN = $CAMPAIGN$ WON = yes } }
+  else = { sb_court_prepare_campaign_result = { CAMPAIGN = $CAMPAIGN$ WON = no } }
+  set_variable = sb_court_$CAMPAIGN$_result_var
+  remove_variable = sb_court_$CAMPAIGN$_prepared_var
+  var:sb_court_$CAMPAIGN$_ruler_scope ?= {
+   if = {
+    limit = { is_character_alive = yes }
+    add_modifier = sb_court_$CAMPAIGN$_$OUTCOME$
+    if = { limit = { always = $WON$ has_modifier = sb_zulu_dynastic_crisis } remove_modifier = sb_zulu_dynastic_crisis }
+   }
+  }
+  if = {
+   limit = { has_variable = sb_institutions_active_var var:sb_court_$CAMPAIGN$_patron_scope ?= { is_character_alive = yes } }
+   every_in_list = {
+    variable = sb_court_$CAMPAIGN$_changes
+    limit = { sb_court_episode_neutral = yes }
+    sb_court_commit_to_patron = { PATRON = scope:sb_court_country.var:sb_court_$CAMPAIGN$_patron_scope }
+   }
+   if = {
+    limit = { NOT = { always = $WON$ } var:sb_court_$CAMPAIGN$_ruler_scope ?= { is_character_alive = yes is_ruler_of_own_country = yes owner = scope:sb_court_country } }
+    every_in_list = {
+     variable = sb_court_$CAMPAIGN$_defectors
+     limit = { sb_court_campaign_defector = yes }
+     sb_court_commit_to_patron = { PATRON = scope:sb_court_country.var:sb_court_$CAMPAIGN$_patron_scope }
+    }
+   }
+  }
+  if = { limit = { NOT = { always = $WON$ } } sb_change_prerogative = { VALUE = $DEFEAT_PREROGATIVE$ } }
+  sb_institutions_recalculate = yes
+ }
+}
+sb_court_generic_war_result = {
+ save_scope_as = sb_court_country
+ sb_court_calculate_backing = yes
+ clear_variable_list = sb_court_generic_changes
+ if = { limit = { always = $WON$ } sb_court_recruit_neutral = { PATRON = ruler LIST = sb_court_generic_changes } }
+ else = {
+  sb_court_choose_opposition_patron = yes
+  sb_court_recruit_neutral = { PATRON = var:sb_court_selected_patron_scope LIST = sb_court_generic_changes }
+  sb_court_recruit_neutral = { PATRON = var:sb_court_selected_patron_scope LIST = sb_court_generic_changes }
+ }
+ if = { limit = { NOT = { always = $WON$ } } sb_change_prerogative = { VALUE = -25 } }
+ sb_institutions_recalculate = yes
+}
+# Decision actors are saved before the player chooses and revalidated on execution.
+sb_court_prepare_frontier_choice = {
+ save_scope_as = sb_court_country
+ sb_court_calculate_backing = yes
+ sb_court_choose_opposition_patron = yes
+ var:sb_court_selected_patron_scope ?= { save_scope_as = sb_court_frontier_rival }
+ random_in_list = { variable = sb_court_members limit = { sb_court_episode_neutral = yes } save_scope_as = sb_court_frontier_neutral }
+ random_in_list = { variable = sb_court_members limit = { sb_court_episode_ally = yes NOT = { has_variable = sb_court_successor_pledge_scope } } save_scope_as = sb_court_frontier_ally }
+ if = { limit = { NOT = { exists = scope:sb_court_frontier_ally } } random_in_list = { variable = sb_court_members limit = { sb_court_episode_ally = yes } save_scope_as = sb_court_frontier_ally } }
+ random_in_list = { variable = sb_court_members limit = { OR = { sb_court_episode_neutral = yes sb_court_episode_ally = yes } } save_scope_as = sb_court_frontier_broker }
+ random_in_list = { variable = sb_court_members limit = { sb_court_episode_prince = yes has_template = ZUL_cetshwayo_heir } save_scope_as = sb_court_frontier_successor }
+ if = { limit = { NOT = { exists = scope:sb_court_frontier_successor } } var:sb_court_selected_patron_scope ?= { save_scope_as = sb_court_frontier_successor } }
+}
+sb_court_frontier_support = {
+ save_scope_as = sb_court_country
+ if = { limit = { scope:sb_court_frontier_neutral ?= { sb_court_episode_neutral = yes } } scope:sb_court_frontier_neutral = { sb_court_commit_to_patron = { PATRON = scope:sb_court_country.ruler } } }
+ sb_institutions_recalculate = yes
+}
+sb_court_frontier_opposition = {
+ save_scope_as = sb_court_country
+ if = { limit = { scope:sb_court_frontier_neutral ?= { sb_court_episode_neutral = yes } scope:sb_court_frontier_rival ?= { sb_court_episode_prince = yes } } scope:sb_court_frontier_neutral = { sb_court_commit_to_patron = { PATRON = scope:sb_court_frontier_rival } } }
+ sb_institutions_recalculate = yes
+}
+sb_court_klip_cession = {
+ save_scope_as = sb_court_country
+ scope:sb_court_frontier_ally ?= {
+  if = {
+   limit = { sb_court_episode_ally = yes }
+   sb_court_withdraw_personal = yes
+   if = {
+    limit = { NOT = { has_variable = sb_court_successor_pledge_scope } scope:sb_court_frontier_successor ?= { sb_court_episode_prince = yes } }
+    set_variable = { name = sb_court_successor_pledge_scope value = scope:sb_court_frontier_successor }
+   }
+  }
+ }
+ sb_institutions_recalculate = yes
+}
+sb_court_klip_broker = {
+ save_scope_as = sb_court_country
+ scope:sb_court_frontier_broker ?= {
+  if = {
+   limit = { OR = { sb_court_episode_neutral = yes sb_court_episode_ally = yes } }
+   add_modifier = { name = sb_court_frontier_broker years = 5 }
+   sb_court_commit_to_patron = { PATRON = scope:sb_court_country.ruler }
+  }
+ }
+ sb_institutions_recalculate = yes
+}

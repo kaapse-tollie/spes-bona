@@ -1,152 +1,17 @@
-﻿# Zulu dynastic stability helpers
-#
-# Structure:
-#   - small additive/removal helpers for the 0-100 dynastic bar
-#   - monthly housekeeping that updates malus tiers and opens follow-up content
-#   - succession / collapse resolution now lives in
-#     `sb_zulu_dynasty_succession_effects.txt`
-#
-# The bar is intentionally reused by later content:
-#   Blood River, Port Natal, and the Swazi question all feed back into the same
-#   dynastic-stability story rather than opening disconnected minigames.
+﻿# Zulu historical shocks feed the ongoing institutional model.
+# Helper names retained for authored Blood River, Port Natal, and frontier hooks.
 
-sb_zulu_sync_ai_dynasty_authority = {
-	if = {
-		limit = {
-			is_ai = yes
-			NOT = { has_modifier = sb_zulu_ai_dynasty_authority }
-		}
-		add_modifier = { name = sb_zulu_ai_dynasty_authority }
-	}
-	if = {
-		limit = {
-			NOT = { is_ai = yes }
-			has_modifier = sb_zulu_ai_dynasty_authority
-		}
-		remove_modifier = sb_zulu_ai_dynasty_authority
-	}
-}
 
-sb_zulu_clear_ai_dynasty_authority = {
-	if = {
-		limit = {
-			has_modifier = sb_zulu_ai_dynasty_authority
-		}
-		remove_modifier = sb_zulu_ai_dynasty_authority
-	}
-}
 
-sb_zulu_add_dynastic_stability_5 = {
-	if = {
-		limit = {
-			has_journal_entry = je_sb_zulu_kingdom
-		}
-		je:je_sb_zulu_kingdom ?= {
-			add_progress = {
-				value = 5
-				name = sb_zulu_dynastic_stability_bar
-			}
-		}
-	}
-}
+sb_zulu_add_dynastic_stability_10 = { sb_change_prerogative = { VALUE = 10 } }
 
-sb_zulu_add_dynastic_stability_10 = {
-	if = {
-		limit = {
-			has_journal_entry = je_sb_zulu_kingdom
-		}
-		je:je_sb_zulu_kingdom ?= {
-			add_progress = {
-				value = 10
-				name = sb_zulu_dynastic_stability_bar
-			}
-		}
-	}
-}
+sb_zulu_add_dynastic_stability_20 = { sb_change_prerogative = { VALUE = 20 } }
 
-sb_zulu_add_dynastic_stability_20 = {
-	if = {
-		limit = {
-			has_journal_entry = je_sb_zulu_kingdom
-		}
-		je:je_sb_zulu_kingdom ?= {
-			add_progress = {
-				value = 20
-				name = sb_zulu_dynastic_stability_bar
-			}
-		}
-	}
-}
+sb_zulu_remove_dynastic_stability_5 = { sb_change_prerogative = { VALUE = -5 } }
 
-sb_zulu_remove_dynastic_stability_5 = {
-	if = {
-		limit = {
-			has_journal_entry = je_sb_zulu_kingdom
-		}
-		je:je_sb_zulu_kingdom ?= {
-			add_progress = {
-				value = -5
-				name = sb_zulu_dynastic_stability_bar
-			}
-		}
-	}
-}
 
-sb_zulu_remove_dynastic_stability_2 = {
-	if = {
-		limit = {
-			has_journal_entry = je_sb_zulu_kingdom
-		}
-		je:je_sb_zulu_kingdom ?= {
-			add_progress = {
-				value = -2
-				name = sb_zulu_dynastic_stability_bar
-			}
-		}
-	}
-}
 
-sb_zulu_remove_dynastic_stability_1 = {
-	if = {
-		limit = {
-			has_journal_entry = je_sb_zulu_kingdom
-		}
-		je:je_sb_zulu_kingdom ?= {
-			add_progress = {
-				value = -1
-				name = sb_zulu_dynastic_stability_bar
-			}
-		}
-	}
-}
 
-sb_zulu_remove_dynastic_stability_10 = {
-	if = {
-		limit = {
-			has_journal_entry = je_sb_zulu_kingdom
-		}
-		je:je_sb_zulu_kingdom ?= {
-			add_progress = {
-				value = -10
-				name = sb_zulu_dynastic_stability_bar
-			}
-		}
-	}
-}
-
-sb_zulu_set_dynastic_stability_33 = {
-	if = {
-		limit = {
-			has_journal_entry = je_sb_zulu_kingdom
-		}
-		je:je_sb_zulu_kingdom ?= {
-			set_bar_progress = {
-				value = 33
-				name = sb_zulu_dynastic_stability_bar
-			}
-		}
-	}
-}
 
 sb_boost_firearms_progress_minor = {
 	if = {
@@ -155,33 +20,16 @@ sb_boost_firearms_progress_minor = {
 			NOT = { has_variable = sb_firearms_modernized_var }
 		}
 		if = {
-			limit = {
-				NOT = { has_variable = sb_firearms_treaty_progress_months_var }
-			}
-			set_variable = {
-				name = sb_firearms_treaty_progress_months_var
-				value = 0
-			}
+			limit = { NOT = { has_variable = sb_firearms_supply_weeks_var } }
+			set_variable = { name = sb_firearms_supply_weeks_var value = 0 }
 		}
+		# Tooltip previews do not execute the initialisation above.
 		if = {
-			limit = {
-				NOT = { has_variable = sb_firearms_industry_progress_months_var }
-			}
-			set_variable = {
-				name = sb_firearms_industry_progress_months_var
-				value = 0
-			}
+			limit = { has_variable = sb_firearms_supply_weeks_var }
+			change_variable = { name = sb_firearms_supply_weeks_var add = 10.4 }
+			sb_update_firearms_progress = yes
+			sb_sync_iron_age_weapons_penalty = yes
 		}
-		change_variable = {
-			name = sb_firearms_treaty_progress_months_var
-			add = 2.4
-		}
-		change_variable = {
-			name = sb_firearms_industry_progress_months_var
-			add = 2.4
-		}
-		sb_update_firearms_progress = yes
-		sb_sync_iron_age_weapons_penalty = yes
 	}
 }
 
@@ -190,25 +38,27 @@ sb_boost_firearms_progress_minor = {
 # -----------------------------------------------------------------------------
 
 sb_zulu_apply_blood_river_victory = {
-	if = { limit = { has_variable = sb_zulu_dynastic_collapse_pending_var } remove_variable = sb_zulu_dynastic_collapse_pending_var }
-	set_variable = sb_zulu_blood_river_victory_var
-	sb_zulu_add_dynastic_stability_20 = yes
-	sb_boost_firearms_progress_minor = yes
+ if = {
+  limit = { NOT = { has_variable = sb_court_blood_river_result_var } }
+  set_variable = sb_zulu_blood_river_victory_var
+  sb_court_campaign_result = { CAMPAIGN = blood_river OUTCOME = victory WON = yes DEFEAT_PREROGATIVE = -25 }
+ }
 }
 
 sb_zulu_apply_blood_river_defeat = {
-	sb_zulu_remove_dynastic_stability_10 = yes
-	random_scope_character = {
-		limit = {
-			has_template = ZUL_dingane
-			is_character_alive = yes
-		}
-		add_modifier = {
-			name = sb_dingane_humbled
-			months = 120
-		}
-	}
-	sb_boost_firearms_progress_minor = yes
+ if = {
+  limit = { NOT = { has_variable = sb_court_blood_river_result_var } }
+  set_variable = sb_zulu_blood_river_defeat_var
+  sb_court_campaign_result = { CAMPAIGN = blood_river OUTCOME = defeat WON = no DEFEAT_PREROGATIVE = -25 }
+ }
+}
+
+sb_zulu_apply_blood_river_neutral = {
+ if = {
+  limit = { NOT = { has_variable = sb_court_blood_river_result_var } }
+  set_variable = sb_court_blood_river_result_var
+  sb_boost_firearms_progress_minor = yes
+ }
 }
 
 sb_zulu_clear_swazi_question_ai_context = {
@@ -216,6 +66,7 @@ sb_zulu_clear_swazi_question_ai_context = {
 	if = { limit = { has_variable = sb_zulu_swazi_ai_guns_south_var } remove_variable = sb_zulu_swazi_ai_guns_south_var }
 	if = { limit = { has_variable = sb_zulu_swazi_ai_lost_blood_river_var } remove_variable = sb_zulu_swazi_ai_lost_blood_river_var }
 	if = { limit = { has_variable = sb_zulu_swazi_ai_won_blood_river_var } remove_variable = sb_zulu_swazi_ai_won_blood_river_var }
+	if = { limit = { has_variable = sb_zulu_swazi_ai_white_peace_var } remove_variable = sb_zulu_swazi_ai_white_peace_var }
 }
 
 sb_zulu_mark_swazi_question_after_honour_deal = {
@@ -246,17 +97,7 @@ sb_zulu_maybe_open_swazi_question = {
 			has_journal_entry = je_sb_zulu_kingdom
 			NOT = { has_variable = sb_zulu_swazi_question_opened_var }
 			NOT = { has_variable = sb_zulu_swazi_war_active_var }
-			OR = {
-				has_variable = sb_zulu_swazi_ai_honour_deal_var
-				has_variable = sb_zulu_swazi_ai_guns_south_var
-				has_variable = sb_zulu_swazi_ai_lost_blood_river_var
-				has_variable = sb_zulu_swazi_ai_won_blood_river_var
-				has_variable = sb_zulu_blood_river_resolved_var
-				has_variable = sb_zulu_port_natal_raid_available_var
-				c:ORA ?= {
-					has_variable = sb_natal_path_resolved_var
-				}
-			}
+			sb_zulu_swazi_question_is_due = yes
 			is_at_war = no
 			is_active_in_diplomatic_play = no
 			c:SWZ ?= {
@@ -291,438 +132,4 @@ sb_zulu_finalize_port_natal_survival = {
 		remove_variable = sb_port_natal_british_war_var
 	}
 	sb_zulu_add_dynastic_stability_20 = yes
-}
-
-sb_zulu_enable_dynastic_claims = {
-	set_variable = sb_zulu_enforce_dynastic_claims_var
-	if = {
-		limit = {
-			NOT = { has_modifier = sb_zulu_enforcing_dynastic_claims }
-		}
-		add_modifier = {
-			name = sb_zulu_enforcing_dynastic_claims
-		}
-	}
-}
-
-sb_zulu_disable_dynastic_claims = {
-	if = {
-		limit = { has_variable = sb_zulu_enforce_dynastic_claims_var }
-		remove_variable = sb_zulu_enforce_dynastic_claims_var
-	}
-	if = {
-		limit = { has_modifier = sb_zulu_enforcing_dynastic_claims }
-		remove_modifier = sb_zulu_enforcing_dynastic_claims
-	}
-}
-
-# -----------------------------------------------------------------------------
-# Dynastic-stability modifier ladder
-# -----------------------------------------------------------------------------
-
-sb_zulu_clear_dynastic_stability_modifiers = {
-	if = {
-		limit = { has_modifier = sb_zulu_dynastic_stability_decile_0 }
-		remove_modifier = sb_zulu_dynastic_stability_decile_0
-	}
-	if = {
-		limit = { has_modifier = sb_zulu_dynastic_stability_decile_1 }
-		remove_modifier = sb_zulu_dynastic_stability_decile_1
-	}
-	if = {
-		limit = { has_modifier = sb_zulu_dynastic_stability_decile_2 }
-		remove_modifier = sb_zulu_dynastic_stability_decile_2
-	}
-	if = {
-		limit = { has_modifier = sb_zulu_dynastic_stability_decile_3 }
-		remove_modifier = sb_zulu_dynastic_stability_decile_3
-	}
-	if = {
-		limit = { has_modifier = sb_zulu_dynastic_stability_decile_4 }
-		remove_modifier = sb_zulu_dynastic_stability_decile_4
-	}
-	if = {
-		limit = { has_modifier = sb_zulu_dynastic_stability_decile_5 }
-		remove_modifier = sb_zulu_dynastic_stability_decile_5
-	}
-	if = {
-		limit = { has_modifier = sb_zulu_dynastic_stability_decile_6 }
-		remove_modifier = sb_zulu_dynastic_stability_decile_6
-	}
-	if = {
-		limit = { has_modifier = sb_zulu_dynastic_stability_decile_7 }
-		remove_modifier = sb_zulu_dynastic_stability_decile_7
-	}
-	if = {
-		limit = { has_modifier = sb_zulu_dynastic_stability_decile_8 }
-		remove_modifier = sb_zulu_dynastic_stability_decile_8
-	}
-	if = {
-		limit = { has_modifier = sb_zulu_dynastic_stability_decile_9 }
-		remove_modifier = sb_zulu_dynastic_stability_decile_9
-	}
-	if = {
-		limit = { has_modifier = sb_zulu_dynastic_stability_decile_10 }
-		remove_modifier = sb_zulu_dynastic_stability_decile_10
-	}
-	if = {
-		limit = { has_modifier = sb_zulu_dynastic_stability_decile_11 }
-		remove_modifier = sb_zulu_dynastic_stability_decile_11
-	}
-	if = {
-		limit = { has_modifier = sb_zulu_dynastic_stability_decile_12 }
-		remove_modifier = sb_zulu_dynastic_stability_decile_12
-	}
-	if = {
-		limit = { has_modifier = sb_zulu_dynastic_stability_decile_13 }
-		remove_modifier = sb_zulu_dynastic_stability_decile_13
-	}
-	if = {
-		limit = { has_modifier = sb_zulu_dynastic_stability_decile_14 }
-		remove_modifier = sb_zulu_dynastic_stability_decile_14
-	}
-	if = {
-		limit = { has_modifier = sb_zulu_dynastic_stability_decile_15 }
-		remove_modifier = sb_zulu_dynastic_stability_decile_15
-	}
-	if = {
-		limit = { has_modifier = sb_zulu_dynastic_stability_decile_16 }
-		remove_modifier = sb_zulu_dynastic_stability_decile_16
-	}
-	if = {
-		limit = { has_modifier = sb_zulu_dynastic_stability_decile_17 }
-		remove_modifier = sb_zulu_dynastic_stability_decile_17
-	}
-	if = {
-		limit = { has_modifier = sb_zulu_dynastic_stability_decile_18 }
-		remove_modifier = sb_zulu_dynastic_stability_decile_18
-	}
-	if = {
-		limit = { has_modifier = sb_zulu_dynastic_stability_decile_19 }
-		remove_modifier = sb_zulu_dynastic_stability_decile_19
-	}
-	if = {
-		limit = { has_variable = sb_zulu_dynastic_stability_applied_tier_var }
-		remove_variable = sb_zulu_dynastic_stability_applied_tier_var
-	}
-}
-
-sb_zulu_update_dynastic_stability_modifiers = {
-	set_variable = { name = sb_zulu_dynastic_stability_target_tier_var value = 19 }
-	if = {
-		limit = { je:je_sb_zulu_kingdom ?= { "scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 4 } }
-		set_variable = { name = sb_zulu_dynastic_stability_target_tier_var value = 0 }
-	}
-	else_if = {
-		limit = { je:je_sb_zulu_kingdom ?= { "scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 9 } }
-		set_variable = { name = sb_zulu_dynastic_stability_target_tier_var value = 1 }
-	}
-	else_if = {
-		limit = { je:je_sb_zulu_kingdom ?= { "scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 14 } }
-		set_variable = { name = sb_zulu_dynastic_stability_target_tier_var value = 2 }
-	}
-	else_if = {
-		limit = { je:je_sb_zulu_kingdom ?= { "scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 19 } }
-		set_variable = { name = sb_zulu_dynastic_stability_target_tier_var value = 3 }
-	}
-	else_if = {
-		limit = { je:je_sb_zulu_kingdom ?= { "scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 24 } }
-		set_variable = { name = sb_zulu_dynastic_stability_target_tier_var value = 4 }
-	}
-	else_if = {
-		limit = { je:je_sb_zulu_kingdom ?= { "scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 29 } }
-		set_variable = { name = sb_zulu_dynastic_stability_target_tier_var value = 5 }
-	}
-	else_if = {
-		limit = { je:je_sb_zulu_kingdom ?= { "scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 34 } }
-		set_variable = { name = sb_zulu_dynastic_stability_target_tier_var value = 6 }
-	}
-	else_if = {
-		limit = { je:je_sb_zulu_kingdom ?= { "scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 39 } }
-		set_variable = { name = sb_zulu_dynastic_stability_target_tier_var value = 7 }
-	}
-	else_if = {
-		limit = { je:je_sb_zulu_kingdom ?= { "scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 44 } }
-		set_variable = { name = sb_zulu_dynastic_stability_target_tier_var value = 8 }
-	}
-	else_if = {
-		limit = { je:je_sb_zulu_kingdom ?= { "scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 49 } }
-		set_variable = { name = sb_zulu_dynastic_stability_target_tier_var value = 9 }
-	}
-	else_if = {
-		limit = { je:je_sb_zulu_kingdom ?= { "scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 54 } }
-		set_variable = { name = sb_zulu_dynastic_stability_target_tier_var value = 10 }
-	}
-	else_if = {
-		limit = { je:je_sb_zulu_kingdom ?= { "scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 59 } }
-		set_variable = { name = sb_zulu_dynastic_stability_target_tier_var value = 11 }
-	}
-	else_if = {
-		limit = { je:je_sb_zulu_kingdom ?= { "scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 64 } }
-		set_variable = { name = sb_zulu_dynastic_stability_target_tier_var value = 12 }
-	}
-	else_if = {
-		limit = { je:je_sb_zulu_kingdom ?= { "scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 69 } }
-		set_variable = { name = sb_zulu_dynastic_stability_target_tier_var value = 13 }
-	}
-	else_if = {
-		limit = { je:je_sb_zulu_kingdom ?= { "scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 74 } }
-		set_variable = { name = sb_zulu_dynastic_stability_target_tier_var value = 14 }
-	}
-	else_if = {
-		limit = { je:je_sb_zulu_kingdom ?= { "scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 79 } }
-		set_variable = { name = sb_zulu_dynastic_stability_target_tier_var value = 15 }
-	}
-	else_if = {
-		limit = { je:je_sb_zulu_kingdom ?= { "scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 84 } }
-		set_variable = { name = sb_zulu_dynastic_stability_target_tier_var value = 16 }
-	}
-	else_if = {
-		limit = { je:je_sb_zulu_kingdom ?= { "scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 89 } }
-		set_variable = { name = sb_zulu_dynastic_stability_target_tier_var value = 17 }
-	}
-	else_if = {
-		limit = { je:je_sb_zulu_kingdom ?= { "scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 94 } }
-		set_variable = { name = sb_zulu_dynastic_stability_target_tier_var value = 18 }
-	}
-	if = {
-		limit = { NOT = { has_variable = sb_zulu_dynastic_stability_applied_tier_var } }
-		set_variable = sb_zulu_dynastic_stability_refresh_needed_var
-	}
-	else_if = {
-		limit = {
-			NOT = { var:sb_zulu_dynastic_stability_applied_tier_var = var:sb_zulu_dynastic_stability_target_tier_var }
-		}
-		set_variable = sb_zulu_dynastic_stability_refresh_needed_var
-	}
-	if = {
-		limit = { has_variable = sb_zulu_dynastic_stability_refresh_needed_var }
-		sb_zulu_clear_dynastic_stability_modifiers = yes
-	if = {
-		limit = {
-			has_journal_entry = je_sb_zulu_kingdom
-			je:je_sb_zulu_kingdom ?= {
-				"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 4
-			}
-		}
-		add_modifier = {
-			name = sb_zulu_dynastic_stability_decile_0
-		}
-	}
-	else_if = {
-		limit = {
-			has_journal_entry = je_sb_zulu_kingdom
-			je:je_sb_zulu_kingdom ?= {
-				"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 9
-			}
-		}
-		add_modifier = {
-			name = sb_zulu_dynastic_stability_decile_1
-		}
-	}
-	else_if = {
-		limit = {
-			has_journal_entry = je_sb_zulu_kingdom
-			je:je_sb_zulu_kingdom ?= {
-				"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 14
-			}
-		}
-		add_modifier = {
-			name = sb_zulu_dynastic_stability_decile_2
-		}
-	}
-	else_if = {
-		limit = {
-			has_journal_entry = je_sb_zulu_kingdom
-			je:je_sb_zulu_kingdom ?= {
-				"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 19
-			}
-		}
-		add_modifier = {
-			name = sb_zulu_dynastic_stability_decile_3
-		}
-	}
-	else_if = {
-		limit = {
-			has_journal_entry = je_sb_zulu_kingdom
-			je:je_sb_zulu_kingdom ?= {
-				"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 24
-			}
-		}
-		add_modifier = {
-			name = sb_zulu_dynastic_stability_decile_4
-		}
-	}
-	else_if = {
-		limit = {
-			has_journal_entry = je_sb_zulu_kingdom
-			je:je_sb_zulu_kingdom ?= {
-				"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 29
-			}
-		}
-		add_modifier = {
-			name = sb_zulu_dynastic_stability_decile_5
-		}
-	}
-	else_if = {
-		limit = {
-			has_journal_entry = je_sb_zulu_kingdom
-			je:je_sb_zulu_kingdom ?= {
-				"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 34
-			}
-		}
-		add_modifier = {
-			name = sb_zulu_dynastic_stability_decile_6
-		}
-	}
-	else_if = {
-		limit = {
-			has_journal_entry = je_sb_zulu_kingdom
-			je:je_sb_zulu_kingdom ?= {
-				"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 39
-			}
-		}
-		add_modifier = {
-			name = sb_zulu_dynastic_stability_decile_7
-		}
-	}
-	else_if = {
-		limit = {
-			has_journal_entry = je_sb_zulu_kingdom
-			je:je_sb_zulu_kingdom ?= {
-				"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 44
-			}
-		}
-		add_modifier = {
-			name = sb_zulu_dynastic_stability_decile_8
-		}
-	}
-	else_if = {
-		limit = {
-			has_journal_entry = je_sb_zulu_kingdom
-			je:je_sb_zulu_kingdom ?= {
-				"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 49
-			}
-		}
-		add_modifier = {
-			name = sb_zulu_dynastic_stability_decile_9
-		}
-	}
-	else_if = {
-		limit = {
-			has_journal_entry = je_sb_zulu_kingdom
-			je:je_sb_zulu_kingdom ?= {
-				"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 54
-			}
-		}
-		add_modifier = {
-			name = sb_zulu_dynastic_stability_decile_10
-		}
-	}
-	else_if = {
-		limit = {
-			has_journal_entry = je_sb_zulu_kingdom
-			je:je_sb_zulu_kingdom ?= {
-				"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 59
-			}
-		}
-		add_modifier = {
-			name = sb_zulu_dynastic_stability_decile_11
-		}
-	}
-	else_if = {
-		limit = {
-			has_journal_entry = je_sb_zulu_kingdom
-			je:je_sb_zulu_kingdom ?= {
-				"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 64
-			}
-		}
-		add_modifier = {
-			name = sb_zulu_dynastic_stability_decile_12
-		}
-	}
-	else_if = {
-		limit = {
-			has_journal_entry = je_sb_zulu_kingdom
-			je:je_sb_zulu_kingdom ?= {
-				"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 69
-			}
-		}
-		add_modifier = {
-			name = sb_zulu_dynastic_stability_decile_13
-		}
-	}
-	else_if = {
-		limit = {
-			has_journal_entry = je_sb_zulu_kingdom
-			je:je_sb_zulu_kingdom ?= {
-				"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 74
-			}
-		}
-		add_modifier = {
-			name = sb_zulu_dynastic_stability_decile_14
-		}
-	}
-	else_if = {
-		limit = {
-			has_journal_entry = je_sb_zulu_kingdom
-			je:je_sb_zulu_kingdom ?= {
-				"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 79
-			}
-		}
-		add_modifier = {
-			name = sb_zulu_dynastic_stability_decile_15
-		}
-	}
-	else_if = {
-		limit = {
-			has_journal_entry = je_sb_zulu_kingdom
-			je:je_sb_zulu_kingdom ?= {
-				"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 84
-			}
-		}
-		add_modifier = {
-			name = sb_zulu_dynastic_stability_decile_16
-		}
-	}
-	else_if = {
-		limit = {
-			has_journal_entry = je_sb_zulu_kingdom
-			je:je_sb_zulu_kingdom ?= {
-				"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 89
-			}
-		}
-		add_modifier = {
-			name = sb_zulu_dynastic_stability_decile_17
-		}
-	}
-	else_if = {
-		limit = {
-			has_journal_entry = je_sb_zulu_kingdom
-			je:je_sb_zulu_kingdom ?= {
-				"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 94
-			}
-		}
-		add_modifier = {
-			name = sb_zulu_dynastic_stability_decile_18
-		}
-	}
-	else_if = {
-		limit = {
-			has_journal_entry = je_sb_zulu_kingdom
-			je:je_sb_zulu_kingdom ?= {
-				"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 99
-			}
-		}
-		add_modifier = {
-			name = sb_zulu_dynastic_stability_decile_19
-		}
-	}
-		set_variable = {
-			name = sb_zulu_dynastic_stability_applied_tier_var
-			value = var:sb_zulu_dynastic_stability_target_tier_var
-		}
-	}
-	remove_variable = sb_zulu_dynastic_stability_refresh_needed_var
-	remove_variable = sb_zulu_dynastic_stability_target_tier_var
 }

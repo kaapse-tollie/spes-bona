@@ -1,0 +1,80 @@
+﻿# Country-scoped reusable calculations. Parent variants follow their law family.
+sb_ir_governance_deduction = {
+ value = 0
+ if = { limit = { sb_court_has_social_monarchy = yes } value = 10 }
+}
+sb_ir_economy_deduction = {
+ value = 10
+ if = { limit = { OR = { has_law_or_variant = law_type:law_traditionalism has_law_or_variant = law_type:law_industry_banned } } value = 0 }
+ else_if = { limit = { has_law_or_variant = law_type:law_agrarianism } value = 5 }
+}
+sb_ir_police_deduction = {
+ value = 0
+ if = { limit = { has_law_or_variant = law_type:law_local_police } value = -5 }
+ else_if = { limit = { OR = { has_law_or_variant = law_type:law_dedicated_police has_law_or_variant = law_type:law_militarized_police } } value = 5 }
+}
+sb_ir_distribution_deduction = {
+ value = 0
+ if = { limit = { has_law_or_variant = law_type:law_oligarchy } value = 5 }
+ else_if = { limit = { has_law_or_variant = law_type:law_landed_voting } value = 10 }
+ else_if = { limit = { has_law_or_variant = law_type:law_wealth_voting } value = 20 }
+ else_if = { limit = { has_law_or_variant = law_type:law_census_voting } value = 30 }
+ else_if = { limit = { has_law_or_variant = law_type:law_universal_suffrage } value = 50 }
+ # Autocracy and the authored Chiefly Council both deduct zero.
+}
+sb_ir_bureaucracy_deduction = {
+ value = 0
+ if = { limit = { has_law_or_variant = law_type:law_appointed_bureaucrats } value = 5 }
+ else_if = { limit = { has_law_or_variant = law_type:law_elected_bureaucrats } value = 10 }
+}
+sb_ir_army_deduction = {
+ value = 5
+ if = { limit = { has_law = law_type:law_sb_amabutho_system } value = 0 }
+}
+sb_institutional_reach = {
+ value = 50
+ subtract = sb_ir_governance_deduction
+ subtract = sb_ir_economy_deduction
+ subtract = sb_ir_police_deduction
+ subtract = sb_ir_distribution_deduction
+ subtract = sb_ir_bureaucracy_deduction
+ subtract = sb_ir_army_deduction
+ min = 0
+ max = 50
+}
+sb_prerogative_movement_balance = {
+ value = sb_court_royal_support
+ subtract = sb_court_chiefly_support
+ if = { limit = { has_law = law_type:law_sb_federated_chiefdoms } multiply = -1 }
+ multiply = 100
+}
+sb_prerogative_target = {
+ value = var:sb_prerogative_cooperation_var
+ multiply = 0.75
+ add = { value = sb_prerogative_movement_balance multiply = 0.25 }
+ min = -100
+ max = 100
+}
+sb_prerogative_monthly_change = {
+ value = var:sb_prerogative_target_var
+ subtract = var:sb_prerogative_var
+ multiply = 0.15
+ min = -4
+ max = 4
+}
+sb_prerogative_clamped = { value = var:sb_prerogative_var min = -100 max = 100 }
+sb_prerogative_effect_scale = {
+ value = var:sb_prerogative_var
+ divide = 100
+ multiply = var:sb_institutional_reach_var
+ divide = 50
+}
+sb_institutional_effect_scale = {
+ value = var:sb_institutional_reach_var
+ divide = 50
+}
+sb_prerogative_bar_projection = { value = var:sb_prerogative_var add = 100 divide = 2 }
+
+# Native constituencies for the current institutional country's JE, including outside partition.
+sb_institutions_royal_activism = { value = 0 every_political_movement = { limit = { is_political_movement_type = movement_sb_zulu_royal } add = political_movement_radicalism } }
+sb_institutions_chiefly_activism = { value = 0 every_political_movement = { limit = { is_political_movement_type = movement_sb_zulu_chiefly } add = political_movement_radicalism } }

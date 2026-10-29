@@ -22,29 +22,29 @@ def text(path: str) -> str:
 
 
 class RebaseTests(unittest.TestCase):
-    def test_release_metadata_targets_1_14_3_and_cmf_1_66_x(self):
-        self.assertIn('supported_version="1.14.3"', text("descriptor.mod"))
-        self.assertIn('version="0.20.1"', text("descriptor.mod"))
+    def test_release_metadata_targets_1_14_5_and_cmf_1_66_x(self):
+        self.assertIn('supported_version="1.14.5"', text("descriptor.mod"))
+        self.assertIn('version="0.20.2"', text("descriptor.mod"))
         metadata = json.loads(text(".metadata/metadata.json"))
-        self.assertEqual("1.14.3", metadata["supported_game_version"])
-        self.assertEqual("0.20.1", metadata["version"])
+        self.assertEqual("1.14.5", metadata["supported_game_version"])
+        self.assertEqual("0.20.2", metadata["version"])
         relationships = [item for item in metadata["relationships"] if item["id"] == CMF_ID]
         self.assertEqual(["1.66.*"], [item["version"] for item in relationships])
 
         inventory = json.loads(text("Docs/compatibility/override_inventory.json"))
-        self.assertEqual("1.14.3", inventory["target_game_version"])
-        self.assertEqual("25347710", inventory["target_steam_build"])
+        self.assertEqual("1.14.5", inventory["target_game_version"])
+        self.assertEqual("25629520", inventory["target_steam_build"])
         self.assertEqual("1.14-openbeta", inventory["target_steam_branch"])
         self.assertEqual("529341", inventory["target_core_depot"])
         self.assertEqual(
-            "5228357714133991559", inventory["target_core_depot_manifest"]
+            "5521822647051867164", inventory["target_core_depot_manifest"]
         )
         self.assertEqual(3, inventory["schema_version"])
         self.assertEqual(39, len(inventory["same_path_files"]))
-        self.assertEqual(112, len(inventory["keyed_overrides"]))
+        self.assertEqual(122, len(inventory["keyed_overrides"]))
         self.assertEqual(18, len(inventory["state_region_blocks"]))
         self.assertEqual(1, len(inventory["additive_overrides"]))
-        self.assertEqual(9, len(inventory["localization_replace_files"]))
+        self.assertEqual(8, len(inventory["localization_replace_files"]))
         self.assertEqual(20, len(inventory["localization_key_collisions"]))
         reviewed_entries = (
             inventory["same_path_files"]
@@ -54,9 +54,9 @@ class RebaseTests(unittest.TestCase):
             + inventory["localization_key_collisions"]
             + inventory["upstream_contracts"]
         )
-        self.assertEqual({"2026-09-04", "2026-09-05", "2026-09-12", "2026-09-19", "2026-09-20"}, {entry["rebase_date"] for entry in reviewed_entries})
+        self.assertEqual({"2026-09-04", "2026-09-05", "2026-09-12", "2026-09-19", "2026-09-20", "2026-10-16", "2026-10-17", "2026-10-18", "2026-10-25", "2026-10-27", "2026-10-28"}, {entry["rebase_date"] for entry in reviewed_entries})
         self.assertEqual(
-            {"1.14.3"},
+            {"1.14.5"},
             {entry["upstream_version"] for entry in inventory["same_path_files"]},
         )
         self.assertEqual(
@@ -118,7 +118,7 @@ class RebaseTests(unittest.TestCase):
                     findings.append(f"{path.relative_to(ROOT)}:{line_number}:{line.strip()}")
         self.assertEqual([], findings)
 
-    def test_1_14_3_preserves_1_13_11_hotfix_files_as_vanilla_owned(self):
+    def test_1_14_5_preserves_1_13_11_hotfix_files_as_vanilla_owned(self):
         self.assertFalse((ROOT / "common/production_methods/04_plantations.txt").exists())
         self.assertFalse((ROOT / "events/tech_events/military_tech_events.txt").exists())
 

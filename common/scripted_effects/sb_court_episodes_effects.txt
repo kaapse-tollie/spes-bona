@@ -1,0 +1,209 @@
+﻿# Independent shuffle bag. A country timer expires while delivery is suspended.
+# Saved card/delay survive exit, save/load and changed participant eligibility.
+sb_court_deck_available = {
+ set_variable = { name = sb_court_deck_available_var value = 0 }
+ # Preview traversal skips the initialisation; do not read or increment an absent counter.
+ if = {
+  limit = { has_variable = sb_court_deck_available_var }
+  if = { limit = { sb_court_card_210_eligible = yes NOT = { has_variable = sb_court_card_210_used_var } } change_variable = { name = sb_court_deck_available_var add = 1 } }
+  if = { limit = { sb_court_card_211_eligible = yes NOT = { has_variable = sb_court_card_211_used_var } } change_variable = { name = sb_court_deck_available_var add = 1 } }
+  if = { limit = { sb_court_card_212_eligible = yes NOT = { has_variable = sb_court_card_212_used_var } } change_variable = { name = sb_court_deck_available_var add = 1 } }
+  if = { limit = { sb_court_card_213_eligible = yes NOT = { has_variable = sb_court_card_213_used_var } } change_variable = { name = sb_court_deck_available_var add = 1 } }
+  if = { limit = { sb_court_card_214_eligible = yes NOT = { has_variable = sb_court_card_214_used_var } } change_variable = { name = sb_court_deck_available_var add = 1 } }
+  if = { limit = { sb_court_card_215_eligible = yes NOT = { has_variable = sb_court_card_215_used_var } } change_variable = { name = sb_court_deck_available_var add = 1 } }
+ }
+}
+sb_court_deck_draw = {
+ sb_court_deck_available = yes
+ if = {
+  limit = { has_variable = sb_court_deck_available_var }
+  if = {
+   limit = { var:sb_court_deck_available_var = 0 }
+   remove_variable = sb_court_card_210_used_var
+   remove_variable = sb_court_card_211_used_var
+   remove_variable = sb_court_card_212_used_var
+   remove_variable = sb_court_card_213_used_var
+   remove_variable = sb_court_card_214_used_var
+   remove_variable = sb_court_card_215_used_var
+   sb_court_deck_available = yes
+  }
+  if = {
+   limit = { var:sb_court_deck_available_var > 0 }
+   random_list = {
+    1 = { trigger = { sb_court_card_210_eligible = yes NOT = { has_variable = sb_court_card_210_used_var } OR = { NOT = { var:sb_court_deck_last_var ?= 210 } var:sb_court_deck_available_var = 1 } } set_variable = { name = sb_court_deck_card_var value = 210 } }
+    1 = { trigger = { sb_court_card_211_eligible = yes NOT = { has_variable = sb_court_card_211_used_var } OR = { NOT = { var:sb_court_deck_last_var ?= 211 } var:sb_court_deck_available_var = 1 } } set_variable = { name = sb_court_deck_card_var value = 211 } }
+    1 = { trigger = { sb_court_card_212_eligible = yes NOT = { has_variable = sb_court_card_212_used_var } OR = { NOT = { var:sb_court_deck_last_var ?= 212 } var:sb_court_deck_available_var = 1 } } set_variable = { name = sb_court_deck_card_var value = 212 } }
+    1 = { trigger = { sb_court_card_213_eligible = yes NOT = { has_variable = sb_court_card_213_used_var } OR = { NOT = { var:sb_court_deck_last_var ?= 213 } var:sb_court_deck_available_var = 1 } } set_variable = { name = sb_court_deck_card_var value = 213 } }
+    1 = { trigger = { sb_court_card_214_eligible = yes NOT = { has_variable = sb_court_card_214_used_var } OR = { NOT = { var:sb_court_deck_last_var ?= 214 } var:sb_court_deck_available_var = 1 } } set_variable = { name = sb_court_deck_card_var value = 214 } }
+    1 = { trigger = { sb_court_card_215_eligible = yes NOT = { has_variable = sb_court_card_215_used_var } OR = { NOT = { var:sb_court_deck_last_var ?= 215 } var:sb_court_deck_available_var = 1 } } set_variable = { name = sb_court_deck_card_var value = 215 } }
+   }
+  }
+  remove_variable = sb_court_deck_available_var
+ }
+}
+sb_court_deck_delay = {
+ set_variable = sb_court_deck_started_var
+ random_list = {
+  1 = { set_variable = { name = sb_court_deck_wait_var months = 6 } }
+  1 = { set_variable = { name = sb_court_deck_wait_var months = 7 } }
+  1 = { set_variable = { name = sb_court_deck_wait_var months = 8 } }
+  1 = { set_variable = { name = sb_court_deck_wait_var months = 9 } }
+  1 = { set_variable = { name = sb_court_deck_wait_var months = 10 } }
+  1 = { set_variable = { name = sb_court_deck_wait_var months = 11 } }
+  1 = { set_variable = { name = sb_court_deck_wait_var months = 12 } }
+  1 = { set_variable = { name = sb_court_deck_wait_var months = 13 } }
+  1 = { set_variable = { name = sb_court_deck_wait_var months = 14 } }
+  1 = { set_variable = { name = sb_court_deck_wait_var months = 15 } }
+  1 = { set_variable = { name = sb_court_deck_wait_var months = 16 } }
+  1 = { set_variable = { name = sb_court_deck_wait_var months = 17 } }
+  1 = { set_variable = { name = sb_court_deck_wait_var months = 18 } }
+  1 = { set_variable = { name = sb_court_deck_wait_var months = 19 } }
+  1 = { set_variable = { name = sb_court_deck_wait_var months = 20 } }
+  1 = { set_variable = { name = sb_court_deck_wait_var months = 21 } }
+  1 = { set_variable = { name = sb_court_deck_wait_var months = 22 } }
+  1 = { set_variable = { name = sb_court_deck_wait_var months = 23 } }
+  1 = { set_variable = { name = sb_court_deck_wait_var months = 24 } }
+ }
+}
+sb_court_deck_monthly = {
+ save_scope_as = sb_court_country
+ # Event expiry selects its default option. Recover a lost popup after its lease.
+ if = { limit = { has_variable = sb_court_episode_open_var NOT = { has_variable = sb_court_episode_lease_var } } sb_court_episode_cleanup = yes }
+ if = {
+  limit = { NOT = { has_variable = sb_court_deck_started_var } }
+  sb_court_deck_draw = yes sb_court_deck_delay = yes
+ }
+ if = {
+  limit = {
+   has_variable = sb_institutions_active_var exists = ruler
+   NOR = { has_variable = sb_court_deck_wait_var has_variable = sb_court_episode_open_var has_variable = sb_court_action_open_var has_variable = sb_court_accession_open_var has_variable = sb_court_dynastic_war_scope has_variable = sb_court_civil_war_var has_variable = sb_court_dynastic_crisis_var }
+  }
+  if = { limit = { var:sb_court_deck_card_var ?= 210 sb_court_card_210_eligible = no } remove_variable = sb_court_deck_card_var }
+  if = { limit = { var:sb_court_deck_card_var ?= 211 sb_court_card_211_eligible = no } remove_variable = sb_court_deck_card_var }
+  if = { limit = { var:sb_court_deck_card_var ?= 212 sb_court_card_212_eligible = no } remove_variable = sb_court_deck_card_var }
+  if = { limit = { var:sb_court_deck_card_var ?= 213 sb_court_card_213_eligible = no } remove_variable = sb_court_deck_card_var }
+  if = { limit = { var:sb_court_deck_card_var ?= 214 sb_court_card_214_eligible = no } remove_variable = sb_court_deck_card_var }
+  if = { limit = { var:sb_court_deck_card_var ?= 215 sb_court_card_215_eligible = no } remove_variable = sb_court_deck_card_var }
+  if = { limit = { NOT = { has_variable = sb_court_deck_card_var } } sb_court_deck_draw = yes }
+  if = {
+   limit = { has_variable = sb_court_deck_card_var }
+   set_variable = sb_court_episode_open_var
+   set_variable = { name = sb_court_episode_lease_var months = 4 }
+   set_variable = { name = sb_court_episode_card_var value = var:sb_court_deck_card_var }
+   set_variable = { name = sb_court_deck_last_var value = var:sb_court_deck_card_var }
+   set_variable = { name = sb_court_episode_ruler_scope value = ruler }
+   sb_court_deck_deliver = yes
+   remove_variable = sb_court_deck_card_var
+  }
+ }
+}
+# Country scope: select once when reserving the episode, using the harvest's
+# Popularity curve. Scale both reservoir weights for native integer rounding.
+sb_court_pick_episode_prince = {
+ save_scope_as = sb_court_country
+ remove_variable = $DESTINATION$
+ set_variable = { name = sb_court_episode_draw_weight_var value = 0 }
+ every_in_list = {
+  variable = sb_court_members
+  limit = {
+   sb_court_episode_prince = yes
+   sb_court_patron_attraction > 0
+   trigger_if = {
+    limit = { always = $EXCLUDE_FIRST$ exists = scope:sb_court_country.var:sb_court_episode_candidate_scope }
+    NOT = { this = scope:sb_court_country.var:sb_court_episode_candidate_scope }
+   }
+  }
+  save_scope_as = sb_court_episode_draw_prince
+  random_list = {
+   0 = {
+    modifier = { add = { value = sb_court_patron_attraction multiply = 100000 } }
+    scope:sb_court_country = { set_variable = { name = $DESTINATION$ value = scope:sb_court_episode_draw_prince } }
+   }
+   0 = { modifier = { add = { value = scope:sb_court_country.var:sb_court_episode_draw_weight_var multiply = 100000 } } }
+  }
+  scope:sb_court_country = { change_variable = { name = sb_court_episode_draw_weight_var add = prev.sb_court_patron_attraction } }
+ }
+ # At -100 Popularity every weight is zero; retain a usable choice among the
+ # eligible princes rather than opening an episode with a missing participant.
+ if = {
+  limit = { NOT = { has_variable = $DESTINATION$ } }
+  random_in_list = {
+   variable = sb_court_members
+   limit = {
+    sb_court_episode_prince = yes
+    trigger_if = {
+     limit = { always = $EXCLUDE_FIRST$ exists = scope:sb_court_country.var:sb_court_episode_candidate_scope }
+     NOT = { this = scope:sb_court_country.var:sb_court_episode_candidate_scope }
+    }
+   }
+   scope:sb_court_country = { set_variable = { name = $DESTINATION$ value = prev } }
+  }
+ }
+ remove_variable = sb_court_episode_draw_weight_var
+}
+
+sb_court_deck_deliver = {
+ if = {
+  limit = { var:sb_court_deck_card_var = 210 }
+  set_variable = sb_court_card_210_used_var
+  random_in_list = { variable = sb_court_members limit = { sb_court_episode_ally = yes NOT = { has_variable = sb_court_successor_pledge_scope } } scope:sb_court_country = { set_variable = { name = sb_court_episode_actor_scope value = prev } } }
+  sb_court_pick_episode_prince = { DESTINATION = sb_court_episode_candidate_scope EXCLUDE_FIRST = no }
+  sb_court_pick_episode_prince = { DESTINATION = sb_court_episode_other_candidate_scope EXCLUDE_FIRST = yes }
+  trigger_event = { id = sb_zulu_court.210 popup = yes }
+ }
+ if = {
+  limit = { var:sb_court_deck_card_var = 211 }
+  set_variable = sb_court_card_211_used_var
+  random_in_list = { variable = sb_court_members limit = { sb_court_episode_notable = yes } scope:sb_court_country = { set_variable = { name = sb_court_episode_actor_scope value = prev } } }
+  set_variable = { name = sb_court_episode_price_var value = sb_court_episode_current_price }
+  trigger_event = { id = sb_zulu_court.211 popup = yes }
+ }
+ if = {
+  limit = { var:sb_court_deck_card_var = 212 }
+  set_variable = sb_court_card_212_used_var
+  random_in_list = { variable = sb_court_members limit = { sb_court_episode_chief = yes } scope:sb_court_country = { set_variable = { name = sb_court_episode_actor_scope value = prev } } }
+  set_variable = { name = sb_court_episode_candidate_scope value = ruler }
+  trigger_event = { id = sb_zulu_court.212 popup = yes }
+ }
+ if = {
+  limit = { var:sb_court_deck_card_var = 213 }
+  set_variable = sb_court_card_213_used_var
+  random_in_list = { variable = sb_court_members limit = { sb_court_episode_opponent = yes } scope:sb_court_country = { set_variable = { name = sb_court_episode_actor_scope value = prev } } }
+  set_variable = { name = sb_court_episode_candidate_scope value = var:sb_court_episode_actor_scope.var:sb_court_claimant_scope }
+  random_in_list = { variable = sb_court_members limit = { sb_court_episode_ally = yes NOT = { this = scope:sb_court_country.var:sb_court_episode_actor_scope } } scope:sb_court_country = { set_variable = { name = sb_court_episode_other_scope value = prev } } }
+  trigger_event = { id = sb_zulu_court.213 popup = yes }
+ }
+ if = {
+  limit = { var:sb_court_deck_card_var = 214 }
+  set_variable = sb_court_card_214_used_var
+  random_in_list = { variable = sb_court_members limit = { sb_court_episode_neutral = yes } scope:sb_court_country = { set_variable = { name = sb_court_episode_actor_scope value = prev } } }
+  sb_court_pick_episode_prince = { DESTINATION = sb_court_episode_candidate_scope EXCLUDE_FIRST = no }
+  random_in_list = { variable = sb_court_members limit = { sb_court_episode_neutral = yes NOT = { this = scope:sb_court_country.var:sb_court_episode_actor_scope } } scope:sb_court_country = { set_variable = { name = sb_court_episode_other_scope value = prev } } }
+  set_variable = { name = sb_court_episode_price_var value = sb_court_episode_current_price }
+  trigger_event = { id = sb_zulu_court.214 popup = yes }
+ }
+ if = {
+  limit = { var:sb_court_deck_card_var = 215 }
+  set_variable = sb_court_card_215_used_var
+  random_in_list = { variable = sb_court_members limit = { sb_court_episode_house = yes } scope:sb_court_country = { set_variable = { name = sb_court_episode_actor_scope value = prev } } }
+  set_variable = { name = sb_court_episode_price_var value = sb_court_episode_current_price }
+  trigger_event = { id = sb_zulu_court.215 popup = yes }
+ }
+}
+sb_court_episode_cleanup = {
+ # Once-only cleanup; an old default/after callback cannot reset the next delay.
+ if = {
+  limit = { has_variable = sb_court_episode_open_var }
+  remove_variable = sb_court_episode_open_var
+  remove_variable = sb_court_episode_lease_var
+  remove_variable = sb_court_episode_card_var
+  remove_variable = sb_court_episode_actor_scope
+  remove_variable = sb_court_episode_other_scope
+  remove_variable = sb_court_episode_candidate_scope
+  remove_variable = sb_court_episode_other_candidate_scope
+  remove_variable = sb_court_episode_ruler_scope
+  remove_variable = sb_court_episode_price_var
+  sb_court_deck_draw = yes
+  sb_court_deck_delay = yes
+ }
+}

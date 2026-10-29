@@ -1,0 +1,808 @@
+﻿# Three ideological constituencies; attraction and actual activism remain native.
+# Explicit seed-once effects create them. Low-support engine removal is not overridden.
+movement_sb_zulu_royal = {
+	category = movement_category_ideological
+	
+	ideology = ideology_sb_usuthu
+	character_ideologies = { } # Allegiance is separate from an IG leader's wider ideology.
+	
+	disband_trigger = { always = no }
+	
+	
+	creation_trigger = { always = no }
+	creation_weight = { value = 0 }
+	on_created = {
+		add_movement_enthusiasm_modifier = yes
+	}
+	
+	character_support_trigger = {
+		has_variable = sb_court_alignment_var
+		sb_court_alignment_eligible = yes
+		var:sb_court_alignment_var = 1
+	}
+	character_support_weight = { value = 200 }
+	
+	pop_support_trigger = {
+		NOT = {
+			is_pop_type = slaves
+		}
+		mog_plp_movement_mainland_general_pop_support_trigger = yes    # Grey_PLP
+	}
+	
+	pop_support_factors = {
+		movement_support_ruler_popularity
+		movement_support_low_urbanization
+		movement_support_high_literacy
+		movement_support_aristocrats
+		movement_support_farmers
+		movement_support_peasants
+		movement_support_clergymen
+		movement_support_officers
+	}
+	
+	pop_support_weight = {
+		if = {
+			limit = {
+				exists = scope:political_movement
+				scope:political_movement ?= {
+					OR = {
+						is_being_suppressed = yes
+						is_being_bolstered = yes
+					}
+				}
+			}
+			if = {
+				limit = {
+					scope:political_movement = {
+						is_being_suppressed = yes
+					}
+				}
+				add = {
+					value = suppression_base_value
+					multiply = {
+						value = -0.5
+						add = owner.modifier:country_suppression_attraction_factor
+					}
+					desc = "concept_suppressed"
+				}
+			}
+			else = {
+				add = {
+					value = bolstering_base_value
+					multiply = {
+						value = 0.5
+						add = owner.modifier:country_bolster_attraction_factor
+					}
+					desc = "concept_bolstered"
+				}
+			}
+		}
+		add = {
+			desc = "URBAN_STATE" # Increases support in rural states, decreases in urban
+			value = 0.5
+			subtract = state.state_urbanization_rate
+			multiply = 10
+		}
+		
+		add = {
+			value = 5
+			desc = "POP_BASE_SUPPORT"
+		}
+		
+		if = {
+			limit = {
+				is_pop_type = aristocrats
+			}
+			add = {
+				value = 50
+				desc = "POP_ARISTOCRATS"
+			}
+		}
+		else_if = {
+			limit = {
+				is_pop_type = farmers
+			}
+			add = {
+				value = 20
+				desc = "POP_FARMERS"
+			}
+		}
+		else_if = {
+			limit = {
+				is_pop_type = peasants
+			}
+			add = {
+				value = 20
+				desc = "POP_PEASANTS"
+			}
+		}
+		else_if = {
+			limit = {
+				is_pop_type = clergymen
+			}
+			add = {
+				value = 20
+				desc = "POP_CLERGYMEN"
+			}
+		}
+		else_if = {
+			limit = {
+				is_pop_type = officers
+			}
+			add = {
+				value = 25
+				desc = "POP_OFFICERS"
+			}
+		}
+		else_if = {
+			limit = {
+				is_pop_type = soldiers
+			}
+			add = {
+				value = 10
+				desc = "POP_SOLDIERS"
+			}
+		}
+		
+		if = {
+			limit = {
+				owner ?= {
+					has_law = law_type:law_monarchy
+				}
+				owner.ruler ?= {
+					NOT = { has_trait = trait_child }
+					law_stance = {
+						law = law_type:law_autocracy
+						value > neutral
+					}
+				}
+			}
+			multiply = { # Absolutist are more reliant on the monarchs popularity than constitutionalists
+				add = owner.ruler.popularity
+				multiply = 0.01
+				add = 1
+				min = 0.2
+				max = 1.8
+				desc = "RULER_POPULARITY"
+			}
+		}
+		else_if = {
+			limit = {
+				owner ?= {
+					has_law = law_type:law_monarchy
+				}
+				owner.ruler ?= {
+					has_trait = trait_child
+					law_stance = {
+						law = law_type:law_autocracy
+						value > neutral
+					}
+				}
+			}
+			multiply = {
+				value = 0.75
+				desc = "RULER_IS_CHILD"
+			}
+		}
+		else_if = {
+			limit = {
+				owner ?= {
+					has_law = law_type:law_monarchy
+				}
+				owner.ruler ?= {
+					law_stance = {
+						law = law_type:law_autocracy
+						value < neutral
+					}
+				}
+			}
+			multiply = {
+				value = 0.75
+				desc = "RULER_IS_LIBERAL"
+			}
+		}
+		
+		multiply = { # Illiterate pops participate at 1/10 the rate of fully literate pops
+			desc = "POP_LITERACY"
+			value = literacy_rate
+			add = 0.2
+			max = 0.7 # Starts more powerful but caps out early
+		}
+		
+		# Grey_PLP
+		multiply = {
+			value = mog_plp_movement_mainland_general_pop_support_weight_incorporation_percent_mult
+		}
+	}
+	
+	revolution = {
+		weight = {
+			value = 100
+		}
+		
+		state_weight = {
+			value = 1
+			add = scope:clout
+
+			subtract = state_urbanization_rate
+			
+			if = {
+				limit = { is_capital = yes }
+				if = {
+					limit = { owner ?= { has_law = law_type:law_monarchy } }
+					multiply = 10.0
+				}
+				else = {
+					multiply = 0.1
+				}
+			}
+			# Grey_PLP - always put last
+			multiply = {
+				value = mog_plp_movement_all_general_state_weight_mult
+			}
+		}
+	}
+	
+	
+	
+	additional_radicalism_factors = {
+		owner ?= {
+			if = {
+				limit = {
+					has_law = law_type:law_monarchy
+				}
+				
+				if = {
+					limit = {
+						OR = {
+							is_enacting_law = law_type:law_presidential_republic
+							is_enacting_law = law_type:law_parliamentary_republic
+							is_enacting_law = law_type:law_corporate_state
+							is_enacting_law = law_type:law_theocracy
+							is_enacting_law = law_type:law_council_republic
+						}
+					}
+					
+					add = {
+						value = 0.25
+						desc = "MONARCHY_BEING_ABOLISHED"
+					}
+				}
+				else = {
+					add = { # Only care about legitimacy in the context of a monarchy that isn't under direct threat
+						value = 50
+						subtract = legitimacy
+						multiply = 0.005
+						desc = "concept_legitimacy"
+					}
+				}
+			}
+		}
+		
+		if = {
+			limit = {
+				owner = {
+					any_neighbouring_state = {
+						owner = {
+							NOT = { THIS = ROOT.owner }
+							any_political_movement = {
+								is_political_movement_type = movement_sb_zulu_royal
+								is_insurrectionary = yes
+							}
+						}
+					}
+				}
+			}
+			add = {
+				desc = "NEIGHBOURING_COUNTRY_WITH_REVOLUTION"
+				value = 0.15
+			}
+		}
+        if = {
+            limit = {
+                this.days_since_movement_defeated <= very_long_modifier_time
+            }
+            add = { # (x-y)/y - ([1, 7300]-7300)/7300
+                desc = "movement_suppressed_after_civil_war"
+                value = this.days_since_movement_defeated
+                subtract = very_long_modifier_time
+                divide = {
+                    value = very_long_modifier_time
+                }
+            }
+        }
+	}
+}
+
+movement_sb_zulu_chiefly = {
+	category = movement_category_ideological
+	
+	ideology = ideology_sb_zulu_chiefly
+	character_ideologies = { } # Allegiance is separate from an IG leader's wider ideology.
+	
+	disband_trigger = { always = no }
+	
+	
+	creation_trigger = { always = no }
+	creation_weight = { value = 0 }
+	on_created = {
+		add_movement_enthusiasm_modifier = yes
+	}
+	
+	character_support_trigger = {
+		has_variable = sb_court_alignment_var
+		sb_court_alignment_eligible = yes
+		var:sb_court_alignment_var = 2
+	}
+	character_support_weight = { value = 200 }
+	
+	pop_support_trigger = {
+		NOT = {
+			is_pop_type = slaves
+		}
+		mog_plp_movement_mainland_general_pop_support_trigger = yes    # Grey_PLP
+	}
+	
+	pop_support_factors = {
+		movement_support_ruler_popularity
+		movement_support_low_urbanization
+		movement_support_high_literacy
+		movement_support_aristocrats
+		movement_support_farmers
+		movement_support_peasants
+		movement_support_clergymen
+		movement_support_officers
+	}
+	
+	pop_support_weight = {
+		if = {
+			limit = {
+				exists = scope:political_movement
+				scope:political_movement ?= {
+					OR = {
+						is_being_suppressed = yes
+						is_being_bolstered = yes
+					}
+				}
+			}
+			if = {
+				limit = {
+					scope:political_movement = {
+						is_being_suppressed = yes
+					}
+				}
+				add = {
+					value = suppression_base_value
+					multiply = {
+						value = -0.5
+						add = owner.modifier:country_suppression_attraction_factor
+					}
+					desc = "concept_suppressed"
+				}
+			}
+			else = {
+				add = {
+					value = bolstering_base_value
+					multiply = {
+						value = 0.5
+						add = owner.modifier:country_bolster_attraction_factor
+					}
+					desc = "concept_bolstered"
+				}
+			}
+		}
+		add = {
+			desc = "URBAN_STATE" # Increases support in rural states, decreases in urban
+			value = 0.5
+			subtract = state.state_urbanization_rate
+			multiply = 10
+		}
+		
+		add = {
+			value = 5
+			desc = "POP_BASE_SUPPORT"
+		}
+		
+		if = {
+			limit = {
+				is_pop_type = aristocrats
+			}
+			add = {
+				value = 50
+				desc = "POP_ARISTOCRATS"
+			}
+		}
+		else_if = {
+			limit = {
+				is_pop_type = farmers
+			}
+			add = {
+				value = 20
+				desc = "POP_FARMERS"
+			}
+		}
+		else_if = {
+			limit = {
+				is_pop_type = peasants
+			}
+			add = {
+				value = 20
+				desc = "POP_PEASANTS"
+			}
+		}
+		else_if = {
+			limit = {
+				is_pop_type = clergymen
+			}
+			add = {
+				value = 20
+				desc = "POP_CLERGYMEN"
+			}
+		}
+		else_if = {
+			limit = {
+				is_pop_type = officers
+			}
+			add = {
+				value = 25
+				desc = "POP_OFFICERS"
+			}
+		}
+		else_if = {
+			limit = {
+				is_pop_type = soldiers
+			}
+			add = {
+				value = 10
+				desc = "POP_SOLDIERS"
+			}
+		}
+		
+		if = {
+			limit = {
+				owner ?= {
+					has_law = law_type:law_sb_federated_chiefdoms
+				}
+				owner.ruler ?= {
+					NOT = { has_trait = trait_child }
+					law_stance = {
+						law = law_type:law_sb_chiefly_council
+						value > neutral
+					}
+				}
+			}
+			multiply = { # Absolutist are more reliant on the monarchs popularity than constitutionalists
+				add = owner.ruler.popularity
+				multiply = 0.01
+				add = 1
+				min = 0.2
+				max = 1.8
+				desc = "RULER_POPULARITY"
+			}
+		}
+		else_if = {
+			limit = {
+				owner ?= {
+					has_law = law_type:law_sb_federated_chiefdoms
+				}
+				owner.ruler ?= {
+					has_trait = trait_child
+					law_stance = {
+						law = law_type:law_sb_chiefly_council
+						value > neutral
+					}
+				}
+			}
+			multiply = {
+				value = 0.75
+				desc = "RULER_IS_CHILD"
+			}
+		}
+		else_if = {
+			limit = {
+				owner ?= {
+					has_law = law_type:law_sb_federated_chiefdoms
+				}
+				owner.ruler ?= {
+					law_stance = {
+						law = law_type:law_sb_chiefly_council
+						value < neutral
+					}
+				}
+			}
+			multiply = {
+				value = 0.75
+				desc = "RULER_IS_LIBERAL"
+			}
+		}
+		
+		multiply = { # Illiterate pops participate at 1/10 the rate of fully literate pops
+			desc = "POP_LITERACY"
+			value = literacy_rate
+			add = 0.2
+			max = 0.7 # Starts more powerful but caps out early
+		}
+		
+		# Grey_PLP
+		multiply = {
+			value = mog_plp_movement_mainland_general_pop_support_weight_incorporation_percent_mult
+		}
+	}
+	
+	revolution = {
+		weight = {
+			value = 100
+		}
+		
+		state_weight = {
+			value = 1
+			add = scope:clout
+
+			subtract = state_urbanization_rate
+			
+			if = {
+				limit = { is_capital = yes }
+				if = {
+					limit = { owner ?= { has_law = law_type:law_sb_federated_chiefdoms } }
+					multiply = 10.0
+				}
+				else = {
+					multiply = 0.1
+				}
+			}
+			# Grey_PLP - always put last
+			multiply = {
+				value = mog_plp_movement_all_general_state_weight_mult
+			}
+		}
+	}
+	
+	
+	
+	additional_radicalism_factors = {
+		
+		
+		if = {
+			limit = {
+				owner = {
+					any_neighbouring_state = {
+						owner = {
+							NOT = { THIS = ROOT.owner }
+							any_political_movement = {
+								is_political_movement_type = movement_sb_zulu_chiefly
+								is_insurrectionary = yes
+							}
+						}
+					}
+				}
+			}
+			add = {
+				desc = "NEIGHBOURING_COUNTRY_WITH_REVOLUTION"
+				value = 0.15
+			}
+		}
+        if = {
+            limit = {
+                this.days_since_movement_defeated <= very_long_modifier_time
+            }
+            add = { # (x-y)/y - ([1, 7300]-7300)/7300
+                desc = "movement_suppressed_after_civil_war"
+                value = this.days_since_movement_defeated
+                subtract = very_long_modifier_time
+                divide = {
+                    value = very_long_modifier_time
+                }
+            }
+        }
+	}
+}
+
+movement_sb_zulu_traditionalist = {
+	category = movement_category_ideological
+	
+	ideology = ideology_sb_zulu_traditionalist
+	character_ideologies = { ideology_traditionalist }
+	
+	disband_trigger = { always = no }
+	
+	
+	creation_trigger = { always = no }
+	creation_weight = { value = 0 }
+	on_created = {
+		add_movement_enthusiasm_modifier = yes
+	}
+	
+	character_support_trigger = { has_ideology = ideology:ideology_traditionalist }
+	character_support_weight = { value = 200 }
+	
+	pop_support_trigger = {
+		NOT = {
+			is_pop_type = slaves
+		}
+		mog_plp_movement_mainland_general_pop_support_trigger = yes    # Grey_PLP
+	}
+	
+	pop_support_factors = {
+		movement_support_low_urbanization
+		movement_support_high_literacy
+		movement_support_aristocrats
+		movement_support_farmers
+		movement_support_peasants
+		movement_support_clergymen
+		movement_support_officers
+	}
+	
+	pop_support_weight = {
+		if = {
+			limit = {
+				exists = scope:political_movement
+				scope:political_movement ?= {
+					OR = {
+						is_being_suppressed = yes
+						is_being_bolstered = yes
+					}
+				}
+			}
+			if = {
+				limit = {
+					scope:political_movement = {
+						is_being_suppressed = yes
+					}
+				}
+				add = {
+					value = suppression_base_value
+					multiply = {
+						value = -0.5
+						add = owner.modifier:country_suppression_attraction_factor
+					}
+					desc = "concept_suppressed"
+				}
+			}
+			else = {
+				add = {
+					value = bolstering_base_value
+					multiply = {
+						value = 0.5
+						add = owner.modifier:country_bolster_attraction_factor
+					}
+					desc = "concept_bolstered"
+				}
+			}
+		}
+		add = {
+			desc = "URBAN_STATE" # Increases support in rural states, decreases in urban
+			value = 0.5
+			subtract = state.state_urbanization_rate
+			multiply = 10
+		}
+		
+		add = {
+			value = 5
+			desc = "POP_BASE_SUPPORT"
+		}
+		
+		if = {
+			limit = {
+				is_pop_type = aristocrats
+			}
+			add = {
+				value = 50
+				desc = "POP_ARISTOCRATS"
+			}
+		}
+		else_if = {
+			limit = {
+				is_pop_type = farmers
+			}
+			add = {
+				value = 20
+				desc = "POP_FARMERS"
+			}
+		}
+		else_if = {
+			limit = {
+				is_pop_type = peasants
+			}
+			add = {
+				value = 20
+				desc = "POP_PEASANTS"
+			}
+		}
+		else_if = {
+			limit = {
+				is_pop_type = clergymen
+			}
+			add = {
+				value = 20
+				desc = "POP_CLERGYMEN"
+			}
+		}
+		else_if = {
+			limit = {
+				is_pop_type = officers
+			}
+			add = {
+				value = 25
+				desc = "POP_OFFICERS"
+			}
+		}
+		else_if = {
+			limit = {
+				is_pop_type = soldiers
+			}
+			add = {
+				value = 10
+				desc = "POP_SOLDIERS"
+			}
+		}
+		
+		multiply = { # Illiterate pops participate at 1/10 the rate of fully literate pops
+			desc = "POP_LITERACY"
+			value = literacy_rate
+			add = 0.2
+			max = 0.7 # Starts more powerful but caps out early
+		}
+		
+		# Grey_PLP
+		multiply = {
+			value = mog_plp_movement_mainland_general_pop_support_weight_incorporation_percent_mult
+		}
+	}
+	
+	revolution = {
+		weight = {
+			value = 100
+		}
+		
+		state_weight = {
+			value = 1
+			add = scope:clout
+
+			subtract = state_urbanization_rate
+			
+			# Grey_PLP - always put last
+			multiply = {
+				value = mog_plp_movement_all_general_state_weight_mult
+			}
+		}
+	}
+	
+	
+	
+	additional_radicalism_factors = {
+		
+		
+		if = {
+			limit = {
+				owner = {
+					any_neighbouring_state = {
+						owner = {
+							NOT = { THIS = ROOT.owner }
+							any_political_movement = {
+								is_political_movement_type = movement_sb_zulu_traditionalist
+								is_insurrectionary = yes
+							}
+						}
+					}
+				}
+			}
+			add = {
+				desc = "NEIGHBOURING_COUNTRY_WITH_REVOLUTION"
+				value = 0.15
+			}
+		}
+        if = {
+            limit = {
+                this.days_since_movement_defeated <= very_long_modifier_time
+            }
+            add = { # (x-y)/y - ([1, 7300]-7300)/7300
+                desc = "movement_suppressed_after_civil_war"
+                value = this.days_since_movement_defeated
+                subtract = very_long_modifier_time
+                divide = {
+                    value = very_long_modifier_time
+                }
+            }
+        }
+	}
+}

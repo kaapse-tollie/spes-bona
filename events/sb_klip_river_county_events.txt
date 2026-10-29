@@ -132,6 +132,7 @@ sb_klip_river_county.020 = {
 	}
 
 	immediate = {
+		sb_court_prepare_frontier_choice = yes
 		save_scope_as = sb_klip_zulu_scope
 		c:NAL ?= { save_scope_as = sb_klip_natal_scope }
 		c:GBR ?= { save_scope_as = sb_klip_britain_scope }
@@ -144,15 +145,11 @@ sb_klip_river_county.020 = {
 		name = sb_klip_river_county.020.a
 		default_option = yes
 		custom_tooltip = sb_klip_river_county_020_a_tt
-		custom_tooltip = sb_klip_river_county_020_a_dynasty_tt
+		custom_tooltip = sb_court_klip_cession_tt
+		if = { limit = { exists = scope:sb_court_frontier_ally } custom_tooltip = sb_court_frontier_ally_named_tt }
+		if = { limit = { exists = scope:sb_court_frontier_successor } custom_tooltip = sb_court_frontier_successor_named_tt }
 		hidden_effect = {
-			sb_zulu_remove_dynastic_stability_5 = yes
-			ruler ?= {
-				if = {
-					limit = { NOT = { has_trait = cautious } }
-					add_trait = cautious
-				}
-			}
+			sb_court_klip_cession = yes
 				c:NAL ?= { trigger_event = { id = sb_klip_river_county.030 days = 2 popup = yes } }
 		}
 		ai_chance = {
@@ -193,15 +190,10 @@ sb_klip_river_county.020 = {
 	option = {
 		name = sb_klip_river_county.020.b
 		custom_tooltip = sb_klip_river_county_020_b_tt
-		custom_tooltip = sb_klip_river_county_020_b_dynasty_tt
+		custom_tooltip = sb_court_klip_broker_tt
+		if = { limit = { exists = scope:sb_court_frontier_broker } custom_tooltip = sb_court_frontier_broker_named_tt }
 		hidden_effect = {
-			sb_zulu_add_dynastic_stability_5 = yes
-			ruler ?= {
-				if = {
-					limit = { NOT = { has_trait = tactful } }
-					add_trait = tactful
-				}
-			}
+			sb_court_klip_broker = yes
 			c:NAL ?= {
 				sb_klip_river_create_county = yes
 				if = {
@@ -249,16 +241,10 @@ sb_klip_river_county.020 = {
 	option = {
 		name = sb_klip_river_county.020.c
 		custom_tooltip = sb_klip_river_county_020_c_tt
-		custom_tooltip = sb_klip_river_county_020_c_dynasty_tt
+		custom_tooltip = sb_court_frontier_support_tt
+		if = { limit = { exists = scope:sb_court_frontier_neutral } custom_tooltip = sb_court_frontier_neutral_named_tt }
 		hidden_effect = {
-			sb_zulu_add_dynastic_stability_10 = yes
-			sb_zulu_add_dynastic_stability_5 = yes
-			ruler ?= {
-				if = {
-					limit = { NOT = { has_trait = ambitious } }
-					add_trait = ambitious
-				}
-			}
+			sb_court_frontier_support = yes
 				c:NAL ?= { sb_klip_river_queue_punitive_delivery = yes }
 		}
 		ai_chance = {

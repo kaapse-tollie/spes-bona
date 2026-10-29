@@ -59,17 +59,19 @@ The affected state identifiers are:
 
 ## How to read the totals
 
-The **configured horizon** is the static 1836 cap plus every one-time technology
-stage that can be unlocked during the campaign. It is a ceiling used for design
+The **configured horizon** is the static cap plus native undiscovered reserves and
+every one-time technology stage. It is a ceiling used for design
 comparison, not a claim that every level is available in 1836.
 
 - Static arable, wood, fishing, whaling, ordinary mines, crop slots, rubber, and
   initial discoverable resources are defined in the state-region file.
-- Gold and oil technology stages add **undiscovered** potential. The normal Victoria 3
-  discovery system determines when that potential becomes usable and supplies the
-  standard discovery notification.
-- Technology-gated diamond, iron, and coal stages become usable immediately and post
-  a one-time owner-visible toast.
+- Eight diamond deposits start as **undiscovered** reserves. Their mine definitions
+  require Dynamite, Pumpjacks, or Pneumatic Tools, matching the former gates. The
+  normal engine discovery system reveals capacity and supplies the discovery toast.
+- Technology-gated iron and coal stages remain immediately usable with custom toasts.
+- The legacy gold/oil callbacks retain their existing capacity effects. Native
+  inspection on 18 October found that these do not add undiscovered reserves; the
+  earlier documentation claimed otherwise. This separate issue awaits a scoped fix.
 - Kimberley uses its pre-existing event path: one initial diamond mine plus nineteen
   additional levels.
 - “Unique-parent Vanilla” counts each unsplit Vanilla parent once. Summing the same
@@ -84,14 +86,25 @@ playtesting values; their fresh-campaign pass/fail checks are recorded there.
 
 ## Technology-gate architecture
 
-Every route calls the same idempotent scripted effect:
+Diamond discovery uses the native state-region `resource` entries and each resource
+building's `unlocking_technologies`. The 95 undiscovered diamond levels are already in
+the map definition, but cannot be discovered before their mine's technology is
+available under native rules. No technology callback grants them usable capacity.
+Three mine definitions share the existing diamond labels and production methods;
+all inherit ordinary mining bonuses through the discoverable diamond group.
+
+The remaining scripted stages call the same idempotent effect when:
 
 1. a country completes a relevant technology;
 2. a campaign starts with that technology already researched; or
 3. ownership of an affected state changes to an eligible country.
 
-Each geographical stage has one global completion flag, so ownership changes or
-repeated hooks cannot add the same capacity twice.
+Each scripted stage has one global completion flag. Native diamond reserves belong
+to the state region and are not re-added by ownership changes or technology hooks.
+
+The table lists unchanged resource budgets and eligibility thresholds. Diamond
+entries require a subsequent engine discovery; the other entries retain their
+existing scripted effects.
 
 | Technology | Configured additions |
 |---|---|

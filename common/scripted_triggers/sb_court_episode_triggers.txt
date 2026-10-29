@@ -1,0 +1,58 @@
+﻿# Current-country capture is supplied by the controller and preserved in event scopes.
+sb_court_episode_house = {
+ sb_court_present_member = yes has_variable = sb_court_representative_var
+ NOT = { sb_court_dynastic_candidate = yes } NOT = { is_ruler_of_own_country = yes }
+ NOT = { has_variable = sb_court_retired_var }
+}
+sb_court_episode_neutral = { sb_court_episode_house = yes sb_court_recruitable_backer = yes var:sb_court_endorsement_var = 0 }
+sb_court_episode_ally = { sb_court_episode_house = yes var:sb_court_endorsement_var = 1 }
+sb_court_campaign_defector = {
+ sb_court_episode_ally = yes sb_court_recruitable_backer = yes
+ NOT = { has_template = ZUL_ndlela_kasompisi }
+}
+sb_court_episode_opponent = { sb_court_episode_house = yes var:sb_court_endorsement_var = -1 var:sb_court_claimant_scope ?= { sb_court_royal_candidate = yes } }
+sb_court_episode_chief = {
+ sb_court_episode_neutral = yes NOT = { var:sb_court_alignment_var = 1 }
+ OR = {
+  scope:sb_court_country = { NOT = { has_variable = sb_court_privileges_this_reign_var } }
+  AND = {
+   prominence >= 50
+   scope:sb_court_country = { NOT = { has_law = law_type:law_sb_chiefly_council } }
+  }
+ }
+}
+sb_court_episode_prince = { sb_court_member_of_country = yes sb_court_royal_candidate = yes NOT = { is_ruler_of_own_country = yes } }
+sb_court_episode_notable = {
+ sb_court_present_member = yes NOT = { is_ruler_of_own_country = yes }
+ OR = { var:sb_court_endorsement_var = 1 var:sb_court_claimant_scope ?= { is_character_alive = yes } }
+ NOR = { has_modifier = sb_court_service_recognised has_modifier = sb_court_service_discredited has_variable = sb_court_retired_var }
+}
+sb_court_card_210_eligible = {
+ sb_court_dynastic_country = yes
+ any_in_list = { variable = sb_court_members sb_court_episode_ally = yes NOT = { has_variable = sb_court_successor_pledge_scope } }
+ any_in_list = { variable = sb_court_members sb_court_episode_prince = yes }
+}
+sb_court_card_211_eligible = { any_in_list = { variable = sb_court_members sb_court_episode_notable = yes } }
+sb_court_card_212_eligible = {
+ any_in_list = { variable = sb_court_members sb_court_episode_chief = yes }
+}
+sb_court_card_213_eligible = {
+ any_in_list = { variable = sb_court_members sb_court_episode_ally = yes }
+ any_in_list = { variable = sb_court_members sb_court_episode_opponent = yes }
+}
+sb_court_card_214_eligible = {
+ any_in_list = { variable = sb_court_members count >= 2 sb_court_episode_neutral = yes }
+ any_in_list = { variable = sb_court_members sb_court_episode_prince = yes }
+}
+sb_court_card_215_eligible = {
+ has_journal_entry = je_sb_adopt_firearms
+ NOR = { has_variable = sb_firearms_modernized_var has_variable = sb_court_firearms_reward_var }
+ OR = { is_player = yes has_variable = sb_zulu_blood_river_resolved_var }
+ any_in_list = { variable = sb_court_members sb_court_episode_house = yes }
+}
+sb_court_card_210_valid = { sb_court_episode_valid = yes var:sb_court_episode_card_var = 210 var:sb_court_episode_actor_scope ?= { sb_court_episode_ally = yes NOT = { has_variable = sb_court_successor_pledge_scope } } var:sb_court_episode_candidate_scope ?= { sb_court_episode_prince = yes } sb_court_dynastic_country = yes }
+sb_court_card_211_valid = { sb_court_episode_valid = yes var:sb_court_episode_card_var = 211 var:sb_court_episode_actor_scope ?= { sb_court_episode_notable = yes } }
+sb_court_card_212_valid = { sb_court_episode_valid = yes var:sb_court_episode_card_var = 212 var:sb_court_episode_actor_scope ?= { sb_court_episode_chief = yes } }
+sb_court_card_213_valid = { sb_court_episode_valid = yes var:sb_court_episode_card_var = 213 var:sb_court_episode_actor_scope ?= { sb_court_episode_opponent = yes var:sb_court_claimant_scope ?= scope:sb_court_country.var:sb_court_episode_candidate_scope } var:sb_court_episode_other_scope ?= { sb_court_episode_ally = yes } }
+sb_court_card_214_valid = { sb_court_episode_valid = yes var:sb_court_episode_card_var = 214 var:sb_court_episode_actor_scope ?= { sb_court_episode_neutral = yes } var:sb_court_episode_other_scope ?= { sb_court_episode_neutral = yes } var:sb_court_episode_candidate_scope ?= { sb_court_episode_prince = yes } }
+sb_court_card_215_valid = { sb_court_episode_valid = yes var:sb_court_episode_card_var = 215 sb_court_card_215_eligible = yes var:sb_court_episode_actor_scope ?= { sb_court_episode_house = yes } }

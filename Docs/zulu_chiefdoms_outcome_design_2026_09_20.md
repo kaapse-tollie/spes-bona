@@ -1,10 +1,58 @@
 # ZUL institutions and the outcome-driven Chiefdoms journal
 
 Design revision for DP, 20 September 2026. **No gameplay implementation.**
+The [consolidated current plan of 18 October](zulu_chiefdoms_rework_plan_2026_10_18.md)
+takes precedence over conflicting proposals below; this document retains the
+exploration and decision history.
 This updates the earlier A/B/C exploration after DP selected A. The persistent
 LO/PB design continues from `zulu_interest_groups_and_militias_exploration_2026_09_20.md`.
 The complete old/new ideology comparison is in
 [zulu_ideology_effect_matrix_2026_09_20.md](zulu_ideology_effect_matrix_2026_09_20.md).
+
+## DP clarification — 17 October 2026
+
+This clarification takes precedence over the September incentive recommendations
+and opening-boost tuning below. It updates design only; no gameplay was changed.
+
+| Item | Status | Current direction |
+|---|---|---|
+| Narrow uSuthu platform | Agreed direction reaffirmed | Restoration of royal institutions; no generic economic/citizenship/bureaucracy agenda. The broader IG work is related, not a prerequisite for this fix. Reconfigure the existing native movement, not a duplicate. |
+| LO/PB work | Agreed to develop together | Royal establishment and chiefly/local notables throughout ZUL's campaign; AF remains outside the rework. Law-granted privileges can change without deleting constituencies or forcing every chief into one faction. |
+| Deadline | Rejected explicitly | No ten-year or substitute timeout. The current implemented timer still needs removal when this redesign is implemented. |
+| Chief and royal victory conditions | Accepted in principle | Legitimacy >=75 plus chiefly institutions and uSuthu support <5%; actual activism >=99% for royalist takeover. These are gameplay thresholds, not historically derived constants; the exact chiefly-law pair remains the proposed constitutional pair. |
+| Opening uSuthu attraction boost | Reopened | DP asks why it is needed. It originally represented royal networks and made recruitment viable; it is not a native survival guard or technical requirement. Recommend first assessing the narrowed movement and revised constituencies without an extra automatic story bonus; this recommendation is provisional. |
+| Cost of royalist victory | Risk/reward principle accepted | A Boer-backed victory can cede territory to NRP. Do not assess a restored puppet and its incorporation reward as if this loss, disruption and intervention costs did not exist. |
+| +10% restored / +25% initial Crown proposals | Open, no automatic correction selected | The earlier recommendation to remove +10% or compensate Control the Crown is not an agreed requirement. Assess the whole route, including conditional NRP loss. |
+
+Terminology: **Control the Crown** means choosing that option in the initial
+Government of Zululand settlement, preserving the crown/protectorate without
+opening the Chiefdoms contest. **Chiefdom settlement overturned** means uSuthu
+wins after Natal first imposed chiefly government; the earlier shorthand
+“failed partition” did not mean a separate lost war or automatically losing all
+Zululand.
+
+The current source marks Boer commitment at 100 in
+`sb_zululand_mark_boer_commitment`. `sb_zululand_apply_crown_victory` preserves that
+entitlement before cleanup and calls `sb_nrp_create_greater_republic`.
+Creation requires live TRN/ZUL, no existing NRP and the required ZUL-owned seed
+province; finalization assigns five authored Zululand provinces to NRP. Thus
+this is a real territorial downside but not an automatic result of every uSuthu
+victory. The land initially belongs to ZUL, so Natal loses territory controlled
+through its subject and potential future annexation, rather than necessarily
+ceding an already NAL-owned state. Later boundary outcomes remain their own chain.
+
+For later reform, the recommended institutional interpretation is persistent
+constituencies with privileges supplied by laws: retaining chiefly office keeps
+Chiefly Notables relevant; replacing chiefly administration/militias removes the
+associated attraction advantages without erasing supporters. Chiefly figures can
+support a king, and royalist interests can survive a republic. Contextual labels
+such as Local Notables are presentation proposals, not automatic ideological
+conversion or a calendar-based expiry. Keep the urban PB constituency available
+as occupations and laws change. Do not map a modern party directly onto one IG.
+The IFP's 2024 manifesto itself supports both traditional leadership and the
+king's custodianship; it illustrates overlapping institutions, not proof of an
+unchanged nineteenth-century faction alignment.
+[IFP manifesto](https://ifp.org.za/wp-content/uploads/2024/04/Inkatha-Freedom-Party-2024-Manifesto-English-V3-WEB_compressed-1.pdf).
 
 ## Accepted direction and latest clarifications
 
@@ -24,8 +72,9 @@ The complete old/new ideology comparison is in
   The royalist +10% suggestion is open because of the Crown-route incentive problem.
 - Replace remaining story-specific LD effects with attraction/activism effects.
   Native subject diplomacy and the movement are still distinct systems.
-- Replace the previous nondecaying opening attraction bonus with a decaying one:
-  +50% or +100%, over five or ten years. Exact tuning remains provisional.
+- Opening attraction was previously to become decaying (+50% or +100%, over
+  five or ten years). DP reopened whether any extra opening boost is warranted
+  on 17 October; those profiles below are alternatives, not a settled requirement.
 
 The old PB-in-government/PB-over-LO-clout/<25%-activism chief-victory proposal is
 superseded by DP's conditions. Do not retain those extra gates silently. The old
@@ -317,9 +366,11 @@ separate governmental/economic ideologies and GOTB's in-place movement changes.
 The complete stance table records source versus proposed values. No runtime test
 or game launch was performed for this design.
 
-Before implementation, the remaining substantial choice is **package 1 or 2 for
-Crown incentives**. Ideology stances, incident tuning and the opening profile can
-be reviewed as a bundle. The army's numerical profile remains explicitly outside
+The September **package 1 or 2** comparison below records proposals, not a
+mandatory correction. DP’s October feedback accepts territorial risk as a reason
+for higher rewards and reopens whether either compensation package is needed.
+Ideology stances, incident tuning and any opening recruitment bonus should be
+assessed together with the conditional NRP cost. The army's numerical profile remains explicitly outside
 what the +25 attraction notes settled. Acceptance scenarios should cover:
 
 - ZUL aristocrat/officer PB eligibility, added weight and laws' individual totals;
@@ -355,9 +406,9 @@ what the +25 attraction notes settled. Acceptance scenarios should cover:
 | Simultaneous threshold priority | Provisional | Royalist first; no added support floor |
 | ZUL-first events and NAL follow-up | Agreed | Automatic outcome; acknowledgements repeat nothing |
 | Permanent chief +50% incorporation | Agreed | Speed; NAL-owned Zululand; no expiry |
-| Royalist +10% legacy | Reopened | Recommend none, with initial Crown compensation |
-| Initial Crown +25%; restored subject type | Open bundle | Package 1 keeps puppet; package 2 grants protectorate |
-| Initial attraction decay | Agreed change / provisional tuning | Recommend +100% over five years |
+| Royalist +10% legacy | Open after October feedback | Do not remove automatically; assess territorial risk and the full route |
+| Initial Crown +25%; restored subject type | Unselected proposals | Neither reward compensation nor protectorate restoration is agreed |
+| Initial attraction bonus | Reopened 17 October | Whether an extra boost is needed, not merely its strength/decay |
 | Remaining LD conversions | Agreed direction / provisional mapping | Table above; native diplomacy retained |
 | Annexation before consolidation | Provisional | No earned chief reward; ordinary route access needs audit |
 | Implementation | Deferred | Design only; DP performs engine verification |

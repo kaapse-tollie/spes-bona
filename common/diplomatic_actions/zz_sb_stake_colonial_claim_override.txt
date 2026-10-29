@@ -170,6 +170,7 @@ REPLACE:da_stake_colonial_claim = {
 					add = 5
 
 					multiply = {
+						#desc = "INFAMY_STATE_POPULATION_FACTOR"
 						value = scope:second_state.state_population
 						divide = define:NDiplomacy|WAR_GOAL_INFAMY_POPULATION_SCALING_FACTOR
 						multiply = define:NDiplomacy|WAR_GOAL_INFAMY_POPULATION_SCALING_MULTIPLIER
@@ -178,6 +179,7 @@ REPLACE:da_stake_colonial_claim = {
 					}
 
 					multiply = {
+						#desc = "country_infamy_generation_against_unrecognized_mult"
 						value = 1
 						if = {
 							limit = {
@@ -197,6 +199,7 @@ REPLACE:da_stake_colonial_claim = {
 					}
 
 					multiply = {
+						#desc = "decentralized_nation"
 						value = 1
 						if = {
 							limit = {
@@ -209,6 +212,7 @@ REPLACE:da_stake_colonial_claim = {
 					}
 
 					min = {
+						#desc = "INFAMY_MINIMUM_VALUE"
 						value = 5
 					}
 					max = 20
@@ -259,6 +263,16 @@ REPLACE:da_stake_colonial_claim = {
 
 				if = {
 					limit = {
+						any_scope_regional_objective = {
+							type = aro:ai_regional_objective_acquire_states
+							is_active = yes
+						}
+					}
+					add = 0.05
+				}
+
+				if = {
+					limit = {
 						has_journal_entry = je_scramble_for_africa
 					}
 					multiply = 2
@@ -286,6 +300,16 @@ REPLACE:da_stake_colonial_claim = {
 
 			if = {
 				limit = {
+					ai_is_regional_objective_state = {
+						TYPE = aro:ai_regional_objective_acquire_states
+						STATE = scope:second_state
+					}
+				}
+				add = 20
+			}
+
+			if = {
+				limit = {
 					has_attitude = {
 						who = scope:target_country
 						attitude = antagonistic
@@ -309,6 +333,10 @@ REPLACE:da_stake_colonial_claim = {
 			OR = {
 				scope:target_country = {
 					is_country_type = decentralized
+				}
+				ai_is_regional_objective_state = {
+					TYPE = aro:ai_regional_objective_acquire_states
+					STATE = scope:second_state
 				}
 				has_attitude = {
 					who = scope:target_country

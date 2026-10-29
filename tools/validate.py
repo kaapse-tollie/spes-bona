@@ -1077,6 +1077,10 @@ def check_stale_symbols() -> Check:
         "sb_nrp_greater_concession_var",
         "sb_dinuzulu_ever_created_global_var",
         "sb_zululand_skirmish_usuthu_var",
+        # Retired write-only Chiefdoms state from the 1.14.5 launch (2026-10-16).
+        "sb_zululand_nal_scope",
+        "sb_zululand_zul_scope",
+        "sb_zululand_thirteen_chiefdoms_route_var",
     }
     hits: list[str] = []
     for base in TEXT_ROOTS:
@@ -1116,13 +1120,15 @@ def check_unused_symbols() -> Check:
 
     texts: dict[Path, str] = {}
     counts: Counter[str] = Counter()
-    for base in ("common", "events", "localization"):
+    for base in ("common", "events", "localization", "gui"):
         for path in sorted((ROOT / base).rglob("*")):
             if not path.is_file() or path.suffix not in {".txt", ".yml", ".gui"}:
                 continue
             source = path.read_text(encoding="utf-8-sig", errors="ignore")
             texts[path] = source
             counts.update(SB_SYMBOL_RE.findall(source))
+            # A scoped access (scope:sb_country.sb_value) references the value too.
+            counts.update(re.findall(r"(?<=\.)(sb_[A-Za-z0-9_]+)\b", source))
 
     definitions: dict[str, list[str]] = {}
     for path, source in texts.items():
@@ -1304,7 +1310,7 @@ def check_release_invariants() -> Check:
                 )
 
     detail = f"{war_goal_count} complete scripted war-goal blocks"
-    return Check("1.14.3 release invariants", "FAIL" if errors else "PASS", "; ".join(errors or [detail]))
+    return Check("1.14.5 release invariants", "FAIL" if errors else "PASS", "; ".join(errors or [detail]))
 
 
 def check_local_override_inventory() -> Check:

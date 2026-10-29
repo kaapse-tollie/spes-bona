@@ -31,8 +31,7 @@ class FrontierTweaksTests(unittest.TestCase):
         ):
             self.assertNotIn(temporary, progress + penalty)
         self.assertIn(
-            "var:sb_firearms_treaty_progress_months_var >= "
-            "var:sb_firearms_industry_progress_months_var",
+            "value = var:sb_firearms_supply_weeks_var multiply = 60 divide = 104",
             progress,
         )
         self.assertIn(
@@ -48,8 +47,8 @@ class FrontierTweaksTests(unittest.TestCase):
         )
         bst_seed = object_block_from_source(seed, "if")
         self.assertIn("country_definition = cd:BST", bst_seed)
-        self.assertIn("name = sb_firearms_treaty_progress_months_var", bst_seed)
-        self.assertIn("value = 9.6", bst_seed)
+        self.assertIn("name = sb_firearms_supply_weeks_var", bst_seed)
+        self.assertIn("value = 41.6", bst_seed)
         self.assertNotIn("sb_firearms_industry_progress_months_var", bst_seed)
 
     def test_bst_starts_with_chiefly_levy_law(self):
@@ -131,91 +130,26 @@ class FrontierTweaksTests(unittest.TestCase):
         self.assertIn("cd:XHO", eligibility)
         self.assertNotIn("cd:MTB", eligibility)
 
-    def test_uthumbu_heir_assignment_matches_the_vanilla_lifecycle_order(self):
-        path = "common/scripted_effects/sb_zulu_dynasty_succession_effects.txt"
-        assign = object_block(path, "sb_zulu_assign_new_heir_scope")
-        prepare = object_block(path, "sb_zulu_prepare_uthumbu_heir")
-        secured = object_block(path, "sb_resolve_zulu_dynasty_secured")
-
-        self.assertLess(
-            assign.index("set_heir = scope:new_heir_scope"),
-            assign.index("free_character_from_void = yes"),
-        )
+    def test_shared_heir_assignment_keeps_native_lifecycle_order(self):
+        assign = object_block("common/scripted_effects/sb_zulu_dynasty_succession_effects.txt", "sb_zulu_assign_new_heir_scope")
+        self.assertLess(assign.index("set_heir = scope:new_heir_scope"), assign.index("free_character_from_void = yes"))
         self.assertNotIn("replace_character_roles", assign)
-        self.assertIn("template = ZUL_uthumbu_claimed_son", prepare)
-        self.assertIn("sb_zulu_assign_new_heir_scope = yes", prepare)
-        self.assertIn("sb_zulu_prepare_uthumbu_heir = yes", secured)
+        self.assertNotIn("kill_character", assign)
 
-    def test_mbuyazi_succession_excludes_dinuzulu(self):
-        path = "common/scripted_effects/sb_zulu_dynasty_succession_effects.txt"
-        effects = text(path)
-        mbuyazi = object_block(path, "sb_resolve_zulu_dynasty_secured_mbuyazi")
-        cetshwayo = object_block(
-            path, "sb_resolve_zulu_dynasty_secured_cetshwayo_for_mpande"
-        )
-        dinuzulu = object_block(path, "sb_zulu_prepare_dinuzulu_heir")
+    def test_dynasty_endpoints_do_not_kill_or_secure_the_court(self):
+        effects = text("common/scripted_effects/sb_zulu_dynasty_succession_effects.txt")
+        journal = object_block("common/journal_entries/1-03_sb_zulu_kingdom.txt", "je_sb_zulu_kingdom")
+        for token in ("sb_resolve_zulu_dynastic_collapse", "sb_resolve_zulu_dynasty_secured", "sb_zulu_kill_current_heir"):
+            self.assertNotIn(token, effects)
+        self.assertNotIn("on_complete", journal)
+        self.assertNotIn("kill_character", effects)
 
-        self.assertIn(
-            "set_global_variable = sb_zulu_mbuyazi_succession_global_var",
-            mbuyazi,
-        )
-        self.assertIn(
-            "remove_global_variable = sb_zulu_mbuyazi_succession_global_var",
-            cetshwayo,
-        )
-        self.assertIn(
-            "NOT = { has_global_variable = sb_zulu_mbuyazi_succession_global_var }",
-            dinuzulu,
-        )
-        self.assertIn("sb_zulu_mbuyazi_succession_global_var", effects)
-
-    def test_closed_mpande_succession_keeps_the_selected_dynastic_line(self):
-        effects_path = "common/scripted_effects/sb_zulu_dynasty_succession_effects.txt"
-        reconcile = object_block(
-            effects_path, "sb_zulu_reconcile_secured_mpande_heir"
-        )
-        line = object_block(
-            effects_path, "sb_zulu_reconcile_secured_mpande_line"
-        )
-        regional = object_block(
-            "common/on_actions/sb_regional_on_action_handlers.txt",
-            "sb_on_zulu_secured_succession_yearly_pulse_country",
-        )
-        router = object_block(
-            "common/on_actions/sb_on_actions.txt", "on_yearly_pulse_country"
-        )
-        archive = object_block(
-            "common/scripted_effects/sb_zululand_settlement_effects.txt",
-            "sb_zululand_archive_preannexation_royal_house",
-        )
-
-        for token in (
-            "sb_zulu_mpande_mbuyazi_heir_var",
-            "ZUL_mbuyazi_heir",
-            "ZUL_mbuyazi_successor",
-            "sb_zulu_mbuyazi_successor_installed_var",
-            "sb_zulu_mpande_cetshwayo_heir_var",
-            "ZUL_cetshwayo_heir",
-            "ZUL_dinuzulu_heir",
-            "sb_zulu_cetshwayo_successor_installed_var",
-        ):
-            self.assertIn(token, reconcile)
-        self.assertIn("country_summon_heir_effect = { TEMPLATE = $HEIR$ }", line)
-        self.assertIn("country_summon_heir_effect = { TEMPLATE = $SUCCESSOR$ }", line)
-        self.assertIn("NOT = { is_template_used = $HEIR$ }", line)
-        self.assertIn("NOT = { is_template_used = $SUCCESSOR$ }", line)
-        self.assertIn("game_date >= $SUCCESSOR_BIRTH_DATE$", line)
-        self.assertIn("SUCCESSOR_BIRTH_DATE = 1852.1.1", reconcile)
-        self.assertIn("SUCCESSOR_BIRTH_DATE = 1868.1.1", reconcile)
-        self.assertIn("country_definition = cd:ZUL", regional)
-        self.assertIn("sb_zulu_reconcile_secured_mpande_heir = yes", regional)
-        self.assertIn(
-            "sb_on_zulu_secured_succession_yearly_pulse_country", router
-        )
-        self.assertLess(
-            archive.index("sb_zulu_reconcile_secured_mpande_heir = yes"),
-            archive.index("ruler = { save_scope_as = sb_zululand_preannexation_ruler_scope }"),
-        )
+    def test_nguni_inherits_the_ongoing_court_without_resetting_it(self):
+        inherited = object_block("common/scripted_effects/sb_nguni_effects.txt", "sb_nguni_apply_formation_inheritance")
+        self.assertIn("sb_ngu_inherited_zul_content_var", inherited)
+        self.assertIn("sb_institutions_reconcile = yes", inherited)
+        self.assertNotIn("sb_zulu_dynasty_secured_var", inherited)
+        self.assertNotIn("set_variable = { name = sb_prerogative_var", inherited)
 
     def test_potgieter_has_no_colonial_administrator_trait(self):
         history = text("common/history/characters/ora - oranje.txt")
@@ -363,7 +297,8 @@ class FrontierTweaksTests(unittest.TestCase):
         trek_path = "common/scripted_effects/sb_trek_migration.txt"
         zoutpansberg = object_block(trek_path, "sb_found_zoutpansberg_republic")
         lydenburg = object_block(trek_path, "sb_found_lydenburg_republic")
-        transvaal = object_block(trek_path, "sb_seed_trn_v2_start_package")
+        transvaal = object_block(trek_path, "sb_spawn_transvaal_republic_v2")
+        transvaal_muster = object_block(trek_path, "sb_seed_trn_v2_start_package")
 
         self.assertEqual(2, starter.count("save_scope_as = sb_boer_starting_commando_scope"))
         self.assertNotIn("transfer_to_formation", starter)
@@ -381,7 +316,7 @@ class FrontierTweaksTests(unittest.TestCase):
                 ),
             )
 
-        self.assertIn("save_scope_as = trn_pretorius_commando_scope", transvaal)
+        self.assertIn("save_scope_as = trn_pretorius_commando_scope", transvaal_muster)
         self.assertIn(
             "transfer_to_formation = scope:trn_pretorius_commando_scope", transvaal
         )

@@ -166,10 +166,14 @@ class StartupStoryPatchTests(unittest.TestCase):
             "sb_zulu_dynastic_stability_bar",
         )
         self.assertIn('desc = "sb_zulu_dynastic_stability_bar_low"', progress_bar)
-        localization = text("localization/english/sb_l_english.yml")
+        gui = text("gui/sb_prerogative_progress_bars.gui")
+        self.assertIn('text = "sb_prerogative_live_readout"', gui)
+        localization = text("localization/english/sb_institutions_l_english.yml")
+        readout = re.search(r'^\s*sb_prerogative_live_readout:[^\n]+', localization, re.MULTILINE)
+        self.assertIsNotNone(readout)
         self.assertIn(
-            "[JournalEntry.GetCurrentBarValue(ScriptedProgressBar.Self)|0]/100",
-            localization,
+            "[JournalEntry.GetCountry.MakeScope.Var('sb_prerogative_var').GetValue|1]",
+            readout.group(),
         )
 
     def test_history_authored_journals_have_no_inactive_auto_stub(self):
@@ -184,33 +188,14 @@ class StartupStoryPatchTests(unittest.TestCase):
         for path, journal in journal_entries.items():
             self.assertNotIn("is_shown_when_inactive", object_block(path, journal))
 
-    def test_dynastic_modifier_cache_guards_its_comparison_operand(self):
-        effect = object_block(
-            "common/scripted_effects/sb_zulu_dynasty_effects.txt",
-            "sb_zulu_update_dynastic_stability_modifiers",
-        )
-        missing_guard = (
-            "limit = { NOT = { has_variable = "
-            "sb_zulu_dynastic_stability_applied_tier_var } }"
-        )
-        self.assertIn(missing_guard, effect)
-        comparison = (
-            "NOT = { var:sb_zulu_dynastic_stability_applied_tier_var = "
-            "var:sb_zulu_dynastic_stability_target_tier_var }"
-        )
-        self.assertIn(comparison, effect)
-        self.assertIn(
-            "limit = { has_variable = "
-            "sb_zulu_dynastic_stability_refresh_needed_var }",
-            effect,
-        )
-        self.assertIn(
-            "remove_variable = sb_zulu_dynastic_stability_refresh_needed_var",
-            effect,
-        )
-        self.assertNotIn("sb_zulu_dynastic_stability_tier_delta_var", effect)
-        self.assertLess(effect.index(missing_guard), effect.index(comparison))
-
+    def test_prerogative_initializes_values_before_recalculation(self):
+        effect = object_block("common/scripted_effects/sb_institutions_effects.txt", "sb_institutions_recalculate")
+        self.assertLess(effect.index("sb_institutions_initialize = yes"), effect.index("value = sb_prerogative_target"))
+        initialize = object_block("common/scripted_effects/sb_institutions_effects.txt", "sb_institutions_initialize")
+        self.assertIn("NOT = { has_variable = sb_institutions_initialized_var }", initialize)
+        self.assertIn("name = sb_prerogative_cooperation_var value = 0", initialize)
+        bar = object_block("common/scripted_progress_bars/sb_progress_bars.txt", "sb_zulu_dynastic_stability_bar")
+        self.assertNotIn("monthly_progress", bar)
 
 if __name__ == "__main__":
     unittest.main()

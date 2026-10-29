@@ -1,0 +1,218 @@
+﻿namespace = sb_court_succession
+sb_court_succession.001 = {
+ type = country_event
+ placement = root
+ title = sb_court_succession.001.t
+ desc = sb_court_succession.001.d
+ flavor = sb_court_succession.001.f
+ event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+ icon = "gfx/interface/icons/event_icons/event_portrait.dds"
+ duration = 3
+ trigger = { sb_court_dynastic_country = yes has_variable = sb_court_accession_open_var }
+ immediate = { save_scope_as = sb_court_country var:sb_court_accession_nominee_scope ?= { save_scope_as = sb_court_nominee } var:sb_court_accession_rival_scope ?= { save_scope_as = sb_court_rival } }
+ option = {
+  name = sb_court_succession.001.a default_option = yes
+  hidden_effect = { sb_court_answer_accession = yes }
+ }
+}
+
+# The allegiance is already recorded by the adulthood pulse; this reports it once.
+sb_court_succession.003 = {
+ type = country_event
+ placement = root
+ title = sb_court_succession.003.t
+ desc = sb_court_succession.003.d
+ flavor = sb_court_succession.003.f
+ gui_window = event_window_2char
+ left_icon = scope:sb_court_adult_son
+ right_icon = scope:sb_court_father
+ on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+ on_opened_soundeffect = "event:/SFX/Events/misc/2Characters"
+ icon = "gfx/interface/icons/event_icons/event_portrait.dds"
+ duration = 3
+ trigger = {
+  scope:sb_court_adult_son ?= { is_character_alive = yes is_adult = yes }
+  scope:sb_court_father ?= { is_character_alive = yes }
+ }
+ option = {
+  name = sb_court_succession.003.a
+  default_option = yes
+  custom_tooltip = sb_court_succession.003.a.tt
+ }
+}
+
+sb_court_succession.004 = { # TO REVIEW
+ type = country_event
+ placement = root
+ title = sb_court_succession.004.t
+ desc = {
+  first_valid = {
+   triggered_desc = { trigger = { sb_court_displayed_dynastic_pair = yes } desc = sb_court_succession.004.d }
+   desc = sb_court_succession.004.d.withdrawn
+  }
+ }
+ flavor = sb_court_succession.004.f
+ gui_window = event_window_2char
+ left_icon = scope:sb_court_nominee
+ right_icon = scope:sb_court_rival
+ on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+ on_opened_soundeffect = "event:/SFX/Events/misc/2Characters"
+ icon = "gfx/interface/icons/event_icons/event_portrait.dds"
+ duration = 3
+ trigger = { sb_court_dynastic_pair_valid = yes }
+ immediate = {
+  save_scope_as = sb_court_country
+  var:sb_court_dynastic_nominee_scope = { save_scope_as = sb_court_nominee }
+  var:sb_court_dynastic_rival_scope = { save_scope_as = sb_court_rival }
+ }
+ option = {
+  name = sb_court_succession.004.a
+  trigger = { sb_court_displayed_dynastic_pair = yes }
+  default_option = yes
+  custom_tooltip = sb_court_dynastic_coalitions_tt
+  custom_tooltip = sb_court_dynastic_back_incumbent_tt
+  custom_tooltip = sb_court_dynastic_sponsor_tt
+  custom_tooltip = sb_court_dynastic_force_split_tt
+  custom_tooltip = sb_court_dynastic_stakes_tt
+  hidden_effect = { sb_court_answer_dynastic_crisis = { CLAIMANT = no } }
+  ai_chance = {
+   base = 0
+   modifier = { trigger = { var:sb_court_dynastic_incumbent_weight_var >= var:sb_court_dynastic_rival_weight_var } add = 100 }
+  }
+ }
+ option = {
+  name = sb_court_succession.004.b
+  trigger = { sb_court_displayed_dynastic_pair = yes }
+  custom_tooltip = sb_court_dynastic_coalitions_tt
+  custom_tooltip = sb_court_dynastic_back_claimant_tt
+  custom_tooltip = sb_court_dynastic_sponsor_tt
+  custom_tooltip = sb_court_dynastic_force_split_tt
+  custom_tooltip = sb_court_dynastic_stakes_tt
+  hidden_effect = { sb_court_answer_dynastic_crisis = { CLAIMANT = yes } }
+  ai_chance = {
+   base = 0
+   modifier = { trigger = { var:sb_court_dynastic_rival_weight_var > var:sb_court_dynastic_incumbent_weight_var } add = 100 }
+  }
+ }
+ option = {
+  name = sb_court_succession.004.c
+  trigger = { NOT = { sb_court_displayed_dynastic_pair = yes } }
+  hidden_effect = { sb_court_dismiss_dynastic_choice = yes }
+ }
+}
+sb_court_succession.005 = { # TO REVIEW
+ type = country_event
+ placement = root
+ title = sb_court_succession.005.t
+ desc = sb_court_succession.005.d
+ flavor = sb_court_succession.005.f
+ gui_window = event_window_1char_tabloid
+ left_icon = scope:sb_court_victor
+ icon = "gfx/interface/icons/event_icons/event_portrait.dds"
+ duration = 3
+ trigger = { scope:sb_court_victor ?= { is_character_alive = yes } }
+ option = {
+  name = sb_court_succession.005.a default_option = yes
+  custom_tooltip = sb_court_succession.005.a.tt
+  hidden_effect = { sb_court_acknowledge_dynastic_victory = yes }
+ }
+}
+
+sb_court_succession.006 = { # TO REVIEW
+ type = country_event
+ placement = root
+ title = sb_court_succession.006.t
+ desc = sb_court_succession.006.d
+ flavor = sb_court_succession.006.f
+ gui_window = event_window_2char
+ left_icon = scope:sb_court_brothers_cetshwayo
+ right_icon = scope:sb_court_brothers_mbuyazi
+ icon = "gfx/interface/icons/event_icons/event_portrait.dds"
+ on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+ on_opened_soundeffect = "event:/SFX/Events/misc/2Characters"
+ duration = 3
+ trigger = { sb_court_brothers_choice_valid = yes trigger_if = { limit = { has_variable = sb_court_brothers_choice_var } var:sb_court_brothers_choice_var = 1 } }
+ cancellation_trigger = { NOT = { sb_court_brothers_choice_valid = yes } }
+ immediate = {
+  save_scope_as = sb_court_country
+  ruler = { save_scope_as = sb_court_father }
+  var:sb_court_brothers_cetshwayo_scope = { save_scope_as = sb_court_brothers_cetshwayo }
+  var:sb_court_brothers_mbuyazi_scope = { save_scope_as = sb_court_brothers_mbuyazi }
+  var:sb_court_brothers_backer_scope ?= { save_scope_as = sb_court_brothers_backer }
+ }
+ option = {
+  name = sb_court_succession.006.a default_option = yes
+  custom_tooltip = sb_court_recognize_successor_tt
+  show_as_tooltip = { scope:sb_court_brothers_mbuyazi = { if = { limit = { NOT = { has_trait = ambitious } } add_trait = ambitious } } }
+  sb_court_preview_brother_backing = { OTHER = scope:sb_court_brothers_mbuyazi TEXT = sb_court_succession.006.a.backer }
+  hidden_effect = { sb_court_answer_brothers_choice = { HEIR = scope:sb_court_brothers_cetshwayo OTHER = scope:sb_court_brothers_mbuyazi RECOGNISE = yes } }
+  ai_chance = { base = 66 }
+ }
+ option = {
+  name = sb_court_succession.006.b
+  custom_tooltip = sb_court_recognize_successor_tt
+  show_as_tooltip = { scope:sb_court_brothers_cetshwayo = { if = { limit = { NOT = { has_trait = ambitious } } add_trait = ambitious } } }
+  sb_court_preview_brother_backing = { OTHER = scope:sb_court_brothers_cetshwayo TEXT = sb_court_succession.006.b.backer }
+  hidden_effect = { sb_court_answer_brothers_choice = { HEIR = scope:sb_court_brothers_mbuyazi OTHER = scope:sb_court_brothers_cetshwayo RECOGNISE = yes } }
+  ai_chance = { base = 33 }
+ }
+}
+
+sb_court_succession.007 = { # TO REVIEW
+ type = country_event
+ placement = root
+ title = sb_court_succession.007.t
+ desc = sb_court_succession.007.d
+ flavor = sb_court_succession.007.f
+ gui_window = event_window_2char
+ left_icon = scope:sb_court_brothers_heir
+ right_icon = scope:sb_court_brothers_other
+ icon = "gfx/interface/icons/event_icons/event_portrait.dds"
+ on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+ on_opened_soundeffect = "event:/SFX/Events/misc/2Characters"
+ duration = 3
+ trigger = { sb_court_brothers_choice_valid = yes trigger_if = { limit = { has_variable = sb_court_brothers_choice_var } var:sb_court_brothers_choice_var = 2 } }
+ cancellation_trigger = { NOT = { sb_court_brothers_choice_valid = yes } }
+ immediate = {
+  save_scope_as = sb_court_country
+  ruler = { save_scope_as = sb_court_father }
+  var:sb_court_brothers_heir_scope = { save_scope_as = sb_court_brothers_heir }
+  if = {
+   limit = { var:sb_court_brothers_heir_scope = { has_template = ZUL_cetshwayo_heir } }
+   var:sb_court_brothers_mbuyazi_scope = { save_scope_as = sb_court_brothers_other }
+  }
+  else = { var:sb_court_brothers_cetshwayo_scope = { save_scope_as = sb_court_brothers_other } }
+  var:sb_court_brothers_backer_scope ?= { save_scope_as = sb_court_brothers_backer }
+ }
+ option = {
+  name = sb_court_succession.007.a default_option = yes
+  show_as_tooltip = { scope:sb_court_brothers_other = { if = { limit = { NOT = { has_trait = ambitious } } add_trait = ambitious } } }
+  sb_court_preview_brother_backing = { OTHER = scope:sb_court_brothers_other TEXT = sb_court_succession.007.a.backer }
+  hidden_effect = { sb_court_answer_brothers_choice = { HEIR = scope:sb_court_brothers_heir OTHER = scope:sb_court_brothers_other RECOGNISE = no } }
+ }
+}
+
+# Manual diagnostic: check the ordinary live entry conditions immediately.
+sb_court_succession.990 = {
+ orphan = yes # Manual console entry, following Vanilla debug events.
+ type = country_event hidden = yes
+ trigger = { sb_institutions_profile_country = yes has_variable = sb_institutions_active_var }
+ immediate = {
+  sb_court_reconcile_succession = yes
+  sb_court_check_claimant_challenge = yes
+ }
+}
+# No global weekly scan. This chain exists only while this reserved movement awaits its split.
+sb_court_succession.991 = {
+ type = country_event
+ hidden = yes
+ trigger = { has_variable = sb_court_dynastic_poll_queued_var }
+ immediate = {
+  remove_variable = sb_court_dynastic_poll_queued_var
+  if = {
+   limit = { has_variable = sb_court_dynastic_crisis_var has_variable = sb_court_dynastic_test_pending_var }
+   sb_court_progress_dynastic_crisis = yes
+   sb_court_queue_dynastic_poll = yes
+  }
+ }
+}

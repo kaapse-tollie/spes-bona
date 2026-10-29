@@ -1,97 +1,107 @@
-"""Execute the setup's movement subset; engine UI/pop calculations remain DP checks."""
+"""Authored-movement handoffs replace the retired native-Absolutist mutation tests.
+
+This executes the small intervention vocabulary with a foreign event ROOT. Core
+seed-once behavior and the definition/CMF exclusion are tested separately.
+"""
 from copy import deepcopy
 from pathlib import Path
 import unittest
 
-from tests.test_usuthu_movement_contest import parse
-from tests.test_zululand_postwar_settlement import object_block, text
+from tests.test_zulu_institutions_laws import statements
+from tools.check_override_inventory import find_object
 
-EFFECTS = 'common/scripted_effects/sb_usuthu_politics_effects.txt'
-NATIVE = 'movement_royalist_absolutist'
+ROOT = Path(__file__).resolve().parents[1]
+EFFECTS = ROOT / 'common/scripted_effects/sb_usuthu_politics_effects.txt'
 
 
-def configure(countries):
-    setup = parse(object_block(EFFECTS, 'sb_zululand_setup_usuthu_politics'))
-    zul = next(value for key, _, value in setup if key == 'c:ZUL')
-    # Lobby effects follow the movement transition and are independently tested.
-    prefix = zul[:next(i for i, node in enumerate(zul) if node[0] == 'every_political_lobby')]
-    helper = parse(object_block(EFFECTS, 'sb_zululand_configure_usuthu_movement'))
+def block(name):
+    return statements(find_object(EFFECTS.read_text(encoding='utf-8-sig'), name))
 
-    def check(nodes, scope):
-        results = []
-        for key, _, value in nodes:
-            if key == 'NOT': result = not check(value, scope)
-            elif key == 'owner': result = check(value, countries[scope['owner']])
-            elif key == 'country_definition': result = value == 'cd:' + scope['tag']
-            elif key == 'has_variable': result = value in scope['flags']
-            elif key == 'has_modifier': result = value in scope['modifiers']
-            elif key == 'is_political_movement_type': result = value == scope['type']
-            elif key == 'any_political_movement': result = any(check(value, m) for m in scope['movements'])
+
+class InterventionRuntime:
+    def __init__(self):
+        self.countries = {
+            tag: {'tag': tag, 'flags': set(), 'modifiers': set(), 'movements': []}
+            for tag in ('NAL', 'ZUL', 'GBR', 'REV')
+        }
+        for tag in ('ZUL', 'REV'):
+            self.countries[tag]['movements'] = [
+                {'type': movement, 'modifiers': set(), 'support': .23, 'activism': .64}
+                for movement in ('movement_sb_zulu_chiefly', 'movement_sb_zulu_royal', 'movement_modernizer')
+            ]
+        self.globals = {}
+        self.reconciled = []
+        self.event_root = 'GBR'
+
+    def check(self, nodes, scope):
+        for key, op, value in nodes:
+            if key == 'has_variable': valid = value in scope['flags']
+            elif key == 'has_modifier': valid = value in scope['modifiers']
+            elif key == 'is_political_movement_type': valid = value == scope['type']
             else: raise AssertionError(key)
-            results.append(result)
-        return all(results)
+            if not valid: return False
+        return True
 
-    def execute(nodes, scope):
-        for key, _, value in nodes:
-            if key == 'if':
+    def execute(self, nodes, scope):
+        for key, op, value in nodes:
+            if key == 'set_global_variable':
+                data = {k: v for k, _, v in value}
+                self.globals[data['name']] = data['value'].removeprefix('c:')
+            elif key.startswith('c:'):
+                self.execute(value, self.countries[key[2:]])
+            elif key.startswith('global_var:'):
+                tag = self.globals.get(key.split(':', 1)[1])
+                if tag: self.execute(value, self.countries[tag])
+            elif key == 'sb_institutions_reconcile':
+                self.reconciled.append(scope['tag'])
+            elif key == 'set_variable': scope['flags'].add(value)
+            elif key == 'remove_variable': scope['flags'].remove(value)
+            elif key == 'add_modifier':
+                scope['modifiers'].add(next(v for k, _, v in value if k == 'name'))
+            elif key == 'remove_modifier': scope['modifiers'].remove(value)
+            elif key == 'if':
                 limit = next(v for k, _, v in value if k == 'limit')
-                if check(limit, scope): execute([n for n in value if n[0] != 'limit'], scope)
+                if self.check(limit, scope): self.execute([n for n in value if n[0] != 'limit'], scope)
             elif key == 'every_political_movement':
                 limit = next(v for k, _, v in value if k == 'limit')
                 for movement in scope['movements']:
-                    if check(limit, movement): execute([n for n in value if n[0] != 'limit'], movement)
-            elif key == 'create_political_movement':
-                movement = dict(type=next(v for k, _, v in value if k == 'type'), owner=scope['tag'], modifiers={}, support=0, activism=0)
-                scope['movements'].append(movement)
-                execute(helper, movement)  # Scoped addition to native on_created.
-            elif key == 'sb_zululand_configure_usuthu_movement': execute(helper, scope)
-            elif key == 'set_core_ideology': scope['ideology'] = value
-            elif key == 'add_modifier':
-                name = next(v for k, _, v in value if k == 'name')
-                scope['modifiers'][name] = scope['modifiers'].get(name, 0) + 1
+                    if self.check(limit, movement): self.execute([n for n in value if n[0] != 'limit'], movement)
             else: raise AssertionError(key)
 
-    execute(prefix, countries['ZUL'])  # Explicit c:ZUL, irrespective of event root.
+    def call(self, name, country='NAL'):
+        self.execute(block(name), self.countries[country])
 
 
-class ExistingMovementTests(unittest.TestCase):
-    def test_existing_identity_support_activism_and_other_countries_survive(self):
-        flags = {'sb_zululand_usuthu_context_var', 'sb_zululand_usuthu_contest_var'}
-        movement = dict(type=NATIVE, owner='ZUL', id=42, support=0.13, activism=0.64, modifiers={'existing_modifier': 1})
-        other = dict(type='movement_modernizer', owner='ZUL', id=43, support=0.16, activism=0.65, modifiers={})
-        countries = {'ZUL': dict(tag='ZUL', flags=flags, movements=[movement, other]), 'NAL': dict(tag='NAL', flags=set(), movements=[deepcopy(movement)])}
-        untouched = deepcopy((other, countries['NAL']))
-        configure(countries)
-        configure(countries)
-        self.assertEqual(2, len(countries['ZUL']['movements']))
-        self.assertIs(movement, countries['ZUL']['movements'][0])
-        self.assertEqual((42, 0.13, 0.64), (movement['id'], movement['support'], movement['activism']))
-        self.assertEqual('ideology_sb_usuthu', movement['ideology'])
-        self.assertEqual({'existing_modifier': 1, 'sb_usuthu_royalist_networks': 1}, movement['modifiers'])
-        self.assertEqual(untouched, (other, countries['NAL']))
+class AuthoredMovementHandoffTests(unittest.TestCase):
+    def test_partition_handoff_reconciles_actual_zulu_scope_without_touching_existing_movements(self):
+        runtime = InterventionRuntime()
+        before = deepcopy(runtime.countries)
+        runtime.call('sb_zululand_setup_usuthu_politics')
+        runtime.call('sb_zululand_setup_usuthu_politics')
+        self.assertEqual(['ZUL', 'ZUL'], runtime.reconciled)
+        self.assertEqual('ZUL', runtime.globals['sb_zululand_live_zul_scope'])
+        self.assertEqual(before, runtime.countries)
+        self.assertEqual('GBR', runtime.event_root)
 
-    def test_missing_movement_is_created_once(self):
-        countries = {'ZUL': dict(tag='ZUL', flags={'sb_zululand_usuthu_context_var', 'sb_zululand_usuthu_contest_var'}, movements=[])}
-        configure(countries)
-        configure(countries)
-        movements = countries['ZUL']['movements']
-        self.assertEqual([NATIVE], [m['type'] for m in movements])
-        self.assertEqual('ideology_sb_usuthu', movements[0]['ideology'])
-        self.assertEqual({'sb_usuthu_royalist_networks': 1}, movements[0]['modifiers'])
+    def test_chief_patronage_uses_tracked_country_and_never_harms_royal_or_unrelated_movements(self):
+        runtime = InterventionRuntime()
+        runtime.globals['sb_zululand_live_zul_scope'] = 'REV'
+        before = deepcopy(runtime.countries)
+        runtime.call('sb_zululand_start_chief_patronage')
+        self.assertEqual({'sb_zululand_chiefly_patronage'}, runtime.countries['REV']['movements'][0]['modifiers'])
+        self.assertEqual(before['REV']['movements'][1:], runtime.countries['REV']['movements'][1:])
+        self.assertEqual(before['ZUL'], runtime.countries['ZUL'])
+        self.assertEqual(before['GBR'], runtime.countries['GBR'])
+        runtime.call('sb_zululand_stop_chief_patronage')
+        runtime.call('sb_zululand_stop_chief_patronage')
+        self.assertEqual(before, runtime.countries)
 
-    def test_only_one_runtime_type_and_country_scoped_display_name(self):
-        root = Path(__file__).resolve().parents[1]
-        self.assertFalse((root / 'common/political_movements/sb_usuthu_movement.txt').exists())
-        for folder in ('common/scripted_effects', 'common/scripted_triggers', 'common/script_values'):
-            for path in (root / folder).glob('*.txt'):
-                self.assertNotIn('movement_sb_usuthu', path.read_text(encoding='utf-8-sig'), str(path))
-        name = text('common/customizable_localization/sb_usuthu_custom_loc.txt')
-        self.assertIn('country_definition = cd:ZUL has_variable = sb_zululand_usuthu_context_var', name)
-        self.assertIn('localization_key = movement_royalist_absolutist', name)
-        self.assertIn('localization_key = movement_sb_usuthu', name)
-        native = text('common/political_movements/zz_sb_absolutist_override.txt')
-        self.assertIn('sb_zululand_configure_usuthu_movement = yes', object_block('common/political_movements/zz_sb_absolutist_override.txt', 'on_created'))
-        self.assertNotIn('NOT = { has_variable = sb_zululand_usuthu_context_var }', native)
+    def test_retired_native_mutation_and_fixed_lobbies_are_absent(self):
+        source = EFFECTS.read_text(encoding='utf-8-sig')
+        for retired in ('set_core_ideology', 'sb_usuthu_royalist_networks', 'every_political_lobby', 'movement_royalist_absolutist'):
+            self.assertNotIn(retired, source)
+        for removed in ('common/customizable_localization/sb_usuthu_custom_loc.txt', 'localization/english/replace/sb_usuthu_movement_l_english.yml'):
+            self.assertFalse((ROOT / removed).exists(), removed)
 
 
 if __name__ == '__main__':

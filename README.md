@@ -24,12 +24,15 @@ Spes Bona is a Victoria 3 regional flavor mod for greater Southern Africa built 
 
 ## Requirements
 
-- Victoria 3 `1.14.3` Open Beta Update 2 (Steam build `25347710`, branch `1.14-openbeta`)
+- Victoria 3 `1.14.5` Open Beta Update 4 (Steam build `25629520`, branch `1.14-openbeta`)
 - Community Mod Framework `1.66.0` with patch `sb-1.14.3-r1`
 
-The 2026-10-13 checkpoint retains this target. The development machine now has
-Victoria 3 `1.14.5`; its compatibility drift and the outstanding validation
-failures are recorded in the [checkpoint review](Docs/compatibility/checkpoint_review_2026_10_13.md).
+SB **0.20.2** targets this exact beta with the existing CMF patch. See the
+[1.14.5 rebase report](Docs/compatibility/1_14_5_rebase.md) and
+[DP's pending fresh-game checks](Docs/compatibility/1_14_5_runtime_matrix.md).
+The [2026-10-13 checkpoint review](Docs/compatibility/checkpoint_review_2026_10_13.md)
+remains historical evidence. ORA–BST's workaround remains on hold;
+Victoria 3 1.15 remains deferred. The approved Zulu institutional and court redesign is now implemented for DP verification; wider country profiles remain deferred. See the [implementation and pending engine matrix](Docs/zulu_institutions_implementation_2026_10_18.md).
 
 ## Compatibility
 
@@ -90,6 +93,7 @@ What still matters most:
 - fresh-save gameplay verification
 - debugger cleanup if any new issues appear
 - AI balance and branch reliability
+- major pre-release balance pass for BST, SWZ, ZUL and GZA starting technologies, economies and literacy: [TODO and saved research briefs](Docs/audit_issues_open.md#major-pre-release-balance-todo--bantu-starting-positions)
 - small presentation and content polish
 
-The current dependency is the verified CMF release **plus** `sb-1.14.3-r1`; an unpatched release is unsupported. Install with `python3 -B tools/sync_cmf.py`. `--check` verifies the complete patched file tree without modifying it. See [the 1.14.3 rebase](Docs/compatibility/1_14_3_rebase.md).
+The current dependency is the verified CMF release **plus** `sb-1.14.3-r1`; an unpatched release is unsupported. Install with `python3 -B tools/sync_cmf.py`. `--check` verifies the complete patched file tree without modifying it. See [the 1.14.5 rebase](Docs/compatibility/1_14_5_rebase.md).

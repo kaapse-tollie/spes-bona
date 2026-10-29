@@ -1,0 +1,156 @@
+# Victoria 3 1.14.5 arm64; read-only lifecycle evidence
+# Reproduce with llvm-objdump --macho --arch=arm64 --disassemble --dis-symname SYMBOL BINARY.
+# Binary SHA-256: e4806a9b315c9ed40bdafd5e6a9e3e46aca741a0a0890bded906ebcc295e2a13
+
+# journal-activated.txt
+__ZNK13CJournalEntry11OnActivatedEv:
+100da3a6c:	60 0e 40 f9	ldr	x0, [x19, #0x18]
+100da3a70:	74 e3 00 94	bl	__ZN12CMarketGoods14GetConsumptionERK16CPriceCalculator
+100da3a74:	08 24 41 39	ldrb	w8, [x0, #0x49]
+100da3a78:	1f 05 00 71	cmp	w8, #0x1
+100da3a7c:	61 01 00 54	b.ne	0x100da3aa8
+100da3a80:	68 22 40 b9	ldr	w8, [x19, #0x20]
+100da3a84:	a8 c3 1b b8	stur	w8, [x29, #-0x44]
+100da3a88:	a0 13 01 d1	sub	x0, x29, #0x44
+100da3a8c:	5e b2 c9 97	bl	__ZNK7TPdxRefI8CCountryE6LookupEv
+100da3a90:	08 20 40 b9	ldr	w8, [x0, #0x20]
+100da3a94:	e8 23 00 b9	str	w8, [sp, #0x20]
+100da3a98:	e0 83 00 91	add	x0, sp, #0x20
+100da3a9c:	75 5a cc 97	bl	__ZNK7TPdxRefI10CCountryAIE6AccessEv
+100da3aa0:	28 00 80 52	mov	w8, #0x1
+100da3aa4:	08 0c 05 39	strb	w8, [x0, #0x143]
+100da3aa8:	ff 23 00 b9	str	wzr, [sp, #0x20]
+
+# create-country.txt
+__ZN15CCountryManager13CreateCountryERK20SCountryCreationData:
+10033c420:	80 32 01 91	add	x0, x20, #0x4c
+10033c424:	f8 4f f3 97	bl	__ZNK7TPdxRefI8CCountryE6LookupEv
+10033c428:	fb 03 00 aa	mov	x27, x0
+10033c42c:	4a d3 23 94	bl	__Z27LogicAccessCurrentGameStatev
+10033c430:	50 d5 23 94	bl	__ZN10CGameState23AccessCountryLawManagerEv
+10033c434:	fc 03 00 aa	mov	x28, x0
+10033c438:	e0 03 1b aa	mov	x0, x27
+10033c43c:	08 0c 41 f8	ldr	x8, [x0, #0x10]!
+10033c440:	08 09 40 f9	ldr	x8, [x8, #0x10]
+10033c444:	00 01 3f d6	blr	x8
+10033c448:	1f 00 00 71	cmp	w0, #0x0
+10033c44c:	62 13 95 9a	csel	x2, x27, x21, ne
+10033c450:	e0 03 1c aa	mov	x0, x28
+10033c454:	e1 03 13 aa	mov	x1, x19
+10033c458:	de 51 ff 97	bl	__ZN18CCountryLawManager15InheritLawsFromER8CCountryRKS0_
+10033c45c:	80 92 01 91	add	x0, x20, #0x64
+10033c460:	30 04 00 94	bl	__ZNK7TPdxRefI9CCivilWarE6LookupEv
+10033c464:	08 00 40 f9	ldr	x8, [x0]
+10033c468:	08 09 40 f9	ldr	x8, [x8, #0x10]
+10033c46c:	00 01 3f d6	blr	x8
+10033c470:	1f 00 00 71	cmp	w0, #0x0
+10033c474:	28 00 80 52	mov	w8, #0x1
+10033c478:	03 15 88 1a	cinc	w3, w8, eq
+10033c47c:	e1 03 13 aa	mov	x1, x19
+10033c480:	e2 03 14 aa	mov	x2, x20
+10033c484:	b2 04 00 94	bl	__ZN15CCountryManager21TransferLandToCountryER8CCountryRK20SCountryCreationData27EStateOwnershipChangeReason
+10033c488:	c3 d7 23 94	bl	__Z24LogicGetCurrentGameStatev
+10033c48c:	08 c0 44 39	ldrb	w8, [x0, #0x130]
+10033c490:	68 00 00 37	tbnz	w8, #0x0, 0x10033c49c
+10033c494:	68 4e 4c b9	ldr	w8, [x19, #0xc4c]
+10033c498:	e8 0a 00 34	cbz	w8, 0x10033c5f4
+10033c49c:	88 86 41 39	ldrb	w8, [x20, #0x61]
+10033c4a0:	1f 05 00 71	cmp	w8, #0x1
+10033c4a4:	61 00 00 54	b.ne	0x10033c4b0
+10033c4a8:	e0 03 13 aa	mov	x0, x19
+10033c4ac:	69 8f 01 94	bl	__ZN8CCountry20IncorporateAllStatesEv
+10033c4b0:	e0 03 13 aa	mov	x0, x19
+10033c4b4:	b0 8f 01 94	bl	__ZN8CCountry24SetCapitalFromDefinitionEv
+10033c4b8:	88 26 40 b9	ldr	w8, [x20, #0x24]
+10033c4bc:	89 3e 40 b9	ldr	w9, [x20, #0x3c]
+10033c4c0:	08 01 09 2a	orr	w8, w8, w9
+10033c4c4:	68 00 00 34	cbz	w8, 0x10033c4d0
+10033c4c8:	e0 03 13 aa	mov	x0, x19
+10033c4cc:	12 90 01 94	bl	__ZN8CCountry15ValidateCapitalEv
+10033c4d0:	08 0b 80 b9	ldrsw	x8, [x24, #0x8]
+10033c4d4:	e9 b6 40 b9	ldr	w9, [x23, #0xb4]
+10033c4d8:	1f 01 09 6b	cmp	w8, w9
+10033c4dc:	ea 00 00 54	b.ge	0x10033c4f8
+10033c4e0:	e9 56 40 f9	ldr	x9, [x23, #0xa8]
+10033c4e4:	28 79 68 f8	ldr	x8, [x9, x8, lsl #3]
+10033c4e8:	29 0a 04 f0	adrp	x9, 33095 ; 0x108483000
+10033c4ec:	29 b1 40 f9	ldr	x9, [x9, #0x160]
+10033c4f0:	1f 01 09 eb	cmp	x8, x9
+10033c4f4:	e1 00 00 54	b.ne	0x10033c510
+10033c4f8:	e0 03 13 aa	mov	x0, x19
+10033c4fc:	21 00 80 52	mov	w1, #0x1
+10033c500:	dc c1 01 94	bl	__ZN8CCountry12SetIsMainTagEb
+10033c504:	e0 03 17 aa	mov	x0, x23
+10033c508:	e1 03 13 aa	mov	x1, x19
+10033c50c:	e4 04 00 94	bl	__ZN15CCountryManager12AddTagLookupER8CCountry
+10033c510:	11 d3 23 94	bl	__Z27LogicAccessCurrentGameStatev
+10033c514:	06 d5 23 94	bl	__ZN10CGameState24AccessCountryRankManagerEv
+10033c518:	82 82 41 39	ldrb	w2, [x20, #0x60]
+10033c51c:	e1 03 13 aa	mov	x1, x19
+10033c520:	62 f3 00 94	bl	__ZN19CCountryRankManager10AddCountryERK8CCountryb
+10033c524:	88 82 41 39	ldrb	w8, [x20, #0x60]
+10033c528:	1f 05 00 71	cmp	w8, #0x1
+10033c52c:	e1 00 00 54	b.ne	0x10033c548
+10033c530:	80 22 01 91	add	x0, x20, #0x48
+10033c534:	b4 4f f3 97	bl	__ZNK7TPdxRefI8CCountryE6LookupEv
+10033c538:	83 42 46 b8	ldur	w3, [x20, #0x64]
+10033c53c:	e1 03 13 aa	mov	x1, x19
+10033c540:	e2 03 00 aa	mov	x2, x0
+10033c544:	67 05 00 94	bl	__ZN15CCountryManager15OnCreateCountryER8CCountryRKS0_7TPdxRefI9CCivilWarE
+10033c548:	e0 03 1a aa	mov	x0, x26
+
+# on-create-country.txt
+__ZN15CCountryManager15OnCreateCountryER8CCountryRKS0_7TPdxRefI9CCivilWarE:
+10033db30:	e0 03 14 aa	mov	x0, x20
+10033db34:	db d0 23 94	bl	__ZN10CGameState15AccessAIManagerEv
+10033db38:	f5 03 00 aa	mov	x21, x0
+10033db3c:	a8 69 03 b0	adrp	x8, 27957 ; 0x107072000
+10033db40:	00 25 44 fd	ldr	d0, [x8, #0x848]
+10033db44:	e0 03 00 fd	str	d0, [sp]
+10033db48:	c8 57 03 b0	adrp	x8, 27385 ; 0x106e36000
+10033db4c:	08 d5 11 91	add	x8, x8, #0x475 ; literal pool for: "/Users/pdxadmin/builds/builds/GC6nExn8n/0/gsg/caligula/caligula/source/logic/country_manager.cpp"
+10033db50:	c9 57 03 b0	adrp	x9, 27385 ; 0x106e36000
+10033db54:	29 69 1b 91	add	x9, x9, #0x6da ; literal pool for: "OnCreateCountry"
+10033db58:	e8 a7 00 a9	stp	x8, x9, [sp, #0x8]
+10033db5c:	20 0a 04 90	adrp	x0, 33092 ; 0x108481000
+10033db60:	00 40 1e 91	add	x0, x0, #0x790
+10033db64:	e1 03 00 91	mov	x1, sp
+10033db68:	52 ee 36 95	bl	__ZN7NRandom13CGlobalRandom10GetIntegerERKN6PdxStd15source_locationE
+10033db6c:	e2 03 00 aa	mov	x2, x0
+10033db70:	e0 03 15 aa	mov	x0, x21
+10033db74:	e1 03 13 aa	mov	x1, x19
+10033db78:	ee 67 48 94	bl	__ZN10CAIManager11CreateAIForERK8CCountryi
+10033db7c:	f5 03 00 aa	mov	x21, x0
+10033db80:	08 00 40 f9	ldr	x8, [x0]
+10033db84:	08 09 40 f9	ldr	x8, [x8, #0x10]
+10033db88:	00 01 3f d6	blr	x8
+10033db8c:	60 00 00 34	cbz	w0, 0x10033db98
+10033db90:	e0 03 15 aa	mov	x0, x21
+10033db94:	0c 6e 49 94	bl	__ZN10CCountryAI5StartEv
+10033db98:	61 1a 40 b9	ldr	w1, [x19, #0x18]
+10033db9c:	e0 03 14 aa	mov	x0, x20
+10033dba0:	02 00 80 52	mov	w2, #0x0
+10033dba4:	7d cf 23 94	bl	__ZN10CGameState13SetControllerE7TPdxRefI8CCountryE14ControllerType
+10033dba8:	e0 03 14 aa	mov	x0, x20
+10033dbac:	71 cf 23 94	bl	__ZN10CGameState23AccessCountryLawManagerEv
+
+# alive-trigger.txt
+/Users/depro/Library/Application Support/Steam/steamapps/common/Victoria 3/binaries/victoria3.app/Contents/MacOS/victoria3:
+(__TEXT,__text) section
+__ZNK22CIsCountryAliveTrigger12GetEvaluatedERK19SJominiScriptScopes:
+1034a9608:	f4 4f be a9	stp	x20, x19, [sp, #-0x20]!
+1034a960c:	fd 7b 01 a9	stp	x29, x30, [sp, #0x10]
+1034a9610:	fd 43 00 91	add	x29, sp, #0x10
+1034a9614:	20 00 40 f9	ldr	x0, [x1]
+1034a9618:	95 6c 0c 94	bl	__ZN12NJominiScope9GetObjectI8CCountryEERKT_RK21CScopeObjectReference
+1034a961c:	f3 03 00 aa	mov	x19, x0
+1034a9620:	68 0e 41 f8	ldr	x8, [x19, #0x10]!
+1034a9624:	08 09 40 f9	ldr	x8, [x8, #0x10]
+1034a9628:	e0 03 13 aa	mov	x0, x19
+1034a962c:	00 01 3f d6	blr	x8
+1034a9630:	68 3e 4c b9	ldr	w8, [x19, #0xc3c]
+1034a9634:	1f 01 00 71	cmp	w8, #0x0
+1034a9638:	e0 03 80 1a	csel	w0, wzr, w0, eq
+1034a963c:	fd 7b 41 a9	ldp	x29, x30, [sp, #0x10]
+1034a9640:	f4 4f c2 a8	ldp	x20, x19, [sp], #0x20
+1034a9644:	c0 03 5f d6	ret

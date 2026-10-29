@@ -1,0 +1,25 @@
+﻿je_sb_court_coup = {
+ icon = "gfx/interface/icons/event_icons/event_portrait.dds"
+ group = je_group_crises
+ scripted_progress_bar = sb_court_coup_progress_bar
+ status_desc = je_sb_court_coup_status
+ event_outcome_completed_desc = {
+  first_valid = { triggered_desc = { trigger = { always = yes } desc = sb_court_coup_confrontation_preview } }
+ }
+ event_outcome_failed_desc = {
+  first_valid = { triggered_desc = { trigger = { always = yes } desc = sb_court_coup_failure_preview } }
+ }
+ complete = { scope:journal_entry = { "scripted_bar_progress(sb_court_coup_progress_bar)" >= 120 } }
+ on_complete = { set_variable = sb_court_coup_confrontation_var trigger_event = { id = sb_court_politics.101 popup = yes } }
+ fail = { OR = { NOT = { sb_court_coup_actor_valid = yes } scope:journal_entry = { "scripted_bar_progress(sb_court_coup_progress_bar)" <= 0 } } }
+ on_fail = { sb_court_coup_cleanup = yes trigger_event = { id = sb_court_politics.102 popup = yes } }
+ timeout = 730
+ on_timeout = { sb_court_coup_cleanup = yes trigger_event = { id = sb_court_politics.102 popup = yes } }
+ invalid = { OR = { NOT = { has_variable = sb_institutions_active_var } has_variable = sb_court_civil_war_var } }
+ on_invalid = { sb_court_coup_cleanup = yes }
+ scripted_button = sb_court_resist_coup_button
+ transferable = no
+ can_revolution_inherit = no
+ should_be_pinned_by_default_uninvolved_or_context = yes
+ weight = 100
+}

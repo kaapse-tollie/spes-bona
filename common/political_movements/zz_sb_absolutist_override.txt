@@ -1,4 +1,4 @@
-﻿# Reuse the native movement for ZUL: retain identity/support; CMF bodies otherwise preserved.
+﻿# CMF 1.66.0: preserve all hooks outside the authored Zulu constituency exclusion.
 REPLACE:movement_royalist_absolutist = {
 	category = movement_category_ideological
 	
@@ -10,8 +10,8 @@ REPLACE:movement_royalist_absolutist = {
 	}
 	
 	disband_trigger = {
-		NOT = { has_variable = sb_zululand_usuthu_contest_var }
 		OR = {
+			sb_uses_authored_zulu_movements = yes
 			AND = {
 				NOT = {
 					has_variable = king_in_parliament_possible
@@ -32,6 +32,7 @@ REPLACE:movement_royalist_absolutist = {
 		if = {
 			limit = {
 				owner ?= {
+					sb_uses_authored_zulu_movements = no
 					country_has_voting_franchise = yes
 					NOT = {
 						has_variable = monarchy_stamped_out_var
@@ -50,10 +51,8 @@ REPLACE:movement_royalist_absolutist = {
 	}
 	
 	creation_trigger = {
-		OR = {
-			has_law = law_type:law_monarchy
-			AND = { country_definition = cd:ZUL has_variable = sb_zululand_usuthu_context_var has_law = law_type:law_chiefdom }
-		}
+		sb_uses_authored_zulu_movements = no
+		has_law = law_type:law_monarchy
 		country_has_voting_franchise = no
 		NOT = {
 			any_political_movement = {
@@ -98,7 +97,6 @@ REPLACE:movement_royalist_absolutist = {
 		}
 	}
 	on_created = {
-		sb_zululand_configure_usuthu_movement = yes
 		add_movement_enthusiasm_modifier = yes
 	}
 	
@@ -136,14 +134,6 @@ REPLACE:movement_royalist_absolutist = {
 	}
 	character_support_weight = {
 		value = 200
-		if = {
-			limit = {
-				exists = scope:interest_group
-				scope:interest_group ?= { owner = { country_definition = cd:ZUL has_variable = sb_zululand_usuthu_context_var } }
-				OR = { has_variable = sb_zululand_exiled_claimant_var has_variable = sb_zululand_crown_successor_var }
-			}
-			add = 10000
-		}
 		if = {
 			limit = {
 				has_ideology = ideology:ideology_royalist
@@ -348,7 +338,6 @@ REPLACE:movement_royalist_absolutist = {
 	}
 	
 	revolution = {
-		possible = { owner = { NOT = { has_variable = sb_zululand_usuthu_contest_var } } }
 		weight = {
 			value = 100
 		}
@@ -378,7 +367,6 @@ REPLACE:movement_royalist_absolutist = {
 	
 	secession = {
 		possible = {
-			owner = { NOT = { has_variable = sb_zululand_usuthu_contest_var } }
 			political_movement_support >= 0.05
 			scope:clout <= 0
 		}

@@ -1,10 +1,16 @@
-# ZUL ideology effect matrix — proposed revision, 20 September 2026
+# ZUL ideology effect matrix — superseded proposal, 20 September 2026
 
-Companion to [the current outcome design](zulu_chiefdoms_outcome_design_2026_09_20.md). Design only. No runtime ideology or law changes.
+**Superseded on 18 October:** DP rejected the PB/LO faction architecture and its
+broad packages. The tables remain historical evidence, not current proposed
+changes. See the [crown-and-chiefs exploration](zulu_crown_and_chiefs_exploration_2026_10_18.md).
+
+Companion to [the earlier consolidated plan](zulu_chiefdoms_rework_plan_2026_10_18.md), with [September's exploration](zulu_chiefdoms_outcome_design_2026_09_20.md) retained as history. Design only. No runtime ideology or law changes.
 
 Every row below is provisional unless separately accepted by DP. Old columns were extracted from installed Vanilla 1.14.3 and current SB; proposed columns are the design. These are package stances, not guaranteed final IG opinions after leader ideologies, later political events, or law variants.
 
-`++` strongly approve; `+` approve; `0` explicitly neutral; `-` disapprove; `--` strongly disapprove; `—` no position from these packages. `parent X` reports the parent law’s source stance for comparison, not a claim that an unimplemented variant already exists. Proposed new-law IDs are working names.
+**18 October clarification:** DP has reopened the reasoning for bureaucracy, policing, economics, land and other broad IG changes. Those proposed rows remain under review. Read the [individual Vanilla ideology reference](zulu_vanilla_ideology_reference_2026_10_18.md) for each original description and all 148 explicit law stances, checked against installed 1.14.5. New army opinions are now limited to Amabutho and Chiefly Militias; other army rows have N/A in the proposed columns.
+
+`++` strongly approve; `+` approve; `0` explicitly neutral; `-` disapprove; `--` strongly disapprove; `N/A` no position from these packages. `parent X` reports the parent law’s source stance for comparison, not a claim that an unimplemented variant already exists. Proposed new-law IDs are working names.
 
 ## Package ownership
 
@@ -32,8 +38,8 @@ The table includes all laws named by any old or proposed package, plus explicit 
 | `law_corporate_state` | 0 | 0 | 0 | 0 | 0 | 0 |
 | `law_social_monarchy` | + | + | + | + | + | + |
 | `law_council_republic` | -- | -- | - | - | -- | -- |
-| `law_chiefdom` | — | -- | — | ++ | -- | -- |
-| `law_sb_federated_chiefdoms` | — | -- | — | ++ | parent -- | -- |
+| `law_chiefdom` | N/A | -- | N/A | ++ | -- | -- |
+| `law_sb_federated_chiefdoms` | N/A | -- | N/A | ++ | parent -- | -- |
 
 ### Distribution Of Power
 
@@ -48,188 +54,188 @@ The table includes all laws named by any old or proposed package, plus explicit 
 | `law_universal_suffrage` | -- | -- | - | - | -- | -- |
 | `law_anarchy` | -- | -- | -- | -- | -- | -- |
 | `law_technocracy` | -- | -- | - | - | -- | -- |
-| `law_elder_council` | — | -- | — | ++ | -- | -- |
-| `law_sb_council_of_chiefs` | — | -- | — | ++ | parent -- | -- |
+| `law_elder_council` | N/A | -- | N/A | ++ | -- | -- |
+| `law_sb_council_of_chiefs` | N/A | -- | N/A | ++ | parent -- | -- |
 
 ### Bureaucracy
 
 | Law key | Old LO | New LO | Old PB | New PB | Current uSuthu | New uSuthu |
 |---|---|---|---|---|---|---|
-| `law_hereditary_bureaucrats` | + | + | - | + | + | — |
-| `law_appointed_bureaucrats` | 0 | + | 0 | 0 | + | — |
-| `law_elected_bureaucrats` | - | - | + | - | - | — |
+| `law_hereditary_bureaucrats` | + | + | - | + | + | N/A |
+| `law_appointed_bureaucrats` | 0 | + | 0 | 0 | + | N/A |
+| `law_elected_bureaucrats` | - | - | + | - | - | N/A |
 
 ### Policing
 
 | Law key | Old LO | New LO | Old PB | New PB | Current uSuthu | New uSuthu |
 |---|---|---|---|---|---|---|
-| `law_local_police` | + | + | 0 | + | — | — |
-| `law_dedicated_police` | 0 | 0 | + | 0 | — | — |
-| `law_militarized_police` | 0 | 0 | ++ | 0 | — | — |
-| `law_no_police` | - | - | - | - | — | — |
+| `law_local_police` | + | + | 0 | + | N/A | N/A |
+| `law_dedicated_police` | 0 | 0 | + | 0 | N/A | N/A |
+| `law_militarized_police` | 0 | 0 | ++ | 0 | N/A | N/A |
+| `law_no_police` | - | - | - | - | N/A | N/A |
 
 ### Economic System
 
 | Law key | Old LO | New LO | Old PB | New PB | Current uSuthu | New uSuthu |
 |---|---|---|---|---|---|---|
-| `law_traditionalism` | ++ | + | -- | + | + | — |
-| `law_agrarianism` | + | + | - | + | 0 | — |
-| `law_interventionism` | 0 | 0 | + | 0 | 0 | — |
-| `law_industry_banned` | - | 0 | -- | 0 | -- | — |
-| `law_laissez_faire` | - | 0 | 0 | 0 | - | — |
-| `law_cooperative_ownership` | -- | 0 | -- | 0 | -- | — |
-| `law_command_economy` | -- | 0 | 0 | 0 | - | — |
-| `law_extraction_economy` | - | 0 | -- | 0 | -- | — |
+| `law_traditionalism` | ++ | + | -- | + | + | N/A |
+| `law_agrarianism` | + | + | - | + | 0 | N/A |
+| `law_interventionism` | 0 | 0 | + | 0 | 0 | N/A |
+| `law_industry_banned` | - | 0 | -- | 0 | -- | N/A |
+| `law_laissez_faire` | - | 0 | 0 | 0 | - | N/A |
+| `law_cooperative_ownership` | -- | 0 | -- | 0 | -- | N/A |
+| `law_command_economy` | -- | 0 | 0 | 0 | - | N/A |
+| `law_extraction_economy` | - | 0 | -- | 0 | -- | N/A |
 
 ### Trade Policy
 
 | Law key | Old LO | New LO | Old PB | New PB | Current uSuthu | New uSuthu |
 |---|---|---|---|---|---|---|
-| `law_isolationism` | + | — | - | — | — | — |
-| `law_mercantilism` | + | — | + | — | — | — |
-| `law_protectionism` | 0 | — | + | — | — | — |
-| `law_free_trade` | - | — | 0 | — | — | — |
+| `law_isolationism` | + | N/A | - | N/A | N/A | N/A |
+| `law_mercantilism` | + | N/A | + | N/A | N/A | N/A |
+| `law_protectionism` | 0 | N/A | + | N/A | N/A | N/A |
+| `law_free_trade` | - | N/A | 0 | N/A | N/A | N/A |
 
 ### Army Model
 
 | Law key | Old LO | New LO | Old PB | New PB | Current uSuthu | New uSuthu |
 |---|---|---|---|---|---|---|
-| `law_peasant_levies` | + | 0 | — | 0 | — | 0 |
-| `law_professional_army` | 0 | + | — | 0 | — | 0 |
-| `law_national_militia` | 0 | - | — | + | — | 0 |
-| `law_mass_conscription` | - | 0 | — | 0 | — | 0 |
-| `law_sb_amabutho_system` | parent + | ++ | — | - | — | ++ |
-| `law_sb_chiefly_militias` | parent 0 | -- | — | ++ | — | -- |
+| `law_peasant_levies` | + | N/A | N/A | N/A | N/A | N/A |
+| `law_professional_army` | 0 | N/A | N/A | N/A | N/A | N/A |
+| `law_national_militia` | 0 | N/A | N/A | N/A | N/A | N/A |
+| `law_mass_conscription` | - | N/A | N/A | N/A | N/A | N/A |
+| `law_sb_amabutho_system` | parent + | ++ | N/A | - | N/A | ++ |
+| `law_sb_chiefly_militias` | parent 0 | -- | N/A | ++ | N/A | -- |
 
 ### Land Reform
 
 | Law key | Old LO | New LO | Old PB | New PB | Current uSuthu | New uSuthu |
 |---|---|---|---|---|---|---|
-| `law_serfdom` | ++ | — | — | — | 0 | — |
-| `law_tenant_farmers` | + | — | — | — | 0 | — |
-| `law_commercialized_agriculture` | 0 | — | — | — | 0 | — |
-| `law_peasant_proprietorship` | -- | — | — | — | - | — |
-| `law_collectivized_agriculture` | -- | — | — | — | -- | — |
+| `law_serfdom` | ++ | N/A | N/A | N/A | 0 | N/A |
+| `law_tenant_farmers` | + | N/A | N/A | N/A | 0 | N/A |
+| `law_commercialized_agriculture` | 0 | N/A | N/A | N/A | 0 | N/A |
+| `law_peasant_proprietorship` | -- | N/A | N/A | N/A | - | N/A |
+| `law_collectivized_agriculture` | -- | N/A | N/A | N/A | -- | N/A |
 
 ### Taxation
 
 | Law key | Old LO | New LO | Old PB | New PB | Current uSuthu | New uSuthu |
 |---|---|---|---|---|---|---|
-| `law_consumption_based_taxation` | + | 0 | 0 | 0 | — | — |
-| `law_land_based_taxation` | + | + | - | + | — | — |
-| `law_per_capita_based_taxation` | 0 | 0 | + | 0 | — | — |
-| `law_proportional_taxation` | - | 0 | + | 0 | — | — |
-| `law_graduated_taxation` | -- | 0 | - | 0 | — | — |
+| `law_consumption_based_taxation` | + | 0 | 0 | 0 | N/A | N/A |
+| `law_land_based_taxation` | + | + | - | + | N/A | N/A |
+| `law_per_capita_based_taxation` | 0 | 0 | + | 0 | N/A | N/A |
+| `law_proportional_taxation` | - | 0 | + | 0 | N/A | N/A |
+| `law_graduated_taxation` | -- | 0 | - | 0 | N/A | N/A |
 
 ### Welfare
 
 | Law key | Old LO | New LO | Old PB | New PB | Current uSuthu | New uSuthu |
 |---|---|---|---|---|---|---|
-| `law_no_social_security` | + | — | — | — | — | — |
-| `law_poor_laws` | 0 | — | — | — | — | — |
-| `law_wage_subsidies` | - | — | — | — | — | — |
-| `law_old_age_pension` | - | — | — | — | — | — |
+| `law_no_social_security` | + | N/A | N/A | N/A | N/A | N/A |
+| `law_poor_laws` | 0 | N/A | N/A | N/A | N/A | N/A |
+| `law_wage_subsidies` | - | N/A | N/A | N/A | N/A | N/A |
+| `law_old_age_pension` | - | N/A | N/A | N/A | N/A | N/A |
 
 ### Citizenship
 
 | Law key | Old LO | New LO | Old PB | New PB | Current uSuthu | New uSuthu |
 |---|---|---|---|---|---|---|
-| `law_ethnostate` | 0 | 0 | + | 0 | 0 | — |
-| `law_subjecthood` | + | + | 0 | + | + | — |
-| `law_national_supremacy` | 0 | 0 | ++ | 0 | 0 | — |
-| `law_racial_segregation` | 0 | 0 | + | 0 | 0 | — |
-| `law_cultural_exclusion` | 0 | 0 | 0 | 0 | 0 | — |
-| `law_multicultural` | - | 0 | - | 0 | - | — |
+| `law_ethnostate` | 0 | 0 | + | 0 | 0 | N/A |
+| `law_subjecthood` | + | + | 0 | + | + | N/A |
+| `law_national_supremacy` | 0 | 0 | ++ | 0 | 0 | N/A |
+| `law_racial_segregation` | 0 | 0 | + | 0 | 0 | N/A |
+| `law_cultural_exclusion` | 0 | 0 | 0 | 0 | 0 | N/A |
+| `law_multicultural` | - | 0 | - | 0 | - | N/A |
 
 ### Caste Hegemony
 
 | Law key | Old LO | New LO | Old PB | New PB | Current uSuthu | New uSuthu |
 |---|---|---|---|---|---|---|
-| `law_hindu_caste_enforced` | ++ | — | - | — | — | — |
-| `law_hindu_caste_codified` | + | — | - | — | — | — |
-| `law_hindu_caste_not_enforced` | - | — | 0 | — | — | — |
-| `law_affirmative_action` | -- | — | 0 | — | — | — |
+| `law_hindu_caste_enforced` | ++ | N/A | - | N/A | N/A | N/A |
+| `law_hindu_caste_codified` | + | N/A | - | N/A | N/A | N/A |
+| `law_hindu_caste_not_enforced` | - | N/A | 0 | N/A | N/A | N/A |
+| `law_affirmative_action` | -- | N/A | 0 | N/A | N/A | N/A |
 
 ### Edo Social System
 
 | Law key | Old LO | New LO | Old PB | New PB | Current uSuthu | New uSuthu |
 |---|---|---|---|---|---|---|
-| `law_strict_edo_system` | ++ | — | -- | — | — | — |
-| `law_intermediate_edo_system` | + | — | - | — | — | — |
-| `law_lax_edo_system` | - | — | + | — | — | — |
+| `law_strict_edo_system` | ++ | N/A | -- | N/A | N/A | N/A |
+| `law_intermediate_edo_system` | + | N/A | - | N/A | N/A | N/A |
+| `law_lax_edo_system` | - | N/A | + | N/A | N/A | N/A |
 
 ### Rights Of Women
 
 | Law key | Old LO | New LO | Old PB | New PB | Current uSuthu | New uSuthu |
 |---|---|---|---|---|---|---|
-| `law_no_womens_rights` | + | + | — | + | — | — |
-| `law_women_own_property` | - | - | — | - | — | — |
-| `law_women_in_the_workplace` | - | - | — | - | — | — |
-| `law_womens_suffrage` | -- | -- | — | -- | — | — |
+| `law_no_womens_rights` | + | + | N/A | + | N/A | N/A |
+| `law_women_own_property` | - | - | N/A | - | N/A | N/A |
+| `law_women_in_the_workplace` | - | - | N/A | - | N/A | N/A |
+| `law_womens_suffrage` | -- | -- | N/A | -- | N/A | N/A |
 
 ### Free Speech
 
 | Law key | Old LO | New LO | Old PB | New PB | Current uSuthu | New uSuthu |
 |---|---|---|---|---|---|---|
-| `law_outlawed_dissent` | + | + | + | + | — | — |
-| `law_censorship` | + | + | + | + | — | — |
-| `law_right_of_assembly` | 0 | 0 | 0 | 0 | — | — |
-| `law_protected_speech` | - | - | - | - | — | — |
+| `law_outlawed_dissent` | + | + | + | + | N/A | N/A |
+| `law_censorship` | + | + | + | + | N/A | N/A |
+| `law_right_of_assembly` | 0 | 0 | 0 | 0 | N/A | N/A |
+| `law_protected_speech` | - | - | - | - | N/A | N/A |
 
 ### Labour Associations
 
 | Law key | Old LO | New LO | Old PB | New PB | Current uSuthu | New uSuthu |
 |---|---|---|---|---|---|---|
-| `law_combination_acts` | — | — | + | — | — | — |
-| `law_guild_system` | — | — | + | — | — | — |
-| `law_anti_strike_laws` | — | — | 0 | — | — | — |
-| `law_corporatized_unions` | — | — | 0 | — | — | — |
-| `law_right_to_associate` | — | — | - | — | — | — |
-| `law_factory_councils` | — | — | -- | — | — | — |
+| `law_combination_acts` | N/A | N/A | + | N/A | N/A | N/A |
+| `law_guild_system` | N/A | N/A | + | N/A | N/A | N/A |
+| `law_anti_strike_laws` | N/A | N/A | 0 | N/A | N/A | N/A |
+| `law_corporatized_unions` | N/A | N/A | 0 | N/A | N/A | N/A |
+| `law_right_to_associate` | N/A | N/A | - | N/A | N/A | N/A |
+| `law_factory_councils` | N/A | N/A | -- | N/A | N/A | N/A |
 
 ### Migration
 
 | Law key | Old LO | New LO | Old PB | New PB | Current uSuthu | New uSuthu |
 |---|---|---|---|---|---|---|
-| `law_closed_borders` | — | — | + | — | — | — |
-| `law_migration_controls` | — | — | ++ | — | — | — |
-| `law_no_migration_controls` | — | — | - | — | — | — |
+| `law_closed_borders` | N/A | N/A | + | N/A | N/A | N/A |
+| `law_migration_controls` | N/A | N/A | ++ | N/A | N/A | N/A |
+| `law_no_migration_controls` | N/A | N/A | - | N/A | N/A | N/A |
 
 ### Internal Security
 
 | Law key | Old LO | New LO | Old PB | New PB | Current uSuthu | New uSuthu |
 |---|---|---|---|---|---|---|
-| `law_secret_police` | — | — | + | — | — | — |
-| `law_national_guard` | — | — | + | — | — | — |
-| `law_no_home_affairs` | — | — | - | — | — | — |
-| `law_guaranteed_liberties` | — | — | -- | — | — | — |
+| `law_secret_police` | N/A | N/A | + | N/A | N/A | N/A |
+| `law_national_guard` | N/A | N/A | + | N/A | N/A | N/A |
+| `law_no_home_affairs` | N/A | N/A | - | N/A | N/A | N/A |
+| `law_guaranteed_liberties` | N/A | N/A | -- | N/A | N/A | N/A |
 
 ### Navy Model
 
 | Law key | Old LO | New LO | Old PB | New PB | Current uSuthu | New uSuthu |
 |---|---|---|---|---|---|---|
-| `law_merchant_navy` | — | — | -- | — | — | — |
-| `law_jeune_ecole` | — | — | 0 | — | — | — |
-| `law_professional_navy` | — | — | ++ | — | — | — |
-| `law_diplomatic_navy` | — | — | + | — | — | — |
+| `law_merchant_navy` | N/A | N/A | -- | N/A | N/A | N/A |
+| `law_jeune_ecole` | N/A | N/A | 0 | N/A | N/A | N/A |
+| `law_professional_navy` | N/A | N/A | ++ | N/A | N/A | N/A |
+| `law_diplomatic_navy` | N/A | N/A | + | N/A | N/A | N/A |
 
 ### Slavery
 
 | Law key | Old LO | New LO | Old PB | New PB | Current uSuthu | New uSuthu |
 |---|---|---|---|---|---|---|
-| `law_slavery_banned` | — | — | — | — | — | — |
-| `law_debt_slavery` | — | — | — | — | — | — |
-| `law_slave_trade` | — | — | — | — | — | — |
-| `law_legacy_slavery` | — | — | — | — | — | — |
+| `law_slavery_banned` | N/A | N/A | N/A | N/A | N/A | N/A |
+| `law_debt_slavery` | N/A | N/A | N/A | N/A | N/A | N/A |
+| `law_slave_trade` | N/A | N/A | N/A | N/A | N/A | N/A |
+| `law_legacy_slavery` | N/A | N/A | N/A | N/A | N/A | N/A |
 
 ### Church And State
 
 | Law key | Old LO | New LO | Old PB | New PB | Current uSuthu | New uSuthu |
 |---|---|---|---|---|---|---|
-| `law_state_religion` | — | — | — | — | — | — |
-| `law_freedom_of_conscience` | — | — | — | — | — | — |
-| `law_total_separation` | — | — | — | — | — | — |
-| `law_state_atheism` | — | — | — | — | — | — |
+| `law_state_religion` | N/A | N/A | N/A | N/A | N/A | N/A |
+| `law_freedom_of_conscience` | N/A | N/A | N/A | N/A | N/A | N/A |
+| `law_total_separation` | N/A | N/A | N/A | N/A | N/A | N/A |
+| `law_state_atheism` | N/A | N/A | N/A | N/A | N/A | N/A |
 
 ## Meaning and tradeoffs
 
@@ -237,7 +243,7 @@ The table includes all laws named by any old or proposed package, plus explicit 
 - **Homestead Order is deliberately narrow.** Both groups favour Traditionalism/Agrarianism, land-based tribute, local policing and Subjecthood. Broader native positions on modern trade, welfare, racial hierarchy, caste, Edo hierarchy, migration and labour organization are removed. This does make the groups less uniformly obstructive to later reforms. Leaders and other movements can still oppose them. Keeping every generic conservative position would be a larger political programme than the evidence currently supports.
 - **Land law remains neutral in this package.** Do not equate customary access and chiefly allocation automatically with European Serfdom, private freehold or modern collectivization. This neutrality is a deliberate modelling limit, not a claim that land did not matter. No starting land or slavery law changes follow from the matrix.
 - **Patriarchal is retained for LO and added to PB.** PB speech positions remain numerically identical to former Patriotic positions; its women’s-rights positions are newly explicit. Native Patriarchal is a broad abstraction and does not describe every right historically exercised by Zulu women.
-- **Movement satisfaction is narrower.** Inherited Traditionalism, Subjecthood and bureaucracy no longer calm the movement through its core ideology. Chiefdom, Council and Chiefly Militias all conflict with it. A retained Professional Army neither helps nor hurts through this core. Monarchy and Autocracy satisfy its constitutional aims after restoration.
+- **Movement satisfaction is narrower.** Inherited Traditionalism, Subjecthood and bureaucracy no longer calm the movement through its core ideology. Chiefdom, Council and Chiefly Militias all conflict with it. Ordinary army laws have no position from the proposed core; new army opinions concern Amabutho and Chiefly Militias only. Monarchy and Autocracy satisfy its constitutional aims after restoration.
 - **Existing law variants need explicit audit.** The new laws need their own rows; ordinary parent laws also remain covered. Other native/SB variants use their documented parent contract unless an explicit row is designed. This table does not redesign non-ZUL IGs, leader pools, IG traits or every unrelated custom law.
 
 ## Historical basis and its limits

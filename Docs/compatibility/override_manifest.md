@@ -1,6 +1,6 @@
 # Spes Bona Override Manifest
 
-Target game version: Victoria 3 `1.14.3` Open Beta Update 2 (Steam build `25347710`, Steam branch `1.14-openbeta`, core depot manifest `5228357714133991559`).
+Target game version: Victoria 3 `1.14.5` Open Beta Update 4 (Steam build `25629520`, Steam branch `1.14-openbeta`, core depot manifest `5521822647051867164`).
 
 Pinned dependency: Community Mod Framework `1.66.0`, commit `807c32ff42b75714a3a0e090c0db3357b5e46ed7`. The launcher relationship is `1.66.*`. Static validation uses the official GitHub `release-1.66.0.zip` asset with SHA-256 `79dd0d434e6ffb617147ad1b91b73e6306139adfffcadf6774eeb32db3a09b8b`; it does not treat the temporarily reverted Workshop payload as authoritative.
 
@@ -24,16 +24,22 @@ On Depro's development machine, the canonical CMF path is `/Users/depro/Document
 The current lock covers:
 
 - `39` exact-path files;
-- `112` keyed `REPLACE`, `TRY_REPLACE`, or `REPLACE_OR_CREATE` objects;
+- `114` keyed `REPLACE`, `TRY_REPLACE`, or `REPLACE_OR_CREATE` objects;
 - `18` intentionally changed state-region blocks;
 - one registered additive `zz_` override;
-- all eight localization replace files plus key-level, multi-source pins for the 20 previously silent Vanilla key collisions;
-- two non-shadowed OB1 AI caller/scoring contracts (`ai_strategy_default` and `state_transfer`); and
+- all nine localization replace files plus key-level, multi-source pins for the 20 previously silent Vanilla key collisions;
+- two non-shadowed current AI caller/scoring contracts (`ai_strategy_default` and `state_transfer`); and
 - no approved `replace_path` directives.
 
 The exact-path set includes Southern African history, the Highveld event baseline, the regional state file, the province raster, terrain, locators, and spline network. Generated and binary files use hash parity; textual files also require a reviewed source diff. Every OB1 source-only drift result is repinned only after a recorded semantic decision.
 
-`common/history/treaties/00_historical_treaties.txt` remains an exact-path Vanilla shadow because startup treaty rows cannot be removed additively. Its unchanged payload is pinned against `1.14.3`; uniquely named third-party treaty files remain additive. SB does not replace or register `on_treaty_ports_inherited`, leaving Vanilla's inheritance prompt and market reconnection path untouched.
+The Initial Enthusiasm helper retains Vanilla's exact grant and adds hidden expiry
+bookkeeping only for NAL's Zulu cultural movement. Its annexation replacement
+preserves the tracked remainder of that modifier and both Shepstone attraction
+modifiers. Other movements' grants and the CMF dependency remain unchanged; see
+the [preservation contract](zulu_national_movement_2026_10_17.md#authorized-modifier-preservation).
+
+`common/history/treaties/00_historical_treaties.txt` remains an exact-path Vanilla shadow because startup treaty rows cannot be removed additively. Its unchanged payload is pinned against `1.14.5`; uniquely named third-party treaty files remain additive. SB does not replace or register `on_treaty_ports_inherited`, leaving Vanilla's inheritance prompt and market reconnection path untouched.
 
 `common/history/diplomacy/00_relations.txt` retains the OB1 relation baseline except for three explicit startup corrections: it disables the whole Vanilla `c:SAF` block, removes ORA's relation to TRN, and disables the whole Vanilla `c:TRN` block because SAF and TRN do not exist in 1836. Later TRN relations remain story-authored.
 
@@ -49,7 +55,16 @@ The checker fails on any unregistered `zz_` override-style file, unregistered `r
 
 ## Dependency Rebases
 
-The five retained political-movement replacements are pinned to CMF `1.66.0` and reviewed against Victoria 3 `1.14.3`. Cultural Supremacy migrates six primary-culture comparisons and one value accessor to Vanilla 1.14.3's explicit-country API in both CMF and SB. Other movement bodies and CMF extensions are preserved; the shared source-file pins are refreshed. Cultural Supremacy retains the upstream unowned-homeland and neighbouring-movement scope fixes; the only SB-specific delta is CAP creation/disband exclusion. The other retained movement deltas remain the documented CAP exclusion or Anglo-African utilitarian eligibility.
+The five retained political-movement replacements are pinned to CMF `1.66.0` and reviewed against Victoria 3 `1.14.5`. Cultural Supremacy migrates six primary-culture comparisons and one value accessor to Vanilla 1.14.3's explicit-country API in both CMF and SB. Other movement bodies and CMF extensions are preserved; the shared source-file pins are refreshed. Cultural Supremacy retains the upstream unowned-homeland and neighbouring-movement scope fixes; the only SB-specific delta is CAP creation/disband exclusion. The other retained movement deltas remain the documented CAP exclusion or Anglo-African utilitarian eligibility.
+
+The 17 October annexation follow-up adds a cultural-minority replacement pinned
+to the same installed CMF and Vanilla sources. Its only changes are a disband
+alternative for NAL's specifically marked Zulu movement and an `on_disbanded`
+receipt that recreates it the next day. Full-body token parity verifies all other
+CMF fields, including native disband conditions, eligibility and recruitment.
+The existing annexation settlement gate makes this a single replacement; no
+category threshold, recurring revival or CMF dependency patch is introduced.
+See the [implementation record](zulu_national_movement_2026_10_17.md#authorized-replacement--b).
 
 The company replacements are intentionally narrow:
 
@@ -60,7 +75,7 @@ Vanilla's additive `on_company_disbanded` handler remains untouched. SB register
 
 The Armed Forces definition is a keyed OB1 rebase. Its executable token stream is unchanged upstream; the source drift is comments and formatting only. Its sole SB delta consumes Imperial Administration's displayed flat `+50` Aristocrat attraction modifier. CMF `1.66.0` does not replace this object. Source and object hashes are pinned so later military-interest-group changes require an explicit rebase.
 
-All three OB1 AI incorporation triggers are exact replacements around one narrow helper. `sb_regional_ai_should_incorporate` admits only AI NAL owning `STATE_ZULULAND`, AI CAP owning `STATE_BECHUANALAND` or `STATE_GRIQUALAND_WEST`, and AI ORA owning `STATE_DRAKENSBERG`; each match requires `owner = root`. It is intentionally independent of NAL's narrative lease, population, adjacency, full-state ownership, homeland time, and starting country type. Both ordinary and colonial `will` paths receive the helper because NAL and CAP can cross those country-type branches. `ai_can_incorporate_state` remains a value/transfer-scoring caller rather than the command that starts incorporation. The `will` overrides improve willingness and candidate priority but cannot bypass affordability or code-side candidate validity. The rebased `ai_strategy_default` caller/scoring object and unchanged `state_transfer` scoring object are pinned as non-shadowed upstream contracts so their branch and valuation semantics cannot drift silently.
+All three AI incorporation replacements wrap the complete current 1.14.5 bodies. Native eligibility includes primary-culture thresholds (50%, or 25% beside an owned incorporated state); ordinary incorporation requires eligibility and minimum population, while colonial incorporation also permits same-region or owned-incorporated adjacency. `sb_regional_ai_should_incorporate` admits only AI NAL owning `STATE_ZULULAND`, AI CAP owning `STATE_BECHUANALAND` or `STATE_GRIQUALAND_WEST`, and AI ORA owning `STATE_DRAKENSBERG`; every exception requires `owner = root`. These four exceptions retain their independence from population, adjacency and country type. Both `will` paths and `ai_can_incorporate_state` include the helper. Eligibility contributes to native incorporation and state/transfer scoring; no trigger bypasses engine affordability or candidate validity. The current `ai_strategy_default` and `state_transfer` objects remain Vanilla-owned, pinned caller/scoring contracts.
 
 The Colonial Racialism amendment is a keyed OB1 rebase. Its only SB delta permits Rural Folk carrying Settler Colonialist to sponsor the amendment; Vanilla's approval gate and existing Armed Forces and Industrialist sponsors remain unchanged.
 
@@ -82,7 +97,7 @@ The focused override decisions are:
 
 ## CMF 1.66 Integration
 
-CMF `1.66.0` is installed with `sb-1.14.3-r1`. Its Annex Country, Conquer State, and Return State definitions match Vanilla 1.14.3, including the new infamy formulas and territorial mirrors, with only CMF's land-grab validity hook added. SB has no duplicate territorial-goal shadows. The seven patched ideology categories are retained unchanged, and the cultural-majority movement uses the explicit-country API. Five replacement payloads, sixteen Vanilla source/object contracts, both tree digests, and three upstream-reviewable diffs live under `patches/cmf/sb-1.14.3-r1`. No SB-specific country or state rule is added to CMF.
+CMF `1.66.0` is installed with `sb-1.14.3-r1`. Its Annex Country, Conquer State, and Return State definitions still match Vanilla 1.14.5, including the GDP/population-share infamy formulas and territorial mirrors, with only CMF's land-grab validity hook added. SB has no duplicate territorial-goal shadows. The seven patched ideology categories are retained unchanged, and the cultural-majority movement uses the explicit-country API. Five replacement payloads, sixteen Vanilla source/object contracts, both tree digests, and three upstream-reviewable diffs live under `patches/cmf/sb-1.14.3-r1`. No SB-specific country or state rule is added to CMF.
 
 `tools/sync_cmf.py` verifies the original archive and stages the complete patch before installation. Repeated sync, `--check`, and `--force` retain the patch; `--latest` is rejected for this dependency. A local unpatched or altered 1.66.0 tree fails validation. Metadata's upstream version and the launcher relationship remain unchanged; this is explicitly a patched distribution, not a new official CMF release.
 
@@ -129,11 +144,11 @@ The new depot report contains 69 changed files, one addition, and no removals. N
 
 The historical target report and fresh-game checklist are `1_14_2_rebase.md` and `1_14_2_runtime_matrix.md`. Earlier OB1 evidence does not certify this build.
 
-## 1.14.3 review
+## 1.14.3 review (historical)
 
 The separate depot report records 92 changed files, three additions, and no removals. Exact-path SB overrides and map assets are unchanged. The required runtime ports are CMF's three territorial infamy formulas and the cultural-majority primary-culture API in both CMF and SB. AI strategy changes are inherited; incorporation trigger bodies and ideology-category bodies are unchanged. CMF's construction-interaction map-list type retains its production-method customization and gains a pinned source contract. Dominion source pins are refreshed without rewriting SB prose.
 
-The current report and DP engine checklist are `1_14_3_rebase.md` and `1_14_3_runtime_matrix.md`. All game launches remain with DP. ORA–BST stays on hold; no custom enforcement or save migration is introduced.
+The historical report and DP engine checklist are `1_14_3_rebase.md` and `1_14_3_runtime_matrix.md`. All game launches remain with DP. ORA–BST stays on hold; no custom enforcement or save migration is introduced.
 
 ## Chiefdoms movement contest (19 September 2026)
 
@@ -167,3 +182,42 @@ parity after undoing this one wrapper is regression-tested and both hashes pinne
 This is a mitigation for a repeated native AI treaty crash, awaiting DP's replay;
 it is not a confirmed diagnosis of the invalidated country or Zulu capitulation.
 See [crash investigation](zul_war_crash_2026_09_19.md).
+
+## 1.14.5 review
+
+See [the complete rebase report](1_14_5_rebase.md) and [DP's pending engine matrix](1_14_5_runtime_matrix.md). The reproducible retained 1.14.4→1.14.5 delta has 147 changes and two additions; the missing 1.14.3 manifest prevents a complete earlier depot diff. The separate comparison covers every pinned Vanilla source from SB's 1.14.3 inventory.
+
+The four runtime ports are incorporation triggers, colonial-claim regional-objective scoring, Scramble's wartime failure guard, and 14 European fleet transport additions. Portuguese armies, regional exceptions, Boer claim restrictions, Scramble growth/cleanup, maps, splines and disabled Highveld are preserved. Interaction and technology object bodies are unchanged; updated AI scoring and Dominion source contracts are reviewed and repinned. The naval graph has 6,641 nodes, 7,192 connections and all 33 SB ports connected.
+
+CMF 1.66.0 + sb-1.14.3-r1 remains byte-identical and all 16 upstream contracts match. Current build, current manifest and current payload checks fail on missing evidence. Historical reproduction alone may skip missing old inputs. No story redesign, ORA–BST workaround, engine launch or 1.15 expiry change is included.
+
+
+## Zulu institutional implementation — 18 October 2026
+
+The current inventory includes 39 same-path files, 118 keyed replacements and
+eight localisation replacement files. Five native army-law replacements add the
+customary-army firearms reform gate; one decree replacement adds institutional
+eligibility while preserving native restrictions. The chiefly constitution uses
+independent laws so its ideological stances apply; the hereditary Chiefdom
+fallback needs no override. Generic Absolutist
+eligibility retains the effective CMF body outside the authored movement lifecycle.
+The political-movement history shadow excludes eligible authored institutions
+from the explicit startup Absolutist call. Removing that one condition reproduces
+Vanilla 1.14.5 byte for byte after BOM decoding; every other movement and country
+keeps its original setup.
+Old blanket Chiefdom/Elder Council and fixed-lobby display replacements are removed.
+
+See the [semantic contract review](zulu_institutions_contract_review_2026_10_18.json),
+[native coup contracts](zulu_court_vanilla_contracts_1_14_5.json), and
+[implementation / DP matrix](../zulu_institutions_implementation_2026_10_18.md).
+The installed CMF payload and existing patch hashes remain unchanged.
+See the [launch follow-up](zulu_institutions_launch_2026_10_18.md) for the
+parent-law correction and removal of the now-redundant government replacement.
+The [court presentation follow-up](zulu_court_presentation_2026_10_18.md) records
+the startup history comparison and independent allegiance traits.
+
+### 27 October claimant career correction
+
+The ZUL character-history override delegates Mpande's politician role to his template, which then extends the role career. The keyed Mpande override changes no starting traits, Popularity, noble status or mortality. Gqugqu's SB-only template receives the same career protection. Only those two changed override hashes are refreshed; game and CMF pins remain unchanged. See [save evidence and verification](zulu_outcome_options_harvest_2026_10_27.md).
+
+**27 October follow-up — Fecund:** DP subsequently requested a unique starting trait for Mpande, supplementing the earlier package with +5% Health, +10 Popularity and +5 Prominence. Only the `REPLACE:ZUL_mpande_zulu` object hash is refreshed for this addition; its upstream contract, the game/CMF pins, role career and other template fields remain unchanged. The new [rabbit card and prompt](../../output/imagegen/fecund_special_2026_10_27/README.md) use the established Vanilla special gold frame. This supersedes the no-trait-change statement for the earlier career-only patch above.

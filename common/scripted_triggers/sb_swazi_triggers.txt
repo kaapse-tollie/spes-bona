@@ -15,3 +15,60 @@
 		}
 	}
 }
+
+# Country scope. Natal must be settled before low Prerogative can open the question.
+sb_zulu_swazi_question_is_due = {
+ # The Natal outcome popup must finish before a new frontier question opens.
+ NOT = { has_variable = sb_natal_terminal_outcome_scope }
+ ruler ?= { has_template = ZUL_dingane }
+ OR = {
+  has_variable = sb_zulu_swazi_ai_won_blood_river_var
+  has_variable = sb_zulu_swazi_ai_white_peace_var
+  AND = {
+   OR = {
+    has_variable = sb_zulu_swazi_ai_lost_blood_river_var
+    # A grant offered by ZUL is not yet the Boer recipient's resolved outcome.
+    c:ORA ?= { has_variable = sb_natal_path_resolved_var }
+   }
+   trigger_if = {
+    limit = { has_variable = sb_prerogative_var }
+    var:sb_prerogative_var <= -10
+   }
+   trigger_else = { always = no }
+  }
+ }
+}
+
+# Conquer State selection: ROOT/current country is the prospective goal holder.
+# Keep native territorial mirrors valid: recovering the originally attacked SWZ
+# state is not an additional demand for Zulu territory.
+sb_swazi_conquest_target_allowed = {
+ trigger_if = {
+  limit = {
+   country_definition = cd:SWZ
+   exists = scope:diplomatic_play
+  }
+  trigger_if = {
+   limit = {
+    exists = scope:target_country
+    scope:target_country ?= {
+     country_definition = cd:ZUL
+     has_variable = sb_zulu_swazi_war_active_var
+     has_variable = sb_zulu_swazi_target_state_scope
+     OR = {
+      var:sb_zulu_swazi_play_scope ?= scope:diplomatic_play
+      AND = {
+       has_variable = sb_zulu_swazi_launch_lease_var
+       scope:diplomatic_play = {
+        is_diplomatic_play_type = dp_conquer_state
+        initiator_is = scope:target_country
+        target_is = root
+       }
+      }
+     }
+    }
+   }
+   scope:target_state ?= scope:target_country.var:sb_zulu_swazi_target_state_scope
+  }
+ }
+}

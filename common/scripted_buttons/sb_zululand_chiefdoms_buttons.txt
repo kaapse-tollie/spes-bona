@@ -9,6 +9,7 @@ je_sb_zululand_increase_policing_button = {
 		NOT = { has_variable = sb_zululand_policing_active_var }
 	}
 	possible = {
+		sb_zululand_contest_interventions_available = yes
 		custom_tooltip = {
 			text = je_sb_zululand_increase_policing_possible_tt
 			hidden_trigger = { authority >= 100 }
@@ -81,7 +82,8 @@ je_sb_zululand_sponsor_usuthu_button = {
 		has_journal_entry = je_sb_zululand_chiefdoms
 		NOT = { has_variable = sb_zululand_usuthu_sponsorship_active_var }
 	}
-	possible = { NOT = { in_default = yes } }
+	possible = {
+		sb_zululand_contest_interventions_available = yes NOT = { in_default = yes } }
 	ai_chance = { value = 0 }
 	effect = { sb_zululand_start_usuthu_sponsorship = yes }
 }
@@ -107,7 +109,8 @@ je_sb_zululand_sanction_volunteers_button = {
 		has_journal_entry = je_sb_zululand_chiefdoms
 		NOT = { has_variable = sb_zululand_boer_volunteers_active_var }
 	}
-	possible = { any_scope_pop = { is_pop_type = soldiers total_size > 0 } }
+	possible = {
+		sb_zululand_contest_interventions_available = yes any_scope_pop = { is_pop_type = soldiers total_size > 0 } }
 	ai_chance = { value = 0 }
 	effect = { sb_zululand_start_boer_volunteers = yes }
 }
@@ -129,7 +132,8 @@ je_sb_zululand_support_chiefs_button = {
 	name = "je_sb_zululand_support_chiefs_button"
 	desc = "je_sb_zululand_support_chiefs_button_desc"
 	visible = { country_definition = cd:NAL has_journal_entry = je_sb_zululand_chiefdoms NOT = { has_variable = sb_zululand_chief_patronage_active_var } }
-	possible = { NOT = { in_default = yes } }
+	possible = {
+		sb_zululand_contest_interventions_available = yes NOT = { in_default = yes } }
 	ai_chance = { value = 0 }
 	effect = { sb_zululand_start_chief_patronage = yes }
 }
@@ -141,4 +145,13 @@ je_sb_zululand_end_chief_support_button = {
 	possible = { always = yes }
 	ai_chance = { value = 0 }
 	effect = { sb_zululand_stop_chief_patronage = yes }
+}
+
+je_sb_zululand_bribe_chief_button = {
+	name = je_sb_zululand_bribe_chief_button
+	desc = je_sb_zululand_bribe_chief_button_desc
+	visible = { OR = { country_definition = cd:NAL country_definition = cd:TRN } has_journal_entry = je_sb_zululand_chiefdoms }
+	possible = { sb_zululand_can_bribe_chief = yes }
+	ai_chance = { value = 0 }
+	effect = { hidden_effect = { sb_zululand_offer_chief_bribe = yes } }
 }

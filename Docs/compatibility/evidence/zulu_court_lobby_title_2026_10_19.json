@@ -1,0 +1,100 @@
+{
+  "date": "2026-10-19",
+  "report": "Blank Prerogative lobby JE and nested title errors after a fresh launch.",
+  "log": {
+    "path": "/private/tmp/sb-court-lobby-error-2026-10-19.log",
+    "sha256": "d9844141493d50dd93e74dbd46c130a86c554d3b2dc6b2131e95c227852a967f",
+    "lines": 4389,
+    "messages": {
+      "FetchData failed for 'SelectLocalization(ROOT.GetCountry.IsValid, 'sb_prerogative_country_title', 'sb_prerogative_royal_title')'": 890,
+      "Data error in loc string 'je_sb_zulu_kingdom'": 890,
+      "Promote 'ROOT' returned nullptr, in 'ROOT.GetCountry.IsValid'": 889,
+      "No filewatcher listeners were added for the following directories: gfx/map/textures/": 1,
+      "Promote 'ROOT' returned nullptr, in 'ROOT.GetCountry.GetCustom('sb_prerogative_title')'": 573,
+      "FetchData failed for 'ROOT.GetCountry.GetCustom('sb_prerogative_title')'": 573,
+      "Data error in loc string 'sb_prerogative_country_title'": 573
+    }
+  },
+  "changes": [
+    {
+      "path": "localization/english/sb_l_english.yml",
+      "sha256": "065c9db9ccdd82be58c6630018304a34a850f46adf26230518351a9c1d646b31"
+    },
+    {
+      "path": "localization/english/sb_institutions_l_english.yml",
+      "sha256": "99245d45d154ecd72376a8d1f1b9acec5bf655d3510298cdb0cdacb12d87b85b"
+    },
+    {
+      "path": "tests/test_zulu_institutions_core.py",
+      "sha256": "06cfa12d9b1f496e7a43214924332bff7db122d4b6956a83c195034f0cbd38b8"
+    }
+  ],
+  "native_sources": [
+    {
+      "path": "gui/multiplayer_lobby_types.gui",
+      "sha256": "87532678021af2db1d751dbe86e7e1ce12ab297af3ec015b0b9ab86f6b2819f4"
+    },
+    {
+      "path": "gui/journal_entry.gui",
+      "sha256": "003e16b9032099e5880c8a21c8efde2e2475fcf741c4d0d43868db85cb7ff33c"
+    },
+    {
+      "path": "gui/minimap.gui",
+      "sha256": "3ccfa1040cd5fa042253dc8bf214f96df7a25535a5002b390b77140101723037"
+    },
+    {
+      "path": "localization/english/ip3_misc_01_l_english.yml",
+      "sha256": "bb696848d159b20e7a5b5b2549237271caf911adffe52b6619cbb700ce04ced1"
+    },
+    {
+      "path": "localization/english/ip2_misc_01_l_english.yml",
+      "sha256": "ce5d6dd34b1251a25e16e060a8b098c09013c391eed058a659542d041a28041f"
+    }
+  ],
+  "read_only_binary_inspection": {
+    "architecture": "arm64",
+    "functions": [
+      "CDataJournalEntry::GetName",
+      "CDataJournalEntryType::GetName"
+    ],
+    "finding": "Active JE localises with its top scope; JE type localises the database key.",
+    "extract": "/private/tmp/sb-je-name-functions-2026-10-19.txt"
+  },
+  "verification": {
+    "regression_failed_on_old_lobby_guard": true,
+    "regression_failed_on_old_nested_root_after_guard_correction": true,
+    "focused_tests_passed": 60,
+    "full_tests": {
+      "run": 592,
+      "passed": 583,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 8
+    },
+    "validator": {
+      "passed_warned_skipped": 15,
+      "total": 17,
+      "failed_gates": [
+        "unit tests",
+        "localization"
+      ],
+      "known_reviewed_prose_drift": [
+        "sb_klip_river_county.060",
+        "sb_klip_river_county.080",
+        "sb_natal_crisis.050"
+      ]
+    },
+    "tiger": {
+      "advisory": true,
+      "parser_game_version": "1.13.5",
+      "installed_game_version": "1.14.5",
+      "fatal": 0,
+      "errors": 1066,
+      "warnings": 145
+    },
+    "whitespace_check": "pass",
+    "raw_validation": "/private/tmp/sb-court-lobby-2026-10-19-validation.txt"
+  },
+  "game_launched": false,
+  "engine_rendering": "Pending DP: lobby title, live Royal/Chiefly title, opening JE without title lookup errors."
+}

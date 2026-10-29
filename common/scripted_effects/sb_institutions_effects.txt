@@ -1,0 +1,117 @@
+﻿# These helpers capture the current country, never a foreign event's root.
+sb_institutions_initialize = {
+ if = {
+  limit = { NOT = { has_variable = sb_institutions_initialized_var } }
+  set_variable = sb_institutions_initialized_var
+  set_variable = sb_institutions_zulu_profile_var
+  set_variable = { name = sb_prerogative_var value = 0 }
+  set_variable = { name = sb_prerogative_last_change_var value = 0 }
+  set_variable = { name = sb_prerogative_cooperation_var value = 0 }
+ }
+}
+sb_institutions_seed_movements = {
+ if = {
+  limit = { NOT = { has_variable = sb_institutions_movements_seeded_var } }
+  set_variable = sb_institutions_movements_seeded_var
+  # Generic Absolutists leave through their scoped native disband trigger.
+  if = { limit = { NOT = { any_political_movement = { is_political_movement_type = movement_sb_zulu_royal } } } create_political_movement = { type = movement_sb_zulu_royal } }
+  if = { limit = { NOT = { any_political_movement = { is_political_movement_type = movement_sb_zulu_chiefly } } } create_political_movement = { type = movement_sb_zulu_chiefly } }
+  if = { limit = { NOT = { any_political_movement = { is_political_movement_type = movement_sb_zulu_traditionalist } } } create_political_movement = { type = movement_sb_zulu_traditionalist } }
+ }
+}
+sb_institutions_clear_effects = {
+ hidden_effect = {
+  sb_court_suspend = yes
+  sb_zululand_suspend_contest_interventions = yes
+  if = { limit = { has_modifier = sb_prerogative_base_legitimacy } remove_modifier = sb_prerogative_base_legitimacy }
+  if = { limit = { has_modifier = sb_prerogative_political } remove_modifier = sb_prerogative_political }
+  if = { limit = { has_modifier = sb_prerogative_military } remove_modifier = sb_prerogative_military }
+  every_political_movement = {
+   limit = { OR = { is_political_movement_type = movement_sb_zulu_royal is_political_movement_type = movement_sb_zulu_chiefly } }
+   if = { limit = { has_modifier = sb_court_following_recruitment } remove_modifier = sb_court_following_recruitment }
+  }
+ }
+}
+sb_institutions_recalculate = {
+ hidden_effect = {
+  sb_institutions_initialize = yes
+  sb_court_update_heir_blocker = yes
+  set_variable = { name = sb_institutional_reach_var value = sb_institutional_reach }
+  if = { limit = { has_global_variable = sb_institutions_lobby_ready_global_var } sb_court_calculate_backing = yes }
+  set_variable = { name = sb_prerogative_movement_balance_var value = sb_prerogative_movement_balance }
+  set_variable = { name = sb_prerogative_target_var value = sb_prerogative_target }
+  set_variable = { name = sb_prerogative_monthly_change_var value = sb_prerogative_monthly_change }
+  if = { limit = { has_modifier = sb_prerogative_base_legitimacy } remove_modifier = sb_prerogative_base_legitimacy }
+  if = { limit = { has_modifier = sb_prerogative_political } remove_modifier = sb_prerogative_political }
+  if = { limit = { has_modifier = sb_prerogative_military } remove_modifier = sb_prerogative_military }
+  if = {
+   limit = { has_variable = sb_institutions_active_var }
+   add_modifier = { name = sb_prerogative_base_legitimacy multiplier = sb_institutional_effect_scale }
+   if = { limit = { NOT = { var:sb_prerogative_var = 0 } } add_modifier = { name = sb_prerogative_political multiplier = sb_prerogative_effect_scale } }
+   if = {
+    limit = { has_law = law_type:law_sb_amabutho_system NOT = { var:sb_prerogative_var = 0 } }
+    add_modifier = { name = sb_prerogative_military multiplier = sb_prerogative_effect_scale }
+   }
+  }
+  je:je_sb_zulu_kingdom ?= {
+   # P remains authoritative on the country; this bar never ticks independently.
+   set_bar_progress = { name = sb_zulu_dynastic_stability_bar value = prev.sb_prerogative_bar_projection }
+  }
+  sb_court_check_claimant_challenge = yes
+ }
+}
+sb_institutions_reconcile = {
+ if = {
+  limit = { sb_institutions_profile_country = yes }
+  sb_institutions_initialize = yes
+  if = {
+   limit = { sb_institutions_eligible = yes }
+   set_variable = sb_institutions_active_var
+   if = {
+    limit = { has_global_variable = sb_institutions_lobby_ready_global_var }
+    sb_court_ensure_roster = yes
+    sb_institutions_seed_movements = yes
+    sb_court_select_chiefly_head = yes
+   }
+   if = { limit = { NOT = { has_journal_entry = je_sb_zulu_kingdom } } add_journal_entry = { type = je_sb_zulu_kingdom } }
+  }
+  else = {
+   remove_variable = sb_institutions_active_var
+   sb_institutions_clear_effects = yes
+  }
+  sb_institutions_recalculate = yes
+ }
+}
+sb_change_prerogative = {
+ if = {
+  limit = { sb_institutions_profile_country = yes sb_institutions_eligible = yes }
+  sb_institutions_initialize = yes
+  change_variable = { name = sb_prerogative_var add = $VALUE$ }
+  set_variable = { name = sb_prerogative_var value = sb_prerogative_clamped }
+  sb_institutions_recalculate = yes
+ }
+}
+sb_institutions_monthly_update = {
+ sb_court_reconcile_dynastic_record = yes
+ sb_institutions_reconcile = yes
+ if = {
+  limit = { has_variable = sb_court_brothers_choice_var }
+  if = { limit = { NOT = { sb_court_brothers_choice_valid = yes } } sb_court_clear_brothers_choice = yes }
+ }
+ sb_court_sync_chiefly_concessions = yes
+ if = {
+  limit = { has_variable = sb_institutions_active_var }
+  sb_court_monthly_housekeeping = yes
+  sb_court_annual_allegiances = yes
+  # A January birthday declaration must follow that year's ordinary allegiance roll.
+  sb_court_mpande_sons_come_of_age = yes
+  sb_court_deck_monthly = yes
+  sb_institutions_recalculate = yes
+  set_variable = { name = sb_prerogative_last_change_var value = var:sb_prerogative_monthly_change_var }
+  change_variable = { name = sb_prerogative_var add = var:sb_prerogative_monthly_change_var }
+  set_variable = { name = sb_prerogative_var value = sb_prerogative_clamped }
+  sb_institutions_recalculate = yes
+  sb_zulu_monthly_dynasty_housekeeping = yes
+  sb_zululand_check_political_settlement = yes
+ }
+}

@@ -1,0 +1,858 @@
+﻿# Country scope. Automatic challenges and contested accessions share one reserved crisis.
+sb_court_check_claimant_challenge = {
+ if = {
+  limit = { sb_court_dynastic_can_challenge = yes }
+  save_scope_as = sb_court_country
+  ordered_in_list = {
+   variable = sb_court_members
+   limit = { sb_court_member_of_country = yes sb_court_organised_rival = yes NOT = { is_ruler_of_own_country = yes } }
+   order_by = var:sb_court_current_weight_var position = 0 check_range_bounds = no
+   scope:sb_court_country = {
+    set_variable = { name = sb_court_accession_nominee_scope value = ruler }
+    set_variable = { name = sb_court_accession_rival_scope value = prev }
+    sb_court_reserve_dynastic_crisis = { REASON = 1 }
+   }
+  }
+ }
+}
+
+# REASON: 1 living-ruler challenge, 2 succession, 3 exposed purge.
+sb_court_reserve_dynastic_crisis = {
+ save_scope_as = sb_court_country
+ if = {
+  limit = {
+   sb_court_dynastic_enabled = yes sb_court_dynastic_country = yes
+   sb_court_dynastic_conflict_free = yes
+   NOT = { has_variable = sb_court_dynastic_crisis_var }
+   NOT = { has_variable = sb_court_dynastic_selection_open_var }
+   # Native disbanding is deferred. Do not revive a cancelled episode's movement.
+   NOT = { any_political_movement = { is_political_movement_type = movement_sb_dynastic_test } }
+   var:sb_court_accession_nominee_scope ?= { sb_court_dynastic_candidate = yes }
+   var:sb_court_accession_rival_scope ?= { sb_court_dynastic_candidate = yes }
+  }
+  set_variable = sb_court_dynastic_crisis_var
+  # Reserve the native concurrency flag; this does not start a coup or use its mechanics.
+  set_variable = coup_event_active
+  set_variable = sb_court_dynastic_owns_coup_lock_var
+  set_variable = sb_court_accession_open_var
+  remove_variable = sb_court_dynastic_resolved_var
+  set_variable = { name = sb_court_dynastic_reason_var value = $REASON$ }
+  set_variable = { name = sb_court_dynastic_nominee_scope value = var:sb_court_accession_nominee_scope }
+  set_variable = { name = sb_court_dynastic_rival_scope value = var:sb_court_accession_rival_scope }
+  set_variable = { name = sb_court_dynastic_original_law_var value = 1 }
+  if = { limit = { sb_court_has_social_monarchy = yes } set_variable = { name = sb_court_dynastic_original_law_var value = 2 } }
+  set_variable = { name = sb_court_dynastic_original_law_scope value = active_law:lawgroup_governance_principles.type }
+  sb_court_snapshot_dynastic_coalitions = yes
+  sb_court_snapshot_dynastic_roster = yes
+  if = {
+   limit = { sb_court_dynastic_pair_valid = yes sb_court_dynastic_pair_weight > 0 var:sb_court_dynastic_rival_weight_var > 0 }
+   set_variable = sb_court_accession_popup_var
+   set_variable = sb_court_dynastic_selection_open_var
+   trigger_event = { id = sb_court_succession.004 popup = yes }
+  }
+  else = { sb_court_cancel_dynastic_crisis = yes }
+ }
+}
+
+# A representative carries its aggregated house exactly once. Members follow that house;
+# royal ancestry itself supplies no second constituency.
+sb_court_snapshot_dynastic_coalitions = {
+ save_scope_as = sb_court_country
+ sb_court_calculate_backing = yes
+ clear_variable_list = sb_court_dynastic_incumbent_members
+ clear_variable_list = sb_court_dynastic_rival_members
+ set_variable = { name = sb_court_dynastic_incumbent_weight_var value = 0 }
+ set_variable = { name = sb_court_dynastic_rival_weight_var value = 0 }
+ every_in_list = {
+  variable = sb_court_members
+  limit = { sb_court_member_of_country = yes has_variable = sb_court_representative_var has_variable = sb_court_represented_weight_var }
+  if = {
+   limit = { scope:sb_court_country = { var:sb_court_dynastic_reason_var = 2 } }
+   if = {
+    limit = {
+     OR = {
+      this = scope:sb_court_country.var:sb_court_dynastic_rival_scope
+      AND = { NOT = { sb_court_royal_candidate = yes } var:sb_court_successor_pledge_scope ?= scope:sb_court_country.var:sb_court_dynastic_rival_scope }
+     }
+    }
+    sb_court_snapshot_dynastic_house = { SIDE = rival }
+   }
+   else_if = {
+    limit = {
+     OR = {
+      this = scope:sb_court_country.var:sb_court_dynastic_nominee_scope
+      AND = { NOT = { sb_court_royal_candidate = yes } var:sb_court_successor_pledge_scope ?= scope:sb_court_country.var:sb_court_dynastic_nominee_scope }
+     }
+    }
+    sb_court_snapshot_dynastic_house = { SIDE = incumbent }
+   }
+  }
+  else = {
+   if = { limit = { sb_court_member_endorsement > 0 } sb_court_snapshot_dynastic_house = { SIDE = incumbent } }
+   else_if = {
+    limit = { sb_court_member_endorsement < 0 var:sb_court_claimant_scope ?= scope:sb_court_country.var:sb_court_dynastic_rival_scope }
+    sb_court_snapshot_dynastic_house = { SIDE = rival }
+   }
+  }
+ }
+ # A recognised minor has no adult following, but must still be placed on their own side.
+ var:sb_court_dynastic_nominee_scope = { sb_court_snapshot_dynastic_member = { SIDE = incumbent } }
+ var:sb_court_dynastic_rival_scope = { sb_court_snapshot_dynastic_member = { SIDE = rival } }
+ set_variable = { name = sb_court_dynastic_share_var value = sb_court_dynastic_claimant_share }
+ set_variable = { name = sb_court_dynastic_target_var value = sb_court_dynastic_target_fraction }
+}
+sb_court_snapshot_dynastic_house = {
+ scope:sb_court_country = { change_variable = { name = sb_court_dynastic_$SIDE$_weight_var add = prev.var:sb_court_represented_weight_var } }
+ sb_court_snapshot_dynastic_member = { SIDE = $SIDE$ }
+ every_in_list = {
+  variable = sb_court_house_members
+  limit = { is_character_alive = yes }
+  sb_court_snapshot_dynastic_member = { SIDE = $SIDE$ }
+ }
+}
+sb_court_snapshot_dynastic_member = {
+ scope:sb_court_country = {
+  if = {
+   limit = { NOT = { is_target_in_variable_list = { name = sb_court_dynastic_$SIDE$_members target = prev } } }
+   add_to_variable_list = { name = sb_court_dynastic_$SIDE$_members target = prev }
+  }
+ }
+}
+
+# Preserve the cast independently of both countries' live court lists. Children,
+# advisers and third-party princes are not discarded with the defeated country.
+sb_court_snapshot_dynastic_roster = {
+ save_scope_as = sb_court_country
+ clear_variable_list = sb_court_dynastic_roster
+ every_in_list = {
+  variable = sb_court_members
+  limit = { is_character_alive = yes var:sb_court_home_scope ?= scope:sb_court_country }
+  sb_court_snapshot_dynastic_character = yes
+ }
+ every_scope_character = {
+  limit = { is_character_alive = yes }
+  sb_court_snapshot_dynastic_character = yes
+ }
+}
+sb_court_snapshot_dynastic_character = {
+ if = {
+  limit = { NOT = { scope:sb_court_country = { is_target_in_variable_list = { name = sb_court_dynastic_roster target = prev } } } }
+  scope:sb_court_country = { add_to_variable_list = { name = sb_court_dynastic_roster target = prev } }
+  if = { limit = { has_variable = sb_court_registered_var } set_variable = sb_court_dynastic_was_registered_var }
+  sb_court_snapshot_dynastic_field = { FIELD = following_var }
+  sb_court_snapshot_dynastic_field = { FIELD = alignment_var }
+  sb_court_snapshot_dynastic_field = { FIELD = endorsement_var }
+  sb_court_snapshot_dynastic_field = { FIELD = claimant_scope }
+  sb_court_snapshot_dynastic_field = { FIELD = successor_pledge_scope }
+  sb_court_snapshot_dynastic_field = { FIELD = council_promise_scope }
+  sb_court_snapshot_dynastic_field = { FIELD = personal_council_scope }
+  # Relative incumbent endorsements need the original sovereign's identity.
+  if = { limit = { var:sb_court_endorsement_var ?= 1 } set_variable = { name = sb_court_dynastic_patron_scope value = scope:sb_court_country.ruler } }
+  if = { limit = { owner ?= scope:sb_court_country } set_variable = sb_court_dynastic_local_var }
+  if = { limit = { is_in_void = yes } set_variable = sb_court_dynastic_was_void_var }
+  if = { limit = { is_in_exile_pool = yes } set_variable = sb_court_dynastic_was_exiled_var }
+  # A pledged adviser with no numerical constituency is still part of the faction.
+  # House members already follow their representative's frozen assignment.
+  if = {
+   limit = {
+    NOT = { scope:sb_court_country = { is_target_in_variable_list = { name = sb_court_dynastic_incumbent_members target = prev } } }
+    NOT = { scope:sb_court_country = { is_target_in_variable_list = { name = sb_court_dynastic_rival_members target = prev } } }
+   }
+   if = {
+    limit = { scope:sb_court_country = { var:sb_court_dynastic_reason_var = 2 } }
+    if = { limit = { var:sb_court_successor_pledge_scope ?= scope:sb_court_country.var:sb_court_dynastic_nominee_scope } sb_court_snapshot_dynastic_member = { SIDE = incumbent } }
+    else_if = { limit = { var:sb_court_successor_pledge_scope ?= scope:sb_court_country.var:sb_court_dynastic_rival_scope } sb_court_snapshot_dynastic_member = { SIDE = rival } }
+   }
+   else = {
+    if = { limit = { var:sb_court_endorsement_var ?= 1 } sb_court_snapshot_dynastic_member = { SIDE = incumbent } }
+    else_if = { limit = { var:sb_court_endorsement_var ?= -1 var:sb_court_claimant_scope ?= scope:sb_court_country.var:sb_court_dynastic_rival_scope } sb_court_snapshot_dynastic_member = { SIDE = rival } }
+   }
+  }
+ }
+}
+sb_court_snapshot_dynastic_field = {
+ if = { limit = { has_variable = sb_court_$FIELD$ } set_variable = { name = sb_court_dynastic_saved_$FIELD$ value = var:sb_court_$FIELD$ } }
+}
+sb_court_restore_dynastic_field = {
+ remove_variable = sb_court_$FIELD$
+ if = { limit = { has_variable = sb_court_dynastic_saved_$FIELD$ } set_variable = { name = sb_court_$FIELD$ value = var:sb_court_dynastic_saved_$FIELD$ } }
+}
+
+# The human's chosen contender keeps the original country; the opposition becomes rebels.
+sb_court_answer_dynastic_crisis = {
+ save_scope_as = sb_court_country
+ if = {
+  limit = {
+   sb_court_dynastic_enabled = yes sb_court_dynastic_pair_valid = yes
+   NOT = { has_variable = sb_court_dynastic_test_pending_var }
+   NOT = { has_variable = sb_court_dynastic_war_scope }
+   scope:sb_court_nominee ?= var:sb_court_dynastic_nominee_scope
+   scope:sb_court_rival ?= var:sb_court_dynastic_rival_scope
+   sb_court_dynastic_conflict_free = yes
+  }
+  if = { limit = { always = $CLAIMANT$ } set_variable = sb_court_dynastic_back_claimant_var }
+  else = { remove_variable = sb_court_dynastic_back_claimant_var }
+  set_variable = { name = sb_court_dynastic_target_var value = sb_court_dynastic_target_fraction }
+  remove_variable = sb_court_dynastic_selection_open_var
+  set_variable = sb_court_dynastic_test_pending_var
+  # Preserve penalties from earlier revolutions; this personal contest must not
+  # leave the native twenty-year defeated-IG penalty on either faction's groups.
+  every_interest_group = {
+   remove_variable = sb_court_dynastic_prior_defeat_var
+   if = { limit = { has_modifier = revolution_lost_ig } set_variable = sb_court_dynastic_prior_defeat_var }
+  }
+  set_variable = sb_court_dynastic_igs_snapshotted_var
+  sb_court_prepare_dynastic_forces = yes
+  # No initial-enthusiasm refresh. This movement exists solely for its reserved conflict.
+  create_political_movement = { type = movement_sb_dynastic_test }
+  random_political_movement = {
+   limit = { is_political_movement_type = movement_sb_dynastic_test }
+   scope:sb_court_country = { set_variable = { name = sb_court_dynastic_movement_scope value = prev } }
+   if = { limit = { owner = { var:sb_court_dynastic_original_law_var = 2 } } set_core_ideology = ideology_sb_contested_social_crown }
+   add_modifier = { name = sb_court_claimant_mobilisation }
+  }
+  var:sb_court_dynastic_rival_scope = {
+   if = {
+    limit = { NOT = { has_role_of_type = agitator } }
+    set_variable = sb_court_dynastic_added_agitator_var
+    add_character_role = agitator
+   }
+  }
+  sb_court_progress_dynastic_crisis = yes
+  sb_court_queue_dynastic_poll = yes
+ }
+ else_if = { limit = { NOT = { has_variable = sb_court_dynastic_test_pending_var } NOT = { has_variable = sb_court_dynastic_war_scope } } sb_court_dismiss_dynastic_choice = yes }
+}
+sb_court_queue_dynastic_poll = {
+ if = {
+  limit = { has_variable = sb_court_dynastic_test_pending_var NOT = { has_variable = sb_court_dynastic_poll_queued_var } }
+  set_variable = sb_court_dynastic_poll_queued_var
+  trigger_event = { id = sb_court_succession.991 days = 7 }
+ }
+}
+sb_court_dismiss_dynastic_choice = {
+ if = {
+  limit = { NOT = { has_variable = sb_court_dynastic_crisis_var } }
+  remove_variable = sb_court_dynastic_selection_open_var
+ }
+ else_if = {
+  limit = { exists = var:sb_court_dynastic_nominee_scope exists = var:sb_court_dynastic_rival_scope }
+  if = {
+   limit = { scope:sb_court_nominee ?= var:sb_court_dynastic_nominee_scope scope:sb_court_rival ?= var:sb_court_dynastic_rival_scope }
+   remove_variable = sb_court_dynastic_selection_open_var
+   sb_court_cancel_dynastic_crisis = yes
+  }
+ }
+}
+
+# Country scope. Supply temporary IG sponsorship without converting leaders or the court.
+# Repeated polls add nothing; ordinary political preferences return with crisis cleanup.
+sb_court_reconcile_claimant_sponsor = {
+ if = {
+  limit = {
+   has_variable = sb_court_dynastic_crisis_var
+   has_variable = sb_court_dynastic_test_pending_var
+   exists = var:sb_court_dynastic_movement_scope
+  }
+  every_interest_group = {
+   if = {
+    limit = { owner = { var:sb_court_dynastic_original_law_var = 2 } }
+    if = { limit = { NOT = { has_ideology = ideology:ideology_sb_contested_social_crown } } add_ideology = ideology_sb_contested_social_crown }
+   }
+   else = {
+    if = { limit = { NOT = { has_ideology = ideology:ideology_sb_contested_crown } } add_ideology = ideology_sb_contested_crown }
+   }
+   if = { limit = { NOT = { has_modifier = sb_court_claimant_armed_forces } } add_modifier = { name = sb_court_claimant_armed_forces } }
+  }
+ }
+}
+
+# Called weekly only for a reserved country. Never manipulate another movement's conflict.
+sb_court_progress_dynastic_crisis = {
+ save_scope_as = sb_court_country
+ if = {
+  limit = { has_variable = sb_court_dynastic_crisis_var NOT = { has_variable = sb_court_dynastic_war_scope } }
+  if = { limit = { NOT = { sb_court_dynastic_pair_valid = yes } } sb_court_cancel_dynastic_crisis = yes }
+  else_if = {
+   limit = { has_variable = sb_court_dynastic_test_pending_var exists = var:sb_court_dynastic_movement_scope }
+   sb_court_reconcile_claimant_sponsor = yes
+   if = {
+    limit = {
+     var:sb_court_dynastic_rival_scope = { political_movement ?= scope:sb_court_country.var:sb_court_dynastic_movement_scope }
+     OR = {
+      AND = { var:sb_court_dynastic_original_law_var = 1 var:sb_court_dynastic_movement_scope = { most_desired_law ?= law_type:law_sb_contested_crown } }
+      AND = { var:sb_court_dynastic_original_law_var = 2 var:sb_court_dynastic_movement_scope = { most_desired_law ?= law_type:law_sb_contested_social_crown } }
+     }
+    }
+    set_variable = sb_court_dynastic_demand_verified_var
+    if = {
+     limit = { NOT = { has_variable = sb_court_dynastic_advanced_var } }
+     random_civil_war = {
+      limit = { is_civil_war_type = revolution political_movement ?= scope:sb_court_country.var:sb_court_dynastic_movement_scope }
+      scope:sb_court_country = {
+       set_variable = { name = sb_court_dynastic_preparing_war_scope value = prev }
+       set_variable = sb_court_dynastic_advanced_var
+      }
+      add_civil_war_progress = 1
+     }
+    }
+   }
+  }
+  else_if = { limit = { has_variable = sb_court_dynastic_test_pending_var } sb_court_cancel_dynastic_crisis = yes }
+ }
+}
+
+# Root is the original country and scope:target is the actual uprising country.
+sb_court_track_dynastic_war = {
+ save_scope_as = sb_court_country
+ if = {
+  limit = {
+   has_variable = sb_court_dynastic_test_pending_var sb_court_dynastic_pair_valid = yes
+   exists = scope:target exists = var:sb_court_dynastic_movement_scope
+   scope:target = {
+    civil_war_origin_country ?= scope:sb_court_country
+    var:civil_war_type_var ?= movement_type:movement_sb_dynastic_test
+   }
+  }
+  random_civil_war = {
+   limit = { is_civil_war_type = revolution political_movement ?= scope:sb_court_country.var:sb_court_dynastic_movement_scope }
+   scope:sb_court_country = { set_variable = { name = sb_court_dynastic_war_scope value = prev } }
+  }
+  if = {
+   limit = { exists = var:sb_court_dynastic_war_scope }
+   scope:target = { save_scope_as = sb_court_dynastic_rebels }
+   save_scope_as = sb_court_dynastic_original
+   set_variable = sb_court_selecting_head_var
+   set_variable = { name = sb_court_dynastic_original_country_scope value = this }
+   set_variable = { name = sb_court_dynastic_opponent_scope value = scope:sb_court_dynastic_rebels }
+   if = {
+    limit = { has_variable = sb_court_dynastic_back_claimant_var }
+    set_variable = { name = sb_court_dynastic_candidate_scope value = var:sb_court_dynastic_rival_scope }
+    set_variable = { name = sb_court_dynastic_opponent_candidate_scope value = var:sb_court_dynastic_nominee_scope }
+    save_scope_as = sb_court_dynastic_rival_country
+    scope:sb_court_dynastic_rebels = { save_scope_as = sb_court_dynastic_incumbent_country }
+   }
+   else = {
+    set_variable = { name = sb_court_dynastic_candidate_scope value = var:sb_court_dynastic_nominee_scope }
+    set_variable = { name = sb_court_dynastic_opponent_candidate_scope value = var:sb_court_dynastic_rival_scope }
+    save_scope_as = sb_court_dynastic_incumbent_country
+    scope:sb_court_dynastic_rebels = { save_scope_as = sb_court_dynastic_rival_country }
+   }
+   scope:sb_court_dynastic_rebels = { sb_court_copy_dynastic_record = yes }
+   # Prerogative follows the contender, regardless of which country the player backs.
+   scope:sb_court_dynastic_rival_country = {
+    set_variable = { name = sb_prerogative_var value = 0 }
+    set_variable = { name = sb_prerogative_last_change_var value = 0 }
+   }
+   scope:sb_court_dynastic_rebels = { sb_court_copy_dynastic_firearms = yes }
+   # Keep the same penalty on both countries even if native IG inheritance omits it.
+   scope:sb_court_dynastic_rebels = {
+    every_interest_group = {
+     if = { limit = { NOT = { has_modifier = sb_court_claimant_armed_forces } } add_modifier = { name = sb_court_claimant_armed_forces } }
+    }
+   }
+   every_in_list = {
+    variable = sb_court_dynastic_roster
+    scope:sb_court_dynastic_rebels = {
+     if = { limit = { prev = { has_variable = sb_court_registered_var } NOT = { is_target_in_variable_list = { name = sb_court_members target = prev } } } add_to_variable_list = { name = sb_court_members target = prev } }
+    }
+    # Unpledged/third-party actors retain their commitments and the native physical allocation.
+    if = { limit = { owner ?= scope:sb_court_dynastic_rebels } set_variable = { name = sb_court_home_scope value = scope:sb_court_dynastic_rebels } }
+   }
+   every_in_list = { variable = sb_court_dynastic_incumbent_members sb_court_place_dynastic_member = { COUNTRY = scope:sb_court_dynastic_incumbent_country } }
+   every_in_list = { variable = sb_court_dynastic_rival_members sb_court_place_dynastic_member = { COUNTRY = scope:sb_court_dynastic_rival_country } }
+   scope:sb_court_dynastic_incumbent_country = { sb_court_rebase_dynastic_side = { SIDE = incumbent } sb_court_set_dynastic_head = yes }
+   scope:sb_court_dynastic_rival_country = { sb_court_rebase_dynastic_side = { SIDE = rival } sb_court_set_dynastic_head = yes }
+   scope:sb_court_dynastic_rebels = {
+    if = { limit = { var:sb_court_dynastic_original_law_var = 2 } activate_law = law_type:law_sb_contested_social_crown }
+    else = { activate_law = law_type:law_sb_contested_crown }
+    sb_court_set_dynastic_head = yes
+    remove_variable = sb_court_selecting_head_var
+    sb_institutions_reconcile = yes
+   }
+   sb_court_rebuild_dynastic_forces = yes
+   sb_court_reconcile_dynastic_supply = yes
+   scope:sb_court_dynastic_rebels = { sb_court_reconcile_dynastic_supply = yes }
+   # Helpers in the rebel country change temporary saved scopes; rebind our original actor.
+   scope:sb_court_dynastic_original = { save_scope_as = sb_court_country }
+   remove_variable = sb_court_selecting_head_var
+   remove_variable = sb_court_dynastic_test_pending_var
+   sb_institutions_reconcile = yes
+  }
+ }
+}
+
+# Recipient is the rebels. Copy only the court receipt, not a country's whole variable space.
+sb_court_copy_dynastic_record = {
+ set_variable = sb_court_selecting_head_var
+ set_variable = sb_court_dynastic_crisis_var
+ set_variable = coup_event_active
+ set_variable = sb_court_dynastic_owns_coup_lock_var
+ set_variable = sb_institutions_zulu_profile_var
+ set_variable = sb_institutions_initialized_var
+ set_variable = sb_institutions_movements_seeded_var
+ set_variable = { name = sb_prerogative_var value = scope:sb_court_country.var:sb_prerogative_var }
+ set_variable = { name = sb_prerogative_last_change_var value = 0 }
+ set_variable = { name = sb_prerogative_cooperation_var value = 0 }
+ set_variable = { name = sb_court_dynastic_reason_var value = scope:sb_court_country.var:sb_court_dynastic_reason_var }
+ set_variable = { name = sb_court_dynastic_original_law_var value = scope:sb_court_country.var:sb_court_dynastic_original_law_var }
+ set_variable = { name = sb_court_dynastic_original_law_scope value = scope:sb_court_country.var:sb_court_dynastic_original_law_scope }
+ set_variable = { name = sb_court_dynastic_nominee_scope value = scope:sb_court_country.var:sb_court_dynastic_nominee_scope }
+ set_variable = { name = sb_court_dynastic_rival_scope value = scope:sb_court_country.var:sb_court_dynastic_rival_scope }
+ set_variable = { name = sb_court_dynastic_war_scope value = scope:sb_court_country.var:sb_court_dynastic_war_scope }
+ set_variable = { name = sb_court_dynastic_movement_scope value = scope:sb_court_country.var:sb_court_dynastic_movement_scope }
+ set_variable = { name = sb_court_dynastic_original_country_scope value = scope:sb_court_country }
+ set_variable = { name = sb_court_dynastic_opponent_scope value = scope:sb_court_country }
+ set_variable = { name = sb_court_dynastic_candidate_scope value = scope:sb_court_country.var:sb_court_dynastic_opponent_candidate_scope }
+ set_variable = { name = sb_court_dynastic_opponent_candidate_scope value = scope:sb_court_country.var:sb_court_dynastic_candidate_scope }
+ set_variable = { name = sb_court_dynastic_incumbent_weight_var value = scope:sb_court_country.var:sb_court_dynastic_incumbent_weight_var }
+ set_variable = { name = sb_court_dynastic_rival_weight_var value = scope:sb_court_country.var:sb_court_dynastic_rival_weight_var }
+ set_variable = { name = sb_court_dynastic_share_var value = scope:sb_court_country.var:sb_court_dynastic_share_var }
+ set_variable = { name = sb_court_dynastic_target_var value = scope:sb_court_country.var:sb_court_dynastic_target_var }
+ if = {
+  limit = { scope:sb_court_dynastic_original = { has_variable = sb_court_dynastic_igs_snapshotted_var } }
+  set_variable = sb_court_dynastic_igs_snapshotted_var
+  sb_court_copy_dynastic_ig_snapshot = { IG = ig:ig_armed_forces }
+  sb_court_copy_dynastic_ig_snapshot = { IG = ig:ig_devout }
+  sb_court_copy_dynastic_ig_snapshot = { IG = ig:ig_industrialists }
+  sb_court_copy_dynastic_ig_snapshot = { IG = ig:ig_intelligentsia }
+  sb_court_copy_dynastic_ig_snapshot = { IG = ig:ig_landowners }
+  sb_court_copy_dynastic_ig_snapshot = { IG = ig:ig_petty_bourgeoisie }
+  sb_court_copy_dynastic_ig_snapshot = { IG = ig:ig_rural_folk }
+  sb_court_copy_dynastic_ig_snapshot = { IG = ig:ig_trade_unions }
+ }
+ scope:sb_court_country = {
+  every_in_list = { variable = sb_court_dynastic_roster scope:sb_court_dynastic_rebels = { add_to_variable_list = { name = sb_court_dynastic_roster target = prev } } }
+  every_in_list = { variable = sb_court_dynastic_incumbent_members scope:sb_court_dynastic_rebels = { add_to_variable_list = { name = sb_court_dynastic_incumbent_members target = prev } } }
+  every_in_list = { variable = sb_court_dynastic_rival_members scope:sb_court_dynastic_rebels = { add_to_variable_list = { name = sb_court_dynastic_rival_members target = prev } } }
+ }
+ if = { limit = { scope:sb_court_country = { exists = var:sb_court_predecessor_scope } } set_variable = { name = sb_court_predecessor_scope value = scope:sb_court_country.var:sb_court_predecessor_scope } }
+ if = { limit = { scope:sb_court_country = { exists = var:sb_court_recognized_heir_scope } } set_variable = { name = sb_court_recognized_heir_scope value = scope:sb_court_country.var:sb_court_recognized_heir_scope } }
+ if = { limit = { NOT = { has_variable = no_heirs } } set_variable = sb_court_owns_heir_blocker_var }
+ set_variable = no_heirs
+ if = { limit = { scope:sb_court_country = { has_variable = sb_zululand_contest_result_var } } set_variable = { name = sb_zululand_contest_result_var value = scope:sb_court_country.var:sb_zululand_contest_result_var } }
+ if = { limit = { scope:sb_court_country = { has_variable = sb_zululand_usuthu_contest_var } } set_variable = sb_zululand_usuthu_contest_var }
+ if = { limit = { scope:sb_court_country = { has_variable = sb_zululand_usuthu_context_var } } set_variable = sb_zululand_usuthu_context_var }
+}
+
+sb_court_copy_dynastic_ig_snapshot = {
+ if = {
+  limit = { scope:sb_court_dynastic_original = { $IG$ = { has_variable = sb_court_dynastic_prior_defeat_var } } }
+  $IG$ = { set_variable = sb_court_dynastic_prior_defeat_var }
+ }
+}
+
+# Ready rebel country, after the native split. Copy the origin's current knowledge,
+# not its market: each side subsequently earns its own qualifying supply weeks.
+sb_court_copy_dynastic_firearms = {
+ if = {
+  limit = { scope:sb_court_dynastic_original = { has_variable = sb_firearms_modernized_var } }
+  set_variable = sb_firearms_modernized_var
+  set_variable = sb_firearms_je_seeded_var
+  sb_remove_iron_age_weapons_modifiers = yes
+  remove_variable = sb_firearms_applied_tier_var
+ }
+ else_if = {
+  limit = { scope:sb_court_dynastic_original = { has_journal_entry = je_sb_adopt_firearms } }
+  set_variable = sb_firearms_je_seeded_var
+  set_variable = { name = sb_firearms_supply_weeks_var value = scope:sb_court_dynastic_original.var:sb_firearms_supply_weeks_var }
+  if = {
+   limit = { NOT = { has_journal_entry = je_sb_adopt_firearms } }
+   add_journal_entry = { type = je_sb_adopt_firearms }
+  }
+  else = { sb_update_firearms_progress = yes sb_repair_iron_age_weapons_penalty = yes }
+ }
+}
+sb_court_place_dynastic_member = {
+ if = {
+  limit = { is_character_alive = yes }
+  set_variable = { name = sb_court_home_scope value = $COUNTRY$ }
+  if = { limit = { is_in_exile_pool = no is_in_void = no NOT = { owner ?= $COUNTRY$ } OR = { owner ?= scope:sb_court_country owner ?= scope:sb_court_dynastic_rebels } } transfer_character = $COUNTRY$ }
+ }
+}
+sb_court_set_dynastic_head = {
+ save_scope_as = sb_court_country
+ if = {
+  limit = { var:sb_court_dynastic_candidate_scope ?= { is_character_alive = yes } }
+  set_variable = sb_court_selecting_head_var
+  sb_court_update_heir_blocker = yes
+  # Native country creation can supply a ruler and heir before this callback.
+  # Only replace placeholders absent from the frozen cast, never another named prince.
+  remove_variable = sb_court_dynastic_generated_ruler_scope
+  remove_variable = sb_court_dynastic_generated_heir_scope
+  if = {
+   limit = { exists = ruler NOT = { is_target_in_variable_list = { name = sb_court_dynastic_roster target = ruler } } }
+   set_variable = { name = sb_court_dynastic_generated_ruler_scope value = ruler }
+  }
+  if = {
+   limit = { exists = heir NOT = { is_target_in_variable_list = { name = sb_court_dynastic_roster target = heir } } }
+   set_variable = { name = sb_court_dynastic_generated_heir_scope value = heir }
+  }
+  if = {
+   limit = { var:sb_court_dynastic_candidate_scope = { is_adult = no } }
+   set_variable = { name = sb_court_minor_sovereign_scope value = var:sb_court_dynastic_candidate_scope }
+   if = { limit = { NOT = { var:sb_court_regent_scope ?= { is_character_alive = yes } } } sb_court_choose_regent = yes }
+   else = {
+    var:sb_court_regent_scope = { if = { limit = { NOT = { is_ruler_of_own_country = yes } } cleanup_ruler_character_roles = yes set_character_as_ruler = yes } }
+   }
+  }
+  else = {
+   var:sb_court_dynastic_candidate_scope = {
+    if = { limit = { is_in_void = yes } free_character_from_void = yes }
+    if = { limit = { is_in_exile_pool = yes } free_from_exile_effect = yes }
+    if = { limit = { NOT = { owner ?= scope:sb_court_country } } transfer_character = scope:sb_court_country }
+    if = { limit = { NOT = { scope:sb_court_country = { ruler ?= var:sb_court_dynastic_candidate_scope } } } cleanup_ruler_character_roles = yes set_character_as_ruler = yes }
+   }
+  }
+  set_variable = sb_court_selecting_head_var
+  # Install first so killing a placeholder cannot open another native succession.
+  var:sb_court_dynastic_generated_ruler_scope ?= { if = { limit = { is_character_alive = yes NOT = { is_ruler_of_own_country = yes } } kill_character = yes } }
+  var:sb_court_dynastic_generated_heir_scope ?= { if = { limit = { is_character_alive = yes NOT = { is_ruler_of_own_country = yes } } kill_character = yes } }
+  remove_variable = sb_court_dynastic_generated_ruler_scope
+  remove_variable = sb_court_dynastic_generated_heir_scope
+  if = { limit = { exists = ruler } set_variable = { name = sb_court_incumbent_scope value = ruler } }
+ }
+}
+
+# Incumbent endorsement is relative to a country. Once the recorded faction has its
+# own country, its backers support that contender; third-party patrons remain named.
+sb_court_rebase_dynastic_side = {
+ save_scope_as = sb_court_country
+ every_in_list = {
+  variable = sb_court_members
+  limit = { is_character_alive = yes var:sb_court_home_scope ?= scope:sb_court_country }
+  if = {
+   limit = { scope:sb_court_country = { is_target_in_variable_list = { name = sb_court_dynastic_$SIDE$_members target = prev } } }
+   set_variable = { name = sb_court_endorsement_var value = 1 }
+   remove_variable = sb_court_claimant_scope
+  }
+  else_if = {
+   limit = { var:sb_court_endorsement_var = 1 }
+   if = {
+    limit = { scope:sb_court_country = { var:sb_court_dynastic_reason_var = 2 } }
+    if = {
+     limit = { scope:sb_court_country.var:sb_court_predecessor_scope ?= { is_character_alive = yes } }
+     set_variable = { name = sb_court_endorsement_var value = -1 }
+     set_variable = { name = sb_court_claimant_scope value = scope:sb_court_country.var:sb_court_predecessor_scope }
+    }
+    else = { set_variable = { name = sb_court_endorsement_var value = 0 } }
+   }
+   else_if = {
+    limit = { scope:sb_court_country = { NOT = { var:sb_court_dynastic_candidate_scope = var:sb_court_dynastic_nominee_scope } } }
+    set_variable = { name = sb_court_endorsement_var value = -1 }
+    set_variable = { name = sb_court_claimant_scope value = scope:sb_court_country.var:sb_court_dynastic_nominee_scope }
+   }
+  }
+ }
+}
+
+# on_revolution_end precedes on_civil_war_won. Both countries must share this exact receipt.
+sb_court_record_dynastic_end = {
+ save_scope_as = sb_court_country
+ if = {
+  limit = { has_variable = sb_court_dynastic_crisis_var exists = var:sb_court_dynastic_war_scope var:sb_court_dynastic_opponent_scope ?= scope:target }
+  if = {
+   limit = { scope:target = { var:sb_court_dynastic_war_scope ?= scope:sb_court_country.var:sb_court_dynastic_war_scope } }
+   set_variable = sb_court_dynastic_ended_var
+   scope:target = { set_variable = sb_court_dynastic_ended_var }
+   sb_court_reconcile_dynastic_supply = yes
+   scope:target = { sb_court_reconcile_dynastic_supply = yes }
+  }
+ }
+}
+sb_court_resolve_dynastic_win = {
+ if = {
+  limit = { has_variable = sb_court_dynastic_crisis_var has_variable = sb_court_dynastic_ended_var NOT = { has_variable = sb_court_dynastic_resolved_var } }
+  save_scope_as = sb_court_dynastic_winner
+  save_scope_as = sb_court_country
+  # Terminal receipts precede law/ruler callbacks, character death and presentation.
+  set_variable = sb_court_dynastic_resolved_var
+  set_variable = { name = sb_court_dynastic_victory_cooldown_var months = 18 }
+  set_variable = sb_court_selecting_head_var
+  var:sb_court_dynastic_opponent_scope ?= {
+   set_variable = sb_court_dynastic_resolved_var
+   set_variable = sb_court_selecting_head_var
+   sb_court_restore_dynastic_law = yes
+  }
+  sb_court_restore_dynastic_law = yes
+  # Native OnRevolutionEnd applies defeated-IG modifiers before the winner callback.
+  if = {
+   limit = { has_variable = sb_court_dynastic_igs_snapshotted_var }
+   every_interest_group = {
+    limit = { has_modifier = revolution_lost_ig NOT = { has_variable = sb_court_dynastic_prior_defeat_var } }
+    remove_modifier = revolution_lost_ig
+   }
+  }
+  if = {
+   limit = { var:sb_court_dynastic_candidate_scope ?= var:sb_court_dynastic_nominee_scope }
+   every_in_list = { variable = sb_court_dynastic_rival_members limit = { is_character_alive = yes } kill_character = yes }
+  }
+  else = { every_in_list = { variable = sb_court_dynastic_incumbent_members limit = { is_character_alive = yes } kill_character = yes } }
+  # Restore surviving identities before the defeated country is removed. A saved
+  # reference alone does not protect a character still owned by that country.
+  scope:sb_court_dynastic_winner = { save_scope_as = sb_court_country }
+  sb_court_restore_dynastic_roster = yes
+  if = {
+   limit = { NOT = { var:sb_court_dynastic_reason_var = 2 } var:sb_court_dynastic_candidate_scope ?= { is_character_alive = yes } }
+   sb_court_reconcile_dynastic_allegiances = yes
+  }
+  if = {
+   limit = { var:sb_court_dynastic_candidate_scope ?= { is_character_alive = yes } }
+   if = {
+    limit = { NOT = { var:sb_court_dynastic_reason_var = 2 } var:sb_court_dynastic_candidate_scope ?= var:sb_court_dynastic_nominee_scope }
+    # A surviving incumbent retains their heir and once-per-reign undertakings.
+    sb_court_set_dynastic_head = yes
+   }
+   else = {
+    var:sb_court_dynastic_candidate_scope = { save_scope_as = sb_court_successor }
+    if = { limit = { NOT = { var:sb_court_dynastic_reason_var = 2 } } set_variable = sb_court_dynastic_current_allegiance_var }
+    sb_court_install_successor = yes
+   }
+   var:sb_court_dynastic_candidate_scope ?= { save_scope_as = sb_court_victor }
+   if = {
+    limit = { exists = scope:sb_court_victor }
+    set_variable = { name = sb_court_dynastic_victory_scope value = scope:sb_court_victor }
+    trigger_event = { id = sb_court_succession.005 popup = yes }
+   }
+  }
+  else = {
+   # The war still has a real winner if its prince died. Re-open lawful succession
+   # after cleanup; the new controller must not treat the dead prince as installed.
+   set_variable = sb_court_dynastic_vacant_var
+  }
+  scope:sb_court_dynastic_winner = { save_scope_as = sb_court_country }
+  var:sb_court_dynastic_opponent_scope ?= { sb_court_clear_dynastic_record = yes remove_variable = sb_court_selecting_head_var }
+  sb_court_clear_dynastic_record = yes
+  remove_variable = sb_court_selecting_head_var
+  if = {
+   limit = { has_variable = sb_court_dynastic_vacant_var }
+   remove_variable = sb_court_dynastic_vacant_var
+   sb_court_capture_vacant_accession = yes
+  }
+  sb_institutions_reconcile = yes
+  # No constitutional settlement dispatcher, annexation, NRP or incorporation reward.
+ }
+}
+
+sb_court_acknowledge_dynastic_victory = {
+ if = {
+  limit = { exists = scope:sb_court_victor var:sb_court_dynastic_victory_scope ?= scope:sb_court_victor }
+  remove_variable = sb_court_dynastic_victory_scope
+  sb_change_prerogative = { VALUE = 10 }
+ }
+}
+
+# Restore political records, not a character's age, health or natural mortality.
+sb_court_restore_dynastic_roster = {
+ every_in_list = {
+  variable = sb_court_dynastic_roster
+  limit = { is_character_alive = yes }
+  if = {
+   limit = { has_variable = sb_court_dynastic_was_registered_var }
+   sb_court_restore_dynastic_field = { FIELD = following_var }
+   sb_court_restore_dynastic_field = { FIELD = alignment_var }
+   sb_court_restore_dynastic_field = { FIELD = endorsement_var }
+   sb_court_restore_dynastic_field = { FIELD = claimant_scope }
+   sb_court_restore_dynastic_field = { FIELD = successor_pledge_scope }
+   sb_court_restore_dynastic_field = { FIELD = council_promise_scope }
+   sb_court_restore_dynastic_field = { FIELD = personal_council_scope }
+  }
+  if = {
+   limit = { has_variable = sb_court_registered_var }
+   set_variable = { name = sb_court_home_scope value = scope:sb_court_dynastic_winner }
+   scope:sb_court_dynastic_winner = {
+    if = { limit = { NOT = { is_target_in_variable_list = { name = sb_court_members target = prev } } } add_to_variable_list = { name = sb_court_members target = prev } }
+   }
+  }
+  if = {
+   limit = {
+    OR = {
+     has_variable = sb_court_dynastic_local_var
+     owner ?= scope:sb_court_dynastic_winner
+     owner ?= scope:sb_court_dynastic_winner.var:sb_court_dynastic_opponent_scope
+    }
+   }
+   # Undo native exile/void removal during this conflict, retaining pre-existing absence.
+   if = { limit = { is_in_exile_pool = yes NOT = { has_variable = sb_court_dynastic_was_exiled_var } } free_from_exile_effect = yes }
+   if = { limit = { is_in_void = yes NOT = { has_variable = sb_court_dynastic_was_void_var } } free_character_from_void = yes }
+   if = { limit = { NOT = { owner ?= scope:sb_court_dynastic_winner } } transfer_character = scope:sb_court_dynastic_winner }
+  }
+ }
+}
+
+# A living-ruler war changes today's patron; it does not cash in future promises.
+sb_court_reconcile_dynastic_allegiances = {
+ save_scope_as = sb_court_country
+ every_in_list = {
+  variable = sb_court_members
+  limit = { is_character_alive = yes }
+  if = {
+   limit = {
+    OR = {
+     this = scope:sb_court_country.var:sb_court_dynastic_candidate_scope
+     var:sb_court_claimant_scope ?= scope:sb_court_country.var:sb_court_dynastic_candidate_scope
+     var:sb_court_dynastic_patron_scope ?= scope:sb_court_country.var:sb_court_dynastic_candidate_scope
+    }
+   }
+   set_variable = { name = sb_court_endorsement_var value = 1 }
+   remove_variable = sb_court_claimant_scope
+  }
+  else_if = {
+   limit = { var:sb_court_endorsement_var = 1 }
+   if = {
+    limit = { var:sb_court_dynastic_patron_scope ?= { is_character_alive = yes } }
+    set_variable = { name = sb_court_endorsement_var value = -1 }
+    set_variable = { name = sb_court_claimant_scope value = var:sb_court_dynastic_patron_scope }
+   }
+   else = { set_variable = { name = sb_court_endorsement_var value = 0 } }
+  }
+  else_if = {
+   limit = { var:sb_court_claimant_scope ?= scope:sb_court_country.var:sb_court_dynastic_opponent_candidate_scope }
+   set_variable = { name = sb_court_endorsement_var value = 0 }
+   remove_variable = sb_court_claimant_scope
+  }
+ }
+}
+sb_court_capture_vacant_accession = {
+ save_scope_as = sb_court_country
+ if = {
+  limit = { sb_court_dynastic_country = yes }
+  set_variable = sb_court_accession_open_var
+  clear_variable_list = sb_court_accession_candidates
+  every_in_list = {
+   variable = sb_court_members
+   limit = { sb_court_dynastic_candidate = yes var:sb_court_home_scope ?= scope:sb_court_country }
+   scope:sb_court_country = { add_to_variable_list = { name = sb_court_accession_candidates target = prev } }
+  }
+  sb_court_refresh_accession = yes
+  sb_court_reconcile_succession = yes
+ }
+}
+
+# Restore only our temporary laws. An independent institutional exit is not undone.
+sb_court_restore_dynastic_law = {
+ if = { limit = { sb_court_has_contested_crown = yes exists = var:sb_court_dynastic_original_law_scope } activate_law = var:sb_court_dynastic_original_law_scope }
+}
+# No winner is inferred from a missing object or a dead claimant. A monthly check
+# releases an abandoned record only after the exact native war is no longer present.
+sb_court_reconcile_dynastic_record = {
+ save_scope_as = sb_court_country
+ if = {
+  limit = { has_variable = sb_court_dynastic_crisis_var has_variable = sb_court_dynastic_war_scope }
+  if = {
+   limit = {
+    NOT = { var:sb_court_dynastic_original_country_scope ?= { any_civil_war = { this ?= scope:sb_court_country.var:sb_court_dynastic_war_scope } } }
+   }
+   var:sb_court_dynastic_opponent_scope ?= {
+    set_variable = sb_court_selecting_head_var
+    sb_court_restore_dynastic_law = yes
+    sb_court_clear_dynastic_record = yes
+    remove_variable = sb_court_selecting_head_var
+   }
+   set_variable = sb_court_selecting_head_var
+   sb_court_restore_dynastic_law = yes
+   sb_court_clear_dynastic_record = yes
+   remove_variable = sb_court_selecting_head_var
+  }
+ }
+ else_if = { limit = { has_variable = sb_court_dynastic_crisis_var NOT = { sb_court_dynastic_pair_valid = yes } } sb_court_cancel_dynastic_crisis = yes }
+ sb_court_reconcile_dynastic_supply = yes
+}
+
+# Called after the actual split and after the exact-war reconciliation above.
+# Recheck AI control monthly so taking over a faction removes its assistance.
+sb_court_reconcile_dynastic_supply = {
+ if = {
+  limit = {
+   is_ai = yes
+   has_variable = sb_court_dynastic_crisis_var
+   exists = var:sb_court_dynastic_war_scope
+   exists = var:sb_court_dynastic_opponent_scope
+   NOT = { has_variable = sb_court_dynastic_ended_var }
+  }
+  if = { limit = { NOT = { has_modifier = sb_court_dynastic_ai_supply } } add_modifier = { name = sb_court_dynastic_ai_supply } }
+ }
+ else = {
+  if = { limit = { has_modifier = sb_court_dynastic_ai_supply } remove_modifier = sb_court_dynastic_ai_supply }
+ }
+}
+sb_court_cancel_dynastic_crisis = {
+ if = {
+  limit = { NOT = { has_variable = sb_court_dynastic_war_scope } }
+  set_variable = sb_court_selecting_head_var
+  sb_court_restore_dynastic_law = yes
+  sb_court_clear_dynastic_record = yes
+  remove_variable = sb_court_selecting_head_var
+ }
+}
+sb_court_clear_dynastic_record = {
+ if = { limit = { has_modifier = sb_court_dynastic_ai_supply } remove_modifier = sb_court_dynastic_ai_supply }
+ every_in_list = {
+  variable = sb_court_dynastic_roster
+  if = {
+   limit = { has_variable = sb_court_dynastic_added_agitator_var }
+   if = { limit = { is_character_alive = yes has_role_of_type = agitator } remove_character_role = agitator }
+   remove_variable = sb_court_dynastic_added_agitator_var
+  }
+  remove_variable = sb_court_dynastic_saved_following_var
+  remove_variable = sb_court_dynastic_saved_alignment_var
+  remove_variable = sb_court_dynastic_saved_endorsement_var
+  remove_variable = sb_court_dynastic_saved_claimant_scope
+  remove_variable = sb_court_dynastic_saved_successor_pledge_scope
+  remove_variable = sb_court_dynastic_saved_council_promise_scope
+  remove_variable = sb_court_dynastic_saved_personal_council_scope
+  remove_variable = sb_court_dynastic_patron_scope
+  remove_variable = sb_court_dynastic_was_registered_var
+  remove_variable = sb_court_dynastic_local_var
+  remove_variable = sb_court_dynastic_was_void_var
+  remove_variable = sb_court_dynastic_was_exiled_var
+ }
+ # Native revolution setup can copy the sponsor's IG package into the rebel country.
+ # Both actual countries use this cleanup, including cancellation and missing-war recovery.
+ every_interest_group = {
+  if = { limit = { has_ideology = ideology:ideology_sb_contested_crown } remove_ideology = ideology_sb_contested_crown }
+  if = { limit = { has_ideology = ideology:ideology_sb_contested_social_crown } remove_ideology = ideology_sb_contested_social_crown }
+  if = { limit = { has_modifier = sb_court_claimant_armed_forces } remove_modifier = sb_court_claimant_armed_forces }
+  remove_variable = sb_court_dynastic_prior_defeat_var
+ }
+ remove_variable = sb_court_dynastic_igs_snapshotted_var
+ # An invalidated, unanswered choice must be dismissed before another pair is offered.
+ # Its selection receipt is consumed by the option, not by background invalidation.
+ # A queued poll belongs to its delivery slot, not this episode. Let .991 consume it;
+ # a new crisis meanwhile reuses that slot rather than starting another weekly chain.
+ if = { limit = { has_variable = sb_court_dynastic_owns_coup_lock_var } remove_variable = coup_event_active remove_variable = sb_court_dynastic_owns_coup_lock_var }
+ var:sb_court_dynastic_movement_scope ?= {
+  if = { limit = { has_modifier = sb_court_claimant_mobilisation } remove_modifier = sb_court_claimant_mobilisation }
+ }
+ remove_variable = sb_court_dynastic_crisis_var
+ remove_variable = sb_court_dynastic_test_pending_var
+ remove_variable = sb_court_dynastic_current_allegiance_var
+ remove_variable = sb_court_dynastic_movement_scope
+ remove_variable = sb_court_dynastic_preparing_war_scope
+ remove_variable = sb_court_dynastic_war_scope
+ remove_variable = sb_court_dynastic_original_country_scope
+ remove_variable = sb_court_dynastic_opponent_scope
+ remove_variable = sb_court_dynastic_candidate_scope
+ remove_variable = sb_court_dynastic_opponent_candidate_scope
+ remove_variable = sb_court_dynastic_nominee_scope
+ remove_variable = sb_court_dynastic_rival_scope
+ remove_variable = sb_court_dynastic_original_law_var
+ remove_variable = sb_court_dynastic_original_law_scope
+ remove_variable = sb_court_dynastic_reason_var
+ remove_variable = sb_court_dynastic_incumbent_weight_var
+ remove_variable = sb_court_dynastic_rival_weight_var
+ remove_variable = sb_court_dynastic_share_var
+ remove_variable = sb_court_dynastic_target_var
+ remove_variable = sb_court_dynastic_demand_verified_var
+ remove_variable = sb_court_dynastic_forces_prepared_var
+ remove_variable = sb_court_dynastic_forces_rebuilt_var
+ remove_variable = sb_court_regular_quota_var
+ remove_variable = sb_court_conscript_quota_var
+ remove_variable = sb_court_dynastic_advanced_var
+ remove_variable = sb_court_dynastic_ended_var
+ remove_variable = sb_court_dynastic_back_claimant_var
+ clear_variable_list = sb_court_dynastic_incumbent_members
+ clear_variable_list = sb_court_dynastic_rival_members
+ clear_variable_list = sb_court_dynastic_roster
+ sb_court_accession_cleanup = yes
+}

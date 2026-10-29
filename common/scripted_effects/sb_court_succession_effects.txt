@@ -1,0 +1,341 @@
+﻿# Country scope throughout. The predecessor is captured before native ruler selection.
+sb_court_capture_accession = {
+ save_scope_as = sb_court_country
+ if = {
+  limit = { sb_court_dynastic_country = yes NOT = { has_variable = sb_court_accession_open_var } NOT = { has_variable = sb_court_dynastic_war_scope } NOT = { has_variable = sb_court_dynastic_crisis_var } }
+  set_variable = sb_court_accession_open_var
+  set_variable = { name = sb_court_predecessor_scope value = scope:sb_court_outgoing }
+  sb_court_calculate_backing = yes
+  clear_variable_list = sb_court_accession_candidates
+  every_in_list = {
+   variable = sb_court_members
+   limit = { sb_court_dynastic_candidate = yes NOT = { this = scope:sb_court_outgoing } var:sb_court_home_scope ?= scope:sb_court_country }
+   scope:sb_court_country = { add_to_variable_list = { name = sb_court_accession_candidates target = prev } }
+  }
+  if = {
+   limit = { var:sb_court_recognized_heir_scope ?= { sb_court_dynastic_candidate = yes NOT = { this = scope:sb_court_outgoing } } }
+   set_variable = { name = sb_court_accession_nominee_scope value = var:sb_court_recognized_heir_scope }
+  }
+  # Keep current support and future commitments distinct until the actual accession.
+  every_in_list = {
+   variable = sb_court_members
+   limit = { var:sb_court_home_scope ?= scope:sb_court_country }
+   set_variable = { name = sb_court_outgoing_endorsement_var value = var:sb_court_endorsement_var }
+  }
+  sb_court_refresh_accession = yes
+ }
+}
+
+# Refresh live candidates without replacing a still-valid selection while its popup is open.
+sb_court_refresh_accession = {
+ save_scope_as = sb_court_country
+ sb_court_calculate_backing = yes
+ remove_variable = sb_court_accession_rival_scope
+ if = {
+  limit = { NOT = { var:sb_court_accession_nominee_scope ?= { sb_court_dynastic_candidate = yes } } }
+  remove_variable = sb_court_accession_nominee_scope
+  ordered_in_list = {
+   variable = sb_court_accession_candidates limit = { sb_court_dynastic_candidate = yes }
+   order_by = var:sb_court_coalition_weight_var position = 0 check_range_bounds = no
+   scope:sb_court_country = { set_variable = { name = sb_court_accession_nominee_scope value = prev } }
+  }
+ }
+ ordered_in_list = {
+  variable = sb_court_accession_candidates
+  limit = { sb_court_major_candidate = yes NOT = { this = scope:sb_court_country.var:sb_court_accession_nominee_scope } }
+  order_by = var:sb_court_coalition_weight_var position = 0 check_range_bounds = no
+  scope:sb_court_country = { set_variable = { name = sb_court_accession_rival_scope value = prev } }
+ }
+}
+
+sb_court_reconcile_succession = {
+ save_scope_as = sb_court_country
+ if = { limit = { has_variable = sb_court_regent_scope } sb_court_reconcile_regency = yes }
+ else_if = {
+  limit = {
+   has_variable = sb_institutions_active_var
+   sb_court_has_royal_law = yes
+   NOT = { has_variable = sb_court_accession_open_var }
+   NOT = { has_variable = sb_court_civil_war_var }
+   NOT = { has_variable = sb_court_dynastic_war_scope } NOT = { has_variable = sb_court_dynastic_crisis_var }
+   ruler ?= { has_template = ZUL_mpande_zulu }
+   game_date >= 1856.12.1
+   NOT = { has_variable = sb_court_mpande_retired_var }
+  }
+  ruler = { save_scope_as = sb_court_outgoing }
+  sb_court_capture_accession = yes
+ }
+ if = {
+  limit = { has_variable = sb_court_accession_open_var NOT = { has_variable = sb_court_accession_popup_var } NOT = { has_variable = sb_court_dynastic_war_scope } NOT = { has_variable = sb_court_dynastic_crisis_var } }
+  sb_court_refresh_accession = yes
+  if = {
+   limit = { exists = var:sb_court_accession_nominee_scope }
+   if = {
+    limit = { has_variable = sb_court_accession_open_var }
+    if = { limit = { exists = var:sb_court_accession_rival_scope } sb_court_reserve_dynastic_crisis = { REASON = 2 } }
+    else = { set_variable = sb_court_accession_popup_var trigger_event = { id = sb_court_succession.001 popup = yes } }
+   }
+  }
+  else = { sb_court_accession_cleanup = yes }
+ }
+ if = { limit = { NOT = { has_variable = sb_court_accession_open_var } } sb_court_reconcile_bargains = yes }
+}
+
+sb_court_accession_cleanup = {
+ remove_variable = sb_court_accession_open_var
+ remove_variable = sb_court_accession_popup_var
+ remove_variable = sb_court_accession_nominee_scope
+ remove_variable = sb_court_accession_rival_scope
+ remove_variable = sb_court_predecessor_scope
+ clear_variable_list = sb_court_accession_candidates
+}
+
+# Winner is a saved character. A peaceful accession and a verified dynastic victory share this.
+sb_court_install_successor = {
+ save_scope_as = sb_court_country
+ if = {
+  limit = { sb_court_dynastic_country = yes scope:sb_court_successor ?= { sb_court_dynastic_candidate = yes } }
+  if = {
+   limit = { scope:sb_court_successor = { is_adult = no } }
+   set_variable = { name = sb_court_minor_sovereign_scope value = scope:sb_court_successor }
+   sb_court_choose_regent = yes
+  }
+  else = {
+   set_variable = sb_court_selecting_head_var
+   scope:sb_court_successor = {
+    if = { limit = { is_in_void = yes } free_character_from_void = yes }
+    if = { limit = { NOT = { owner ?= scope:sb_court_country } } transfer_character = scope:sb_court_country }
+    if = { limit = { is_in_exile_pool = yes } free_from_exile_effect = yes }
+    cleanup_ruler_character_roles = yes
+    set_character_as_ruler = yes
+   }
+   remove_variable = sb_court_selecting_head_var
+  }
+  if = {
+   limit = { OR = { ruler ?= scope:sb_court_successor exists = var:sb_court_regent_scope } }
+   # Recognised promises become co-operation; other royal claims remain separate.
+   every_in_list = {
+    variable = sb_court_members
+    limit = { var:sb_court_home_scope ?= scope:sb_court_country is_character_alive = yes }
+    if = {
+     limit = { NOT = { scope:sb_court_country = { has_variable = sb_court_dynastic_current_allegiance_var } } }
+     if = {
+      limit = { var:sb_court_successor_pledge_scope ?= scope:sb_court_successor }
+      set_variable = { name = sb_court_endorsement_var value = 1 }
+      remove_variable = sb_court_claimant_scope
+      if = { limit = { NOT = { scope:sb_court_country = { has_variable = sb_court_regent_scope } } } remove_variable = sb_court_successor_pledge_scope }
+     }
+     else_if = {
+      limit = { var:sb_court_successor_pledge_scope ?= { sb_court_dynastic_candidate = yes } }
+      set_variable = { name = sb_court_endorsement_var value = -1 }
+      set_variable = { name = sb_court_claimant_scope value = var:sb_court_successor_pledge_scope }
+     }
+     else_if = { limit = { OR = { var:sb_court_outgoing_endorsement_var ?= 1 var:sb_court_endorsement_var = 1 } } set_variable = { name = sb_court_endorsement_var value = 0 } }
+    }
+    if = {
+     limit = { var:sb_court_council_promise_scope ?= scope:sb_court_successor }
+     set_variable = { name = sb_court_personal_council_scope value = scope:sb_court_successor }
+     remove_variable = sb_court_council_promise_scope
+     scope:sb_court_country = { activate_law = law_type:law_sb_chiefly_council }
+    }
+    remove_variable = sb_court_outgoing_endorsement_var
+   }
+   ruler = { set_variable = { name = sb_court_endorsement_var value = 1 } remove_variable = sb_court_claimant_scope }
+   set_variable = { name = sb_court_incumbent_scope value = ruler }
+   if = { limit = { NOT = { scope:sb_court_maturing_sovereign ?= scope:sb_court_successor } } remove_variable = sb_court_privileges_this_reign_var }
+   remove_variable = sb_court_recognized_heir_scope
+   if = {
+    limit = { var:sb_court_predecessor_scope ?= { has_template = ZUL_mpande_zulu is_character_alive = yes } }
+    set_variable = sb_court_mpande_retired_var
+    var:sb_court_predecessor_scope = { set_variable = sb_court_retired_var resign_and_retire = yes }
+   }
+   sb_court_accession_cleanup = yes
+   sb_court_ensure_roster = yes
+   sb_institutions_recalculate = yes
+  }
+ }
+}
+
+# Resolve against the displayed nominee, then re-evaluate the opposing coalition. Never
+# silently substitute a different heir beneath an already-open event.
+sb_court_answer_accession = {
+ save_scope_as = sb_court_country
+ if = {
+  limit = { sb_court_dynastic_country = yes has_variable = sb_court_accession_open_var NOT = { has_variable = sb_court_dynastic_test_pending_var } NOT = { has_variable = sb_court_dynastic_war_scope } NOT = { has_variable = sb_court_dynastic_crisis_var } }
+  if = {
+   limit = { scope:sb_court_nominee ?= { sb_court_dynastic_candidate = yes } }
+   set_variable = { name = sb_court_accession_nominee_scope value = scope:sb_court_nominee }
+   sb_court_refresh_accession = yes
+   if = {
+    limit = { has_variable = sb_court_accession_open_var }
+    if = { limit = { exists = var:sb_court_accession_rival_scope } sb_court_reserve_dynastic_crisis = { REASON = 2 } }
+    else = { var:sb_court_accession_nominee_scope = { save_scope_as = sb_court_successor } sb_court_install_successor = yes }
+   }
+  }
+  else = { remove_variable = sb_court_accession_popup_var sb_court_reconcile_succession = yes }
+ }
+ else_if = { limit = { sb_court_dynastic_country = no } sb_court_accession_cleanup = yes }
+}
+
+# Spain's regent-ruler / minor-heir arrangement, without the immortal-regent helper.
+sb_court_choose_regent = {
+ save_scope_as = sb_court_country
+ remove_variable = sb_court_regent_scope
+ ordered_in_list = {
+  variable = sb_court_members
+  limit = { sb_court_present_member = yes var:sb_court_successor_pledge_scope ?= scope:sb_court_country.var:sb_court_minor_sovereign_scope NOT = { has_variable = sb_court_retired_var } }
+  order_by = prominence position = 0 check_range_bounds = no
+  scope:sb_court_country = { set_variable = { name = sb_court_regent_scope value = prev } }
+ }
+ if = {
+  limit = { exists = var:sb_court_regent_scope }
+  set_variable = sb_court_selecting_head_var
+  var:sb_court_regent_scope = { cleanup_ruler_character_roles = yes set_character_as_ruler = yes set_variable = { name = regency_years value = 0 } }
+  sb_court_release_heir_blocker = yes
+  set_heir = var:sb_court_minor_sovereign_scope
+  sb_court_update_heir_blocker = yes
+  if = { limit = { NOT = { has_modifier = modifier_regency } } add_modifier = modifier_regency }
+  remove_variable = sb_court_selecting_head_var
+ }
+ # With no willing adult, leave ordinary native succession available; invent no guardian.
+ else = { sb_court_end_regency = yes sb_court_accession_cleanup = yes }
+}
+sb_court_end_regency = {
+ var:sb_court_regent_scope ?= { remove_variable = regency_years }
+ remove_variable = sb_court_regent_scope
+ remove_variable = sb_court_minor_sovereign_scope
+ if = { limit = { has_modifier = modifier_regency } remove_modifier = modifier_regency }
+}
+sb_court_reconcile_regency = {
+ if = {
+  limit = { var:sb_court_minor_sovereign_scope ?= { is_character_alive = yes is_adult = yes } }
+  var:sb_court_minor_sovereign_scope = { save_scope_as = sb_court_successor save_scope_as = sb_court_maturing_sovereign }
+  sb_court_end_regency = yes
+  sb_court_install_successor = yes
+ }
+ else_if = {
+  limit = { NOT = { var:sb_court_minor_sovereign_scope ?= { is_character_alive = yes } } }
+  sb_court_end_regency = yes
+ }
+ else_if = { limit = { NOT = { var:sb_court_regent_scope ?= { is_character_alive = yes } } } sb_court_choose_regent = yes }
+}
+
+# One presentation per sovereign. The child's identity survives later changes of ruler.
+sb_court_introduce_son = {
+ save_scope_as = sb_court_country
+ if = {
+  limit = { sb_court_can_introduce_son = yes sb_court_can_negotiate = yes var:sb_prerogative_var >= 50 }
+  if = { limit = { ruler ?= { has_template = ZUL_dingane } } sb_court_introduce_uthumbu = yes }
+  else = {
+   create_character = { template = SB_ZUL_newborn_son save_scope_as = new_heir_scope }
+   scope:new_heir_scope = { sb_court_register_character = { FOLLOWING = 0 ALIGNMENT = 1 ENDORSEMENT = 0 } }
+   sb_court_present_newborn = yes
+  }
+ }
+}
+sb_court_present_newborn = {
+ ruler = { set_variable = { name = sb_court_presented_son_scope value = scope:new_heir_scope } }
+ sb_change_prerogative = { VALUE = -50 }
+ sb_zulu_assign_new_heir_scope = yes
+ set_variable = { name = sb_court_recognized_heir_scope value = scope:new_heir_scope }
+ sb_court_back_recognized_heir = yes
+}
+
+# Preserve Dingane's existing named alternate lineage.
+sb_court_introduce_uthumbu = {
+ save_scope_as = sb_court_country
+ if = {
+  limit = { has_variable = sb_institutions_active_var ruler ?= { has_template = ZUL_dingane } var:sb_prerogative_var >= 50 NOT = { has_variable = sb_court_uthumbu_introduced_var } }
+  if = {
+   limit = { NOT = { any_scope_character = { has_template = ZUL_uthumbu_claimed_son is_character_alive = yes } } }
+   create_character = {
+    template = ZUL_uthumbu_claimed_son
+    save_scope_as = new_heir_scope
+   }
+  }
+  else = {
+   random_scope_character = {
+    limit = { has_template = ZUL_uthumbu_claimed_son is_character_alive = yes }
+    save_scope_as = new_heir_scope
+   }
+  }
+  if = {
+   limit = { scope:new_heir_scope ?= { has_template = ZUL_uthumbu_claimed_son is_character_alive = yes } }
+   scope:new_heir_scope = {
+    if = {
+     limit = { NOT = { has_variable = sb_court_registered_var } }
+     sb_court_register_character = { FOLLOWING = 0 ALIGNMENT = 1 ENDORSEMENT = 0 }
+    }
+   }
+   set_variable = sb_court_uthumbu_introduced_var
+   sb_court_present_newborn = yes
+  }
+ }
+}
+
+# CMF suppresses generated heirs through on_heir_born. Own only the flag we set,
+# and release it on institutional exit or exhaustion of the living authored line.
+sb_court_update_heir_blocker = {
+ save_scope_as = sb_court_country
+ if = {
+  limit = {
+   sb_court_dynastic_country = yes
+   OR = {
+    has_variable = sb_court_dynastic_war_scope
+    any_in_list = {
+     variable = sb_court_members
+     sb_court_living_dynast = yes
+     var:sb_court_home_scope ?= scope:sb_court_country
+     NOT = { is_ruler_of_own_country = yes }
+    }
+   }
+  }
+  if = { limit = { NOT = { has_variable = no_heirs } } set_variable = sb_court_owns_heir_blocker_var }
+  set_variable = no_heirs
+ }
+ else = { sb_court_release_heir_blocker = yes }
+}
+sb_court_release_heir_blocker = {
+ if = {
+  limit = { has_variable = sb_court_owns_heir_blocker_var }
+  remove_variable = no_heirs
+  remove_variable = sb_court_owns_heir_blocker_var
+ }
+}
+
+# The template-use ledger includes dead/exiled characters: never recreate a used identity.
+# Births enter the registered father's court even if another prince currently rules.
+sb_court_introduce_known_children = {
+ save_scope_as = sb_court_country
+ if = {
+  limit = {
+   has_variable = sb_institutions_active_var game_date >= 1868.1.1
+   NOT = { is_template_used = ZUL_dinuzulu_heir }
+   any_in_list = {
+    variable = sb_court_members is_character_alive = yes
+    var:sb_court_home_scope ?= scope:sb_court_country
+    has_template = ZUL_cetshwayo_heir
+   }
+  }
+  sb_court_create_known_child = { TEMPLATE = ZUL_dinuzulu_heir }
+ }
+ if = {
+  limit = {
+   has_variable = sb_institutions_active_var game_date >= 1891.1.1
+   NOT = { is_template_used = ZUL_solomon_heir }
+   any_in_list = {
+    variable = sb_court_members is_character_alive = yes
+    var:sb_court_home_scope ?= scope:sb_court_country
+    has_template = ZUL_dinuzulu_heir
+   }
+  }
+  sb_court_create_known_child = { TEMPLATE = ZUL_solomon_heir }
+ }
+}
+sb_court_create_known_child = {
+ create_character = { template = $TEMPLATE$ save_scope_as = sb_court_new_child }
+ scope:sb_court_new_child = {
+  sb_court_register_character = { FOLLOWING = 0 ALIGNMENT = 1 ENDORSEMENT = 0 }
+ }
+ sb_court_update_heir_blocker = yes
+}

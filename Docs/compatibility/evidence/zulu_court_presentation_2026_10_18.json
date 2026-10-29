@@ -1,0 +1,199 @@
+{
+  "date": "2026-10-18",
+  "baseline": {
+    "sb": "0.20.2",
+    "game": "1.14.5",
+    "cmf": "1.66.0 + sb-1.14.3-r1"
+  },
+  "decision": "DP approved replacing forced faction ideologies with independent allegiance traits; no bonus modifiers on traits.",
+  "game_launched": false,
+  "saved_campaign_modified": false,
+  "cmf_modified": false,
+  "startup_comparison": {
+    "path": "common/history/political_movements/00_movements.txt",
+    "upstream_version": "1.14.5",
+    "upstream_sha256": "8b252833f3f775e821d6d060e77d8c2ff5bcadda5f392ff020b2c137dc1294b1",
+    "mod_sha256": "beb63d3bafef150508bdb3c5a8a61882210378ffa30ed7e23a97bdc169dd3ea8",
+    "comparison": "text-hash-pair",
+    "scope": "eligible authored institutional countries; initial Absolutist movement only",
+    "intent": "Exclude the authored Zulu institutional profile from the explicit Absolutist history call before bootstrap; every other Vanilla history statement is unchanged.",
+    "load_order": "exact-path shadow; higher-priority owner wins",
+    "owner": "Spes Bona maintainers",
+    "rebase_date": "2026-10-18"
+  },
+  "verification": {
+    "focused": {
+      "tests": 63,
+      "passed": 63,
+      "command": "python3 -B -m unittest tests.test_startup_story_patch tests.test_zulu_institutions_laws tests.test_zulu_institutions_core tests.test_zulu_court_politics tests.test_validate.RepositoryValidatorTests.test_gui_scripted_gui_calls_count_as_usage_but_real_orphans_fail"
+    },
+    "full_static": {
+      "command": "python3 -B tools/validate.py --skip-cmf-sync",
+      "log_sha256": "a8949b09a95013f941107483b1fef87e344e1a9825f285a60d4293a7b4ae6205",
+      "checks": [
+        {
+          "status": "PASS",
+          "name": "CMF release pin",
+          "detail": "exact tag 1.66.0, SHA-256 79dd0d434e6ffb617147ad1b91b73e6306139adfffcadf6774eeb32db3a09b8b"
+        },
+        {
+          "status": "SKIP",
+          "name": "CMF release sync",
+          "detail": "disabled by --skip-cmf-sync"
+        },
+        {
+          "status": "PASS",
+          "name": "CMF compatibility",
+          "detail": ""
+        },
+        {
+          "status": "FAIL",
+          "name": "unit tests",
+          "detail": "AssertionError: Lists differ: [] != ['localization: reviewed localization pros[683 chars]iew']"
+        },
+        {
+          "status": "PASS",
+          "name": "local override inventory",
+          "detail": ""
+        },
+        {
+          "status": "PASS",
+          "name": "map data",
+          "detail": ""
+        },
+        {
+          "status": "FAIL",
+          "name": "localization",
+          "detail": "reviewed localization prose drift: localization/english/sb_natal_crisis_l_english.yml:sb_klip_river_county.060; reviewed localization size drift: localization/english/sb_natal_crisis_l_english.yml:sb_klip_river_county.060; reviewed localization prose drift: localization/english/sb_natal_crisis_l_english.yml:sb_klip_river_county.080; reviewed localization size drift: localization/english/sb_natal_crisis_l_english.yml:sb_klip_river_county.080; reviewed localization prose drift: localization/english/sb_natal_crisis_l_english.yml:sb_natal_crisis.050; reviewed localization size drift: localization/english/sb_natal_crisis_l_english.yml:sb_natal_crisis.050; event/JE review coverage: 107 reviewed, 180 to review"
+        },
+        {
+          "status": "PASS",
+          "name": "on-action router",
+          "detail": ""
+        },
+        {
+          "status": "PASS",
+          "name": "stale symbols",
+          "detail": ""
+        },
+        {
+          "status": "PASS",
+          "name": "unused symbols",
+          "detail": "3 reviewed definition-only symbols"
+        },
+        {
+          "status": "PASS",
+          "name": "runtime script contracts",
+          "detail": "no known engine-rejected script forms"
+        },
+        {
+          "status": "WARN",
+          "name": "deferred release gates",
+          "detail": "5 unresolved gates: BC-20, BC-22, CP-07, QUAL-09, SUP-05"
+        },
+        {
+          "status": "PASS",
+          "name": "1.14.5 release invariants",
+          "detail": "86 complete scripted war-goal blocks"
+        },
+        {
+          "status": "PASS",
+          "name": "delayed-event lifecycle",
+          "detail": ""
+        },
+        {
+          "status": "PASS",
+          "name": "naval network connectivity",
+          "detail": ""
+        },
+        {
+          "status": "PASS",
+          "name": "Vanilla/CMF override comparison",
+          "detail": ""
+        }
+      ]
+    },
+    "unit_discovery": {
+      "total": 587,
+      "passed": 578,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 8,
+      "remaining_failure": "test_repository_manifests_are_current: pre-existing reviewed-localisation baseline drift in sb_natal_crisis.050, sb_klip_river_county.060 and .080"
+    },
+    "advisory_tiger": {
+      "command": "python3 -B tools/validate.py --skip-cmf-sync --tiger",
+      "fatal": 0,
+      "errors": 1066,
+      "warnings": 144,
+      "schema": "1.13.5",
+      "target": "1.14.5",
+      "log_sha256": "de4da65f839848b203de71383f96463d0f869625deaddeff38863ebe20be182f",
+      "limitation": "Advisory only; older schema and existing CMF/native-scope diagnostics. Runtime sources were unchanged by the subsequent validation bookkeeping and numeric-readout test repairs."
+    },
+    "diff_check": "PASS",
+    "assets_and_concepts": "Referenced native textures exist; directly referenced concepts resolve."
+  },
+  "source_sha256": {
+    "common/character_templates/sb_court_characters.txt": "a612c8d91686bb33f1680c0fa0227245130e0d9858d9d578a8a9bfac23e515f6",
+    "common/character_traits/sb_court_allegiance_traits.txt": "51a7d7760703696ebbd2ce072095b4a7b9ef89b80558a85f5bec5971568e5b89",
+    "common/customizable_localization/sb_court_custom_loc.txt": "4607a39655e82e389c8362b879366a1830ed4ac68a9a234bd7daa36b33716bcf",
+    "common/history/political_movements/00_movements.txt": "beb63d3bafef150508bdb3c5a8a61882210378ffa30ed7e23a97bdc169dd3ea8",
+    "common/ideologies/sb_zulu_constitutional_ideologies.txt": "98c89e933eeb7d123aa04198131cc2a2bf3ce5db56123dcdec7e053ca1ad0844",
+    "common/political_movements/sb_zulu_constitutional_movements.txt": "8f79bf2abcba753f1c5df1731c8ea187d5e3751048619dedc04d4f38f138887b",
+    "common/scripted_effects/sb_court_politics_effects.txt": "c540817cd87b1fdc206a41538f77b7d846b0f86fde58fd42cf711ad4fba4bea1",
+    "common/scripted_effects/sb_zululand_settlement_effects.txt": "8a3ded25d808c9d11119965979f2cd02c0ce0dbbe5c7abdde445471b748e87c8",
+    "common/scripted_guis/sb_court_roster.txt": "e626598f63ea1f87e4ad47f7afa825c560c89f4fe9ff456c2db2e56f75a6f90d",
+    "common/scripted_progress_bars/sb_progress_bars.txt": "5771a335fd81d027ef4c1ce1a4f6892253020ed7e3ac31a199d2d8693967e9b4",
+    "common/static_modifiers/sb_court_modifiers.txt": "75d17a215d2703bb7d88b584e3903971a9f554cc918abcba0b8dff1e046faf55",
+    "gui/sb_prerogative_progress_bars.gui": "39118f4b371690e43fc67b3375698707ca0926d4c7fdaa0b2fd18c96583055be",
+    "localization/english/sb_court_politics_l_english.yml": "61f89c5e305abc10035b3529c50791e5352d475becb9fef9384ebf6297e36956",
+    "localization/english/sb_institutions_l_english.yml": "7e24fb9e923af27e840a513155018586fbc3df07fe98ce64427c6a1efccda1e7",
+    "localization/english/sb_l_english.yml": "63d73d47a57519ad9cff510c159312306390e4c8031d1ce6f526b39264bef2f3",
+    "localization/english/sb_zulu_institutions_laws_l_english.yml": "3206e3d96421e8da927f1cafc07ffda9139ee913a565322e48d9a9816581b1f4",
+    "tests/test_1_14_0_rebase.py": "71a786e2acade50c69a2e1893e129d409739e577fa07d7a8f8cf042244c749dc",
+    "tests/test_startup_story_patch.py": "bfbe0685ac6dc3003f9651e908550e9b9450e2de3b579c5c471831a16be77c6e",
+    "tests/test_validate.py": "7f86efb552e7e720575e81c6aa8cc8070fb411afb5ba85165e476d17cc8b1fbf",
+    "tests/test_zulu_court_politics.py": "c252b4ebf04d947e8faf976dc2784044ff4e2ca9cf688b58c2c5ea35ad04b480",
+    "tests/test_zulu_institutions_laws.py": "3a56dc353b365f4cc95544384d6741894cff0364d93e3697d0315b28e93c94cf",
+    "tools/validate.py": "1843301212774a43055f1e669206dcc198b60c96b470013936fd14652f104523"
+  },
+  "runtime_scenarios": [
+    {
+      "scenario": "Fresh ZUL startup without generic Absolutists",
+      "status": "pending DP"
+    },
+    {
+      "scenario": "uSuthu name and amaKhosi chief icon",
+      "status": "pending DP"
+    },
+    {
+      "scenario": "Separate traits, wider ideology and named allegiance",
+      "status": "pending DP"
+    },
+    {
+      "scenario": "Patronage, succession and alignment updates",
+      "status": "pending DP"
+    },
+    {
+      "scenario": "CAP exile home-court allegiance",
+      "status": "pending DP"
+    },
+    {
+      "scenario": "Royal/chiefly title and flavour switching",
+      "status": "pending DP"
+    },
+    {
+      "scenario": "Negative/zero/positive bar positions",
+      "status": "pending DP"
+    },
+    {
+      "scenario": "Influential Supporters icon and non-zero attraction",
+      "status": "pending DP"
+    },
+    {
+      "scenario": "JE layout, character links and fresh-launch diagnostics",
+      "status": "pending DP"
+    }
+  ]
+}

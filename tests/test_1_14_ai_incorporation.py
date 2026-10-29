@@ -5,6 +5,7 @@ import re
 import unittest
 
 from tools import validate
+from tests.test_usuthu_movement_contest import parse
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -16,46 +17,11 @@ EXPECTED_PRIORITIES = {
     ("CAP", "STATE_GRIQUALAND_WEST"),
     ("ORA", "STATE_DRAKENSBERG"),
 }
-EXPECTED_REPLACEMENTS = {
-    "ai_can_incorporate_state": r'''REPLACE:ai_can_incorporate_state = {
-	OR = {
-		AND = {
-			OR = {
-				is_homeland_of_country_cultures = root
-				"years_to_incorporate(root)" <= define:NAI|INCORPORATE_STATE_MAX_YEARS
-			}
-		}
-		sb_regional_ai_should_incorporate = yes
-	}
-}''',
-    "ai_will_incorporate_state": r'''REPLACE:ai_will_incorporate_state = {
-	OR = {
-		AND = {
-			OR = {
-				is_homeland_of_country_cultures = root
-				"years_to_incorporate(root)" <= define:NAI|INCORPORATE_STATE_MAX_YEARS
-			}
-			state_population >= define:NAI|INCORPORATE_STATE_MIN_POPULATION
-		}
-		sb_regional_ai_should_incorporate = yes
-	}
-}''',
-    "ai_colony_will_incorporate_state": r'''REPLACE:ai_colony_will_incorporate_state = {
-	OR = {
-		AND = {
-			OR = {
-				region = root.capital.region
-				any_neighbouring_state = {
-					owner = root
-					is_incorporated = yes
-				}
-			}
-			state_population >= define:NAI|INCORPORATE_STATE_MIN_POPULATION
-		}
-		sb_regional_ai_should_incorporate = yes
-	}
-}''',
-}
+REPLACEMENTS = (
+    "ai_can_incorporate_state",
+    "ai_will_incorporate_state",
+    "ai_colony_will_incorporate_state",
+)
 
 
 def text(path: str) -> str:
@@ -83,6 +49,111 @@ def parsed_priorities(helper: str) -> set[tuple[str, str]]:
     return set(pairs)
 
 
+def evaluate(nodes, state, root, triggers, defines):
+    """Evaluate only the incorporation trigger vocabulary, rejecting unknown gates."""
+    def check(key, op, value):
+        if key in ("AND", "OR"):
+            results = [evaluate([n], state, root, triggers, defines) for n in value]
+            return all(results) if key == "AND" else any(results)
+        if key == "root":
+            return evaluate(value, root, root, triggers, defines)
+        if key in triggers:
+            return evaluate(triggers[key], state, root, triggers, defines) == (value == "yes")
+        if key == "owner": return state["owner"] == root["tag"]
+        if key == "country_definition": return value == "cd:" + state["tag"]
+        if key == "state_region": return value == "s:" + state["state_region"]
+        if key == "is_ai": return state["is_ai"] == (value == "yes")
+        if key == "is_incorporated": return state["incorporated"] == (value == "yes")
+        if key == "is_homeland_of_country_cultures": return state["homeland"]
+        if key == "region": return state["region"] == root["capital_region"]
+        if key == "any_neighbouring_state":
+            return any(evaluate(value, n, root, triggers, defines) for n in state["neighbours"])
+        if key == "primary_cultures_percent_state":
+            assert value[0] == ("target_country", "=", "root"), value
+            assert value[1][:2] == ("value", ">="), value
+            return state["primary_share"] >= float(value[1][2])
+        if key in ('"years_to_incorporate(root)"', "state_population"):
+            bound = defines[value]
+            if key == "state_population":
+                assert op == ">="
+                return state["population"] >= bound
+            assert op == "<="
+            return state["years"] <= bound
+        raise AssertionError((key, op, value))
+    return all(check(*node) for node in nodes)
+
+
+class NativeIncorporationBoundariesTests(unittest.TestCase):
+    def setUp(self):
+        self.assertIsNotNone(GAME_ROOT)
+        source = text(TRIGGER_PATH)
+        self.triggers = {key: parse(object_block(source, key, "REPLACE")) for key in REPLACEMENTS}
+        self.triggers["sb_regional_ai_should_incorporate"] = parse(object_block(source, "sb_regional_ai_should_incorporate"))
+        defines = (GAME_ROOT / "common/defines/00_ai.txt").read_text(encoding="utf-8-sig")
+        self.defines = {
+            "define:NAI|" + key: float(re.search(rf"\b{key}\s*=\s*(\d+(?:\.\d+)?)", defines)[1])
+            for key in ("INCORPORATE_STATE_MAX_YEARS", "INCORPORATE_STATE_MIN_POPULATION")
+        }
+        self.minimum = self.defines["define:NAI|INCORPORATE_STATE_MIN_POPULATION"]
+        self.maximum = self.defines["define:NAI|INCORPORATE_STATE_MAX_YEARS"]
+        self.root = dict(tag="GBR", is_ai=True, capital_region="europe")
+        self.state = dict(owner="GBR", state_region="STATE_ZULULAND", primary_share=0,
+                          homeland=False, years=self.maximum + 1, population=self.minimum,
+                          region="africa", neighbours=[])
+
+    def result(self, key, **changes):
+        return evaluate(self.triggers[key], dict(self.state, **changes), self.root, self.triggers, self.defines)
+
+    def test_primary_culture_and_same_owner_incorporated_adjacency_thresholds(self):
+        for owner, incorporated, share, expected in (
+            ("GBR", True, .2499, False), ("GBR", True, .25, True),
+            ("GBR", False, .25, False), ("FRA", True, .25, False),
+            ("FRA", False, .4999, False), ("FRA", False, .5, True),
+        ):
+            with self.subTest(owner=owner, incorporated=incorporated, share=share):
+                neighbour = dict(owner=owner, incorporated=incorporated)
+                for key in REPLACEMENTS[:2]:
+                    self.assertEqual(expected, self.result(key, primary_share=share, neighbours=[neighbour]))
+        for key in REPLACEMENTS:
+            self.assertFalse(self.result(key, primary_share=.4999))
+            self.assertTrue(self.result(key, primary_share=.5))
+
+    def test_homeland_and_incorporation_years_keep_their_native_paths(self):
+        for key in REPLACEMENTS:
+            self.assertTrue(self.result(key, homeland=True))
+            self.assertTrue(self.result(key, years=self.maximum))
+            self.assertFalse(self.result(key, years=self.maximum + 1))
+
+    def test_ordinary_and_colonial_population_and_geography_boundaries(self):
+        self.assertTrue(self.result("ai_can_incorporate_state", primary_share=.5, population=1))
+        for key in REPLACEMENTS[1:]:
+            self.assertFalse(self.result(key, primary_share=.5, population=self.minimum - 1))
+            self.assertTrue(self.result(key, primary_share=.5, population=self.minimum))
+        for region, neighbours, expected in (
+            ("europe", [], True), ("africa", [], False),
+            ("africa", [dict(owner="GBR", incorporated=True)], True),
+            ("africa", [dict(owner="FRA", incorporated=True)], False),
+            ("africa", [dict(owner="GBR", incorporated=False)], False),
+        ):
+            self.assertEqual(expected, self.result("ai_colony_will_incorporate_state", region=region, neighbours=neighbours))
+            self.assertFalse(self.result("ai_will_incorporate_state", region=region, neighbours=neighbours))
+
+    def test_four_regional_exceptions_and_negative_controls_through_all_three_paths(self):
+        self.state.update(population=1)
+        for tag, region in EXPECTED_PRIORITIES:
+            for is_ai, owner, actor, expected in (
+                (True, tag, tag, True), (False, tag, tag, False),
+                (True, "GBR", tag, False), (True, "GBR", "GBR", False),
+            ):
+                self.root.update(tag=actor, is_ai=is_ai)
+                for key in REPLACEMENTS:
+                    with self.subTest(key=key, actor=actor, region=region, owner=owner, is_ai=is_ai):
+                        self.assertEqual(expected, self.result(key, owner=owner, state_region=region))
+            self.root.update(tag=tag, is_ai=True)
+            for key in REPLACEMENTS:
+                self.assertFalse(self.result(key, owner=tag, state_region="STATE_CAPE_COLONY"))
+
+
 class RegionalAIIncorporationTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -104,10 +175,16 @@ class RegionalAIIncorporationTests(unittest.TestCase):
             and (root_tag, state_region) in self.priorities
         )
 
-    def test_all_three_replacements_wrap_byte_faithful_ob1_gates(self):
-        for key, expected in EXPECTED_REPLACEMENTS.items():
+    def test_all_three_replacements_wrap_complete_current_native_gates(self):
+        self.assertIsNotNone(GAME_ROOT, "current Vanilla incorporation contracts are mandatory")
+        native = (GAME_ROOT / "common/scripted_triggers/00_ai_triggers.txt").read_text(encoding="utf-8-sig")
+        for key in REPLACEMENTS:
             with self.subTest(key=key):
-                self.assertEqual(expected, object_block(self.source, key, "REPLACE"))
+                self.assertEqual(
+                    [("OR", "=", [("AND", "=", parse(object_block(native, key))),
+                                    ("sb_regional_ai_should_incorporate", "=", "yes")])],
+                    parse(object_block(self.source, key, "REPLACE")),
+                )
 
     def test_helper_is_ai_owned_and_has_exact_four_positive_mappings(self):
         self.assertEqual(EXPECTED_PRIORITIES, self.priorities)
@@ -188,17 +265,17 @@ class RegionalAIIncorporationTests(unittest.TestCase):
                 )
 
     def test_helper_is_orred_once_into_both_will_paths_and_ai_can(self):
-        for key in EXPECTED_REPLACEMENTS:
+        for key in REPLACEMENTS:
             block = object_block(self.source, key, "REPLACE")
             self.assertEqual(1, block.count("sb_regional_ai_should_incorporate = yes"), key)
         self.assertNotIn("sb_zululand_ai_should_incorporate", self.source)
 
-    def test_ob1_caller_and_transfer_scoring_surface_remain_vanilla_owned(self):
+    def test_caller_and_transfer_scoring_surface_remain_vanilla_owned(self):
         self.assertFalse((ROOT / "common/ai_strategies/00_default_strategy.txt").exists())
         self.assertFalse((ROOT / "common/treaty_articles/06_transfer_state.txt").exists())
 
-    @unittest.skipIf(GAME_ROOT is None, "Vanilla game root unavailable")
     def test_unchanged_default_strategy_routes_both_country_type_branches(self):
+        self.assertIsNotNone(GAME_ROOT)
         source = (GAME_ROOT / "common/ai_strategies/00_default_strategy.txt").read_text(
             encoding="utf-8-sig"
         )
@@ -213,8 +290,8 @@ class RegionalAIIncorporationTests(unittest.TestCase):
         self.assertLess(start_gate.index(ordinary), start_gate.index("trigger_else = { # Content"))
         self.assertNotIn("ai_can_incorporate_state", start_gate)
 
-    @unittest.skipIf(GAME_ROOT is None, "Vanilla game root unavailable")
-    def test_ai_can_is_scoring_only_in_both_visible_ob1_callers(self):
+    def test_ai_can_scoring_contexts_remain_in_both_native_callers(self):
+        self.assertIsNotNone(GAME_ROOT)
         strategy = (GAME_ROOT / "common/ai_strategies/00_default_strategy.txt").read_text(
             encoding="utf-8-sig"
         )

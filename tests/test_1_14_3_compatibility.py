@@ -1,4 +1,4 @@
-"""Current-beta contracts: Vanilla parity, preserved CMF additions, and exact evidence."""
+"""Historical 1.14.3 evidence and the still-current CMF compatibility patch."""
 
 import hashlib
 import json
@@ -22,30 +22,39 @@ def tokens(source):
     return re.findall(r'"(?:\\.|[^"\\])*"|[{}=]|[^\s{}=]+', source)
 
 
-class CurrentBetaTests(unittest.TestCase):
-    def test_exact_current_build_and_depot_report(self):
-        self.assertIsNotNone(GAME, "1.14.3 release validation requires the installed game")
-        app_path = inventory.find_steam_app_manifest(GAME)
-        self.assertIsNotNone(app_path, "current Steam build identity is required")
+class HistoricalEvidenceTests(unittest.TestCase):
+    def test_recorded_1_14_3_report_structure(self):
+        data = json.loads(delta.OUTPUT.read_text())
+        self.assertEqual({"added": 3, "changed": 92, "removed": 0, "total": 95}, data["counts"])
+        self.assertEqual(delta.depot._manifest_summary(delta.NEW), data["new_manifest"])
+        paths = {e["path"] for e in data["entries"]}
+        self.assertEqual(95, len(paths))
+        self.assertIn("game/common/script_values/00_infamy_values.txt", paths)
+        self.assertIn("game/common/political_movements/02_cultural_movement.txt", paths)
+        self.assertFalse(any(p.startswith("game/map_data/") or "spline_network" in p for p in paths))
+
+    def test_historical_report_reproduces_when_both_manifests_are_retained(self):
+        if not all(delta.depot.default_manifest_path(i).is_file() for i in (delta.OLD, delta.NEW)):
+            self.skipTest("historical 1.14.2/1.14.3 Steam manifests unavailable")
+        self.assertEqual(delta.depot.normalized_json(delta.build_delta()), delta.OUTPUT.read_text())
+
+    def test_historical_installed_payload_only_on_its_exact_build(self):
+        app_path = inventory.find_steam_app_manifest(GAME) if GAME else None
+        if app_path is None:
+            self.skipTest("historical 1.14.3 installation unavailable")
         app = inventory.parse_vdf(app_path.read_text())["AppState"]
-        self.assertEqual("25347710", app["buildid"])
+        if app["buildid"] != "25347710":
+            self.skipTest("historical 1.14.3 build is not installed")
         self.assertEqual("5228357714133991559", app["InstalledDepots"]["529341"]["manifest"])
         self.assertEqual("1.14-openbeta", app["UserConfig"]["BetaKey"])
         settings = json.loads((GAME.parent / "launcher/launcher-settings.json").read_text())
         self.assertEqual("1.14.3", settings["rawVersion"])
-        data = delta.build_delta()
-        self.assertEqual(delta.depot.normalized_json(data), delta.OUTPUT.read_text())
-        self.assertEqual({"added": 3, "changed": 92, "removed": 0, "total": 95}, data["counts"])
-        delta.depot.verify_current_payload(data, GAME)
-        paths = {e["path"] for e in data["entries"]}
-        self.assertIn("game/common/script_values/00_infamy_values.txt", paths)
-        self.assertIn("game/common/political_movements/02_cultural_movement.txt", paths)
-        locked = json.loads((ROOT / "Docs/compatibility/override_inventory.json").read_text())
-        self.assertFalse(paths & {"game/" + e["path"] for e in locked["same_path_files"]})
-        self.assertFalse(any(p.startswith("game/map_data/") or "spline_network" in p for p in paths))
+        delta.depot.verify_current_payload(json.loads(delta.OUTPUT.read_text()), GAME)
 
-    def test_current_manifest_tampering_is_rejected(self):
+    def test_historical_manifest_tampering_is_rejected_when_available(self):
         path = delta.depot.default_manifest_path(delta.NEW)
+        if not path.is_file():
+            self.skipTest("historical 1.14.3 Steam manifest unavailable")
         data = bytearray(path.read_bytes())
         data[-1] ^= 1
         with tempfile.TemporaryDirectory() as temporary:
@@ -54,6 +63,8 @@ class CurrentBetaTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "SHA-256"):
                 delta.depot.decode_manifest(altered, delta.NEW)
 
+
+class RetainedCmfPatchTests(unittest.TestCase):
     def test_territorial_goals_equal_vanilla_except_cmf_hook(self):
         self.assertIsNotNone(GAME)
         for filename in ("00_annex_country.txt", "03_conquer_state.txt", "21_return_state.txt"):

@@ -262,6 +262,11 @@ class StoryWarRouteTests(unittest.TestCase):
             back_down.index("sb_story_humiliation_resolve = yes"),
         )
         self.assertIn("sb_story_humiliation_resolve = yes", war_end)
+        self.assertIn("sb_natal_story_resolve_bound_result = yes", resolver)
+        resolver += object_block(
+            "common/scripted_effects/sb_story_war_effects.txt",
+            "sb_natal_story_resolve_bound_result",
+        )
 
         for route in ("natal", "martinus"):
             with self.subTest(route=route):
@@ -849,7 +854,7 @@ class StoryWarRouteTests(unittest.TestCase):
         )
         resolver = object_block(
             "common/scripted_effects/sb_story_war_effects.txt",
-            "sb_story_humiliation_resolve",
+            "sb_natal_story_resolve_bound_result",
         )
 
         for token in (
@@ -876,7 +881,7 @@ class StoryWarRouteTests(unittest.TestCase):
         events_path = "events/sb_natal_crisis_events.txt"
         triggers_path = "common/scripted_triggers/sb_natal_interwar_triggers.txt"
         effects = text(effects_path)
-        resolver = object_block(effects_path, "sb_story_humiliation_resolve")
+        resolver = object_block(effects_path, "sb_natal_story_resolve_bound_result")
         watchdog = object_block(events_path, "sb_natal_crisis.098")
 
         for begin, result, event_id in (
@@ -902,6 +907,7 @@ class StoryWarRouteTests(unittest.TestCase):
         self.assertIn("id = sb_natal_crisis.070", queue)
         self.assertIn("id = sb_natal_crisis.080", queue)
         self.assertIn("id = sb_natal_crisis.081", queue)
+        self.assertIn("id = sb_natal_crisis.082", queue)
         self.assertIn("sb_natal_terminal_outcome_popup_receipt_var", recover)
         self.assertIn("is_country_alive = yes", recover)
         self.assertIn("sb_natal_terminal_outcome_received_var", consume)
@@ -918,19 +924,22 @@ class StoryWarRouteTests(unittest.TestCase):
             (".070", "sb_natal_story_terminal_ora_victory_event_authority"),
             (".080", "sb_natal_story_terminal_zulu_victory_event_authority"),
             (".081", "sb_natal_story_terminal_zulu_neutral_event_authority"),
+            (".082", "sb_natal_story_terminal_zulu_defeat_event_authority"),
         ):
             with self.subTest(event=event_id):
                 event = object_block(events_path, f"sb_natal_crisis{event_id}")
                 self.assertIn("sb_natal_terminal_outcome_delivery_queued_var", event)
                 self.assertIn("sb_natal_terminal_outcome_popup_receipt_var months = 4", event)
                 self.assertIn(authority, event)
-                self.assertIn("sb_natal_story_consume_terminal_outcome = yes", event)
+                finish = "sb_natal_story_handoff_zulu_defeat" if event_id == ".070" else "sb_natal_story_consume_terminal_outcome"
+                self.assertIn(f"{finish} = yes", event)
                 self.assertNotIn("country_definition = cd:", event)
 
         for authority, result in (
             ("sb_natal_story_terminal_ora_victory_event_authority", "sb_natal_terminal_outcome_ora_victory_var"),
             ("sb_natal_story_terminal_zulu_victory_event_authority", "sb_natal_terminal_outcome_zulu_victory_var"),
             ("sb_natal_story_terminal_zulu_neutral_event_authority", "sb_natal_terminal_outcome_zulu_neutral_var"),
+            ("sb_natal_story_terminal_zulu_defeat_event_authority", "sb_natal_terminal_outcome_zulu_defeat_var"),
         ):
             with self.subTest(authority=authority):
                 trigger = object_block(triggers_path, authority)
@@ -1332,8 +1341,8 @@ class StoryWarRouteTests(unittest.TestCase):
             war_end,
             "if",
             "sb_zulu_swazi_play_scope",
-            "sb_zulu_apply_swazi_campaign_victory",
-            "sb_zulu_apply_swazi_campaign_defeat",
+            "RESULT = 1",
+            "RESULT = 2",
             "sb_zulu_apply_swazi_campaign_stalemate",
         )
         self.assertEqual(2, swazi.count("has_variable = sb_zulu_swazi_target_state_scope"))

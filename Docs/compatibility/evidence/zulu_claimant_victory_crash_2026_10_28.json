@@ -1,0 +1,381 @@
+{
+  "date": "2026-10-28",
+  "crash": "victoria3_01260928_141838",
+  "game_version": "1.14.5",
+  "inputs": [
+    {
+      "path": "/Users/depro/Documents/Paradox Interactive/Victoria 3/save games/autosave.v3",
+      "copy": "/private/tmp/sb-claimant-victory-crash-2026-10-28/autosave.v3",
+      "bytes": 139874348,
+      "sha256": "1c35a46b97c72723549e378f8416b50312377c004cb5f7450ec9700d59ccd361"
+    },
+    {
+      "path": "/Users/depro/Documents/Paradox Interactive/Victoria 3/save games/autosave_1.v3",
+      "copy": "/private/tmp/sb-claimant-victory-crash-2026-10-28/autosave_1.v3",
+      "bytes": 139942319,
+      "sha256": "a34af488d2c3e15f26c708c1a984fa613b394c43559e3dcce15d53c4d275c9d9"
+    },
+    {
+      "path": "/Users/depro/Documents/Paradox Interactive/Victoria 3/save games/autosave_2.v3",
+      "copy": "/private/tmp/sb-claimant-victory-crash-2026-10-28/autosave_2.v3",
+      "bytes": 139242961,
+      "sha256": "f62fb3e3bc308d4f784ff544cb687f21f2083d28a859df99e0692b578943f59d"
+    },
+    {
+      "path": "/Users/depro/Documents/Paradox Interactive/Victoria 3/crashes/victoria3_01260928_141838/exception.txt",
+      "copy": "/private/tmp/sb-claimant-victory-crash-2026-10-28/crash/exception.txt",
+      "bytes": 6041,
+      "sha256": "a82acb9b4febbfc9c44d72243812ce597d440adea6f0649cbef63652faf124e4"
+    },
+    {
+      "path": "/Users/depro/Documents/Paradox Interactive/Victoria 3/crashes/victoria3_01260928_141838/logs/error.log",
+      "copy": "/private/tmp/sb-claimant-victory-crash-2026-10-28/crash/logs/error.log",
+      "bytes": 206192,
+      "sha256": "0df53ff3be0b06123914e23144e2b58508bd21ab5a9e4e00a87ca3f5b23299ff"
+    },
+    {
+      "path": "/Users/depro/Documents/Paradox Interactive/Victoria 3/crashes/victoria3_01260928_141838/logs/debug.log",
+      "copy": "/private/tmp/sb-claimant-victory-crash-2026-10-28/crash/logs/debug.log",
+      "bytes": 447703,
+      "sha256": "8e8f6b7d18cefb1732a1245fa0a3ffbdaa99e625ceb2842fc5d3d7aa5ef9bf80"
+    },
+    {
+      "path": "/Users/depro/Documents/Paradox Interactive/Victoria 3/crashes/victoria3_01260928_141838/logs/system.log",
+      "copy": "/private/tmp/sb-claimant-victory-crash-2026-10-28/crash/logs/system.log",
+      "bytes": 1058,
+      "sha256": "9d1deed0a83fb15695b7035a1b118f0f568c22a403f7f46d1fb95c5840178068"
+    },
+    {
+      "path": "/Users/depro/Documents/Paradox Interactive/Victoria 3/crashes/victoria3_01260928_141838/logs/game.log",
+      "copy": "/private/tmp/sb-claimant-victory-crash-2026-10-28/crash/logs/game.log",
+      "bytes": 80080,
+      "sha256": "7cb1e2d0526e04d34f8dc603e0d27dd4f405c4966d35a52b609129cb94c20fb8"
+    }
+  ],
+  "stack": [
+    "CPdxGuiDataManager::SetDataContextForWidgetInternal",
+    "CPdxGuiDataManager::SetDataContextForWidget",
+    "CEventWindow::Setup",
+    "CPopupManager::ShowEventWindows"
+  ],
+  "last_error": "Could not find widget 'event_window_char' in file 'gui/eventwindow.gui'",
+  "confirmed_defects": [
+    "sb_court_succession.005 references nonexistent event_window_char",
+    "sb_court_restore_dynastic_roster unconditionally transfers living characters, including actors already owned by the winner"
+  ],
+  "correction": [
+    "Use installed event_window_1char_tabloid with the existing victor portrait scope",
+    "Only transfer survivors whose owner differs from the actual winner"
+  ],
+  "other_resolution_diagnostics": [
+    "duplicate je_sb_zulu_kingdom warning",
+    "Failed to generate leader for Landowners in KwaZulu assertion",
+    "War.GetWarParticipant(Country.GetReference()).IsValid assertion"
+  ],
+  "limitations": [
+    "The actual crash stack is popup setup, not military allocation or war-result processing",
+    "All captured saves precede victory; no post-victory save verifies cast survival or final winner",
+    "Other resolution assertions are not established as causes of this fatal crash; monitor the replay",
+    "Native military household allocation and recruitment remain unresolved; see recorded post-split workforce"
+  ],
+  "observations": [
+    {
+      "save": "autosave.v3",
+      "date": "1839.11.1",
+      "countries": {
+        "481": {
+          "definition": "ZUL",
+          "ruler": "4477",
+          "heir": "4294967295",
+          "states": "{ 780 }",
+          "capital": "780",
+          "flags": null,
+          "civil_war": null,
+          "last_civil_war_date": null
+        },
+        "16777220": {
+          "definition": "ZUL",
+          "ruler": "4479",
+          "heir": "4294967295",
+          "states": "{ 779 }",
+          "capital": "779",
+          "flags": null,
+          "civil_war": "yes",
+          "last_civil_war_date": null
+        }
+      },
+      "states": {
+        "779": {
+          "country": "16777220",
+          "region": "STATE_ZULULAND",
+          "state_region": null,
+          "capital": "4469",
+          "provinces": "{",
+          "buildings": null
+        },
+        "780": {
+          "country": "481",
+          "region": "STATE_NATAL",
+          "state_region": null,
+          "capital": "4490",
+          "provinces": "{",
+          "buildings": null
+        }
+      },
+      "buildings": {
+        "7718": {
+          "state": "780",
+          "building": "building_barrack",
+          "levels": "1",
+          "staffing": "0.071",
+          "active": "yes",
+          "production_methods": "{ \"pm_no_organization\" \"pm_no_organization\" }"
+        },
+        "7720": {
+          "state": "779",
+          "building": "building_barrack",
+          "levels": "3",
+          "staffing": "2.922",
+          "active": "yes",
+          "production_methods": "{ \"pm_no_organization\" \"pm_no_organization\" }"
+        },
+        "7721": {
+          "state": "779",
+          "building": "building_conscription_center",
+          "levels": "11",
+          "staffing": "10.89198",
+          "active": "yes",
+          "production_methods": "{ \"pm_sb_customary_muster_conscription\" }"
+        }
+      },
+      "unit_count": {
+        "16777220": 14,
+        "481": 2
+      },
+      "manpower": {
+        "481": 71,
+        "16777220": 13745
+      }
+    },
+    {
+      "save": "autosave_1.v3",
+      "date": "1839.10.1",
+      "countries": {
+        "481": {
+          "definition": "ZUL",
+          "ruler": "4477",
+          "heir": "4294967295",
+          "states": "{ 780 }",
+          "capital": "780",
+          "flags": null,
+          "civil_war": null,
+          "last_civil_war_date": null
+        },
+        "16777220": {
+          "definition": "ZUL",
+          "ruler": "4479",
+          "heir": "4294967295",
+          "states": "{ 779 }",
+          "capital": "779",
+          "flags": null,
+          "civil_war": "yes",
+          "last_civil_war_date": null
+        }
+      },
+      "states": {
+        "779": {
+          "country": "16777220",
+          "region": "STATE_ZULULAND",
+          "state_region": null,
+          "capital": "4469",
+          "provinces": "{",
+          "buildings": null
+        },
+        "780": {
+          "country": "481",
+          "region": "STATE_NATAL",
+          "state_region": null,
+          "capital": "4490",
+          "provinces": "{",
+          "buildings": null
+        }
+      },
+      "buildings": {
+        "7718": {
+          "state": "780",
+          "building": "building_barrack",
+          "levels": "1",
+          "staffing": "0.07",
+          "active": "yes",
+          "production_methods": "{ \"pm_no_organization\" \"pm_no_organization\" }"
+        },
+        "7720": {
+          "state": "779",
+          "building": "building_barrack",
+          "levels": "3",
+          "staffing": "2.916",
+          "active": "yes",
+          "production_methods": "{ \"pm_no_organization\" \"pm_no_organization\" }"
+        },
+        "7721": {
+          "state": "779",
+          "building": "building_conscription_center",
+          "levels": "11",
+          "staffing": "10.89198",
+          "active": "yes",
+          "production_methods": "{ \"pm_sb_customary_muster_conscription\" }"
+        }
+      },
+      "unit_count": {
+        "16777220": 14,
+        "481": 1
+      },
+      "manpower": {
+        "481": 65,
+        "16777220": 13751
+      }
+    },
+    {
+      "save": "autosave_2.v3",
+      "date": "1839.9.1",
+      "countries": {
+        "481": {
+          "definition": "ZUL",
+          "ruler": "4477",
+          "heir": "4294967295",
+          "states": "{ 780 }",
+          "capital": "780",
+          "flags": null,
+          "civil_war": null,
+          "last_civil_war_date": null
+        },
+        "16777220": {
+          "definition": "ZUL",
+          "ruler": "4479",
+          "heir": "4294967295",
+          "states": "{ 779 }",
+          "capital": "779",
+          "flags": null,
+          "civil_war": "yes",
+          "last_civil_war_date": null
+        }
+      },
+      "states": {
+        "779": {
+          "country": "16777220",
+          "region": "STATE_ZULULAND",
+          "state_region": null,
+          "capital": "4469",
+          "provinces": "{",
+          "buildings": null
+        },
+        "780": {
+          "country": "481",
+          "region": "STATE_NATAL",
+          "state_region": null,
+          "capital": "4490",
+          "provinces": "{",
+          "buildings": null
+        }
+      },
+      "buildings": {
+        "7718": {
+          "state": "780",
+          "building": "building_barrack",
+          "levels": "1",
+          "staffing": "0.199",
+          "active": "yes",
+          "production_methods": "{ \"pm_no_organization\" \"pm_no_organization\" }"
+        },
+        "7720": {
+          "state": "779",
+          "building": "building_barrack",
+          "levels": "3",
+          "staffing": "2.922",
+          "active": "yes",
+          "production_methods": "{ \"pm_no_organization\" \"pm_no_organization\" }"
+        },
+        "7721": {
+          "state": "779",
+          "building": "building_conscription_center",
+          "levels": "11",
+          "staffing": "10.2839",
+          "active": "yes",
+          "production_methods": "{ \"pm_sb_customary_muster_conscription\" }"
+        }
+      },
+      "unit_count": {
+        "16777220": 14,
+        "481": 1
+      },
+      "manpower": {
+        "481": 199,
+        "16777220": 13194
+      }
+    }
+  ],
+  "latest_staffing": {
+    "16777220": {
+      "sb_court_dynastic_rival_scope": {
+        "type": "com",
+        "id": "4479"
+      },
+      "sb_court_dynastic_incumbent_weight_var": 177.0,
+      "sb_court_dynastic_rival_weight_var": 334.0,
+      "sb_court_dynastic_target_var": 0.65362,
+      "sb_court_dynastic_forces_rebuilt_var": {
+        "type": "boolean",
+        "id": "1"
+      }
+    },
+    "481": {
+      "sb_court_dynastic_rival_scope": {
+        "type": "com",
+        "id": "4479"
+      },
+      "sb_court_dynastic_incumbent_weight_var": 177.0,
+      "sb_court_dynastic_rival_weight_var": 334.0,
+      "sb_court_dynastic_target_var": 0.65362,
+      "sb_court_dynastic_forces_prepared_var": {
+        "type": "boolean",
+        "id": "1"
+      },
+      "sb_court_dynastic_forces_rebuilt_var": {
+        "type": "boolean",
+        "id": "1"
+      }
+    },
+    "military_pops": {
+      "779": {
+        "soldiers_workforce": 14634,
+        "soldiers_dependents": 49502,
+        "officers_workforce": 105,
+        "officers_dependents": 309
+      },
+      "780": {
+        "officers_workforce": 32,
+        "officers_dependents": 95,
+        "soldiers_workforce": 49,
+        "soldiers_dependents": 166
+      }
+    }
+  },
+  "runtime_replay": "pending DP after full restart, reload an existing checkpoint before victory",
+  "validation": {
+    "focused": 61,
+    "unit_total": 825,
+    "unit_pass": 816,
+    "unit_skip": 8,
+    "unit_failure": 1,
+    "unit_error": 0,
+    "validator_pass_warn_skip": 15,
+    "validator_failed": 2,
+    "known_failure": "Existing reviewed localisation drift: sb_klip_river_county.060/.080 and sb_natal_crisis.050",
+    "tiger": {
+      "error": 1073,
+      "warning": 149,
+      "changed_claimant_file_diagnostics": 0,
+      "additional_unrelated_warnings": "Five Bechuanaland handler scope warnings"
+    }
+  }
+}

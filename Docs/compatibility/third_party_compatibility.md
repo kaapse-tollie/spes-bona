@@ -1,6 +1,6 @@
 # Third-Party Compatibility Notes
 
-Target game version: Victoria 3 `1.14.3` Open Beta Update 2, Steam build `25347710`, branch `1.14-openbeta`.
+Target game version: Victoria 3 `1.14.5` Open Beta Update 4, Steam build `25629520`, branch `1.14-openbeta`.
 
 Required framework: Community Mod Framework `1.66.0` with patch `sb-1.14.3-r1`. The launcher dependency is pinned to `1.66.*`. Release validation pins exact tag `1.66.0`, commit `807c32ff42b75714a3a0e090c0db3357b5e46ed7`, asset `release-1.66.0.zip`, and SHA-256 `79dd0d434e6ffb617147ad1b91b73e6306139adfffcadf6774eeb32db3a09b8b`.
 
@@ -34,13 +34,18 @@ The three intentional isolated passable Bechuanaland pockets are allowlisted by 
 
 SB does not use a treaty-history `replace_path`. Its exact-path `00_historical_treaties.txt` shadows Vanilla and changes the Southern African startup rows; uniquely named treaty files remain additive. Another mod changing the same Vanilla filename requires a merged patch.
 
-SB does not override Vanilla 1.14.3's treaty-port inheritance on-action. It also relies on CMF 1.66.0's standard and double-sided journal widgets and ships no competing journal GUI copy.
+SB does not override Vanilla 1.14.5's treaty-port inheritance on-action. It also relies on CMF 1.66.0's standard and double-sided journal widgets and ships no competing journal GUI copy.
 
 ## Global Keyed Overrides
 
 Some definitions are global keyed replacements despite a Southern African design goal: dominion actions/types, Stake Colonial Claim, Abolish Monarchy, commander retirement, Frontier Colonization and Legacy Slavery, selected ideologies and technologies, state traits, companies, and political movements. The inventory identifies every object and pins its Vanilla or CMF source.
 
-The Cultural Supremacy override is rebased to patched CMF 1.66.0 and Vanilla 1.14.3's explicit-country primary-culture API, while retaining only SB's CAP exclusion. Both CMF and SB carry the API migration.
+`add_movement_enthusiasm_modifier` is also a keyed replacement: its native grant
+is unchanged, followed by hidden expiry bookkeeping for NAL's Zulu cultural
+movement only. Mods replacing that helper must retain the scoped record call for
+SB's annexation modifier preservation. No generic modifier copying is provided.
+
+The Cultural Supremacy override is rebased to patched CMF 1.66.0 and Vanilla 1.14.3's explicit-country primary-culture API, while retaining only SB's CAP exclusion. Both CMF and SB carry the API migration; these bodies and all 16 pinned CMF contracts still match the 1.14.5 baseline. The existing patch is retained without new payloads.
 
 ## Hail Columbia
 
@@ -50,9 +55,9 @@ This is an explicit deferred release gate, not permission to weaken either mod's
 
 ## Validation Authority
 
-Tiger is useful for advisory parser diagnostics. DP performs the pending 1.14.3 cold launch, fresh-start log audit, and focused engine cases in `1_14_3_runtime_matrix.md` to verify current runtime and load-order behavior. The `1_13_11_runtime_matrix.md` evidence remains historical and separate.
+Tiger is useful for advisory parser diagnostics. DP performs the pending 1.14.5 cold launch, fresh-start log audit, and focused engine cases in `1_14_5_runtime_matrix.md` to verify current runtime and load-order behavior. The `1_13_11_runtime_matrix.md` evidence remains historical and separate.
 
-Current dependency: CMF `1.66.0` plus `sb-1.14.3-r1`. The patch manifest and expected installed-tree digest are pinned by the compatibility inventory. See `Docs/compatibility/1_14_3_rebase.md` and `Docs/compatibility/1_14_3_runtime_matrix.md`; earlier matrices remain historical evidence.
+Current dependency: CMF `1.66.0` plus `sb-1.14.3-r1`. The patch manifest and expected installed-tree digest are pinned by the compatibility inventory. See `Docs/compatibility/1_14_5_rebase.md` and `Docs/compatibility/1_14_5_runtime_matrix.md`; earlier matrices remain historical evidence.
 
 
 ## Zululand movement contest

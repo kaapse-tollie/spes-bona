@@ -1,0 +1,196 @@
+# Victoria 3 1.14.5 arm64: building-linked civil-war army allocation
+# Binary SHA-256: e4806a9b315c9ed40bdafd5e6a9e3e46aca741a0a0890bded906ebcc295e2a13
+# Read-only disassembly, no binary changes.
+# Reproduce a complete function: llvm-objdump --macho --arch=arm64 --disassemble --dis-symname SYMBOL BINARY.
+
+## __ZN9CCivilWar19CalcStatePotentialsE13ECivilWarTypeRK8CCountryRK18CPoliticalMovementRK9CPdxArrayI7TPdxRefI14CInterestGroupEiERS7_I18SUprisingStateInfoiERKS7_IS8_I6CStateEiE
+# Full reproduction: /Library/Developer/CommandLineTools/usr/bin/llvm-objdump --macho --arch=arm64 --disassemble --dis-symname __ZN9CCivilWar19CalcStatePotentialsE13ECivilWarTypeRK8CCountryRK18CPoliticalMovementRK9CPdxArrayI7TPdxRefI14CInterestGroupEiERS7_I18SUprisingStateInfoiERKS7_IS8_I6CStateEiE "/Users/depro/Library/Application Support/Steam/steamapps/common/Victoria 3/binaries/victoria3.app/Contents/MacOS/victoria3"
+1001da84c:	48 21 09 9b	madd	x8, x10, x9, x8
+1001da850:	e8 33 00 f9	str	x8, [sp, #0x60]
+1001da854:	48 0b 40 b9	ldr	w8, [x26, #0x8]
+1001da858:	e8 5f 00 b9	str	w8, [sp, #0x5c]
+1001da85c:	e0 03 1a aa	mov	x0, x26
+1001da860:	35 fb 44 94	bl	__ZNK6CState14CalcUnitsCountEv
+1001da864:	e0 5b 00 b9	str	w0, [sp, #0x58]
+1001da868:	e0 03 1a aa	mov	x0, x26
+1001da86c:	65 fb 44 94	bl	__ZNK6CState14CalcShipsCountEv
+1001da870:	e0 57 00 b9	str	w0, [sp, #0x54]
+1001da874:	e0 03 1a aa	mov	x0, x26
+1001da878:	f9 fb 44 94	bl	__ZNK6CState24CalcConscriptionCapacityEv
+1001da87c:	e0 53 00 b9	str	w0, [sp, #0x50]
+1001da880:	e1 73 01 91	add	x1, sp, #0x5c
+1001da884:	e2 83 01 91	add	x2, sp, #0x60
+1001da888:	e3 a3 01 91	add	x3, sp, #0x68
+1001da88c:	e4 63 01 91	add	x4, sp, #0x58
+1001da890:	e5 53 01 91	add	x5, sp, #0x54
+1001da894:	e6 43 01 91	add	x6, sp, #0x50
+1001da898:	e0 17 40 f9	ldr	x0, [sp, #0x28]
+1001da89c:	e7 1e 00 94	bl	__ZN9CPdxArrayI18SUprisingStateInfoiE13AppendEmplaceIJ7TPdxRefI6CStateERK11CFixedPointRS6_iiiEEERS0_DpOT_
+
+## __ZN9CCivilWar19UpdateMilitarySetupERK9CPdxArrayIP10CCharacteriERK8CCountry22EMilitaryFormationType
+# Full reproduction: /Library/Developer/CommandLineTools/usr/bin/llvm-objdump --macho --arch=arm64 --disassemble --dis-symname __ZN9CCivilWar19UpdateMilitarySetupERK9CPdxArrayIP10CCharacteriERK8CCountry22EMilitaryFormationType "/Users/depro/Library/Application Support/Steam/steamapps/common/Victoria 3/binaries/victoria3.app/Contents/MacOS/victoria3"
+1001dee90:	3f 07 00 71	cmp	w25, #0x1
+1001dee94:	a0 03 00 54	b.eq	0x1001def08
+1001dee98:	99 0d 00 35	cbnz	w25, 0x1001df048
+1001dee9c:	e1 13 40 f9	ldr	x1, [sp, #0x20]
+1001deea0:	e2 03 14 aa	mov	x2, x20
+1001deea4:	28 05 00 94	bl	__ZNK9CCivilWar20ParseTransferedUnitsER9CPdxArrayIP11CCombatUnitiERK8CCountry
+1001deea8:	e1 0b 40 f9	ldr	x1, [sp, #0x10]
+1001deeac:	e2 03 1b aa	mov	x2, x27
+1001deeb0:	e3 13 40 f9	ldr	x3, [sp, #0x20]
+1001deeb4:	a6 05 00 94	bl	__ZNK9CCivilWar24ParseTransferedUnitTypesER9CPdxArrayIPK15CCombatUnitTypeiERS0_IiiERKS0_IP11CCombatUnitiE
+1001deeb8:	e2 63 01 91	add	x2, sp, #0x58
+1001deebc:	e1 03 14 aa	mov	x1, x20
+1001deec0:	25 06 00 94	bl	__ZNK9CCivilWar13TransferUnitsERK8CCountryRK24SRevolutionMilitarySetup
+1001deec4:	61 00 00 14	b	0x1001df048
+
+## __ZNK9CCivilWar20ParseTransferedUnitsER9CPdxArrayIP11CCombatUnitiERK8CCountry
+# Full reproduction: /Library/Developer/CommandLineTools/usr/bin/llvm-objdump --macho --arch=arm64 --disassemble --dis-symname __ZNK9CCivilWar20ParseTransferedUnitsER9CPdxArrayIP11CCombatUnitiERK8CCountry "/Users/depro/Library/Application Support/Steam/steamapps/common/Victoria 3/binaries/victoria3.app/Contents/MacOS/victoria3"
+/Users/depro/Library/Application Support/Steam/steamapps/common/Victoria 3/binaries/victoria3.app/Contents/MacOS/victoria3:
+(__TEXT,__text) section
+__ZNK9CCivilWar20ParseTransferedUnitsER9CPdxArrayIP11CCombatUnitiERK8CCountry:
+1001e0344:	ff 83 02 d1	sub	sp, sp, #0xa0
+1001e0348:	e9 23 03 6d	stp	d9, d8, [sp, #0x30]
+1001e034c:	fc 6f 04 a9	stp	x28, x27, [sp, #0x40]
+1001e0350:	fa 67 05 a9	stp	x26, x25, [sp, #0x50]
+1001e0354:	f8 5f 06 a9	stp	x24, x23, [sp, #0x60]
+1001e0358:	f6 57 07 a9	stp	x22, x21, [sp, #0x70]
+1001e035c:	f4 4f 08 a9	stp	x20, x19, [sp, #0x80]
+1001e0360:	fd 7b 09 a9	stp	x29, x30, [sp, #0x90]
+1001e0364:	fd 43 02 91	add	x29, sp, #0x90
+1001e0368:	f5 03 02 aa	mov	x21, x2
+1001e036c:	f3 03 01 aa	mov	x19, x1
+1001e0370:	20 15 04 b0	adrp	x0, 33445 ; 0x108485000
+1001e0374:	00 c0 0c 91	add	x0, x0, #0x330
+1001e0378:	82 e1 fb 97	bl	__ZN16NPdxTransactions20CTransactionResourceINSt3__110unique_ptrI17CBuildingDatabaseNS1_14default_deleteIS3_EEEEE18AccessOrSetEmplaceIJEEERS6_DpOT_
+1001e037c:	00 00 40 f9	ldr	x0, [x0]
+1001e0380:	e0 01 00 b5	cbnz	x0, 0x1001e03bc
+1001e0384:	28 62 03 d0	adrp	x8, 27718 ; 0x106e26000
+1001e0388:	08 d1 1c 91	add	x8, x8, #0x734 ; literal pool for: "Instance has not been created!"
+1001e038c:	e8 13 00 f9	str	x8, [sp, #0x20]
+1001e0390:	c8 03 80 52	mov	w8, #0x1e
+1001e0394:	e8 2b 00 b9	str	w8, [sp, #0x28]
+1001e0398:	ff b3 00 39	strb	wzr, [sp, #0x2c]
+1001e039c:	e2 83 00 91	add	x2, sp, #0x20
+1001e03a0:	f4 03 00 aa	mov	x20, x0
+1001e03a4:	60 00 80 52	mov	w0, #0x3
+1001e03a8:	81 00 80 52	mov	w1, #0x4
+1001e03ac:	03 00 80 52	mov	w3, #0x0
+1001e03b0:	84 0c 80 52	mov	w4, #0x64
+1001e03b4:	e8 f9 66 95	bl	__ZN4NLog12LogCallStackEjNS_9ELogLevelERK14CPdxStringViewjj
+1001e03b8:	e0 03 14 aa	mov	x0, x20
+1001e03bc:	01 00 80 52	mov	w1, #0x0
+1001e03c0:	e1 5e 52 94	bl	__ZNK17CBuildingDatabase23GetBuildingsForMilitaryE13EMilitaryType
+1001e03c4:	e0 0b 00 f9	str	x0, [sp, #0x10]
+1001e03c8:	a8 4e 8c b9	ldrsw	x8, [x21, #0xc4c]
+1001e03cc:	e8 0a 00 34	cbz	w8, 0x1001e0528
+1001e03d0:	a9 22 46 f9	ldr	x9, [x21, #0xc40]
+1001e03d4:	28 09 08 8b	add	x8, x9, x8, lsl #2
+1001e03d8:	e8 07 00 f9	str	x8, [sp, #0x8]
+1001e03dc:	08 10 2f 1e	fmov	s8, #1.50000000
+1001e03e0:	06 00 00 14	b	0x1001e03f8
+1001e03e4:	e9 0f 40 f9	ldr	x9, [sp, #0x18]
+1001e03e8:	29 11 00 91	add	x9, x9, #0x4
+1001e03ec:	e8 07 40 f9	ldr	x8, [sp, #0x8]
+1001e03f0:	3f 01 08 eb	cmp	x9, x8
+1001e03f4:	a0 09 00 54	b.eq	0x1001e0528
+1001e03f8:	e9 0f 00 f9	str	x9, [sp, #0x18]
+1001e03fc:	28 01 40 b9	ldr	w8, [x9]
+1001e0400:	e8 23 00 b9	str	w8, [sp, #0x20]
+1001e0404:	e0 83 00 91	add	x0, sp, #0x20
+1001e0408:	ba eb f9 97	bl	__ZNK7TPdxRefI6CStateE6AccessEv
+1001e040c:	e8 0b 40 f9	ldr	x8, [sp, #0x10]
+1001e0410:	08 0d 80 b9	ldrsw	x8, [x8, #0xc]
+1001e0414:	88 fe ff 34	cbz	w8, 0x1001e03e4
+1001e0418:	f5 03 00 aa	mov	x21, x0
+1001e041c:	e9 0b 40 f9	ldr	x9, [sp, #0x10]
+1001e0420:	3a 01 40 f9	ldr	x26, [x9]
+1001e0424:	5b 0f 08 8b	add	x27, x26, x8, lsl #3
+1001e0428:	04 00 00 14	b	0x1001e0438
+1001e042c:	5a 23 00 91	add	x26, x26, #0x8
+1001e0430:	5f 03 1b eb	cmp	x26, x27
+1001e0434:	80 fd ff 54	b.eq	0x1001e03e4
+1001e0438:	41 03 40 f9	ldr	x1, [x26]
+1001e043c:	e0 03 15 aa	mov	x0, x21
+1001e0440:	83 56 44 94	bl	__ZN6CState12FindBuildingERK13CBuildingType
+1001e0444:	f6 03 00 aa	mov	x22, x0
+1001e0448:	08 8c 40 f8	ldr	x8, [x0, #0x8]!
+1001e044c:	08 09 40 f9	ldr	x8, [x8, #0x10]
+1001e0450:	00 01 3f d6	blr	x8
+1001e0454:	c0 fe ff 34	cbz	w0, 0x1001e042c
+1001e0458:	c8 2e 80 b9	ldrsw	x8, [x22, #0x2c]
+1001e045c:	88 fe ff 34	cbz	w8, 0x1001e042c
+1001e0460:	dc 12 40 f9	ldr	x28, [x22, #0x20]
+1001e0464:	19 f5 7e d3	lsl	x25, x8, #2
+1001e0468:	08 00 00 14	b	0x1001e0488
+1001e046c:	68 02 40 f9	ldr	x8, [x19]
+1001e0470:	17 d9 38 f8	str	x23, [x8, w24, sxtw #3]
+1001e0474:	08 07 00 11	add	w8, w24, #0x1
+1001e0478:	68 0e 00 b9	str	w8, [x19, #0xc]
+1001e047c:	9c 13 00 91	add	x28, x28, #0x4
+1001e0480:	39 13 00 f1	subs	x25, x25, #0x4
+1001e0484:	40 fd ff 54	b.eq	0x1001e042c
+1001e0488:	88 03 40 b9	ldr	w8, [x28]
+1001e048c:	e8 23 00 b9	str	w8, [sp, #0x20]
+1001e0490:	e0 83 00 91	add	x0, sp, #0x20
+1001e0494:	cc f3 f9 97	bl	__ZNK7TPdxRefI11CCombatUnitE6AccessEv
+1001e0498:	f7 03 00 aa	mov	x23, x0
+1001e049c:	68 62 41 29	ldp	w8, w24, [x19, #0x8]
+1001e04a0:	1f 03 08 6b	cmp	w24, w8
+1001e04a4:	41 fe ff 54	b.ne	0x1001e046c
+1001e04a8:	08 07 00 11	add	w8, w24, #0x1
+1001e04ac:	00 03 22 1e	scvtf	s0, w24
+1001e04b0:	00 08 28 1e	fmul	s0, s0, s8
+1001e04b4:	09 00 38 1e	fcvtzs	w9, s0
+1001e04b8:	1f 01 09 6b	cmp	w8, w9
+1001e04bc:	34 d5 98 1a	csinc	w20, w9, w24, le
+1001e04c0:	60 0a 40 f9	ldr	x0, [x19, #0x10]
+1001e04c4:	81 7e 7d d3	ubfiz	x1, x20, #3, #32
+1001e04c8:	08 00 40 f9	ldr	x8, [x0]
+1001e04cc:	08 09 40 f9	ldr	x8, [x8, #0x10]
+1001e04d0:	02 01 80 52	mov	w2, #0x8
+1001e04d4:	00 01 3f d6	blr	x8
+1001e04d8:	f6 03 00 aa	mov	x22, x0
+1001e04dc:	68 0e 80 b9	ldrsw	x8, [x19, #0xc]
+1001e04e0:	17 78 28 f8	str	x23, [x0, x8, lsl #3]
+1001e04e4:	e8 00 00 34	cbz	w8, 0x1001e0500
+1001e04e8:	61 02 40 f9	ldr	x1, [x19]
+1001e04ec:	02 f1 7d d3	lsl	x2, x8, #3
+1001e04f0:	e0 03 16 aa	mov	x0, x22
+1001e04f4:	7e 66 73 95	bl	0x105eb9eec ; symbol stub for: _memcpy
+1001e04f8:	78 0e 40 b9	ldr	w24, [x19, #0xc]
+1001e04fc:	02 00 00 14	b	0x1001e0504
+1001e0500:	18 00 80 52	mov	w24, #0x0
+1001e0504:	7f 0e 00 b9	str	wzr, [x19, #0xc]
+1001e0508:	60 0a 40 f9	ldr	x0, [x19, #0x10]
+1001e050c:	61 02 40 f9	ldr	x1, [x19]
+1001e0510:	08 00 40 f9	ldr	x8, [x0]
+1001e0514:	08 0d 40 f9	ldr	x8, [x8, #0x18]
+1001e0518:	00 01 3f d6	blr	x8
+1001e051c:	76 02 00 f9	str	x22, [x19]
+1001e0520:	74 0a 00 b9	str	w20, [x19, #0x8]
+1001e0524:	d4 ff ff 17	b	0x1001e0474
+1001e0528:	fd 7b 49 a9	ldp	x29, x30, [sp, #0x90]
+1001e052c:	f4 4f 48 a9	ldp	x20, x19, [sp, #0x80]
+1001e0530:	f6 57 47 a9	ldp	x22, x21, [sp, #0x70]
+1001e0534:	f8 5f 46 a9	ldp	x24, x23, [sp, #0x60]
+1001e0538:	fa 67 45 a9	ldp	x26, x25, [sp, #0x50]
+1001e053c:	fc 6f 44 a9	ldp	x28, x27, [sp, #0x40]
+1001e0540:	e9 23 43 6d	ldp	d9, d8, [sp, #0x30]
+1001e0544:	ff 83 02 91	add	sp, sp, #0xa0
+1001e0548:	c0 03 5f d6	ret
+
+## __ZNK9CCivilWar13TransferUnitsERK8CCountryRK24SRevolutionMilitarySetup
+# Full reproduction: /Library/Developer/CommandLineTools/usr/bin/llvm-objdump --macho --arch=arm64 --disassemble --dis-symname __ZNK9CCivilWar13TransferUnitsERK8CCountryRK24SRevolutionMilitarySetup "/Users/depro/Library/Application Support/Steam/steamapps/common/Victoria 3/binaries/victoria3.app/Contents/MacOS/victoria3"
+1001e0aa0:	61 ff ff 54	b.ne	0x1001e0a8c
+1001e0aa4:	15 00 00 14	b	0x1001e0af8
+1001e0aa8:	fb 57 40 f9	ldr	x27, [sp, #0xa8]
+1001e0aac:	69 7b 76 b8	ldr	w9, [x27, x22, lsl #2]
+1001e0ab0:	3f 05 00 71	cmp	w9, #0x1
+1001e0ab4:	2b 02 00 54	b.lt	0x1001e0af8
+1001e0ab8:	e0 0b 44 a9	ldp	x0, x2, [sp, #0x40]
+1001e0abc:	35 bd 00 94	bl	__ZN18CCombatUnitManager18TransferCombatUnitER11CCombatUnitR18CMilitaryFormation
+1001e0ac0:	e9 3f 40 f9	ldr	x9, [sp, #0x78]
+1001e0ac4:	e8 87 80 b9	ldrsw	x8, [sp, #0x84]
+1001e0ac8:	2a 0d 08 8b	add	x10, x9, x8, lsl #3
+1001e0acc:	4a 81 5f f8	ldur	x10, [x10, #-0x8]

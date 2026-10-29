@@ -1,149 +1,29 @@
-﻿# Spes Bona - Zulu dynastic stability JE
-# ==============================================================================
-# This JE tracks whether the post-Shaka royal order survives:
-#   - the Natal / Blood River crisis
-#   - the coastal Port Natal / British intervention lane
-#   - the later Dingane-era Swazi pressure release valve
-# ==============================================================================
-
+﻿# Ongoing institutions. Exit retains the country registry and can later re-enter.
 je_sb_zulu_kingdom = {
-	group = je_group_historical_content
-
-	icon = "gfx/interface/icons/invention_icons/dynamite.dds"
-
-	scripted_progress_bar = sb_zulu_dynastic_stability_bar
-
-	is_shown_in_lobby = {
-		OR = {
-			c:ZUL ?= this
-			c:NGN ?= this
-		}
-	}
-
-	possible = {
-		sb_is_zulu_dynasty_country = yes
-		NOT = { has_variable = sb_zulu_dynasty_secured_var }
-	}
-
-	scripted_button = je_sb_zulu_enforce_dynastic_claims_button
-	scripted_button = je_sb_zulu_relax_dynastic_claims_button
-
-	immediate = {
-		if = {
-			limit = {
-				NOT = { has_variable = sb_zulu_dynastic_stability_seeded_var }
-			}
-			set_variable = sb_zulu_dynastic_stability_seeded_var
-			je:je_sb_zulu_kingdom ?= {
-				set_bar_progress = {
-					value = 50
-					name = sb_zulu_dynastic_stability_bar
-				}
-			}
-		}
-		sb_zulu_update_dynastic_stability_modifiers = yes
-		sb_zulu_sync_ai_dynasty_authority = yes
-	}
-
-	status_desc = {
-		first_valid = {
-			triggered_desc = {
-				desc = je_sb_zulu_kingdom_status_secure
-				trigger = {
-					scope:journal_entry = {
-						"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" >= 75
-					}
-				}
-			}
-			triggered_desc = {
-				desc = je_sb_zulu_kingdom_status_steady
-				trigger = {
-					scope:journal_entry = {
-						"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" >= 50
-					}
-				}
-			}
-			triggered_desc = {
-				desc = je_sb_zulu_kingdom_status_crisis
-				trigger = {
-					scope:journal_entry = {
-						"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 15
-					}
-				}
-			}
-			triggered_desc = {
-				desc = je_sb_zulu_kingdom_status_precarious
-				trigger = {
-					scope:journal_entry = {
-						"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 35
-					}
-				}
-			}
-			desc = je_sb_zulu_kingdom_status
-		}
-	}
-
-	complete = {
-		custom_tooltip = {
-			text = je_sb_zulu_kingdom_complete_dynasty
-			scope:journal_entry = {
-				"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" >= 100
-			}
-		}
-	}
-
-	on_monthly_pulse = {
-		effect = {
-			sb_zulu_sync_ai_dynasty_authority = yes
-			sb_zulu_monthly_dynasty_housekeeping = yes
-			if = {
-				limit = {
-					NOT = { has_variable = sb_zulu_dynastic_collapse_pending_var }
-					scope:journal_entry = {
-						"scripted_bar_progress(sb_zulu_dynastic_stability_bar)" <= 0
-					}
-				}
-				set_variable = sb_zulu_dynastic_collapse_pending_var
-				trigger_event = { id = sb_zulu_dynasty.090 days = 1 popup = yes }
-			}
-		}
-	}
-
-	on_complete = {
-		trigger_event = { id = sb_zulu_dynasty.093 days = 1 popup = yes }
-		remove_variable = sb_zulu_dynastic_collapse_pending_var
-		sb_zulu_clear_ai_dynasty_authority = yes
-		sb_zulu_disable_dynastic_claims = yes
-		sb_zulu_clear_dynastic_stability_modifiers = yes
-	}
-
-	event_outcome_completed_desc = {
-		first_valid = {
-			triggered_desc = {
-				trigger = {
-					ruler = { has_template = ZUL_dingane }
-				}
-				desc = event_effects_sb_zulu_dynasty.093_dingane_tt
-			}
-			triggered_desc = {
-				trigger = {
-					ruler = { has_template = ZUL_mpande_zulu }
-				}
-				desc = event_effects_sb_zulu_dynasty.093_mpande_tt
-			}
-			triggered_desc = {
-				trigger = { always = yes }
-				desc = event_effects_sb_zulu_dynasty.093_other_tt
-			}
-		}
-	}
-
-	on_invalid = {
-		remove_variable = sb_zulu_dynastic_collapse_pending_var
-		sb_zulu_clear_ai_dynasty_authority = yes
-		sb_zulu_clear_dynastic_stability_modifiers = yes
-	}
-
-	weight = 1000
-	should_be_pinned_by_default_uninvolved_or_context = yes
+ group = je_group_historical_content
+ icon = "gfx/interface/icons/event_icons/event_scales.dds"
+ scripted_progress_bar = sb_zulu_dynastic_stability_bar
+ widget = {
+  gui = "gui/sb_prerogative_progress_bars.gui"
+  name = "sb_prerogative_progress_bars"
+  container = "com_custom_widget_container_scripted_progress_bars"
+ }
+ is_shown_in_lobby = { sb_institutions_profile_country = yes }
+ possible = { sb_institutions_eligible = yes }
+ scripted_button = sb_court_recognize_successor_button
+ scripted_button = sb_court_introduce_heir_button
+ scripted_button = sb_court_accommodation_button
+ immediate = {
+  sb_institutions_initialize = yes
+  set_variable = sb_institutions_active_var
+  sb_institutions_recalculate = yes
+ }
+ status_desc = je_sb_zulu_kingdom_status
+ invalid = { NOT = { sb_institutions_eligible = yes } }
+ on_invalid = {
+  remove_variable = sb_institutions_active_var
+  sb_institutions_clear_effects = yes
+ }
+ weight = 1000
+ should_be_pinned_by_default_uninvolved_or_context = yes
 }
