@@ -139,7 +139,8 @@ class FrontierRuntime(CourtRuntime):
             elif key == 'sb_change_prerogative':
                 scope['vars']['sb_prerogative_var'] += float(field(value, 'VALUE'))
             elif key == 'set_interest_group': scope['interest_group'] = value
-            elif key == 'add_trait' and value == 'honorable': scope.setdefault('traits', set()).add(value)
+            elif key in ('custom_tooltip', 'show_as_tooltip'): pass  # Execution does not apply previews.
+            elif key == 'add_trait' and value in ('honorable', 'innovative'): scope.setdefault('traits', set()).add(value)
             elif key == 'remove_trait': scope.setdefault('traits', set()).discard(value)
             else: super().effect([node], scope, prev)
 
@@ -258,19 +259,19 @@ class FirearmsSupplyTests(unittest.TestCase):
         for inherited_journal in (False,True):
             rt=FrontierRuntime()
             source=rt.country
-            source['vars'].update(sb_firearms_supply_weeks_var=10.4,sb_firearms_je_seeded_var=1)
+            source['vars'].update(sb_firearms_supply_weeks_var=26,sb_firearms_je_seeded_var=1)
             rebels={'id':'ZUL','vars':{},'journals':{'je_sb_adopt_firearms'} if inherited_journal else set(),
                     'market':{'mg:small_arms':{'market_goods_sell_orders':1,'shortage':False}}}
             rt.scopes['sb_court_dynastic_original']=source
             rt.effect(EFFECTS['sb_court_copy_dynastic_firearms'],rebels)
             self.assertEqual({'je_sb_adopt_firearms'},rebels['journals'])
-            self.assertEqual(10.4,rebels['vars']['sb_firearms_supply_weeks_var'])
+            self.assertEqual(26,rebels['vars']['sb_firearms_supply_weeks_var'])
             self.assertAlmostEqual(6,rebels['vars']['sb_firearms_progress_months_var'])
             self.assertIn('sb_repair_iron_age_weapons_penalty',rebels['native_syncs'])
             weekly=field(field(block('common/journal_entries/1-04_sb_firearms_acquisition.txt','je_sb_adopt_firearms'),'on_weekly_pulse'),'effect')
             rt.effect(weekly,source);rt.effect(weekly,rebels)
-            self.assertEqual(10.4,source['vars']['sb_firearms_supply_weeks_var'])
-            self.assertEqual(11.4,rebels['vars']['sb_firearms_supply_weeks_var'])
+            self.assertEqual(26,source['vars']['sb_firearms_supply_weeks_var'])
+            self.assertEqual(27,rebels['vars']['sb_firearms_supply_weeks_var'])
             self.assertNotIn('sb_firearms_supply_weeks_var',rt.scopes['root']['vars'])
 
     def test_dynastic_rebel_inherits_completed_firearms_without_reopening_journal(self):
@@ -313,7 +314,7 @@ class FirearmsSupplyTests(unittest.TestCase):
         rt.country['market'] = {}
         self.assertFalse(rt.condition(EXTRA_TRIGGERS['sb_has_firearms_market_supply'], rt.country))
 
-    def test_104_qualifying_weeks_interruptions_pause_and_completion_stops(self):
+    def test_260_qualifying_weeks_interruptions_pause_and_completion_stops(self):
         rt = FrontierRuntime(); c = rt.country
         self.start(rt)
         arms = c['market']['mg:small_arms']
@@ -324,18 +325,36 @@ class FirearmsSupplyTests(unittest.TestCase):
             for _ in range(10): self.tick(rt)
             self.assertEqual(40, c['vars']['sb_firearms_supply_weeks_var'])
         arms.update(market_goods_sell_orders=1, shortage=False)
-        for _ in range(63): self.tick(rt)
+        for _ in range(219): self.tick(rt)
         self.assertFalse(rt.condition(field(self.journal(), 'complete'), c))
         self.tick(rt)
         self.assertTrue(rt.condition(field(self.journal(), 'complete'), c))
         self.assertEqual(60, c['vars']['sb_firearms_progress_months_var'])
         self.tick(rt)
-        self.assertEqual(104, c['vars']['sb_firearms_supply_weeks_var'])
+        self.assertEqual(260, c['vars']['sb_firearms_supply_weeks_var'])
         rt.effect(field(self.journal(), 'on_complete'), c)
         self.assertIn('sb_firearms_modernized_var', c['vars'])
         self.assertNotIn('sb_firearms_supply_weeks_var', c['vars'])
         rt.effect(EXTRA_EFFECTS['sb_boost_firearms_progress_50'], c)
         self.assertNotIn('sb_firearms_supply_weeks_var', c['vars'])
+
+    def test_completion_preview_does_not_apply_event_rewards_or_prerogative(self):
+        event = block('events/sb_firearms_events.txt', 'sb_firearms.001')
+        option = field(event, 'option')
+        for innovative in (False, True):
+            with self.subTest(innovative=innovative):
+                rt = FrontierRuntime(); c = rt.country
+                self.start(rt)
+                c['ruler']['traits'] = {'innovative'} if innovative else set()
+                rt.effect(field(self.journal(), 'on_complete'), c)
+                self.assertNotIn('sb_new_tactics', c.get('modifiers', {}))
+                self.assertEqual(innovative, 'innovative' in c['ruler']['traits'])
+                self.assertEqual(['sb_firearms.001'], c['events'])
+                rt.effect([n for n in option if n[0] != 'name'], c)
+                self.assertIn('sb_new_tactics', c['modifiers'])
+                self.assertEqual({'innovative'}, c['ruler']['traits'])
+                self.assertEqual(0, c['vars']['sb_prerogative_var'])
+                self.assertNotIn('sb_new_tactics', rt.scopes['root'].get('modifiers', {}))
 
     def test_seeds_and_all_authored_rewards_keep_percentages(self):
         rt = FrontierRuntime(); self.start(rt, 'BST')
@@ -349,9 +368,9 @@ class FirearmsSupplyTests(unittest.TestCase):
                 rt = FrontierRuntime(); self.start(rt)
                 rt.effect(EXTRA_EFFECTS[name], rt.country)
                 self.assertAlmostEqual(percent * .6, rt.country['vars']['sb_firearms_progress_months_var'])
-        rt.country['vars']['sb_firearms_supply_weeks_var'] = 100
+        rt.country['vars']['sb_firearms_supply_weeks_var'] = 250
         rt.effect(EXTRA_EFFECTS['sb_boost_firearms_progress_50'], rt.country)
-        self.assertEqual(104, rt.country['vars']['sb_firearms_supply_weeks_var'])
+        self.assertEqual(260, rt.country['vars']['sb_firearms_supply_weeks_var'])
         self.assertEqual(60, rt.country['vars']['sb_firearms_progress_months_var'])
 
     def test_all_authored_tags_share_gate_and_unrelated_tags_do_not_qualify(self):
@@ -367,7 +386,7 @@ class FirearmsSupplyTests(unittest.TestCase):
             with self.subTest(british=british):
                 rt = FrontierRuntime(); c = rt.country
                 self.start(rt)
-                c['vars']['sb_firearms_supply_weeks_var'] = 41.6
+                c['vars']['sb_firearms_supply_weeks_var'] = 104
                 rt.effect(EXTRA_EFFECTS['sb_update_firearms_progress'], c)
                 natal = {'id': 'NAL', 'alive': True, 'vars': {'sb_natalia_british_colony_resolved_var': 1}}
                 rt.countries['c:NAL'] = natal
@@ -384,7 +403,7 @@ class FirearmsSupplyTests(unittest.TestCase):
                 for name in list(c['vars']):
                     if name.startswith('sb_firearms_'): del c['vars'][name]
                 rt.effect(EXTRA_EFFECTS['sb_natal_restore_archived_zulu_firearms'], c)
-                self.assertEqual(41.6, c['vars']['sb_firearms_supply_weeks_var'])
+                self.assertEqual(104, c['vars']['sb_firearms_supply_weeks_var'])
                 self.assertAlmostEqual(24, c['vars']['sb_firearms_progress_months_var'])
                 self.assertNotIn('sb_natal_zulu_firearms_archived_var', natal['vars'])
                 c['vars']['sb_firearms_supply_weeks_var'] = 50

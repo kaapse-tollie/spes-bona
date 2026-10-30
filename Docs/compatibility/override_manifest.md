@@ -24,7 +24,7 @@ On Depro's development machine, the canonical CMF path is `/Users/depro/Document
 The current lock covers:
 
 - `39` exact-path files;
-- `114` keyed `REPLACE`, `TRY_REPLACE`, or `REPLACE_OR_CREATE` objects;
+- `123` keyed `REPLACE`, `TRY_REPLACE`, or `REPLACE_OR_CREATE` objects;
 - `18` intentionally changed state-region blocks;
 - one registered additive `zz_` override;
 - all nine localization replace files plus key-level, multi-source pins for the 20 previously silent Vanilla key collisions;
@@ -58,10 +58,12 @@ The checker fails on any unregistered `zz_` override-style file, unregistered `r
 The five retained political-movement replacements are pinned to CMF `1.66.0` and reviewed against Victoria 3 `1.14.5`. Cultural Supremacy migrates six primary-culture comparisons and one value accessor to Vanilla 1.14.3's explicit-country API in both CMF and SB. Other movement bodies and CMF extensions are preserved; the shared source-file pins are refreshed. Cultural Supremacy retains the upstream unowned-homeland and neighbouring-movement scope fixes; the only SB-specific delta is CAP creation/disband exclusion. The other retained movement deltas remain the documented CAP exclusion or Anglo-African utilitarian eligibility.
 
 The 17 October annexation follow-up adds a cultural-minority replacement pinned
-to the same installed CMF and Vanilla sources. Its only changes are a disband
+to the same installed CMF and Vanilla sources. Its gameplay changes are a disband
 alternative for NAL's specifically marked Zulu movement and an `on_disbanded`
-receipt that recreates it the next day. Full-body token parity verifies all other
-CMF fields, including native disband conditions, eligibility and recruitment.
+receipt that recreates it the next day. The 29 October deeper performance pass
+also tests neighbouring insurrection before culture matching. Predicate parity
+and token parity for every other field verify the preserved CMF body, including
+native disband conditions, eligibility and recruitment.
 The existing annexation settlement gate makes this a single replacement; no
 category threshold, recurring revival or CMF dependency patch is introduced.
 See the [implementation record](zulu_national_movement_2026_10_17.md#authorized-replacement--b).
@@ -73,7 +75,20 @@ The company replacements are intentionally narrow:
 
 Vanilla's additive `on_company_disbanded` handler remains untouched. SB registers exactly one separate Mozambique cleanup handler.
 
-The Armed Forces definition is a keyed OB1 rebase. Its executable token stream is unchanged upstream; the source drift is comments and formatting only. Its sole SB delta consumes Imperial Administration's displayed flat `+50` Aristocrat attraction modifier. CMF `1.66.0` does not replace this object. Source and object hashes are pinned so later military-interest-group changes require an explicit rebase.
+The Armed Forces definition is a keyed OB1 rebase. Its executable token stream is unchanged upstream; the source drift is comments and formatting only. Its sole numerical SB delta consumes Imperial Administration's displayed flat `+50` Aristocrat attraction modifier. The 29 October performance pass also short-circuits pure guards and combines mutually exclusive wage/shared government checks, preserving scores and breakdown entries. CMF `1.66.0` does not replace this object. Source and object hashes are pinned so later military-interest-group changes require an explicit rebase.
+
+The [29 October performance pass](../performance_pass_2026_10_29.md) also repins
+SB's Absolutist creation/disband predicates and the cultural-majority neighbour
+predicate after equivalent scan/condition reordering. Its
+[deeper follow-up](../performance_deeper_pass_2026_10_29.md) applies the same
+insurrection-first check to the cultural-minority neighbour predicate. Their CMF hooks, numerical
+values and original SB exclusions remain unchanged. No dependency patch changes.
+
+The [30 October precision pass](../performance_precision_pass_2026_10_30.md)
+also evaluates the existing Boer frontier-colonisation exception first and skips
+cultural-majority competing-movement searches for exactly zero-radical pops.
+Support values are identical; the neutral loss tooltip contribution can disappear.
+Only these two SB object hashes are repinned; upstream and dependency pins remain.
 
 All three AI incorporation replacements wrap the complete current 1.14.5 bodies. Native eligibility includes primary-culture thresholds (50%, or 25% beside an owned incorporated state); ordinary incorporation requires eligibility and minimum population, while colonial incorporation also permits same-region or owned-incorporated adjacency. `sb_regional_ai_should_incorporate` admits only AI NAL owning `STATE_ZULULAND`, AI CAP owning `STATE_BECHUANALAND` or `STATE_GRIQUALAND_WEST`, and AI ORA owning `STATE_DRAKENSBERG`; every exception requires `owner = root`. These four exceptions retain their independence from population, adjacency and country type. Both `will` paths and `ai_can_incorporate_state` include the helper. Eligibility contributes to native incorporation and state/transfer scoring; no trigger bypasses engine affordability or candidate validity. The current `ai_strategy_default` and `state_transfer` objects remain Vanilla-owned, pinned caller/scoring contracts.
 
@@ -221,3 +236,7 @@ the startup history comparison and independent allegiance traits.
 The ZUL character-history override delegates Mpande's politician role to his template, which then extends the role career. The keyed Mpande override changes no starting traits, Popularity, noble status or mortality. Gqugqu's SB-only template receives the same career protection. Only those two changed override hashes are refreshed; game and CMF pins remain unchanged. See [save evidence and verification](zulu_outcome_options_harvest_2026_10_27.md).
 
 **27 October follow-up — Fecund:** DP subsequently requested a unique starting trait for Mpande, supplementing the earlier package with +5% Health, +10 Popularity and +5 Prominence. Only the `REPLACE:ZUL_mpande_zulu` object hash is refreshed for this addition; its upstream contract, the game/CMF pins, role career and other template fields remain unchanged. The new [rabbit card and prompt](../../output/imagegen/fecund_special_2026_10_27/README.md) use the established Vanilla special gold frame. This supersedes the no-trait-change statement for the earlier career-only patch above.
+
+## Zulu names-only culture override — 29 October 2026
+
+`common/cultures/sb_zulu_names.txt` replaces Vanilla's `zulu` definition solely to revise its four name pools. All non-name fields, including the current treaty-seal texture, remain identical to installed 1.14.5. The keyed inventory pins both definitions; `tests/test_zulu_names.py` checks non-name parity, unique pool entries, localisation and retained royal template identities. See the [names/traits evidence brief](../zulu_royal_names_traits_2026_10_29.md). No CMF patch change is required.

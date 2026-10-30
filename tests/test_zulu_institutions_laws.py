@@ -31,13 +31,17 @@ def tokens(text):
 
 
 def statements(text):
-    """The small gate vocabulary has no bare-list clauses."""
+    """Parse gate/effect fields and native bare lists used for provinces and backers."""
     ts = re.findall(r'\?=|>=|<=|[=<>]|[{}]|[^\s{}=<>]+', re.sub(r'#[^\n]*', '', text))
     pos = 0
     def parse():
         nonlocal pos
         out = []
         while pos < len(ts) and ts[pos] != '}':
+            if pos + 1 >= len(ts) or ts[pos + 1] not in ('=', '?=', '>=', '<=', '<', '>'):
+                out.append((ts[pos], 'bare', ts[pos]))
+                pos += 1
+                continue
             key, op, value = ts[pos:pos+3]
             pos += 3
             if value == '{':
@@ -216,9 +220,16 @@ class ConstitutionalDefinitionTests(unittest.TestCase):
         self.assertEqual('strongly_approve', actual[parent])
 
     def test_generic_absolutist_preserves_complete_cmf_body_except_scoped_exclusion(self):
+        from tests.test_performance_pass import canonical_trigger
         old = find_object(read(CMF, 'common/political_movements/ycom_00_ideological_movements.txt'), 'movement_royalist_absolutist', directive='REPLACE')
         new = find_object(read(ROOT, 'common/political_movements/zz_sb_absolutist_override.txt'), 'movement_royalist_absolutist', directive='REPLACE')
         new = re.sub(r'\s*sb_uses_authored_zulu_movements = (?:yes|no)', '', new)
+        # Only these pure predicates changed evaluation order / merged a scan.
+        # Verify their logic before retaining token parity for every other field.
+        for field in ('creation_trigger', 'disband_trigger'):
+            original, optimised = child(old, field), child(new, field)
+            self.assertEqual(canonical_trigger(statements(original)), canonical_trigger(statements(optimised)), field)
+            new = new.replace(optimised, original, 1)
         self.assertEqual(tokens(old), tokens(new))
 
     def test_three_movements_use_native_revolution_without_old_contest_suppression(self):

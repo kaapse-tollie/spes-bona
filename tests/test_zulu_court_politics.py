@@ -1,4 +1,4 @@
-"""Execute court arithmetic/selection from source; native coup/war delivery remains DP's check."""
+﻿"""Execute court arithmetic/selection from source; native coup/war delivery remains DP's check."""
 from pathlib import Path
 import hashlib
 import json
@@ -18,17 +18,25 @@ def definitions(path):
 
 VALUES = definitions('common/script_values/sb_court_politics_values.txt')
 VALUES.update(definitions('common/script_values/sb_court_dynastic_values.txt'))
+VALUES.update(definitions('common/script_values/sb_court_muster_values.txt'))
 EFFECTS = definitions('common/scripted_effects/sb_court_politics_effects.txt')
 ACTIONS = definitions('common/scripted_effects/sb_court_actions_effects.txt')
-for _file in ('coalitions', 'succession', 'rivals', 'episodes', 'cast', 'allegiance', 'concession', 'frontier', 'dynastic', 'force_split'):
+for _file in ('coalitions', 'succession', 'rivals', 'episodes', 'cast', 'allegiance', 'concession', 'frontier', 'dynastic', 'force_split', 'muster', 'population_return', 'barracks_return', 'dunn', 'later_princes'):
     EFFECTS.update(definitions(f'common/scripted_effects/sb_court_{_file}_effects.txt'))
+EFFECTS.update(definitions('common/scripted_effects/sb_hamu_bargain_effects.txt'))
 TRIGGERS = definitions('common/scripted_triggers/sb_court_politics_triggers.txt')
+TRIGGERS.update(definitions('common/scripted_triggers/sb_court_dunn_triggers.txt'))
+TRIGGERS.update(definitions('common/scripted_triggers/sb_hamu_bargain_triggers.txt'))
 TRIGGERS.update(definitions('common/scripted_triggers/sb_court_episode_triggers.txt'))
 TRIGGERS.update(definitions('common/scripted_triggers/sb_court_dynastic_triggers.txt'))
+TRIGGERS.update(definitions('common/scripted_triggers/sb_court_muster_triggers.txt'))
 TRIGGERS['sb_institutions_profile_country'] = definitions('common/scripted_triggers/sb_institutions_triggers.txt')['sb_institutions_profile_country']
 TRIGGERS['sb_is_zulu_dynasty_country'] = definitions('common/scripted_triggers/sb_firearms_triggers.txt')['sb_is_zulu_dynasty_country']
 COURT_MODIFIERS = definitions('common/static_modifiers/sb_court_modifiers.txt')
 TRAITS = extract_top_level_blocks((ROOT/'common/character_traits/sb_court_allegiance_traits.txt').read_text(encoding='utf-8-sig'))
+TRAITS.update(extract_top_level_blocks((ROOT/'common/character_traits/sb_court_trader.txt').read_text(encoding='utf-8-sig')))
+# Use the installed native personality definition for the adulthood reward.
+TRAITS['charismatic'] = extract_top_level_blocks((GAME/'common/character_traits/personality_traits.txt').read_text(encoding='utf-8-sig'))['charismatic']
 TRAIT_MODIFIERS = {name:statements(script_child(body,'character_modifier')) for name,body in TRAITS.items() if 'character_modifier' in body}
 
 
@@ -43,6 +51,7 @@ class CourtRuntime:
     def __init__(self, members):
         self.country = {'id': 'ZUL', 'vars': {'sb_institutions_active_var': 1}, 'members': members, 'movements': []}
         self.country['ruler'] = members[0] if members else None
+        self.global_vars = {}
         self.scopes = {'root': {'id': 'GBR', 'vars': {}}}
         for m in members:
             m['owner'] = self.country
@@ -63,6 +72,10 @@ class CourtRuntime:
             found = self.scopes.get(name)
             return self.ref(tail, found) if tail and found else found
         if key.startswith('modifier:'): return scope.get('modifiers', {}).get(key[9:], 0)
+        if key.startswith('global_var:'):
+            name, _, tail = key[11:].partition('.')
+            found = self.global_vars.get(name)
+            return self.ref(tail, found, scope) if tail and found is not None else found
         if key.startswith('var:'):
             name, _, tail = key[4:].partition('.')
             found = scope['vars'].get(name)
@@ -112,6 +125,7 @@ class CourtRuntime:
                 f = dict((k,v) for k,_,v in value)
                 r = any(self.condition([n for n in value if n[0] != 'variable'], m, scope) for m in scope.get('members' if f['variable'] == 'sb_court_members' else f['variable'], []))
             elif key == 'country_definition': r = scope.get('id') == value.removeprefix('cd:')
+            elif key == 'has_global_variable': r = value in self.global_vars
             elif key == 'has_variable': r = value in scope['vars']
             elif key == 'has_modifier': r = value in scope.get('modifiers', {})
             elif key == 'has_trait': r = value in scope.get('traits', set())
@@ -150,6 +164,9 @@ class CourtRuntime:
         result = 0
         for key, op, value in self.branches(nodes, scope, prev):
             if key == 'desc': continue
+            if key == 'floor':
+                result = math.floor(result)
+                continue
             if key == 'round':
                 result = math.floor(result + 0.5)
                 continue
@@ -189,6 +206,10 @@ class CourtRuntime:
                         return x
                     body = subst(body)
                 self.effect(body, scope, prev)
+            elif key == 'set_global_variable':
+                fields = {'name': value, 'value': '1'} if isinstance(value,str) else dict((k,v) for k,_,v in value)
+                self.global_vars[fields['name']] = self.ref(fields.get('value','1'),scope,prev)
+            elif key == 'remove_global_variable': self.global_vars.pop(value,None)
             elif key == 'save_scope_as': self.scopes[value] = scope
             elif key == 'set_variable':
                 if isinstance(value, str): scope['vars'][value] = 1
@@ -207,7 +228,8 @@ class CourtRuntime:
             elif key == 'remove_variable': scope['vars'].pop(value, None)
             elif key == 'add_trait':
                 traits = scope.setdefault('traits', set())
-                replaced = re.search(r'replace\s*=\s*\{([^}]+)\}', TRAITS[value]).group(1).split()
+                replacement = re.search(r'replace\s*=\s*\{([^}]*)\}', TRAITS[value])
+                replaced = replacement.group(1).split() if replacement else []
                 traits.difference_update(replaced)
                 traits.add(value)
             elif key == 'remove_trait':scope.setdefault('traits',set()).discard(value)
@@ -237,7 +259,7 @@ class CourtRuntime:
                 limit = next(v for k, _, v in value if k == 'limit')
                 for m in scope['movements']:
                     if self.condition(limit,m,scope): self.effect([n for n in value if n[0]!='limit'],m,scope)
-            elif key.startswith(('scope:', 'var:', 'ig:')) or key in ('owner', 'ruler'):
+            elif key.startswith(('scope:', 'var:', 'ig:', 'global_var:')) or key in ('owner', 'ruler'):
                 target = self.ref(key, scope, prev)
                 if target is not None: self.effect(value, target, scope)
             elif key == 'add_treasury': scope['gold_reserves'] += self.ref(value, scope, prev)
@@ -306,8 +328,8 @@ class CourtBackingTests(unittest.TestCase):
         self.assertEqual(supporter['prominence'],runtime.ref('prominence',supporter))
         self.assertTrue(runtime.condition(TRIGGERS['sb_court_royal_candidate'], heir))
         self.assertIn('sb_court_endorsement_uncommitted_trait', heir['traits'])
-        self.assertNotIn('sb_court_claimant_trait', heir['traits'])
-        self.assertEqual(heir['prominence'],runtime.ref('prominence',heir))
+        self.assertIn('sb_court_claimant_trait', heir['traits'])
+        self.assertEqual(heir['prominence'] + 25,runtime.ref('prominence',heir))
         for name, value in original_vars.items():
             self.assertIs(value, claimant['vars'][name])
         runtime.backing()
@@ -431,6 +453,7 @@ class CourtContractsTests(unittest.TestCase):
     def test_only_claimant_card_has_native_bonus_and_forced_faction_ideologies_are_gone(self):
         localization = self.source('localization/english/sb_court_politics_l_english.yml')
         for name, body in TRAITS.items():
+            if not name.startswith('sb_court_') or name == 'sb_court_trader': continue
             if name == 'sb_court_claimant_trait':
                 self.assertEqual([('character_prominence_add','=', '25')],TRAIT_MODIFIERS[name])
             else:self.assertNotIn('_modifier', body)
@@ -454,6 +477,48 @@ class CourtContractsTests(unittest.TestCase):
         for asset in re.findall(r'(?:texture|progresstexture|noprogresstexture) = "([^"]+)"', gui):
             self.assertTrue((GAME/asset).is_file(), asset)
         self.assertIn('gfx/interface/progressbar/progressbar_marker.dds', native_gui)
+
+    def test_challenge_marker_matches_projection_without_a_cmf_container(self):
+        gui = self.source('gui/sb_prerogative_progress_bars.gui')
+        marker = script_child(gui, 'progressbar')
+        self.assertIn('name = sb_court_challenge_threshold_marker', marker)
+        values = re.search(r'blockoverride "values"\s*\{([^}]+)\}', marker)[1]
+        fields = dict(re.findall(r'(min|max|value)\s*=\s*([\d.]+)', values))
+        self.assertEqual({'min': '0', 'max': '1', 'value': '0.25'}, fields)
+        runtime = CourtRuntime([])
+        runtime.country['vars']['sb_prerogative_var'] = -50
+        projection = definitions('common/script_values/sb_institutions_values.txt')['sb_prerogative_bar_projection']
+        bar = dict((k,v) for k,_,v in definitions('common/scripted_progress_bars/sb_progress_bars.txt')['sb_zulu_dynastic_stability_bar'])
+        normalised = (runtime.calc(projection, runtime.country)-float(bar['min_value']))/(float(bar['max_value'])-float(bar['min_value']))
+        self.assertEqual(normalised, float(fields['value']))
+        cmf = (ROOT.parent/'Community Mod Framework/gui/com_gui_progressbars.gui').read_text(encoding='utf-8-sig')
+        for template in ('com_target_bar', 'com_target_bar_marker'):
+            self.assertIn(f'using = {template}', marker)
+            self.assertIn(f'template {template} {{', cmf)
+        self.assertIn('GuiScope.SetRoot(JournalEntry.GetCountry.MakeScope)', marker)
+        self.assertNotIn('ComProgressBarTarget', marker)
+        self.assertNotIn('tooltip =', marker)  # The overlay must not replace the effects hover.
+
+    def test_dynastic_ui_rules_follow_viewed_institutions(self):
+        gui_rules = definitions('common/scripted_guis/sb_court_roster.txt')['sb_court_dynastic_rules_applicable']
+        applicability = next(v for k,_,v in gui_rules if k == 'is_shown')
+        custom = definitions('common/customizable_localization/sb_court_custom_loc.txt')
+        runtime = CourtRuntime([])
+        runtime.scopes['root']['laws'] = {'law_type:law_sb_federated_chiefdoms'}
+        for law,expected in (('law_monarchy',True),('law_social_monarchy',True),
+                             ('law_sb_contested_crown',True),('law_sb_contested_social_crown',True),
+                             ('law_sb_federated_chiefdoms',False)):
+            runtime.country['laws'] = {'law_type:'+law}
+            self.assertEqual(expected, runtime.condition(applicability, runtime.country), law)
+            for key in ('sb_court_challenge_summary','sb_court_challenge_rule','sb_court_succession_summary'):
+                texts = [dict((k,v) for k,_,v in body) for k,_,body in custom[key] if k == 'text']
+                selected = next(t['localization_key'] for t in texts
+                                if runtime.condition(t.get('trigger',[]), runtime.country))
+                self.assertEqual(key+'_royal' if expected else
+                                 ('sb_court_succession_unavailable' if key.endswith('succession_summary') else 'sb_court_challenge_unavailable'), selected)
+        runtime.country['laws'] = {'law_type:law_monarchy'}
+        runtime.country['vars'].pop('sb_institutions_active_var')
+        self.assertFalse(runtime.condition(applicability, runtime.country))
 
     def test_titles_follow_constitution_and_roster_names_actual_allegiance(self):
         custom = definitions('common/customizable_localization/sb_court_custom_loc.txt')

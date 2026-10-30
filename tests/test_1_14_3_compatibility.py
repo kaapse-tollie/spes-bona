@@ -107,6 +107,17 @@ class RetainedCmfPatchTests(unittest.TestCase):
         self.assertEqual(1, sb_body.count("owner = { country_definition = cd:CAP }"))
         without_cap = sb_body.replace("NOT = { country_definition = cd:CAP }", "")
         without_cap = re.sub(r"disband_trigger\s*=\s*\{\s*owner\s*=\s*\{\s*country_definition\s*=\s*cd:CAP\s*\}\s*\}", "", without_cap)
+        from tests.test_performance_pass import canonical_trigger
+        from tests.test_zulu_institutions_laws import child, statements
+        old_filter = child(child(cmf_body, 'additional_radicalism_factors'), 'any_political_movement')
+        new_filter = child(child(without_cap, 'additional_radicalism_factors'), 'any_political_movement')
+        self.assertEqual(canonical_trigger(statements(old_filter)), canonical_trigger(statements(new_filter)))
+        without_cap = without_cap.replace(new_filter, old_filter, 1)
+        # Zero-radical pops skip only the neutral competing-movement multiplier.
+        weight = child(without_cap, 'pop_support_weight')
+        neutral_guard = 'NOT = { pop_radical_fraction = 0 }'
+        self.assertEqual(1, weight.count(neutral_guard))
+        without_cap = without_cap.replace(weight, weight.replace(neutral_guard, '', 1), 1)
         self.assertEqual(tokens(cmf_body), tokens(without_cap))
 
     def test_current_patch_identity_and_upstream_contracts(self):

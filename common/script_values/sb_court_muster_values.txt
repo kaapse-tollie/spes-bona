@@ -1,0 +1,66 @@
+﻿# State or country scope. Workforce excludes dependants; professions are mutually exclusive.
+sb_court_muster_workforce = {
+ value = 0
+ every_scope_pop = {
+  limit = { OR = { is_pop_type = soldiers is_pop_type = officers sb_court_muster_civilian = yes } }
+  add = this.workforce
+ }
+}
+sb_court_muster_civilian_workforce = {
+ value = 0
+ every_scope_pop = { limit = { sb_court_muster_civilian = yes } add = this.workforce }
+}
+sb_court_muster_required_workforce = {
+ value = var:sb_court_regular_quota_var
+ add = var:sb_court_conscript_quota_var
+ multiply = 1000
+ multiply = 1.2
+}
+
+# All installed land unit types have 1,000 maximum manpower. Read each service's
+# selected profession ratio, including the customary levy's 99:1 mix.
+sb_court_muster_regular_officers = {
+ value = 30
+ if = { limit = { scope:sb_court_force_origin.var:sb_court_regular_training_var = 2 } value = 250 }
+ else_if = { limit = { scope:sb_court_force_origin.var:sb_court_regular_training_var = 3 } value = 50 }
+ else_if = { limit = { scope:sb_court_force_origin.var:sb_court_regular_training_var = 4 } value = 100 }
+ else_if = { limit = { scope:sb_court_force_origin.var:sb_court_regular_training_var = 5 } value = 150 }
+ else_if = { limit = { scope:sb_court_force_origin.var:sb_court_regular_training_var = 6 } value = 200 }
+ else_if = { limit = { scope:sb_court_force_origin.var:sb_court_regular_training_var = 7 } value = 250 }
+}
+sb_court_muster_levy_officers = {
+ value = 30
+ if = { limit = { scope:sb_court_force_origin.var:sb_court_conscript_training_var = 2 } value = 50 }
+ else_if = { limit = { scope:sb_court_force_origin.var:sb_court_conscript_training_var = 3 } value = 100 }
+ else_if = { limit = { scope:sb_court_force_origin.var:sb_court_conscript_training_var = 4 } value = 150 }
+ else_if = { limit = { scope:sb_court_force_origin.var:sb_court_conscript_training_var = 5 } value = 200 }
+ else_if = { limit = { scope:sb_court_force_origin.var:sb_court_conscript_training_var = 6 } value = 250 }
+ else_if = { limit = { scope:sb_court_force_origin.var:sb_court_conscript_training_var = 7 } value = 10 }
+}
+sb_court_muster_officer_jobs = {
+ value = var:sb_court_regular_quota_var
+ multiply = sb_court_muster_regular_officers
+ add = { value = var:sb_court_conscript_quota_var multiply = sb_court_muster_levy_officers }
+}
+sb_court_muster_soldier_jobs = {
+ value = var:sb_court_regular_quota_var
+ add = var:sb_court_conscript_quota_var
+ multiply = 1000
+ subtract = sb_court_muster_officer_jobs
+}
+sb_court_dynastic_officer_share = {
+ value = sb_court_dynastic_claimant_share
+ if = {
+  limit = { OR = { var:sb_court_regular_total_var > 0 var:sb_court_conscript_total_var > 0 } }
+  value = scope:sb_court_dynastic_rival_country.sb_court_muster_officer_jobs
+  divide = { value = scope:sb_court_dynastic_incumbent_country.sb_court_muster_officer_jobs add = scope:sb_court_dynastic_rival_country.sb_court_muster_officer_jobs }
+ }
+}
+sb_court_dynastic_soldier_share = {
+ value = sb_court_dynastic_claimant_share
+ if = {
+  limit = { OR = { var:sb_court_regular_total_var > 0 var:sb_court_conscript_total_var > 0 } }
+  value = scope:sb_court_dynastic_rival_country.sb_court_muster_soldier_jobs
+  divide = { value = scope:sb_court_dynastic_incumbent_country.sb_court_muster_soldier_jobs add = scope:sb_court_dynastic_rival_country.sb_court_muster_soldier_jobs }
+ }
+}

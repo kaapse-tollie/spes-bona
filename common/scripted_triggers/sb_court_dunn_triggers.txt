@@ -1,0 +1,69 @@
+﻿# Country scope; no event ROOT dependence or unrelated-war requirement.
+sb_court_british_natal_context = {
+ c:NAL ?= { is_country_alive = yes has_variable = sb_natalia_british_colony_resolved_var }
+ c:GBR ?= { is_country_alive = yes any_subject_or_below = { country_definition = cd:NAL } }
+}
+sb_court_dunn_frontier_settled = {
+ sb_court_british_natal_context = yes
+ c:NAL = {
+  has_variable = sb_klip_river_county_resolved_var
+  NOR = {
+   has_variable = sb_klip_river_boer_departure_pending_var
+   has_variable = sb_klip_river_secession_delivery_pending_var
+   has_variable = sb_klip_river_punitive_delivery_pending_var
+   has_variable = sb_klip_river_punitive_outcome_delivery_pending_var
+   has_variable = sb_klip_river_secession_play_scope
+   has_variable = sb_klip_river_punitive_play_scope
+  }
+ }
+}
+sb_court_dunn_visit_eligible = {
+ sb_is_zulu_dynasty_country = yes
+ has_variable = sb_institutions_active_var
+ sb_court_has_royal_law = yes
+ game_date >= 1855.1.1
+ sb_court_dunn_frontier_settled = yes
+ ruler ?= { has_template = ZUL_mpande_zulu is_character_alive = yes }
+ NOR = { has_variable = sb_court_dynastic_crisis_var has_variable = sb_court_accession_open_var }
+ any_scope_character = { has_template = ZUL_cetshwayo_heir sb_court_royal_candidate = yes var:sb_court_home_scope ?= prev }
+ any_scope_character = { has_template = ZUL_mbuyazi_heir sb_court_royal_candidate = yes var:sb_court_home_scope ?= prev }
+}
+sb_court_dunn_offer_valid = {
+ has_variable = sb_court_dunn_offer_var
+ sb_court_dunn_visit_eligible = yes
+ var:sb_court_dunn_visitor_scope ?= {
+  has_template = SB_ZUL_john_dunn sb_court_adult_member = yes
+  owner ?= prev var:sb_court_home_scope ?= prev
+  is_in_exile_pool = no is_in_void = no
+  NOT = { has_variable = sb_court_successor_pledge_scope }
+ }
+ var:sb_court_dunn_prince_scope ?= { has_template = ZUL_mbuyazi_heir sb_court_royal_candidate = yes owner ?= prev var:sb_court_home_scope ?= prev }
+ var:sb_court_dunn_other_prince_scope ?= { has_template = ZUL_cetshwayo_heir sb_court_royal_candidate = yes owner ?= prev var:sb_court_home_scope ?= prev }
+}
+# Character scope; the annual reservation belongs to Dunn, not a copied court country.
+sb_court_dunn_can_trade = {
+ has_template = SB_ZUL_john_dunn is_character_alive = yes
+ has_variable = sb_court_dunn_admitted_var
+ is_in_exile_pool = no is_in_void = no
+ owner ?= {
+  is_country_alive = yes sb_institutions_profile_country = yes
+  sb_court_british_natal_context = yes
+  has_journal_entry = je_sb_adopt_firearms
+  NOT = { has_variable = sb_firearms_modernized_var }
+ }
+ NOT = { has_variable = sb_court_dunn_judgement_var }
+}
+sb_court_dunn_delivery_valid = {
+ global_var:sb_court_dunn_identity_scope ?= {
+  sb_court_dunn_can_trade = yes
+  has_variable = sb_court_dunn_delivery_open_var
+  owner ?= prev var:sb_court_dunn_delivery_country_scope ?= prev
+ }
+}
+sb_court_dunn_judgement_valid = {
+ ruler ?= { has_template = ZUL_cetshwayo_heir }
+ global_var:sb_court_dunn_identity_scope ?= {
+  is_character_alive = yes has_variable = sb_court_dunn_judgement_var
+  owner ?= prev var:sb_court_dunn_judge_scope ?= prev
+ }
+}

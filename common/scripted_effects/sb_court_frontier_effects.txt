@@ -5,12 +5,12 @@ sb_court_choose_opposition_patron = {
  remove_variable = sb_court_selected_patron_scope
  set_variable = { name = sb_court_largest_rival_var value = 0 }
  every_in_list = {
-  variable = sb_court_members limit = { sb_court_episode_prince = yes }
+  variable = sb_court_members limit = { sb_court_current_opposition_prince = yes }
   scope:sb_court_country = { set_variable = { name = sb_court_largest_rival_var value = { value = var:sb_court_largest_rival_var min = prev.var:sb_court_current_weight_var } } }
  }
  ordered_in_list = {
   variable = sb_court_members
-  limit = { sb_court_episode_prince = yes var:sb_court_current_weight_var = scope:sb_court_country.var:sb_court_largest_rival_var }
+  limit = { sb_court_current_opposition_prince = yes var:sb_court_current_weight_var = scope:sb_court_country.var:sb_court_largest_rival_var }
   order_by = sb_court_claimant_identity_order position = 0
   scope:sb_court_country = { set_variable = { name = sb_court_selected_patron_scope value = prev } }
  }
@@ -105,7 +105,11 @@ sb_court_campaign_result = {
    }
   }
   if = {
-   limit = { has_variable = sb_institutions_active_var var:sb_court_$CAMPAIGN$_patron_scope ?= { is_character_alive = yes } }
+   limit = {
+    has_variable = sb_institutions_active_var
+    var:sb_court_$CAMPAIGN$_patron_scope ?= { is_character_alive = yes }
+    trigger_if = { limit = { NOT = { always = $WON$ } } var:sb_court_$CAMPAIGN$_patron_scope = { NOT = { sb_court_mpande_son_under_king = yes } } }
+   }
    every_in_list = {
     variable = sb_court_$CAMPAIGN$_changes
     limit = { sb_court_episode_neutral = yes }
@@ -157,7 +161,7 @@ sb_court_frontier_support = {
 }
 sb_court_frontier_opposition = {
  save_scope_as = sb_court_country
- if = { limit = { scope:sb_court_frontier_neutral ?= { sb_court_episode_neutral = yes } scope:sb_court_frontier_rival ?= { sb_court_episode_prince = yes } } scope:sb_court_frontier_neutral = { sb_court_commit_to_patron = { PATRON = scope:sb_court_frontier_rival } } }
+ if = { limit = { scope:sb_court_frontier_neutral ?= { sb_court_episode_neutral = yes } scope:sb_court_frontier_rival ?= { sb_court_current_opposition_prince = yes } } scope:sb_court_frontier_neutral = { sb_court_commit_to_patron = { PATRON = scope:sb_court_frontier_rival } } }
  sb_institutions_recalculate = yes
 }
 sb_court_klip_cession = {

@@ -15,7 +15,6 @@ COMPLETION_PREVIEWS = {
         "event_effects_sb_cape.104_tt",
         "event_effects_sb_cape.125_tt",
     ),
-    "je_sb_adopt_firearms": ("event_effects_sb_firearms.001_tt",),
     "je_sb_transvaal_unity": ("event_effects_sb_transvaal_unity_tt",),
     "je_sb_bst_ora_frontier": ("sb_bst_frontier_300_boer_settlers_tt",),
     "je_sb_consolidation_of_south_west_africa": (
@@ -33,6 +32,10 @@ COMPLETION_PREVIEWS = {
     ),
     "je_sb_rhodesian_venture": ("sb_rhodesian_venture_success_tt",),
     "je_sb_natal_indenture_program_v2": ("sb_natal_indian_ethnogenesis_tt",),
+}
+
+NATIVE_COMPLETION_PREVIEWS = {
+    "je_sb_adopt_firearms": "sb_apply_firearms_completion_rewards",
 }
 
 FAILURE_PREVIEWS = {
@@ -98,9 +101,39 @@ class JournalEventRewardPreviewTests(unittest.TestCase):
             on_complete = field_block(journal, "on_complete")
             if "trigger_event" not in on_complete:
                 continue
-            if not field_block(journal, "event_outcome_completed_desc"):
+            native_preview = field_block(on_complete, "show_as_tooltip")
+            native_reward = NATIVE_COMPLETION_PREVIEWS.get(journal_name)
+            if not field_block(journal, "event_outcome_completed_desc") and not (
+                native_reward and f"{native_reward} = yes" in native_preview
+            ):
                 missing.append(journal_name)
         self.assertEqual([], missing)
+
+    def test_single_firearms_outcome_uses_native_effects_and_modifier_breakdown(self):
+        journal = self.journals["je_sb_adopt_firearms"]
+        self.assertFalse(field_block(journal, "event_outcome_completed_desc"))
+        on_complete = field_block(journal, "on_complete")
+        helper = NATIVE_COMPLETION_PREVIEWS["je_sb_adopt_firearms"]
+        self.assertIn(f"{helper} = yes", field_block(on_complete, "show_as_tooltip"))
+        event = (ROOT / "events/sb_firearms_events.txt").read_text(encoding="utf-8-sig")
+        self.assertIn(f"{helper} = yes", field_block(event, "option"))
+        effects = (ROOT / "common/scripted_effects/sb_firearms_effects.txt").read_text(encoding="utf-8-sig")
+        reward = field_block(effects, helper)
+        modifier = field_block(reward, "add_modifier")
+        self.assertIn("name = sb_new_tactics", modifier)
+        self.assertIn("days = 1825", modifier)
+        self.assertNotIn("custom_tooltip", reward)
+        self.assertNotIn("dynastic_stability", reward + event)
+        self.assertNotIn("prerogative", reward + event)
+
+    def test_firearms_completion_exposes_only_its_named_requirement(self):
+        complete = field_block(self.journals["je_sb_adopt_firearms"], "complete")
+        requirement = field_block(complete, "custom_tooltip")
+        self.assertIn("text = je_sb_adopt_firearms_completion_tt", requirement)
+        self.assertIn("has_variable = sb_firearms_modernized_var", requirement)
+        self.assertIn("var:sb_firearms_supply_weeks_var >= 260", requirement)
+        self.assertNotIn("has_variable", complete.replace(requirement, ""))
+        self.assertNotIn("var:", complete.replace(requirement, ""))
 
     def test_preview_localization_resolves(self):
         expected = {

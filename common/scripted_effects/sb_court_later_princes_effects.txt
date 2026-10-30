@@ -1,0 +1,42 @@
+﻿# Country scope. Existing roster-freeze semantics also protect these later arrivals.
+sb_court_later_princes_monthly = {
+ global_var:sb_hamu_sponsor_scope ?= {
+  if = { limit = { is_country_alive = no has_variable = sb_hamu_contract_var NOR = { has_variable = sb_hamu_failed_var has_variable = sb_hamu_fulfilled_var } } sb_hamu_fail_contract = yes }
+ }
+ if = {
+  limit = { NOR = { has_variable = sb_court_dynastic_crisis_var has_variable = sb_court_accession_open_var has_variable = sb_court_civil_war_var } }
+  save_scope_as = sb_court_country
+  if = {
+   limit = { year >= 1855 NOT = { has_global_variable = sb_court_mthonga_created_var } }
+   set_global_variable = sb_court_mthonga_created_var
+   if = {
+    limit = { NOT = { is_template_used = SB_ZUL_mthonga } }
+    create_character = {
+     template = SB_ZUL_mthonga
+     on_created = {
+      owner = { save_scope_as = sb_court_country }
+      add_character_role = politician
+      set_variable = sb_court_deferred_dynast_var
+      sb_court_register_character = { FOLLOWING = 0 ALIGNMENT = 1 ENDORSEMENT = 0 }
+     }
+    }
+   }
+  }
+  if = { limit = { year >= 1857 sb_court_has_royal_law = yes NOT = { ruler ?= { has_template = ZUL_mpande_zulu } } } sb_court_declare_mthonga = yes }
+ }
+}
+sb_court_declare_mthonga = {
+ save_scope_as = sb_court_country
+ if = {
+  limit = { NOR = { has_variable = sb_court_dynastic_crisis_var has_variable = sb_court_accession_open_var has_variable = sb_court_civil_war_var } }
+  every_scope_character = {
+   limit = {
+    has_template = SB_ZUL_mthonga is_character_alive = yes is_adult = yes
+    NOR = { is_ruler_of_own_country = yes has_variable = sb_court_mthonga_declared_var has_variable = sb_court_claim_renounced_var has_variable = sb_court_retired_var }
+   }
+   remove_variable = sb_court_deferred_dynast_var
+   set_variable = sb_court_mthonga_declared_var
+   sb_court_sync_allegiance_traits = yes
+  }
+ }
+}

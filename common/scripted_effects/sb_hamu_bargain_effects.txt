@@ -1,0 +1,268 @@
+﻿# Sponsor scope; freeze cost and named house before the popup.
+sb_hamu_open_offer = {
+ if = {
+  limit = { sb_hamu_offer_available = yes }
+  set_global_variable = sb_swazi_boer_border_resolved_global_var
+  set_global_variable = sb_hamu_offer_recorded_var
+  set_global_variable = { name = sb_hamu_sponsor_scope value = this }
+  set_variable = sb_hamu_offer_open_var
+  set_variable = { name = sb_hamu_grant_var value = gold_reserves_limit }
+  set_variable = { name = sb_hamu_prince_scope value = global_var:sb_court_hamu_identity_scope }
+  set_variable = { name = sb_hamu_court_scope value = var:sb_hamu_prince_scope.owner }
+  save_scope_as = sb_hamu_sponsor
+  var:sb_hamu_court_scope = {
+   save_scope_as = sb_court_country
+   sb_court_calculate_backing = yes
+   ordered_in_list = {
+    variable = sb_court_members
+    limit = { sb_court_episode_neutral = yes }
+    order_by = var:sb_court_represented_weight_var position = 0 check_range_bounds = no
+    scope:sb_hamu_sponsor = { set_variable = { name = sb_hamu_backer_scope value = prev } }
+   }
+  }
+  trigger_event = { id = sb_hamu_bargain.001 popup = yes }
+ }
+}
+sb_hamu_accept_offer = {
+ if = {
+  limit = { sb_hamu_offer_valid = yes }
+  # Receipt first: callbacks cannot sell the same coast twice.
+  set_global_variable = sb_hamu_promise_live_var
+  set_variable = sb_hamu_contract_var
+  remove_variable = sb_hamu_offer_open_var
+  add_treasury = sb_hamu_grant_payment
+  save_scope_as = sb_hamu_sponsor
+  var:sb_hamu_prince_scope = { save_scope_as = sb_hamu_prince set_variable = { name = sb_court_endorsement_var value = -1 } set_variable = { name = sb_court_claimant_scope value = this } }
+  change_relations = { country = var:sb_hamu_court_scope value = -10 }
+  var:sb_hamu_court_scope = {
+   save_scope_as = sb_court_country
+   sb_court_calculate_backing = yes
+   scope:sb_hamu_sponsor.var:sb_hamu_backer_scope ?= {
+    if = {
+     limit = { sb_court_episode_neutral = yes }
+     set_variable = { name = sb_court_endorsement_var value = -1 }
+     set_variable = { name = sb_court_claimant_scope value = scope:sb_hamu_prince }
+     scope:sb_hamu_sponsor = { set_variable = sb_hamu_backer_joined_var }
+    }
+   }
+   sb_institutions_recalculate = yes
+   trigger_event = { id = sb_hamu_bargain.002 popup = yes }
+  }
+ }
+}
+sb_hamu_start_funding = {
+ if = {
+  limit = { sb_hamu_can_fund = yes NOT = { has_variable = sb_hamu_funded_var } }
+  set_variable = sb_hamu_funded_var
+  add_modifier = { name = sb_hamu_subsidy_cost }
+  var:sb_hamu_prince_scope = { add_modifier = { name = sb_hamu_boer_patronage } }
+ }
+}
+sb_hamu_stop_funding = {
+ remove_variable = sb_hamu_funded_var
+ if = { limit = { has_modifier = sb_hamu_subsidy_cost } remove_modifier = sb_hamu_subsidy_cost }
+ var:sb_hamu_prince_scope ?= { if = { limit = { has_modifier = sb_hamu_boer_patronage } remove_modifier = sb_hamu_boer_patronage } }
+}
+sb_hamu_fail_contract = {
+ sb_hamu_stop_funding = yes
+ set_variable = sb_hamu_failed_var
+ remove_global_variable = sb_hamu_promise_live_var
+}
+# Actual completed accession only. Faction installation must not call this helper.
+sb_hamu_record_accession = {
+ if = {
+  limit = { ruler ?= { has_template = SB_ZUL_hamu } }
+  save_scope_as = sb_hamu_winner
+  global_var:sb_hamu_sponsor_scope ?= {
+   if = {
+    limit = { has_variable = sb_hamu_contract_var NOR = { has_variable = sb_hamu_failed_var has_variable = sb_hamu_fulfilled_var } var:sb_hamu_prince_scope ?= scope:sb_hamu_winner.ruler }
+    set_variable = sb_hamu_earned_var
+    if = { limit = { exists = scope:sb_hamu_winner.var:sb_court_dynastic_opponent_scope } set_variable = { name = sb_hamu_reunion_scope value = scope:sb_hamu_winner.var:sb_court_dynastic_opponent_scope } }
+    set_variable = { name = sb_hamu_court_scope value = scope:sb_hamu_winner }
+    sb_hamu_stop_funding = yes
+   }
+  }
+ }
+}
+sb_hamu_contract_monthly = {
+ if = { limit = { has_variable = sb_hamu_offer_open_var sb_hamu_offer_valid = no } remove_variable = sb_hamu_offer_open_var }
+ if = {
+  limit = { has_variable = sb_hamu_contract_var NOR = { has_variable = sb_hamu_failed_var has_variable = sb_hamu_fulfilled_var } }
+  if = {
+   limit = {
+    OR = {
+     is_country_alive = no
+     AND = { NOT = { has_variable = sb_hamu_earned_var } OR = { NOT = { var:sb_hamu_prince_scope ?= { is_character_alive = yes } } var:sb_hamu_prince_scope ?= { OR = { has_variable = sb_court_claim_renounced_var has_variable = sb_court_retired_var } } } }
+    }
+   }
+   sb_hamu_fail_contract = yes
+  }
+  else = {
+   # A surviving claimant can move with either authenticated faction; exile is not a new court.
+   if = {
+    limit = { NOT = { has_variable = sb_hamu_earned_var } var:sb_hamu_prince_scope.owner ?= { sb_institutions_profile_country = yes } }
+    set_variable = { name = sb_hamu_court_scope value = var:sb_hamu_prince_scope.owner }
+   }
+   if = {
+    limit = { has_variable = sb_hamu_earned_var var:sb_hamu_court_scope ?= { sb_hamu_land_owned = yes } }
+    sb_hamu_create_nrp = yes
+   }
+   else_if = {
+    limit = {
+     OR = {
+      NOT = { var:sb_hamu_court_scope ?= { is_country_alive = yes } }
+      AND = { NOT = { has_variable = sb_hamu_earned_var } var:sb_hamu_court_scope ?= { sb_hamu_land_within_conflict = no } }
+      AND = { has_variable = sb_hamu_earned_var sb_hamu_earned_land_recoverable = no }
+     }
+    }
+    sb_hamu_fail_contract = yes
+   }
+   if = { limit = { is_ai = yes sb_hamu_can_fund = yes NOT = { in_default = yes } } sb_hamu_start_funding = yes }
+   if = { limit = { is_ai = yes in_default = yes } sb_hamu_stop_funding = yes }
+  }
+ }
+}
+sb_hamu_create_nrp = {
+ if = {
+  limit = {
+   has_variable = sb_hamu_earned_var can_have_subjects = yes
+   NOR = { has_variable = sb_hamu_fulfilled_var has_variable = sb_hamu_failed_var has_variable = sb_hamu_setup_pending_var }
+   NOT = { c:NRP ?= { is_country_alive = yes } }
+   var:sb_hamu_court_scope ?= { is_country_alive = yes sb_hamu_land_owned = yes }
+  }
+  set_variable = sb_hamu_setup_pending_var
+  save_scope_as = sb_hamu_sponsor
+  var:sb_hamu_court_scope = {
+   create_country = {
+    tag = NRP origin = scope:sb_hamu_sponsor province = p:xE1E455
+    on_created = { set_variable = sb_hamu_nrp_var global_var:sb_hamu_sponsor_scope ?= { set_variable = { name = sb_hamu_created_republic_scope value = prev } sb_hamu_finalise_nrp = yes } }
+   }
+  }
+  # A failed native creation can be retried; a live NRP is finalised by the monthly reconciliation.
+  if = { limit = { NOT = { exists = var:sb_hamu_created_republic_scope } } remove_variable = sb_hamu_setup_pending_var }
+ }
+}
+sb_hamu_finalise_nrp = {
+ if = {
+  limit = {
+   has_variable = sb_hamu_setup_pending_var is_country_alive = yes can_have_subjects = yes
+   c:NRP ?= { is_country_alive = yes has_variable = sb_hamu_nrp_var }
+   var:sb_hamu_created_republic_scope ?= c:NRP
+   var:sb_hamu_court_scope ?= { is_country_alive = yes }
+  }
+  save_scope_as = sb_hamu_sponsor
+  if = {
+   limit = {
+    p:xE1E455.state.owner = { OR = { this = c:NRP this = scope:sb_hamu_sponsor.var:sb_hamu_court_scope } }
+    p:xE882CE.state.owner = { OR = { this = c:NRP this = scope:sb_hamu_sponsor.var:sb_hamu_court_scope } }
+    p:xBE6FEE.state.owner = { OR = { this = c:NRP this = scope:sb_hamu_sponsor.var:sb_hamu_court_scope } }
+    p:x904EBE.state.owner = { OR = { this = c:NRP this = scope:sb_hamu_sponsor.var:sb_hamu_court_scope } }
+    p:x9E9742.state.owner = { OR = { this = c:NRP this = scope:sb_hamu_sponsor.var:sb_hamu_court_scope } }
+   }
+   c:NRP = {
+    if = {
+     limit = { NOT = { has_variable = sb_hamu_republic_setup_var } }
+     set_variable = sb_hamu_republic_setup_var
+     set_variable = { name = sb_hamu_residual_court_scope value = scope:sb_hamu_sponsor.var:sb_hamu_court_scope }
+     sb_nrp_apply_boer_republic_setup = yes
+    }
+   }
+   if = {
+    limit = { c:NRP = { is_subject = no } can_have_as_subject = { who = c:NRP type = subject_type_sb_boer_confederal_partner } }
+    create_diplomatic_pact = { country = c:NRP type = sb_boer_confederal_partner }
+   }
+   if = {
+    limit = { c:NRP = { is_direct_subject_of = scope:sb_hamu_sponsor is_subject_type = subject_type_sb_boer_confederal_partner } }
+    s:STATE_ZULULAND = { set_owner_of_provinces = { country = c:NRP provinces = { xE1E455 xE882CE xBE6FEE x904EBE x9E9742 } } region_state:NRP ?= { set_state_type = incorporated } }
+    if = {
+     limit = { c:NRP = { sb_hamu_land_owned = yes } }
+     set_variable = sb_hamu_fulfilled_var
+     remove_variable = sb_hamu_setup_pending_var
+     remove_global_variable = sb_hamu_promise_live_var
+     set_global_variable = sb_nrp_reward_consumed_var
+     sb_hamu_stop_funding = yes
+     trigger_event = { id = sb_hamu_bargain.003 popup = yes }
+    }
+   }
+  }
+ }
+}
+
+# NRP scope. No calendar ultimatum: retain eligibility until the residual kingdom is British.
+sb_hamu_boundary_monthly = {
+ if = {
+  limit = { has_variable = sb_hamu_boundary_refused_var NOT = { has_variable = sb_hamu_boundary_play_scope } sb_hamu_boundary_authority_current = no }
+  var:sb_hamu_boundary_recipient_scope ?= { remove_variable = sb_hamu_boundary_offer_var }
+  remove_variable = sb_hamu_boundary_refused_var
+  remove_variable = sb_hamu_boundary_decided_var
+  remove_variable = sb_hamu_boundary_recipient_scope
+ }
+ if = {
+  limit = { has_variable = sb_hamu_boundary_open_var OR = { sb_hamu_boundary_valid = no sb_hamu_boundary_authority_current = no } }
+  var:sb_hamu_boundary_recipient_scope ?= { remove_variable = sb_hamu_boundary_offer_var }
+  remove_variable = sb_hamu_boundary_open_var
+  remove_variable = sb_hamu_boundary_recipient_scope
+ }
+ if = {
+  limit = { sb_hamu_boundary_valid = yes NOR = { has_variable = sb_hamu_boundary_open_var has_variable = sb_hamu_boundary_decided_var } }
+  set_variable = sb_hamu_boundary_open_var
+  set_variable = { name = sb_hamu_boundary_recipient_scope value = overlord }
+  overlord = { set_variable = sb_hamu_boundary_offer_var trigger_event = { id = sb_hamu_bargain.010 popup = yes } }
+ }
+ if = { limit = { has_variable = sb_hamu_boundary_refused_var } sb_hamu_launch_boundary = yes }
+}
+# The subject's actual overlord makes the choice; no independent-NRP auto-capitulation rule.
+sb_hamu_answer_boundary = {
+ if = {
+  limit = { sb_hamu_boundary_answer_valid = yes }
+  remove_variable = sb_hamu_boundary_offer_var
+  c:NRP = {
+   remove_variable = sb_hamu_boundary_open_var
+   set_variable = sb_hamu_boundary_decided_var
+   if = {
+    limit = { always = $ACCEPT$ }
+    sb_hamu_capture_boundary_recipient = yes
+    s:STATE_ZULULAND = { set_owner_of_provinces = { country = scope:sb_hamu_boundary_beneficiary provinces = { xE1E455 x904EBE x9E9742 } } }
+   }
+   else = { set_variable = sb_hamu_boundary_refused_var sb_hamu_launch_boundary = yes }
+  }
+ }
+}
+sb_hamu_capture_boundary_recipient = {
+ if = { limit = { var:sb_hamu_residual_court_scope ?= { is_country_alive = yes } } var:sb_hamu_residual_court_scope = { save_scope_as = sb_hamu_boundary_beneficiary } }
+ else = { p:x41C070.state.owner = { save_scope_as = sb_hamu_boundary_beneficiary } }
+}
+sb_hamu_launch_boundary = {
+ if = {
+  limit = {
+   sb_hamu_boundary_valid = yes has_variable = sb_hamu_boundary_refused_var
+   sb_hamu_boundary_authority_current = yes
+   NOT = { has_variable = sb_hamu_boundary_play_scope }
+   c:GBR = { is_active_in_diplomatic_play = no NOT = { has_truce_with = c:NRP } }
+   overlord = { is_active_in_diplomatic_play = no NOT = { has_truce_with = c:GBR } }
+   NOT = { has_war_with = c:GBR }
+  }
+  overlord = { save_scope_as = sb_hamu_boundary_target }
+  c:GBR = {
+   set_variable = sb_hamu_boundary_launch_var
+   create_diplomatic_play = { type = dp_sb_nrp_boundary_confrontation target_country = scope:sb_hamu_boundary_target }
+   remove_variable = sb_hamu_boundary_launch_var
+  }
+ }
+}
+# Actual new-play root; original route uses a separate lease and remains unchanged.
+sb_hamu_configure_boundary_play = {
+ if = {
+  limit = {
+   is_diplomatic_play_type = dp_sb_nrp_boundary_confrontation
+   scope:initiator ?= { country_definition = cd:GBR has_variable = sb_hamu_boundary_launch_var }
+   c:NRP ?= { sb_hamu_boundary_valid = yes has_variable = sb_hamu_boundary_refused_var overlord ?= scope:target }
+  }
+  c:NRP = { set_variable = { name = sb_hamu_boundary_play_scope value = root } remove_variable = sb_hamu_boundary_refused_var sb_hamu_capture_boundary_recipient = yes }
+  add_target_backers = { c:NRP }
+  s:STATE_ZULULAND.region_state:NRP = { save_scope_as = sb_hamu_boundary_state }
+  if = { limit = { NOT = { scope:sb_hamu_boundary_beneficiary = scope:initiator } } add_initiator_backers = { scope:sb_hamu_boundary_beneficiary } }
+  add_war_goal = { holder = scope:sb_hamu_boundary_beneficiary type = return_state target_country = c:NRP target_state = scope:sb_hamu_boundary_state primary_demand = yes }
+  remove_war_goal = { who = initiator type = sb_story_humiliation }
+ }
+}

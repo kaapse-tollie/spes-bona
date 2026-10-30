@@ -80,7 +80,6 @@ class CourtReworkBehaviour(unittest.TestCase):
         self.assertEqual(135,rt.country['vars']['sb_court_pledged_weight_var'])
         self.assertEqual(50,rt.country['vars']['sb_court_unpledged_weight_var'])
         self.assertEqual(135,prince['vars']['sb_court_coalition_weight_var'])
-        self.assertAlmostEqual(135/185*100,prince['vars']['sb_court_coalition_share_var'])
         self.assertEqual(100,prince['vars']['sb_court_pledged_share_var'])
         self.assertEqual([chief],prince['sb_court_supporters'])
         self.assertIn('sb_court_house_leader_var',prince['vars'])
@@ -103,15 +102,22 @@ class CourtReworkBehaviour(unittest.TestCase):
         self.assertNotIn('sb_court_junior_status',successor.get('modifiers',{}))
         self.assertNotIn('sb_court_successor_pledge_scope',successor['vars'])
 
-    def test_major_threshold_includes_unpledged_prominence(self):
-        rt,king,prince,chief=court(q=10)
-        prince['prominence']=0  # +25 claimant bonus plus a pledged house of 10.
+    def test_major_threshold_uses_succession_pledged_prominence(self):
+        rt,king,prince,chief=court(q=20)
+        prince['prominence']=0  # +25 claimant bonus plus a pledged house of 20.
         king['prominence']=105
+        other=character('other prince',0,80,-1,1)
+        other.update(owner=rt.country,template='ZUL_gqugqu_claimant')
+        other['vars'].update(sb_court_home_scope=rt.country,sb_court_claimant_scope=other)
+        rt.country['members'].append(other)
         rt.backing()
-        self.assertEqual(25,prince['vars']['sb_court_coalition_share_var'])
-        self.assertEqual(100,prince['vars']['sb_court_pledged_share_var'])
+        self.assertEqual(30,prince['vars']['sb_court_pledged_share_var'])
         self.assertTrue(rt.condition(TRIGGERS['sb_court_major_candidate'],prince))
-        king['prominence']=106
+        king['prominence']=1000  # No future pledge: cannot dilute either prince.
+        rt.backing()
+        self.assertEqual(30,prince['vars']['sb_court_pledged_share_var'])
+        self.assertTrue(rt.condition(TRIGGERS['sb_court_major_candidate'],prince))
+        other['prominence']+=1
         rt.backing()
         self.assertFalse(rt.condition(TRIGGERS['sb_court_major_candidate'],prince))
 
@@ -138,6 +144,7 @@ class CourtReworkBehaviour(unittest.TestCase):
         self.assertEqual(160,rt.country['vars']['sb_court_unpledged_weight_var'])
         self.assertEqual(0,rt.country['vars']['sb_court_pledged_weight_var'])
         self.assertEqual(0,prince['vars']['sb_court_pledged_share_var'])
+        self.assertFalse(rt.condition(TRIGGERS['sb_court_major_candidate'],prince))
         self.assertNotIn('sb_court_claimant_trait',prince['traits'])
         self.assertNotIn('sb_court_junior_status',prince.get('modifiers',{}))
 
@@ -270,11 +277,16 @@ class CourtReworkBehaviour(unittest.TestCase):
         rt, king, prince, chief = court()
         king['template'] = 'ZUL_mpande_zulu'
         prince['template'] = 'ZUL_cetshwayo_heir'
-        rt.country.update(game_date=18561130)
+        rt.country.update(game_date=18560731)
         rt.country['vars']['sb_court_recognized_heir_scope'] = prince
         rt.effect(EFFECTS['sb_court_reconcile_succession'],rt.country)
         self.assertEqual([],rt.country.get('events',[]))
-        rt.country['game_date'] = 18561201
+        rt.country['game_date'] = 18560801
+        rt.country['vars']['sb_court_dunn_offer_var']=1
+        rt.effect(EFFECTS['sb_court_reconcile_succession'],rt.country)
+        self.assertEqual([],rt.country.get('events',[]))
+        self.assertNotIn('sb_court_accession_open_var',rt.country['vars'])
+        rt.country['vars'].pop('sb_court_dunn_offer_var')
         rt.effect(EFFECTS['sb_court_reconcile_succession'],rt.country)
         rt.effect(EFFECTS['sb_court_reconcile_succession'],rt.country)
         self.assertEqual(['sb_court_succession.001'],rt.country['events'])
@@ -283,6 +295,11 @@ class CourtReworkBehaviour(unittest.TestCase):
         self.assertIs(prince,rt.country['ruler'])
         self.assertTrue(king['alive'])
         self.assertTrue(king['retired'])
+        self.assertIn('sb_court_claim_renounced_var',king['vars'])
+        self.assertNotIn('sb_court_claimant_scope',king['vars'])
+        self.assertNotIn('sb_court_claimant_trait',king.get('traits',set()))
+        self.assertFalse(rt.condition(TRIGGERS['sb_court_living_dynast'],king))
+        self.assertFalse(rt.condition(TRIGGERS['sb_court_dynastic_candidate'],king))
         self.assertEqual(1,chief['vars']['sb_court_endorsement_var'])
         self.assertEqual(0,king['vars']['sb_court_endorsement_var'])
         self.assertNotIn('sb_court_accession_open_var',rt.country['vars'])
@@ -554,7 +571,7 @@ class CourtReworkContracts(unittest.TestCase):
 
     def test_retirement_regency_and_concurrency_contracts(self):
         s=self.text('common/scripted_effects/sb_court_succession_effects.txt')
-        self.assertIn('game_date >= 1856.12.1',s)
+        self.assertIn('game_date >= 1856.8.1',s)
         self.assertIn('resign_and_retire = yes',s)
         self.assertNotIn('set_character_immortal',s)
         self.assertNotIn('is_at_war = no',s)
@@ -566,19 +583,34 @@ class CourtReworkContracts(unittest.TestCase):
 
     def test_court_section_is_bounded_scrollable_and_keeps_viewed_country(self):
         gui=self.text('gui/sb_prerogative_progress_bars.gui')
-        self.assertIn('name = sb_court_panel',gui)
-        self.assertIn('section_header_button = {',gui)
-        self.assertIn('blockoverride "onclick_showmore"',gui)
-        self.assertIn('blockoverride "onclick_showless"',gui)
+        self.assertEqual(3,gui.count('section_header_button = {'))
+        self.assertEqual(3,gui.count('blockoverride "onclick_showmore"'))
+        self.assertEqual(3,gui.count('blockoverride "onclick_showless"'))
         self.assertNotIn('window = {',gui)
-        from tests.test_zulu_institutions_laws import child
-        panel=child(gui,'scrollbox')
-        self.assertIn('size = { 504 560 }',panel)
-        self.assertIn('blockoverride "scrollbox_content"',panel)
+        from tools.check_override_inventory import extract_braced_object
+        import re
+        panels=[extract_braced_object(gui,m.start())
+                for m in re.finditer(r'\bscrollbox\s*=\s*\{',gui)]
+        self.assertEqual(3,len(panels))
+        for name,panel in zip(('current','succession','houses'),panels):
+            self.assertIn(f'name = sb_court_{name}_panel',panel)
+            self.assertIn(f'visible = "[GetVariableSystem.Exists(\'sb_court_{name}_open\')]"',panel)
+            self.assertIn(f"GetVariableSystem.Toggle('sb_court_{name}_open')",gui)
+            self.assertIn('size = { 504 560 }',panel)
+            self.assertIn('blockoverride "scrollbox_content"',panel)
+        self.assertNotIn('GetVariableSystem.Set',gui)  # All three start closed.
+        self.assertNotIn('sb_court_window_open',gui)
+        self.assertIn("GetList('sb_court_current_supporters')",panels[0])
+        self.assertNotIn("GetList('sb_court_supporters')",panels[0])
+        self.assertIn("GetList('sb_court_supporters')",panels[1])
+        self.assertNotIn("GetList('sb_court_current_supporters')",panels[1])
+        self.assertIn("Character.GetCustom('sb_court_roster_endorsement')",panels[0])
+        for summary,panel in zip(('sb_court_challenge_summary','sb_court_succession_summary'),panels):
+            self.assertIn(f"JournalEntry.GetCountry.GetCustom('{summary}')",gui)
+            self.assertNotIn(summary,panel)  # Visible even with its panel closed.
         # A popup layer never takes a child out of its flow. Constrain every
         # explicitly sized child and use the native scrollbar-bearing template.
-        import re
-        for width in re.findall(r'size\s*=\s*\{\s*(\d+)\s+\d+\s*\}',panel):
+        for width in re.findall(r'size\s*=\s*\{\s*(\d+)\s+\d+\s*\}',gui):
             self.assertLessEqual(int(width),504)
         native=(Path.home()/'Library/Application Support/Steam/steamapps/common/Victoria 3/game/gui/frontend/shared/lists.gui').read_text(encoding='utf-8-sig')
         scrollbox=native[native.index('type scrollbox = scrollarea'):]

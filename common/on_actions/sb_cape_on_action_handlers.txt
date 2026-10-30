@@ -17,14 +17,6 @@ sb_on_cape_yearly_pulse_country = {
 						state_region = s:STATE_NAMAQUALAND
 						state_region = s:STATE_HEREROLAND
 					}
-					any_scope_pop = {
-						religion = rel:protestant
-						culture = {
-							has_discrimination_trait_group = heritage_group_european
-							NOT = { has_discrimination_trait = heritage_british }
-							NOT = { this = cu:boer }
-						}
-					}
 				}
 				every_scope_pop = {
 					limit = {
@@ -48,10 +40,6 @@ sb_on_cape_yearly_pulse_country = {
 						state_region = s:STATE_EASTERN_CAPE
 						state_region = s:STATE_NORTHERN_CAPE
 					}
-					any_scope_pop = {
-						religion = { has_discrimination_trait = heritage_islamic }
-						NOT = { culture = cu:cape_malay }
-					}
 				}
 				every_scope_pop = {
 					limit = {
@@ -73,20 +61,6 @@ sb_on_cape_yearly_pulse_country = {
 						state_region = s:STATE_GRIQUALAND_WEST
 						state_region = s:STATE_NAMAQUALAND
 						state_region = s:STATE_HEREROLAND
-					}
-					any_scope_pop = {
-						culture = {
-							NOT = { has_discrimination_trait_group = heritage_group_european }
-						}
-						NOT = { culture = cu:xhosa }
-						NOT = { culture = cu:nama }
-						NOT = { culture = cu:san }
-						NOT = { culture = cu:tswana }
-						NOT = { culture = cu:cape_malay }
-						NOT = { culture = cu:cape_creole }
-						NOT = { culture = cu:griqua }
-						NOT = { culture = cu:oorlam }
-						NOT = { culture = cu:baster }
 					}
 				}
 				every_scope_pop = {
@@ -121,9 +95,12 @@ sb_on_cape_monthly_pulse_country = {
 			country_has_primary_culture = cu:anglo_african
 			country_has_primary_culture = cu:boer
 			country_definition = cd:XHO
-			any_scope_state = {
-				state_region = s:STATE_EASTERN_CAPE
-				has_state_trait = state_trait_sb_xhosa_resistance
+			AND = {
+				has_state_in_state_region = STATE_EASTERN_CAPE
+				any_scope_state = {
+					state_region = s:STATE_EASTERN_CAPE
+					has_state_trait = state_trait_sb_xhosa_resistance
+				}
 			}
 		}
 	}
@@ -189,6 +166,12 @@ sb_on_cape_monthly_pulse_country = {
 						country_has_primary_culture = cu:anglo_african
 					country_has_primary_culture = cu:boer
 				}
+					ig:ig_rural_folk ?= {
+						OR = {
+							has_ideology = ideology:ideology_isolationist
+							NOT = { has_ideology = ideology:ideology_sb_settler_colonialist }
+						}
+					}
 					any_scope_state = {
 						OR = {
 							state_region = s:STATE_CAPE_COLONY
@@ -225,6 +208,7 @@ sb_on_cape_monthly_pulse_country = {
 			# keeps frontier tension from decaying during active resistance.
 			if = {
 				limit = {
+					has_state_in_state_region = STATE_EASTERN_CAPE
 					any_scope_state = {
 						state_region = s:STATE_EASTERN_CAPE
 						has_state_trait = state_trait_sb_xhosa_resistance
@@ -244,6 +228,7 @@ sb_on_cape_monthly_pulse_country = {
 				limit = { country_definition = cd:XHO }
 				if = {
 					limit = {
+						has_state_in_state_region = STATE_EASTERN_CAPE
 						any_scope_state = {
 							state_region = s:STATE_EASTERN_CAPE
 							has_state_trait = state_trait_sb_xhosa_resistance
@@ -317,6 +302,7 @@ sb_on_cape_monthly_pulse_country = {
 								is_player = yes
 								sb_xhosa_frontier_ai_wars_enabled = yes
 							}
+							has_state_in_state_region = STATE_EASTERN_CAPE
 							any_scope_state = {
 								state_region = s:STATE_EASTERN_CAPE
 								has_state_trait = state_trait_sb_xhosa_resistance

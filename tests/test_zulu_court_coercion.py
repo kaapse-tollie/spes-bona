@@ -74,6 +74,74 @@ def attempt(rt, prince, purge, roll):
 
 
 class CourtCoercion(unittest.TestCase):
+    def test_current_loyalty_blocks_both_actions_even_if_it_changes_after_the_quote(self):
+        for purge in (False,True):
+            rt,king,prince,rival,_=opening()
+            quote_confrontation(rt,prince)
+            prince['vars']['sb_court_endorsement_var']=1
+            prince['vars']['sb_court_successor_pledge_scope']=rival
+            self.assertFalse(rt.condition(TRIGGERS['sb_court_coercion_target_valid'],prince))
+            rt.effect([('sb_court_confrontation','=',[('PURGE','=','yes' if purge else 'no')])],rt.country)
+            self.assertTrue(prince['alive'])
+            self.assertEqual(100,rt.country['vars']['sb_prerogative_var'])
+            self.assertFalse(prince.get('sb_court_purge_rulers'))
+            self.assertNotIn('sb_court_renunciation_cooldown_var',prince['vars'])
+            self.assertNotIn('sb_court_authority_commitment_var',rt.country['vars'])
+            prince['vars']['sb_court_endorsement_var']=0
+            self.assertTrue(rt.condition(TRIGGERS['sb_court_coercion_target_valid'],prince))
+
+    def test_historical_mpande_waits_for_purge_then_chooses_it(self):
+        source=(ROOT/'common/character_interactions/sb_court_interactions.txt').read_text(encoding='utf-8-sig')
+        interaction=dict((k,v) for k,_,v in statements(find_object(source,'sb_court_confront_rival')))
+        options=[dict((k,v) for k,_,v in body) for key,_,body in statements(find_object(EVENT_SOURCE,'sb_court_politics.003')) if key=='option']
+
+        def event_weights(rt):
+            result={}
+            for option in options:
+                if not rt.condition(option.get('trigger',[]),rt.country): continue
+                chance=option['ai_chance']
+                weight=float(next(v for k,_,v in chance if k=='base'))
+                for key,_,body in chance:
+                    if key!='modifier':continue
+                    fields=dict((k,v) for k,_,v in body)
+                    if not rt.condition(fields.get('trigger',[]),rt.country):continue
+                    weight=(weight+float(fields.get('add',0)))*float(fields.get('factor',1))
+                result[option['name']]=weight
+            return result
+
+        for rule in ('strict_historical','dynamic_historical'):
+            rt,king,_,rival,_=opening()
+            king['template']='ZUL_mpande_zulu'
+            rt.country.update(player=False,rules={'sb_frontier_ai_behavior_'+rule})
+            rt.scopes['actor']=rt.country
+            rt.country['vars']['sb_prerogative_var']=49
+            self.assertEqual(0,rt.calc(interaction['ai_chance'],rival))
+            rt.country['vars']['sb_prerogative_var']=50
+            self.assertTrue(rt.condition(interaction['possible'],rival))
+            self.assertEqual(100,rt.calc(interaction['ai_chance'],rival))
+            quote_confrontation(rt,rival)
+            self.assertEqual({'sb_court_politics.003.a':0,'sb_court_politics.003.c':100,'sb_court_politics.003.b':0},event_weights(rt))
+            rt.country['vars']['sb_prerogative_var']=49
+            self.assertEqual({'sb_court_politics.003.a':0,'sb_court_politics.003.b':40},event_weights(rt))
+            rt.country['vars']['sb_prerogative_var']=50
+            rival['sb_court_purge_rulers']=[king]
+            self.assertEqual(0,rt.calc(interaction['ai_chance'],rival))
+            self.assertEqual({'sb_court_politics.003.a':0,'sb_court_politics.003.b':40},event_weights(rt))
+
+        for player,rule,king_template,target_template in (
+            (True,'strict_historical','ZUL_mpande_zulu','ZUL_gqugqu_claimant'),
+            (False,'off','ZUL_mpande_zulu','ZUL_gqugqu_claimant'),
+            (False,'strict_historical','ZUL_dingane','ZUL_gqugqu_claimant'),
+            (False,'strict_historical','ZUL_mpande_zulu','ZUL_cetshwayo_heir'),
+        ):
+            rt,king,_,rival,_=opening()
+            king['template']=king_template;rival['template']=target_template
+            rt.country.update(player=player,rules={'sb_frontier_ai_behavior_'+rule})
+            quote_confrontation(rt,rival)
+            self.assertEqual(1,rt.calc(interaction['ai_chance'],rival))
+            self.assertFalse(rt.condition(TRIGGERS['sb_court_ai_mpande_purge_target'],rival))
+            self.assertEqual({'sb_court_politics.003.a':50,'sb_court_politics.003.c':10,'sb_court_politics.003.b':40},event_weights(rt))
+
     def test_historical_ai_mpande_preserves_both_sons_but_can_confront_gqugqu(self):
         for rule in ('strict_historical','dynamic_historical'):
             for template in ('ZUL_cetshwayo_heir','ZUL_mbuyazi_heir'):
@@ -97,7 +165,7 @@ class CourtCoercion(unittest.TestCase):
                     attempt(rt,gqugqu,False,0)
                     self.assertIn('sb_court_claim_renounced_var',gqugqu['vars'])
 
-    def test_sons_remain_targets_for_players_off_mode_and_other_rulers(self):
+    def test_reconciled_loyal_sons_are_protected_for_players_and_off_mode_too(self):
         for player,rule,ruler in ((True,'dynamic_historical','ZUL_mpande_zulu'),
                                   (False,'off','ZUL_mpande_zulu'),
                                   (False,'strict_historical','ZUL_dingane')):
@@ -107,7 +175,12 @@ class CourtCoercion(unittest.TestCase):
                 rt.country.update(player=player,rules={'sb_frontier_ai_behavior_'+rule})
                 self.assertTrue(rt.condition(TRIGGERS['sb_court_coercion_target_valid'],son))
                 attempt(rt,son,False,0)
-                self.assertIn('sb_court_claim_renounced_var',son['vars'])
+                if ruler == 'ZUL_mpande_zulu':
+                    self.assertEqual(1,son['vars']['sb_court_endorsement_var'])
+                    self.assertNotIn('sb_court_claim_renounced_var',son['vars'])
+                    self.assertEqual(100,rt.country['vars']['sb_prerogative_var'])
+                else:
+                    self.assertIn('sb_court_claim_renounced_var',son['vars'])
 
     def test_successor_preview_does_not_shadow_a_permanent_country_scope(self):
         source=(ROOT/'common/scripted_buttons/sb_court_buttons.txt').read_text(encoding='utf-8-sig')

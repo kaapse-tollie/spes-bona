@@ -363,6 +363,7 @@ sb_court_track_dynastic_war = {
    every_in_list = { variable = sb_court_dynastic_rival_members sb_court_place_dynastic_member = { COUNTRY = scope:sb_court_dynastic_rival_country } }
    scope:sb_court_dynastic_incumbent_country = { sb_court_rebase_dynastic_side = { SIDE = incumbent } sb_court_set_dynastic_head = yes }
    scope:sb_court_dynastic_rival_country = { sb_court_rebase_dynastic_side = { SIDE = rival } sb_court_set_dynastic_head = yes }
+   if = { limit = { var:sb_court_dynastic_reason_var = 2 } sb_court_retire_mpande = yes }
    scope:sb_court_dynastic_rebels = {
     if = { limit = { var:sb_court_dynastic_original_law_var = 2 } activate_law = law_type:law_sb_contested_social_crown }
     else = { activate_law = law_type:law_sb_contested_crown }
@@ -384,6 +385,18 @@ sb_court_track_dynastic_war = {
 
 # Recipient is the rebels. Copy only the court receipt, not a country's whole variable space.
 sb_court_copy_dynastic_record = {
+ if = {
+  limit = { scope:sb_court_dynastic_original = { has_variable = sb_court_barracks_natal_relocated_var } }
+  set_variable = { name = sb_court_barracks_natal_relocated_var value = scope:sb_court_dynastic_original.var:sb_court_barracks_natal_relocated_var }
+ }
+ if = {
+  limit = { scope:sb_court_dynastic_original = { has_variable = sb_court_population_natal_share_var } }
+  set_variable = { name = sb_court_population_natal_share_var value = scope:sb_court_dynastic_original.var:sb_court_population_natal_share_var }
+ }
+ if = {
+  limit = { scope:sb_court_dynastic_original = { has_variable = sb_court_dynastic_scripted_muster_var } }
+  set_variable = sb_court_dynastic_scripted_muster_var
+ }
  set_variable = sb_court_selecting_head_var
  set_variable = sb_court_dynastic_crisis_var
  set_variable = coup_event_active
@@ -428,6 +441,7 @@ sb_court_copy_dynastic_record = {
  }
  if = { limit = { scope:sb_court_country = { exists = var:sb_court_predecessor_scope } } set_variable = { name = sb_court_predecessor_scope value = scope:sb_court_country.var:sb_court_predecessor_scope } }
  if = { limit = { scope:sb_court_country = { exists = var:sb_court_recognized_heir_scope } } set_variable = { name = sb_court_recognized_heir_scope value = scope:sb_court_country.var:sb_court_recognized_heir_scope } }
+ if = { limit = { scope:sb_court_country = { exists = var:sb_court_recognized_minor_scope } } set_variable = { name = sb_court_recognized_minor_scope value = scope:sb_court_country.var:sb_court_recognized_minor_scope } }
  if = { limit = { NOT = { has_variable = no_heirs } } set_variable = sb_court_owns_heir_blocker_var }
  set_variable = no_heirs
  if = { limit = { scope:sb_court_country = { has_variable = sb_zululand_contest_result_var } } set_variable = { name = sb_zululand_contest_result_var value = scope:sb_court_country.var:sb_zululand_contest_result_var } }
@@ -583,11 +597,12 @@ sb_court_resolve_dynastic_win = {
     remove_modifier = revolution_lost_ig
    }
   }
+  sb_court_reserve_dunn_judgement = yes
   if = {
    limit = { var:sb_court_dynastic_candidate_scope ?= var:sb_court_dynastic_nominee_scope }
-   every_in_list = { variable = sb_court_dynastic_rival_members limit = { is_character_alive = yes } kill_character = yes }
+   every_in_list = { variable = sb_court_dynastic_rival_members limit = { is_character_alive = yes NOT = { has_variable = sb_court_dunn_judgement_var } } kill_character = yes }
   }
-  else = { every_in_list = { variable = sb_court_dynastic_incumbent_members limit = { is_character_alive = yes } kill_character = yes } }
+  else = { every_in_list = { variable = sb_court_dynastic_incumbent_members limit = { is_character_alive = yes NOT = { has_variable = sb_court_dunn_judgement_var } } kill_character = yes } }
   # Restore surviving identities before the defeated country is removed. A saved
   # reference alone does not protect a character still owned by that country.
   scope:sb_court_dynastic_winner = { save_scope_as = sb_court_country }
@@ -620,6 +635,8 @@ sb_court_resolve_dynastic_win = {
    # after cleanup; the new controller must not treat the dead prince as installed.
    set_variable = sb_court_dynastic_vacant_var
   }
+  sb_hamu_record_accession = yes
+  sb_court_schedule_population_return = yes
   scope:sb_court_dynastic_winner = { save_scope_as = sb_court_country }
   var:sb_court_dynastic_opponent_scope ?= { sb_court_clear_dynastic_record = yes remove_variable = sb_court_selecting_head_var }
   sb_court_clear_dynastic_record = yes
@@ -630,7 +647,8 @@ sb_court_resolve_dynastic_win = {
    sb_court_capture_vacant_accession = yes
   }
   sb_institutions_reconcile = yes
-  # No constitutional settlement dispatcher, annexation, NRP or incorporation reward.
+  sb_court_open_dunn_judgement = yes
+  # Ordinary royal victories grant no constitutional reward; an existing Hamu land contract is handled separately.
  }
 }
 
@@ -779,6 +797,7 @@ sb_court_reconcile_dynastic_supply = {
 sb_court_cancel_dynastic_crisis = {
  if = {
   limit = { NOT = { has_variable = sb_court_dynastic_war_scope } }
+  sb_court_restore_barracks = yes
   set_variable = sb_court_selecting_head_var
   sb_court_restore_dynastic_law = yes
   sb_court_clear_dynastic_record = yes
@@ -786,6 +805,8 @@ sb_court_cancel_dynastic_crisis = {
  }
 }
 sb_court_clear_dynastic_record = {
+ sb_court_demobilise_dynastic_muster = yes
+ if = { limit = { NOT = { has_variable = sb_court_population_return_pending_var } } sb_court_clear_population_return = yes }
  if = { limit = { has_modifier = sb_court_dynastic_ai_supply } remove_modifier = sb_court_dynastic_ai_supply }
  every_in_list = {
   variable = sb_court_dynastic_roster
@@ -844,6 +865,9 @@ sb_court_clear_dynastic_record = {
  remove_variable = sb_court_dynastic_share_var
  remove_variable = sb_court_dynastic_target_var
  remove_variable = sb_court_dynastic_demand_verified_var
+ remove_variable = sb_court_dynastic_scripted_muster_var
+ remove_variable = sb_court_dynastic_levies_var
+ remove_variable = sb_court_dynastic_levy_training_var
  remove_variable = sb_court_dynastic_forces_prepared_var
  remove_variable = sb_court_dynastic_forces_rebuilt_var
  remove_variable = sb_court_regular_quota_var

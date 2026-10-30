@@ -60,7 +60,7 @@ sb_court_claimant_popularity_attraction = {
 }
 
 # Reserve one existing barracks level for the weaker coalition, then divide the
-# remainder. On a tie the claimant is the weaker/Natal side, as in the state weights.
+# remainder. Equal coalitions divide evenly; the incumbent receives the remainder.
 sb_court_dynastic_regular_allocation = {
  value = 0
  if = {
@@ -80,17 +80,12 @@ sb_court_dynastic_regular_allocation = {
    add = 1
    round = yes
   }
- }
-}
-
-# Staff follows the actual integer regular quotas, including the weaker side's floor.
-# With no barracks, retain the coalition ratio for any existing military households.
-sb_court_dynastic_staff_share = {
- value = sb_court_dynastic_claimant_share
- if = {
-  limit = { var:sb_court_regular_total_var > 0 }
-  value = var:sb_court_regular_claimant_var
-  divide = var:sb_court_regular_total_var
+  if = {
+   limit = { var:sb_court_dynastic_rival_weight_var = var:sb_court_dynastic_incumbent_weight_var }
+   value = var:sb_court_regular_total_var
+   multiply = 0.5
+   round = yes
+  }
  }
 }
 

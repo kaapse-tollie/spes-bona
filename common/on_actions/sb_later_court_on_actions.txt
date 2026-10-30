@@ -1,0 +1,25 @@
+﻿# Cheap country gates; no daily global character search.
+on_monthly_pulse_country = { on_actions = { sb_on_later_court_monthly } }
+on_diplomatic_play_started = { on_actions = { sb_on_hamu_boundary_started } }
+sb_on_hamu_boundary_started = {
+ trigger = { is_diplomatic_play_type = dp_sb_nrp_boundary_confrontation scope:initiator ?= { has_variable = sb_hamu_boundary_launch_var } }
+ effect = { sb_hamu_configure_boundary_play = yes }
+}
+sb_on_later_court_monthly = {
+ trigger = {
+  OR = {
+   country_definition = cd:TRN
+   global_var:sb_hamu_sponsor_scope ?= { this = prev }
+   has_variable = sb_hamu_nrp_var
+   global_var:sb_court_dunn_identity_scope ?= { owner ?= prev }
+  }
+ }
+ effect = {
+  if = { limit = { global_var:sb_court_dunn_identity_scope ?= { owner ?= prev } } sb_court_dunn_trade_monthly = yes }
+  if = { limit = { country_definition = cd:TRN } sb_hamu_open_offer = yes }
+  if = { limit = { country_definition = cd:TRN sb_nrp_chiefdoms_promise_available = no } sb_zululand_stop_usuthu_sponsorship = yes sb_zululand_stop_boer_volunteers = yes }
+  if = { limit = { has_variable = sb_hamu_contract_var } sb_hamu_contract_monthly = yes }
+  if = { limit = { has_variable = sb_hamu_setup_pending_var } sb_hamu_finalise_nrp = yes }
+  if = { limit = { has_variable = sb_hamu_nrp_var } sb_hamu_boundary_monthly = yes }
+ }
+}

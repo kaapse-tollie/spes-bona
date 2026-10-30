@@ -194,7 +194,7 @@ class BloodRiverOutcomeEvents(unittest.TestCase):
         self.assertTrue(rt.answer('080',z))
         self.assertFalse(rt.answer('080',z))
         self.assertIn('sb_court_blood_river_victory',z['ruler']['modifiers'])
-        self.assertAlmostEqual(10.4,z['vars']['sb_firearms_supply_weeks_var'])
+        self.assertAlmostEqual(26,z['vars']['sb_firearms_supply_weeks_var'])
         for replacement in rt.countries.values():self.assertEqual({},replacement['vars'])
 
     def test_accepted_demand_preserves_the_sovereign_before_delayed_recovery(self):
@@ -260,7 +260,7 @@ class BloodRiverOutcomeEvents(unittest.TestCase):
                 self.assertIn('sb_court_blood_river_defeat', king['modifiers'])
                 self.assertIn('sb_zulu_blood_river_defeat_var', z['vars'])
                 self.assertEqual(-10, z['vars']['sb_prerogative_var'])
-                self.assertAlmostEqual(10.4, z['vars']['sb_firearms_supply_weeks_var'])
+                self.assertAlmostEqual(26, z['vars']['sb_firearms_supply_weeks_var'])
                 self.assertEqual(6, z['vars']['sb_firearms_progress_months_var'])
                 self.assertEqual([True], z['swazi_checks'])
                 self.assertFalse(rt.answer('082', z))
@@ -284,7 +284,7 @@ class BloodRiverOutcomeEvents(unittest.TestCase):
             self.assertIn('sb_court_blood_river_victory', king['modifiers'])
             self.assertNotIn('sb_court_blood_river_victory', prince.get('modifiers', {}))
             self.assertFalse(rt.answer('080', z))
-            self.assertAlmostEqual(10.4, z['vars']['sb_firearms_supply_weeks_var'])
+            self.assertAlmostEqual(26, z['vars']['sb_firearms_supply_weeks_var'])
 
     def test_white_peace_and_mutual_settlement_learn_firearms_without_political_rewards(self):
         for accepted in ((), ('initiator', 'target')):
@@ -297,7 +297,7 @@ class BloodRiverOutcomeEvents(unittest.TestCase):
             self.assertTrue(rt.answer('081', z))
             self.assertFalse(rt.answer('081', z))
             rt.effect(DYNASTY['sb_zulu_apply_blood_river_neutral'], z)
-            self.assertAlmostEqual(10.4, z['vars']['sb_firearms_supply_weeks_var'])
+            self.assertAlmostEqual(26, z['vars']['sb_firearms_supply_weeks_var'])
             self.assertIn('sb_court_blood_river_result_var', z['vars'])
             self.assertNotIn('sb_zulu_blood_river_victory_var', z['vars'])
             self.assertNotIn('sb_court_blood_river_changes', z)
@@ -310,15 +310,15 @@ class BloodRiverOutcomeEvents(unittest.TestCase):
         for active, modernized in ((True, False), (False, False), (True, True)):
             with self.subTest(active=active, modernized=modernized):
                 rt = OutcomeRuntime(); z = rt.country
-                z['vars']['sb_firearms_supply_weeks_var'] = 103
+                z['vars']['sb_firearms_supply_weeks_var'] = 259
                 rt.resolve()
                 self.assertTrue(rt.open('081', z))
-                self.assertEqual(103, z['vars']['sb_firearms_supply_weeks_var'])
+                self.assertEqual(259, z['vars']['sb_firearms_supply_weeks_var'])
                 # Eligibility is evaluated when the option executes, not frozen on opening.
                 if not active: z['journals'].clear()
                 if modernized: z['vars']['sb_firearms_modernized_var'] = 1
                 self.assertTrue(rt.answer('081', z))
-                self.assertEqual(104 if active and not modernized else 103,
+                self.assertEqual(260 if active and not modernized else 259,
                                  z['vars']['sb_firearms_supply_weeks_var'])
 
     def test_swazi_defeat_applies_thirty_once(self):
@@ -347,7 +347,7 @@ class BloodRiverOutcomeEvents(unittest.TestCase):
         self.assertNotIn('sb_firearms_supply_weeks_var', z['vars'])
         self.assertTrue(rt.answer('082', z))
         self.assertFalse(rt.answer('082', z))
-        self.assertAlmostEqual(10.4, z['vars']['sb_firearms_supply_weeks_var'])
+        self.assertAlmostEqual(26, z['vars']['sb_firearms_supply_weeks_var'])
         self.assertEqual(-10, z['vars']['sb_prerogative_var'])
 
     def test_dead_recipient_is_cleared_without_defeat_rewards(self):

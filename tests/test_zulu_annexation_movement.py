@@ -9,6 +9,8 @@ from tests.test_klip_punitive_protectorate import (
 from tests.test_natal_zululand_gameplay_contract import object_block, object_block_from_source, text, ROOT
 from tests.test_1_14_3_compatibility import tokens
 from tools.check_override_inventory import find_object
+from tests.test_performance_pass import canonical_trigger
+from tests.test_zulu_institutions_laws import child, statements
 
 CHOICE = 'sb_zululand_choose_direct_natal_administration'
 INITIAL = 'initial_movement_enthusiasm'
@@ -178,7 +180,11 @@ class ZuluAnnexationMovementTests(unittest.TestCase):
         added = object_block_from_source(object_block(OVERRIDE, 'disband_trigger'), 'AND')
         self.assertEqual(1, sb.count(added))
         sb = sb.replace(added, '').replace(object_block(OVERRIDE, 'on_disbanded'), '')
-        self.assertEqual(tokens(native), tokens(sb))
+        # Same neighbour predicate, cheap insurrection check before culture lookup.
+        old_filter = child(child(native, 'additional_radicalism_factors'), 'any_political_movement')
+        new_filter = child(child(sb, 'additional_radicalism_factors'), 'any_political_movement')
+        self.assertEqual(canonical_trigger(statements(old_filter)), canonical_trigger(statements(new_filter)))
+        self.assertEqual(tokens(native.replace(old_filter, new_filter)), tokens(sb))
 
     def test_receipt_is_hidden_delayed_and_has_no_recurring_dispatch(self):
         callback = object_block(OVERRIDE, 'on_disbanded')

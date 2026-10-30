@@ -22,6 +22,7 @@ sb_court_episode_chief = {
  }
 }
 sb_court_episode_prince = { sb_court_member_of_country = yes sb_court_royal_candidate = yes NOT = { is_ruler_of_own_country = yes } }
+sb_court_current_opposition_prince = { sb_court_episode_prince = yes NOT = { sb_court_mpande_son_under_king = yes } }
 sb_court_episode_notable = {
  sb_court_present_member = yes NOT = { is_ruler_of_own_country = yes }
  OR = { var:sb_court_endorsement_var = 1 var:sb_court_claimant_scope ?= { is_character_alive = yes } }
@@ -42,7 +43,7 @@ sb_court_card_213_eligible = {
 }
 sb_court_card_214_eligible = {
  any_in_list = { variable = sb_court_members count >= 2 sb_court_episode_neutral = yes }
- any_in_list = { variable = sb_court_members sb_court_episode_prince = yes }
+ any_in_list = { variable = sb_court_members sb_court_current_opposition_prince = yes }
 }
 sb_court_card_215_eligible = {
  has_journal_entry = je_sb_adopt_firearms
@@ -54,5 +55,5 @@ sb_court_card_210_valid = { sb_court_episode_valid = yes var:sb_court_episode_ca
 sb_court_card_211_valid = { sb_court_episode_valid = yes var:sb_court_episode_card_var = 211 var:sb_court_episode_actor_scope ?= { sb_court_episode_notable = yes } }
 sb_court_card_212_valid = { sb_court_episode_valid = yes var:sb_court_episode_card_var = 212 var:sb_court_episode_actor_scope ?= { sb_court_episode_chief = yes } }
 sb_court_card_213_valid = { sb_court_episode_valid = yes var:sb_court_episode_card_var = 213 var:sb_court_episode_actor_scope ?= { sb_court_episode_opponent = yes var:sb_court_claimant_scope ?= scope:sb_court_country.var:sb_court_episode_candidate_scope } var:sb_court_episode_other_scope ?= { sb_court_episode_ally = yes } }
-sb_court_card_214_valid = { sb_court_episode_valid = yes var:sb_court_episode_card_var = 214 var:sb_court_episode_actor_scope ?= { sb_court_episode_neutral = yes } var:sb_court_episode_other_scope ?= { sb_court_episode_neutral = yes } var:sb_court_episode_candidate_scope ?= { sb_court_episode_prince = yes } }
+sb_court_card_214_valid = { sb_court_episode_valid = yes var:sb_court_episode_card_var = 214 var:sb_court_episode_actor_scope ?= { sb_court_episode_neutral = yes } var:sb_court_episode_other_scope ?= { sb_court_episode_neutral = yes } var:sb_court_episode_candidate_scope ?= { sb_court_current_opposition_prince = yes } }
 sb_court_card_215_valid = { sb_court_episode_valid = yes var:sb_court_episode_card_var = 215 sb_court_card_215_eligible = yes var:sb_court_episode_actor_scope ?= { sb_court_episode_house = yes } }

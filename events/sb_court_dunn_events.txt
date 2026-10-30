@@ -1,0 +1,108 @@
+﻿namespace = sb_court_dunn
+
+sb_court_dunn.001 = { # TO REVIEW
+ type = country_event
+ placement = root
+ title = sb_court_dunn.001.t
+ desc = sb_court_dunn.001.d
+ flavor = sb_court_dunn.001.f
+ gui_window = event_window_2char
+ left_icon = scope:sb_court_dunn_visitor
+ right_icon = scope:sb_court_dunn_prince
+ on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+ on_opened_soundeffect = "event:/SFX/Events/misc/2Characters"
+ icon = "gfx/interface/icons/event_icons/event_portrait.dds"
+ duration = 3
+ trigger = { sb_court_dunn_offer_valid = yes }
+ cancellation_trigger = { sb_court_dunn_offer_valid = no }
+ immediate = {
+  var:sb_court_dunn_visitor_scope = { save_scope_as = sb_court_dunn_visitor }
+  var:sb_court_dunn_prince_scope = { save_scope_as = sb_court_dunn_prince }
+  var:sb_court_dunn_other_prince_scope = { save_scope_as = sb_court_dunn_other_prince }
+  var:sb_court_dunn_objector_scope ?= { save_scope_as = sb_court_dunn_objector }
+ }
+ option = {
+  name = sb_court_dunn.001.a
+  default_option = yes
+  custom_tooltip = sb_court_dunn.001.a.tt
+  if = { limit = { var:sb_court_dunn_objector_scope ?= { sb_court_brothers_available_backer = yes } } custom_tooltip = sb_court_dunn.001.objector.tt }
+  hidden_effect = { sb_court_accept_dunn_offer = yes }
+  ai_chance = { base = 90 }
+ }
+ option = {
+  name = sb_court_dunn.001.b
+  custom_tooltip = sb_court_dunn.001.b.tt
+  hidden_effect = { sb_court_decline_dunn_offer = yes }
+  ai_chance = { base = 10 }
+ }
+}
+
+sb_court_dunn.002 = { # TO REVIEW
+ type = country_event
+ placement = root
+ title = sb_court_dunn.002.t
+ desc = sb_court_dunn.002.d
+ flavor = sb_court_dunn.002.f
+ gui_window = event_window_1char_tabloid
+ left_icon = scope:sb_court_dunn_trader
+ icon = "gfx/interface/icons/event_icons/event_portrait.dds"
+ on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+ on_opened_soundeffect = "event:/SFX/Events/misc/2Characters"
+ duration = 3
+ trigger = { sb_court_dunn_delivery_valid = yes }
+ cancellation_trigger = { sb_court_dunn_delivery_valid = no }
+ immediate = { global_var:sb_court_dunn_identity_scope = { save_scope_as = sb_court_dunn_trader } }
+ option = {
+  name = sb_court_dunn.002.a
+  default_option = yes
+  custom_tooltip = sb_court_dunn.002.a.tt
+  hidden_effect = { sb_court_answer_dunn_delivery = yes }
+ }
+}
+
+sb_court_dunn.003 = { # TO REVIEW
+ type = country_event
+ placement = root
+ title = sb_court_dunn.003.t
+ desc = {
+  first_valid = {
+   triggered_desc = { trigger = { global_var:sb_court_dunn_identity_scope = { has_variable = sb_court_dunn_delivered_guns_var } } desc = sb_court_dunn.003.d }
+   triggered_desc = { desc = sb_court_dunn.003.d.no_guns }
+  }
+ }
+ flavor = sb_court_dunn.003.f
+ gui_window = event_window_2char
+ left_icon = scope:sb_court_dunn_king
+ right_icon = scope:sb_court_dunn_trader
+ icon = "gfx/interface/icons/event_icons/event_portrait.dds"
+ on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+ on_opened_soundeffect = "event:/SFX/Events/misc/2Characters"
+ duration = 3
+ trigger = { sb_court_dunn_judgement_valid = yes }
+ cancellation_trigger = { sb_court_dunn_judgement_valid = no }
+ immediate = {
+  ruler = { save_scope_as = sb_court_dunn_king }
+  global_var:sb_court_dunn_identity_scope = { save_scope_as = sb_court_dunn_trader }
+ }
+ option = {
+  name = sb_court_dunn.003.a
+  custom_tooltip = sb_court_dunn.003.a.tt
+  if = { limit = { c:GBR ?= { is_country_alive = yes } } custom_tooltip = sb_court_dunn.003.a.relations.tt }
+  hidden_effect = { sb_court_answer_dunn_judgement = { KEEP = no KILL = yes } }
+  ai_chance = { base = 10 }
+ }
+ option = {
+  name = sb_court_dunn.003.b
+  default_option = yes
+  custom_tooltip = sb_court_dunn.003.b.tt
+  if = { limit = { c:GBR ?= { is_country_alive = yes } } custom_tooltip = sb_court_dunn.003.b.relations.tt }
+  hidden_effect = { sb_court_answer_dunn_judgement = { KEEP = yes KILL = no } }
+  ai_chance = { base = 80 }
+ }
+ option = {
+  name = sb_court_dunn.003.c
+  custom_tooltip = sb_court_dunn.003.c.tt
+  hidden_effect = { sb_court_answer_dunn_judgement = { KEEP = no KILL = no } }
+  ai_chance = { base = 10 }
+ }
+}

@@ -1,0 +1,96 @@
+﻿# Shared reservation: accepting either territorial undertaking excludes the other.
+sb_nrp_chiefdoms_promise_available = {
+ NOR = { has_global_variable = sb_hamu_promise_live_var has_global_variable = sb_nrp_reward_consumed_var }
+}
+sb_hamu_land_owned = {
+ p:xE1E455.state.owner = this
+ p:xE882CE.state.owner = this
+ p:xBE6FEE.state.owner = this
+ p:x904EBE.state.owner = this
+ p:x9E9742.state.owner = this
+}
+sb_hamu_land_within_conflict = {
+ p:xE1E455.state.owner = { OR = { this = prev var:sb_court_dynastic_opponent_scope ?= prev } }
+ p:xE882CE.state.owner = { OR = { this = prev var:sb_court_dynastic_opponent_scope ?= prev } }
+ p:xBE6FEE.state.owner = { OR = { this = prev var:sb_court_dynastic_opponent_scope ?= prev } }
+ p:x904EBE.state.owner = { OR = { this = prev var:sb_court_dynastic_opponent_scope ?= prev } }
+ p:x9E9742.state.owner = { OR = { this = prev var:sb_court_dynastic_opponent_scope ?= prev } }
+}
+sb_hamu_candidate = {
+ has_template = SB_ZUL_hamu sb_court_royal_candidate = yes
+ is_in_exile_pool = no is_in_void = no
+ NOT = { is_ruler_of_own_country = yes }
+ owner ?= { sb_court_has_royal_law = yes sb_hamu_land_owned = yes NOR = { has_variable = sb_court_dynastic_crisis_var has_variable = sb_court_accession_open_var } }
+}
+sb_hamu_offer_available = {
+ country_definition = cd:TRN is_country_alive = yes can_have_subjects = yes
+ any_scope_state = { state_region = s:STATE_EAST_TRANSVAAL }
+ OR = { has_global_variable = sb_swazi_boer_border_resolved_global_var c:SWZ ?= { has_variable = sb_swazi_boer_pressure_resolved_var } }
+ NOR = {
+  has_global_variable = sb_hamu_offer_recorded_var
+  has_global_variable = sb_hamu_promise_live_var
+  has_global_variable = sb_nrp_chiefdoms_promise_var has_global_variable = sb_nrp_chiefdoms_earned_var
+  has_global_variable = sb_nrp_reward_consumed_var
+ }
+ NOT = { c:NRP ?= { is_country_alive = yes } }
+ NOT = { container:sb_zululand_chiefdoms_state ?= { var:sb_zululand_boer_commitment_var > 0 } }
+ global_var:sb_court_hamu_identity_scope ?= { sb_hamu_candidate = yes }
+}
+# Sponsor scope. All quoted participants remain fixed until the answer.
+sb_hamu_offer_valid = {
+ is_country_alive = yes can_have_subjects = yes has_variable = sb_hamu_offer_open_var
+ any_scope_state = { state_region = s:STATE_EAST_TRANSVAAL }
+ NOR = { has_global_variable = sb_nrp_chiefdoms_promise_var has_global_variable = sb_nrp_chiefdoms_earned_var has_global_variable = sb_nrp_reward_consumed_var has_global_variable = sb_hamu_promise_live_var }
+ NOT = { c:NRP ?= { is_country_alive = yes } }
+ var:sb_hamu_prince_scope ?= { sb_hamu_candidate = yes }
+ var:sb_hamu_court_scope ?= { is_country_alive = yes sb_hamu_land_owned = yes }
+ var:sb_hamu_prince_scope.owner ?= var:sb_hamu_court_scope
+}
+sb_hamu_can_fund = {
+ has_variable = sb_hamu_contract_var is_country_alive = yes
+ NOR = { has_variable = sb_hamu_earned_var has_variable = sb_hamu_fulfilled_var has_variable = sb_hamu_failed_var }
+ var:sb_hamu_prince_scope ?= { is_character_alive = yes NOT = { has_variable = sb_court_claim_renounced_var } }
+}
+# NRP scope. Only actual British control of the residual kingdom permits a demand.
+sb_hamu_residual_british_control = {
+ var:sb_hamu_residual_court_scope ?= { is_country_alive = yes is_subject_of = c:GBR }
+}
+sb_hamu_boundary_valid = {
+ country_definition = cd:NRP is_country_alive = yes has_variable = sb_hamu_nrp_var
+ sb_hamu_land_owned = yes
+ is_subject = yes
+ c:GBR ?= { is_country_alive = yes }
+ overlord = { is_country_alive = yes NOR = { country_definition = cd:GBR is_subject_of = c:GBR } }
+ OR = {
+  sb_hamu_residual_british_control = yes
+  AND = {
+   NOT = { var:sb_hamu_residual_court_scope ?= { is_country_alive = yes } }
+   p:x1A084B.state.owner = { OR = { country_definition = cd:GBR is_subject_of = c:GBR } }
+   p:x41C070.state.owner = { OR = { country_definition = cd:GBR is_subject_of = c:GBR } }
+   p:x88FAD4.state.owner = { OR = { country_definition = cd:GBR is_subject_of = c:GBR } }
+   p:xBFA16B.state.owner = { OR = { country_definition = cd:GBR is_subject_of = c:GBR } }
+  }
+ }
+}
+sb_hamu_boundary_answer_valid = {
+ has_variable = sb_hamu_boundary_offer_var
+ c:NRP ?= { sb_hamu_boundary_valid = yes overlord ?= prev }
+}
+
+# Sponsor scope. Only the authenticated defeated faction may still hold promised land.
+sb_hamu_earned_land_recoverable = {
+ p:xE1E455.state.owner = { OR = { this = prev.var:sb_hamu_court_scope AND = { exists = prev.var:sb_hamu_reunion_scope this = prev.var:sb_hamu_reunion_scope } AND = { exists = prev.var:sb_hamu_created_republic_scope this = prev.var:sb_hamu_created_republic_scope } } }
+ p:xE882CE.state.owner = { OR = { this = prev.var:sb_hamu_court_scope AND = { exists = prev.var:sb_hamu_reunion_scope this = prev.var:sb_hamu_reunion_scope } AND = { exists = prev.var:sb_hamu_created_republic_scope this = prev.var:sb_hamu_created_republic_scope } } }
+ p:xBE6FEE.state.owner = { OR = { this = prev.var:sb_hamu_court_scope AND = { exists = prev.var:sb_hamu_reunion_scope this = prev.var:sb_hamu_reunion_scope } AND = { exists = prev.var:sb_hamu_created_republic_scope this = prev.var:sb_hamu_created_republic_scope } } }
+ p:x904EBE.state.owner = { OR = { this = prev.var:sb_hamu_court_scope AND = { exists = prev.var:sb_hamu_reunion_scope this = prev.var:sb_hamu_reunion_scope } AND = { exists = prev.var:sb_hamu_created_republic_scope this = prev.var:sb_hamu_created_republic_scope } } }
+ p:x9E9742.state.owner = { OR = { this = prev.var:sb_hamu_court_scope AND = { exists = prev.var:sb_hamu_reunion_scope this = prev.var:sb_hamu_reunion_scope } AND = { exists = prev.var:sb_hamu_created_republic_scope this = prev.var:sb_hamu_created_republic_scope } } }
+}
+
+# NRP scope. An absent overlord never appears on the right of an equality.
+sb_hamu_boundary_authority_current = {
+ trigger_if = {
+  limit = { is_subject = yes has_variable = sb_hamu_boundary_recipient_scope }
+  var:sb_hamu_boundary_recipient_scope ?= { this = prev.overlord }
+ }
+ trigger_else = { always = no }
+}

@@ -61,7 +61,7 @@ def sha(path):
 
 manifest = {
     'generator': 'Built-in image_gen; exact prompt in prompt.md',
-    'generation_source': '/Users/depro/.codex/generated_images/01a06e15-4e0f-72a2-9928-6a6706be2336/exec-d372317e-f67d-4b96-8647-208d8a413e40.png',
+    'generation_source': '/Users/depro/Documents/Paradox Interactive/Victoria 3/mod/References/Generated images/01a06e15-4e0f-72a2-9928-6a6706be2336/exec-d372317e-f67d-4b96-8647-208d8a413e40.png',
     'style_reference': '../mountain_king_special_2026_10_19/vanilla_special_reference_sheet.png',
     'sources': [{'path':str(p),'sha256':sha(p)} for p in sources],
     'raw': {'path':RAW.name,'sha256':sha(RAW),'size':list(raw.size)},

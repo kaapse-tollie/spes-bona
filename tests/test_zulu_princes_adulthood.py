@@ -2,7 +2,7 @@
 import unittest
 
 from tests.test_zulu_frontier_followup import FrontierRuntime, block, field
-from tests.test_zulu_court_politics import character, EFFECTS
+from tests.test_zulu_court_politics import character, EFFECTS, TRIGGERS
 from tests.test_zulu_recognition_backing import RecognitionRuntime, add
 
 
@@ -74,6 +74,9 @@ class PrincesAdulthoodTests(unittest.TestCase):
         self.assertIn('sb_court_endorsement_claimant_trait', elder['traits'])
         self.assertEqual(0, younger['vars']['sb_court_endorsement_var'])
         self.assertEqual(1, elder['vars']['sb_court_alignment_var'])
+        self.assertIn('charismatic', elder['traits'])
+        self.assertIn('sb_court_claimant_trait', elder['traits'])
+        self.assertNotIn('charismatic', younger.get('traits', set()))
         self.assertNotIn('sb_court_claim_renounced_var', elder['vars'])
         self.assertNotIn('sb_court_successor_pledge_scope', elder['vars'])
         own = elder['vars']['sb_court_represented_weight_var']
@@ -109,7 +112,7 @@ class PrincesAdulthoodTests(unittest.TestCase):
                 pulse(rt)
                 self.assertNotIn('events', rt.country)
                 self.assertIn('sb_court_adulthood_checked_var', son['vars'])
-                self.assertEqual(0, son['vars']['sb_court_endorsement_var'])
+                self.assertEqual(1 if state == 'ruler' else 0, son['vars']['sb_court_endorsement_var'])
                 # Losing the throne later is not another coming of age.
                 rt.country['ruler'] = king
                 father['alive'] = True
@@ -169,6 +172,27 @@ class PrincesAdulthoodTests(unittest.TestCase):
 
 
 class BrothersRuntime(RecognitionRuntime):
+    def condition(self, nodes, scope, prev=None):
+        for key, op, value in nodes:
+            if key in TRIGGERS and isinstance(value, list):
+                params = {k:v for k, _, v in value}
+                def subst(node):
+                    if isinstance(node, list): return [(subst(k), op, subst(v)) for k, op, v in node]
+                    for param, val in params.items(): node = node.replace('$'+param+'$', val)
+                    return node
+                result = self.condition(subst(TRIGGERS[key]), scope, prev)
+            elif key == 'any_in_list' and any(k == 'count' for k, _, _ in value):
+                collection = 'members' if field(value, 'variable') == 'sb_court_members' else field(value, 'variable')
+                count = sum(self.condition([n for n in value if n[0] not in ('variable', 'count')], item, scope)
+                            for item in scope.get(collection, []))
+                comparator, threshold = next((op, v) for k, op, v in value if k == 'count')
+                assert comparator == '>='
+                result = count >= int(threshold)
+            else:
+                result = super().condition([(key, op, value)], scope, prev)
+            if not result: return False
+        return True
+
     def effect(self, nodes, scope, prev=None):
         for node in self.branches(nodes, scope, prev):
             if node[:2] == ('add_trait', '=') and node[2] == 'ambitious':
@@ -213,13 +237,15 @@ class BrothersChoiceTests(unittest.TestCase):
             self.assertNotIn('sb_court_successor_pledge_scope', highest['vars'])
             self.assertEqual(5, rt.country['vars']['sb_prerogative_var'])
             self.assertFalse(rt.condition([('sb_court_recognisable_successor','=','yes')], sons[choice]))
+            self.assertNotIn('innovative',sons[1].get('traits',set()))
             self.answer(rt, event, choice)
+            self.assertIn('innovative',sons[1]['traits'])
             self.assertIs(sons[choice], rt.country['heir'])
             self.assertIs(sons[choice], rt.country['vars']['sb_court_recognized_heir_scope'])
             self.assertEqual(-20, rt.country['vars']['sb_prerogative_var'])
             self.assertIn('ambitious', sons[1-choice]['traits'])
             self.assertIs(sons[1-choice], highest['vars']['sb_court_successor_pledge_scope'])
-            self.assertIs(sons[choice], lesser['vars']['sb_court_successor_pledge_scope'])
+            self.assertIs(sons[0], lesser['vars']['sb_court_successor_pledge_scope'])
             self.assertEqual(1, highest['vars']['sb_court_endorsement_var'])
             self.assertEqual(1, highest['vars']['sb_court_alignment_var'])
             self.answer(rt, event, choice)
@@ -235,11 +261,41 @@ class BrothersChoiceTests(unittest.TestCase):
             event = self.open_event(rt)
             self.assertEqual(['sb_court_succession.007'], rt.country['events'])
             self.assertIs(sons[1-heir], rt.scopes['sb_court_brothers_other'])
+            self.assertNotIn('innovative',sons[1].get('traits',set()))
             self.answer(rt, event)
+            self.assertIn('innovative',sons[1]['traits'])
             self.assertIs(sons[heir], rt.country['heir'])
             self.assertIs(sons[1-heir], highest['vars']['sb_court_successor_pledge_scope'])
             self.assertIn('ambitious', sons[1-heir]['traits'])
             self.assertEqual(5, rt.country['vars']['sb_prerogative_var'])
+
+    def test_sons_support_mpandes_reign_while_retaining_future_claims(self):
+        rt, father, sons, houses = self.setup_court(1)
+        self.open_event(rt)
+        rt.backing()
+        for son in sons:
+            self.assertEqual(1, son['vars']['sb_court_endorsement_var'])
+            self.assertNotIn('sb_court_claimant_scope', son['vars'])
+            self.assertIn('sb_court_claimant_trait', son['traits'])
+            self.assertIn('sb_court_endorsement_incumbent_trait', son['traits'])
+            self.assertEqual(0, son['vars']['sb_court_current_weight_var'])
+            self.assertGreater(son['vars']['sb_court_coalition_weight_var'], 0)
+            self.assertFalse(rt.condition(TRIGGERS['sb_court_current_opposition_prince'], son))
+            self.assertTrue(rt.condition(TRIGGERS['sb_court_episode_prince'], son))
+        self.assertIn(sons[0], father['sb_court_current_supporters'])
+        self.assertIn(sons[1], father['sb_court_current_supporters'])
+        # A different ruler restores their eligibility as current opposition.
+        rt.country['ruler'] = rt.country['members'][0]
+        self.assertTrue(rt.condition(TRIGGERS['sb_court_current_opposition_prince'], sons[0]))
+
+    def test_frozen_conflict_does_not_rewrite_sons_commitments(self):
+        rt, _, sons, _ = self.setup_court(1)
+        for flag in ('sb_court_accession_open_var', 'sb_court_dynastic_crisis_var', 'sb_court_civil_war_var'):
+            sons[0]['vars'].update(sb_court_endorsement_var=-1, sb_court_claimant_scope=sons[0])
+            rt.country['vars'][flag] = 1
+            rt.effect(EFFECTS['sb_court_reconcile_mpande_sons'], rt.country)
+            self.assertEqual(-1, sons[0]['vars']['sb_court_endorsement_var'])
+            rt.country['vars'].pop(flag)
 
     def test_an_existing_backer_prevents_an_extra_grant_and_an_empty_pool_is_honest(self):
         rt, _, sons, (highest, lesser) = self.setup_court(0)
@@ -258,6 +314,45 @@ class BrothersChoiceTests(unittest.TestCase):
         self.answer(rt, event)
         self.assertIn('ambitious', sons[1]['traits'])
         self.assertTrue(all(h['vars']['sb_court_successor_pledge_scope'] is sons[0] for h in houses))
+
+    def test_rival_cetshwayo_receives_two_new_houses_without_stealing_pledges(self):
+        for existing in (0, 1, 2):
+            rt, _, sons, (highest, lesser) = self.setup_court(1)
+            for i in range(existing):
+                backer = add(rt, 'Existing '+str(i), 30)
+                backer['vars']['sb_court_successor_pledge_scope'] = sons[0]
+            pledged_to_heir = add(rt, 'Heir backer', 200)
+            pledged_to_heir['vars']['sb_court_successor_pledge_scope'] = sons[1]
+            event = self.open_event(rt)
+            preview = [n for n in field(event, 'option') if n[0] == 'sb_court_preview_brother_backing']
+            rt.effect(preview, rt.country)
+            self.assertEqual(2, len(rt.tooltips))
+            self.answer(rt, event)
+            backers = [m for m in rt.country['members'] if m['vars'].get('sb_court_successor_pledge_scope') is sons[0]]
+            self.assertEqual(existing + 2, len(backers))
+            self.assertIs(sons[1], pledged_to_heir['vars']['sb_court_successor_pledge_scope'])
+            self.assertEqual(1, highest['vars']['sb_court_endorsement_var'])
+
+    def test_house_ranking_uses_combined_prominence_and_counts_shared_house_once(self):
+        rt, _, sons, (highest, lesser) = self.setup_court(1)
+        lesser['vars']['sb_court_following_var'] = 20
+        junior = add(rt, 'Junior member', 55, following=20)
+        event = self.open_event(rt)
+        self.assertIs(lesser, rt.country['vars']['sb_court_brothers_backer_scope'])
+        self.assertIs(highest, rt.country['vars']['sb_court_brothers_second_backer_scope'])
+        self.answer(rt, event)
+        self.assertIs(sons[0], lesser['vars']['sb_court_successor_pledge_scope'])
+        self.assertNotIn('sb_court_successor_pledge_scope', junior['vars'])
+
+    def test_cetshwayo_second_frozen_house_can_fill_a_gap_without_replacing_stale_first(self):
+        rt, _, sons, (highest, lesser) = self.setup_court(1)
+        event = self.open_event(rt)
+        highest['vars']['sb_court_successor_pledge_scope'] = sons[1]
+        outsider = add(rt, 'Later house', 300)
+        self.answer(rt, event)
+        self.assertIs(sons[1], highest['vars']['sb_court_successor_pledge_scope'])
+        self.assertIs(sons[0], lesser['vars']['sb_court_successor_pledge_scope'])
+        self.assertNotIn('sb_court_successor_pledge_scope', outsider['vars'])
 
     def test_ineligible_notables_do_not_take_the_unpledged_house_slot(self):
         rt, _, sons, (highest, _) = self.setup_court(0)
@@ -315,7 +410,7 @@ class BrothersChoiceTests(unittest.TestCase):
         event = self.open_event(rt)
         self.assertEqual('event_window_2char', field(event, 'gui_window'))
         options = [v for k, _, v in event if k == 'option']
-        self.assertEqual(['66', '33'], [field(field(o, 'ai_chance'), 'base') for o in options])
+        self.assertEqual(['33', '66'], [field(field(o, 'ai_chance'), 'base') for o in options])
         sons[0]['alive'] = False
         monthly = block('common/scripted_effects/sb_institutions_effects.txt', 'sb_institutions_monthly_update')
         cleanup = next(n for n in monthly if n[0] == 'if' and ('has_variable', '=', 'sb_court_brothers_choice_var') in field(n[2], 'limit'))

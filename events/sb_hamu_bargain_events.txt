@@ -1,0 +1,116 @@
+﻿namespace = sb_hamu_bargain
+
+sb_hamu_bargain.001 = { # TO REVIEW
+ type = country_event
+ placement = root
+ on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+ icon = "gfx/interface/icons/event_icons/event_portrait.dds"
+ duration = 3
+ title = sb_hamu_bargain.001.t
+ desc = sb_hamu_bargain.001.d
+ flavor = sb_hamu_bargain.001.f
+ gui_window = event_window_1char_tabloid
+ left_icon = scope:sb_hamu_prince
+ on_opened_soundeffect = "event:/SFX/Events/misc/2Characters"
+ trigger = { sb_hamu_offer_valid = yes }
+ cancellation_trigger = { sb_hamu_offer_valid = no }
+ immediate = {
+  var:sb_hamu_prince_scope = { save_scope_as = sb_hamu_prince }
+  var:sb_hamu_court_scope = { save_scope_as = sb_hamu_court }
+  var:sb_hamu_backer_scope ?= { save_scope_as = sb_hamu_backer }
+ }
+ option = {
+  name = sb_hamu_bargain.001.a
+  custom_tooltip = sb_hamu_bargain.001.payment.tt
+  custom_tooltip = sb_hamu_bargain.001.promise.tt
+  custom_tooltip = sb_hamu_bargain.001.relations.tt
+  if = { limit = { exists = scope:sb_hamu_backer } custom_tooltip = sb_hamu_bargain.001.backer.tt }
+  else = { custom_tooltip = sb_hamu_bargain.001.no_backer.tt }
+  hidden_effect = { sb_hamu_accept_offer = yes }
+  ai_chance = { base = 75 }
+ }
+ option = {
+  name = sb_hamu_bargain.001.b
+  default_option = yes
+  hidden_effect = { remove_variable = sb_hamu_offer_open_var }
+  ai_chance = { base = 25 }
+ }
+}
+
+sb_hamu_bargain.002 = { # TO REVIEW
+ type = country_event
+ placement = root
+ on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+ icon = "gfx/interface/icons/event_icons/event_portrait.dds"
+ duration = 3
+ title = sb_hamu_bargain.002.t
+ desc = sb_hamu_bargain.002.d
+ flavor = sb_hamu_bargain.002.f
+ gui_window = event_window_2char
+ left_icon = scope:sb_hamu_sovereign
+ right_icon = scope:sb_hamu_prince
+ on_opened_soundeffect = "event:/SFX/Events/misc/2Characters"
+ trigger = { global_var:sb_hamu_sponsor_scope ?= { has_variable = sb_hamu_contract_var NOT = { has_variable = sb_hamu_failed_var } var:sb_hamu_prince_scope ?= { is_character_alive = yes } } exists = ruler }
+ immediate = {
+  ruler = { save_scope_as = sb_hamu_sovereign }
+  global_var:sb_hamu_sponsor_scope = {
+   save_scope_as = sb_hamu_sponsor
+   var:sb_hamu_prince_scope = { save_scope_as = sb_hamu_prince }
+   var:sb_hamu_backer_scope ?= { save_scope_as = sb_hamu_backer }
+  }
+ }
+ option = {
+  name = sb_hamu_bargain.002.a
+  default_option = yes
+  custom_tooltip = sb_hamu_bargain.002.promise.tt
+  if = { limit = { global_var:sb_hamu_sponsor_scope = { has_variable = sb_hamu_backer_joined_var } exists = scope:sb_hamu_backer } custom_tooltip = sb_hamu_bargain.002.backer.tt }
+ }
+}
+
+sb_hamu_bargain.003 = { # TO REVIEW
+ type = country_event
+ placement = root
+ on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+ icon = "gfx/interface/icons/event_icons/event_portrait.dds"
+ duration = 3
+ title = sb_hamu_bargain.003.t
+ desc = sb_hamu_bargain.003.d
+ flavor = sb_hamu_bargain.003.f
+ gui_window = event_window_1char_tabloid
+ left_icon = scope:sb_hamu_prince
+ on_opened_soundeffect = "event:/SFX/Events/misc/2Characters"
+ trigger = { has_variable = sb_hamu_fulfilled_var c:NRP ?= { is_country_alive = yes } var:sb_hamu_prince_scope ?= { is_character_alive = yes } }
+ immediate = { var:sb_hamu_prince_scope = { save_scope_as = sb_hamu_prince } c:NRP = { save_scope_as = sb_hamu_republic } }
+ option = { name = sb_hamu_bargain.003.a default_option = yes custom_tooltip = sb_hamu_bargain.003.a.tt }
+}
+
+sb_hamu_bargain.010 = { # TO REVIEW
+ type = country_event
+ placement = root
+ on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+ icon = "gfx/interface/icons/event_icons/event_portrait.dds"
+ duration = 3
+ title = sb_hamu_bargain.010.t
+ desc = sb_hamu_bargain.010.d
+ flavor = sb_hamu_bargain.010.f
+ gui_window = event_window_1char_tabloid
+ left_icon = scope:sb_hamu_british_ruler
+ on_opened_soundeffect = "event:/SFX/Events/misc/2Characters"
+ trigger = { sb_hamu_boundary_answer_valid = yes }
+ cancellation_trigger = { sb_hamu_boundary_answer_valid = no }
+ immediate = { c:GBR.ruler = { save_scope_as = sb_hamu_british_ruler } c:NRP = { save_scope_as = sb_hamu_republic } }
+ option = {
+  name = sb_hamu_bargain.010.a
+  default_option = yes
+  custom_tooltip = sb_hamu_bargain.010.a.tt
+  hidden_effect = { sb_hamu_answer_boundary = { ACCEPT = yes } }
+  ai_chance = { base = 75 }
+ }
+ option = {
+  name = sb_hamu_bargain.010.b
+  custom_tooltip = sb_hamu_bargain.010.b.tt
+  hidden_effect = { sb_hamu_answer_boundary = { ACCEPT = no } }
+  ai_chance = { base = 25 }
+ }
+}
+

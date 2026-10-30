@@ -2,12 +2,8 @@
 #
 # Bar model:
 #   - the visible bar runs from 0 to 60
-#   - each progress lane tracks months up to 24
-#   - the best lane is copied into the master value, then multiplied by 2.5
-#     so 24 months becomes 60 visible bar progress
-#
-# This keeps seeded starts like SWZ/GZA readable while still allowing either
-# treaty imports or domestic arms production to complete the JE.
+#   - market supply advances a single counter up to 260 weeks
+#   - supply weeks are projected onto the existing 0-60 display/penalty scale
 
 sb_remove_iron_age_weapons_modifiers = {
 	if = { limit = { has_modifier = sb_iron_age_weapons } remove_modifier = sb_iron_age_weapons }
@@ -73,10 +69,10 @@ sb_remove_iron_age_weapons_modifiers = {
 }
 
 sb_seed_initial_firearms_progress = {
-	# Basutoland retains its 40% head start: 41.6 of 104 supply weeks.
+	# Basutoland retains its 40% head start: 104 of 260 supply weeks.
 	if = {
 		limit = { country_definition = cd:BST }
-		set_variable = { name = sb_firearms_supply_weeks_var value = 41.6 }
+		set_variable = { name = sb_firearms_supply_weeks_var value = 104 }
 	}
 	else = { set_variable = { name = sb_firearms_supply_weeks_var value = 0 } }
 	set_variable = { name = sb_firearms_progress_months_var value = 0 }
@@ -92,7 +88,7 @@ sb_apply_port_natal_raid_firearms_windfall = {
 			limit = { NOT = { has_variable = sb_firearms_supply_weeks_var } }
 			set_variable = { name = sb_firearms_supply_weeks_var value = 0 }
 		}
-		change_variable = { name = sb_firearms_supply_weeks_var add = 10.4 }
+		change_variable = { name = sb_firearms_supply_weeks_var add = 26 }
 		sb_update_firearms_progress = yes
 		sb_sync_iron_age_weapons_penalty = yes
 	}
@@ -108,7 +104,7 @@ sb_boost_firearms_progress_raid = {
 			limit = { NOT = { has_variable = sb_firearms_supply_weeks_var } }
 			set_variable = { name = sb_firearms_supply_weeks_var value = 0 }
 		}
-		change_variable = { name = sb_firearms_supply_weeks_var add = 5.2 }
+		change_variable = { name = sb_firearms_supply_weeks_var add = 13 }
 		sb_update_firearms_progress = yes
 		sb_sync_iron_age_weapons_penalty = yes
 	}
@@ -124,7 +120,7 @@ sb_boost_firearms_progress_10 = {
 			limit = { NOT = { has_variable = sb_firearms_supply_weeks_var } }
 			set_variable = { name = sb_firearms_supply_weeks_var value = 0 }
 		}
-		change_variable = { name = sb_firearms_supply_weeks_var add = 10.4 }
+		change_variable = { name = sb_firearms_supply_weeks_var add = 26 }
 		sb_update_firearms_progress = yes
 		sb_sync_iron_age_weapons_penalty = yes
 	}
@@ -140,7 +136,7 @@ sb_boost_firearms_progress_50 = {
 			limit = { NOT = { has_variable = sb_firearms_supply_weeks_var } }
 			set_variable = { name = sb_firearms_supply_weeks_var value = 0 }
 		}
-		change_variable = { name = sb_firearms_supply_weeks_var add = 52 }
+		change_variable = { name = sb_firearms_supply_weeks_var add = 130 }
 		sb_update_firearms_progress = yes
 		sb_sync_iron_age_weapons_penalty = yes
 	}
@@ -181,13 +177,27 @@ sb_update_firearms_progress = {
 		limit = { NOT = { has_variable = sb_firearms_supply_weeks_var } }
 		set_variable = { name = sb_firearms_supply_weeks_var value = 0 }
 	}
-	clamp_variable = { name = sb_firearms_supply_weeks_var min = 0 max = 104 }
+	clamp_variable = { name = sb_firearms_supply_weeks_var min = 0 max = 260 }
 	# Preserve the existing 0-60 display and penalty scale, despite its legacy name.
 	set_variable = {
 		name = sb_firearms_progress_months_var
-		value = { value = var:sb_firearms_supply_weeks_var multiply = 60 divide = 104 }
+		value = { value = var:sb_firearms_supply_weeks_var multiply = 60 divide = 260 }
 	}
 	sb_sync_firearms_progress_bar = yes
+}
+
+# Shared by the journal's native reward preview and its acknowledgement event.
+sb_apply_firearms_completion_rewards = {
+	add_modifier = {
+		name = sb_new_tactics
+		days = 1825
+	}
+	ruler = {
+		if = {
+			limit = { NOT = { has_trait = innovative } }
+			add_trait = innovative
+		}
+	}
 }
 
 sb_sync_iron_age_weapons_penalty = {

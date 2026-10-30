@@ -1,0 +1,301 @@
+# Victoria 3 1.14.5 arm64: Food Security provisioning trial
+# Binary SHA-256: e4806a9b315c9ed40bdafd5e6a9e3e46aca741a0a0890bded906ebcc295e2a13
+# Read-only inspection; no binary change or game launch.
+# Reproduce each full function with:
+# /Library/Developer/CommandLineTools/usr/bin/llvm-objdump --macho --arch=arm64 --disassemble --dis-symname SYMBOL BINARY
+# Interpreted formula: clamp(1 + state modifier - basic-food cost share - shortage severity, 0, 1).
+# The modifier is applied BEFORE the clamp. A saved 0 does not reveal its negative raw value.
+
+/Users/depro/Library/Application Support/Steam/steamapps/common/Victoria 3/binaries/victoria3.app/Contents/MacOS/victoria3:
+(__TEXT,__text) section
+__ZN13NFoodSecurity20CalcFoodSecurityDataERK4CPopP7CString:
+100667fd4:	ff 43 04 d1	sub	sp, sp, #0x110
+100667fd8:	f8 5f 0d a9	stp	x24, x23, [sp, #0xd0]
+100667fdc:	f6 57 0e a9	stp	x22, x21, [sp, #0xe0]
+100667fe0:	f4 4f 0f a9	stp	x20, x19, [sp, #0xf0]
+100667fe4:	fd 7b 10 a9	stp	x29, x30, [sp, #0x100]
+100667fe8:	fd 03 04 91	add	x29, sp, #0x100
+100667fec:	f3 03 01 aa	mov	x19, x1
+100667ff0:	f7 03 00 aa	mov	x23, x0
+100667ff4:	f4 03 08 aa	mov	x20, x8
+100667ff8:	40 f1 03 90	adrp	x0, 32296 ; 0x10848f000
+100667ffc:	00 20 2f 91	add	x0, x0, #0xbc8
+100668000:	dc 03 00 94	bl	__ZN16NPdxTransactions20CTransactionResourceINSt3__110unique_ptrI16CPopNeedDatabaseNS1_14default_deleteIS3_EEEEE18AccessOrSetEmplaceIJEEERS6_DpOT_
+100668004:	15 00 40 f9	ldr	x21, [x0]
+100668008:	b5 01 00 b5	cbnz	x21, 0x10066803c
+10066800c:	e8 3d 03 d0	adrp	x8, 26558 ; 0x106e26000
+100668010:	08 d1 1c 91	add	x8, x8, #0x734 ; literal pool for: "Instance has not been created!"
+100668014:	e8 2f 00 f9	str	x8, [sp, #0x58]
+100668018:	c8 03 80 52	mov	w8, #0x1e
+10066801c:	e8 63 00 b9	str	w8, [sp, #0x60]
+100668020:	ff 93 01 39	strb	wzr, [sp, #0x64]
+100668024:	e2 63 01 91	add	x2, sp, #0x58
+100668028:	60 00 80 52	mov	w0, #0x3
+10066802c:	81 00 80 52	mov	w1, #0x4
+100668030:	03 00 80 52	mov	w3, #0x0
+100668034:	84 0c 80 52	mov	w4, #0x64
+100668038:	c7 da 54 95	bl	__ZN4NLog12LogCallStackEjNS_9ELogLevelERK14CPdxStringViewjj
+10066803c:	b6 b6 47 f9	ldr	x22, [x21, #0xf68]
+100668040:	bf ff 3b a9	stp	xzr, xzr, [x29, #-0x48]
+100668044:	bf 83 1c f8	stur	xzr, [x29, #-0x38]
+100668048:	a8 23 01 d1	sub	x8, x29, #0x48
+10066804c:	7f 02 00 f1	cmp	x19, #0x0
+100668050:	01 11 9f 9a	csel	x1, x8, xzr, ne
+100668054:	e0 03 17 aa	mov	x0, x23
+100668058:	d5 fe ff 97	bl	__ZN13NFoodSecurity22CalcBasicFoodCostShareERK4CPopP7CString
+10066805c:	f5 03 00 aa	mov	x21, x0
+100668060:	bf 7f 3a a9	stp	xzr, xzr, [x29, #-0x60]
+100668064:	bf 03 1b f8	stur	xzr, [x29, #-0x50]
+100668068:	e8 42 40 b9	ldr	w8, [x23, #0x40]
+10066806c:	e8 5b 00 b9	str	w8, [sp, #0x58]
+100668070:	e0 63 01 91	add	x0, sp, #0x58
+100668074:	30 a7 e6 97	bl	__ZNK7TPdxRefI6CStateE6LookupEv
+100668078:	e1 03 00 aa	mov	x1, x0
+10066807c:	a8 83 01 d1	sub	x8, x29, #0x60
+100668080:	7f 02 00 f1	cmp	x19, #0x0
+100668084:	02 11 9f 9a	csel	x2, x8, xzr, ne
+100668088:	e0 03 16 aa	mov	x0, x22
+10066808c:	2d ec 1d 94	bl	__ZN12NMarketUtils20CalcShortageSeverityERK8CPopNeedRK6CStateP7CString
+100668090:	f6 03 00 aa	mov	x22, x0
+100668094:	e8 42 40 b9	ldr	w8, [x23, #0x40]
+100668098:	e8 5b 00 b9	str	w8, [sp, #0x58]
+10066809c:	e0 63 01 91	add	x0, sp, #0x58
+1006680a0:	25 a7 e6 97	bl	__ZNK7TPdxRefI6CStateE6LookupEv
+1006680a4:	08 b8 4b f9	ldr	x8, [x0, #0x1770]
+1006680a8:	a8 83 19 f8	stur	x8, [x29, #-0x68]
+1006680ac:	88 00 00 b4	cbz	x8, 0x1006680bc
+1006680b0:	08 21 00 91	add	x8, x8, #0x8
+1006680b4:	29 00 80 52	mov	w9, #0x1
+1006680b8:		.long	0xb8290108
+1006680bc:	7f 02 00 f1	cmp	x19, #0x0
+1006680c0:	e1 07 9f 1a	cset	w1, ne
+1006680c4:	e0 63 01 91	add	x0, sp, #0x58
+1006680c8:	01 04 37 94	bl	__ZN16CValueCalculatorC2ENS_5EModeE
+1006680cc:	28 f1 03 f0	adrp	x8, 32295 ; 0x10848f000
+1006680d0:	17 d1 54 79	ldrh	w23, [x8, #0xa68]
+1006680d4:	e1 3d 03 b0	adrp	x1, 26557 ; 0x106e25000
+1006680d8:	21 44 35 91	add	x1, x1, #0xd51 ; literal pool for: ""
+1006680dc:	e0 03 01 91	add	x0, sp, #0x40
+1006680e0:	e6 f7 51 95	bl	__ZN7CStringC1EPKc
+1006680e4:	e0 63 01 91	add	x0, sp, #0x58
+1006680e8:	a2 a3 01 d1	sub	x2, x29, #0x68
+1006680ec:	e4 03 01 91	add	x4, sp, #0x40
+1006680f0:	21 00 80 52	mov	w1, #0x1
+1006680f4:	e3 03 17 aa	mov	x3, x23
+1006680f8:	d2 c9 e6 97	bl	__ZN16CValueCalculator8AddEntryENS_10EEntryTypeERK7CPdxPtrIKN15NJominiModifier15CObjectModifierEENS2_13EModifierTypeERK7CString
+1006680fc:	e8 5f c1 39	ldrsb	w8, [sp, #0x57]
+100668100:	68 00 f8 36	tbz	w8, #0x1f, 0x10066810c
+100668104:	e0 23 40 f9	ldr	x0, [sp, #0x40]
+100668108:	aa fd 51 95	bl	__ZdlPv
+10066810c:	e0 63 01 91	add	x0, sp, #0x58
+100668110:	29 07 37 94	bl	__ZNK16CValueCalculator8GetValueEv
+100668114:	09 d4 90 52	mov	w9, #0x86a0
+100668118:	29 00 a0 72	movk	w9, #0x1, lsl #16
+10066811c:	08 00 15 cb	sub	x8, x0, x21
+100668120:	08 01 16 cb	sub	x8, x8, x22
+100668124:	08 01 09 8b	add	x8, x8, x9
+100668128:	1f 01 09 eb	cmp	x8, x9
+10066812c:	08 b1 89 9a	csel	x8, x8, x9, lt
+100668130:	15 fd a8 8a	bic	x21, x8, x8, asr #63
+100668134:	28 06 04 f0	adrp	x8, 32967 ; 0x10872f000
+100668138:	08 41 1a 91	add	x8, x8, #0x690
+10066813c:	08 01 40 f9	ldr	x8, [x8]
+100668140:	2a 06 04 f0	adrp	x10, 32967 ; 0x10872f000
+100668144:	4a 01 1b 91	add	x10, x10, #0x6c0
+100668148:	4a 01 40 f9	ldr	x10, [x10]
+10066814c:	6b 66 9e 52	mov	w11, #0xf333
+100668150:	8b a0 b6 72	movk	w11, #0xb504, lsl #16
+100668154:	0c 01 15 cb	sub	x12, x8, x21
+100668158:	8d 01 0b 8b	add	x13, x12, x11
+10066815c:	4b 01 0b 8b	add	x11, x10, x11
+100668160:	ee cc 9c d2	mov	x14, #0xe667
+100668164:	2e 41 ad f2	movk	x14, #0x6a09, lsl #16
+100668168:	2e 00 c0 f2	movk	x14, #0x1, lsl #32
+10066816c:	5f 01 0c eb	cmp	x10, x12
+100668170:	4f c1 8c 9a	csel	x15, x10, x12, gt
+100668174:	9f 01 0a eb	cmp	x12, x10
+100668178:	90 b1 8a 9a	csel	x16, x12, x10, lt
+10066817c:	31 21 9c d2	mov	x17, #0xe109
+100668180:	31 da b8 f2	movk	x17, #0xc6d1, lsl #16
+100668184:	31 62 cd f2	movk	x17, #0x6b11, lsl #32
+100668188:	31 3e e5 f2	movk	x17, #0x29f1, lsl #48
+10066818c:	e0 7d 51 9b	smulh	x0, x15, x17
+100668190:	01 fc 4e 93	asr	x1, x0, #14
+100668194:	20 fc 40 8b	add	x0, x1, x0, lsr #63
+100668198:	09 bc 09 9b	msub	x9, x0, x9, x15
+10066819c:	29 7d 10 9b	mul	x9, x9, x16
+1006681a0:	29 7d 51 9b	smulh	x9, x9, x17
+1006681a4:	2f fd 4e 93	asr	x15, x9, #14
+1006681a8:	e9 fd 49 8b	add	x9, x15, x9, lsr #63
+1006681ac:	09 24 10 9b	madd	x9, x0, x16, x9
+1006681b0:	8a 7d 0a 9b	mul	x10, x12, x10
+1006681b4:	4a 7d 51 9b	smulh	x10, x10, x17
+1006681b8:	4c fd 4e 93	asr	x12, x10, #14
+1006681bc:	8a fd 4a 8b	add	x10, x12, x10, lsr #63
+1006681c0:	bf 01 0e eb	cmp	x13, x14
+1006681c4:	62 31 4e fa	ccmp	x11, x14, #0x2, lo
+1006681c8:	29 21 8a 9a	csel	x9, x9, x10, hs
+1006681cc:	0a d4 90 52	mov	w10, #0x86a0
+1006681d0:	2a 00 a0 72	movk	w10, #0x1, lsl #16
+1006681d4:	3f 01 0a eb	cmp	x9, x10
+1006681d8:	29 b1 8a 9a	csel	x9, x9, x10, lt
+1006681dc:	29 fd a9 8a	bic	x9, x9, x9, asr #63
+1006681e0:	95 26 00 a9	stp	x21, x9, [x20]
+1006681e4:	29 06 04 f0	adrp	x9, 32967 ; 0x10872f000
+
+/Users/depro/Library/Application Support/Steam/steamapps/common/Victoria 3/binaries/victoria3.app/Contents/MacOS/victoria3:
+(__TEXT,__text) section
+__ZN13NFoodSecurity22CalcBasicFoodCostShareERK4CPopP7CString:
+100667bac:	ff 43 02 d1	sub	sp, sp, #0x90
+100667bb0:	fa 67 04 a9	stp	x26, x25, [sp, #0x40]
+100667bb4:	f8 5f 05 a9	stp	x24, x23, [sp, #0x50]
+100667bb8:	f6 57 06 a9	stp	x22, x21, [sp, #0x60]
+100667bbc:	f4 4f 07 a9	stp	x20, x19, [sp, #0x70]
+100667bc0:	fd 7b 08 a9	stp	x29, x30, [sp, #0x80]
+100667bc4:	fd 03 02 91	add	x29, sp, #0x80
+100667bc8:	f3 03 01 aa	mov	x19, x1
+100667bcc:	f4 03 00 aa	mov	x20, x0
+100667bd0:	ff 1f 00 f9	str	xzr, [sp, #0x38]
+100667bd4:	08 40 40 b9	ldr	w8, [x0, #0x40]
+100667bd8:	e8 23 00 b9	str	w8, [sp, #0x20]
+100667bdc:	e0 83 00 91	add	x0, sp, #0x20
+100667be0:	55 a8 e6 97	bl	__ZNK7TPdxRefI6CStateE6LookupEv
+100667be4:	f6 03 00 aa	mov	x22, x0
+100667be8:	88 4a 40 b9	ldr	w8, [x20, #0x48]
+100667bec:	e8 23 00 b9	str	w8, [sp, #0x20]
+100667bf0:	e0 83 00 91	add	x0, sp, #0x20
+100667bf4:	61 a4 e6 97	bl	__ZNK7TPdxRefI8CCultureE6LookupEv
+100667bf8:	01 1c 40 f9	ldr	x1, [x0, #0x38]
+100667bfc:	e0 03 16 aa	mov	x0, x22
+100667c00:	a6 5d 32 94	bl	__ZNK6CState15GetPopNeedCacheERK12CCultureType
+100667c04:	f5 03 00 aa	mov	x21, x0
+100667c08:	40 f1 03 90	adrp	x0, 32296 ; 0x10848f000
+100667c0c:	00 c0 29 91	add	x0, x0, #0xa70
+100667c10:	8a 03 00 94	bl	__ZN16NPdxTransactions20CTransactionResourceINSt3__110unique_ptrI19CBuyPackageDatabaseNS1_14default_deleteIS3_EEEEE18AccessOrSetEmplaceIJEEERS6_DpOT_
+100667c14:	18 00 40 f9	ldr	x24, [x0]
+100667c18:	b8 01 00 b5	cbnz	x24, 0x100667c4c
+100667c1c:	e8 3d 03 f0	adrp	x8, 26559 ; 0x106e26000
+100667c20:	08 d1 1c 91	add	x8, x8, #0x734 ; literal pool for: "Instance has not been created!"
+100667c24:	e8 13 00 f9	str	x8, [sp, #0x20]
+100667c28:	c8 03 80 52	mov	w8, #0x1e
+100667c2c:	e8 2b 00 b9	str	w8, [sp, #0x28]
+100667c30:	ff b3 00 39	strb	wzr, [sp, #0x2c]
+100667c34:	e2 83 00 91	add	x2, sp, #0x20
+100667c38:	60 00 80 52	mov	w0, #0x3
+100667c3c:	81 00 80 52	mov	w1, #0x4
+100667c40:	03 00 80 52	mov	w3, #0x0
+100667c44:	84 0c 80 52	mov	w4, #0x64
+100667c48:	c3 db 54 95	bl	__ZN4NLog12LogCallStackEjNS_9ELogLevelERK14CPdxStringViewjj
+100667c4c:	97 52 40 b9	ldr	w23, [x20, #0x50]
+100667c50:	08 33 4f b9	ldr	w8, [x24, #0xf30]
+100667c54:	48 01 00 34	cbz	w8, 0x100667c7c
+100667c58:	e0 3d 03 f0	adrp	x0, 26559 ; 0x106e26000
+100667c5c:	00 6c 21 91	add	x0, x0, #0x85b ; literal pool for: "_Count == 0 && \"Trying to touch database while something else is creating items\""
+100667c60:	c5 f1 03 b0	adrp	x5, 32313 ; 0x1084a0000
+100667c64:	a5 c0 3f 91	add	x5, x5, #0xff0
+100667c68:	01 00 80 d2	mov	x1, #0x0
+100667c6c:	02 00 80 52	mov	w2, #0x0
+100667c70:	23 00 80 52	mov	w3, #0x1
+100667c74:	04 00 80 52	mov	w4, #0x0
+100667c78:	85 fa 51 95	bl	__Z14PdxAssertDebugPKcS0_jbbRb
+100667c7c:	ff 06 00 71	cmp	w23, #0x1
+100667c80:	8b 00 00 54	b.lt	0x100667c90
+100667c84:	08 bf 40 b9	ldr	w8, [x24, #0xbc]
+100667c88:	1f 01 17 6b	cmp	w8, w23
+100667c8c:	8a 00 00 54	b.ge	0x100667c9c
+100667c90:	48 f1 03 90	adrp	x8, 32296 ; 0x10848f000
+100667c94:	08 81 34 91	add	x8, x8, #0xd20
+100667c98:	04 00 00 14	b	0x100667ca8
+100667c9c:	08 5b 40 f9	ldr	x8, [x24, #0xb0]
+100667ca0:	08 0d 17 8b	add	x8, x8, x23, lsl #3
+100667ca4:	08 21 00 d1	sub	x8, x8, #0x8
+100667ca8:	17 01 40 f9	ldr	x23, [x8]
+100667cac:	08 33 4f b9	ldr	w8, [x24, #0xf30]
+100667cb0:	48 01 00 34	cbz	w8, 0x100667cd8
+100667cb4:	e0 3d 03 f0	adrp	x0, 26559 ; 0x106e26000
+100667cb8:	00 6c 21 91	add	x0, x0, #0x85b ; literal pool for: "_Count == 0 && \"Trying to touch database while something else is creating items\""
+100667cbc:	c5 f1 03 d0	adrp	x5, 32314 ; 0x1084a1000
+100667cc0:	a5 00 00 91	add	x5, x5, #0x0
+100667cc4:	01 00 80 d2	mov	x1, #0x0
+100667cc8:	02 00 80 52	mov	w2, #0x0
+100667ccc:	23 00 80 52	mov	w3, #0x1
+100667cd0:	04 00 80 52	mov	w4, #0x0
+100667cd4:	6e fa 51 95	bl	__Z14PdxAssertDebugPKcS0_jbbRb
+100667cd8:	18 d4 90 52	mov	w24, #0x86a0
+100667cdc:	38 00 a0 72	movk	w24, #0x1, lsl #16
+100667ce0:	e0 03 15 aa	mov	x0, x21
+100667ce4:	e1 03 17 aa	mov	x1, x23
+100667ce8:	41 24 1e 94	bl	__ZNK26CMarketCulturePopNeedCache16GetBasicFoodInfoERK11CBuyPackage
+100667cec:	f5 03 00 aa	mov	x21, x0
+100667cf0:	08 78 40 f9	ldr	x8, [x0, #0xf0]
+100667cf4:	1f 05 00 f1	cmp	x8, #0x1
+100667cf8:	6b 04 00 54	b.lt	0x100667d84
+100667cfc:	c0 62 00 91	add	x0, x22, #0x18
+100667d00:	e1 03 15 aa	mov	x1, x21
+100667d04:	02 d4 90 52	mov	w2, #0x86a0
+100667d08:	22 00 a0 72	movk	w2, #0x1, lsl #16
+100667d0c:	dc 17 32 94	bl	__ZNK17CStatePricingData18GetProductionPriceERK9CPdxArrayI10SGoodsDataiE11CFixedPoint
+100667d10:	f6 03 00 aa	mov	x22, x0
+100667d14:	a8 7a 40 f9	ldr	x8, [x21, #0xf0]
+100667d18:	1f 05 00 f1	cmp	x8, #0x1
+100667d1c:	cb 03 00 54	b.lt	0x100667d94
+100667d20:	69 b4 91 92	mov	x9, #-0x8da4
+100667d24:	89 3b a5 f2	movk	x9, #0x29dc, lsl #16
+100667d28:	a9 83 d5 f2	movk	x9, #0xac1d, lsl #32
+100667d2c:	ea 68 83 92	mov	x10, #-0x1b48
+100667d30:	0a 77 aa f2	movk	x10, #0x53b8, lsl #16
+100667d34:	4a 07 cb f2	movk	x10, #0x583a, lsl #32
+100667d38:	c9 02 09 8b	add	x9, x22, x9
+100667d3c:	3f 01 0a eb	cmp	x9, x10
+100667d40:	28 03 00 54	b.hi	0x100667da4
+100667d44:	09 80 9c d2	mov	x9, #0xe400
+100667d48:	69 81 aa f2	movk	x9, #0x540b, lsl #16
+100667d4c:	49 00 c0 f2	movk	x9, #0x2, lsl #32
+100667d50:	1f 01 09 eb	cmp	x8, x9
+100667d54:	23 03 00 54	b.lo	0x100667db8
+100667d58:	08 fd 45 d3	lsr	x8, x8, #5
+100667d5c:	69 08 8f d2	mov	x9, #0x7843
+100667d60:	89 36 ae f2	movk	x9, #0x71b4, lsl #16
+100667d64:	89 58 cb f2	movk	x9, #0x5ac4, lsl #32
+100667d68:	89 4f e1 f2	movk	x9, #0xa7c, lsl #48
+100667d6c:	08 7d c9 9b	umulh	x8, x8, x9
+100667d70:	08 fd 47 d3	lsr	x8, x8, #7
+100667d74:	c0 0e c8 9a	sdiv	x0, x22, x8
+100667d78:	e0 1f 00 f9	str	x0, [sp, #0x38]
+100667d7c:	93 04 00 b5	cbnz	x19, 0x100667e0c
+100667d80:	86 00 00 14	b	0x100667f98
+100667d84:	00 00 80 d2	mov	x0, #0x0
+100667d88:	16 00 80 d2	mov	x22, #0x0
+100667d8c:	13 04 00 b5	cbnz	x19, 0x100667e0c
+100667d90:	82 00 00 14	b	0x100667f98
+100667d94:	00 00 80 d2	mov	x0, #0x0
+100667d98:	e0 1f 00 f9	str	x0, [sp, #0x38]
+100667d9c:	93 03 00 b5	cbnz	x19, 0x100667e0c
+100667da0:	7e 00 00 14	b	0x100667f98
+100667da4:	c9 7e 18 9b	mul	x9, x22, x24
+100667da8:	20 0d c8 9a	sdiv	x0, x9, x8
+100667dac:	e0 1f 00 f9	str	x0, [sp, #0x38]
+100667db0:	f3 02 00 b5	cbnz	x19, 0x100667e0c
+100667db4:	79 00 00 14	b	0x100667f98
+100667db8:	29 21 9c d2	mov	x9, #0xe109
+100667dbc:	29 da b8 f2	movk	x9, #0xc6d1, lsl #16
+100667dc0:	29 62 cd f2	movk	x9, #0x6b11, lsl #32
+100667dc4:	29 3e e5 f2	movk	x9, #0x29f1, lsl #48
+100667dc8:	c9 7e 49 9b	smulh	x9, x22, x9
+100667dcc:	2a fd 4e 93	asr	x10, x9, #14
+100667dd0:	49 fd 49 8b	add	x9, x10, x9, lsr #63
+100667dd4:	0a d4 90 52	mov	w10, #0x86a0
+100667dd8:	2a 00 a0 72	movk	w10, #0x1, lsl #16
+100667ddc:	29 7d 0a 9b	mul	x9, x9, x10
+100667de0:	ca 02 09 cb	sub	x10, x22, x9
+100667de4:	2b 0d c8 9a	sdiv	x11, x9, x8
+100667de8:	69 a5 08 9b	msub	x9, x11, x8, x9
+100667dec:	29 7d 18 9b	mul	x9, x9, x24
+100667df0:	29 0d c8 9a	sdiv	x9, x9, x8
+100667df4:	4a 7d 18 9b	mul	x10, x10, x24
+100667df8:	48 0d c8 9a	sdiv	x8, x10, x8
+100667dfc:	69 25 18 9b	madd	x9, x11, x24, x9
+100667e00:	20 01 08 8b	add	x0, x9, x8
+100667e04:	e0 1f 00 f9	str	x0, [sp, #0x38]
+100667e08:	93 0c 00 b4	cbz	x19, 0x100667f98
+

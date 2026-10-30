@@ -9,6 +9,8 @@ Native-pixel reconstruction from installed Vanilla icons, revised 29 October 202
 
 Each is **220 × 220 RGBA** with a transparent exterior. Overlay a transparent foreground on the PNG at the same canvas size, then export the finished icon as DDS. The supplied uncompressed DDS files decode to exactly the same pixels as their PNGs. Existing ideology definitions and icons are unchanged.
 
+The DDS exports include Vanilla's eight mip levels: 220, 110, 55, 27, 13, 6, 3 and 1 pixels square. The shared `tools/dds_mipmaps.py` exporter preserves the approved full-size pixels and adds alpha-aware box-filtered reductions. The initial 29 October export omitted these smaller levels; 30 October in-game screenshots showed rough small-size rims despite correct full-size pixels. Corrected mipmapped exports still await an in-game comparison by DP.
+
 The reconstruction starts from **pacifist**, retaining its complete rim, exterior, alpha and uncovered bevel. The burgundy donors begin with `unused/pacifist.dds`, `unused/feminist.dds`, `communist.dds` and `shinto_moralist.dds`. Sparse Orthodox, Buddhist and isolationist icons cover the remaining foreground/shadow intersections. The teal version uses their leader equivalents, including `mitogaku.dds` for the Torii gate.
 
 Sources need alignment before comparison: for example the burgundy feminist image shifts one pixel left and Shinto shifts two pixels up. These are integer translations, with no resampling. The script records each offset and source hash. It distinguishes burgundy from copper and teal from silver; when multiple sources expose the background colour, it selects the brightest background pixel to reject cast shadows.

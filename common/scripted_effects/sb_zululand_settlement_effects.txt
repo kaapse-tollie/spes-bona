@@ -786,9 +786,12 @@ sb_zululand_stop_policing = {
 }
 
 sb_zululand_start_usuthu_sponsorship = {
+ if = { limit = { sb_nrp_chiefdoms_promise_available = yes }
+ set_global_variable = sb_nrp_chiefdoms_promise_var
 	set_variable = sb_zululand_usuthu_sponsorship_active_var
 	add_modifier = { name = sb_zululand_usuthu_sponsorship_cost }
 	global_var:sb_zululand_live_zul_scope ?= { every_political_movement = { limit = { is_political_movement_type = movement_sb_zulu_royal } add_modifier = { name = sb_usuthu_sponsorship } } }
+ }
 }
 
 sb_zululand_stop_usuthu_sponsorship = {
@@ -798,11 +801,14 @@ sb_zululand_stop_usuthu_sponsorship = {
 }
 
 sb_zululand_start_boer_volunteers = {
+ if = { limit = { sb_nrp_chiefdoms_promise_available = yes }
+ set_global_variable = sb_nrp_chiefdoms_promise_var
 	set_variable = sb_zululand_boer_volunteers_active_var
 	every_scope_state = {
 		if = { limit = { NOT = { has_modifier = sb_zululand_boer_volunteer_mortality } } add_modifier = { name = sb_zululand_boer_volunteer_mortality } }
 	}
 	global_var:sb_zululand_live_zul_scope ?= { every_political_movement = { limit = { is_political_movement_type = movement_sb_zulu_royal } add_modifier = { name = sb_usuthu_volunteers } } }
+ }
 }
 
 sb_zululand_stop_boer_volunteers = {
@@ -913,6 +919,7 @@ sb_zululand_accept_boer_appeal = {
 			sb_zululand_contest_interventions_available = yes
 			any_scope_pop = { is_pop_type = soldiers total_size >= 500 }
 		}
+		set_global_variable = sb_nrp_chiefdoms_promise_var
 		sb_zululand_move_boer_volunteers_to_zululand = yes
 		container:sb_zululand_chiefdoms_state ?= {
 			change_variable = { name = sb_zululand_boer_commitment_var add = 20 }
@@ -1027,12 +1034,14 @@ sb_zululand_ai_manage_usuthu_sponsorship = {
 }
 
 sb_zululand_apply_monthly_commitment = {
+ if = { limit = { sb_nrp_chiefdoms_promise_available = yes }
 	container:sb_zululand_chiefdoms_state ?= {
 		if = { limit = { c:TRN ?= { has_variable = sb_zululand_usuthu_sponsorship_active_var } } change_variable = { name = sb_zululand_boer_commitment_var add = 2 } }
 		if = { limit = { c:TRN ?= { has_variable = sb_zululand_boer_volunteers_active_var } } change_variable = { name = sb_zululand_boer_commitment_var add = 3 } }
 		clamp_variable = { name = sb_zululand_boer_commitment_var min = 0 max = 100 }
 	}
 	sb_zululand_mark_boer_commitment = yes
+ }
 }
 
 # Terminal events apply their outcome immediately; holding the popup cannot delay resolution.
@@ -1320,6 +1329,7 @@ sb_nrp_apply_boer_republic_setup = {
 }
 
 sb_nrp_create_greater_republic = {
+ if = { limit = { sb_nrp_chiefdoms_promise_available = yes }
 	if = {
 		limit = { NOT = { global_var:sb_zululand_live_zul_scope ?= { is_country_alive = yes } } c:ZUL ?= { is_country_alive = yes } }
 		set_global_variable = { name = sb_zululand_live_zul_scope value = c:ZUL }
@@ -1347,6 +1357,7 @@ sb_nrp_create_greater_republic = {
 		# immediately; this fallback finalizes a live NRP or clears a failed setup.
 		trigger_event = { id = sb_zululand_settlement.201 days = 1 popup = no }
 	}
+ }
 }
 
 sb_nrp_finalize_greater_republic = {
@@ -1365,6 +1376,8 @@ sb_nrp_finalize_greater_republic = {
 			}
 		}
 		remove_variable = sb_nrp_setup_pending_var
+		set_global_variable = sb_nrp_reward_consumed_var
+		remove_global_variable = sb_nrp_chiefdoms_promise_var
 		# Restore ZUL's inherited buildable levels in its residual state. The split
 		# assigns the objects to NRP, so the helper rebuilds those levels for ZUL;
 		# NRP then receives only the agreed one-ranch starter economy.
@@ -1890,6 +1903,7 @@ sb_nrp_monthly_housekeeping = {
 	if = {
 		limit = {
 			has_variable = sb_nrp_boundary_cutback_accepted_var
+			NOT = { has_variable = sb_hamu_nrp_var }
 			NOT = { has_variable = sb_nrp_union_wait_var }
 			NOT = { has_variable = sb_nrp_union_petition_lapsed_var }
 			NOT = { has_variable = sb_nrp_union_petition_pending_var }
@@ -2024,11 +2038,13 @@ sb_zululand_finalize_political_contest = {
 		activate_law = law_type:law_monarchy
 		activate_law = law_type:law_autocracy
 		sb_court_install_royal_claimant = yes
+		sb_hamu_record_accession = yes
 		c:NAL ?= {
 			set_variable = sb_zululand_crown_restored_victory_var
 			if = {
 				limit = { container:sb_zululand_chiefdoms_state ?= { has_variable = sb_zululand_boer_committed_var } }
 				set_variable = sb_zululand_nrp_creation_entitled_var
+				set_global_variable = sb_nrp_chiefdoms_earned_var
 			}
 		}
 		every_scope_state = {
@@ -2068,6 +2084,7 @@ sb_zululand_finalize_political_contest = {
 			remove_variable = sb_zululand_nrp_creation_entitled_var
 		}
 	}
+	if = { limit = { NOT = { has_global_variable = sb_nrp_chiefdoms_earned_var } } remove_global_variable = sb_nrp_chiefdoms_promise_var }
 	if = {
 		limit = { var:sb_zululand_contest_result_var = 1 }
 		trigger_event = { id = sb_zululand_settlement.123 days = 1 popup = yes }

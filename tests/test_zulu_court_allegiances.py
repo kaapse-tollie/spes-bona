@@ -38,7 +38,7 @@ class CourtAllegiances(unittest.TestCase):
             self.assertEqual(100, rt.country['vars']['sb_court_pledged_weight_var'])
             self.assertEqual(150, rt.country['vars']['sb_court_unpledged_weight_var'])
             self.assertAlmostEqual(100, sum(p['vars']['sb_court_current_share_var'] for p in (king, prince)))
-            self.assertEqual(40, prince['vars']['sb_court_coalition_share_var'])
+            self.assertEqual(100, prince['vars']['sb_court_pledged_share_var'])
             self.assertEqual({}, rt.scopes['root']['vars'])
 
     def test_quarter_discount_only_affects_present_backing_and_keeps_popularity_separate(self):

@@ -20,11 +20,10 @@ sb_court_sync_allegiance_traits = {
   limit = { var:sb_court_endorsement_var ?= -1 }
   if = {
    limit = { var:sb_court_claimant_scope ?= this }
-   if = {
-    limit = { sb_court_adult_member = yes var:sb_court_home_scope ?= { has_variable = sb_institutions_active_var } NOR = { has_variable = sb_court_claim_renounced_var has_variable = sb_court_retired_var } }
-    if = { limit = { NOT = { has_trait = sb_court_claimant_trait } } add_trait = sb_court_claimant_trait }
-   }
-   else_if = { limit = { has_trait = sb_court_claimant_trait } remove_trait = sb_court_claimant_trait }
+   # A self-claim needs no redundant "supports a claimant" card.
+   if = { limit = { has_trait = sb_court_endorsement_incumbent_trait } remove_trait = sb_court_endorsement_incumbent_trait }
+   if = { limit = { has_trait = sb_court_endorsement_claimant_trait } remove_trait = sb_court_endorsement_claimant_trait }
+   if = { limit = { has_trait = sb_court_endorsement_uncommitted_trait } remove_trait = sb_court_endorsement_uncommitted_trait }
   }
   else = {
    if = { limit = { NOT = { has_trait = sb_court_endorsement_claimant_trait } } add_trait = sb_court_endorsement_claimant_trait }
@@ -34,6 +33,16 @@ sb_court_sync_allegiance_traits = {
   limit = { var:sb_court_endorsement_var ?= 0 }
   if = { limit = { NOT = { has_trait = sb_court_endorsement_uncommitted_trait } } add_trait = sb_court_endorsement_uncommitted_trait }
  }
+ if = {
+  limit = {
+   sb_court_adult_member = yes
+   var:sb_court_home_scope ?= { has_variable = sb_institutions_active_var }
+   NOR = { is_ruler_of_own_country = yes has_variable = sb_court_claim_renounced_var has_variable = sb_court_retired_var }
+   OR = { sb_court_royal_candidate = yes AND = { var:sb_court_endorsement_var ?= -1 var:sb_court_claimant_scope ?= this } }
+  }
+  if = { limit = { NOT = { has_trait = sb_court_claimant_trait } } add_trait = sb_court_claimant_trait }
+ }
+ else_if = { limit = { has_trait = sb_court_claimant_trait } remove_trait = sb_court_claimant_trait }
 }
 
 # Registry effects capture THIS country. No helper assumes event ROOT is its country.
@@ -118,7 +127,7 @@ sb_court_ensure_roster = {
  every_scope_character = { limit = { has_template = ZUL_zulu_kanogandaya NOT = { has_variable = sb_court_registered_var } } sb_court_register_character = { FOLLOWING = 4 ALIGNMENT = 0 ENDORSEMENT = 0 } }
  every_scope_character = { limit = { has_template = ZUL_zibhebhu_kamaphitha NOT = { has_variable = sb_court_registered_var } } set_is_noble = yes sb_court_register_character = { FOLLOWING = 9 ALIGNMENT = 0 ENDORSEMENT = 0 } }
  every_scope_character = { limit = { has_template = SB_ZUL_mnyamana NOT = { has_variable = sb_court_registered_var } } sb_court_register_character = { FOLLOWING = 5 ALIGNMENT = 1 ENDORSEMENT = 1 } }
- every_scope_character = { limit = { has_template = SB_ZUL_hamu NOT = { has_variable = sb_court_registered_var } } sb_court_register_character = { FOLLOWING = 6 ALIGNMENT = 0 ENDORSEMENT = 0 } }
+ every_scope_character = { limit = { has_template = SB_ZUL_hamu is_character_alive = yes } if = { limit = { NOT = { has_variable = sb_court_registered_var } } sb_court_register_character = { FOLLOWING = 6 ALIGNMENT = 1 ENDORSEMENT = 0 } } set_global_variable = { name = sb_court_hamu_identity_scope value = this } }
  every_scope_character = { limit = { has_template = SB_ZUL_john_dunn NOT = { has_variable = sb_court_registered_var } } sb_court_register_character = { FOLLOWING = 7 ALIGNMENT = 0 ENDORSEMENT = 0 } }
  every_scope_character = { limit = { has_template = SB_ZUL_godide NOT = { has_variable = sb_court_registered_var } } sb_court_register_character = { FOLLOWING = 3 ALIGNMENT = 1 ENDORSEMENT = 0 } }
  every_scope_character = { limit = { has_template = SB_ZUL_sekethwayo NOT = { has_variable = sb_court_registered_var } } sb_court_register_character = { FOLLOWING = 8 ALIGNMENT = 1 ENDORSEMENT = 0 } }
@@ -152,6 +161,7 @@ sb_court_ensure_roster = {
 sb_court_calculate_backing = {
  hidden_effect = {
   save_scope_as = sb_court_country
+  sb_court_reconcile_mpande_sons = yes
   set_variable = { name = sb_court_weight_var value = 0 }
   set_variable = { name = sb_court_incumbent_weight_var value = 0 }
   set_variable = { name = sb_court_weighted_endorsement_var value = 0 }
@@ -183,18 +193,27 @@ sb_court_calculate_backing = {
     }
    }
    else = {
-    scope:sb_court_country = {
-     ordered_in_list = {
-      variable = sb_court_members
-      limit = { sb_court_representative_eligible = yes var:sb_court_following_var = scope:sb_court_candidate.var:sb_court_following_var }
-      order_by = sb_court_house_leadership_score
-      position = 0
-      set_variable = sb_court_representative_var
-      set_variable = sb_court_house_leader_var
-      save_scope_as = sb_court_house_head
+    # These links were cleared above. Rank each house once, before any status
+    # penalty changes; all its members receive the same original ordered choice.
+    if = {
+     limit = { NOT = { has_variable = sb_court_house_leader_scope } }
+     scope:sb_court_country = {
+      ordered_in_list = {
+       variable = sb_court_members
+       limit = { var:sb_court_following_var = scope:sb_court_candidate.var:sb_court_following_var sb_court_representative_eligible = yes }
+       order_by = sb_court_house_leadership_score
+       if = {
+        limit = { scope:sb_court_candidate = { NOT = { has_variable = sb_court_house_leader_scope } } }
+        set_variable = sb_court_representative_var
+        set_variable = sb_court_house_leader_var
+        save_scope_as = sb_court_house_head
+        scope:sb_court_candidate = { set_variable = { name = sb_court_house_leader_scope value = scope:sb_court_house_head } }
+       }
+       set_variable = { name = sb_court_house_leader_scope value = scope:sb_court_house_head }
+      }
      }
     }
-    set_variable = { name = sb_court_house_leader_scope value = scope:sb_court_house_head }
+    var:sb_court_house_leader_scope ?= { save_scope_as = sb_court_house_head }
    }
   }
   # The native prominence total now includes the one claimant bonus and status penalty.
@@ -234,7 +253,7 @@ sb_court_calculate_backing = {
   }
   every_in_list = {
    variable = sb_court_members
-   limit = { sb_court_member_of_country = yes has_variable = sb_court_representative_var has_variable = sb_court_represented_weight_var }
+   limit = { has_variable = sb_court_representative_var has_variable = sb_court_represented_weight_var sb_court_member_of_country = yes }
    sb_court_count_representative = yes
   }
   sb_court_calculate_coalitions = yes
@@ -324,6 +343,8 @@ sb_court_monthly_housekeeping = {
  sb_court_ensure_roster = yes
  sb_court_introduce_known_children = yes
  sb_court_spawn_dated_cast = yes
+ sb_court_later_princes_monthly = yes
+ sb_court_prepare_dunn_offer = yes
  sb_court_reconcile_succession = yes
  sb_court_select_chiefly_head = yes
  sb_court_check_claimant_challenge = yes
@@ -337,14 +358,18 @@ sb_court_spawn_dated_cast = {
   create_character = { template = SB_ZUL_mnyamana on_created = { owner = { save_scope_as = sb_court_country } add_character_role = politician sb_court_register_character = { FOLLOWING = 5 ALIGNMENT = 1 ENDORSEMENT = 0 } } }
  }
  if = {
-  limit = { year >= 1865 NOT = { has_global_variable = sb_court_hamu_created_var } }
+  limit = { year >= 1860 NOT = { has_global_variable = sb_court_hamu_created_var } NOR = { has_variable = sb_court_dynastic_crisis_var has_variable = sb_court_accession_open_var } }
   set_global_variable = sb_court_hamu_created_var
-  create_character = { template = SB_ZUL_hamu on_created = { owner = { save_scope_as = sb_court_country } add_character_role = politician sb_court_register_character = { FOLLOWING = 6 ALIGNMENT = 0 ENDORSEMENT = 0 } } }
+  if = { limit = { NOT = { is_template_used = SB_ZUL_hamu } }
+  create_character = { template = SB_ZUL_hamu on_created = { owner = { save_scope_as = sb_court_country } add_character_role = politician sb_court_register_character = { FOLLOWING = 6 ALIGNMENT = 1 ENDORSEMENT = 0 } set_global_variable = { name = sb_court_hamu_identity_scope value = this } } }
+  }
  }
  if = {
   limit = { year >= 1857 NOT = { has_global_variable = sb_court_john_dunn_created_var } }
   set_global_variable = sb_court_john_dunn_created_var
-  create_character = { template = SB_ZUL_john_dunn on_created = { owner = { save_scope_as = sb_court_country } add_character_role = politician sb_court_register_character = { FOLLOWING = 7 ALIGNMENT = 0 ENDORSEMENT = 0 } } }
+  if = { limit = { NOT = { is_template_used = SB_ZUL_john_dunn } }
+  create_character = { template = SB_ZUL_john_dunn on_created = { owner = { save_scope_as = sb_court_country } add_character_role = politician sb_court_register_character = { FOLLOWING = 7 ALIGNMENT = 0 ENDORSEMENT = 0 } add_trait = sb_court_trader set_global_variable = { name = sb_court_dunn_identity_scope value = this } } }
+  }
  }
  if = {
   limit = { year >= 1855 NOT = { has_global_variable = sb_court_godide_created_var } }

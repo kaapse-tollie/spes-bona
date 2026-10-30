@@ -1,6 +1,7 @@
 ﻿# Keyed override of Vanilla 1.14.0 Open Beta 1 common/interest_groups/00_armed_forces.txt.
 # Upstream SHA-256: c010ec05625f29a1e2691e49b1b30a2900cfce46553d8a9c2c7f248a1ae3e119
 # Delta: Aristocrats add Imperial Administration's displayed Armed Forces attraction modifier.
+# Equivalent short-circuit guards and shared wage/government checks preserve all weights.
 REPLACE:ig_armed_forces = {
 	color = hsv{ 0.09 0.29 0.39 }
 	texture = "gfx/interface/icons/ig_icons/armed_forces.dds"
@@ -237,24 +238,24 @@ REPLACE:ig_armed_forces = {
 			desc = "POP_NOT_DISCRIMINATED"
 			if = {
 				limit = {
+					pop_acceptance >= acceptance_status_4
 					NOT = {
 						owner = {
 							has_social_hierarchy = edo_system
 						}
 					}
-					pop_acceptance >= acceptance_status_4
 				}
 				value = 25
 				if = { # Militarisation of colonial settlers
 					limit = {
+						state = {
+							is_incorporated = no
+						}
 						owner = {
 							OR = {
 								has_law_or_variant = law_type:law_colonial_resettlement
 								has_law_or_variant = law_type:law_frontier_colonization
 							}
-						}
-						state = {
-							is_incorporated = no
 						}
 					}
 					add = 50
@@ -305,7 +306,7 @@ REPLACE:ig_armed_forces = {
 					}
 					multiply = 0.75
 				}
-				if = {
+				else_if = {
 					limit = {
 						owner = {
 							military_wage_level = low
@@ -313,7 +314,7 @@ REPLACE:ig_armed_forces = {
 					}
 					multiply = 0.85
 				}
-				if = {
+				else_if = {
 					limit = {
 						owner = {
 							military_wage_level = medium
@@ -321,7 +322,7 @@ REPLACE:ig_armed_forces = {
 					}
 					multiply = 1
 				}
-				if = {
+				else_if = {
 					limit = {
 						owner = {
 							military_wage_level = high
@@ -329,7 +330,7 @@ REPLACE:ig_armed_forces = {
 					}
 					multiply = 1.15
 				}
-				if = {
+				else_if = {
 					limit = {
 						owner = {
 							military_wage_level = very_high
@@ -457,13 +458,6 @@ REPLACE:ig_armed_forces = {
 				value = 1
 				add = scope:interest_group.modifier:interest_group_in_government_attraction_mult
 				min = 0
-			}
-		}
-		if = {
-			limit = {
-				scope:interest_group ?= {
-					is_in_government = yes
-				}
 			}
 			multiply = { # Multiplied by 1.25x max
 				desc = "POP_LOYALISTS"

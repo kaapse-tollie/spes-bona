@@ -21,6 +21,14 @@ they are not historical quotations. Trait effects use native previews; each name
 house's future pledge has its own tooltip. Portraits, long names, wrapping and
 delivery await DP. Ordinary recognition prose is reused without alteration.
 
+The later 29 October revision reverses the AI preference to Mbuyazi and separates
+Cetshwayo's larger rival backing from Mbuyazi's smaller court circle. `.007` has
+early wording and a dated uSuthu/iziGqoza variant; the latter is not backdated to
+the brothers' 1844 coming of age. John Dunn's new `sb_court_dunn.001` namespace in
+`localization/english/sb_court_dunn_l_english.yml` is **TO REVIEW**. Its paired
+portraits show Dunn and Mbuyazi; the acknowledgement previews the actual future
+pledge. See [Dunn's source and writing record](zulu_dunn_mbuyazi_event_2026_10_29.md).
+
 Claimant victory `sb_court_succession.005` remains `TO REVIEW`. The 27 October
 revision describes the agreed deaths of the losing coalition and the surviving
 houses; the choice's stakes tooltip states the same consequence before war.
@@ -295,7 +303,7 @@ text explains the internal preservation; the only new key is the modifier name.
 | `localization/english/sb_court_politics_l_english.yml` | `sb_court_endorsement_uncommitted_trait` | Court presentation and allegiance traits; pending DP prose review. |
 | `localization/english/sb_court_politics_l_english.yml` | `sb_court_endorsement_uncommitted_trait_desc` | Court presentation and allegiance traits; pending DP prose review. |
 | `localization/english/sb_court_politics_l_english.yml` | `sb_court_claimant_trait` | Approved character-card integration; new Claimant display label, pending DP prose review. |
-| `localization/english/sb_court_politics_l_english.yml` | `sb_court_claimant_trait_desc` | Distinguishes a recorded self-claim from support for another claimant; pending DP prose review. |
+| `localization/english/sb_court_politics_l_english.yml` | `sb_court_claimant_trait_desc` | 29 October: a claim can coexist with support for the reigning sovereign; pending DP prose review. |
 
 ## Court rework — 19 October 2026
 
@@ -488,7 +496,7 @@ Zulu-facing event namespaces `sb_natal_crisis.020`, `.026`, `.080`, `.081` and `
 ## 26 October: sons' adulthood and weekly firearms
 
 - `sb_court_succession.003` in `localization/english/sb_court_succession_l_english.yml`: **TO REVIEW**. Once-only father/son declaration; paired native portrait window. Installed `regency.2` informed the named public declaration and concrete private scene. New prose is authored fiction, not a historical quotation.
-- `je_sb_adopt_firearms` in `localization/english/sb_firearms_l_english.yml`: **TO REVIEW**. Reason, status and completion explain one market-supply gate and 104 qualifying weeks. Obsolete separate treaty/industry statuses and completion keys are retired.
+- `je_sb_adopt_firearms` in `localization/english/sb_firearms_l_english.yml`: **TO REVIEW**. Reason, status and completion explain one market-supply gate; the 29 October follow-up increases completion to 260 qualifying weeks, wraps the internal completion check, and shows the native Effects preview. `je_sb_adopt_firearms_remove_penalties_tt` previews removal of the remaining weapons penalties. The obsolete `event_effects_sb_firearms.001_tt` is retired; the completion event keeps Innovative and native New Tactics effects without a dynasty/Prerogative reward. Obsolete separate treaty/industry statuses remain retired.
 - Existing queued `sb_court_introduce_heir_button_desc` and `sb_court_introduce_heir_tt` now say newborn and 50 P. Other court choices are unchanged.
 
 26 October, honour-path cleanup: DP requested retirement of `sb_natal_crisis.021` and its unreviewed localisation. Its existing hidden handoff now runs in `.020.a`; `.020` and reviewed `.030` prose are unchanged. Earlier prose-review evidence remains historical.
@@ -537,3 +545,90 @@ Zulu-facing event namespaces `sb_natal_crisis.020`, `.026`, `.080`, `.081` and `
 | `localization/english/sb_contested_crown_l_english.yml` | `sb_court_dynastic_stakes_tt` | 27 October: defeat kills the entire frozen coalition; third-party and uncommitted characters survive. Pending DP prose review. |
 | `localization/english/sb_l_english.yml` | `sb_fecund` | Fecund special trait for Mpande; DP requested name, 27 October. |
 | `localization/english/sb_l_english.yml` | `sb_fecund_desc` | TO REVIEW: fruitful and abundant household, following DP's requested description, 27 October. |
+
+## Civil-war muster — 29 October 2026
+
+| File | Key | Reason |
+| --- | --- | --- |
+| `localization/english/sb_court_muster_l_english.yml` | `building_sb_court_muster` | Temporary levy recruitment building for multi-state claimant wars. |
+| `localization/english/sb_court_muster_l_english.yml` | `sb_court_muster_conscription_suspended` | Native conscription restriction while the replacement muster is active. |
+| `localization/english/sb_court_muster_l_english.yml` | `sb_court_wartime_provisions` | Temporary Food Security relief for both scripted multi-state claimant-war factions; removed with the muster. |
+
+| `localization/english/sb_zulu_names_l_english.yml` | `Bathonyile` | 29 October: documented clan/given name or royal patronymic; pending DP review. |
+| `localization/english/sb_zulu_names_l_english.yml` | `Biyela` | 29 October: documented clan/given name or royal patronymic; pending DP review. |
+| `localization/english/sb_zulu_names_l_english.yml` | `Buthelezi` | 29 October: documented clan/given name or royal patronymic; pending DP review. |
+| `localization/english/sb_zulu_names_l_english.yml` | `Chube` | 29 October: documented clan/given name or royal patronymic; pending DP review. |
+| `localization/english/sb_zulu_names_l_english.yml` | `Dilikana` | 29 October: documented clan/given name or royal patronymic; pending DP review. |
+| `localization/english/sb_zulu_names_l_english.yml` | `Godlumkhonto` | 29 October: documented clan/given name or royal patronymic; pending DP review. |
+| `localization/english/sb_zulu_names_l_english.yml` | `Gwala` | 29 October: documented clan/given name or royal patronymic; pending DP review. |
+| `localization/english/sb_zulu_names_l_english.yml` | `Hlabisa` | 29 October: documented clan/given name or royal patronymic; pending DP review. |
+| `localization/english/sb_zulu_names_l_english.yml` | `Hloyisile` | 29 October: documented clan/given name or royal patronymic; pending DP review. |
+| `localization/english/sb_zulu_names_l_english.yml` | `Langeni` | 29 October: documented clan/given name or royal patronymic; pending DP review. |
+| `localization/english/sb_zulu_names_l_english.yml` | `Mabhoko` | 29 October: documented clan/given name or royal patronymic; pending DP review. |
+| `localization/english/sb_zulu_names_l_english.yml` | `Magwaza` | 29 October: documented clan/given name or royal patronymic; pending DP review. |
+| `localization/english/sb_zulu_names_l_english.yml` | `Matshana` | 29 October: documented clan/given name or royal patronymic; pending DP review. |
+| `localization/english/sb_zulu_names_l_english.yml` | `Mbatha` | 29 October: documented clan/given name or royal patronymic; pending DP review. |
+| `localization/english/sb_zulu_names_l_english.yml` | `Mbopha` | 29 October: documented clan/given name or royal patronymic; pending DP review. |
+| `localization/english/sb_zulu_names_l_english.yml` | `Mchunu` | 29 October: documented clan/given name or royal patronymic; pending DP review. |
+| `localization/english/sb_zulu_names_l_english.yml` | `Mdletshe` | 29 October: documented clan/given name or royal patronymic; pending DP review. |
+| `localization/english/sb_zulu_names_l_english.yml` | `Mehlokazulu` | 29 October: documented clan/given name or royal patronymic; pending DP review. |
+| `localization/english/sb_zulu_names_l_english.yml` | `Mfanawendlela` | 29 October: documented clan/given name or royal patronymic; pending DP review. |
+| `localization/english/sb_zulu_names_l_english.yml` | `Mfuzi` | 29 October: documented clan/given name or royal patronymic; pending DP review. |
+| `localization/english/sb_zulu_names_l_english.yml` | `Mkabi` | 29 October: documented clan/given name or royal patronymic; pending DP review. |
+| `localization/english/sb_zulu_names_l_english.yml` | `Mlandela` | 29 October: documented clan/given name or royal patronymic; pending DP review. |
+| `localization/english/sb_zulu_names_l_english.yml` | `Mmama` | 29 October: documented clan/given name or royal patronymic; pending DP review. |
+| `localization/english/sb_zulu_names_l_english.yml` | `Mnqandi` | 29 October: documented clan/given name or royal patronymic; pending DP review. |
+| `localization/english/sb_zulu_names_l_english.yml` | `Monase` | 29 October: documented clan/given name or royal patronymic; pending DP review. |
+| `localization/english/sb_zulu_names_l_english.yml` | `Mpungose` | 29 October: documented clan/given name or royal patronymic; pending DP review. |
+| `localization/english/sb_zulu_names_l_english.yml` | `Msushwana` | 29 October: documented clan/given name or royal patronymic; pending DP review. |
+| `localization/english/sb_zulu_names_l_english.yml` | `Ndabankulu` | 29 October: documented clan/given name or royal patronymic; pending DP review. |
+| `localization/english/sb_zulu_names_l_english.yml` | `Nomantshali` | 29 October: documented clan/given name or royal patronymic; pending DP review. |
+| `localization/english/sb_zulu_names_l_english.yml` | `Ntombela` | 29 October: documented clan/given name or royal patronymic; pending DP review. |
+| `localization/english/sb_zulu_names_l_english.yml` | `Nyamakayishi` | 29 October: documented clan/given name or royal patronymic; pending DP review. |
+| `localization/english/sb_zulu_names_l_english.yml` | `Nyawo` | 29 October: documented clan/given name or royal patronymic; pending DP review. |
+| `localization/english/sb_zulu_names_l_english.yml` | `Senzangakhona` | 29 October: documented clan/given name or royal patronymic; pending DP review. |
+| `localization/english/sb_zulu_names_l_english.yml` | `Sibisi` | 29 October: documented clan/given name or royal patronymic; pending DP review. |
+| `localization/english/sb_zulu_names_l_english.yml` | `Sitshaluza` | 29 October: documented clan/given name or royal patronymic; pending DP review. |
+| `localization/english/sb_zulu_names_l_english.yml` | `Sokwetshatha` | 29 October: documented clan/given name or royal patronymic; pending DP review. |
+| `localization/english/sb_zulu_names_l_english.yml` | `Somfula` | 29 October: documented clan/given name or royal patronymic; pending DP review. |
+| `localization/english/sb_zulu_names_l_english.yml` | `Tshani` | 29 October: documented clan/given name or royal patronymic; pending DP review. |
+| `localization/english/sb_zulu_names_l_english.yml` | `Vumandaba` | 29 October: documented clan/given name or royal patronymic; pending DP review. |
+| `localization/english/sb_zulu_names_l_english.yml` | `Zungu` | 29 October: documented clan/given name or royal patronymic; pending DP review. |
+| `localization/english/sb_zulu_names_l_english.yml` | `kaCetshwayo` | 29 October: documented clan/given name or royal patronymic; pending DP review. |
+
+## Later-court implementation — 30 October 2026
+
+`sb_court_dunn.001`–`.003` and `sb_hamu_bargain.001`–`.003`, `.010` are TO REVIEW.
+Admission and judgement use paired portraits; deliveries and the foreign offer use
+the named trader/prince. Installed `shogunate.2` supplied the coalition-bargain model.
+No reviewed namespace was rewritten. Rendering remains pending DP.
+
+| File | Key | Reason |
+|---|---|---|
+| `localization/english/sb_court_dunn_l_english.yml` | `sb_court_trader` | Later-court trait or funding interface. |
+| `localization/english/sb_court_dunn_l_english.yml` | `sb_court_trader_desc` | Later-court trait or funding interface. |
+| `localization/english/sb_court_dunn_l_english.yml` | `Mthonga` | Later-court trait or funding interface. |
+| `localization/english/sb_hamu_bargain_l_english.yml` | `sb_hamu_fund` | Later-court trait or funding interface. |
+| `localization/english/sb_hamu_bargain_l_english.yml` | `sb_hamu_fund_desc` | Later-court trait or funding interface. |
+| `localization/english/sb_hamu_bargain_l_english.yml` | `sb_hamu_end_funding` | Later-court trait or funding interface. |
+| `localization/english/sb_hamu_bargain_l_english.yml` | `sb_hamu_end_funding_desc` | Later-court trait or funding interface. |
+| `localization/english/sb_hamu_bargain_l_english.yml` | `sb_hamu_funding_valid_tt` | Later-court trait or funding interface. |
+| `localization/english/sb_hamu_bargain_l_english.yml` | `sb_hamu_subsidy_cost` | Later-court trait or funding interface. |
+| `localization/english/sb_hamu_bargain_l_english.yml` | `sb_hamu_boer_patronage` | Later-court trait or funding interface. |
+
+| `localization/english/sb_court_politics_l_english.yml` | `sb_court_coercion_not_supporting_ruler_tt` | New requirement: a prince supporting the incumbent cannot be confronted or purged. |
+
+| `localization/english/sb_institutions_l_english.yml` | `sb_ir_governance_adjustment` | Active law contribution to Institutional Reach; DP presentation review pending. |
+| `localization/english/sb_institutions_l_english.yml` | `sb_ir_economy_adjustment` | Active law contribution to Institutional Reach; DP presentation review pending. |
+| `localization/english/sb_institutions_l_english.yml` | `sb_ir_police_adjustment` | Active law contribution to Institutional Reach; DP presentation review pending. |
+| `localization/english/sb_institutions_l_english.yml` | `sb_ir_distribution_adjustment` | Active law contribution to Institutional Reach; DP presentation review pending. |
+| `localization/english/sb_institutions_l_english.yml` | `sb_ir_bureaucracy_adjustment` | Active law contribution to Institutional Reach; DP presentation review pending. |
+| `localization/english/sb_institutions_l_english.yml` | `sb_ir_army_adjustment` | Active law contribution to Institutional Reach; DP presentation review pending. |
+| `localization/english/sb_institutions_l_english.yml` | `sb_ir_local_police_adjustment` | Active law contribution to Institutional Reach; DP presentation review pending. |
+| `localization/english/sb_firearms_l_english.yml` | `sb_firearms_current_penalties` | Live current penalty heading in the Firearms JE. |
+| `localization/english/sb_court_politics_l_english.yml` | `sb_court_challenge_threshold_label` | 30 October: separate challenge/succession sections and thresholds; pending DP prose review. |
+| `localization/english/sb_court_politics_l_english.yml` | `sb_court_challenge_summary_royal` | 30 October: separate challenge/succession sections and thresholds; pending DP prose review. |
+| `localization/english/sb_court_politics_l_english.yml` | `sb_court_challenge_rule_royal` | 30 October: separate challenge/succession sections and thresholds; pending DP prose review. |
+| `localization/english/sb_court_politics_l_english.yml` | `sb_court_challenge_unavailable` | 30 October: separate challenge/succession sections and thresholds; pending DP prose review. |
+| `localization/english/sb_court_politics_l_english.yml` | `sb_court_succession_summary_royal` | 30 October: separate challenge/succession sections and thresholds; pending DP prose review. |
+| `localization/english/sb_court_politics_l_english.yml` | `sb_court_succession_unavailable` | 30 October: separate challenge/succession sections and thresholds; pending DP prose review. |

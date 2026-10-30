@@ -1,5 +1,79 @@
 # Zulu court: implementation spec and iteration board
 
+## 30 October, current: separate court sections and 30% succession threshold
+
+DP raised the major succession rival threshold to **30% of succession-pledged Prominence**, replacing the earlier 25% decision recorded below. The same predicate governs death, retirement and revalidation of an open handover. Living-ruler challenges remain **25% of currently pledged Prominence plus P ≤−50**, with existing protections, cooldowns and conflict checks. Neither denominator includes unpledged backing. The retained 1856 fixture still qualifies Cetshwayo at **185/596 = 31.04%**.
+
+The JE has three independently collapsible, initially closed sections: **Present Allegiances and Challenges**, **The Next Succession**, and **Great Houses and Councillors**. Short threshold summaries remain visible beneath the first two headings. Current and future supporters keep their separate pools; present-allegiance rows identify loyal princes without describing them as challengers. Each panel remains bounded and scrollable in the viewed country's context.
+
+A fixed gold divider marks **−50** at 25% of the existing −100…+100 bar. SB reuses CMF's static marker templates with a local values override; no CMF container, saved state or dependency change is needed. The red/green scale and moving current-P marker remain. The effects tooltip explains the challenge requirements and other blocking conditions. Under chiefly institutions the dynastic marker is hidden and both summaries explain that royal rules do not apply; political records remain visible.
+
+Source acceptance: **174 focused court tests pass**, including separate threshold boundaries, the saved retirement distribution, open-handover revalidation, chiefdom exclusions and GUI structure. Independent review found no blocking issues. Full discovery: **988 tests, 979 passed, one existing localisation failure, eight skips**; the validator reports **15/17** checks passed/warned/skipped, with the same localisation issue reported by two gates. CMF integrity, override parity, map/naval and runtime-script checks pass. The existing failures are the dangling Swazi `.098` review row and reviewed-text drift in Klip `.060`/`.080` and Natal `.050`; this task does not change those files or approvals. Tiger was run separately after its executable was absent from the validator PATH: the advisory result remains **0 fatal, 1,076 errors, 149 warnings, one untidy and one tip**, matching the preceding baseline. Validation logs: `/private/tmp/sb-court-threshold-validation-20261030.txt` and `/private/tmp/sb-court-threshold-tiger-20261030.txt`. Native rendering remains pending DP under scenarios **149–150** in the runtime matrix. No launch or save migration.
+
+## 30 October: succession threshold and retirement presentation
+
+DP approved **25% of succession-pledged Prominence** for a major challenger at death or retirement, matching the court display. This supersedes the earlier all-represented-Prominence denominator below. A living-ruler challenge still uses current allegiance, not future pledges; the war split still divides only the selected contenders' backing. Uncommitted houses and third-party princes are not silently assigned to either army.
+
+The 1 August 1856 checkpoint had Cetshwayo at 185/596 pledged (31.04%) but 185/756 represented (24.47%), just below the former threshold. The following save records Mbuyazi's peaceful accession. See the [investigation and replay checks](compatibility/zulu_retirement_succession_2026_10_30.md).
+
+Existing `.001` and `.004` now explicitly present living Mpande's retirement: a peaceful handover or the two princes' confrontation. The peaceful acknowledgement explains accession, retirement and the possibility of newly sufficient opposition before the answer. It validates the displayed nominee; no duplicate retirement popup or scripted death is added.
+
+Dunn's `.002` has one distribution option. Its first delivery is reserved for three days after accepting his arrival; subsequent annual delivery timing and the two-week reward are unchanged. Progress remains an option effect, not an event-opening reward. Engine replay and rendering remain pending DP.
+
+## 30 October: later court and Hamu's Boer bargain — design only
+
+DP rejected a separate Mthonga refuge event: use actual flight through the ordinary coercion outcome. The current renunciation refusal does not cause flight; this revision does not silently add that behaviour. The earlier declaration and silent fallback remain agreed.
+
+The [later-story design](zulu_later_court_story_design_2026_10_30.md) now develops Hamu's foreign backing into an alternative NRP route. Entry requires TRN/future ZAR ownership of some East Transvaal and the **Boer–Swazi border settlement** resolved, as DP clarified. A Boer offer frames the bargain around sea access, funding and relations; ZUL learns of Hamu's support and promised cession. The **one-off 1G secures the promise**, and optional continuing funding improves Hamu's chances without guaranteeing success. His actual accession, not a temporary faction installation, forms **Greater NRP as the actual sponsor's subject**, fulfils the bargain once and excludes later scripted Boer aid/NRP rewards. No scripted direct annexation/union offer. Existing Confederal Partner is the provisional type recommendation; its shared presidency and 5% transfer are not yet explicitly approved. Other subsidy/support tuning remains provisional. The old obligation-only/five-year proposal is superseded; the Mandlakazi proposal is not yet approved.
+
+British intervention is conditional on the residual Zulu polity coming under actual British rule, with dormant eligibility preserved for a later takeover. Adapt the ultimatum for the NRP overlord's decision and actual country identity; do not inherit automatic acceptance by subjects, optional defence, a full-Zululand ownership check that includes NRP's land, or the old 24-month annexation petition. Treat annexed residual Zululand explicitly and distinguish formal control from occupation/alliance. No gameplay implementation is authorised by this design update.
+
+The shared **ZAR** successor tag and broad TRN/LYD/ZPB eligibility/identity audit are logged as major refactor **ARCH-20261030-01** in [the open register](audit_issues_open.md#major-content-refactor-todo--unified-south-african-republic-zar). Current NRP creation/boundary/union helpers cannot be reused unchanged: Greater NRP contains the port, while its old cutback removes it. No gameplay, localisation, country definition or dependency was changed for this exploration. DP engine checks remain pending after future implementation.
+
+## 30 October: Dunn and earlier royal coalitions — design revision only
+
+DP accepted the [second-war story design](zulu_second_war_story_design_2026_10_29.md) with final corrections: annual Dunn deliveries give exactly **two supplied weeks** towards Firearms, replacing 1% / 2.6 weeks. After completion there are no more annual offers or rewards. A permanent **Trader** trait gives +10 Prominence once and persists through political transfers. Executing Dunn costs **10 GBR relations**; retaining him gives **5**.
+
+The authored introduction requires both a settled Klip River dispute and current British Natal. Mpande's retirement uses **1 August 1856** eligibility to aim towards a December war at five activism points/week, replacing the proposed January retirement. Mthonga appears around 1855–1856 and declares when a victorious Cetshwayo retains Dunn or via the living eligible 1857 fallback; declaration grants Claimant. **Hamu arrives in 1860 and receives Claimant directly, with no arrival/declaration event**. Both use the trait's existing +25 Prominence once, real candidate eligibility and normal coalition-building. Preserve actual survival, the tracked-crisis roster freeze and ordinary court/revolution rules.
+
+These are accepted design changes only; story implementation has not yet been requested. Runtime dates, traits, delivery effects and character-creation scripts are unchanged this turn. The 29 October Firearms completion/reward corrections below remain implemented.
+
+DP's further decisions: retaining Dunn opens Mthonga's claim without taking a supporter from Cetshwayo. The eligible 1857 claim fallback applies under another royal victor too, silently. Dunn's initial admission gives Cetshwayo the most prominent eligible house without a future-successor pledge, ranked by aggregated house Prominence, preserving its present allegiance. Develop the later rival stories now; [the later-story exploration](zulu_later_court_story_design_2026_10_30.md) separates their proposed mechanics from these agreed choices.
+
+## 29 October, preceding: second-war story exploration and Firearms polish
+
+The initial Dunn/second-war exploration proposed a 1855 introduction, annual deliveries, early 1856 retirement and Cetshwayo aftermath. The accepted 30 October design above supersedes that calendar and the provisional rewards. Story scripts remain unchanged pending implementation; the separate Firearms changes below are already implemented.
+
+The separately requested Firearms changes are implemented: 260 supplied weeks; one readable completion predicate; native Effects preview; actual New Tactics modifier (+10% military research for five years) and conditional Innovative; no dynasty-stability or substitute Prerogative reward. Event rewards and seeds retain their percentages, while existing saves retain raw week counts.73 focused checks pass; full 947-test run has only the known localisation-review failure (eight historical skips). UI/runtime remain pending DP, scenario 148.
+
+## 29 October, current: recruitment time before claimant mobilisation
+
+DP selected a slower build-up after the second succession produced a one-province rebellion. Claimant activism now advances by **5 percentage points per week** (`0.01 × (1 + 4)`), superseding the 25-point trial below. The existing +100% attraction, claimant Popularity contribution, frozen coalition calculation, eligibility checks and exact-war progress effect are unchanged. No population support is assigned directly.
+
+Mpande's retirement is eligible from **1 August 1856**, four months before December. Dunn's visit is eligible from **1 July**, retaining its one-month lead and valid-open-offer reservation. These are gameplay scheduling dates; neither asserts a documented July meeting or August abdication.
+
+From zero activism the native 75% organising threshold takes about **15 weekly ticks**, and 100% takes **20**. Our existing progress effect can advance the exact organising war before 100%, so early-August acknowledgement aims towards late November/December rather than guaranteeing 1 December. Monthly pulses, unanswered popups and native recruitment/sponsorship can delay it. Peaceful succession retains its normal checks. Existing movement activism is not reset and existing wars are not repartitioned.
+
+**110 focused checks pass.** Actual recruitment, provincial allocation and outbreak timing remain pending DP in runtime case 147. Replay from before July 1856 to exercise the complete revised sequence. The [save investigation](compatibility/zulu_second_succession_split_2026_10_29.md) remains historical evidence of the preceding rate.
+
+Full validation: **935 tests passed, eight historical skips, one existing reviewed-localisation failure; no errors**. The validator reports 14/16 gates passed/warned/skipped; both failed gates report the same existing localisation drift/queue issues recorded in the preceding performance pass. Compatibility, map/naval checks, script contracts and delayed-event lifecycle pass. Independent Sol 6.1 Max review found no blocker. No game launch or new Tiger run; engine acceptance remains pending.
+
+## 29 October: Mpande's consolidation and the brothers
+
+This follow-up implements DP's revised historical preference. In Strict/Dynamic Historical, AI Mpande prioritises an eligible purge of Gqugqu, waiting for the existing Prerogative and coercion requirements. Other targets, costs and human choices retain their rules. Mbuyazi:Cetshwayo now has **66:33** AI recognition weights, including the birthday event; this supersedes the opposite weights in earlier records.
+
+A passed-over Cetshwayo is topped up to **two outside pledged houses**, whereas Mbuyazi retains the **one-house** floor. Select the strongest eligible unpledged houses by aggregated house Prominence, freeze them for the tooltip, revalidate on acknowledgement and reserve them before recognition distributes Mpande's supporting Prominence. Existing pledges, current allegiance and constitutional alignment remain intact. These are first-pass balance defaults, not a guarantee of either succession outcome. The two brothers' scenes remain TO REVIEW; uSuthu/iziGqoza names are used only in the dated later variant.
+
+[John Dunn's new event](zulu_dunn_mbuyazi_event_2026_10_29.md) opens from July 1856 under the revised mobilisation schedule above, reusing his identity and pledging his house to Mbuyazi on acknowledgement. A valid open offer postpones scheduled retirement until answered. Retirement relinquishes Mpande's claim when he actually leaves sovereignty, including the contested split; it does not script his death. Existing losing-coalition rules remain in effect, including for Dunn.
+
+Historical basis: Mpande's late preference for Mbuyazi and Cetshwayo's rival backing appear in the [Edinburgh edition of Walmsley's January 1857 correspondence](https://www.whiteswritingwhiteness.ed.ac.uk/traces/shepstone-jan-1857/) and [Shamase's oral-history study, pp. 10–11](https://doi.org/10.4102/ink.v6i1.240). Earlier birthday backing is an authored seed for the later conflict; no documented late-1850s commitment is automatically backdated to a named chief. Follow-up engine scenarios 138–141 remain pending DP.
+
+## 29 October: one-state native allocation / multi-state muster
+
+Checkpoint **`1a3d7c3`** preserves the preceding maintenance work. DP's latest instruction supersedes the proposal's common path: a one-state origin retains native resources and population allocation. The implemented multi-state path records its pre-split levy budget, uses temporary Wartime Muster buildings, allocates military households by regular-plus-levy jobs and fills civilian recruitment shortfalls with a finite 20% reserve. Neither path changes claimant identities, civil-war sponsorship, Firearms handling or rewards.
+
+[Updated proposal and implementation record](zulu_civil_war_muster_proposal_2026_10_29.md) · [DP matrix](zulu_civil_war_muster_runtime_matrix_2026_10_29.md). Custom-building recruitment, native conscription suppression, staffing, AI use and demobilisation remain **pending DP**. Use a pre-choice checkpoint; existing wars are not migrated. Earlier same-muster-for-both-maps and regular-only staffing recommendations are superseded.
+
 ## 28 October, current: live claimant crises and future royal lines
 
 DP reports a successful AI replay and explicitly authorises normal activation. The earlier explicit-test-only release hold below is historical and superseded. Low-Prerogative challenges, contested accessions/retirement and organised purge exposure now enter the existing native conflict controller without `.990` opt-in. The diagnostic event remains available; no thresholds, winner rules, sponsorship package or rebuilding formula change. Service/officer allocation is still an identified engine check, not claimed verified by the post-war saves.
@@ -320,11 +394,11 @@ Keep one leader per named house. Sum the native prominence of its eligible adult
 
 Reuse country/character records and the existing registry. Do not infer a shared house from a generated surname or add a second numerical constituency for a claimant. A prince's own prominence is part of the normal total, not a duplicate bonus pool. Select a shared house's leader by prominence before SB's −10 non-leader penalty, so that the penalty cannot entrench its recipient's subordinate status. A new leader speaks for the surviving house but retains their own personal and succession commitments.
 
-The court displays separate current-allegiance and next-succession totals. The incumbent's own house and loyal supporters belong to the current pledged pool. Each prince's future share divides the succession-pledged total; the existing 25% major-challenger test divides all represented prominence, including unpledged backing. Great Houses lists non-princely leaders and named members, with their individual and combined prominence. Princes appear in the succession section; unaffiliated adults appear under Other Councillors. Procedural adults enter unaligned and personally uncommitted without overwriting authored identities or earlier promises.
+The court displays separate current-allegiance and next-succession totals. The incumbent's own house and loyal supporters belong to the current pledged pool. Each prince's future share and the 30% major succession challenger test divide the succession-pledged total. A living ruler's challenger instead needs 25% of currently pledged backing and P ≤−50. Great Houses lists non-princely leaders and named members, with their individual and combined prominence. Princes appear in the succession section; unaffiliated adults appear under Other Councillors. Procedural adults enter unaligned and personally uncommitted without overwriting authored identities or earlier promises.
 
-**Agreed presentation:** a reopenable modal, entered where Great Houses currently appears. Show the incumbent, recognised heir, alternative candidates, pledged backing, named supporters and uncommitted backing. Character details distinguish all three commitments. Show supporting commanders separately; court backing is not army strength or a victory probability. Use native event/popup styling and existing allegiance cards.
+**Current presentation:** three independent, bounded JE dropdowns as specified above. Show the incumbent, recognised heir, alternative candidates, pledged backing, named supporters and uncommitted backing. Character details distinguish all three commitments. Show supporting commanders separately; court backing is not army strength or a victory probability. Use native event/popup styling and existing allegiance cards.
 
-Keep the ordinary explanation practical: improve the ruler's popularity, win following support, or strengthen the movement supporting the current constitution. Display actual effects and monthly drift; put detailed arithmetic in an optional breakdown. The viewed court must remain correctly scoped, including foreign courts. Opening the modal never spends resources or advances politics.
+Keep the ordinary explanation practical: improve the ruler's popularity, win following support, or strengthen the movement supporting the current constitution. Display actual effects and monthly drift; put detailed arithmetic in an optional breakdown. The viewed court must remain correctly scoped, including foreign courts. Opening a section never spends resources or advances politics.
 
 ## 2. Equilibrium and ordinary allegiance
 
@@ -358,11 +432,11 @@ The approved payer basis is native `gold_reserves_limit`; q is clamped to 10–1
 
 ## 4. Succession controller and Mpande's retirement
 
-**Implemented date: 1 December 1856.** This is a gameplay retirement date, not a claim about historical abdication. The first eligible monthly pulse on/after it uses the same controller as earlier natural death. Prior replacement, death or a completed retirement cannot trigger another episode. A contested episode retains its records for the explicit war prototype and releases ordinary court actions; it does not silently award a peaceful outcome. Without prototype opt-in, Mpande's contested retirement is deferred and a death still leaves the engine's native selection in place pending verification of the custom conflict route.
+**Original prototype date: 1 December 1856; superseded on 29 October by 1 August 1856.** This is a gameplay retirement date, not a claim about historical abdication. The first eligible monthly pulse on/after it uses the same controller as earlier natural death. Prior replacement, death or a completed retirement cannot trigger another episode. The original prototype retained contested records behind explicit opt-in; the 28 October live-activation record above supersedes that release gate.
 
 At entry, retain the outgoing ruler, candidates and existing commitments before native selection changes those references. One pending episode owns the popup until answered. Do not trigger again each month while it is open.
 
-For the first build, a secured succession means an eligible acknowledged successor and no unresolved major rival claim. If there was no designation but only one viable candidate remains, the accession event can acknowledge that candidate; absence of an heir flag does not invent a war. A major rival starts around 25% of total represented backing as a **tuning default**, with genuine mobilisation eligibility to be established in the war prototype. A general's office is not a mandatory condition for civilian patrons.
+For the first build, a secured succession means an eligible acknowledged successor and no unresolved major rival claim. If there was no designation but only one viable candidate remains, the accession event can acknowledge that candidate; absence of an heir flag does not invent a war. The original prototype used 25% of total represented backing; the current rule is **30% of succession-pledged Prominence**, as agreed on 30 October. A general's office is not a mandatory condition for civilian patrons.
 
 - **Secured:** install the successor, retire Mpande from sovereignty and reconcile commitments once.
 - **Contested:** show actual factions and commitments, choose a side, and enter the tracked dynastic conflict. Major competing claims cannot be dismissed through a lucky peaceful-resolution roll.
@@ -433,3 +507,14 @@ Maintain this spec and the increment statuses during development. Update a defau
 Cetshwayo and Mbuyazi each make a once-only declaration for their living father, Mpande, on their first adult court pulse if he is not ruler. Event `sb_court_succession.003` reports the actual current-allegiance change with paired portraits. Their own future succession claims remain distinct. The adulthood check is consumed even if Mpande is already ruler or dead, so a later loss of the throne cannot replay it. No new peace requirement or immediate Prerogative payment/shock is added.
 
 Firearms adoption now has one counter of 104 qualifying weeks. The country's market must have positive Small Arms sell orders and no Small Arms shortage. Domestic output, treaty deliveries and other imports use that same rule; an idle factory or signed treaty alone contributes nothing. Existing event rewards remain 5%, 10%, 40% or 50%, and BST retains its 40% start. The 0–60 display/penalty scale, completion flag, ordinary army-reform unlock and one-delivery restoration archives remain. There is no save migration. Native market accounting, weekly timing, portraits and newborn/heir handling remain pending DP.
+
+## 29 October follow-up: royal sons and population return
+
+Implemented defaults are recorded in [the family/population follow-up](zulu_family_and_population_followup_2026_10_29.md). `.007` grants rival Cetshwayo two **new** houses; his recognised-heir branch does not. Adult royal candidature and its +25 card are independent of allegiance to the current king. Mpande's sons support his reign while competing for future succession. Cetshwayo receives native Charismatic at adulthood. A recognised minor receives one adulthood backing reconciliation, deferred through frozen conflicts. The multi-state muster restores its recorded Natal/Zululand population ratio among survivors after victory; native one-state allocation is unchanged. Names-only culture and royal patronymic changes preserve existing identities. Hamu's existing 1865 gate is retained. Runtime cases 142–146 remain pending DP.
+
+## Later-court batch — 30 October 2026
+
+Implemented the agreed Dunn admission/deliveries/judgement, Mthonga declaration,
+Hamu's 1860 availability and Boer bargain. Greater NRP is the actual sponsor's
+Confederal Partner. The existing retirement/claimant-war mechanics are retained.
+[Delivery record, defaults and numbered pending engine scenarios](zulu_later_court_implementation_2026_10_30.md).

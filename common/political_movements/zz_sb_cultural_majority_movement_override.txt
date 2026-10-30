@@ -1,7 +1,8 @@
 ﻿# Spes Bona - cultural-majority movement override
 # Community Mod Framework 1.66.0 baseline with the Vanilla 1.14.0 Open Beta 1 unowned-
 # homeland fix, plus only the CAP creation/disband exclusion. The Cape JE owns
-# this conflict without erasing CMF integrations elsewhere.
+# this conflict without erasing CMF integrations elsewhere. Check insurrection
+# before the neighbour's culture match; recruitment and activism values are unchanged.
 
 REPLACE:movement_cultural_majority = {
 	category = movement_category_cultural_majority
@@ -310,6 +311,7 @@ REPLACE:movement_cultural_majority = {
 
 		if = { # If a more radical movement exists, it'll poach radicals from this one.
 			limit = {
+				NOT = { pop_radical_fraction = 0 }
 				owner ?= {
 					any_political_movement = {
 						OR = {
@@ -514,6 +516,7 @@ REPLACE:movement_cultural_majority = {
 						owner = {
 							NOT = { THIS = ROOT.owner }
 							any_political_movement = {
+								is_insurrectionary = yes
 								OR = {
 									AND = {
 										is_political_movement_type = movement_cultural_majority
@@ -528,7 +531,6 @@ REPLACE:movement_cultural_majority = {
 										culture ?= { is_primary_culture_of = root.owner }
 									}
 								}
-								is_insurrectionary = yes
 							}
 						}
 					}

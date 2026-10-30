@@ -1314,29 +1314,20 @@ sb_imperial_confederation_ensure_active_owner_je = {
 
 sb_imperial_confederation_validate_involvement = {
 	every_country = {
-		limit = {
-			OR = {
-				is_involved_in_journal_entry = je_sb_imperial_confederation_scheme
-				sb_should_be_involved_in_imperial_confederation = yes
-			}
-		}
 		if = {
-			limit = {
-				is_involved_in_journal_entry = je_sb_imperial_confederation_scheme
-				NOT = { sb_should_be_involved_in_imperial_confederation = yes }
-			}
-			save_temporary_scope_as = sb_imperial_confederation_involvement_candidate
-			c:GBR ?= {
-				je:je_sb_imperial_confederation_scheme ?= {
-					remove_involved_country = scope:sb_imperial_confederation_involvement_candidate
+			limit = { is_involved_in_journal_entry = je_sb_imperial_confederation_scheme }
+			if = {
+				limit = { NOT = { sb_should_be_involved_in_imperial_confederation = yes } }
+				save_temporary_scope_as = sb_imperial_confederation_involvement_candidate
+				c:GBR ?= {
+					je:je_sb_imperial_confederation_scheme ?= {
+						remove_involved_country = scope:sb_imperial_confederation_involvement_candidate
+					}
 				}
 			}
 		}
-		if = {
-			limit = {
-				NOT = { is_involved_in_journal_entry = je_sb_imperial_confederation_scheme }
-				sb_should_be_involved_in_imperial_confederation = yes
-			}
+		else_if = {
+			limit = { sb_should_be_involved_in_imperial_confederation = yes }
 			save_temporary_scope_as = sb_imperial_confederation_involvement_candidate
 			c:GBR ?= {
 				je:je_sb_imperial_confederation_scheme ?= {

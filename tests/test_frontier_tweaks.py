@@ -31,7 +31,7 @@ class FrontierTweaksTests(unittest.TestCase):
         ):
             self.assertNotIn(temporary, progress + penalty)
         self.assertIn(
-            "value = var:sb_firearms_supply_weeks_var multiply = 60 divide = 104",
+            "value = var:sb_firearms_supply_weeks_var multiply = 60 divide = 260",
             progress,
         )
         self.assertIn(
@@ -48,7 +48,7 @@ class FrontierTweaksTests(unittest.TestCase):
         bst_seed = object_block_from_source(seed, "if")
         self.assertIn("country_definition = cd:BST", bst_seed)
         self.assertIn("name = sb_firearms_supply_weeks_var", bst_seed)
-        self.assertIn("value = 41.6", bst_seed)
+        self.assertIn("value = 104", bst_seed)
         self.assertNotIn("sb_firearms_industry_progress_months_var", bst_seed)
 
     def test_bst_starts_with_chiefly_levy_law(self):

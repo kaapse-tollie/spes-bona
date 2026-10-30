@@ -1,186 +1,102 @@
-# Zulu civil-war muster — proposal for both territorial splits
+# Zulu civil-war muster — updated proposal and implementation record
 
-29 October 2026. **Proposal, not an implementation instruction. Gameplay remains unchanged.** Builds on the [force-balance investigation](zulu_civil_war_force_balance_exploration_2026_10_29.md).
+29 October 2026. DP authorised implementation after checkpoint **`1a3d7c3`**. Source implemented; native recruitment and battle balance remain **pending DP**. The checkpoint preserves the preceding proposal and maintenance batch.
 
-## Intended result
+## 1. The revised boundary
 
-Coalition Prominence should determine a faction's initial military allocation in both early and later claimant wars. Geography should still affect campaigning and the ability to sustain a long war, but should not turn a near-even coalition contest into a tenfold difference in available troops.
+DP confirms that a one-state Zulu civil war already divides resources through the native movement-strength mechanism. Preserve that behaviour. Classify the origin when the challenge is answered, **before the native split**, and retain that classification through the conflict.
 
-DP's correction is a requirement: after losing Klip River, ZUL can undergo a native civil war dividing **Zululand itself**. The muster cannot depend on one faction owning Natal. A kingdom that retains both regions and a kingdom divided within one region must use the same manpower rules.
+| Origin before the split | Allocation |
+|---|---|
+| One owned state, including Zululand after Klip River | Entirely native military and population division. No recruitment relocation, army rebuilding, temporary muster, civilian transfer or conscription restriction. |
+| More than one owned state | Scripted military muster after the actual split; retain existing pre-creation recruitment preparation. |
 
-No changes to 1836 population history, provincial boundaries, the native war controller, the political coalition calculation, character routing or victory rewards are proposed here. This is a reusable military helper for the existing claimant conflict. Extension to a differently triggered constitutional war requires its own verified faction inputs; this proposal does not replace that settlement logic.
+A post-split country having one state does not make it a one-state-origin war. Conversely, two actual state objects in `STATE_ZULULAND` do not justify rebuilding a native provincial split. Resolve actual country and state identities; NAL and other owners of the same region are excluded.
 
-## 1. Territorial handling
-
-| Situation at the crisis | Territorial behaviour | Military behaviour |
-|---|---|---|
-| ZUL owns Zululand and its Natal portion | Retain the current stronger-coalition preference for Zululand and weaker-coalition preference for Natal. | Allocate by the frozen contender shares after the actual split. |
-| Klip River is no longer owned; ZUL is split within Zululand | Allow the engine's provincial division. Two countries can own separate state objects in `STATE_ZULULAND`. Do not try to find a Natal recipient. | Use those two actual countries and their owned state objects. Move people only to cover recruitment deficits. |
-| A later kingdom owns additional regions | Retain native selection outside the existing two-region preference. | Sum each faction's actual recruitment resources and use its owned recruitment states. |
-
-The current `sb_court_dynastic_state_weight` already limits its explicit Natal/Zululand weights to an origin that owns both regions. Retain that boundary. The force replacement helper also currently chooses an actual owned state rather than a hard-coded Natal state. What needs changing is the recruitment budget and its staffing, not a new unconditional map rule.
-
-Never select recipients by `s:STATE_ZULULAND` alone: after an internal split that region contains both countries. Resolve the exact incumbent and claimant countries from the tracked war, then their owned state objects. Exclude NAL, other countries and third-party armies even when they own another portion of the same region.
+Existing stronger-coalition preference for Zululand applies only while the origin owns both its Zululand and Natal portions. Other territorial selection remains native. Character routing, sponsorship, coalition quotes, Firearms JEs, Prerogative and victory rewards are unchanged.
 
 ```mermaid
 flowchart TD
-    A[Answered claimant challenge: freeze coalition shares] --> B[Existing native revolution controller]
-    B --> C{Actual territorial split}
-    C --> D[Early: Zululand and Zulu-owned Natal]
-    C --> E[Later: two owned portions of Zululand]
-    C --> F[Other native multi-state division]
-    D --> G[Identify actual faction countries and recruitment states]
-    E --> G
-    F --> G
-    G --> H[Count the combined regulars and configured levies]
-    H --> I[Allocate permanent regulars and temporary wartime muster]
-    I --> J[Redistribute existing military workforce; fill civilian shortfalls]
-    J --> K[Native hiring, training, supply and combat]
-    K --> L[Tracked resolution or cancellation]
-    L --> M[Demobilise temporary muster; restore native conscription]
+    A[Answer claimant challenge] --> B{Origin owns more than one state?}
+    B -->|No| C[Native revolution divides provinces and forces]
+    B -->|Yes| D[Record multi-state path and configured levy budget]
+    D --> E[Existing recruitment preparation]
+    E --> F[Actual native territorial split]
+    F --> G[Allocate regulars and temporary muster by coalition backing]
+    G --> H[Redistribute existing military households; fill civilian shortfalls]
+    H --> I[Native hiring, training and combat]
+    C --> J[Existing tracked resolution]
+    I --> J
+    J --> K[Multi-state only: remove temporary muster and conscription restriction]
 ```
 
-## 2. One army budget, two constituencies
+## 2. Multi-state force budget
 
-Retain the existing frozen political shares:
+The frozen claimant share remains:
 
 ```text
-claimant share = claimant committed Prominence / both contenders' committed Prominence
+claimant committed Prominence / (incumbent + claimant committed Prominence)
 ```
 
-Do not add Popularity, the unpledged discount, movement support or other princes again. Geography's 10–75% native target bounds do not redefine the army share.
+Do not count third claimants, unpledged influence or Popularity again.
 
-At the actual split, before destructive reconstruction, count the combined resources of the two real factions:
+- **R:** completed regular recruitment levels across both actual countries immediately after splitting.
+- **L:** configured conscript levels recorded before splitting. Native caps can truncate these when a small state becomes independent, so counting only afterwards loses the intended budget.
+- Existing training methods are read from the largest centre for each service. Reuse the installed training groups; grant no technology. The previously authorised reconstruction still resets unit manpower, experience and mix. Native default types follow the country's available technology.
+- For unequal coalitions, reserve one existing regular level for the weaker side, then split the remainder by backing. For an exact tie, divide evenly. Round one quota and assign the other the exact remainder; never invent levels for a small pool.
+- Divide L by backing with the same remainder rule. Additional levies are capped by surviving eligible workforce after reserving the regulars and the 20% recruitment buffer. Existing regular levels are retained even if understrength.
 
-- **R:** existing regular battalions/recruitment capacity.
-- **L:** existing configured conscript battalions, bounded by their valid pre-split capacity. Not every theoretical level the laws could eventually allow.
-- Existing military workforce, officers, civilian recruitment workforce, training methods and unit types.
+Example: four regulars plus sixteen configured levies, at 60:40 backing, produce **2 + 10** and **2 + 6** recruitment levels. These are capacity targets, not instant full battalions or guaranteed battle results.
 
-Preparation needed to make the native revolution possible remains separate and once-only. Count any relocated recruitment level once. Political shares remain frozen, but do not recreate people or manpower lost between the challenge and the actual split.
+## 3. Temporary muster and native conscription
 
-Allocate the regulars using the existing weaker-side minimum: one level comes from the available total, and the remainder follows coalition strength. **For an exact tie, divide evenly rather than applying a unilateral weaker-side advantage.** Round one allocation and give the other side the exact remainder. If fewer than two regulars exist, do not invent regulars merely to satisfy two minima; the levy allocation must be assessed too.
+`building_sb_court_muster` is a separate, script-created military building using `bg_army`, `recruits_combat_units = yes` and `pmg_training_conscription`. It cannot be built, expanded or downsized normally. Ordinary barracks retain R; the temporary type supplies L as standing recruitment during this war.
 
-Divide L by coalition share, with the same exact-remainder rule. Keep regular and levy entitlements separate even if both eventually use military buildings that recruit standing units in the engine.
+Reusing the conscription training group preserves the customary **99:1 servicemen/officer mix**, rather than replacing it with the ordinary barracks' starting 97:3 ratio. All installed training ratios are covered by source tests. Employment and training remain native.
 
-### Illustrative 60:40 case
+Both actual participants receive `sb_court_muster_conscription_suspended` while the muster is active. Its **−10 conscription-rate multiplier** drives the native multiplier to its zero floor, with headroom for ordinary positive modifiers. This is a temporary technical restriction, not a combat penalty or an army-law change. The UI may display the underlying −1,000% modifier. Installed arithmetic clamps multiplicative factors at zero; a negative additive rate is deliberately avoided. Native uprising bonuses are additive and cannot restore a zero multiplier. An external mod adding more than +900% multiplicative conscription is outside this supported contract.
 
-With four regulars and sixteen configured levies:
+A building `potential` guard was investigated and rejected as the suppression mechanism: the native maximum-capacity path does not evaluate that scripted trigger. No override of Vanilla's conscription-building definition is shipped. [Native inspection and limits](compatibility/zulu_muster_native_contract_2026_10_29.md).
 
-| Allocation | Stronger coalition | Weaker coalition | Total |
-|---|---:|---:|---:|
-| Regulars, including weaker-side minimum | 2 | 2 | 4 |
-| Wartime levies | 10 | 6 | 16 |
-| Initial battalion capacity | **12** | **8** | **20** |
+**Engine acceptance is still required:** the custom recruitment building must create usable units and formations, AI must use them, and no second native conscript pool may survive or reappear. Source arithmetic does not establish these behaviours. Failure is a blocker for this muster prototype, not permission to add repeated army resets.
 
-These quotas apply whether the weaker country is in Klip River or a provincial portion of Zululand. They are capacity targets, not a promise of twenty instantly full battalions or an exact 60:40 battle result.
+## 4. Recruitment workforce
 
-## 3. Recommended implementation direction: distinct wartime muster
+Allocation runs once, after both real factions exist:
 
-The full proposal replaces the **allocated levy pool for this war** with temporary recruitment capacity. This prevents the mainland from independently regenerating a much larger native levy pool after the scripted division.
-
-The preferred prototype is a separate, script-created **wartime muster building** using the documented military-building interface (`recruits_combat_units = yes`), with the relevant customary training/occupation mix. Ordinary barracks remain the permanent R allocation. Muster buildings provide L and are unavailable for normal construction or AI expansion.
-
-Why separate buildings: adding temporary levels to ordinary barracks makes it difficult to distinguish them later from player construction, downsizing or native merging of two pieces of Zululand. A separate type makes demobilisation auditable: remove the temporary muster, rather than wipe and recreate every surviving regular formation.
-
-For Amabutho, retain the existing customary levies' **99% servicemen / 1% officers** requirements. Do not silently turn them into ordinary starting barracks' 97:3 officer requirement. Preserve actual available unit quality and military technology. Later reformed armies need an explicit training/occupation mapping; no free upgrade to a higher infantry tier.
-
-**Required feasibility checks before choosing this for production:**
-
-1. Native recruitment, formations, mobilisation, AI control and victory transfer must recognise the custom military building. The generic interface is present; this exact new building has not been engine-tested.
-2. Suppress additional native conscription only for the two tracked participants while the replacement muster exists. Verify that automatic centre recalculation, native civil-war bonuses and player/AI orders cannot duplicate L. Deleting centres once is insufficient.
-3. Respect military-building limits and ensure quotas survive subsequent native updates.
-4. Separate state pieces merging after victory must retain enough identity to remove all temporary muster and preserve ordinary barracks.
-
-If any check fails, report the specific blocker. Do not quietly ship both levy pools, switch to recurring army resets, or remove the army model law. The smaller recruitment-only alternative below remains available.
-
-## 4. Recruit people, not empty building levels
-
-Allocate soldiers and officers according to the jobs in **R + L**, not just R as at present. Existing military households are the first source; preserve their people, culture, religion and dependants.
-
-Then calculate each side's remaining requirement using its actual post-split population. Proposed first-pass civilian recruitment buffer:
+1. Select each country's most populous actual owned state as its recruitment location, before transfers change populations.
+2. Bring existing servicemen/officers within that country to its recruitment state.
+3. Divide each profession between the countries according to its jobs across **both regulars and muster**. Officer and serviceman shares can differ because the two services have different profession ratios.
+4. Fill civilian shortfalls first from the country's own other states, then from the opposing country's surplus after reserving its full requirement.
 
 ```text
-required recruitment workforce = 120% of the workforce needed for the allocated force
-shortfall = max(0, required recruitment workforce − locally available eligible workforce)
+recruitment requirement = 1.2 × 1,000 × (regular quota + levy quota)
 ```
 
-The 20% buffer is provisional replacement capacity, not extra battalions or extra population. Count employable local peasants/unemployed workers and the military workforce once; exclude workers who do not meet the relevant hiring conditions. Do not count dependants as workers, and do not treat all civilians as qualified officers.
+Count workforce, not dependants. Eligible civilians are peasants and unemployed free workers. Exclude slaves and employed non-peasant civilian workers. Moving a fraction of a Pop carries the corresponding dependants, culture and religion; no new population or scripted profession conversion is created.
 
-- Move only the deficit from the other faction, and only from its surplus after reserving its own requirement.
-- Preserve population across the two sides. No `create_pop` soldier grant and no recurring transfer to replace casualties.
-- If combined recruits are insufficient, reduce the proposed additional levy muster proportionately. Do not invent workers or erase existing regulars to manufacture the quoted total.
-- Vanilla servicemen have `can_always_hire = yes`, so moving eligible civilian workers and letting recruitment employ them is the first approach. A blanket conversion of entire peasant groups is unnecessary. Officers have separate qualification rules and must be checked independently.
-- If the native intra-Zululand division already supplies both factions adequately, **move no extra civilian population**. Do not force a fixed 5,000-worker transfer or an equal population split.
+Existing officers are distributed separately. Civilians are not treated as already qualified officers: qualifications, hiring and training still need inspection in-game. Small per-Pop rounding differences are expected.
 
-For the example above, a 1,000-worker-per-battalion illustration gives recruitment targets of 14,400 and 9,600 workers. Actual employment ratios must come from the chosen military methods. The people needed can be much more numerous once dependants are included; this is why a 5,000-person transfer is not the same intervention as 5,000 available workers.
+If combined eligible workforce cannot cover R + L and the reserve, reduce L before splitting it. No repeated transfer replaces casualties. The initial 20% reserve is finite. Native wages, equipment, supply and combat continue; the existing AI-only supply-consumption aid is unchanged.
 
-Native hiring and training still occur. First test this during the normal play build-up. Add no combat bonus or instant full-manpower claim. A temporary recruitment aid is a tuning option only if measured staffing remains too slow despite sufficient qualified workers.
+DP's first replay exposed a separate food shortage: the smaller faction receives recruits while commercial food production remains across the border. DP selected temporary **Wartime Provisions** for this test. Both actual multi-state factions receive +1.5 Food Security when their muster begins, removed by the same terminal cleanup. The native pre-clamp calculation requires a stronger value than the displayed zero suggests. This is relief rather than extra grain, wages or a redistribution of civilian buildings; food prices and other economic effects remain. [Evidence, tuning and limits](compatibility/zulu_muster_famine_2026_10_29.md). One-state origins receive none.
 
-## 5. Supply, casualties and the longer war
+## 5. Cleanup and scope
 
-Retain the existing AI-only −50% supply-consumption aid. Apply the same muster rules regardless of which contender the player selects. Keep normal wages, equipment availability, battlefield losses, commanders and Prerogative effects.
+On the tracked conflict's resolution or cancellation, remove the temporary muster, its conscription restriction and Wartime Provisions from the two participants. Preserve ordinary barracks, subsequent construction and surviving regular units. The dedicated building type can be removed after native state merging without guessing which barracks were temporary. Repeated callbacks are harmless.
 
-This proposal balances the initial muster and a finite reserve; it does not promise identical economies or replenish both sides forever. Longer wars can still favour the country with more people and resources. Capture finance and supply alongside manpower before adding subsidies. If one faction cannot maintain even its allocated initial force, a bounded war chest is a separate tuning decision, not an unmentioned infinite treasury.
+People remain in their new locations after demobilisation. Repatriation after employment changes, merging and casualties would not be lossless. This is a lasting geographical effect in multi-state wars; there is no change to 1836 population history or maps.
 
-Do not continuously reapply quotas or cancel ordinary casualties. Any ongoing construction or outside intervention is recorded separately from whether the initial split worked.
+Cancellation before a split creates no muster or population transfer. The existing pre-creation relocation of an available recruitment level is not reversed. The next crisis classifies its then-current state count afresh.
 
-## 6. Resolution and demographic consequences
+No game launch, save migration, dependency patch, foreign-war replacement, global define change, additional combat bonus or wider country rollout.
 
-Use the tracked war's existing once-only resolution/cancellation handling, for either winner and either selected side:
+## 6. Verification and handoff
 
-1. Remove temporary muster capacity and its remaining temporary units safely, without recreating casualties.
-2. Release the conscription restriction and let native capacity recalculate.
-3. Preserve surviving ordinary barracks, normal player/AI construction and surviving regular units; do not restore a destroyed prewar army.
-4. Remove only this crisis's modifiers and records. Keep the existing character outcome, Firearms JE reconciliation and victory reward unchanged.
-5. Allow demobilised people to seek civilian employment.
+The [validation record](compatibility/zulu_muster_validation_2026_10_29.md) preserves the original 85 passing focused checks, the existing full-suite localisation review failure and advisory Tiger results. The subsequent provisioning follow-up passes 87 focused checks; its in-game effect remains pending.
 
-**Population movement has a lasting geographical consequence.** The first version would not attempt to identify and transport every surviving household back after the war. People moved between two pieces of Zululand become part of the reunited region; people moved into Klip River can remain there. There is no lossless reversal after native merging, employment changes, births and casualties. No change to starting population history is required.
+The [runtime matrix](zulu_civil_war_muster_runtime_matrix_2026_10_29.md) covers both territorial paths, both player choices and winners, one-state splits after Klip River, uneven multi-state recruitment, low workforce, cancellation, repeated callbacks and demobilisation. All unperformed engine scenarios remain **pending DP**.
 
-If the crisis ends before the actual split, no post-split muster or population transfer occurs. Existing preparation receipts still prevent duplicate restructuring. A missing participant or invalid tracked conflict must not trigger global army cleanup.
+Source tests execute the shipped scope routing and arithmetic with explicit native split inputs. They cover conservation, native one-state bypass, pre-split levy receipts, combined-service staffing, civilian deficits, safe cleanup, method ratios and unrelated-country negative controls. They do not simulate native province allocation, recruitment, AI or war outcomes.
 
-## 7. Smaller alternative: native levies plus recruitment transfers
-
-Keep ordinary barracks and native conscription. At the actual early or intra-Zululand split, redistribute military workforce and fill civilian recruitment deficits by the rules above; verify the resulting conscript centres and army strength. At the end, native levies demobilise normally, with no custom building or suppression mechanism.
-
-This is much less invasive and may be sufficient after Klip River, when the engine divides a large population between both sides. It may remain inadequate in the early two-region war: meeting a native conscription quota can require transferring a much larger civilian population, and the mainland can retain far more recruitment capacity.
-
-| Criterion | Recruitment-only alternative | Distinct wartime muster |
-|---|---|---|
-| Works with either map | Yes, uses actual factions | Yes, uses actual factions |
-| Fewer new engine assumptions | **Yes** | Custom building and conscription suppression need proof |
-| Political share controls initial regulars and levies | Partial; native capacity can dominate | **Intended full control**, subject to staffing verification |
-| Demobilisation | Native | Explicit temporary-type cleanup |
-| Population moves | Potentially large to satisfy native conscription | Only job/reserve shortfalls; still real and lasting |
-| Recommended use | Baseline comparison / smaller fallback | Preferred experimental direction for consistent early and late balance |
-
-Neither approach requires map changes or starting-population edits. The previous investigation's territorial redesign option is unnecessary for the later case DP describes; the engine already supplies that intra-Zululand division.
-
-## 8. Acceptance before deployment
-
-All unperformed engine scenarios remain **pending DP**. Compare the existing implementation and the prototype from the same pre-crisis checkpoint:
-
-| Map | Backing | Player sides / outcomes |
-|---|---|---|
-| Zululand + Zulu-owned Natal | 50:50, 60:40, 75:25 | Either contender; both winners |
-| Zululand only after Klip River | 50:50, 60:40, 75:25 | Either contender; both winners; inspect two state objects in the same region |
-| Later multi-state kingdom | Uneven recruitment buildings | Both owners; no NAL or third-country population touched |
-
-For each: record quotas, surviving building levels, separate military/civilian workforce, officers/qualifications, manpower, organisation, finance and supply immediately after splitting and at weeks four and eight. Check no extra native conscript pool appears. Repeat comparisons to distinguish coalition influence from commander/battle randomness.
-
-Also test cancellation, contender death, repeated callbacks, save/reload, player construction/downsizing, state merging, casualties and demobilisation. No manpower/experience restoration or population creation is permitted.
-
-Release requires usable forces on both sides, a repeatable relationship between coalition backing and available manpower, and no tenfold discrepancy in an otherwise near-even test. It does not require predetermined winners. Static arithmetic and lifecycle tests cannot substitute for these runtime checks.
-
-## Decision register
-
-| Status | Item |
-|---|---|
-| Agreed requirement | Support the post-Klip River internal division of Zululand as well as the early two-region map. |
-| Existing constraints retained | Native conflict and two actual factions; coalition shares; identity outcomes; no unrelated-war peace gate. |
-| Provisional recommendation | Prototype distinct temporary muster plus deficit-based workforce transfers; compare against recruitment-only changes. |
-| Provisional tuning | 20% finite recruitment reserve; existing weaker-side regular minimum with an even split on ties; no extra combat bonus. |
-| Open technical dependency | Custom muster recruitment, non-duplicating suppression of native levies, officer staffing and safe demobilisation. |
-| Open design acceptance | Temporary muster and lasting relocation of existing households. |
-| Deferred | Starting demography, map redraw, ongoing war subsidies, broader country rollout. |
-
-Only this proposal and the investigation's cross-reference were changed. No gameplay or save edits; no launch or runtime validation.
+Use a checkpoint **before answering the claimant challenge**, or a new campaign. Existing wars retain their old preparation and allocation; no migration is attempted.

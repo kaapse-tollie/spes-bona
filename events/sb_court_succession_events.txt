@@ -2,16 +2,50 @@
 sb_court_succession.001 = {
  type = country_event
  placement = root
- title = sb_court_succession.001.t
- desc = sb_court_succession.001.d
- flavor = sb_court_succession.001.f
- event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+ title = {
+  first_valid = {
+   triggered_desc = { trigger = { sb_court_mpande_retirement = yes } desc = sb_court_succession.001.t.retirement }
+   desc = sb_court_succession.001.t
+  }
+ }
+ desc = {
+  first_valid = {
+   triggered_desc = { trigger = { sb_court_displayed_accession_valid = no } desc = sb_court_succession.001.d.withdrawn }
+   triggered_desc = { trigger = { sb_court_displayed_accession_contested = yes } desc = sb_court_succession.001.d.contested }
+   triggered_desc = { trigger = { sb_court_mpande_retirement = yes } desc = sb_court_succession.001.d.retirement }
+   desc = sb_court_succession.001.d
+  }
+ }
+ flavor = {
+  first_valid = {
+   triggered_desc = { trigger = { sb_court_mpande_retirement = yes } desc = sb_court_succession.001.f.retirement }
+   desc = sb_court_succession.001.f
+  }
+ }
+ gui_window = event_window_1char_tabloid
+ left_icon = scope:sb_court_nominee
+ on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+ on_opened_soundeffect = "event:/SFX/Events/misc/2Characters"
  icon = "gfx/interface/icons/event_icons/event_portrait.dds"
  duration = 3
- trigger = { sb_court_dynastic_country = yes has_variable = sb_court_accession_open_var }
- immediate = { save_scope_as = sb_court_country var:sb_court_accession_nominee_scope ?= { save_scope_as = sb_court_nominee } var:sb_court_accession_rival_scope ?= { save_scope_as = sb_court_rival } }
+ trigger = { sb_court_dynastic_country = yes has_variable = sb_court_accession_open_var var:sb_court_accession_nominee_scope ?= { sb_court_dynastic_candidate = yes } }
+ immediate = { save_scope_as = sb_court_country var:sb_court_accession_nominee_scope = { save_scope_as = sb_court_nominee } }
  option = {
   name = sb_court_succession.001.a default_option = yes
+  trigger = { sb_court_displayed_accession_valid = yes }
+  if = { limit = { sb_court_displayed_accession_contested = yes } custom_tooltip = sb_court_succession.001.a.contested.tt }
+  else = {
+   if = { limit = { scope:sb_court_nominee = { is_adult = yes } } custom_tooltip = sb_court_succession.001.a.tt }
+   else = { custom_tooltip = sb_court_succession.001.a.minor.tt }
+   if = { limit = { sb_court_mpande_retirement = yes } custom_tooltip = sb_court_succession.001.a.retirement.tt }
+   custom_tooltip = sb_court_succession.001.a.challenge.tt
+  }
+  hidden_effect = { sb_court_answer_accession = yes }
+ }
+ option = {
+  name = sb_court_succession.001.c default_option = yes
+  trigger = { sb_court_displayed_accession_valid = no }
+  custom_tooltip = sb_court_succession.001.c.tt
   hidden_effect = { sb_court_answer_accession = yes }
  }
 }
@@ -44,14 +78,25 @@ sb_court_succession.003 = {
 sb_court_succession.004 = { # TO REVIEW
  type = country_event
  placement = root
- title = sb_court_succession.004.t
+ title = {
+  first_valid = {
+   triggered_desc = { trigger = { sb_court_mpande_retirement = yes } desc = sb_court_succession.004.t.retirement }
+   desc = sb_court_succession.004.t
+  }
+ }
  desc = {
   first_valid = {
+   triggered_desc = { trigger = { sb_court_displayed_dynastic_pair = yes sb_court_mpande_retirement = yes } desc = sb_court_succession.004.d.retirement }
    triggered_desc = { trigger = { sb_court_displayed_dynastic_pair = yes } desc = sb_court_succession.004.d }
    desc = sb_court_succession.004.d.withdrawn
   }
  }
- flavor = sb_court_succession.004.f
+ flavor = {
+  first_valid = {
+   triggered_desc = { trigger = { sb_court_mpande_retirement = yes } desc = sb_court_succession.004.f.retirement }
+   desc = sb_court_succession.004.f
+  }
+ }
  gui_window = event_window_2char
  left_icon = scope:sb_court_nominee
  right_icon = scope:sb_court_rival
@@ -139,22 +184,25 @@ sb_court_succession.006 = { # TO REVIEW
   var:sb_court_brothers_cetshwayo_scope = { save_scope_as = sb_court_brothers_cetshwayo }
   var:sb_court_brothers_mbuyazi_scope = { save_scope_as = sb_court_brothers_mbuyazi }
   var:sb_court_brothers_backer_scope ?= { save_scope_as = sb_court_brothers_backer }
+  var:sb_court_brothers_second_backer_scope ?= { save_scope_as = sb_court_brothers_second_backer }
  }
  option = {
-  name = sb_court_succession.006.a default_option = yes
+  name = sb_court_succession.006.a
   custom_tooltip = sb_court_recognize_successor_tt
+  show_as_tooltip = { var:sb_court_brothers_mbuyazi_scope = { if = { limit = { NOT = { has_trait = innovative } } add_trait = innovative } } }
   show_as_tooltip = { scope:sb_court_brothers_mbuyazi = { if = { limit = { NOT = { has_trait = ambitious } } add_trait = ambitious } } }
-  sb_court_preview_brother_backing = { OTHER = scope:sb_court_brothers_mbuyazi TEXT = sb_court_succession.006.a.backer }
-  hidden_effect = { sb_court_answer_brothers_choice = { HEIR = scope:sb_court_brothers_cetshwayo OTHER = scope:sb_court_brothers_mbuyazi RECOGNISE = yes } }
-  ai_chance = { base = 66 }
+  sb_court_preview_brother_backing = { OTHER = scope:sb_court_brothers_mbuyazi ADDITIONAL = no TEXT = sb_court_succession.006.a.backer }
+  hidden_effect = { sb_court_answer_brothers_choice = { HEIR = scope:sb_court_brothers_cetshwayo OTHER = scope:sb_court_brothers_mbuyazi ADDITIONAL = no RECOGNISE = yes } }
+  ai_chance = { base = 33 }
  }
  option = {
-  name = sb_court_succession.006.b
+  name = sb_court_succession.006.b default_option = yes
   custom_tooltip = sb_court_recognize_successor_tt
+  show_as_tooltip = { var:sb_court_brothers_mbuyazi_scope = { if = { limit = { NOT = { has_trait = innovative } } add_trait = innovative } } }
   show_as_tooltip = { scope:sb_court_brothers_cetshwayo = { if = { limit = { NOT = { has_trait = ambitious } } add_trait = ambitious } } }
-  sb_court_preview_brother_backing = { OTHER = scope:sb_court_brothers_cetshwayo TEXT = sb_court_succession.006.b.backer }
-  hidden_effect = { sb_court_answer_brothers_choice = { HEIR = scope:sb_court_brothers_mbuyazi OTHER = scope:sb_court_brothers_cetshwayo RECOGNISE = yes } }
-  ai_chance = { base = 33 }
+  sb_court_preview_brother_backing = { OTHER = scope:sb_court_brothers_cetshwayo ADDITIONAL = no TEXT = sb_court_succession.006.b.backer }
+  hidden_effect = { sb_court_answer_brothers_choice = { HEIR = scope:sb_court_brothers_mbuyazi OTHER = scope:sb_court_brothers_cetshwayo ADDITIONAL = no RECOGNISE = yes } }
+  ai_chance = { base = 66 }
  }
 }
 
@@ -162,8 +210,20 @@ sb_court_succession.007 = { # TO REVIEW
  type = country_event
  placement = root
  title = sb_court_succession.007.t
- desc = sb_court_succession.007.d
- flavor = sb_court_succession.007.f
+ desc = {
+  first_valid = {
+   triggered_desc = { trigger = { var:sb_court_brothers_heir_scope ?= { has_template = ZUL_mbuyazi_heir } year >= 1852 } desc = sb_court_succession.007.d.usuthu }
+   triggered_desc = { trigger = { var:sb_court_brothers_heir_scope ?= { has_template = ZUL_mbuyazi_heir } } desc = sb_court_succession.007.d.cetshwayo }
+   desc = sb_court_succession.007.d
+  }
+ }
+ flavor = {
+  first_valid = {
+   triggered_desc = { trigger = { var:sb_court_brothers_heir_scope ?= { has_template = ZUL_mbuyazi_heir } year >= 1852 } desc = sb_court_succession.007.f.usuthu }
+   triggered_desc = { trigger = { var:sb_court_brothers_heir_scope ?= { has_template = ZUL_mbuyazi_heir } } desc = sb_court_succession.007.f.cetshwayo }
+   desc = sb_court_succession.007.f
+  }
+ }
  gui_window = event_window_2char
  left_icon = scope:sb_court_brothers_heir
  right_icon = scope:sb_court_brothers_other
@@ -183,12 +243,14 @@ sb_court_succession.007 = { # TO REVIEW
   }
   else = { var:sb_court_brothers_cetshwayo_scope = { save_scope_as = sb_court_brothers_other } }
   var:sb_court_brothers_backer_scope ?= { save_scope_as = sb_court_brothers_backer }
+  var:sb_court_brothers_second_backer_scope ?= { save_scope_as = sb_court_brothers_second_backer }
  }
  option = {
   name = sb_court_succession.007.a default_option = yes
+  show_as_tooltip = { var:sb_court_brothers_mbuyazi_scope = { if = { limit = { NOT = { has_trait = innovative } } add_trait = innovative } } }
   show_as_tooltip = { scope:sb_court_brothers_other = { if = { limit = { NOT = { has_trait = ambitious } } add_trait = ambitious } } }
-  sb_court_preview_brother_backing = { OTHER = scope:sb_court_brothers_other TEXT = sb_court_succession.007.a.backer }
-  hidden_effect = { sb_court_answer_brothers_choice = { HEIR = scope:sb_court_brothers_heir OTHER = scope:sb_court_brothers_other RECOGNISE = no } }
+  sb_court_preview_brother_backing = { OTHER = scope:sb_court_brothers_other ADDITIONAL = yes TEXT = sb_court_succession.007.a.backer }
+  hidden_effect = { sb_court_answer_brothers_choice = { HEIR = scope:sb_court_brothers_heir OTHER = scope:sb_court_brothers_other ADDITIONAL = yes RECOGNISE = no } }
  }
 }
 

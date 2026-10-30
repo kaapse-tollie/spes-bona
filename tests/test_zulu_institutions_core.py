@@ -162,8 +162,9 @@ class Runtime:
                 scope['owner']['bar'] = self.number(fields['value'], scope, prev)
             elif key == 'owner': self.effect(value, scope['owner'], scope)
             elif key == 'sb_court_calculate_backing': scope['vars']['sb_prerogative_cooperation_var'] = scope['cooperation']
-            # Court identity/callback behaviour is executed in test_zulu_court_rework.
-            elif key in ('sb_court_check_claimant_challenge', 'sb_court_reconcile_dynastic_record', 'sb_court_update_heir_blocker', 'sb_court_ensure_roster', 'sb_court_select_chiefly_head', 'sb_court_monthly_housekeeping', 'sb_court_sync_chiefly_concessions', 'sb_court_annual_allegiances', 'sb_court_mpande_sons_come_of_age', 'sb_court_deck_monthly', 'sb_court_suspend', 'sb_zululand_suspend_contest_interventions', 'sb_zulu_monthly_dynasty_housekeeping', 'sb_zululand_check_political_settlement'):
+            # Court identity/callback behaviour is executed in test_zulu_court_rework;
+            # the minor-heir grant is covered in test_zulu_recognition_backing.
+            elif key in ('sb_court_check_claimant_challenge', 'sb_court_reconcile_dynastic_record', 'sb_court_update_heir_blocker', 'sb_court_ensure_roster', 'sb_court_select_chiefly_head', 'sb_court_monthly_housekeeping', 'sb_court_sync_chiefly_concessions', 'sb_court_annual_allegiances', 'sb_court_reconcile_minor_backing', 'sb_court_mpande_sons_come_of_age', 'sb_court_deck_monthly', 'sb_court_suspend', 'sb_zululand_suspend_contest_interventions', 'sb_zulu_monthly_dynasty_housekeeping', 'sb_zululand_check_political_settlement'):
                 self.calls.append((key, scope['tag']))
             else: raise AssertionError(key)
 

@@ -1,0 +1,138 @@
+﻿# Receipt for the two-state muster only. Reverse its net relocation after reunion,
+# preserving surviving total capacity. Missing receipts never imply an original layout.
+sb_court_start_barracks_receipt = {
+ set_variable = { name = sb_court_barracks_natal_relocated_var value = 0 }
+}
+
+sb_court_measure_barracks_region = {
+ save_scope_as = sb_court_barracks_country
+ set_variable = { name = sb_court_barracks_count_var value = 0 }
+ every_scope_state = {
+  limit = { state_region = $REGION$ }
+  every_scope_building = {
+   limit = { is_building_type = building_barrack }
+   scope:sb_court_barracks_country = { change_variable = { name = sb_court_barracks_count_var add = prev.level } }
+  }
+ }
+}
+
+# Measure both actual countries when split, and only this country before creation.
+sb_court_measure_dynastic_natal_barracks = {
+ sb_court_measure_barracks_region = { REGION = s:STATE_NATAL }
+ if = {
+  limit = { exists = var:sb_court_dynastic_opponent_scope }
+  save_scope_as = sb_court_barracks_origin
+  var:sb_court_dynastic_opponent_scope = {
+   sb_court_measure_barracks_region = { REGION = s:STATE_NATAL }
+   scope:sb_court_barracks_origin = { change_variable = { name = sb_court_barracks_count_var add = prev.var:sb_court_barracks_count_var } }
+   remove_variable = sb_court_barracks_count_var
+  }
+ }
+}
+
+# Bracket each actual scripted move. Building or demolition during the weeks
+# between preparation and rebellion must not be attributed to that move.
+sb_court_begin_barracks_relocation = {
+ if = {
+  limit = { has_variable = sb_court_barracks_natal_relocated_var }
+  sb_court_measure_dynastic_natal_barracks = yes
+  set_variable = { name = sb_court_barracks_before_var value = var:sb_court_barracks_count_var }
+  remove_variable = sb_court_barracks_count_var
+ }
+}
+sb_court_record_barracks_relocation = {
+ if = {
+  limit = { has_variable = sb_court_barracks_before_var }
+  sb_court_measure_dynastic_natal_barracks = yes
+  set_variable = { name = sb_court_barracks_natal_relocated_var value = { value = var:sb_court_barracks_natal_relocated_var add = var:sb_court_barracks_count_var subtract = var:sb_court_barracks_before_var } }
+  remove_variable = sb_court_barracks_count_var
+  remove_variable = sb_court_barracks_before_var
+  if = {
+   limit = { exists = var:sb_court_dynastic_opponent_scope }
+   save_scope_as = sb_court_barracks_origin
+   var:sb_court_dynastic_opponent_scope = {
+    set_variable = { name = sb_court_barracks_natal_relocated_var value = scope:sb_court_barracks_origin.var:sb_court_barracks_natal_relocated_var }
+   }
+  }
+ }
+}
+
+sb_court_restore_barracks = {
+ if = {
+  limit = {
+   has_variable = sb_court_barracks_natal_relocated_var
+   any_scope_state = { state_region = s:STATE_NATAL }
+   any_scope_state = { state_region = s:STATE_ZULULAND }
+  }
+  if = {
+   limit = { var:sb_court_barracks_natal_relocated_var > 0 }
+   sb_court_return_barracks_region = { FROM = s:STATE_NATAL TO = s:STATE_ZULULAND SIGN = 1 }
+  }
+  else_if = {
+   limit = { var:sb_court_barracks_natal_relocated_var < 0 }
+   sb_court_return_barracks_region = { FROM = s:STATE_ZULULAND TO = s:STATE_NATAL SIGN = -1 }
+  }
+ }
+}
+
+# Current winner (or cancelled, unsplit country). Never recreate demolished
+# capacity or overwrite the destination's existing production methods.
+sb_court_return_barracks_region = {
+ sb_court_measure_barracks_region = { REGION = $FROM$ }
+ set_variable = { name = sb_court_barracks_remaining_var value = { value = var:sb_court_barracks_natal_relocated_var multiply = $SIGN$ max = var:sb_court_barracks_count_var } }
+ save_scope_as = sb_court_force_origin
+ ordered_scope_state = {
+  limit = { state_region = $TO$ }
+  order_by = state_population position = 0 check_range_bounds = no
+  save_scope_as = sb_court_barracks_destination
+ }
+ every_scope_state = {
+  limit = { state_region = $FROM$ any_scope_building = { is_building_type = building_barrack } }
+  if = {
+   limit = { owner.var:sb_court_barracks_remaining_var > 0 }
+   owner = {
+    set_variable = { name = sb_court_regular_total_var value = 0 }
+    set_variable = { name = sb_court_regular_largest_var value = -1 }
+    set_variable = { name = sb_court_regular_training_var value = 0 }
+    set_variable = { name = sb_court_conscript_training_var value = 0 }
+    set_variable = { name = sb_court_conscript_quota_var value = 0 }
+   }
+   every_scope_building = {
+    limit = { is_building_type = building_barrack }
+    sb_court_count_dynastic_service = { SERVICE = regular }
+   }
+   owner = {
+    set_variable = { name = sb_court_barracks_move_var value = { value = var:sb_court_barracks_remaining_var max = var:sb_court_regular_total_var } }
+    set_variable = { name = sb_court_regular_quota_var value = { value = var:sb_court_regular_total_var subtract = var:sb_court_barracks_move_var } }
+    set_variable = { name = sb_court_barracks_remaining_var value = { value = var:sb_court_barracks_remaining_var subtract = var:sb_court_barracks_move_var } }
+   }
+   remove_building = building_barrack
+   sb_court_create_dynastic_forces = yes
+   owner = { set_variable = { name = sb_court_regular_quota_var value = var:sb_court_barracks_move_var } }
+   scope:sb_court_barracks_destination = {
+    if = {
+     limit = { any_scope_building = { is_building_type = building_barrack } }
+     every_scope_building = {
+      limit = { is_building_type = building_barrack }
+      scope:sb_court_force_origin = { change_variable = { name = sb_court_regular_quota_var add = prev.level } }
+     }
+     create_building = { building = building_barrack level = owner.var:sb_court_regular_quota_var }
+    }
+    else = { sb_court_create_dynastic_forces = yes }
+   }
+  }
+ }
+ remove_variable = sb_court_regular_total_var
+ remove_variable = sb_court_regular_largest_var
+ remove_variable = sb_court_regular_training_var
+ remove_variable = sb_court_conscript_training_var
+ remove_variable = sb_court_regular_quota_var
+ remove_variable = sb_court_conscript_quota_var
+ remove_variable = sb_court_barracks_count_var
+ remove_variable = sb_court_barracks_remaining_var
+ remove_variable = sb_court_barracks_move_var
+}
+
+sb_court_clear_barracks_return = {
+ remove_variable = sb_court_barracks_natal_relocated_var
+}

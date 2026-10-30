@@ -1,0 +1,146 @@
+﻿# One-off military allocation for a multi-state origin. Native one-state splits never enter here.
+sb_court_snapshot_dynastic_levies = {
+ set_variable = { name = sb_court_regular_total_var value = 0 }
+ set_variable = { name = sb_court_conscript_total_var value = 0 }
+ set_variable = { name = sb_court_regular_largest_var value = -1 }
+ set_variable = { name = sb_court_conscript_largest_var value = -1 }
+ set_variable = { name = sb_court_regular_training_var value = 0 }
+ set_variable = { name = sb_court_conscript_training_var value = 0 }
+ sb_court_count_dynastic_forces = yes
+ set_variable = { name = sb_court_dynastic_levies_var value = var:sb_court_conscript_total_var }
+ set_variable = { name = sb_court_dynastic_levy_training_var value = var:sb_court_conscript_training_var }
+ remove_variable = sb_court_regular_total_var
+ remove_variable = sb_court_conscript_total_var
+ remove_variable = sb_court_regular_largest_var
+ remove_variable = sb_court_conscript_largest_var
+ remove_variable = sb_court_regular_training_var
+ remove_variable = sb_court_conscript_training_var
+}
+
+# Keep regulars even when understrength. Additional muster must fit the surviving
+# workforce plus a finite 20% reserve. Officer qualifications remain native.
+sb_court_limit_dynastic_muster = {
+ set_variable = {
+  name = sb_court_conscript_total_var
+  value = {
+   value = scope:sb_court_dynastic_incumbent_country.sb_court_muster_workforce
+   add = scope:sb_court_dynastic_rival_country.sb_court_muster_workforce
+   divide = 1.2
+   divide = 1000
+   subtract = var:sb_court_regular_total_var
+   min = 0
+   floor = yes
+   max = var:sb_court_conscript_total_var
+  }
+ }
+}
+
+# Recipient country. Pin an actual owned state before relocation changes populations.
+# Consolidate existing military households there, then balance across the two sides.
+sb_court_begin_dynastic_muster = {
+ set_variable = sb_court_muster_active_var
+ add_modifier = { name = sb_court_muster_conscription_suspended }
+ add_modifier = { name = sb_court_wartime_provisions }
+ save_scope_as = sb_court_muster_country
+ ordered_scope_state = {
+  order_by = state_population position = 0 check_range_bounds = no
+  scope:sb_court_muster_country = { set_variable = { name = sb_court_muster_state_scope value = prev } }
+  save_scope_as = sb_court_staff_destination
+ }
+ every_scope_pop = {
+  limit = {
+   OR = { is_pop_type = soldiers is_pop_type = officers }
+   workforce > 0
+   NOT = { state = scope:sb_court_staff_destination }
+  }
+  move_partial_pop = { state = scope:sb_court_staff_destination population_ratio = 1 }
+ }
+}
+
+sb_court_fill_dynastic_recruitment = {
+ # Use each side's own civilian recruitment pool before moving anyone across the border.
+ scope:sb_court_dynastic_incumbent_country = { sb_court_fill_local_muster = yes }
+ scope:sb_court_dynastic_rival_country = { sb_court_fill_local_muster = yes }
+ scope:sb_court_dynastic_incumbent_country = { sb_court_receive_muster_reserve = { DONOR = scope:sb_court_dynastic_rival_country } }
+ scope:sb_court_dynastic_rival_country = { sb_court_receive_muster_reserve = { DONOR = scope:sb_court_dynastic_incumbent_country } }
+ # A multi-state donor may have given civilians from its recruitment state as well
+ # as its hinterland. Bring its retained reserve back to the actual workplaces.
+ scope:sb_court_dynastic_incumbent_country = { sb_court_fill_local_muster = yes }
+ scope:sb_court_dynastic_rival_country = { sb_court_fill_local_muster = yes }
+}
+
+# Use only peasants or unemployed civilians. No creation, profession conversion,
+# transfer from unrelated countries, or ongoing replacement of casualties.
+sb_court_fill_local_muster = {
+ var:sb_court_muster_state_scope = { save_scope_as = sb_court_staff_destination }
+ set_variable = { name = sb_court_civilian_pool_var value = 0 }
+ save_scope_as = sb_court_muster_country
+ every_scope_pop = {
+  limit = { sb_court_muster_civilian = yes NOT = { state = scope:sb_court_staff_destination } }
+  scope:sb_court_muster_country = { change_variable = { name = sb_court_civilian_pool_var add = prev.workforce } }
+ }
+ if = {
+  limit = { var:sb_court_civilian_pool_var > 0 }
+  set_variable = {
+   name = sb_court_civilian_move_var
+   value = {
+    value = sb_court_muster_required_workforce
+    subtract = var:sb_court_muster_state_scope.sb_court_muster_workforce
+    divide = var:sb_court_civilian_pool_var
+    min = 0 max = 1
+   }
+  }
+  if = {
+   limit = { var:sb_court_civilian_move_var > 0 }
+   every_scope_pop = {
+    limit = { sb_court_muster_civilian = yes NOT = { state = scope:sb_court_staff_destination } }
+    move_partial_pop = { state = scope:sb_court_staff_destination population_ratio = scope:sb_court_muster_country.var:sb_court_civilian_move_var }
+   }
+  }
+ }
+ remove_variable = sb_court_civilian_pool_var
+ remove_variable = sb_court_civilian_move_var
+}
+
+# Country recipient. Reserve the donor's own full quota before moving its surplus;
+# the cap is also bounded by its actual civilian pool, never its officer households.
+sb_court_receive_muster_reserve = {
+ var:sb_court_muster_state_scope = { save_scope_as = sb_court_staff_destination }
+ set_variable = {
+  name = sb_court_civilian_move_var
+  value = {
+   value = sb_court_muster_required_workforce
+   subtract = var:sb_court_muster_state_scope.sb_court_muster_workforce
+   min = 0
+   max = { value = $DONOR$.sb_court_muster_workforce subtract = $DONOR$.sb_court_muster_required_workforce min = 0 }
+   max = $DONOR$.sb_court_muster_civilian_workforce
+  }
+ }
+ if = {
+  limit = { var:sb_court_civilian_move_var > 0 }
+  set_variable = { name = sb_court_civilian_move_var value = { value = var:sb_court_civilian_move_var divide = $DONOR$.sb_court_muster_civilian_workforce } }
+  save_scope_as = sb_court_muster_country
+  $DONOR$ = {
+   every_scope_pop = {
+    limit = { sb_court_muster_civilian = yes }
+    move_partial_pop = { state = scope:sb_court_staff_destination population_ratio = scope:sb_court_muster_country.var:sb_court_civilian_move_var }
+   }
+  }
+ }
+ remove_variable = sb_court_civilian_move_var
+}
+
+# Called on both tracked countries by the existing resolution/cancellation dispatcher.
+# The distinct type survives state merging; normal barracks and later construction stay intact.
+sb_court_demobilise_dynastic_muster = {
+ if = {
+  limit = { has_variable = sb_court_muster_active_var }
+  every_scope_state = {
+   if = { limit = { any_scope_building = { is_building_type = building_sb_court_muster } } remove_building = building_sb_court_muster }
+  }
+  if = { limit = { has_modifier = sb_court_muster_conscription_suspended } remove_modifier = sb_court_muster_conscription_suspended }
+  if = { limit = { has_modifier = sb_court_wartime_provisions } remove_modifier = sb_court_wartime_provisions }
+  remove_variable = sb_court_muster_active_var
+  remove_variable = sb_court_muster_state_scope
+ }
+}

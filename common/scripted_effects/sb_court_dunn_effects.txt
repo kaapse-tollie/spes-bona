@@ -1,0 +1,209 @@
+﻿# Dunn's identity and annual trade reservation survive political transfers.
+# Laband, Historical Dictionary of the Zulu Wars: Dunn supported Mbuyazi in late 1856.
+sb_court_prepare_dunn_offer = {
+ save_scope_as = sb_court_country
+ if = {
+  limit = { has_variable = sb_court_dunn_offer_var sb_court_dunn_offer_valid = no }
+  sb_court_clear_dunn_offer = yes
+ }
+ if = {
+  limit = {
+   sb_court_dunn_visit_eligible = yes
+   NOT = { has_global_variable = sb_court_dunn_visit_recorded_var }
+  }
+  # An existing or deceased identity must also suppress the later creation fallback.
+  if = { limit = { is_template_used = SB_ZUL_john_dunn } set_global_variable = sb_court_john_dunn_created_var }
+  if = {
+   limit = { NOT = { has_global_variable = sb_court_john_dunn_created_var } }
+   set_global_variable = sb_court_john_dunn_created_var
+   create_character = {
+    template = SB_ZUL_john_dunn
+    save_scope_as = sb_court_dunn_visitor
+    on_created = {
+     owner = { save_scope_as = sb_court_country }
+     add_character_role = politician
+     sb_court_register_character = { FOLLOWING = 7 ALIGNMENT = 0 ENDORSEMENT = 0 }
+    }
+   }
+  }
+  every_scope_character = {
+   limit = { has_template = SB_ZUL_john_dunn is_character_alive = yes }
+   if = { limit = { NOT = { has_variable = sb_court_registered_var } } sb_court_register_character = { FOLLOWING = 7 ALIGNMENT = 0 ENDORSEMENT = 0 } }
+   if = { limit = { NOT = { has_trait = sb_court_trader } } add_trait = sb_court_trader }
+   set_global_variable = { name = sb_court_dunn_identity_scope value = this }
+   scope:sb_court_country = { set_variable = { name = sb_court_dunn_visitor_scope value = prev } }
+  }
+  every_scope_character = {
+   limit = { has_template = ZUL_mbuyazi_heir sb_court_royal_candidate = yes }
+   scope:sb_court_country = { set_variable = { name = sb_court_dunn_prince_scope value = prev } }
+  }
+  every_scope_character = {
+   limit = { has_template = ZUL_cetshwayo_heir sb_court_royal_candidate = yes }
+   scope:sb_court_country = { set_variable = { name = sb_court_dunn_other_prince_scope value = prev } }
+  }
+  sb_court_calculate_backing = yes
+  ordered_in_list = {
+   variable = sb_court_members
+   limit = { sb_court_brothers_available_backer = yes NOT = { has_template = SB_ZUL_john_dunn } }
+   order_by = var:sb_court_represented_weight_var position = 0 check_range_bounds = no
+   scope:sb_court_country = { set_variable = { name = sb_court_dunn_objector_scope value = prev } }
+  }
+  set_variable = sb_court_dunn_offer_var
+  if = {
+   limit = { sb_court_dunn_offer_valid = yes }
+   # Reserve before scheduling: an open popup cannot generate another visit.
+   set_global_variable = sb_court_dunn_visit_recorded_var
+   trigger_event = { id = sb_court_dunn.001 }
+  }
+  else = { sb_court_clear_dunn_offer = yes }
+ }
+}
+
+sb_court_accept_dunn_offer = {
+ save_scope_as = sb_court_country
+ sb_court_calculate_backing = yes
+ if = {
+  limit = { sb_court_dunn_offer_valid = yes }
+  var:sb_court_dunn_prince_scope = { save_scope_as = sb_court_dunn_prince }
+  var:sb_court_dunn_visitor_scope = {
+   set_variable = { name = sb_court_successor_pledge_scope value = scope:sb_court_dunn_prince }
+   set_variable = sb_court_dunn_admitted_var
+  }
+  var:sb_court_dunn_other_prince_scope = { save_scope_as = sb_court_dunn_other_prince }
+  var:sb_court_dunn_objector_scope ?= {
+   if = { limit = { sb_court_brothers_available_backer = yes } set_variable = { name = sb_court_successor_pledge_scope value = scope:sb_court_dunn_other_prince } }
+  }
+  var:sb_court_dunn_visitor_scope = { sb_court_offer_dunn_delivery = { DAYS = 3 } }
+  sb_institutions_recalculate = yes
+ }
+ sb_court_clear_dunn_offer = yes
+}
+
+sb_court_clear_dunn_offer = {
+ remove_variable = sb_court_dunn_offer_var
+ remove_variable = sb_court_dunn_visitor_scope
+ remove_variable = sb_court_dunn_prince_scope
+ remove_variable = sb_court_dunn_other_prince_scope
+ remove_variable = sb_court_dunn_objector_scope
+}
+
+# A declined invitation keeps the actual trader alive in Natal, outside the court.
+sb_court_decline_dunn_offer = {
+ if = { limit = { sb_court_dunn_offer_valid = yes } var:sb_court_dunn_visitor_scope = { sb_court_detach_dunn = yes transfer_character = c:NAL } }
+ sb_court_clear_dunn_offer = yes
+}
+# Character scope. Reserve the annual delivery before scheduling its acknowledgement.
+sb_court_offer_dunn_delivery = {
+ if = {
+  limit = { sb_court_dunn_can_trade = yes NOT = { has_variable = sb_court_dunn_delivery_year_var } }
+  set_variable = { name = sb_court_dunn_delivery_year_var days = 365 }
+  set_variable = sb_court_dunn_delivery_open_var
+  set_variable = { name = sb_court_dunn_delivery_country_scope value = owner }
+  save_scope_as = sb_court_dunn_trader
+  owner = { trigger_event = { id = sb_court_dunn.002 days = $DAYS$ popup = yes } }
+ }
+}
+sb_court_answer_dunn_delivery = {
+ if = {
+  limit = { sb_court_dunn_delivery_valid = yes }
+  global_var:sb_court_dunn_identity_scope = {
+   remove_variable = sb_court_dunn_delivery_open_var
+   remove_variable = sb_court_dunn_delivery_country_scope
+   set_variable = sb_court_dunn_delivered_guns_var
+  }
+  if = { limit = { NOT = { has_variable = sb_firearms_supply_weeks_var } } set_variable = { name = sb_firearms_supply_weeks_var value = 0 } }
+  change_variable = { name = sb_firearms_supply_weeks_var add = 2 }
+  clamp_variable = { name = sb_firearms_supply_weeks_var min = 0 max = 260 }
+  sb_update_firearms_progress = yes
+  sb_sync_iron_age_weapons_penalty = yes
+ }
+}
+# Country scope, only the actual hosting country runs this helper.
+sb_court_dunn_trade_monthly = {
+ global_var:sb_court_dunn_identity_scope ?= {
+  if = {
+   limit = { owner ?= prev }
+   if = {
+    limit = { has_variable = sb_court_dunn_delivery_open_var OR = { sb_court_dunn_can_trade = no NOT = { var:sb_court_dunn_delivery_country_scope ?= owner } } }
+    remove_variable = sb_court_dunn_delivery_open_var
+    remove_variable = sb_court_dunn_delivery_country_scope
+   }
+   if = { limit = { has_variable = sb_court_dunn_judgement_var NOT = { owner = { sb_court_dunn_judgement_valid = yes } } } remove_variable = sb_court_dunn_judgement_var remove_variable = sb_court_dunn_judge_scope }
+   sb_court_offer_dunn_delivery = { DAYS = 0 }
+  }
+ }
+}
+# Called before the defeated-coalition death loop. Only the recorded brothers' outcome qualifies.
+sb_court_reserve_dunn_judgement = {
+ every_in_list = { variable = sb_court_dynastic_roster limit = { has_template = SB_ZUL_john_dunn } remove_variable = sb_court_dunn_judgement_var remove_variable = sb_court_dunn_judge_scope }
+ if = {
+  limit = {
+   var:sb_court_dynastic_candidate_scope ?= { has_template = ZUL_cetshwayo_heir is_character_alive = yes }
+   OR = {
+    var:sb_court_dynastic_nominee_scope ?= { has_template = ZUL_mbuyazi_heir }
+    var:sb_court_dynastic_rival_scope ?= { has_template = ZUL_mbuyazi_heir }
+   }
+  }
+  every_in_list = {
+   variable = sb_court_dynastic_roster
+   limit = { has_template = SB_ZUL_john_dunn is_character_alive = yes has_variable = sb_court_dunn_admitted_var }
+   set_global_variable = { name = sb_court_dunn_identity_scope value = this }
+   set_variable = sb_court_dunn_judgement_var
+   set_variable = { name = sb_court_dunn_judge_scope value = scope:sb_court_dynastic_winner }
+  }
+ }
+}
+sb_court_open_dunn_judgement = {
+ if = {
+  limit = { sb_court_dunn_judgement_valid = yes }
+  trigger_event = { id = sb_court_dunn.003 popup = yes }
+ }
+}
+sb_court_answer_dunn_judgement = {
+ if = {
+  limit = { sb_court_dunn_judgement_valid = yes }
+  save_scope_as = sb_court_country
+  global_var:sb_court_dunn_identity_scope = {
+   remove_variable = sb_court_dunn_judgement_var
+   remove_variable = sb_court_dunn_judge_scope
+   if = { limit = { always = $KEEP$ } set_variable = { name = sb_court_endorsement_var value = 1 } remove_variable = sb_court_claimant_scope }
+   else = { sb_court_detach_dunn = yes }
+  }
+  if = {
+   limit = { always = $KEEP$ }
+   if = { limit = { c:GBR ?= { is_country_alive = yes } } change_relations = { country = c:GBR value = 5 } }
+   sb_court_declare_mthonga = yes
+  }
+  else_if = {
+   limit = { always = $KILL$ }
+   global_var:sb_court_dunn_identity_scope = { kill_character = yes }
+   if = { limit = { c:GBR ?= { is_country_alive = yes } } change_relations = { country = c:GBR value = -10 } }
+  }
+  else = {
+   global_var:sb_court_dunn_identity_scope = {
+    if = { limit = { c:NAL ?= { is_country_alive = yes } } transfer_character = c:NAL }
+    else_if = { limit = { c:CAP ?= { is_country_alive = yes } } transfer_character = c:CAP }
+    else = { exile_character_with_role_cleanup = yes }
+   }
+  }
+  sb_institutions_recalculate = yes
+ }
+}
+
+# Declining or banishing removes the trader's constituency, not his living identity.
+sb_court_detach_dunn = {
+ remove_variable = sb_court_registered_var
+ remove_variable = sb_court_home_scope
+ remove_variable = sb_court_representative_var
+ remove_variable = sb_court_successor_pledge_scope
+ remove_variable = sb_court_claimant_scope
+ remove_variable = sb_court_dunn_admitted_var
+ remove_variable = sb_court_dunn_delivery_open_var
+ remove_variable = sb_court_dunn_delivery_country_scope
+ remove_trait = sb_court_alignment_royal_trait
+ remove_trait = sb_court_alignment_chiefly_trait
+ remove_trait = sb_court_alignment_neutral_trait
+ remove_trait = sb_court_endorsement_incumbent_trait
+ remove_trait = sb_court_endorsement_claimant_trait
+ remove_trait = sb_court_endorsement_uncommitted_trait
+}

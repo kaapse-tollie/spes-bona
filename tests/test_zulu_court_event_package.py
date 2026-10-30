@@ -169,8 +169,24 @@ class AnnualTransitions(unittest.TestCase):
         self.assertEqual(-1,son['vars']['sb_court_endorsement_var'])
         self.assertIs(prince,son['vars']['sb_court_claimant_scope'])
         self.assertIn('sb_court_endorsement_claimant_trait',son['traits'])
-        self.assertNotIn('sb_court_claimant_trait',son['traits'])
+        self.assertIn('sb_court_claimant_trait',son['traits'])
         self.assertNotIn(son,rt.country['sb_court_annual_current_changes'])
+
+    def test_mpandes_sons_are_future_patrons_but_not_current_opposition(self):
+        rt,king,prince,rival,chiefs=setup()
+        rt.country['ruler']=prince
+        sons=[]
+        for name,template in [('Cetshwayo','ZUL_cetshwayo_heir'),('Mbuyazi','ZUL_mbuyazi_heir')]:
+            son=character(name,0,40,-1,1,age=18)
+            son.update(template=template,owner=rt.country)
+            son['vars'].update(sb_court_home_scope=rt.country,sb_court_claimant_scope=son)
+            rt.country['members'].append(son);sons.append(son)
+        rt.backing();rt.rolls=[99]*200
+        rt.effect(EFFECTS['sb_court_annual_allegiances'],rt.country)
+        for son in sons:
+            self.assertFalse(any(p is son for p in rt.country['sb_court_current_patrons']))
+            self.assertTrue(any(p is son for p in rt.country['sb_court_future_patrons']))
+            self.assertEqual(1,son['vars']['sb_court_endorsement_var'])
 
     def test_probability_boundaries_from_shipped_values(self):
         rt,king,prince,rival,chiefs=setup();actor=chiefs[0]
@@ -700,6 +716,18 @@ class CampaignConsequences(unittest.TestCase):
                 self.assertEqual(min(2,5-neutral_count) if has_rival else 0,len(rt.country['sb_court_swazi_defectors']))
                 expected=(int(neutral_count>0)+min(2,5-neutral_count)) if has_rival else 0
                 self.assertEqual(expected,sum(c['vars']['sb_court_endorsement_var']==-1 for c in chiefs))
+
+    def test_saved_defeat_cannot_build_a_sons_opposition_after_mpandes_accession(self):
+        rt,king,mpande,rival,chiefs=setup()
+        son=character('Cetshwayo',0,90,-1,1,age=18)
+        son.update(template='ZUL_cetshwayo_heir',owner=rt.country)
+        son['vars'].update(sb_court_home_scope=rt.country,sb_court_claimant_scope=son)
+        rt.country['members'].append(son)
+        rt.effect(statements('effect = { sb_court_prepare_campaign_result = { CAMPAIGN = swazi WON = no } }'),rt.country)
+        self.assertIs(son,rt.country['vars']['sb_court_swazi_patron_scope'])
+        rt.country['ruler']=mpande
+        rt.effect(statements('effect = { sb_court_campaign_result = { CAMPAIGN = swazi OUTCOME = defeat WON = no DEFEAT_PREROGATIVE = -30 } }'),rt.country)
+        self.assertFalse(any(c['vars'].get('sb_court_claimant_scope') is son for c in chiefs))
 
 
 class OpeningPackagesAndLifecycle(unittest.TestCase):

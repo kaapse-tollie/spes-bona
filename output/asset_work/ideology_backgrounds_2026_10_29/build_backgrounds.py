@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+import sys
 
 import numpy as np
 from PIL import Image, ImageDraw
@@ -11,6 +12,9 @@ from PIL import Image, ImageDraw
 
 HERE = Path(__file__).resolve().parent
 MOD = HERE.parents[2]
+sys.path.insert(0, str(MOD / "tools"))
+from dds_mipmaps import save_mipmapped_dds
+
 DESTINATION = MOD / "gfx/interface/icons/ideology_icons"
 Y, X = np.mgrid[:220, :220]
 RADIUS = np.hypot(X - 110, Y - 110)
@@ -116,10 +120,15 @@ def main():
         exports = {}
         for extension in ["png", "dds"]:
             path = DESTINATION / f"{stem}.{extension}"
-            image.save(path)  # Lossless uncompressed RGBA DDS.
+            if extension == "dds":
+                mip_sizes = save_mipmapped_dds(image, path)
+            else:
+                image.save(path)
             decoded = Image.open(path).convert("RGBA")
             assert decoded.size == (220, 220) and decoded.tobytes() == image.tobytes()
             exports[extension] = {"path": str(path.relative_to(MOD)), "sha256": sha256(path)}
+            if extension == "dds":
+                exports[extension]["mip_sizes"] = mip_sizes
         label = "Leader ideology" if i else "Group ideology"
         manifest["backgrounds"][stem] = {**evidence, "exports": exports, "png_dds_pixels_identical": True}
         preview.paste(image, (15 + i * 250, 12), image)

@@ -24,16 +24,18 @@ class ClaimantRuntime(ReworkRuntime):
     def calc(self,nodes,scope,prev=None):
         expanded=[]
         for key,op,value in nodes:
-            if key=='every_scope_building':
+            if key in ('every_scope_building','every_scope_pop'):
                 limit=next((v for k,_,v in value if k=='limit'),[])
                 body=[n for n in value if n[0]!='limit']
-                for building in scope.get('buildings',[]):
+                items=scope.get('buildings',[]) if key=='every_scope_building' else scope.get('pops',[p for st in scope.get('states',[]) for p in st.get('pops',[])])
+                for building in items:
                     if self.condition(limit,building,scope):
                         expanded.append(('add','=',str(self.calc(body,building,scope))))
             else: expanded.append((key,op,value))
         return super().calc(expanded,scope,prev)
 
     def ref(self,key,scope,prev=None):
+        if key == 'num_states': return len(scope.get('states',[]))
         if key.startswith(('law_type:','movement_type:','s:')): return key
         if key == 'active_law:lawgroup_governance_principles.type':
             return next(iter(scope.get('laws',set()) & GOVERNANCE),None)
@@ -49,6 +51,7 @@ class ClaimantRuntime(ReworkRuntime):
             elif key == 'is_country_alive': result=scope.get('alive',True) == (value=='yes')
             elif key == 'any_scope_building': result=any(self.condition(value,b,scope) for b in scope.get('buildings',[]))
             elif key == 'is_building_type': result=scope.get('type') == value
+            elif key == 'is_employed': result=scope.get('employed',True) == (value=='yes')
             elif key == 'is_pop_type': result=scope.get('type') == value
             elif key == 'has_active_production_method': result=value in scope.get('production_methods',set())
             elif key == 'is_enacting_law': result=scope.get('enacting') == value
@@ -257,7 +260,7 @@ class ClaimantBehaviour(unittest.TestCase):
             self.assertEqual(1,rt.calc(VALUES['sb_court_dynastic_state_weight'],mainland))
             self.assertEqual(1,rt.calc(VALUES['sb_court_dynastic_state_weight'],natal))
 
-    def test_staff_follows_rounded_barracks_quotas_before_workplaces_are_rebuilt(self):
+    def test_staff_follows_both_service_jobs_before_workplaces_are_rebuilt(self):
         for weights,back_prince,native_rebels_mainland in product(((300,100),(100,300),(200,200)),(False,True),(False,True)):
             rt,king,prince,*_=court(*weights)
             mainland,natal=self.recruitment_states(rt,[(4,17),(0,0)])
@@ -274,15 +277,19 @@ class ClaimantBehaviour(unittest.TestCase):
             prince_country=rt.country if back_prince else rebels
             # Four barracks: reserve one for the weaker side, round its quota,
             # then use the exact remainder for the stronger side.
-            weak_quota=math.floor(1+3*min(weights)/sum(weights)+.5)
-            share=(4-weak_quota if weights[1]>weights[0] else weak_quota)/4
+            regular=prince_country['vars']['sb_court_regular_quota_var']
+            levy=prince_country['vars']['sb_court_conscript_quota_var']
+            # 17,400 available workers / 1,200 per level allows ten levies after four regulars.
+            levy_total=10
+            soldier_share=(regular*950+levy*990)/(4*950+levy_total*990)
+            officer_share=(regular*50+levy*10)/(4*50+levy_total*10)
             for kind,total in (('soldiers',8000),('officers',400)):
                 got=sum(p['workforce'] for st in prince_country['states'] for p in st['pops'] if p['type']==kind)
-                self.assertAlmostEqual(total*share,got,delta=2)
+                self.assertAlmostEqual(total*(soldier_share if kind=='soldiers' else officer_share),got,delta=2)
                 self.assertEqual(total,sum(p['workforce'] for st in (mainland,natal) for p in st['pops'] if p['type']==kind))
             for kind,dependants in (('soldiers',25200),('officers',1200),('peasants',27000)):
                 self.assertEqual(dependants,sum(p['dependants'] for st in (mainland,natal) for p in st['pops'] if p['type']==kind))
-            self.assertEqual(9000,sum(p['workforce'] for p in natal['pops'] if p['type']=='peasants'))
+            self.assertEqual(9000,sum(p['workforce'] for st in (mainland,natal) for p in st['pops'] if p['type']=='peasants'))
             self.assertEqual(300,sum(p['workforce'] for st in (mainland,natal) for p in st['pops'] if p['culture']=='swazi'))
             self.assertEqual(['animist'],list(set(p['religion'] for st in (mainland,natal) for p in st['pops'])))
             self.assertLess(max(i for i,k in enumerate(rt.force_operations) if k=='move'),rt.force_operations.index('demolish'))
@@ -338,6 +345,7 @@ class ClaimantBehaviour(unittest.TestCase):
         for back_prince,rebels_take_mainland in product((False,True),repeat=2):
             rt,king,prince,*_=court(177,334)
             mainland,natal=self.recruitment_states(rt,[(4,17),(0,0)])
+            self.add_staff(mainland,'peasants',50000,150000)
             reserve(rt,king,prince);answer(rt,back_prince)
             self.assertGreater(rt.recruitment_at_movement_creation['state-1'],0)
             original,rebel=(natal,mainland) if rebels_take_mainland else (mainland,natal)
@@ -347,7 +355,7 @@ class ClaimantBehaviour(unittest.TestCase):
             king_country=rebels if back_prince else rt.country
             for country,regular,conscript in ((prince_country,2,11),(king_country,2,6)):
                 self.assertEqual(regular,sum(b['level'] for st in country['states'] for b in st['buildings'] if b['type']=='building_barrack'))
-                self.assertEqual(conscript,sum(b['level'] for st in country['states'] for b in st['buildings'] if b['type']=='building_conscription_center'))
+                self.assertEqual(conscript,sum(b['level'] for st in country['states'] for b in st['buildings'] if b['type']=='building_sb_court_muster'))
             changes=list(rt.demolitions)
             rt.run('sb_court_prepare_dynastic_forces');rt.run('sb_court_rebuild_dynastic_forces')
             self.assertEqual(changes,rt.demolitions)
@@ -406,7 +414,7 @@ class ClaimantBehaviour(unittest.TestCase):
             for service in ('regular','conscript'):
                 rt.country['vars']['sb_court_'+service+'_total_var']=total
                 allocated=rt.calc(VALUES['sb_court_dynastic_'+service+'_allocation'],rt.country)
-                if service=='regular' and total:
+                if service=='regular' and total and i!=r:
                     weaker=math.floor(1+(total-1)*min(i,r)/(i+r)+.5)
                     expected=total-weaker if r>i else weaker
                     self.assertGreaterEqual(weaker,1)
@@ -428,22 +436,27 @@ class ClaimantBehaviour(unittest.TestCase):
             buildings.append({'type':'building_naval_base','level':2,'vars':{}})
             return {'id':identity,'vars':{},'state_population':pop,'buildings':buildings}
         for back_prince,rebels_take_army in product((False,True),repeat=2):
-            rt,king,prince,*_=court(177,334);reserve(rt,king,prince);answer(rt,back_prince)
+            rt,king,prince,*_=court(177,334)
             mainland=state('mainland',1000000,4,17);natal=state('Natal fragment',100000)
+            for st in (mainland,natal): st['owner']=rt.country
+            rt.country['states']=[mainland,natal]
+            self.add_staff(mainland,'peasants',50000,150000)
+            reserve(rt,king,prince);answer(rt,back_prince)
+            rt.demolitions=[]
             original_state,rebel_state=(natal,mainland) if rebels_take_army else (mainland,natal)
             original_state['owner']=rt.country;rt.country['states']=[original_state]
             # Nothing is destroyed while the movement has no actual native split.
             rt.run('sb_court_rebuild_dynastic_forces')
-            self.assertFalse(hasattr(rt,'demolitions'))
+            self.assertFalse(rt.demolitions)
             _,rebels=split(rt,native_rebel_states=[rebel_state])
             prince_country=rt.country if back_prince else rebels
             king_country=rebels if back_prince else rt.country
             for country,regular,conscript in ((prince_country,2,11),(king_country,2,6)):
                 buildings={b['type']:b for st in country['states'] for b in st['buildings']}
                 self.assertEqual(regular,buildings['building_barrack']['level'])
-                self.assertEqual(conscript,buildings['building_conscription_center']['level'])
+                self.assertEqual(conscript,buildings['building_sb_court_muster']['level'])
                 self.assertEqual({'pm_general_training'},buildings['building_barrack']['production_methods'])
-                self.assertEqual({'pm_sb_customary_muster_conscription'},buildings['building_conscription_center']['production_methods'])
+                self.assertEqual({'pm_sb_customary_muster_conscription'},buildings['building_sb_court_muster']['production_methods'])
                 self.assertEqual(2,buildings['building_naval_base']['level'])
             first=list(rt.demolitions)
             rt.run('sb_court_track_dynastic_war');rt.run('sb_court_rebuild_dynastic_forces')
@@ -463,7 +476,7 @@ class ClaimantBehaviour(unittest.TestCase):
         self.assertFalse(hasattr(rt,'demolitions'))
 
     def test_rebuild_totals_all_states_and_uses_largest_existing_training_method(self):
-        rt,king,prince,*_=court(300,100);reserve(rt,king,prince);answer(rt)
+        rt,king,prince,*_=court(300,100)
         def state(identity,pop,regular,conscript,pm):
             return {'id':identity,'owner':rt.country,'vars':{},'state_population':pop,'buildings':[
                 {'type':'building_barrack','level':regular,'vars':{},'production_methods':{pm}},
@@ -473,6 +486,10 @@ class ClaimantBehaviour(unittest.TestCase):
         low=state('small original',100,2,3,'pm_no_organization')
         high=state('large original',200,6,9,'pm_general_training')
         rebel=state('rebel',150,4,8,'pm_no_organization')
+        rt.country['states']=[low,high,rebel]
+        self.add_staff(low,'peasants',10000,30000)
+        self.add_staff(high,'peasants',90000,270000)
+        reserve(rt,king,prince);answer(rt)
         rt.country['states']=[low,high]
         _,rebels=split(rt,native_rebel_states=[rebel])
         self.assertEqual(['building_logging_camp'],[b['type'] for b in low['buildings']])
@@ -480,7 +497,7 @@ class ClaimantBehaviour(unittest.TestCase):
             military={b['type']:b for st in country['states'] for b in st['buildings']
                       if b['type']!='building_logging_camp'}
             self.assertEqual(regular,military['building_barrack']['level'])
-            self.assertEqual(conscript,military['building_conscription_center']['level'])
+            self.assertEqual(conscript,military['building_sb_court_muster']['level'])
             self.assertEqual({'pm_general_training'},military['building_barrack']['production_methods'])
         self.assertEqual(6,sum(b['level'] for st in (low,high,rebel) for b in st['buildings']
                                if b['type']=='building_logging_camp'))
@@ -536,7 +553,8 @@ class ClaimantBehaviour(unittest.TestCase):
         for value,want in ((24.999,False),(25,True)):
             prince['vars']['sb_court_current_share_var']=value
             self.assertEqual(want,rt.condition(TRIGGERS['sb_court_organised_rival'],prince))
-            prince['vars']['sb_court_coalition_share_var']=value
+        for value,want in ((0,False),(25,False),(29.999,False),(30,True)):
+            prince['vars']['sb_court_pledged_share_var']=value
             self.assertEqual(want,rt.condition(TRIGGERS['sb_court_major_candidate'],prince))
 
     def test_ai_choice_uses_greater_frozen_backing_and_incumbent_tie_break(self):
@@ -583,6 +601,7 @@ class ClaimantBehaviour(unittest.TestCase):
     def test_live_contested_death_opens_one_faction_choice_without_manual_opt_in(self):
         rt,king,prince,third,_=court(200,200)
         king['alive']=False;third['prominence']=200
+        rt.country['vars']['sb_court_dunn_offer_var']=1
         rt.country['vars']['sb_court_recognized_heir_scope']=prince
         rt.scopes['sb_court_outgoing']=king
         rt.run('sb_court_capture_accession')
@@ -593,6 +612,99 @@ class ClaimantBehaviour(unittest.TestCase):
         self.assertIs(third,rt.country['vars']['sb_court_dynastic_rival_scope'])
         self.assertEqual(2,rt.country['vars']['sb_court_dynastic_reason_var'])
         self.assertNotIn('sb_court_dynasty_test_var',rt.country['vars'])
+
+    def test_retirement_uses_the_saved_pledged_distribution_and_opens_both_princes(self):
+        # 1 August 1856 checkpoint: 756 represented, 596 pledged, 185/248
+        # for Cetshwayo/Mbuyazi. Cetshwayo was only 24.47% of the old total.
+        rt,king,cetshwayo,mbuyazi,neutral=court(100,185)
+        king['template']='ZUL_mpande_zulu'
+        cetshwayo['template']='ZUL_cetshwayo_heir'
+        mbuyazi.update(template='ZUL_mbuyazi_heir',prominence=223)
+        neutral['prominence']=60
+        other=character('third prince',5,138,-1,1)
+        other.update(owner=rt.country,template='ZUL_gqugqu_claimant')
+        other['vars'].update(sb_court_home_scope=rt.country,sb_court_claimant_scope=other)
+        rt.country['members'].append(other)
+        rt.country['vars']['sb_court_recognized_heir_scope']=mbuyazi
+        rt.country['game_date']=18560731
+        rt.backing()
+        self.assertEqual(756,rt.country['vars']['sb_court_weight_var'])
+        self.assertEqual(596,rt.country['vars']['sb_court_pledged_weight_var'])
+        self.assertAlmostEqual(185/596*100,cetshwayo['vars']['sb_court_pledged_share_var'])
+        rt.run('sb_court_reconcile_succession')
+        self.assertEqual([],rt.country.get('events',[]))
+        rt.country['game_date']=18560801
+        rt.run('sb_court_reconcile_succession');rt.run('sb_court_reconcile_succession')
+        self.assertEqual(['sb_court_succession.004'],rt.country['events'])
+        self.assertIs(mbuyazi,rt.country['vars']['sb_court_dynastic_nominee_scope'])
+        self.assertIs(cetshwayo,rt.country['vars']['sb_court_dynastic_rival_scope'])
+        self.assertEqual(248,rt.country['vars']['sb_court_dynastic_incumbent_weight_var'])
+        self.assertEqual(185,rt.country['vars']['sb_court_dynastic_rival_weight_var'])
+        self.assertTrue(rt.condition(TRIGGERS['sb_court_mpande_retirement'],rt.country))
+        self.assertNotIn('sb_court_retired_var',king['vars'])
+        self.assertNotIn('sb_court_dynastic_crisis_var',rt.scopes['root']['vars'])
+
+    def test_open_peaceful_accession_previews_and_routes_a_new_major_rival(self):
+        rt,king,nominee,rival,_=court(100,200)
+        king['template']='ZUL_mpande_zulu'
+        nominee['template']='ZUL_mbuyazi_heir'
+        rival['template']='ZUL_cetshwayo_heir'
+        rt.country.update(game_date=18560801)
+        rt.country['vars']['sb_court_recognized_heir_scope']=nominee
+        rt.run('sb_court_reconcile_succession')
+        self.assertEqual(['sb_court_succession.001'],rt.country['events'])
+        rt.scopes['sb_court_nominee']=nominee
+        self.assertTrue(rt.condition(TRIGGERS['sb_court_displayed_accession_valid'],rt.country))
+        self.assertFalse(rt.condition(TRIGGERS['sb_court_displayed_accession_contested'],rt.country))
+        rival['prominence']=60  # 85/285 = 29.82%, above the old 25% but below 30%.
+        rt.backing()
+        self.assertFalse(rt.condition(TRIGGERS['sb_court_displayed_accession_contested'],rt.country))
+        rival['prominence']=100
+        rt.backing()
+        self.assertTrue(rt.condition(TRIGGERS['sb_court_displayed_accession_contested'],rt.country))
+        rt.run('sb_court_answer_accession');rt.run('sb_court_answer_accession')
+        self.assertEqual(['sb_court_succession.001','sb_court_succession.004'],rt.country['events'])
+        self.assertIs(king,rt.country['ruler'])
+        self.assertFalse(rt.condition(TRIGGERS['sb_court_displayed_accession_valid'],rt.country))
+
+    def test_retirement_presentation_requires_living_incumbent_mpande(self):
+        rt,king,prince,*_=court()
+        self.assertFalse(rt.condition(TRIGGERS['sb_court_mpande_retirement'],rt.country))
+        rt.country['vars']['sb_court_predecessor_scope']=king
+        self.assertFalse(rt.condition(TRIGGERS['sb_court_mpande_retirement'],rt.country))
+        king['template']='ZUL_mpande_zulu'
+        self.assertTrue(rt.condition(TRIGGERS['sb_court_mpande_retirement'],rt.country))
+        king['alive']=False
+        self.assertFalse(rt.condition(TRIGGERS['sb_court_mpande_retirement'],rt.country))
+        king['alive']=True;rt.country['ruler']=prince
+        self.assertFalse(rt.condition(TRIGGERS['sb_court_mpande_retirement'],rt.country))
+
+    def test_contested_retirement_removes_mpandes_claim_when_the_princes_take_power(self):
+        for back_claimant in (False,True):
+            rt,king,prince,third,_=court(200,200)
+            king['template']='ZUL_mpande_zulu'
+            prince['template']='ZUL_cetshwayo_heir'
+            third['template']='ZUL_mbuyazi_heir'
+            rt.country['vars']['sb_court_predecessor_scope']=king
+            reserve(rt,prince,third,reason=2);answer(rt,back_claimant)
+            self.assertNotIn('sb_court_retired_var',king['vars'])
+            _,rebels=split(rt)
+            self.assertTrue(king['alive']);self.assertTrue(king['retired'])
+            self.assertIn('sb_court_claim_renounced_var',king['vars'])
+            self.assertNotIn('sb_court_claimant_scope',king['vars'])
+            self.assertNotIn('sb_court_claimant_trait',king.get('traits',set()))
+            self.assertFalse(rt.condition(TRIGGERS['sb_court_dynastic_candidate'],king))
+            self.assertIs(third if back_claimant else prince,rt.country['ruler'])
+            self.assertIs(prince if back_claimant else third,rebels['ruler'])
+            self.assertTrue(prince['alive']);self.assertTrue(third['alive'])
+            rt.run('sb_court_track_dynastic_war');rt.run('sb_court_retire_mpande')
+            self.assertTrue(king['alive'])
+            rt.run('sb_court_record_dynastic_end')
+            rt.run('sb_court_resolve_dynastic_win')
+            self.assertTrue(king['alive']);self.assertTrue(king['retired'])
+            self.assertNotIn('sb_court_claimant_scope',king['vars'])
+            self.assertNotIn('sb_court_claimant_trait',king.get('traits',set()))
+            self.assertFalse(rt.condition(TRIGGERS['sb_court_dynastic_candidate'],king))
 
     def test_movement_once_exact_demand_and_exact_organising_object(self):
         rt,king,prince,_,_=court();reserve(rt,king,prince);answer(rt)
@@ -1263,16 +1375,22 @@ class ClaimantContracts(unittest.TestCase):
         movement=(ROOT/'common/political_movements/sb_court_dynastic_test.txt').read_text(encoding='utf-8-sig')
         self.assertEqual([],statements(child(movement,'character_ideologies')))
 
-    def test_claimant_activism_advances_twenty_five_points_per_week(self):
+    def test_claimant_activism_gives_recruitment_time_before_native_organising(self):
         source=(GAME/'common/defines/00_defines.txt').read_text(encoding='utf-8-sig')
-        weekly=float(re.search(r'(?m)^\s*MOVEMENT_WEEKLY_RADICALISM_CHANGE\s*=\s*([.0-9]+)',source)[1])
+        def native(name):
+            return float(re.search(r'(?m)^\s*'+name+r'\s*=\s*([.0-9]+)',source)[1])
         fields=dict((k,v) for k,_,v in definitions('common/static_modifiers/sb_court_dynastic_modifiers.txt')['sb_court_claimant_mobilisation'])
-        # Growth is additive: +2400% turns the native 0.01 into 0.25 per week.
-        # Keep the intermediate organising threshold visible before full activism.
-        rate=weekly*(1+float(fields.get('political_movement_activism_growth_mult',0)))
-        self.assertAlmostEqual(0.25,rate)
-        trajectory=[min(1.0,n*rate) for n in range(1,5)]
-        self.assertEqual([0.25,0.50,0.75,1.0],trajectory)
+        # +400% turns native 0.01 into 0.05. Organising can start at 75%,
+        # before full activism: this is a rate/threshold check, not a war simulator.
+        rate=native('MOVEMENT_WEEKLY_RADICALISM_CHANGE')*(1+float(fields.get('political_movement_activism_growth_mult',0)))
+        self.assertAlmostEqual(0.05,rate)
+        organise=native('MIN_RADICALISM_FOR_CIVIL_WAR_PROGRESSION')
+        start=native('MIN_RADICALISM_FOR_CIVIL_WAR_START')
+        self.assertEqual((0.75,1.0),(organise,start))
+        self.assertLess(14*rate,organise)
+        self.assertAlmostEqual(organise,15*rate)
+        self.assertLess(19*rate,start)
+        self.assertAlmostEqual(start,20*rate)
 
     def test_claimant_attraction_is_a_single_crisis_only_movement_modifier(self):
         modifiers=definitions('common/static_modifiers/sb_court_dynastic_modifiers.txt')

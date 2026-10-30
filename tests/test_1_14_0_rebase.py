@@ -41,7 +41,7 @@ class RebaseTests(unittest.TestCase):
         )
         self.assertEqual(3, inventory["schema_version"])
         self.assertEqual(39, len(inventory["same_path_files"]))
-        self.assertEqual(122, len(inventory["keyed_overrides"]))
+        self.assertEqual(123, len(inventory["keyed_overrides"]))
         self.assertEqual(18, len(inventory["state_region_blocks"]))
         self.assertEqual(1, len(inventory["additive_overrides"]))
         self.assertEqual(8, len(inventory["localization_replace_files"]))
@@ -54,7 +54,7 @@ class RebaseTests(unittest.TestCase):
             + inventory["localization_key_collisions"]
             + inventory["upstream_contracts"]
         )
-        self.assertEqual({"2026-09-04", "2026-09-05", "2026-09-12", "2026-09-19", "2026-09-20", "2026-10-16", "2026-10-17", "2026-10-18", "2026-10-25", "2026-10-27", "2026-10-28"}, {entry["rebase_date"] for entry in reviewed_entries})
+        self.assertEqual({"2026-09-04", "2026-09-05", "2026-09-12", "2026-09-19", "2026-09-20", "2026-10-16", "2026-10-17", "2026-10-18", "2026-10-25", "2026-10-27", "2026-10-28", "2026-10-29"}, {entry["rebase_date"] for entry in reviewed_entries})
         self.assertEqual(
             {"1.14.5"},
             {entry["upstream_version"] for entry in inventory["same_path_files"]},

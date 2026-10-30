@@ -1,0 +1,36 @@
+# Zulu houses, royal sons and post-war population — 29 October 2026
+
+Implemented in the existing maintenance batch. Game and CMF pins remain unchanged. New campaigns are the supported baseline; no save migration or game launch was performed.
+
+## Decisions and implementation
+
+- **Population return:** the authored multi-state muster records Zulu-owned Natal's share of Natal plus Zululand before moving people. Either actual winner restores that share from the surviving population after reunion. No casualty replacement, foreign-state movement or change to native one-state allocation. A bounded receipt handles the winner callback preceding reunion. See the [implementation and pending engine checks](zulu_population_return_2026_10_29.md).
+- **Starting population research:** the current files assign 2,000 people to Zulu-owned Natal and 268,000 to Zululand. No reliable, geographically matched 1836 count was found. The later Klip River county figures cannot be applied directly to SB's single province. Starting data remains unchanged; see the [research brief](klip_river_population_research_2026_10_29.md).
+- **`.007`:** when Cetshwayo is the passed-over brother, the two most prominent available unpledged houses make **new** future-successor pledges to him, even if he already has backers. The event freezes distinct house leaders, ranks their combined house Prominence, revalidates them on acknowledgement and never steals another prince's pledges or substitutes a newly available house. Mbuyazi retains his previous one-house floor when he is the rival. `.006` retains its existing two-house Cetshwayo floor. The option now names the rival and his following directly. This supersedes the earlier `.007` top-up description without rewriting its historical implementation record.
+- **Current versus future allegiance:** Cetshwayo and Mbuyazi support Mpande while he is their court's reigning king. They retain their separate succession claims and future coalitions. Annual recruitment, current-allegiance disputes and campaign defections cannot turn them into competing present patrons under Mpande. Their future pledges remain available. Frozen succession and civil-war commitments are not rewritten.
+- **Claimant card:** the +25-Prominence card is independent of personal allegiance. An adult eligible prince can display both Claimant and Supports the Incumbent. Accession, renunciation, retirement and institutional exit still remove the claim bonus where appropriate. The description distinguishes a claim from opposition to the current ruler.
+- **Character balance:** Cetshwayo gains native **Charismatic** on his first adult pulse. Its full native package applies: +50 Popularity, +5% ruler Influence, +10% commander Morale Recovery and +20% IG Pop Attraction. The choice is a gameplay interpretation of his broad following, not a claim that an exact numerical bonus is historical. Mbuyazi retains his event-earned Ambitious; no unsupported adverse personality is added. Child templates remain without adult personality packages.
+- **Recognised minor:** preserve the existing backing grant at recognition and perform one further reconciliation on reaching 16, bringing unpledged royal supporters towards half the current supporting Prominence. Count earlier pledges, preserve rival commitments and keep houses intact. Consume the pending receipt before applying the helper, so later monthly pulses cannot refill support. Dead, renounced or replaced heirs cancel it. Exile preserves registered court identity. Frozen successions/wars defer it, and both factions receive the receipt.
+- **Names:** retain template IDs while displaying Dingane/Mpande kaSenzangakhona, Cetshwayo/Mbuyazi kaMpande, Dinuzulu kaCetshwayo and Solomon kaDinuzulu. Generated Zulu surnames use clan names rather than specific fathers. The names-only culture override preserves every other installed Vanilla field. Research, source limits and pool contents are in the [names and traits brief](zulu_royal_names_traits_2026_10_29.md).
+- **Hamu:** the inspected 1850.9.1 save precedes his existing 1865 introduction. Its two Hamu KaMdlela commanders are generated namesakes. Hamu kaNzibe and Hamu kaMpande identify the same prince through his affiliated house and biological father; his story and availability have not been changed.
+
+## Presentation and evidence
+
+The brothers retain the installed paired-character event layout. The event-writing skill's concrete actor/action approach informs `.007`'s replacement choice; its existing public designation and private rival-following scene remain. The relevant installed references remain `shogunate.2` and `commander_events.4`, recorded in the previous event review. `.007` remains TO REVIEW; proper names and the updated Claimant description remain in the exact-key non-event review queue. No reviewed prose or approvals were regenerated.
+
+## Validation and handoff
+
+Focused source execution covers new versus floor backing, preview/effect parity, frozen and stale participants, independent claimant cards, present/future patron pools, minor adulthood, exile, repeated callbacks and population return. An independent Sol 6.1 Max reviewer audited the implementation; its findings about frozen minor receipts and stale campaign patrons were addressed.
+
+All new engine scenarios remain **pending DP** in [runtime cases 142–146](zulu_court_runtime_matrix_2026_10_19.md). In particular, native population reunion, profession/employment after return, actual trait modifiers and event rendering are not proven by source tests.
+
+Final static results:
+
+- **153 focused tests passed** for the court, princes, recognition, event package, population return and names. The separate institutional and baseline suites passed 21 and 14 tests. The independent reviewer ran 95 relevant tests successfully and reported no remaining gameplay blocker.
+- **Full discovery: 929 tests — 920 passed, 8 historical skips, 1 existing localisation-register failure; no errors.**
+- **Full validator: 15/17 gates passed, warned or skipped.** Both failing gates are the same pre-existing localisation problem: reviewed drift in `sb_klip_river_county.060`, `.080` and `sb_natal_crisis.050`, plus the dangling `sb_swazi_frontier.098.prerogative_after_blood_river` review row. Approvals and those unrelated texts remain unchanged.
+- Installed CMF verification, current Vanilla/CMF contracts, override inventory, map/naval checks, lifecycle registration and runtime script checks pass. CMF release synchronisation was explicitly disabled; this task does not update the dependency.
+- Advisory Tiger: **0 fatal, 1,075 errors, 149 warnings**. The additional diagnostic relative to the previous 1,074-error baseline is the old schema rejecting `seal_and_signature_texture` in the names-only culture override. That field is preserved verbatim from installed Vanilla and covered by the non-name parity test. No new court/population script diagnostic was found. Tiger is not engine verification.
+- `git diff --check` passes. No game launch, save edit, commit or push was performed.
+
+Final validator output: `/private/tmp/sb-court-family-acceptance.txt`. Focused output: `/private/tmp/sb-court-followup-focused.txt`.

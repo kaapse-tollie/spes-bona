@@ -1,0 +1,122 @@
+﻿# Only the authored multi-state muster changes population geography. Record its
+# owned Natal/Zululand ratio before recruitment, never another country's portion.
+sb_court_snapshot_population_ratio = {
+ sb_court_clear_population_return = yes
+ if = {
+  limit = {
+   any_scope_state = { state_region = s:STATE_NATAL }
+   any_scope_state = { state_region = s:STATE_ZULULAND }
+  }
+  sb_court_start_barracks_receipt = yes
+  sb_court_measure_return_population = yes
+  if = {
+   limit = { var:sb_court_population_total_var > 0 }
+   set_variable = { name = sb_court_population_natal_share_var value = { value = var:sb_court_population_natal_var divide = var:sb_court_population_total_var } }
+  }
+  sb_court_clear_population_measurements = yes
+ }
+}
+
+# Winner callback may precede the final state merge. Keep a separate, bounded
+# receipt through court cleanup, with at most two one-day retries after this call.
+sb_court_schedule_population_return = {
+ if = {
+  limit = { OR = { has_variable = sb_court_population_natal_share_var has_variable = sb_court_barracks_natal_relocated_var } NOT = { has_variable = sb_court_population_return_pending_var } }
+  if = {
+   limit = { exists = var:sb_court_dynastic_opponent_scope }
+   set_variable = { name = sb_court_population_opponent_scope value = var:sb_court_dynastic_opponent_scope }
+  }
+  set_variable = { name = sb_court_population_return_pending_var value = 3 }
+  sb_court_return_population = yes
+ }
+}
+
+sb_court_return_population = {
+ if = {
+  limit = { has_variable = sb_court_population_return_pending_var }
+  save_scope_as = sb_court_population_country
+  if = {
+   limit = {
+    any_scope_state = { state_region = s:STATE_NATAL }
+    any_scope_state = { state_region = s:STATE_ZULULAND }
+    OR = { NOT = { has_variable = sb_court_dynastic_war_scope } has_variable = sb_court_dynastic_ended_var }
+    trigger_if = {
+     limit = { exists = var:sb_court_population_opponent_scope }
+     var:sb_court_population_opponent_scope = {
+      NOT = { any_scope_state = { OR = { state_region = s:STATE_NATAL state_region = s:STATE_ZULULAND } } }
+     }
+    }
+   }
+   sb_court_restore_barracks = yes
+   if = {
+    limit = { has_variable = sb_court_population_natal_share_var }
+    sb_court_measure_return_population = yes
+    set_variable = { name = sb_court_population_natal_target_var value = { value = var:sb_court_population_total_var multiply = var:sb_court_population_natal_share_var } }
+    if = {
+     limit = { var:sb_court_population_natal_var > var:sb_court_population_natal_target_var }
+     set_variable = { name = sb_court_population_move_ratio_var value = { value = var:sb_court_population_natal_var subtract = var:sb_court_population_natal_target_var divide = var:sb_court_population_natal_var min = 0 max = 1 } }
+     sb_court_move_return_population = { FROM = s:STATE_NATAL TO = s:STATE_ZULULAND }
+    }
+    else_if = {
+     limit = { var:sb_court_population_natal_var < var:sb_court_population_natal_target_var var:sb_court_population_zululand_var > 0 }
+     set_variable = { name = sb_court_population_move_ratio_var value = { value = var:sb_court_population_natal_target_var subtract = var:sb_court_population_natal_var divide = var:sb_court_population_zululand_var min = 0 max = 1 } }
+     sb_court_move_return_population = { FROM = s:STATE_ZULULAND TO = s:STATE_NATAL }
+    }
+   }
+   sb_court_clear_population_return = yes
+  }
+  else_if = {
+   limit = { var:sb_court_population_return_pending_var > 1 }
+   change_variable = { name = sb_court_population_return_pending_var add = -1 }
+   trigger_event = { id = sb_court_population_return.001 days = 1 }
+  }
+  else = { sb_court_clear_population_return = yes }
+ }
+}
+
+# Country scope. Preserve each Pop's people/culture/religion through native moves;
+# employment and profession reassignment remain the engine's responsibility.
+sb_court_move_return_population = {
+ ordered_scope_state = {
+  limit = { state_region = $TO$ }
+  order_by = state_population position = 0 check_range_bounds = no
+  save_scope_as = sb_court_population_destination
+ }
+ every_scope_state = {
+  limit = { state_region = $FROM$ }
+  every_scope_pop = {
+   move_partial_pop = { state = scope:sb_court_population_destination population_ratio = scope:sb_court_population_country.var:sb_court_population_move_ratio_var }
+  }
+ }
+}
+
+sb_court_measure_return_population = {
+ save_scope_as = sb_court_population_country
+ set_variable = { name = sb_court_population_natal_var value = 0 }
+ set_variable = { name = sb_court_population_zululand_var value = 0 }
+ every_scope_state = {
+  limit = { state_region = s:STATE_NATAL }
+  scope:sb_court_population_country = { change_variable = { name = sb_court_population_natal_var add = prev.state_population } }
+ }
+ every_scope_state = {
+  limit = { state_region = s:STATE_ZULULAND }
+  scope:sb_court_population_country = { change_variable = { name = sb_court_population_zululand_var add = prev.state_population } }
+ }
+ set_variable = { name = sb_court_population_total_var value = { value = var:sb_court_population_natal_var add = var:sb_court_population_zululand_var } }
+}
+
+sb_court_clear_population_measurements = {
+ remove_variable = sb_court_population_natal_var
+ remove_variable = sb_court_population_zululand_var
+ remove_variable = sb_court_population_total_var
+ remove_variable = sb_court_population_natal_target_var
+ remove_variable = sb_court_population_move_ratio_var
+}
+
+sb_court_clear_population_return = {
+ sb_court_clear_barracks_return = yes
+ remove_variable = sb_court_population_natal_share_var
+ remove_variable = sb_court_population_return_pending_var
+ remove_variable = sb_court_population_opponent_scope
+ sb_court_clear_population_measurements = yes
+}

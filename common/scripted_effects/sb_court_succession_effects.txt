@@ -59,8 +59,10 @@ sb_court_reconcile_succession = {
    NOT = { has_variable = sb_court_civil_war_var }
    NOT = { has_variable = sb_court_dynastic_war_scope } NOT = { has_variable = sb_court_dynastic_crisis_var }
    ruler ?= { has_template = ZUL_mpande_zulu }
-   game_date >= 1856.12.1
+   # Allow roughly four months of claimant mobilisation towards December.
+   game_date >= 1856.8.1
    NOT = { has_variable = sb_court_mpande_retired_var }
+   NOT = { has_variable = sb_court_dunn_offer_var }
   }
   ruler = { save_scope_as = sb_court_outgoing }
   sb_court_capture_accession = yes
@@ -113,6 +115,8 @@ sb_court_install_successor = {
   }
   if = {
    limit = { OR = { ruler ?= scope:sb_court_successor exists = var:sb_court_regent_scope } }
+   # A paid Hamu promise is earned before accession clears claim/pledge records.
+   sb_hamu_record_accession = yes
    # Recognised promises become co-operation; other royal claims remain separate.
    every_in_list = {
     variable = sb_court_members
@@ -144,14 +148,27 @@ sb_court_install_successor = {
    set_variable = { name = sb_court_incumbent_scope value = ruler }
    if = { limit = { NOT = { scope:sb_court_maturing_sovereign ?= scope:sb_court_successor } } remove_variable = sb_court_privileges_this_reign_var }
    remove_variable = sb_court_recognized_heir_scope
-   if = {
-    limit = { var:sb_court_predecessor_scope ?= { has_template = ZUL_mpande_zulu is_character_alive = yes } }
-    set_variable = sb_court_mpande_retired_var
-    var:sb_court_predecessor_scope = { set_variable = sb_court_retired_var resign_and_retire = yes }
-   }
+   sb_court_retire_mpande = yes
    sb_court_accession_cleanup = yes
    sb_court_ensure_roster = yes
    sb_institutions_recalculate = yes
+  }
+ }
+}
+
+# Country scope. A contested retirement takes effect when the princes take power,
+# not after their war ends. Do not give the retired king another claimant card.
+sb_court_retire_mpande = {
+ if = {
+  limit = { var:sb_court_predecessor_scope ?= { has_template = ZUL_mpande_zulu is_character_alive = yes NOT = { is_ruler_of_own_country = yes } } }
+  set_variable = sb_court_mpande_retired_var
+  var:sb_court_predecessor_scope = {
+   set_variable = sb_court_retired_var
+   set_variable = sb_court_claim_renounced_var
+   remove_variable = sb_court_claimant_scope
+   set_variable = { name = sb_court_endorsement_var value = 0 }
+   sb_court_sync_allegiance_traits = yes
+   if = { limit = { is_in_void = no } resign_and_retire = yes }
   }
  }
 }
@@ -163,7 +180,7 @@ sb_court_answer_accession = {
  if = {
   limit = { sb_court_dynastic_country = yes has_variable = sb_court_accession_open_var NOT = { has_variable = sb_court_dynastic_test_pending_var } NOT = { has_variable = sb_court_dynastic_war_scope } NOT = { has_variable = sb_court_dynastic_crisis_var } }
   if = {
-   limit = { scope:sb_court_nominee ?= { sb_court_dynastic_candidate = yes } }
+   limit = { sb_court_displayed_accession_valid = yes }
    set_variable = { name = sb_court_accession_nominee_scope value = scope:sb_court_nominee }
    sb_court_refresh_accession = yes
    if = {

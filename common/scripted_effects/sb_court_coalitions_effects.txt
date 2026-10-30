@@ -3,6 +3,11 @@
 sb_court_back_recognized_heir = {
  hidden_effect = {
   save_scope_as = sb_court_country
+  remove_variable = sb_court_recognized_minor_scope
+  if = {
+   limit = { var:sb_court_recognized_heir_scope ?= { is_adult = no sb_court_living_dynast = yes } }
+   set_variable = { name = sb_court_recognized_minor_scope value = var:sb_court_recognized_heir_scope }
+  }
   sb_court_calculate_backing = yes
   set_variable = { name = sb_court_recognition_remaining_var value = 0 }
   set_variable = { name = sb_court_recognition_pledged_var value = 0 }
@@ -61,7 +66,6 @@ sb_court_calculate_coalitions = {
    remove_variable = sb_court_council_promise_scope
   }
   set_variable = { name = sb_court_coalition_weight_var value = 0 }
-  set_variable = { name = sb_court_coalition_share_var value = 0 }
   set_variable = { name = sb_court_pledged_share_var value = 0 }
   set_variable = { name = sb_court_current_weight_var value = 0 }
   set_variable = { name = sb_court_current_share_var value = 0 }
@@ -71,7 +75,7 @@ sb_court_calculate_coalitions = {
  }
  every_in_list = {
   variable = sb_court_members
-  limit = { sb_court_member_of_country = yes has_variable = sb_court_representative_var has_variable = sb_court_represented_weight_var }
+  limit = { has_variable = sb_court_representative_var has_variable = sb_court_represented_weight_var sb_court_member_of_country = yes }
   save_scope_as = sb_court_backer
   # Present allegiance is independent of a promise about the next succession.
   # Use the same valid endorsements as the Prerogative numerator.
@@ -132,7 +136,6 @@ sb_court_calculate_coalitions = {
   every_in_list = {
    variable = sb_court_members
    limit = { var:sb_court_home_scope ?= scope:sb_court_country }
-   set_variable = { name = sb_court_coalition_share_var value = { value = var:sb_court_coalition_weight_var divide = scope:sb_court_country.var:sb_court_weight_var multiply = 100 } }
    if = {
     limit = { scope:sb_court_country = { var:sb_court_current_pledged_weight_var > 0 } }
     set_variable = { name = sb_court_current_share_var value = { value = var:sb_court_current_weight_var divide = scope:sb_court_country.var:sb_court_current_pledged_weight_var multiply = 100 } }
@@ -239,5 +242,32 @@ sb_court_reconcile_bargains = {
   ruler ?= { add_modifier = { name = sb_court_public_discredit years = 5 } }
   trigger_event = { id = sb_zulu_court.201 popup = yes }
   remove_variable = sb_court_breach_detected_var
+ }
+}
+
+# Importing a native minor heir also records the pending adulthood grant.
+sb_court_reconcile_minor_backing = {
+ save_scope_as = sb_court_country
+ if = {
+  limit = { NOR = { has_variable = sb_court_accession_open_var has_variable = sb_court_dynastic_crisis_var has_variable = sb_court_civil_war_var } }
+ if = {
+  limit = {
+   var:sb_court_recognized_heir_scope ?= {
+    sb_court_living_dynast = yes var:sb_court_home_scope ?= scope:sb_court_country
+    NOT = { is_ruler_of_own_country = yes }
+   }
+  }
+  if = {
+   limit = { var:sb_court_recognized_heir_scope = { is_adult = no } }
+   set_variable = { name = sb_court_recognized_minor_scope value = var:sb_court_recognized_heir_scope }
+  }
+  else_if = {
+   limit = { var:sb_court_recognized_minor_scope ?= var:sb_court_recognized_heir_scope }
+   remove_variable = sb_court_recognized_minor_scope
+   sb_court_back_recognized_heir = yes
+  }
+  else = { remove_variable = sb_court_recognized_minor_scope }
+ }
+ else = { remove_variable = sb_court_recognized_minor_scope }
  }
 }

@@ -1,4 +1,5 @@
-﻿# Reserved claimant wars only: prepare recruitment, then divide the actual factions.
+﻿# Multi-state claimant wars only: prepare recruitment, then divide the actual factions.
+# One-state origins retain the native provincial, military and population allocation.
 # Destructive rebuilding replaces manpower, experience and unit mix.
 # Before native creation, give empty states one existing recruitment level. A proposed
 # revolution with no army units/conscription capacity fails before the split callback.
@@ -12,21 +13,30 @@ sb_court_prepare_dynastic_forces = {
    sb_court_dynastic_conflict_free = yes
   }
   set_variable = sb_court_dynastic_forces_prepared_var
-  save_scope_as = sb_court_force_origin
-  every_scope_state = {
-   limit = { sb_court_state_recruitment_levels = 0 }
-   save_scope_as = sb_court_force_destination
-   scope:sb_court_force_origin = {
-    ordered_scope_state = {
-     limit = { sb_court_state_recruitment_levels > 1 }
-     order_by = sb_court_state_recruitment_levels position = 0 check_range_bounds = no
-     if = {
-      limit = { any_scope_building = { is_building_type = building_barrack level > 0 } }
-      sb_court_move_dynastic_recruitment = { SERVICE = regular BUILDING = building_barrack }
+  # Classify before the native split; afterwards either country can own one state.
+  if = {
+   limit = { num_states > 1 }
+   set_variable = sb_court_dynastic_scripted_muster_var
+   save_scope_as = sb_court_force_origin
+   sb_court_snapshot_population_ratio = yes
+   sb_court_begin_barracks_relocation = yes
+   sb_court_snapshot_dynastic_levies = yes
+   every_scope_state = {
+    limit = { sb_court_state_recruitment_levels = 0 }
+    save_scope_as = sb_court_force_destination
+    scope:sb_court_force_origin = {
+     ordered_scope_state = {
+      limit = { sb_court_state_recruitment_levels > 1 }
+      order_by = sb_court_state_recruitment_levels position = 0 check_range_bounds = no
+      if = {
+       limit = { any_scope_building = { is_building_type = building_barrack level > 0 } }
+       sb_court_move_dynastic_recruitment = { SERVICE = regular BUILDING = building_barrack }
+      }
+      else = { sb_court_move_dynastic_recruitment = { SERVICE = conscript BUILDING = building_conscription_center } }
      }
-     else = { sb_court_move_dynastic_recruitment = { SERVICE = conscript BUILDING = building_conscription_center } }
     }
    }
+   sb_court_record_barracks_relocation = yes
   }
  }
 }
@@ -67,6 +77,7 @@ sb_court_rebuild_dynastic_forces = {
  if = {
   limit = {
    has_variable = sb_court_dynastic_war_scope
+   has_variable = sb_court_dynastic_scripted_muster_var
    has_variable = sb_court_dynastic_test_pending_var
    NOT = { has_variable = sb_court_dynastic_forces_rebuilt_var }
    scope:sb_court_dynastic_incumbent_country ?= { is_country_alive = yes }
@@ -74,6 +85,7 @@ sb_court_rebuild_dynastic_forces = {
    sb_court_dynastic_pair_weight > 0
   }
   save_scope_as = sb_court_force_origin
+  sb_court_begin_barracks_relocation = yes
   set_variable = { name = sb_court_regular_total_var value = 0 }
   set_variable = { name = sb_court_conscript_total_var value = 0 }
   set_variable = { name = sb_court_regular_largest_var value = -1 }
@@ -82,6 +94,11 @@ sb_court_rebuild_dynastic_forces = {
   set_variable = { name = sb_court_conscript_training_var value = 0 }
   scope:sb_court_dynastic_incumbent_country = { sb_court_count_dynastic_forces = yes }
   scope:sb_court_dynastic_rival_country = { sb_court_count_dynastic_forces = yes }
+  # Native state caps can remove configured conscription during the split. Retain
+  # its pre-split budget, but cap the muster to the surviving recruitment workforce.
+  set_variable = { name = sb_court_conscript_total_var value = var:sb_court_dynastic_levies_var }
+  set_variable = { name = sb_court_conscript_training_var value = var:sb_court_dynastic_levy_training_var }
+  sb_court_limit_dynastic_muster = yes
   # Regulars include the weaker coalition's one-level floor; conscripts keep their share.
   # The incumbent receives each exact remainder, conserving the available levels.
   set_variable = { name = sb_court_regular_claimant_var value = sb_court_dynastic_regular_allocation }
@@ -97,12 +114,16 @@ sb_court_rebuild_dynastic_forces = {
   # Reserve before deleting anything. Repeated split callbacks cannot rebuild the armies again.
   set_variable = sb_court_dynastic_forces_rebuilt_var
   scope:sb_court_dynastic_rebels = { set_variable = sb_court_dynastic_forces_rebuilt_var }
-  # Move existing military households before deleting their workplaces. No civilian
-  # conversion or instant manpower: the rebuilt centres must still hire and train.
-  sb_court_distribute_dynastic_staff = { TYPE = soldiers }
-  sb_court_distribute_dynastic_staff = { TYPE = officers }
+  # Mark both actual participants before any native conscription recalculation.
+  scope:sb_court_dynastic_incumbent_country = { sb_court_begin_dynastic_muster = yes }
+  scope:sb_court_dynastic_rival_country = { sb_court_begin_dynastic_muster = yes }
+  # Each profession follows its jobs across both services, not regulars alone.
+  sb_court_distribute_dynastic_staff = { TYPE = soldiers SHARE = sb_court_dynastic_soldier_share }
+  sb_court_distribute_dynastic_staff = { TYPE = officers SHARE = sb_court_dynastic_officer_share }
+  sb_court_fill_dynastic_recruitment = yes
   scope:sb_court_dynastic_incumbent_country = { sb_court_replace_dynastic_forces = yes }
   scope:sb_court_dynastic_rival_country = { sb_court_replace_dynastic_forces = yes }
+  sb_court_record_barracks_relocation = yes
   remove_variable = sb_court_regular_total_var
   remove_variable = sb_court_conscript_total_var
   remove_variable = sb_court_regular_largest_var
@@ -133,7 +154,7 @@ sb_court_distribute_dynastic_staff = {
  }
  set_variable = {
   name = sb_court_rival_staff_target_var
-  value = { value = var:sb_court_incumbent_staff_var add = var:sb_court_rival_staff_var multiply = sb_court_dynastic_staff_share }
+  value = { value = var:sb_court_incumbent_staff_var add = var:sb_court_rival_staff_var multiply = $SHARE$ }
  }
  if = {
   limit = { var:sb_court_rival_staff_var > var:sb_court_rival_staff_target_var }
@@ -159,8 +180,7 @@ sb_court_distribute_dynastic_staff = {
 
 # Recipient country. Use the same state-selection rule as its military rebuild.
 sb_court_receive_dynastic_staff = {
- ordered_scope_state = {
-  order_by = state_population position = 0 check_range_bounds = no
+ var:sb_court_muster_state_scope = {
   save_scope_as = sb_court_staff_destination
   $DONOR$ = {
    every_scope_pop = {
@@ -210,16 +230,12 @@ sb_court_replace_dynastic_forces = {
   if = { limit = { any_scope_building = { is_building_type = building_barrack } } remove_building = building_barrack }
   if = { limit = { any_scope_building = { is_building_type = building_conscription_center } } remove_building = building_conscription_center }
  }
- ordered_scope_state = {
-  order_by = state_population position = 0 check_range_bounds = no
-  sb_court_create_dynastic_forces = yes
- }
+ var:sb_court_muster_state_scope = { sb_court_create_dynastic_forces = yes }
 }
 
 # State scope, shared by pre-creation preparation and the final coalition division.
 sb_court_create_dynastic_forces = {
  if = { limit = { owner.var:sb_court_regular_quota_var > 0 } create_building = { building = building_barrack level = owner.var:sb_court_regular_quota_var } }
- if = { limit = { owner.var:sb_court_conscript_quota_var > 0 } create_building = { building = building_conscription_center level = owner.var:sb_court_conscript_quota_var } }
  if = { limit = { owner.var:sb_court_regular_quota_var > 0 scope:sb_court_force_origin.var:sb_court_regular_training_var = 1 } activate_production_method = { building_type = building_barrack production_method = pm_no_organization } }
  if = { limit = { owner.var:sb_court_regular_quota_var > 0 scope:sb_court_force_origin.var:sb_court_regular_training_var = 2 } activate_production_method = { building_type = building_barrack production_method = pm_samurai_training } }
  if = { limit = { owner.var:sb_court_regular_quota_var > 0 scope:sb_court_force_origin.var:sb_court_regular_training_var = 3 } activate_production_method = { building_type = building_barrack production_method = pm_general_training } }
@@ -227,11 +243,20 @@ sb_court_create_dynastic_forces = {
  if = { limit = { owner.var:sb_court_regular_quota_var > 0 scope:sb_court_force_origin.var:sb_court_regular_training_var = 5 } activate_production_method = { building_type = building_barrack production_method = pm_training_streamlining } }
  if = { limit = { owner.var:sb_court_regular_quota_var > 0 scope:sb_court_force_origin.var:sb_court_regular_training_var = 6 } activate_production_method = { building_type = building_barrack production_method = pm_nco_incorporation } }
  if = { limit = { owner.var:sb_court_regular_quota_var > 0 scope:sb_court_force_origin.var:sb_court_regular_training_var = 7 } activate_production_method = { building_type = building_barrack production_method = pm_mobile_warfare_tactics } }
- if = { limit = { owner.var:sb_court_conscript_quota_var > 0 scope:sb_court_force_origin.var:sb_court_conscript_training_var = 1 } activate_production_method = { building_type = building_conscription_center production_method = pm_no_organization_conscription } }
- if = { limit = { owner.var:sb_court_conscript_quota_var > 0 scope:sb_court_force_origin.var:sb_court_conscript_training_var = 2 } activate_production_method = { building_type = building_conscription_center production_method = pm_general_training_conscription } }
- if = { limit = { owner.var:sb_court_conscript_quota_var > 0 scope:sb_court_force_origin.var:sb_court_conscript_training_var = 3 } activate_production_method = { building_type = building_conscription_center production_method = pm_advanced_tactics_training_conscription } }
- if = { limit = { owner.var:sb_court_conscript_quota_var > 0 scope:sb_court_force_origin.var:sb_court_conscript_training_var = 4 } activate_production_method = { building_type = building_conscription_center production_method = pm_training_streamlining_conscription } }
- if = { limit = { owner.var:sb_court_conscript_quota_var > 0 scope:sb_court_force_origin.var:sb_court_conscript_training_var = 5 } activate_production_method = { building_type = building_conscription_center production_method = pm_nco_incorporation_conscription } }
- if = { limit = { owner.var:sb_court_conscript_quota_var > 0 scope:sb_court_force_origin.var:sb_court_conscript_training_var = 6 } activate_production_method = { building_type = building_conscription_center production_method = pm_mobile_warfare_tactics_conscription } }
- if = { limit = { owner.var:sb_court_conscript_quota_var > 0 scope:sb_court_force_origin.var:sb_court_conscript_training_var = 7 } activate_production_method = { building_type = building_conscription_center production_method = pm_sb_customary_muster_conscription } }
+ if = {
+  limit = { owner = { has_variable = sb_court_muster_active_var } }
+  sb_court_create_dynastic_levies = { BUILDING = building_sb_court_muster }
+ }
+ else = { sb_court_create_dynastic_levies = { BUILDING = building_conscription_center } }
+}
+
+sb_court_create_dynastic_levies = {
+ if = { limit = { owner.var:sb_court_conscript_quota_var > 0 } create_building = { building = $BUILDING$ level = owner.var:sb_court_conscript_quota_var } }
+ if = { limit = { owner.var:sb_court_conscript_quota_var > 0 scope:sb_court_force_origin.var:sb_court_conscript_training_var = 1 } activate_production_method = { building_type = $BUILDING$ production_method = pm_no_organization_conscription } }
+ if = { limit = { owner.var:sb_court_conscript_quota_var > 0 scope:sb_court_force_origin.var:sb_court_conscript_training_var = 2 } activate_production_method = { building_type = $BUILDING$ production_method = pm_general_training_conscription } }
+ if = { limit = { owner.var:sb_court_conscript_quota_var > 0 scope:sb_court_force_origin.var:sb_court_conscript_training_var = 3 } activate_production_method = { building_type = $BUILDING$ production_method = pm_advanced_tactics_training_conscription } }
+ if = { limit = { owner.var:sb_court_conscript_quota_var > 0 scope:sb_court_force_origin.var:sb_court_conscript_training_var = 4 } activate_production_method = { building_type = $BUILDING$ production_method = pm_training_streamlining_conscription } }
+ if = { limit = { owner.var:sb_court_conscript_quota_var > 0 scope:sb_court_force_origin.var:sb_court_conscript_training_var = 5 } activate_production_method = { building_type = $BUILDING$ production_method = pm_nco_incorporation_conscription } }
+ if = { limit = { owner.var:sb_court_conscript_quota_var > 0 scope:sb_court_force_origin.var:sb_court_conscript_training_var = 6 } activate_production_method = { building_type = $BUILDING$ production_method = pm_mobile_warfare_tactics_conscription } }
+ if = { limit = { owner.var:sb_court_conscript_quota_var > 0 scope:sb_court_force_origin.var:sb_court_conscript_training_var = 7 } activate_production_method = { building_type = $BUILDING$ production_method = pm_sb_customary_muster_conscription } }
 }

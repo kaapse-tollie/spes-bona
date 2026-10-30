@@ -3,6 +3,7 @@ sb_court_adult_member = {
  has_variable = sb_court_registered_var
  is_character_alive = yes
  is_adult = yes
+ NOT = { has_variable = sb_court_deferred_dynast_var }
 }
 # Home assignment distinguishes two revolutionary sides while retaining CAP exiles.
 sb_court_member_of_country = {
@@ -76,6 +77,14 @@ sb_court_brothers_available_backer = {
  sb_court_recruitable_backer = yes
  NOT = { has_variable = sb_court_successor_pledge_scope }
 }
+# Country scope. Top up outside house backing; a prince's own following is not an outside pledge.
+sb_court_brother_lacks_backing = {
+ NOT = { any_in_list = { variable = sb_court_members count >= 2 sb_court_episode_house = yes sb_court_recruitable_backer = yes var:sb_court_successor_pledge_scope ?= $OTHER$ } }
+ trigger_if = {
+  limit = { $OTHER$ = { NOT = { has_template = ZUL_cetshwayo_heir } } }
+  NOT = { any_in_list = { variable = sb_court_members sb_court_episode_house = yes sb_court_recruitable_backer = yes var:sb_court_successor_pledge_scope ?= $OTHER$ } }
+ }
+}
 # Country scope. Known lines use dated births rather than an invented replacement.
 sb_court_can_introduce_son = {
  has_variable = sb_institutions_active_var
@@ -114,6 +123,7 @@ sb_court_living_dynast = {
   has_template = ZUL_mbuyazi_successor
   has_template = ZUL_uthumbu_successor
   has_template = SB_ZUL_hamu
+  AND = { has_template = SB_ZUL_mthonga has_variable = sb_court_mthonga_declared_var }
   has_variable = sb_zululand_exiled_claimant_var
  }
 }
@@ -197,9 +207,37 @@ sb_court_quoted_pledge_valid = {
 }
 sb_court_major_candidate = {
  sb_court_dynastic_candidate = yes
- var:sb_court_coalition_share_var >= 25
+ var:sb_court_pledged_share_var >= 30
+}
+# Country/event scope. Retirement is a living handover, not a vacant throne.
+sb_court_mpande_retirement = {
+ var:sb_court_predecessor_scope ?= { has_template = ZUL_mpande_zulu is_character_alive = yes }
+ trigger_if = { limit = { exists = var:sb_court_predecessor_scope } ruler ?= var:sb_court_predecessor_scope }
+}
+sb_court_displayed_accession_valid = {
+ sb_court_dynastic_country = yes
+ has_variable = sb_court_accession_open_var
+ NOR = { has_variable = sb_court_dynastic_test_pending_var has_variable = sb_court_dynastic_war_scope has_variable = sb_court_dynastic_crisis_var }
+ scope:sb_court_nominee ?= { sb_court_dynastic_candidate = yes }
+ trigger_if = { limit = { exists = scope:sb_court_nominee } var:sb_court_accession_nominee_scope ?= scope:sb_court_nominee }
+}
+sb_court_displayed_accession_contested = {
+ sb_court_displayed_accession_valid = yes
+ any_in_list = {
+  variable = sb_court_accession_candidates
+  sb_court_major_candidate = yes
+  NOT = { this = scope:sb_court_nominee }
+ }
+}
+sb_court_mpande_son_under_king = {
+ OR = { has_template = ZUL_cetshwayo_heir has_template = ZUL_mbuyazi_heir }
+ var:sb_court_home_scope ?= {
+  sb_court_dynastic_country = yes
+  ruler ?= { has_template = ZUL_mpande_zulu is_character_alive = yes }
+ }
 }
 sb_court_organised_rival = {
+ NOT = { sb_court_mpande_son_under_king = yes }
  sb_court_dynastic_candidate = yes
  var:sb_court_current_share_var >= 25
 }
@@ -207,6 +245,7 @@ sb_court_organised_rival = {
 # Character scope; each action retains its own allowance against this person.
 sb_court_coercion_target_valid = {
  sb_court_royal_candidate = yes
+ custom_tooltip = { text = sb_court_coercion_not_supporting_ruler_tt NOT = { var:sb_court_endorsement_var ?= 1 } }
  is_in_exile_pool = no is_in_void = no
  NOT = { is_ruler_of_own_country = yes }
  # Historical AI Mpande preserves his sons' succession contest; Gqugqu remains eligible.
@@ -222,6 +261,18 @@ sb_court_coercion_target_valid = {
    }
   }
   NOR = { has_template = ZUL_cetshwayo_heir has_template = ZUL_mbuyazi_heir }
+ }
+}
+# Character scope: historical AI Mpande waits until he can purge Gqugqu.
+sb_court_ai_mpande_purge_target = {
+ has_template = ZUL_gqugqu_claimant
+ owner = {
+  is_ai = yes
+  ruler ?= { has_template = ZUL_mpande_zulu }
+  OR = {
+   has_game_rule = sb_frontier_ai_behavior_strict_historical
+   has_game_rule = sb_frontier_ai_behavior_dynamic_historical
+  }
  }
 }
 sb_court_can_request_renunciation = {
@@ -264,4 +315,12 @@ sb_court_episode_valid = {
 sb_court_dynastic_country = {
  has_variable = sb_institutions_active_var
  sb_court_has_royal_law = yes
+}
+
+# .007 grants Cetshwayo two new houses; .006 and Mbuyazi retain their backing floors.
+sb_court_brother_needs_backing = {
+ OR = {
+  AND = { always = $ADDITIONAL$ $OTHER$ = { has_template = ZUL_cetshwayo_heir } }
+  sb_court_brother_lacks_backing = { OTHER = $OTHER$ }
+ }
 }

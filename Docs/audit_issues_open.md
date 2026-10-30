@@ -1,6 +1,6 @@
 # Spes Bona Audit Issues — Open
 
-Last refreshed: 2026-10-29
+Last refreshed: 2026-10-30
 
 Approved implementation baseline: `51c98bf32fc9f9049c99f858f5a558bdfde0dffe`
 
@@ -16,13 +16,35 @@ The [2026-10-13 checkpoint review](compatibility/checkpoint_review_2026_10_13.md
 
 Static success is not runtime certification. Strict release certification remains contingent on every engine-only case in `Docs/compatibility/1_14_5_runtime_matrix.md`; every unrun row remains `Engine pending`. Earlier runtime matrices remain historical evidence.
 
+## Major content refactor TODO — unified South African Republic (ZAR)
+
+**`ARCH-20261030-01` — Major refactor; open; requested by DP on 30 October 2026.** A player unifying the Transvaal as LYD or ZPB can remain excluded from content written exclusively for TRN. Design a common **ZAR** successor tag and audit the affected content rather than adding the name to isolated event gates. ZAR is not currently defined; this entry implements no new country or migration.
+
+Scope: formation and player continuity from TRN/LYD/ZPB; historical setup versus ongoing regional eligibility; events, journal entries, decisions, Boer compacts, diplomatic AI, border settlements, government/character setup, names/localisation, and territorial rewards. Preserve the actual country identities held by pending plays, succession wars, contracts and event callbacks. A qualifying retag/unification must retain its own undertakings; an unrelated conqueror must not inherit them merely by using a similar name. Do not mechanically replace every `c:TRN` reference: origin-country setup and an active sponsor/beneficiary have different meanings.
+
+The immediate design dependency is [Hamu's Boer bargain](zulu_later_court_story_design_2026_10_30.md#2-hamu-the-zulu-kingdom): TRN or future ZAR owns part of East Transvaal after the Boer–Swazi border settlement, pays 1G for a lasting promise, optionally funds Hamu further, and can receive **Greater NRP as a subject** if he accedes. Reserve the actual sponsor/overlord identity and share the once-only NRP entitlement with the later Thirteen Chiefs route. The broader refactor must audit the existing NRP formation, boundary and union paths, which contain TRN/NAL-specific assumptions. This Hamu route excludes automatic annexation; a British ultimatum becomes eligible only under actual British control of residual ZUL, including later, and must involve the actual NRP overlord.
+
+**Completion:** agree formation/retag rules and enumerate affected authored routes; test equivalent access for TRN, LYD and ZPB unifiers, player continuity, pending-contract retention and unrelated-country negative controls. Preserve country-specific historical entry content where appropriate. This is future architecture work, separate from the current design-only Hamu exploration; no save migration or blanket eligibility expansion is authorised by this note.
+
 ## Major pre-release performance TODO — simulation tick times
 
 **`PERF-20261028-01` — Major priority; open; reported by DP on 28 October 2026.** Tick times have become markedly slower during the Zulu court/civil-war testing. Measure the regression before selecting a fix; neither the court nor the latest force changes are yet established as its cause.
 
 DP should collect comparable timings/profiler output at a fixed game speed and machine/settings: fresh campaign, developed peaceful court, claimant preparations, active civil war, and post-war reunification. Compare retained source checkpoints using compatible disposable campaigns. Inspect weekly polling/event queues, monthly/annual court and roster work, movement/IG recalculation, modifier churn and split/reunion work; distinguish a one-off transition stall from sustained daily slowdown. Keep game version, CMF, DLC/load order, date and population/army size in the evidence. Codex can analyse saved logs/source; DP launches and profiles.
 
-**Completion:** a reproducible baseline, identified hot path(s), measured before/after tick costs and regression checks showing political/war behaviour is preserved. Do not optimise by removing agreed mechanics or by speculative global cadence changes. No performance fix is included in the current claimant follow-up.
+**29 October follow-up:** DP supplied three-month 1843 timings for movement/IG calculations and the monthly router. A [small performance pass](performance_pass_2026_10_29.md) now reduces repeated predicate work and adds equivalent handler guards. Calculations and cadence are preserved; the largest inherited neighbour scans remain. DP then confirmed noticeably faster ticks and waived further first-pass measurement. A [deeper pass](performance_deeper_pass_2026_10_29.md) reduces repeated house ranking and global country scans without changing cadence or outcomes. Numerical before/after engine timings and child-handler profiling remain pending for the broader pre-release audit.
+
+**Completion:** a reproducible baseline, identified hot path(s), measured before/after tick costs and regression checks showing political/war behaviour is preserved. Do not optimise by removing agreed mechanics or by speculative global cadence changes. The limited source pass does not close this audit.
+
+## 30 October playtest follow-up — reform and Lesotho food balance
+
+**Open investigation/design, not a new gameplay baseline.** [Targeted fixes and evidence](zulu_playtest_followup_2026_10_30.md) record Dunn's missing-window crash, two-state barracks restoration, Mbuyazi's event trait, loyal-claimant protection and JE presentation. Their DP rendering/engine checks remain pending.
+
+**Succession follow-up:** the [August 1856 save investigation](compatibility/zulu_retirement_succession_2026_10_30.md) explains why Cetshwayo's displayed 31.04% did not meet the former all-court threshold. DP approved using 25% of succession-pledged Prominence instead. The threshold, retirement presentation and delayed first Dunn delivery are corrected in source; pre-retirement engine replay remains pending.
+
+**`IR-20261030-01` — Deferred design TODO by DP on 30 October 2026: Institutional Reach expansion.** [Regional reform research](institutional_reach_regional_reform_research_2026_10_30.md) evaluates Swazi, Gaza and potentially Basotho, research penalties and the proposed IR100/technology arithmetic. Revisit the proposed IR-scaled Society/Production research penalties (up to −25%), technology contributions and country-specific reform objectives together. Exact values, technology-count convention, penalty stacking and regional rollout remain undecided; retain the current IR model for now and do not enable Zulu claimant helpers for other tags. The broader balance pass below remains open.
+
+**`BST-20261030-01` — Deferred investigation TODO by DP on 30 October 2026: Lesotho starvation after the mountain retreat.** Retain a **pre-annexation** retreat/famine checkpoint. The latest five autosaves are already post-annexation. Inspect the 5,000-person single-Pop retreat transfer and conditional 14-level conscription assistance against remaining agricultural employment, subsistence capacity and food supply. Neither missing refugees nor insufficient base population is established by the retained saves. Diagnose the cause before choosing population, arable-land or military-support changes; no balance change is authorised by this entry.
 
 ## Major pre-release balance TODO — Bantu starting positions
 
