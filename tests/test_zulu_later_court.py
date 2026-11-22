@@ -379,7 +379,91 @@ class DunnAndPrincesTests(unittest.TestCase):
         rt.run('sb_court_reserve_dunn_judgement')
         self.assertNotIn('sb_court_dunn_judgement_var',dunn['vars'])
 
-    def test_mthonga_not_declared_during_delayed_mpande_retirement(self):
+    def judgement(self):
+        rt,dunn=self.admitted()
+        rt.country['ruler']=rt.cetshwayo
+        dunn['vars'].update(sb_court_dunn_judgement_var=1,sb_court_dunn_judge_scope=rt.country)
+        return rt,dunn
+
+    def test_dunn_judgement_waits_for_victory_acknowledgement_then_three_days_once(self):
+        rt,dunn=self.judgement()
+        rt.country['vars']['sb_court_dynastic_victory_scope']=rt.cetshwayo
+        rt.scopes['sb_court_victor']=rt.cetshwayo
+        rt.run('sb_court_dunn_trade_monthly')
+        self.assertNotIn('sb_court_dunn.003',rt.country['events'])
+        rt.run('sb_court_acknowledge_dynastic_victory')
+        self.assertEqual(('sb_court_dunn.003',3),rt.country['event_schedule'][-1])
+        rt.run('sb_court_acknowledge_dynastic_victory')
+        self.assertEqual(1,rt.country['events'].count('sb_court_dunn.003'))
+        self.assertNotIn('sb_court_open_dunn_judgement',str(EFFECTS['sb_court_resolve_dynastic_win']))
+
+    def test_judgement_reuses_paired_characters_and_normalises_dunns_ig(self):
+        from tests.test_zulu_institutions_laws import statements
+        from tools.check_override_inventory import find_object
+        from tests.test_zulu_court_politics import ROOT
+        event=statements(find_object((ROOT/'events/sb_court_dunn_events.txt').read_text(encoding='utf-8-sig'),'sb_court_dunn.003'))
+        rt,dunn=self.judgement()
+        dunn['interest_group']='owner.ig:ig_landowners'
+        old=dict(dunn['vars'])
+        self.assertEqual('event_window_2char',field(event,'gui_window'))
+        rt.effect(field(event,'immediate'),rt.country)
+        self.assertIs(dunn,rt.scopes['sb_court_dunn_trader'])
+        self.assertIs(rt.cetshwayo,rt.scopes['sb_court_dunn_king'])
+        self.assertEqual('owner.ig:ig_industrialists',dunn['interest_group'])
+        self.assertEqual(old,dunn['vars'])
+        # Retaining the trader does not promise deliveries after the British route closes.
+        keep=[body for key,_,body in event if key=='option'][1]
+        delivery=next(body for key,_,body in keep if key=='if' and field(body,'custom_tooltip')=='sb_court_dunn.003.b.trade.tt')
+        self.assertTrue(rt.condition(field(delivery,'limit'),rt.country))
+        rt.countries['c:GBR']['subjects']=[]
+        self.assertFalse(rt.condition(field(delivery,'limit'),rt.country))
+
+    def test_judgement_choices_execute_once_with_distinct_tradeoffs(self):
+        for keep,kill in (('yes','no'),('no','yes'),('no','no')):
+            with self.subTest(keep=keep,kill=kill):
+                rt,dunn=self.judgement()
+                rt.effect([('sb_court_answer_dunn_judgement','=',[('KEEP','=',keep),('KILL','=',kill)])],rt.country)
+                if keep=='yes':
+                    self.assertTrue(dunn['alive'])
+                    self.assertEqual(1,dunn['vars']['sb_court_endorsement_var'])
+                    self.assertIn('sb_court_dunn_admitted_var',dunn['vars'])
+                    self.assertEqual(5,rt.country['relations']['c:GBR'])
+                    m=next(c for c in rt.country['characters'] if c['template']=='SB_ZUL_mthonga')
+                    self.assertIn('sb_court_mthonga_declared_var',m['vars'])
+                    self.assertIn('sb_court_claimant_trait',m['traits'])
+                    self.assertIs(rt.cetshwayo,rt.house['vars']['sb_court_successor_pledge_scope'])
+                else:
+                    self.assertNotIn('sb_court_dunn_admitted_var',dunn['vars'])
+                    self.assertFalse(any(c['template']=='SB_ZUL_mthonga' for c in rt.country['characters']))
+                    if kill=='yes':
+                        self.assertFalse(dunn['alive'])
+                        self.assertEqual(-10,rt.country['relations']['c:GBR'])
+                        self.assertIn('sb_court_victors_avenged',rt.cetshwayo['modifiers'])
+                        self.assertIn({'name':'sb_court_victors_avenged','years':'5'},rt.cetshwayo['modifier_terms'])
+                    else:
+                        self.assertTrue(dunn['alive'])
+                        self.assertIs(rt.countries['c:NAL'],dunn['owner'])
+                        self.assertNotIn('relations',rt.country)
+                self.assertNotIn('sb_court_dunn_judgement_var',dunn['vars'])
+                before=(rt.created,len(rt.cetshwayo.get('modifier_terms',[])),dict(rt.country.get('relations',{})))
+                rt.effect([('sb_court_answer_dunn_judgement','=',[('KEEP','=',keep),('KILL','=',kill)])],rt.country)
+                self.assertEqual(before,(rt.created,len(rt.cetshwayo.get('modifier_terms',[])),dict(rt.country.get('relations',{}))))
+                self.assertEqual({},rt.scopes['root']['vars'])
+
+    def test_stale_judgement_cannot_reward_or_introduce_mthonga(self):
+        for invalid in ('dead','foreign','new_ruler'):
+            rt,dunn=self.judgement()
+            if invalid=='dead':dunn['alive']=False
+            elif invalid=='foreign':dunn['owner']=rt.countries['c:NAL']
+            else:rt.country['ruler']=rt.mbuyazi
+            before=rt.created
+            for keep,kill in (('yes','no'),('no','yes'),('no','no')):
+                rt.effect([('sb_court_answer_dunn_judgement','=',[('KEEP','=',keep),('KILL','=',kill)])],rt.country)
+            self.assertEqual(before,rt.created)
+            self.assertNotIn('relations',rt.country)
+            self.assertNotIn('sb_court_victors_avenged',rt.cetshwayo.get('modifiers',{}))
+
+    def test_mthonga_waits_for_dunn_choice_instead_of_automatic_1857_declaration(self):
         rt=LaterCourtRuntime();m=rt.actor('SB_ZUL_mthonga',0,18,1)
         m['vars']['sb_court_deferred_dynast_var']=1
         rt.global_vars['sb_court_mthonga_created_var']=1
@@ -389,9 +473,29 @@ class DunnAndPrincesTests(unittest.TestCase):
         self.assertNotIn('sb_court_mthonga_declared_var',m['vars'])
         rt.country['ruler']=rt.cetshwayo
         rt.run('sb_court_later_princes_monthly')
+        self.assertNotIn('sb_court_mthonga_declared_var',m['vars'])
+        rt.run('sb_court_declare_mthonga')
         self.assertIn('sb_court_mthonga_declared_var',m['vars'])
         self.assertIn('sb_court_claimant_trait',m['traits'])
         self.assertNotIn('sb_court_successor_pledge_scope',rt.house['vars'])
+
+    def test_mthonga_declaration_never_recreates_or_overrides_a_resolved_claim(self):
+        for invalid in ('dead','foreign','renounced','retired','minor','created_receipt'):
+            rt=LaterCourtRuntime()
+            rt.global_vars['sb_court_mthonga_created_var']=1
+            if invalid!='created_receipt':
+                m=rt.actor('SB_ZUL_mthonga',0,18,1)
+                m['vars']['sb_court_deferred_dynast_var']=1
+                if invalid=='dead':m['alive']=False
+                elif invalid=='foreign':
+                    m['owner']=rt.countries['c:NAL']
+                    rt.country['characters'].remove(m)
+                elif invalid=='minor':m['age']=15
+                else:m['vars']['sb_court_claim_renounced_var' if invalid=='renounced' else 'sb_court_retired_var']=1
+            rt.run('sb_court_declare_mthonga')
+            self.assertEqual(0,rt.created,invalid)
+            if invalid!='created_receipt':
+                self.assertNotIn('sb_court_mthonga_declared_var',m['vars'],invalid)
 
 
 if __name__=='__main__':unittest.main()

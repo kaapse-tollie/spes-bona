@@ -277,11 +277,11 @@ class CourtReworkBehaviour(unittest.TestCase):
         rt, king, prince, chief = court()
         king['template'] = 'ZUL_mpande_zulu'
         prince['template'] = 'ZUL_cetshwayo_heir'
-        rt.country.update(game_date=18560731)
+        rt.country.update(game_date=18560630)
         rt.country['vars']['sb_court_recognized_heir_scope'] = prince
         rt.effect(EFFECTS['sb_court_reconcile_succession'],rt.country)
         self.assertEqual([],rt.country.get('events',[]))
-        rt.country['game_date'] = 18560801
+        rt.country['game_date'] = 18560701
         rt.country['vars']['sb_court_dunn_offer_var']=1
         rt.effect(EFFECTS['sb_court_reconcile_succession'],rt.country)
         self.assertEqual([],rt.country.get('events',[]))
@@ -317,6 +317,20 @@ class CourtReworkBehaviour(unittest.TestCase):
         self.assertIs(king,rt.country['ruler'])
         self.assertNotIn('sb_court_accession_open_var',rt.country['vars'])
 
+    def test_accession_resets_prerogative_once_without_resetting_the_same_sovereign(self):
+        for start in (-75, 60):
+            rt,king,prince,_ = court()
+            rt.country['vars'].update(sb_prerogative_var=start, sb_prerogative_last_change_var=4)
+            rt.scopes['sb_court_successor'] = prince
+            rt.effect(EFFECTS['sb_court_install_successor'],rt.country)
+            self.assertIs(prince,rt.country['ruler'])
+            self.assertEqual(0,rt.country['vars']['sb_prerogative_var'])
+            self.assertEqual(0,rt.country['vars']['sb_prerogative_last_change_var'])
+            rt.country['vars']['sb_prerogative_var'] = 12
+            rt.effect(EFFECTS['sb_court_install_successor'],rt.country)
+            self.assertEqual(12,rt.country['vars']['sb_prerogative_var'])
+            self.assertNotIn('sb_prerogative_var',rt.scopes['root']['vars'])
+
     def test_institutional_exit_invalidates_open_accession(self):
         rt,king,prince,_ = court()
         rt.scopes['sb_court_outgoing'] = king
@@ -326,6 +340,20 @@ class CourtReworkBehaviour(unittest.TestCase):
         rt.effect(EFFECTS['sb_court_answer_accession'],rt.country)
         self.assertIs(king,rt.country['ruler'])
         self.assertNotIn('sb_court_accession_open_var',rt.country['vars'])
+
+    def test_native_fallback_resets_only_a_new_royal_ruler_in_the_authored_country(self):
+        source=(ROOT/'common/on_actions/sb_court_on_actions.txt').read_text(encoding='utf-8-sig')
+        hook=dict((k,v) for k,_,v in statements(find_object(source,'sb_court_on_ruler_selected')))['effect']
+        for authored in (False,True):
+            rt,king,prince,_=court()
+            rt.country['ruler']=prince
+            rt.country['vars'].update(sb_court_incumbent_scope=king,sb_prerogative_var=60,sb_prerogative_last_change_var=4)
+            if not authored:rt.country['id']='FRA'
+            rt.effect(hook,prince)
+            self.assertEqual(0 if authored else 60,rt.country['vars']['sb_prerogative_var'])
+            rt.country['vars']['sb_prerogative_var']=12
+            rt.effect(hook,prince)
+            self.assertEqual(12,rt.country['vars']['sb_prerogative_var'])
 
     def test_contested_accession_reserves_live_choice_and_blocks_other_negotiations(self):
         rt,king,prince,chief = court()
@@ -357,10 +385,13 @@ class CourtReworkBehaviour(unittest.TestCase):
         self.assertIs(minor,rt.country['heir'])
         self.assertTrue(rt.condition(TRIGGERS['sb_court_dynastic_candidate'],minor))
         self.assertEqual(0,minor['vars']['sb_court_following_var'])
+        self.assertEqual(0,rt.country['vars']['sb_prerogative_var'])
+        rt.country['vars']['sb_prerogative_var'] = 35
         adult['alive'] = False
         rt.effect(EFFECTS['sb_court_reconcile_regency'],rt.country)
         self.assertIs(chief,rt.country['ruler'])
         self.assertIs(minor,rt.country['heir'])
+        self.assertEqual(35,rt.country['vars']['sb_prerogative_var'])
         rt.country['vars']['sb_court_privileges_this_reign_var'] = 1
         minor['age'] = 18
         rt.effect(EFFECTS['sb_court_reconcile_regency'],rt.country)
@@ -368,6 +399,7 @@ class CourtReworkBehaviour(unittest.TestCase):
         self.assertNotIn('modifier_regency',rt.country['modifiers'])
         self.assertTrue(chief['alive'])
         self.assertIn('sb_court_privileges_this_reign_var',rt.country['vars'])
+        self.assertEqual(35,rt.country['vars']['sb_prerogative_var'])
 
     def test_council_promise_is_fulfilled_before_checking_for_repudiation(self):
         rt,king,prince,chief = court()
@@ -571,7 +603,7 @@ class CourtReworkContracts(unittest.TestCase):
 
     def test_retirement_regency_and_concurrency_contracts(self):
         s=self.text('common/scripted_effects/sb_court_succession_effects.txt')
-        self.assertIn('game_date >= 1856.8.1',s)
+        self.assertIn('game_date >= 1856.7.1',s)
         self.assertIn('resign_and_retire = yes',s)
         self.assertNotIn('set_character_immortal',s)
         self.assertNotIn('is_at_war = no',s)
@@ -582,10 +614,10 @@ class CourtReworkContracts(unittest.TestCase):
         self.assertIn('sb_court_accession_popup_var',s)
 
     def test_court_section_is_bounded_scrollable_and_keeps_viewed_country(self):
-        gui=self.text('gui/sb_prerogative_progress_bars.gui')
-        self.assertEqual(3,gui.count('section_header_button = {'))
-        self.assertEqual(3,gui.count('blockoverride "onclick_showmore"'))
-        self.assertEqual(3,gui.count('blockoverride "onclick_showless"'))
+        gui=self.text('gui/sb_prerogative_progress_bars.gui') + self.text('gui/sb_court_house_roster.gui')
+        self.assertEqual(4,gui.count('section_header_button = {'))
+        self.assertEqual(4,gui.count('blockoverride "onclick_showmore"'))
+        self.assertEqual(4,gui.count('blockoverride "onclick_showless"'))
         self.assertNotIn('window = {',gui)
         from tools.check_override_inventory import extract_braced_object
         import re
@@ -594,8 +626,10 @@ class CourtReworkContracts(unittest.TestCase):
         self.assertEqual(3,len(panels))
         for name,panel in zip(('current','succession','houses'),panels):
             self.assertIn(f'name = sb_court_{name}_panel',panel)
-            self.assertIn(f'visible = "[GetVariableSystem.Exists(\'sb_court_{name}_open\')]"',panel)
-            self.assertIn(f"GetVariableSystem.Toggle('sb_court_{name}_open')",gui)
+            if name != 'houses':
+                self.assertIn(f"GetVariableSystem.Toggle('sb_court_{name}_open')",gui)
+            else:
+                self.assertIn("Concatenate('sb_court_houses_', Country.GetIDString)",panel)
             self.assertIn('size = { 504 560 }',panel)
             self.assertIn('blockoverride "scrollbox_content"',panel)
         self.assertNotIn('GetVariableSystem.Set',gui)  # All three start closed.

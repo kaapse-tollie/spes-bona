@@ -17,6 +17,7 @@ sb_zululand_under_british_postwar_control = {
 		is_country_alive = yes
 		is_subject_of = c:GBR
 		has_variable = sb_natalia_british_colony_resolved_var
+		NOT = { has_variable = sb_klip_river_secession_settlement_pending_var }
 	}
 	OR = {
 		c:ZUL ?= {
@@ -72,11 +73,9 @@ sb_zululand_chiefdoms_involved_actor = {
 	OR = {
 		country_definition = cd:NAL
 		this = global_var:sb_zululand_live_zul_scope
+		container:sb_zululand_chiefdoms_state ?= { var:sb_chiefs_rebels_scope ?= prev }
 		country_definition = cd:GBR
-		AND = {
-			country_definition = cd:TRN
-			any_scope_state = { state_region = s:STATE_EAST_TRANSVAAL }
-		}
+		sb_zululand_trn_is_eligible_participant = yes
 	}
 }
 
@@ -95,11 +94,27 @@ sb_zululand_can_unload_refugees = {
 sb_zululand_can_return_claimant = {
 	country_definition = cd:NAL
 	sb_zululand_contest_interventions_available = yes
-	NOT = { has_variable = sb_zululand_claimant_returned_var }
 	global_var:sb_zululand_live_zul_scope ?= {
-		var:sb_court_restoration_claimant_scope ?= { is_character_alive = yes }
+		var:sb_court_restoration_claimant_scope ?= {
+			sb_court_royal_candidate = yes
+			NOT = { is_ruler_of_own_country = yes }
+			NOT = { has_variable = sb_zululand_claimant_returned_var }
+		}
 	}
 
+}
+
+# Any caller. The country-wide receipt alone does not prove the current claimant returned.
+sb_zululand_returned_claimant_present = {
+	global_var:sb_zululand_live_zul_scope ?= {
+		var:sb_court_restoration_claimant_scope ?= {
+			sb_court_royal_candidate = yes
+			has_variable = sb_zululand_claimant_returned_var
+			owner ?= prev
+			is_in_exile_pool = no
+			is_in_void = no
+		}
+	}
 }
 
 sb_zululand_trn_is_eligible_participant = {
@@ -293,12 +308,15 @@ sb_nrp_boundary_current_political_authority = {
 	trigger_else = { is_subject = no }
 }
 
-# Institutional exit suspends interventions, not the unresolved political record.
+# Partition interventions have their own lifecycle, independent of institutional exit.
 sb_zululand_contest_interventions_available = {
 	trigger_if = { limit = { country_definition = cd:TRN } sb_nrp_chiefdoms_promise_available = yes }
 	sb_zululand_chiefdoms_situation_active = yes
 	c:NAL ?= { sb_zululand_chiefdoms_runtime_valid = yes }
-	global_var:sb_zululand_live_zul_scope ?= { has_variable = sb_institutions_active_var }
+	OR = {
+		global_var:sb_zululand_live_zul_scope ?= { sb_chiefs_partition_intact = yes }
+		sb_chiefs_active_split = yes
+	}
 }
 
 sb_zululand_can_bribe_chief = {
@@ -314,6 +332,9 @@ sb_zululand_can_bribe_chief = {
 sb_zululand_neutral_chief = {
 	sb_court_adult_member = yes
 	sb_court_alignment_eligible = yes
+	var:sb_court_home_scope ?= global_var:sb_zululand_live_zul_scope
+ has_variable = sb_court_representative_var
+	var:sb_court_represented_weight_var > 0
 	owner ?= global_var:sb_zululand_live_zul_scope
 	is_in_exile_pool = no
 	is_in_void = no

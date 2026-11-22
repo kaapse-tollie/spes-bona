@@ -1,0 +1,133 @@
+﻿# Partition identity is shared; a foreign observer is never the affected country.
+sb_chiefs_contest_country = {
+ sb_zululand_chiefdoms_situation_active = yes
+ OR = {
+  this = global_var:sb_zululand_live_zul_scope
+  container:sb_zululand_chiefdoms_state ?= { var:sb_chiefs_origin_scope ?= prev }
+  container:sb_zululand_chiefdoms_state ?= { var:sb_chiefs_rebels_scope ?= prev }
+ }
+}
+
+# Any caller. Natal's actual overlord, including indirect subjects; no GBR assumption.
+sb_chiefs_boer_shares_natal_overlord = {
+ c:NAL ?= {
+  is_country_alive = yes
+  is_subject = yes
+  overlord = { c:TRN ?= { is_subject_of = prev } }
+ }
+}
+
+sb_chiefs_native_mode = {
+ container:sb_zululand_chiefdoms_state ?= { has_variable = sb_chiefs_native_test_var }
+}
+
+# Movement scope. Preserve other movements, recruitment and law pressure.
+sb_chiefs_other_uprising_allowed = {
+ OR = { civil_war ?= { civil_war_progress >= 1 } owner ?= { NOT = { sb_chiefs_contest_country = yes } } }
+}
+sb_chiefs_constitutional_uprising_allowed = {
+ OR = {
+  civil_war ?= { civil_war_progress >= 1 }
+  owner ?= { NOT = { sb_chiefs_contest_country = yes } }
+  sb_chiefs_native_mode = yes
+ }
+}
+
+sb_chiefs_partition_intact = {
+ is_country_alive = yes
+ c:NAL ?= { is_country_alive = yes }
+ is_direct_subject_of = c:NAL
+ owns_entire_state_region = STATE_ZULULAND
+}
+# The shared situation retains its activation date across observers and reloads.
+sb_chiefs_review_due = {
+ c:NAL ?= { je:je_sb_zululand_chiefdoms ?= { journal_entry_age >= 3650 } }
+}
+
+sb_chiefs_chiefly_constitution = {
+ has_law = law_type:law_sb_federated_chiefdoms
+ has_law = law_type:law_sb_chiefly_council
+}
+sb_chiefs_royal_constitution = {
+ has_law = law_type:law_monarchy
+ has_law = law_type:law_autocracy
+}
+sb_chiefs_valid_claimant = { var:sb_court_restoration_claimant_scope ?= { sb_court_royal_candidate = yes } }
+sb_chiefs_royal_restored = {
+ sb_chiefs_royal_constitution = yes
+ sb_chiefs_valid_claimant = yes
+ trigger_if = {
+  limit = { exists = var:sb_court_restoration_claimant_scope }
+  ruler ?= var:sb_court_restoration_claimant_scope
+ }
+ trigger_else = { always = no }
+}
+
+# Joining-rule country scope; both sides must match the recorded native conflict.
+# The existing Chiefdoms pact must also pass DP's automatic-participation replay.
+sb_chiefs_foreign_join_allowed = {
+ trigger_if = {
+  limit = {
+   sb_zululand_chiefdoms_situation_active = yes
+   sb_chiefs_native_mode = yes
+   exists = container:sb_zululand_chiefdoms_state.var:sb_chiefs_origin_scope
+   exists = container:sb_zululand_chiefdoms_state.var:sb_chiefs_rebels_scope
+   exists = container:sb_zululand_chiefdoms_state.var:sb_chiefs_war_scope
+   exists = scope:target_country
+   exists = scope:enemy_country
+  }
+  NOT = {
+   AND = {
+    OR = {
+     AND = {
+      scope:target_country = container:sb_zululand_chiefdoms_state.var:sb_chiefs_origin_scope
+      scope:enemy_country = container:sb_zululand_chiefdoms_state.var:sb_chiefs_rebels_scope
+     }
+     AND = {
+      scope:target_country = container:sb_zululand_chiefdoms_state.var:sb_chiefs_rebels_scope
+      scope:enemy_country = container:sb_zululand_chiefdoms_state.var:sb_chiefs_origin_scope
+     }
+    }
+    NOT = {
+     OR = {
+      this = container:sb_zululand_chiefdoms_state.var:sb_chiefs_origin_scope
+      this = container:sb_zululand_chiefdoms_state.var:sb_chiefs_rebels_scope
+     }
+    }
+   }
+  }
+ }
+ trigger_else = { always = yes }
+}
+
+# Only an authenticated counterpart can temporarily stand outside Natal's pact.
+sb_chiefs_active_split = {
+ container:sb_zululand_chiefdoms_state ?= {
+  exists = var:sb_chiefs_war_scope
+  var:sb_chiefs_war_scope = { is_civil_war_type = revolution civil_war_progress >= 1 }
+  var:sb_chiefs_origin_scope ?= { is_country_alive = yes is_direct_subject_of = c:NAL }
+  var:sb_chiefs_rebels_scope ?= { is_country_alive = yes }
+ }
+}
+sb_chiefs_winner_ready = {
+ is_country_alive = yes
+ owns_entire_state_region = STATE_ZULULAND
+ c:NAL ?= { is_country_alive = yes }
+ OR = { is_direct_subject_of = c:NAL AND = { is_subject = no container:sb_zululand_chiefdoms_state.var:sb_chiefs_rebels_scope ?= this } }
+}
+
+# Country winner scope: authenticate the saved pair even after native war deletion.
+sb_chiefs_recorded_war_pair = {
+ sb_chiefs_native_mode = yes
+ exists = var:sb_court_civil_war_var
+ OR = {
+  AND = {
+   this = container:sb_zululand_chiefdoms_state.var:sb_chiefs_origin_scope
+   var:sb_court_civil_war_var = container:sb_zululand_chiefdoms_state.var:sb_chiefs_rebels_scope
+  }
+  AND = {
+   this = container:sb_zululand_chiefdoms_state.var:sb_chiefs_rebels_scope
+   var:sb_court_civil_war_var = container:sb_zululand_chiefdoms_state.var:sb_chiefs_origin_scope
+  }
+ }
+}

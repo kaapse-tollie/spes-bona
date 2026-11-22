@@ -1,0 +1,129 @@
+﻿# The side choice activates recruitment for a new one-state episode.
+# .990 remains a diagnostic; neither entry retrofits an existing movement or war.
+sb_court_enable_recruitment_trial = {
+ if = {
+  limit = {
+   has_variable = sb_court_dynastic_crisis_var
+   has_variable = sb_court_dynastic_selection_open_var
+   NOT = { has_variable = sb_court_dynastic_test_pending_var }
+   NOT = { has_variable = sb_court_dynastic_preparing_war_scope }
+   NOT = { has_variable = sb_court_dynastic_war_scope }
+   num_states = 1
+   sb_court_dynastic_pair_valid = yes
+  }
+  set_variable = sb_court_recruitment_trial_var
+ }
+}
+
+# Country scope, after the chosen side and target are frozen, before creation.
+sb_court_initialise_recruitment_trial = {
+ if = {
+  limit = { has_variable = sb_court_recruitment_trial_var }
+  if = {
+   limit = { num_states = 1 }
+   set_variable = { name = sb_court_recruitment_rebel_scope value = var:sb_court_dynastic_rival_scope }
+   if = { limit = { has_variable = sb_court_dynastic_back_claimant_var } set_variable = { name = sb_court_recruitment_rebel_scope value = var:sb_court_dynastic_nominee_scope } }
+   set_variable = { name = sb_court_recruitment_factor_var value = sb_court_recruitment_initial_factor }
+   set_variable = { name = sb_court_recruitment_weeks_var value = 0 }
+   save_scope_as = sb_court_country
+   var:sb_court_recruitment_rebel_scope = { save_scope_as = sb_court_recruitment_rebel }
+   debug_log = "SB recruitment trial started: country=[SCOPE.sCountry('sb_court_country').GetName]; rebel=[SCOPE.sCharacter('sb_court_recruitment_rebel').GetFullName]; target=[SCOPE.sCountry('sb_court_country').MakeScope.Var('sb_court_dynastic_target_var').GetValue]; attraction factor=[SCOPE.sCountry('sb_court_country').MakeScope.Var('sb_court_recruitment_factor_var').GetValue]"
+  }
+  else = { remove_variable = sb_court_recruitment_trial_var }
+ }
+}
+
+sb_court_apply_recruitment_trial = {
+ if = {
+  limit = { has_variable = sb_court_recruitment_trial_var exists = var:sb_court_dynastic_movement_scope }
+  var:sb_court_dynastic_movement_scope = {
+   if = { limit = { has_modifier = sb_court_coalition_recruitment } remove_modifier = sb_court_coalition_recruitment }
+   add_modifier = { name = sb_court_coalition_recruitment multiplier = owner.sb_court_recruitment_modifier_scale }
+  }
+ }
+}
+
+# Sample settled support before advancement or any new membership refresh.
+# Only the weekly .991 delivery counts samples; monthly reconciliation does not.
+sb_court_tick_recruitment_trial = {
+ if = {
+  limit = {
+   has_variable = sb_court_recruitment_trial_var
+   has_variable = sb_court_dynastic_test_pending_var
+   NOT = { has_variable = sb_court_recruitment_failed_var }
+   NOT = { has_variable = sb_court_dynastic_advanced_var }
+   NOT = { has_variable = sb_court_dynastic_war_scope }
+   exists = var:sb_court_dynastic_movement_scope
+   sb_court_dynastic_pair_valid = yes
+  }
+  save_scope_as = sb_court_country
+  if = {
+   limit = { num_states = 1 }
+   change_variable = { name = sb_court_recruitment_weeks_var add = 1 }
+   debug_log = "SB recruitment trial: week=[SCOPE.sCountry('sb_court_country').MakeScope.Var('sb_court_recruitment_weeks_var').GetValue]; target=[SCOPE.sCountry('sb_court_country').MakeScope.Var('sb_court_dynastic_target_var').GetValue]; support=[SCOPE.sCountry('sb_court_country').MakeScope.ScriptValue('sb_court_recruitment_support')]; popular=[SCOPE.sCountry('sb_court_country').MakeScope.ScriptValue('sb_court_recruitment_popular')]; military=[SCOPE.sCountry('sb_court_country').MakeScope.ScriptValue('sb_court_recruitment_military')]; wealth=[SCOPE.sCountry('sb_court_country').MakeScope.ScriptValue('sb_court_recruitment_wealth')]; attraction factor=[SCOPE.sCountry('sb_court_country').MakeScope.Var('sb_court_recruitment_factor_var').GetValue]"
+  }
+  else = {
+   set_variable = sb_court_recruitment_failed_var
+   debug_log = "SB recruitment trial stopped: the pending origin no longer owns exactly one state. Preserve this save and reload the pre-trial checkpoint."
+  }
+ }
+}
+
+# Run after advancement so a qualified war on sample 26 takes precedence.
+# A stalled organising object is not a completed trial and cannot evade the budget.
+sb_court_finish_recruitment_trial_tick = {
+ if = {
+  limit = {
+   has_variable = sb_court_recruitment_trial_var
+   has_variable = sb_court_dynastic_test_pending_var
+   NOT = { has_variable = sb_court_recruitment_failed_var }
+   NOT = { has_variable = sb_court_dynastic_advanced_var }
+   NOT = { has_variable = sb_court_dynastic_war_scope }
+   var:sb_court_recruitment_weeks_var >= 26
+  }
+  set_variable = sb_court_recruitment_failed_var
+  debug_log = "SB recruitment trial failed to advance a qualified war within 26 weekly samples. Preserve this save and reload the pre-trial checkpoint; no winner or peaceful settlement was granted."
+ }
+}
+
+# After advancement and expiry checks, request one native membership turn in the
+# pending country. This also recalculates its other movements and interest groups.
+# Freeze the next factor, refresh using LAST week's settled modifier, then apply
+# the next modifier. Do not sample support again until a later native update.
+sb_court_refresh_recruitment_trial = {
+ if = {
+  limit = {
+   has_variable = sb_court_recruitment_trial_var
+   has_variable = sb_court_dynastic_test_pending_var
+   NOT = { has_variable = sb_court_recruitment_failed_var }
+   NOT = { has_variable = sb_court_dynastic_advanced_var }
+   NOT = { has_variable = sb_court_dynastic_war_scope }
+   num_states = 1
+   var:sb_court_recruitment_weeks_var >= 1
+   var:sb_court_recruitment_weeks_var < 26
+   sb_court_dynastic_pair_valid = yes
+   exists = var:sb_court_dynastic_movement_scope
+   var:sb_court_dynastic_movement_scope = {
+    is_political_movement_type = movement_sb_dynastic_test
+    owner = prev
+    NOT = { sb_court_recruitment_ready = yes }
+   }
+  }
+  set_variable = { name = sb_court_recruitment_factor_var value = sb_court_recruitment_next_factor }
+  recalculate_pop_ig_support = yes
+  sb_court_apply_recruitment_trial = yes
+  save_scope_as = sb_court_country
+  debug_log = "SB recruitment refresh: week=[SCOPE.sCountry('sb_court_country').MakeScope.Var('sb_court_recruitment_weeks_var').GetValue]; next attraction factor=[SCOPE.sCountry('sb_court_country').MakeScope.Var('sb_court_recruitment_factor_var').GetValue]; membership refreshed with the previous week's modifier; support sampled on the next weekly delivery."
+ }
+}
+
+sb_court_clear_recruitment_trial = {
+ var:sb_court_dynastic_movement_scope ?= {
+  if = { limit = { has_modifier = sb_court_coalition_recruitment } remove_modifier = sb_court_coalition_recruitment }
+ }
+ remove_variable = sb_court_recruitment_trial_var
+ remove_variable = sb_court_recruitment_rebel_scope
+ remove_variable = sb_court_recruitment_factor_var
+ remove_variable = sb_court_recruitment_weeks_var
+ remove_variable = sb_court_recruitment_failed_var
+}

@@ -1,5 +1,7 @@
 ﻿# Ongoing institutions. Exit retains the country registry and can later re-enter.
 je_sb_zulu_kingdom = {
+ activation_description = { always = yes }
+
  group = je_group_historical_content
  icon = "gfx/interface/icons/event_icons/event_scales.dds"
  scripted_progress_bar = sb_zulu_dynastic_stability_bar
@@ -12,18 +14,22 @@ je_sb_zulu_kingdom = {
  possible = { sb_institutions_eligible = yes }
  scripted_button = sb_court_recognize_successor_button
  scripted_button = sb_court_introduce_heir_button
- scripted_button = sb_court_accommodation_button
  immediate = {
   sb_institutions_initialize = yes
   set_variable = sb_institutions_active_var
   sb_institutions_recalculate = yes
  }
  status_desc = je_sb_zulu_kingdom_status
- invalid = { NOT = { sb_institutions_eligible = yes } }
- on_invalid = {
-  remove_variable = sb_institutions_active_var
-  sb_institutions_clear_effects = yes
- }
+	outcome = {
+		flags = { hidden invalid_outcome }
+		conclusion_desc = je_standard_failure_conclusion_desc
+		trigger = { NOT = { sb_institutions_eligible = yes } }
+		effect = {
+	  remove_variable = sb_institutions_active_var
+	  sb_institutions_clear_effects = yes
+	 }
+	}
+
  weight = 1000
  should_be_pinned_by_default_uninvolved_or_context = yes
 }

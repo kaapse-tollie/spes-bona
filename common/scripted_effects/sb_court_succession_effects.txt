@@ -59,8 +59,8 @@ sb_court_reconcile_succession = {
    NOT = { has_variable = sb_court_civil_war_var }
    NOT = { has_variable = sb_court_dynastic_war_scope } NOT = { has_variable = sb_court_dynastic_crisis_var }
    ruler ?= { has_template = ZUL_mpande_zulu }
-   # Allow roughly four months of claimant mobilisation towards December.
-   game_date >= 1856.8.1
+   # Allow roughly five months including acknowledgement and native recruitment.
+   game_date >= 1856.7.1
    NOT = { has_variable = sb_court_mpande_retired_var }
    NOT = { has_variable = sb_court_dunn_offer_var }
   }
@@ -143,6 +143,13 @@ sb_court_install_successor = {
      scope:sb_court_country = { activate_law = law_type:law_sb_chiefly_council }
     }
     remove_variable = sb_court_outgoing_endorsement_var
+   }
+   # A new reign starts at neutral Prerogative. Reinstallation and the same
+   # sovereign reaching majority do not erase co-operation earned in this reign.
+   if = {
+    limit = { NOT = { var:sb_court_incumbent_scope ?= scope:sb_court_successor } NOT = { scope:sb_court_maturing_sovereign ?= scope:sb_court_successor } }
+    set_variable = { name = sb_prerogative_var value = 0 }
+    set_variable = { name = sb_prerogative_last_change_var value = 0 }
    }
    ruler = { set_variable = { name = sb_court_endorsement_var value = 1 } remove_variable = sb_court_claimant_scope }
    set_variable = { name = sb_court_incumbent_scope value = ruler }
@@ -251,6 +258,10 @@ sb_court_introduce_son = {
  }
 }
 sb_court_present_newborn = {
+ # A generated child shares the explicitly established parental branch.
+ scope:new_heir_scope = {
+  if = { limit = { var:sb_court_following_var = 0 scope:sb_court_country.ruler.var:sb_court_following_var > 0 } set_variable = { name = sb_court_following_var value = scope:sb_court_country.ruler.var:sb_court_following_var } }
+ }
  ruler = { set_variable = { name = sb_court_presented_son_scope value = scope:new_heir_scope } }
  sb_change_prerogative = { VALUE = -50 }
  sb_zulu_assign_new_heir_scope = yes
@@ -326,7 +337,7 @@ sb_court_introduce_known_children = {
  save_scope_as = sb_court_country
  if = {
   limit = {
-   has_variable = sb_institutions_active_var game_date >= 1868.1.1
+   OR = { has_variable = sb_institutions_active_var sb_chiefs_contest_country = yes } game_date >= 1868.1.1
    NOT = { is_template_used = ZUL_dinuzulu_heir }
    any_in_list = {
     variable = sb_court_members is_character_alive = yes
@@ -338,7 +349,7 @@ sb_court_introduce_known_children = {
  }
  if = {
   limit = {
-   has_variable = sb_institutions_active_var game_date >= 1891.1.1
+   OR = { has_variable = sb_institutions_active_var sb_chiefs_contest_country = yes } game_date >= 1891.1.1
    NOT = { is_template_used = ZUL_solomon_heir }
    any_in_list = {
     variable = sb_court_members is_character_alive = yes

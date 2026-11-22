@@ -146,7 +146,7 @@ class CourtHouseholds(unittest.TestCase):
         history=(ROOT/'common/history/characters/zul - zulu.txt').read_text(encoding='utf-8-sig')
         self.assertIn('set_variable = no_heirs',history)
         self.assertIn('on_created = { add_character_role = politician }',history)
-        gui=(ROOT/'gui/sb_prerogative_progress_bars.gui').read_text(encoding='utf-8-sig')
+        gui=(ROOT/'gui/sb_prerogative_progress_bars.gui').read_text(encoding='utf-8-sig') + (ROOT/'gui/sb_court_house_roster.gui').read_text(encoding='utf-8-sig')
         import re
         buttons=[find_object(gui[m.start():],'sb_court_character_button') for m in re.finditer(r'sb_court_character_button\s*=\s*\{',gui)]
         self.assertEqual(6,len(buttons))

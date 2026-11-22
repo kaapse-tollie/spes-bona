@@ -367,8 +367,8 @@ class CourtDeckAndChoices(unittest.TestCase):
     def test_action_portraits_resolve_the_named_subject(self):
         text=(ROOT/'events/sb_court_politics_events.txt').read_text(encoding='utf-8-sig')
         events={f'sb_court_politics.{n}': statements(find_object(text,f'sb_court_politics.{n}'))
-                for n in ('001','002','003','004','005','006')}
-        for number in ('001','002','003','004'):
+                for n in ('001','002','003')}
+        for number in ('001','002','003'):
             with self.subTest(event=number):
                 rt,king,prince,*_=setup()
                 rt.country['vars'].update(sb_court_action_actor_scope=prince)
@@ -377,16 +377,6 @@ class CourtDeckAndChoices(unittest.TestCase):
                 self.assertEqual('event_window_1char_tabloid',event['gui_window'])
                 self.assertNotIn('event_image',event)
                 self.assertIs(king if number=='001' else prince,rt.ref(event['left_icon'],rt.country))
-        # Accommodation results inherit the event's named actor, not the removed country variable.
-        rt.scopes.pop('sb_court_actor')
-        rt.effect(fields(events['sb_court_politics.004'])['immediate'],rt.country)
-        rt.effect([('sb_court_action_cleanup','=','yes')],rt.country)
-        self.assertNotIn('sb_court_action_actor_scope',rt.country['vars'])
-        for number in ('005','006'):
-            event=fields(events[f'sb_court_politics.{number}'])
-            self.assertEqual('event_window_1char_tabloid',event['gui_window'])
-            self.assertNotIn('event_image',event)
-            self.assertIs(prince,rt.ref(event['left_icon'],rt.country))
     def test_disputed_award_distinct_houses_and_no_free_valid_escape(self):
         rt,*_=self.deliver(214);a=rt.country['vars']['sb_court_episode_actor_scope'];b=rt.country['vars']['sb_court_episode_other_scope']
         self.assertIsNot(a,b);self.assertFalse(rt.answer(214,'z'))

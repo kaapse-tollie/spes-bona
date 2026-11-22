@@ -76,8 +76,14 @@ sb_hamu_record_accession = {
   global_var:sb_hamu_sponsor_scope ?= {
    if = {
     limit = { has_variable = sb_hamu_contract_var NOR = { has_variable = sb_hamu_failed_var has_variable = sb_hamu_fulfilled_var } var:sb_hamu_prince_scope ?= scope:sb_hamu_winner.ruler }
-    set_variable = sb_hamu_earned_var
-    if = { limit = { exists = scope:sb_hamu_winner.var:sb_court_dynastic_opponent_scope } set_variable = { name = sb_hamu_reunion_scope value = scope:sb_hamu_winner.var:sb_court_dynastic_opponent_scope } }
+    if = {
+     limit = { NOT = { has_variable = sb_hamu_earned_var } }
+     # Freeze the defeated side before either controller clears its conflict records.
+     # Repeated accession callbacks must not replace an already earned reunion receipt.
+     set_variable = sb_hamu_earned_var
+     if = { limit = { exists = scope:sb_hamu_winner.var:sb_court_dynastic_opponent_scope } set_variable = { name = sb_hamu_reunion_scope value = scope:sb_hamu_winner.var:sb_court_dynastic_opponent_scope } }
+     else_if = { limit = { exists = scope:sb_hamu_winner.var:sb_court_civil_war_var } set_variable = { name = sb_hamu_reunion_scope value = scope:sb_hamu_winner.var:sb_court_civil_war_var } }
+    }
     set_variable = { name = sb_hamu_court_scope value = scope:sb_hamu_winner }
     sb_hamu_stop_funding = yes
    }

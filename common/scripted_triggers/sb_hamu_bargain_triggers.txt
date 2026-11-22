@@ -1,6 +1,11 @@
 ﻿# Shared reservation: accepting either territorial undertaking excludes the other.
 sb_nrp_chiefdoms_promise_available = {
- NOR = { has_global_variable = sb_hamu_promise_live_var has_global_variable = sb_nrp_reward_consumed_var }
+ NOR = {
+  has_global_variable = sb_hamu_promise_live_var
+  has_global_variable = sb_nrp_reward_consumed_var
+  has_global_variable = sb_chiefs_boer_forfeited_var
+  sb_chiefs_boer_shares_natal_overlord = yes
+ }
 }
 sb_hamu_land_owned = {
  p:xE1E455.state.owner = this
@@ -10,11 +15,12 @@ sb_hamu_land_owned = {
  p:x9E9742.state.owner = this
 }
 sb_hamu_land_within_conflict = {
- p:xE1E455.state.owner = { OR = { this = prev var:sb_court_dynastic_opponent_scope ?= prev } }
- p:xE882CE.state.owner = { OR = { this = prev var:sb_court_dynastic_opponent_scope ?= prev } }
- p:xBE6FEE.state.owner = { OR = { this = prev var:sb_court_dynastic_opponent_scope ?= prev } }
- p:x904EBE.state.owner = { OR = { this = prev var:sb_court_dynastic_opponent_scope ?= prev } }
- p:x9E9742.state.owner = { OR = { this = prev var:sb_court_dynastic_opponent_scope ?= prev } }
+ # Either court controller records the exact other faction; unrelated rebels do not qualify.
+ p:xE1E455.state.owner = { OR = { this = prev var:sb_court_dynastic_opponent_scope ?= prev var:sb_court_civil_war_var ?= prev } }
+ p:xE882CE.state.owner = { OR = { this = prev var:sb_court_dynastic_opponent_scope ?= prev var:sb_court_civil_war_var ?= prev } }
+ p:xBE6FEE.state.owner = { OR = { this = prev var:sb_court_dynastic_opponent_scope ?= prev var:sb_court_civil_war_var ?= prev } }
+ p:x904EBE.state.owner = { OR = { this = prev var:sb_court_dynastic_opponent_scope ?= prev var:sb_court_civil_war_var ?= prev } }
+ p:x9E9742.state.owner = { OR = { this = prev var:sb_court_dynastic_opponent_scope ?= prev var:sb_court_civil_war_var ?= prev } }
 }
 sb_hamu_candidate = {
  has_template = SB_ZUL_hamu sb_court_royal_candidate = yes

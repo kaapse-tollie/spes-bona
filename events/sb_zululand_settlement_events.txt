@@ -21,6 +21,7 @@ sb_zululand_settlement.001 = {
 		name = sb_zululand_settlement.001.a
 		default_option = yes
 		custom_tooltip = sb_zululand_settlement.001.a.tt
+		custom_tooltip = sb_zululand_settlement.001.a.tt.government
 		hidden_effect = { sb_zululand_handoff_to_natal = yes }
 		ai_chance = { base = 1000 }
 	}
@@ -29,6 +30,8 @@ sb_zululand_settlement.001 = {
 		name = sb_zululand_settlement.001.b
 		trigger = { is_player = yes }
 		custom_tooltip = sb_zululand_settlement.001.b.tt
+		custom_tooltip = sb_zululand_settlement.001.b.tt.radicals
+		custom_tooltip = sb_zululand_settlement.001.b.tt.movement
 		hidden_effect = { sb_zululand_apply_direct_british_administration = yes }
 		ai_chance = { base = 0 }
 	}
@@ -60,9 +63,16 @@ sb_zululand_settlement.110 = {
 		name = sb_zululand_settlement.110.a
 		default_option = yes
 		if = {
-			limit = { sb_zululand_contest_interventions_available = yes }
-			if = { limit = { has_variable = sb_zululand_skirmish_zibhebhu_var } sb_zululand_chiefly_mobilization = yes }
-			else = { sb_zululand_royal_mobilization = yes }
+			limit = { hidden_trigger = { sb_zululand_contest_interventions_available = yes } }
+			if = {
+				limit = { hidden_trigger = { has_variable = sb_zululand_skirmish_zibhebhu_var } }
+				custom_tooltip = sb_zululand_settlement.110.a.chiefs
+				hidden_effect = { sb_zululand_chiefly_mobilization = yes }
+			}
+			else = {
+				custom_tooltip = sb_zululand_settlement.110.a.royals
+				hidden_effect = { sb_zululand_royal_mobilization = yes }
+			}
 		}
 		sb_zululand_finish_situation_event = yes
 	}
@@ -95,14 +105,21 @@ sb_zululand_settlement.112 = {
 		name = sb_zululand_settlement.112.a
 		default_option = yes
 		if = {
-			limit = { sb_zululand_contest_interventions_available = yes }
+			limit = { hidden_trigger = { sb_zululand_contest_interventions_available = yes } }
 			if = {
-				limit = { var:sb_zululand_defector_scope ?= { sb_zululand_neutral_chief = yes } }
-				if = { limit = { has_variable = sb_zululand_defection_zibhebhu_var } var:sb_zululand_defector_scope = { sb_court_align_chiefly = yes } }
-				else = { var:sb_zululand_defector_scope = { sb_court_align_royal = yes } }
-				global_var:sb_zululand_live_zul_scope = { sb_institutions_recalculate = yes }
+				limit = { hidden_trigger = { var:sb_zululand_defector_scope ?= { sb_zululand_neutral_chief = yes } } }
+				if = {
+					limit = { hidden_trigger = { has_variable = sb_zululand_defection_zibhebhu_var } }
+					custom_tooltip = sb_zululand_settlement.112.a.chiefs
+					hidden_effect = { var:sb_zululand_defector_scope = { sb_court_align_chiefly = yes } }
+				}
+				else = {
+					custom_tooltip = sb_zululand_settlement.112.a.royals
+					hidden_effect = { var:sb_zululand_defector_scope = { sb_court_align_royal = yes } }
+				}
+				hidden_effect = { global_var:sb_zululand_live_zul_scope = { sb_institutions_recalculate = yes } }
 			}
-			remove_variable = sb_zululand_defector_scope
+			hidden_effect = { remove_variable = sb_zululand_defector_scope }
 		}
 		sb_zululand_finish_situation_event = yes
 	}
@@ -122,12 +139,23 @@ sb_zululand_settlement.115 = {
 	duration = 3
 
 	trigger = { country_definition = cd:TRN sb_zululand_trn_is_eligible_participant = yes }
+	immediate = { c:NAL ?= { set_variable = sb_zululand_incident_pending_var } }
 	option = {
 		name = sb_zululand_settlement.115.a
-		default_option = yes
-		trigger = { any_scope_pop = { is_pop_type = soldiers total_size >= 500 } }
+		trigger = {
+			custom_tooltip = {
+				text = sb_chiefs_intervention_tt
+				hidden_trigger = { sb_zululand_trn_is_eligible_participant = yes sb_zululand_contest_interventions_available = yes }
+			}
+			custom_tooltip = {
+				text = sb_zululand_settlement.115.a.available
+				hidden_trigger = { any_scope_pop = { is_pop_type = soldiers total_size >= 500 } }
+			}
+		}
 		custom_tooltip = sb_zululand_settlement.115.a.tt
-		sb_zululand_accept_boer_appeal = yes
+		custom_tooltip = sb_zululand_settlement.115.a.tt.commitment
+		custom_tooltip = sb_zululand_settlement.115.a.tt.activism
+		hidden_effect = { sb_zululand_accept_boer_appeal = yes }
 		c:NAL ?= { sb_zululand_finish_situation_event = yes }
 		ai_chance = {
 			base = 0
@@ -155,6 +183,7 @@ sb_zululand_settlement.115 = {
 	}
 	option = {
 		name = sb_zululand_settlement.115.b
+		default_option = yes
 		custom_tooltip = sb_zululand_settlement.115.b.tt
 		c:NAL ?= { sb_zululand_finish_situation_event = yes }
 		ai_chance = {
@@ -205,6 +234,9 @@ sb_zululand_settlement.120 = {
 		name = sb_zululand_settlement.120.a
 		default_option = yes
 		custom_tooltip = sb_zululand_settlement.120.a.tt
+		custom_tooltip = sb_zululand_settlement.120.a.tt.subject
+		custom_tooltip = sb_zululand_settlement.120.a.tt.interventions
+		custom_tooltip = sb_zululand_settlement.120.a.tt.reward
 	}
 }
 
@@ -224,6 +256,10 @@ sb_zululand_settlement.121 = {
 		name = sb_zululand_settlement.121.a
 		default_option = yes
 		custom_tooltip = sb_zululand_settlement.121.a.tt
+		custom_tooltip = sb_zululand_settlement.121.a.tt.subject
+		custom_tooltip = sb_zululand_settlement.121.a.tt.interventions
+		custom_tooltip = sb_zululand_settlement.121.a.tt.reward
+		custom_tooltip = sb_zululand_settlement.121.a.tt.promise
 	}
 }
 
@@ -567,16 +603,25 @@ sb_zululand_settlement.116 = {
 	option = {
 		name = sb_zululand_settlement.116.a
 		trigger = {
-			sb_zululand_contest_interventions_available = yes
-			gold_reserves >= var:sb_zululand_bribe_cost_var
-			var:sb_zululand_bribe_target_scope ?= { sb_zululand_neutral_chief = yes }
+			custom_tooltip = {
+			text = sb_chiefs_intervention_tt
+			hidden_trigger = { has_variable = sb_zululand_bribe_open_var has_variable = sb_zululand_bribe_cost_var sb_zululand_contest_interventions_available = yes }
+		}
+			custom_tooltip = {
+			text = sb_chiefs_bribe_target_tt
+			hidden_trigger = { var:sb_zululand_bribe_target_scope ?= { sb_zululand_neutral_chief = yes } }
+		}
 		}
 		custom_tooltip = sb_zululand_settlement.116.a.tt
+		if = {
+			limit = { hidden_trigger = { country_definition = cd:NAL } }
+			custom_tooltip = sb_zululand_settlement.116.a.tt.chiefs
+		}
+		else = { custom_tooltip = sb_zululand_settlement.116.a.tt.royals }
 		hidden_effect = {
 			if = {
 				limit = {
-					sb_zululand_contest_interventions_available = yes
-					gold_reserves >= var:sb_zululand_bribe_cost_var
+					has_variable = sb_zululand_bribe_open_var has_variable = sb_zululand_bribe_cost_var sb_zululand_contest_interventions_available = yes
 					var:sb_zululand_bribe_target_scope ?= { sb_zululand_neutral_chief = yes }
 				}
 				add_treasury = sb_zululand_bribe_payment

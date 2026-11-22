@@ -85,60 +85,9 @@ sb_court_politics.009 = {
  hidden = yes
  immediate = { sb_court_release_coercion_authority = { AUTHORITY = 200 } }
 }
-sb_court_politics.004 = {
- type = country_event
- placement = root
- title = sb_court_politics.004.t
- desc = sb_court_politics.004.d
- gui_window = event_window_1char_tabloid
- left_icon = scope:sb_court_actor
- icon = "gfx/interface/icons/event_icons/event_portrait.dds"
- duration = 3
- immediate = { var:sb_court_action_actor_scope ?= { save_scope_as = sb_court_actor } var:sb_court_second_candidate_scope ?= { save_scope_as = sb_court_second_candidate } var:sb_court_third_candidate_scope ?= { save_scope_as = sb_court_third_candidate } }
- 
- option = {
-  name = sb_court_politics.004.a
-  trigger = { has_variable = sb_institutions_active_var var:sb_prerogative_var >= 25 var:sb_court_action_actor_scope ?= { sb_court_adult_member = yes } }
-  custom_tooltip = sb_court_politics_004_offer_tt
-  hidden_effect = {
-   if = {
-    limit = { has_variable = sb_institutions_active_var var:sb_prerogative_var >= 25 var:sb_court_action_actor_scope ?= { sb_court_adult_member = yes } }
-    sb_change_prerogative = { VALUE = -25 }
-    random_list = { 0 = { modifier = { add = { value = sb_court_negotiation_acceptance } min = 0 } sb_court_accept_accommodation = yes } 0 = { modifier = { add = { value = sb_court_negotiation_refusal } min = 0 } sb_court_refuse_offer = yes } }
-   }
-   else = { sb_court_action_cleanup = yes }
-  }
-  ai_chance = { base = 50 }
- }
- option = { name = sb_court_politics.004.b default_option = yes hidden_effect = { sb_court_action_cleanup = yes } ai_chance = { base = 10 } }
 
-}
-sb_court_politics.005 = {
- type = country_event
- placement = root
- title = sb_court_politics.005.t
- desc = sb_court_politics.005.d
- gui_window = event_window_1char_tabloid
- # Inherited from the accommodation event; survives action-variable cleanup.
- left_icon = scope:sb_court_actor
- icon = "gfx/interface/icons/event_icons/event_portrait.dds"
- duration = 3
- 
- option = { name = sb_court_politics.005.a default_option = yes }
-}
-sb_court_politics.006 = {
- type = country_event
- placement = root
- title = sb_court_politics.006.t
- desc = sb_court_politics.006.d
- gui_window = event_window_1char_tabloid
- # Inherited from the accommodation event; survives action-variable cleanup.
- left_icon = scope:sb_court_actor
- icon = "gfx/interface/icons/event_icons/event_portrait.dds"
- duration = 3
- 
- option = { name = sb_court_politics.006.a default_option = yes }
-}
+
+
 
 
 

@@ -1,0 +1,17 @@
+﻿# Movement scope. New one-state episodes use recruitment readiness; old movements
+# and multi-state crises retain their existing rules.
+sb_court_recruitment_ready = {
+ trigger_if = {
+  limit = { owner = { has_variable = sb_court_recruitment_trial_var } }
+  owner = {
+   num_states = 1
+   NOT = { has_variable = sb_court_recruitment_failed_var }
+   exists = var:sb_court_recruitment_rebel_scope
+   var:sb_court_recruitment_rebel_scope = { is_character_alive = yes }
+   exists = var:sb_court_dynastic_movement_scope
+   var:sb_court_dynastic_movement_scope = prev
+  }
+  political_movement_support >= owner.var:sb_court_dynastic_target_var
+  political_movement_support <= owner.sb_court_recruitment_upper_support
+ }
+}

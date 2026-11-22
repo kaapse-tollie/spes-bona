@@ -1,12 +1,11 @@
 """Execute event draws, exact-play goal eligibility and repeated mobilisation."""
 from collections import Counter
 from pathlib import Path
-import os
 import unittest
 
 from tests.test_zulu_court_event_package import setup, fields, EventRuntime
 from tests.test_zulu_court_politics import EFFECTS, definitions
-from tests.test_zulu_institutions_laws import statements
+from tests.test_zulu_institutions_laws import GAME, statements
 from tools.check_override_inventory import find_object
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -172,9 +171,10 @@ class SwaziGoalSelection(unittest.TestCase):
             play[field] = value
             self.assertTrue(self.allowed(rt, swz))
 
-    def test_override_preserves_effective_cmf_definition_apart_from_scoped_guards(self):
-        cmf = Path(os.environ.get('CMF_ROOT', ROOT.parent / 'Community Mod Framework'))
-        source = (cmf / 'common/war_goal_types/03_conquer_state.txt').read_text(encoding='utf-8-sig')
+    def test_override_preserves_native_definition_apart_from_scoped_guards(self):
+        self.assertIsNotNone(GAME)
+        self.assertFalse((ROOT.parent / 'Community Mod Framework/common/war_goal_types/03_conquer_state.txt').exists())
+        source = (GAME / 'common/war_goal_types/03_conquer_state.txt').read_text(encoding='utf-8-sig')
         override = find_object((ROOT / 'common/war_goal_types/zz_sb_swazi_conquest_override.txt').read_text(encoding='utf-8-sig'), 'conquer_state', directive='REPLACE')
         self.assertEqual(2, override.count('sb_swazi_conquest_target_allowed = yes'))
         stripped = override.replace('REPLACE:conquer_state', 'conquer_state', 1).replace('\n\t\tsb_swazi_conquest_target_allowed = yes', '')

@@ -87,6 +87,15 @@ class ClaimantRuntime(ReworkRuntime):
                     if ig_key.startswith('ig:') and self.condition(limit,ig,scope):
                         self.effect([n for n in value if n[0]!='limit'],ig,scope)
             elif key == 'add_civil_war_progress': scope['progress']=scope.get('progress',0)+float(value)
+            elif key == 'debug_log': scope.setdefault('debug_logs',[]).append(value)
+            elif key == 'recalculate_pop_ig_support':
+                # Record the native request; do not fabricate recruitment or fresh cached support.
+                movement=scope['vars']['sb_court_dynastic_movement_scope']
+                self.pop_support_refreshes=getattr(self,'pop_support_refreshes',[])+[{
+                    'country':scope['id'], 'week':scope['vars']['sb_court_recruitment_weeks_var'],
+                    'next_factor':scope['vars']['sb_court_recruitment_factor_var'],
+                    'applied_modifier':movement['modifiers']['sb_court_coalition_recruitment'],
+                }]
             elif key in ('every_scope_state','ordered_scope_state','every_scope_building'):
                 fields=dict((k,v) for k,_,v in value)
                 items=list(scope.get('buildings' if key=='every_scope_building' else 'states',[]))
@@ -613,6 +622,20 @@ class ClaimantBehaviour(unittest.TestCase):
         self.assertEqual(2,rt.country['vars']['sb_court_dynastic_reason_var'])
         self.assertNotIn('sb_court_dynasty_test_var',rt.country['vars'])
 
+    def test_contested_succession_resets_both_new_reigns_once(self):
+        for back_claimant,start in product((False,True),(-75,60)):
+            rt,king,prince,*_=court()
+            reserve(rt,king,prince,reason=2);answer(rt,back_claimant)
+            rt.country['vars']['sb_prerogative_var']=start
+            _,rebels=split(rt)
+            for side in (rt.country,rebels):
+                self.assertEqual(0,side['vars']['sb_prerogative_var'])
+                self.assertEqual(0,side['vars']['sb_prerogative_last_change_var'])
+                side['vars']['sb_prerogative_var']=12
+            rt.run('sb_court_track_dynastic_war')
+            for side in (rt.country,rebels):
+                self.assertEqual(12,side['vars']['sb_prerogative_var'])
+
     def test_retirement_uses_the_saved_pledged_distribution_and_opens_both_princes(self):
         # 1 August 1856 checkpoint: 756 represented, 596 pledged, 185/248
         # for Cetshwayo/Mbuyazi. Cetshwayo was only 24.47% of the old total.
@@ -626,14 +649,14 @@ class ClaimantBehaviour(unittest.TestCase):
         other['vars'].update(sb_court_home_scope=rt.country,sb_court_claimant_scope=other)
         rt.country['members'].append(other)
         rt.country['vars']['sb_court_recognized_heir_scope']=mbuyazi
-        rt.country['game_date']=18560731
+        rt.country['game_date']=18560630
         rt.backing()
         self.assertEqual(756,rt.country['vars']['sb_court_weight_var'])
         self.assertEqual(596,rt.country['vars']['sb_court_pledged_weight_var'])
         self.assertAlmostEqual(185/596*100,cetshwayo['vars']['sb_court_pledged_share_var'])
         rt.run('sb_court_reconcile_succession')
         self.assertEqual([],rt.country.get('events',[]))
-        rt.country['game_date']=18560801
+        rt.country['game_date']=18560701
         rt.run('sb_court_reconcile_succession');rt.run('sb_court_reconcile_succession')
         self.assertEqual(['sb_court_succession.004'],rt.country['events'])
         self.assertIs(mbuyazi,rt.country['vars']['sb_court_dynastic_nominee_scope'])
@@ -1340,7 +1363,7 @@ class ClaimantContracts(unittest.TestCase):
 
     def test_trial_opposition_stances_and_native_sponsor_limits(self):
         # Arithmetic from the inspected gate, not a claim that this harness creates native wars.
-        pins=json.loads((ROOT/'Docs/compatibility/zulu_contested_crown_contracts_1_14_5.json').read_text())['native_defines']
+        pins=json.loads((ROOT/'Docs/compatibility/zulu_contested_crown_contracts_1_15_2.json').read_text())['native_defines']
         stances={'strongly_disapprove':0,'disapprove':1,'neutral':2,'approve':3,'strongly_approve':4}
         penalty=float(dict((k,v) for k,_,v in definitions('common/static_modifiers/sb_court_dynastic_modifiers.txt')['sb_court_claimant_armed_forces'])['interest_group_approval_add'])
         self.assertEqual(-20,penalty)
@@ -1407,7 +1430,7 @@ class ClaimantContracts(unittest.TestCase):
         self.assertNotIn('sb_court_claimant_mobilisation',movement['modifiers'])
 
     def test_current_native_and_cmf_contracts_are_mandatory_and_match(self):
-        data=json.loads((ROOT/'Docs/compatibility/zulu_contested_crown_contracts_1_14_5.json').read_text())
+        data=json.loads((ROOT/'Docs/compatibility/zulu_contested_crown_contracts_1_15_2.json').read_text())
         self.assertTrue(GAME.is_dir(),'Current game contracts are mandatory, not historical optional evidence')
         for base,items in ((GAME,data['contracts']),(ROOT.parent/'Community Mod Framework',data['cmf_contracts'])):
             for contract in items:

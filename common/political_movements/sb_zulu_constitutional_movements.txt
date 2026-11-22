@@ -20,7 +20,20 @@ movement_sb_zulu_royal = {
 		sb_court_alignment_eligible = yes
 		var:sb_court_alignment_var = 1
 	}
-	character_support_weight = { value = 200 }
+	character_support_weight = {
+		value = 200
+		# The returning claimant leads his restoration, rather than another eligible cause.
+		if = {
+			limit = {
+				owner ?= {
+					has_variable = sb_zululand_usuthu_contest_var
+					NOT = { has_variable = sb_court_dynastic_crisis_var }
+					var:sb_court_restoration_claimant_scope ?= prev
+				}
+			}
+			value = 100000
+		}
+	}
 	
 	pop_support_trigger = {
 		NOT = {
@@ -216,6 +229,7 @@ movement_sb_zulu_royal = {
 	}
 	
 	revolution = {
+		possible = { sb_chiefs_constitutional_uprising_allowed = yes }
 		weight = {
 			value = 100
 		}
@@ -530,6 +544,7 @@ movement_sb_zulu_chiefly = {
 	}
 	
 	revolution = {
+		possible = { sb_chiefs_constitutional_uprising_allowed = yes }
 		weight = {
 			value = 100
 		}
@@ -750,6 +765,7 @@ movement_sb_zulu_traditionalist = {
 	}
 	
 	revolution = {
+		possible = { sb_chiefs_other_uprising_allowed = yes }
 		weight = {
 			value = 100
 		}

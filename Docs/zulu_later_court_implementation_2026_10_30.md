@@ -1,8 +1,58 @@
 # Dunn, the later princes and Hamu's coastal bargain
 
+## 1 November: constitutional-war promise repair
+
+The territorial guard previously recognised only the dynastic controller's
+opponent reference. A signed promise could therefore fail when the Thirteen
+Chiefdoms constitutional war divided the promised coast between its actual
+factions. Constitutional victory also cleared the pair before Hamu's earned
+accession receipt could retain the defeated owner.
+
+The guard now accepts either controller's recorded opponent. A verified royal
+constitutional win records Hamu's accession while the winner still holds that
+reference, including when no Chiefdoms contest is open. The first earned receipt
+retains the defeated country across cleanup and repeated accession callbacks.
+Monthly reconciliation waits for actual ownership of all five provinces; an
+unrelated owner still cancels the bargain. Starting a faction, or another prince
+winning, grants no Hamu reward. No military allocation, law balance, dependency,
+localisation or save-migration changes accompany this repair.
+
+Six source-executed regressions cover both original/rebel orientations, a
+foreign callback root, active and absent Chiefdoms contests, independent native
+end/winner callbacks, delayed reunion with a removed loser, subsequent opponent
+changes, each province's third-party loss, and once-only NRP delivery. The
+pre-fix run reproduced false contract failure and the missing reunion receipt.
+**97 focused tests pass** across Hamu, the later court, constitutional settlement
+and court politics. Native callback/reunification order remains **pending DP**
+under runtime scenario 163; no game was launched.
+
+Full validation: **1,032 tests — 1,023 passed, eight historical-input skips,
+one unchanged localisation-review failure, no errors**. The validator reports
+**15/17** checks passed/warned/skipped; unit discovery and localisation report
+the same existing dangling Swazi `.098` review row and reviewed-text drift in
+Klip `.060`/`.080` and Natal `.050`. CMF integrity, compatibility, map/naval,
+runtime contracts and delayed-event checks pass. Advisory Tiger remains at
+0 fatal, 1,076 errors and 149 warnings for its older supported game version;
+the affected files introduce no new diagnostic. Independent Sol 6.1 Max review
+found no blocking issue, and `git diff --check` passes. Logs:
+`/private/tmp/sb-hamu-chiefdoms-before-20261101.txt`,
+`/private/tmp/sb-hamu-chiefdoms-focused-20261101.txt` and
+`/private/tmp/sb-hamu-chiefdoms-acceptance-20261101.txt`.
+
+**31 October shipment supersession:** the [authorised faction choice](zulu_dunn_shipments_design_2026_10_30.md)
+adds +10/−10 named Prominence for five years and a 1% same-camp prince death roll
+as an alternative to the two Firearms weeks. Earlier single-option descriptions
+below are historical. First/annual delivery timing and completion boundaries remain.
+
 Implemented 30 October 2026 for the current 1.14.5/CMF baseline and new campaigns.
 No game launch, save migration, dependency edit or ZAR rollout. Mandlakazi's
 provisional handover/bargain remains outside this batch.
+
+**31 October supersession:** the [Dunn/succession follow-up](zulu_dunn_succession_followup_2026_10_31.md)
+updates judgement timing and tradeoffs, makes Dunn Industrialists, introduces
+Mthonga through retention instead of the dates below, resets new-reign Prerogative
+and moves retirement eligibility to July. The following records the original
+30 October delivery and verification.
 
 ## Delivered behaviour
 

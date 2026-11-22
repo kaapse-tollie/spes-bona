@@ -305,10 +305,10 @@ class ZululandPostwarSettlementTests(unittest.TestCase):
         self.assertIn("scripted_progress_bar = sb_zululand_chiefdom_balance_bar", journal)
         self.assertIn("scripted_progress_bar = sb_zululand_boer_commitment_bar", journal)
         self.assertEqual(11, journal.count("scripted_button ="))
-        for country in ("NAL", "GBR", "TRN"):
+        for country in ("NAL", "GBR"):
             self.assertIn(f"country_definition = cd:{country}", involved)
         self.assertIn("this = global_var:sb_zululand_live_zul_scope", involved)
-        self.assertIn("state_region = s:STATE_EAST_TRANSVAAL", involved)
+        self.assertIn("sb_zululand_trn_is_eligible_participant = yes", involved)
 
         runtime = object_block(
             "common/scripted_triggers/sb_zululand_settlement_triggers.txt",
@@ -320,14 +320,14 @@ class ZululandPostwarSettlementTests(unittest.TestCase):
         )
         self.assertIn("global_var:sb_zululand_live_zul_scope ?= { is_country_alive = yes }", runtime)
         self.assertIn("limit = { sb_zululand_chiefdoms_runtime_valid = yes }", housekeeping)
-        self.assertIn("sb_zululand_cleanup_situation = yes", housekeeping)
+        self.assertIn("sb_chiefs_evaluate_contest = yes", housekeeping)
 
     def test_prerogative_tooltip_reads_real_country_without_advancing_bar(self):
         ui = text("gui/sb_zululand_chiefdoms_progress_bars.gui")
         loc = text("localization/english/sb_zululand_settlement_l_english.yml")
         self.assertIn("GetCurrentBarProgress", ui)
-        self.assertIn("ScriptValue('sb_zululand_live_target')", loc)
-        self.assertIn("ScriptValue('sb_zululand_live_drift')", loc)
+        self.assertIn("ScriptValue('sb_usuthu_activism')", loc)
+        self.assertNotIn("ScriptValue('sb_zululand_live_drift')", loc)
         self.assertIn("GetScriptValueDesc('sb_zululand_monthly_commitment')", loc)
         bar = object_block("common/scripted_progress_bars/sb_progress_bars.txt", "sb_zululand_chiefdom_balance_bar")
         self.assertNotIn("monthly_progress", bar)
@@ -337,11 +337,13 @@ class ZululandPostwarSettlementTests(unittest.TestCase):
     def test_political_resolution_replaces_deadline_and_instant_activism(self):
         path = "common/scripted_effects/sb_zululand_settlement_effects.txt"
         create = object_block(path, "sb_zululand_create_chiefdoms_container")
-        terminal = object_block(path, "sb_zululand_check_political_settlement")
+        terminal = object_block("common/scripted_effects/sb_chiefdoms_contest_effects.txt", "sb_chiefs_evaluate_contest")
         self.assertIn("name = sb_zululand_boer_commitment_var value = 0", create)
-        self.assertIn("var:sb_prerogative_var >= 50", terminal)
-        self.assertEqual(2,terminal.count("political_movement_support >= 0.05"))
-        self.assertIn("NOT = { has_variable = sb_court_civil_war_var }",terminal)
+        self.assertNotIn("sb_prerogative_var", terminal)
+        self.assertNotIn("political_movement_support", terminal)
+        self.assertIn("sb_chiefs_active_split = yes",terminal)
+        self.assertIn("political_movement_radicalism >= 1",terminal)
+        self.assertIn("sb_chiefs_review_due = yes",terminal)
         for old in ("sb_zululand_contest_deadline_var","political_movement_radicalism >= 0.99"):
             self.assertNotIn(old,text(path))
 
@@ -580,10 +582,10 @@ class ZululandPostwarSettlementTests(unittest.TestCase):
             self.assertNotIn("sb_zululand_finalize_",event)
 
     def test_resolution_has_no_unagreed_incident_or_unrelated_peace_gate(self):
-        check=object_block("common/scripted_effects/sb_zululand_settlement_effects.txt","sb_zululand_check_political_settlement")
+        check=object_block("common/scripted_effects/sb_chiefdoms_contest_effects.txt","sb_chiefs_evaluate_contest")
         for unwanted in ("is_at_war","is_active_in_diplomatic_play","months_var","event_spacing_var","skirmish_fired_var","legitimacy"):
             self.assertNotIn(unwanted,check)
-        self.assertIn("NOT = { has_variable = sb_zululand_contest_result_var }",check)
+        self.assertIn("sb_zululand_chiefdoms_situation_active = yes",check)
 
     def test_boundary_timers_ai_safety_and_return_state_goals_are_fixed(self):
         path = "common/scripted_effects/sb_zululand_settlement_effects.txt"
@@ -805,7 +807,7 @@ class ZululandPostwarSettlementTests(unittest.TestCase):
             "common/amendments/sb_amendments.txt", "amendment_sb_shepstone_system"
         )
 
-        self.assertIn("tax_land_add = 0.03", amendment)
+        self.assertIn("tax_land_add = 0.1", amendment)
         self.assertNotIn("country_tax_income_add", amendment)
         for modifier in (
             "building_subsistence_output_mult = 0.30",

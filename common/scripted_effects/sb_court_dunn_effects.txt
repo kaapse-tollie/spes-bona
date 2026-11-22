@@ -28,6 +28,7 @@ sb_court_prepare_dunn_offer = {
   }
   every_scope_character = {
    limit = { has_template = SB_ZUL_john_dunn is_character_alive = yes }
+   set_interest_group = owner.ig:ig_industrialists
    if = { limit = { NOT = { has_variable = sb_court_registered_var } } sb_court_register_character = { FOLLOWING = 7 ALIGNMENT = 0 ENDORSEMENT = 0 } }
    if = { limit = { NOT = { has_trait = sb_court_trader } } add_trait = sb_court_trader }
    set_global_variable = { name = sb_court_dunn_identity_scope value = this }
@@ -103,6 +104,45 @@ sb_court_offer_dunn_delivery = {
   owner = { trigger_event = { id = sb_court_dunn.002 days = $DAYS$ popup = yes } }
  }
 }
+# These saved scopes belong to this popup, not the next annual shipment. Prefer
+# fresh recipients; a repeated allocation refreshes its five-year modifier.
+sb_court_prepare_dunn_allocation = {
+ save_scope_as = sb_court_country
+ if = {
+  limit = { sb_court_dunn_delivery_valid = yes sb_court_can_negotiate = yes }
+  ruler = { save_scope_as = sb_court_dunn_ruler }
+  sb_court_calculate_backing = yes
+  ordered_in_list = {
+   variable = sb_court_members
+   limit = { sb_court_dunn_faction_ally = yes NOT = { has_modifier = sb_court_dunn_armed_following } }
+   order_by = var:sb_court_represented_weight_var position = 0 check_range_bounds = no
+   save_scope_as = sb_court_dunn_ally
+  }
+  if = {
+   limit = { NOT = { exists = scope:sb_court_dunn_ally } }
+   ordered_in_list = {
+    variable = sb_court_members limit = { sb_court_dunn_faction_ally = yes }
+    order_by = var:sb_court_represented_weight_var position = 0 check_range_bounds = no
+    save_scope_as = sb_court_dunn_ally
+   }
+  }
+  ordered_in_list = {
+   variable = sb_court_members
+   limit = { sb_court_dunn_faction_opponent = yes NOT = { has_modifier = sb_court_dunn_outgunned } }
+   order_by = var:sb_court_represented_weight_var position = 0 check_range_bounds = no
+   save_scope_as = sb_court_dunn_opponent
+  }
+  if = {
+   limit = { NOT = { exists = scope:sb_court_dunn_opponent } }
+   ordered_in_list = {
+    variable = sb_court_members limit = { sb_court_dunn_faction_opponent = yes }
+    order_by = var:sb_court_represented_weight_var position = 0 check_range_bounds = no
+    save_scope_as = sb_court_dunn_opponent
+   }
+  }
+  scope:sb_court_dunn_opponent ?= { var:sb_court_claimant_scope = { save_scope_as = sb_court_dunn_enemy_prince } }
+ }
+}
 sb_court_answer_dunn_delivery = {
  if = {
   limit = { sb_court_dunn_delivery_valid = yes }
@@ -116,6 +156,32 @@ sb_court_answer_dunn_delivery = {
   clamp_variable = { name = sb_firearms_supply_weeks_var min = 0 max = 260 }
   sb_update_firearms_progress = yes
   sb_sync_iron_age_weapons_penalty = yes
+ }
+}
+sb_court_arm_dunn_followings = {
+ if = {
+  limit = { sb_court_dunn_faction_delivery_valid = yes }
+  # Consume the same receipt as wide distribution before effects/death callbacks.
+  global_var:sb_court_dunn_identity_scope = {
+   remove_variable = sb_court_dunn_delivery_open_var
+   remove_variable = sb_court_dunn_delivery_country_scope
+   set_variable = sb_court_dunn_delivered_guns_var
+  }
+  scope:sb_court_dunn_ally = {
+   if = { limit = { has_modifier = sb_court_dunn_armed_following } remove_modifier = sb_court_dunn_armed_following }
+   add_modifier = { name = sb_court_dunn_armed_following years = 5 }
+  }
+  scope:sb_court_dunn_opponent = {
+   if = { limit = { has_modifier = sb_court_dunn_outgunned } remove_modifier = sb_court_dunn_outgunned }
+   add_modifier = { name = sb_court_dunn_outgunned years = 5 }
+  }
+  random_list = {
+   1 = { scope:sb_court_dunn_enemy_prince = { kill_character = yes } }
+   99 = { }
+  }
+  # Ordinary character death releases the prince's pledges; it does not kill his
+  # supporters or award a constitutional victory. Recalculate after the full choice.
+  sb_institutions_recalculate = yes
  }
 }
 # Country scope, only the actual hosting country runs this helper.
@@ -156,7 +222,7 @@ sb_court_reserve_dunn_judgement = {
 sb_court_open_dunn_judgement = {
  if = {
   limit = { sb_court_dunn_judgement_valid = yes }
-  trigger_event = { id = sb_court_dunn.003 popup = yes }
+  trigger_event = { id = sb_court_dunn.003 days = 3 popup = yes }
  }
 }
 sb_court_answer_dunn_judgement = {
@@ -177,6 +243,7 @@ sb_court_answer_dunn_judgement = {
   else_if = {
    limit = { always = $KILL$ }
    global_var:sb_court_dunn_identity_scope = { kill_character = yes }
+   ruler = { add_modifier = { name = sb_court_victors_avenged years = 5 } }
    if = { limit = { c:GBR ?= { is_country_alive = yes } } change_relations = { country = c:GBR value = -10 } }
   }
   else = {

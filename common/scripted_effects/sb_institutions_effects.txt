@@ -22,13 +22,12 @@ sb_institutions_seed_movements = {
 sb_institutions_clear_effects = {
  hidden_effect = {
   sb_court_suspend = yes
-  sb_zululand_suspend_contest_interventions = yes
   if = { limit = { has_modifier = sb_prerogative_base_legitimacy } remove_modifier = sb_prerogative_base_legitimacy }
   if = { limit = { has_modifier = sb_prerogative_political } remove_modifier = sb_prerogative_political }
   if = { limit = { has_modifier = sb_prerogative_military } remove_modifier = sb_prerogative_military }
   every_political_movement = {
    limit = { OR = { is_political_movement_type = movement_sb_zulu_royal is_political_movement_type = movement_sb_zulu_chiefly } }
-   if = { limit = { has_modifier = sb_court_following_recruitment } remove_modifier = sb_court_following_recruitment }
+   if = { limit = { owner = { NOT = { sb_chiefs_contest_country = yes } } has_modifier = sb_court_following_recruitment } remove_modifier = sb_court_following_recruitment }
   }
  }
 }
@@ -62,7 +61,13 @@ sb_institutions_recalculate = {
 }
 sb_institutions_reconcile = {
  if = {
-  limit = { sb_institutions_profile_country = yes }
+  # Direct law on_activate also runs before rebel land/AI creation, bypassing on-action guards.
+  # The post-history bootstrap and completed-country handoff retry reconciliation safely.
+  limit = {
+   has_global_variable = sb_institutions_lobby_ready_global_var
+   is_country_alive = yes
+   sb_institutions_profile_country = yes
+  }
   sb_institutions_initialize = yes
   if = {
    limit = { sb_institutions_eligible = yes }
@@ -100,7 +105,26 @@ sb_institutions_monthly_update = {
  }
  sb_court_sync_chiefly_concessions = yes
  if = {
+  limit = { sb_chiefs_contest_country = yes NOT = { has_variable = sb_institutions_active_var } }
+  sb_court_ensure_roster = yes
+  sb_court_introduce_known_children = yes
+  sb_court_spawn_dated_cast = yes
+  sb_court_refresh_royal_claimant = yes
+  sb_court_select_chiefly_head = yes
+  # Partition recruitment continues after institutional exit; royal succession does not.
+  if = {
+   limit = {
+    month = 1 game_date >= 1837.1.1
+    NOR = { has_variable = sb_court_annual_checked_var has_variable = sb_court_accession_open_var has_variable = sb_court_dynastic_war_scope has_variable = sb_court_civil_war_var has_variable = sb_court_dynastic_crisis_var }
+   }
+   set_variable = { name = sb_court_annual_checked_var months = 11 }
+   sb_court_annual_alignment = yes
+  }
+  sb_court_calculate_backing = yes
+ }
+ if = {
   limit = { has_variable = sb_institutions_active_var }
+  sb_zulu_monthly_dynasty_housekeeping = yes
   sb_court_monthly_housekeeping = yes
   sb_court_annual_allegiances = yes
   # A January birthday declaration must follow that year's ordinary allegiance roll.
@@ -112,7 +136,5 @@ sb_institutions_monthly_update = {
   change_variable = { name = sb_prerogative_var add = var:sb_prerogative_monthly_change_var }
   set_variable = { name = sb_prerogative_var value = sb_prerogative_clamped }
   sb_institutions_recalculate = yes
-  sb_zulu_monthly_dynasty_housekeeping = yes
-  sb_zululand_check_political_settlement = yes
  }
 }

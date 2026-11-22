@@ -60,10 +60,58 @@ sb_court_dunn_delivery_valid = {
   owner ?= prev var:sb_court_dunn_delivery_country_scope ?= prev
  }
 }
+# Event-local targets are selected once when the shipment opens.
+sb_court_dunn_faction_member = {
+ sb_court_present_member = yes
+ sb_court_recruitable_backer = yes
+ has_variable = sb_court_representative_var
+ NOR = { is_ruler_of_own_country = yes has_variable = sb_court_retired_var }
+}
+sb_court_dunn_faction_ally = {
+ sb_court_dunn_faction_member = yes
+ var:sb_court_endorsement_var = 1
+ OR = { prominence < 100 has_modifier = sb_court_dunn_armed_following }
+}
+sb_court_dunn_faction_prince = {
+ sb_court_present_member = yes
+ sb_court_coercion_target_valid = yes
+ NOT = { sb_court_mpande_son_under_king = yes }
+}
+sb_court_dunn_faction_opponent = {
+ sb_court_dunn_faction_member = yes
+ var:sb_court_endorsement_var = -1
+ var:sb_court_claimant_scope ?= { sb_court_dunn_faction_prince = yes }
+}
+sb_court_dunn_faction_delivery_valid = {
+ sb_court_dunn_delivery_valid = yes
+ sb_court_can_negotiate = yes
+ scope:sb_court_country ?= this
+ scope:sb_court_dunn_ruler ?= { is_character_alive = yes is_ruler_of_own_country = yes owner ?= prev }
+ scope:sb_court_dunn_ally ?= { sb_court_dunn_faction_ally = yes }
+ scope:sb_court_dunn_enemy_prince ?= {
+  sb_court_dunn_faction_prince = yes
+  scope:sb_court_dunn_opponent ?= {
+   sb_court_dunn_faction_opponent = yes
+   var:sb_court_claimant_scope ?= prev
+  }
+ }
+}
 sb_court_dunn_judgement_valid = {
  ruler ?= { has_template = ZUL_cetshwayo_heir }
  global_var:sb_court_dunn_identity_scope ?= {
   is_character_alive = yes has_variable = sb_court_dunn_judgement_var
   owner ?= prev var:sb_court_dunn_judge_scope ?= prev
+ }
+}
+# Preview and execution share the identity check: never recreate a dead prince or
+# silently revoke a living prince's renunciation to supply this event's consequence.
+sb_court_mthonga_can_declare = {
+ NOR = { has_variable = sb_court_dynastic_crisis_var has_variable = sb_court_accession_open_var has_variable = sb_court_civil_war_var }
+ OR = {
+  AND = { NOT = { has_global_variable = sb_court_mthonga_created_var } NOT = { is_template_used = SB_ZUL_mthonga } }
+  any_scope_character = {
+   has_template = SB_ZUL_mthonga is_character_alive = yes is_adult = yes
+   NOR = { is_ruler_of_own_country = yes has_variable = sb_court_mthonga_declared_var has_variable = sb_court_claim_renounced_var has_variable = sb_court_retired_var }
+  }
  }
 }

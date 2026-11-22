@@ -1,5 +1,11 @@
 # Zulu institutions and court politics — implementation and DP handoff
 
+> **10 November 2026 — current partition/house implementation:** see
+> [Thirteen Chiefdoms refinement and persistent houses](zulu_thirteen_chiefs_implementation_2026_11_10.md)
+> and its [pending DP matrix](zulu_thirteen_chiefs_runtime_matrix_2026_11_10.md).
+> That record supersedes the older Prerogative-dependent partition settlement and
+> office-based royal household below. Earlier text and results remain evidence.
+
 18 October 2026. Implements DP's approved technical specification in the current SB maintenance batch. Game baseline remains 1.14.5, CMF 1.66.0 + `sb-1.14.3-r1`. New campaigns and checkpoints made **before partition with this implementation loaded** are the supported test baseline. No game was launched; no saved campaign was migrated.
 
 Earlier exploration documents remain historical decision records. This implementation supersedes their PB/LO estate split, automatic 99%-activism restoration, Liberty Desire victory, ten-year deadline, permanent royalist-network bonus, and terminal Dynastic Stability endpoints.

@@ -46,11 +46,13 @@ class MusterBehaviour(unittest.TestCase):
                     for kind in ('building_barrack','building_conscription_center')))
                 self.assertNotIn('sb_court_muster_active_var',side['vars'])
                 self.assertNotIn('sb_court_muster_conscription_suspended',side.get('modifiers',{}))
-                self.assertNotIn('sb_court_wartime_provisions',side.get('modifiers',{}))
+                self.assertIn('sb_court_wartime_provisions',side.get('modifiers',{}))
             self.assertFalse(hasattr(rt,'demolitions'))
             self.assertFalse(hasattr(rt,'pop_moves'))
             rt.run('sb_court_record_dynastic_end');rt.run('sb_court_resolve_dynastic_win')
             self.assertFalse(hasattr(rt,'demolitions'))
+            for side in (rt.country,rebels):
+                self.assertNotIn('sb_court_wartime_provisions',side.get('modifiers',{}))
 
     def test_multi_state_levy_snapshot_survives_native_capacity_loss(self):
         for back_prince in (False,True):
@@ -188,12 +190,13 @@ class MusterBehaviour(unittest.TestCase):
 
 
 class MusterContracts(unittest.TestCase):
-    def test_provisions_cover_native_food_cost_and_shortage_before_the_security_clamp(self):
+    def test_provisions_give_partial_relief_without_guaranteeing_an_end_to_starvation(self):
         from tools.check_override_inventory import extract_top_level_blocks
         from tests.test_zulu_institutions_laws import statements,child
         modifiers=definitions('common/static_modifiers/sb_court_dynastic_modifiers.txt')
         fields={k:v for k,_,v in modifiers['sb_court_wartime_provisions']}
         relief=float(fields['state_food_security_add'])
+        self.assertEqual(.75,relief)
         self.assertTrue((GAME/fields['icon'].strip('"')).is_file())
         source=(GAME/'common/defines/00_defines.txt').read_text(encoding='utf-8-sig')
         price_range=float(re.search(r'^\s*PRICE_RANGE\s*=\s*([\d.]+)',source,re.M)[1])
@@ -206,13 +209,17 @@ class MusterContracts(unittest.TestCase):
             food_shares.append(goods.get('popneed_basic_food',0)/sum(goods.values()))
         # Installed native formula: clamp(1 + modifier - basic-food cost share
         # - shortage severity, 0, 1). This is arithmetic coverage, not engine replay.
+        improves = remains_hungry = False
         for food_share in food_shares:
             for price_multiplier in (1-price_range,1,1+price_range):
                 for shortage in (0,.5,1):
                     security=max(0,min(1,1+relief-food_share*price_multiplier-shortage))
-                    self.assertGreaterEqual(security,starvation)
-        worst_cost=max(food_shares)*(1+price_range)
-        self.assertLess(max(0,1+.4-worst_cost-1),starvation)
+                    unassisted=max(0,min(1,1-food_share*price_multiplier-shortage))
+                    self.assertGreaterEqual(security,unassisted)
+                    improves |= security > unassisted
+                    remains_hungry |= security < starvation
+        self.assertTrue(improves)
+        self.assertTrue(remains_hungry)
 
     def test_temporary_muster_uses_installed_training_without_native_centre_identity(self):
         building=definitions('common/buildings/sb_court_muster.txt')['building_sb_court_muster']

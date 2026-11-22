@@ -1,6 +1,133 @@
 # One-state claimant wars: coalition recruitment proposal
 
-30 October 2026. **Design proposal only; not approved or implemented.**
+**31 October result: the first active replay failed to converge.** Native annual
+Pop membership updates cannot satisfy this trial's weekly recruitment assumption.
+The saved episode reached its 26-sample failure limit. A supported country-specific
+recalculation effect has been identified. **The authorised follow-up now implements bounded country
+refreshes, with the timing described below.** [Diagnosis and evidence](compatibility/zulu_recruitment_stall_2026_10_31.md).
+Restart from before side selection; the failed April episode is not reset.
+
+30 October 2026. **DP authorised the trial after checkpoint `dc1f65c` (SB 0.20.3).
+Source implemented; native convergence and allocation remain pending DP.
+Evening follow-up: new one-state side choices activate the trial automatically.**
+
+## Implemented trial and how to run it
+
+The controller starts when either side is selected in a new one-state episode.
+The existing multi-state muster and already-created movements retain their
+previous behaviour. This is the next DP test build, not engine acceptance.
+
+1. Restart the game with this source and load a checkpoint **before the claimant
+   movement is created**. The inspected September 1856–January 1857 autosaves are
+   already past that point; use an earlier checkpoint. No save migration.
+2. Choose a side in the two-contender event (`sb_court_succession.004`) normally.
+   No console command is required. `debug.log` should immediately contain
+   `SB recruitment trial started:` with the actual rebel, frozen target and
+   initial attraction factor. This does not force a non-qualifying challenge.
+3. The claimant movement should show **Mustering the Coalition**
+   as well as its ordinary mobilisation modifier. It remains a genuine native
+   revolution; the named prince's agitator role is separate from the actual
+   rebel ruler installed on division.
+4. Keep the pre-choice checkpoint for repeats. Record the split and staffing,
+   and retain `debug.log` plus a save around the division. Search the log for
+   `SB recruitment trial` for weekly target, total/popular/military/wealth support
+   and attraction factor. Log interpolation itself remains an engine check.
+   The follow-up adds `SB recruitment refresh:` after each permitted native
+   membership turn. Expect at most 25, and none after readiness or expiry.
+
+Initial tuning uses `factor = clamp(16 × frozen rebel share, 0.25, 32)`.
+Outside the accepted support band, each weekly sample multiplies that factor by
+`1 + clamp(4 × (target − observed support), −0.5, +0.5)`, then clamps it again.
+Inside the band it holds steady. The separately scaled attraction modifier
+subtracts the native base and existing +100% mobilisation contribution from its
+multiplier, so the controller does not scale activism. Other native recruitment
+factors, including the actual rebel's Popularity, still apply.
+
+### 31 October: bounded native membership refresh
+
+The weekly `.991` delivery now samples settled support, checks advancement, then
+checks the existing 26-sample expiry. If recruitment is still eligible and outside
+the accepted band, samples 1–25 each perform one country-specific
+`recalculate_pop_ig_support` call. Ready, failed, invalidated, advanced and active-war
+episodes do not refresh; neither do multi-state or unrelated countries.
+
+Before that call, calculate and store the next attraction factor from the sampled
+support. The movement modifier itself remains at **last week's factor** for the
+recalculation. Apply the new modifier afterwards, for use by the next refresh.
+The first modifier has seven days to settle after side selection; later modifiers
+and refreshed support likewise have a native update interval before use. This
+adds a deliberate feedback delay and does not query support for advancement again
+in the same delivery. It needs no additional event or saved queue state.
+
+The native effect updates **all movements and IG memberships in this country**,
+using its normal bounded membership adjustment. It does not assign a target
+support percentage. Measure those political side effects and tick cost alongside
+support convergence; every engine check of this follow-up remains pending DP.
+Source acceptance: **109 focused checks**, **149 independently reviewed checks**;
+full discovery **997 passed, eight existing skips and the known localisation
+failure** (1,006 total). [Full validation and limitations](compatibility/zulu_recruitment_stall_2026_10_31.md#authorised-follow-up-bounded-refresh-implemented).
+
+Readiness requires the exact recorded movement's support from the frozen target
+to five percentage points above it. Both native `revolution.possible` and SB's
+advance helper use that predicate. No unverified province-count accessor is used.
+The military component is logged separately; it is not silently set to the target
+or made a second, potentially unreachable gate. Weekly sampling uses the existing
+reserved `.991` chain; monthly checks and repeated previews do not add samples.
+
+After 26 samples without qualified scripted advancement or an actual split,
+the trial is marked failed and further scripted polling stops, including when an
+organising object already exists. Advancement is checked before expiry on the
+last sample. This does not resolve the political dispute or cancel an existing
+native war: preserve the result and reload the pre-trial checkpoint. A changed
+state count likewise invalidates this one-state experiment. Participant death
+and other ordinary invalidations retain the existing cancellation cleanup.
+
+The budget ends when SB issues qualified advancement, before the engine confirms
+creation of the rebel country. That operation is not proof of a successful split.
+DP must still verify the actual country and war callbacks; a failed native split
+after advancement remains a failed trial even though recruitment qualified.
+
+The controller must demonstrate convergence and useful military allocation before
+release acceptance. There is no automatic fallback to a tiny rebellion, territory
+rewriting, a rolled victor or an invented peaceful settlement.
+
+### Evening replay: the controller was inactive
+
+The original implementation required a manual `.990` invocation while the choice
+was unanswered. The 22:23–22:24 replay contains none of its variables or its
+modifier in any of the five saves, and no trial log lines. It reproduced the old
+one-province result; it did not test support convergence. The final rebel army
+has one staffed battalion (732 manpower) and two empty unit records.
+[Save/log evidence and correction](compatibility/zulu_second_succession_replay_2026_10_30.md).
+
+The follow-up wires activation into the actual side choice and logs it immediately.
+Both choices are executed by source tests without the diagnostic event; repeated
+choices cannot reset the controller, and existing movements are not retrofitted.
+105 focused checks pass; independent review passed 145 related checks. Full
+discovery is 993 passed, eight existing skips and one unchanged localisation
+failure (1,002 total); validator 15/17 and advisory Tiger totals are unchanged.
+See the linked evening report for the separate existing failures and output path.
+
+### Source verification before the evening follow-up
+
+- 104 focused recruitment, claimant-war and muster tests pass. They inject native
+  support and callbacks; they do not simulate native recruitment or allocation.
+- Independent Sol 6.1 Max review: 144 focused checks passed and no remaining
+  blocking source finding. The review caught the stalled-organiser budget case;
+  its correction and final-sample precedence are covered by regression checks.
+- Full discovery: **1,001 tests; 992 passed, eight existing skips and one existing
+  localisation-review failure**. The metadata test now matches checkpoint 0.20.3.
+- Full validator: **15/17 passed, warned or skipped**. Unit and localisation gates
+  both report the pre-existing dangling `.098.prerogative_after_blood_river` review
+  row and reviewed text drift in Natal `.050` and Klip `.060`/`.080`. This trial
+  does not change those namespaces or approve their wording.
+- CMF verification, compatibility inventory, map/naval checks and script contracts
+  pass. Advisory Tiger remains at 0 fatal, 1,076 errors and 149 warnings, matching
+  the previous baseline; no diagnostic names the new recruitment files.
+- `git diff --check` passes. No game launch or save mutation. All native scenarios
+  in runtime cases 151–153 remain pending DP.
+
+Final full-run output: `/private/tmp/sb-recruitment-acceptance-20261030.txt`.
 
 ## Evidence and objective
 
@@ -28,8 +155,9 @@ remain relevant; a promised exact battalion percentage would be misleading.
 - Keep the two named contenders, frozen current/succession coalition calculation,
   player-side choice, ordinary mortality and exact-war cleanup.
 - Keep five percentage points of weekly activism as the first test's pacing.
-- Do not change global movement defines, ordinary movement recruitment or unrelated
-  coups, and do not impose peace with unrelated countries.
+- Do not change global movement defines or unrelated coups, and do not impose
+  peace with unrelated countries. The bounded country refresh also updates local
+  ordinary movements and IGs; it does not refresh other countries.
 - Do not change the 30% succession eligibility or 25% living-ruler eligibility
   rules. They select a conflict, not its territorial size.
 
@@ -53,8 +181,8 @@ flowchart TD
     B --> C[Create the crisis movement; retain five-point weekly activism]
     C --> D[Measure combined and military movement support]
     D --> E{Recruitment close to frozen share?}
-    E -->|Below or above| F[Adjust bounded crisis attraction]
-    F --> D
+    E -->|Below or above| F[Refresh membership using settled attraction; apply next factor]
+    F -->|Next weekly sample| D
     E -->|Ready; native conditions satisfied| G[Permit the exact native revolution]
     G --> H[Inspect provinces, staffed forces and economic viability]
     D --> I[Test budget exhausted without convergence]
@@ -109,15 +237,16 @@ challenge and retirement. Record weekly combined/military/wealth/popular support
 time to split, provinces, staffed regulars, conscripts and manpower. Stronger backing
 must give a repeatable military advantage; a larger coloured map alone is insufficient.
 Test cancellation and participant death, and retain a multi-state negative control.
-All engine scenarios are **pending DP**. No source implementation or game launch.
+All engine scenarios are **pending DP**. No game launch performed by Codex.
 
 | Item | Status |
 |---|---|
 | Native one-state allocation; existing multi-state handling | Agreed existing boundary |
 | Frozen side selection and existing challenge thresholds | Agreed existing boundary |
-| Measured recruitment target and readiness gate | Provisional recommendation |
-| Five-point weekly activism retained for first test | Provisional retention of current setting |
-| Target to five points above; six-month test budget | Provisional tuning |
+| Measured recruitment target and readiness gate | Authorised; automatic for new one-state side choices in the next DP test build; release acceptance pending |
+| Five-point weekly activism retained for first test | Retained |
+| Target to five points above; 26 weekly samples | Implemented initial tuning; DP convergence check pending |
+| Bounded native country refresh | Authorised and implemented 31 October; maximum 25, using the previous week's modifier; native convergence, political side effects and cost pending DP |
 | Direct movement-support assignment | Unverified; not assumed |
 | Post-split province/force correction | Alternative requiring a separate decision and proof |
 

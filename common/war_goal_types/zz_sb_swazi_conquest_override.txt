@@ -1,4 +1,4 @@
-﻿# CMF 1.66.0 + sb-1.14.3-r1; only the authored SWZ conquest-selection guard differs.
+﻿# Vanilla 1.15.0 with the authored SWZ selection and validity guard.
 REPLACE:conquer_state = {
 	icon = "gfx/interface/icons/war_goals/conquer_state.dds"
 
@@ -31,14 +31,13 @@ REPLACE:conquer_state = {
 	}
 
 	valid = {
+		sb_swazi_conquest_target_allowed = yes
 		# trigger in addition to some basic validation code-side
 		# scopes: root = holder, creator_country, diplomatic_play, target_country, target_state, stakeholder, target_region, article_options
 		scope:target_state = {
 			owner = scope:target_country
 			NOT = { has_claim_by = root }
 		}
-		tlim_land_grab_war_goal_possible_trigger = yes
-		sb_swazi_conquest_target_allowed = yes
 	}
 
 	maneuvers = {
@@ -62,6 +61,7 @@ REPLACE:conquer_state = {
 		value = 0
 
 		scope:target_state = {
+			save_temporary_scope_as = infamy_ignores_claim
 			add = state_infamy_value
 		}
 

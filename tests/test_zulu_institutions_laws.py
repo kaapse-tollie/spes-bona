@@ -32,7 +32,7 @@ def tokens(text):
 
 def statements(text):
     """Parse gate/effect fields and native bare lists used for provinces and backers."""
-    ts = re.findall(r'\?=|>=|<=|[=<>]|[{}]|[^\s{}=<>]+', re.sub(r'#[^\n]*', '', text))
+    ts = re.findall(r'"(?:\\.|[^"\\])*"|\?=|>=|<=|[=<>]|[{}]|[^\s{}=<>]+', re.sub(r'#[^\n]*', '', text))
     pos = 0
     def parse():
         nonlocal pos
@@ -59,7 +59,7 @@ def gate(nodes, state):
         if key == 'OR': result = any(gate([n], state) for n in value)
         elif key == 'AND': result = gate(value, state)
         elif key == 'NOR': result = not any(gate([n], state) for n in value)
-        elif key == 'NOT': result = not gate(value, state)
+        elif key == 'NOT': result = not any(gate([n], state) for n in value)
         elif key == 'has_variable': result = value in state.get('flags', set())
         elif key == 'has_law': result = value.removeprefix('law_type:') in state.get('laws', set())
         elif key == 'sb_institutions_profile_country': result = state.get('profile', False) == (value == 'yes')
@@ -224,6 +224,8 @@ class ConstitutionalDefinitionTests(unittest.TestCase):
         old = find_object(read(CMF, 'common/political_movements/ycom_00_ideological_movements.txt'), 'movement_royalist_absolutist', directive='REPLACE')
         new = find_object(read(ROOT, 'common/political_movements/zz_sb_absolutist_override.txt'), 'movement_royalist_absolutist', directive='REPLACE')
         new = re.sub(r'\s*sb_uses_authored_zulu_movements = (?:yes|no)', '', new)
+        new = re.sub(r'\s*possible = \{ sb_chiefs_other_uprising_allowed = yes \}', '', new)
+        new = re.sub(r'\s*sb_chiefs_other_uprising_allowed = yes', '', new)
         # Only these pure predicates changed evaluation order / merged a scan.
         # Verify their logic before retaining token parity for every other field.
         for field in ('creation_trigger', 'disband_trigger'):
@@ -240,7 +242,12 @@ class ConstitutionalDefinitionTests(unittest.TestCase):
             self.assertEqual(1, body.count('add_movement_enthusiasm_modifier = yes'))
             self.assertIn('revolution = {', body)
             self.assertNotIn('secession = {', body)
-            self.assertNotIn('sb_zululand_usuthu_contest_var', body)
+            # The designated claimant's agitator preference may use the contest
+            # flag; it must not suppress native recruitment or revolution.
+            recruitment = body
+            if suffix == 'royal':
+                recruitment = body.replace(child(body, 'character_support_weight'), '', 1)
+            self.assertNotIn('sb_zululand_usuthu_contest_var', recruitment)
             self.assertNotIn('num_states', body)
             self.assertNotIn('is_at_war', body)
             self.assertIn('mog_plp_movement_all_general_state_weight_mult', body)

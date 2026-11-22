@@ -1,0 +1,574 @@
+# Victoria 3 1.14.5 arm64: annual recruitment and targeted refresh
+# Read-only excerpts; full commands are included for reproduction.
+
+# Recruitment replay native findings, 31 October 2026
+
+All analysis is offline; no game launch or binary/source mutation. Raw native excerpts include the exact reproduction arguments.
+
+1. `pop_manager_annual_update.txt`: normal Pop political updating selects a cohort through `CollectPopsForDailyUpdateOnceEachYear` at 10111c488. `pop_manager_annual_collector.txt` selects by matching a modulo-360 Pop ID/day bucket (10111a1dc-10111a238). This is not a weekly update of every Pop.
+2. `pop_adjust_movement_support.txt`: read modified movement weight from update-data map at 1010f25f0; divide by the sum of weights at 1010f25f4ff; cap against weight times MOVEMENT_POP_SUPPORT_ATTRACTION_CAP at 1010f2664-1010f2748. Both terms use the same already calculated weight. Desired members are rounded from political-participant count times capped fraction. Change per update is limited by MAX_POP_FRACTION_JOIN_OR_LEAVE_MOVEMENT (0.1), with MIN_POP_NUMBER_JOIN_OR_LEAVE_MOVEMENT (10) overriding for small Pops (1010f2814-1010f28d4). One high-attraction annual turn cannot move 57% of a fresh Pop.
+3. `movement_pop_support_weight.txt` passes movement modifier cache at +0x2e0 into the type's calculation. `movement_type_pop_support_weight.txt` reads PoliticalMovementPopAttractionMult at 101943becff and forms a nonnegative multiplier; no 10% ceiling is imposed on this attraction multiplier. Attraction cap in item 2 is applied to the resulting modified weight.
+4. `add_timed_modifier.txt` calls Invalidate at 1000945fc; `remove_modifier_effect.txt` invalidates at 101af2f14. `movement_calculate_modifier.txt` updates and includes its timed node, and registers its dependency at 1010b9d10-1010b9d38. `global_update_modifiers.txt` calls modifier-node manager Update at 100f64c98. No delayed restart timer was found that weekly remove/readd would starve.
+5. `country_and_annual_update_callers.txt` records direct B/BL callers. Creation of a political movement forces a country-specific political update at 1010abf68; ordinary subsequent updating is annual. `recalculate_pop_ig_support_effect.txt` proves the existing country effect also invokes the country-specific update at 101b290e8.
+6. `pop_manager_country_update.txt`: country-specific update precomputes fresh Pop attraction data and invokes EPopSupportUpdate=1 (normal bounded leave/join), at 10111ced8-10111cedc. It updates all IGs and movements of that country. It is not a direct setter for this trial movement and does not bypass the 10% step.
+7. The country updater does not explicitly run the global modifier manager or movement cached-support recalculation. A same-effect-block call after changing a modifier does not establish settled +0x2e0 modifier cache or +0xb8 movement support; native scheduling still requires engine verification.
+
+Current replay evidence: target 0.57275; factor grows 9.164 -> 13.746 -> 20.619 -> 30.9285 ->32 by week4, then support stays around 0.10 through logged week17. Saved weeks reach26 with failure. This supports a mismatch between a 26-week controller budget and native annual membership updates, not failed script arithmetic.
+
+Smallest evidence-backed next trial: use existing `recalculate_pop_ig_support = yes` for the active one-state origin at bounded cadence, retaining actual native support gate and noting all-IG/all-movement consequences. Allow a native update boundary between modifier application, membership recalculation, and support sampling. This is a new convergence test, not proof of territory or military allocation.
+
+
+## pop_manager_annual_update.txt
+
+# Read-only native inspection, Victoria 3 1.14.5 arm64
+# Reproduce: ['/Library/Developer/CommandLineTools/usr/bin/llvm-objdump', '--macho', '--arch=arm64', '--disassemble', '--dis-symname', '__ZN11CPopManager36UpdatePopsInterestGroupsAndMovementsEv', '/Users/depro/Library/Application Support/Steam/steamapps/common/Victoria 3/binaries/victoria3.app/Contents/MacOS/victoria3']
+
+/Users/depro/Library/Application Support/Steam/steamapps/common/Victoria 3/binaries/victoria3.app/Contents/MacOS/victoria3:
+(__TEXT,__text) section
+__ZN11CPopManager36UpdatePopsInterestGroupsAndMovementsEv:
+10111c44c:	f8 5f bc a9	stp	x24, x23, [sp, #-0x40]!
+10111c450:	f6 57 01 a9	stp	x22, x21, [sp, #0x10]
+10111c454:	f4 4f 02 a9	stp	x20, x19, [sp, #0x20]
+10111c458:	fd 7b 03 a9	stp	x29, x30, [sp, #0x30]
+10111c45c:	fd c3 00 91	add	x29, sp, #0x30
+10111c460:	ff c3 0c d1	sub	sp, sp, #0x330
+10111c464:	f3 03 00 aa	mov	x19, x0
+10111c468:	ff 7f 04 a9	stp	xzr, xzr, [sp, #0x40]
+10111c46c:	34 9e 03 90	adrp	x20, 29636 ; 0x1084e0000
+10111c470:	94 02 1c 91	add	x20, x20, #0x700
+10111c474:	f4 2b 00 f9	str	x20, [sp, #0x50]
+10111c478:	c7 57 ec 97	bl	__Z24LogicGetCurrentGameStatev
+10111c47c:	01 20 00 91	add	x1, x0, #0x8
+10111c480:	e2 03 01 91	add	x2, sp, #0x40
+10111c484:	e0 03 13 aa	mov	x0, x19
+10111c488:	16 f7 ff 97	bl	__ZN11CPopManager37CollectPopsForDailyUpdateOnceEachYearERK21CJominiHistoricalDateR9CPdxArrayIP4CPopiE
+10111c48c:	f3 4f 80 b9	ldrsw	x19, [sp, #0x4c]
+10111c490:	f3 4f 06 29	stp	w19, w19, [sp, #0x30]
+10111c494:	f4 1f 00 f9	str	x20, [sp, #0x38]
+10111c498:	08 13 80 52	mov	w8, #0x98
+10111c49c:	61 7e 28 9b	smull	x1, w19, w8
+10111c4a0:	88 02 40 f9	ldr	x8, [x20]
+10111c4a4:	08 09 40 f9	ldr	x8, [x8, #0x10]
+10111c4a8:	e0 03 14 aa	mov	x0, x20
+# Remaining allocation/scheduling body omitted; reproduce with command above.
+
+
+## pop_manager_annual_collector.txt
+
+# Read-only native inspection, Victoria 3 1.14.5 arm64
+# Reproduce: ['/Library/Developer/CommandLineTools/usr/bin/llvm-objdump', '--macho', '--arch=arm64', '--disassemble', '--dis-symname', '__ZN11CPopManager37CollectPopsForDailyUpdateOnceEachYearERK21CJominiHistoricalDateR9CPdxArrayIP4CPopiE', '/Users/depro/Library/Application Support/Steam/steamapps/common/Victoria 3/binaries/victoria3.app/Contents/MacOS/victoria3']
+
+/Users/depro/Library/Application Support/Steam/steamapps/common/Victoria 3/binaries/victoria3.app/Contents/MacOS/victoria3:
+(__TEXT,__text) section
+__ZN11CPopManager37CollectPopsForDailyUpdateOnceEachYearERK21CJominiHistoricalDateR9CPdxArrayIP4CPopiE:
+10111a0e0:	e9 23 b9 6d	stp	d9, d8, [sp, #-0x70]!
+10111a0e4:	fc 6f 01 a9	stp	x28, x27, [sp, #0x10]
+10111a0e8:	fa 67 02 a9	stp	x26, x25, [sp, #0x20]
+10111a0ec:	f8 5f 03 a9	stp	x24, x23, [sp, #0x30]
+10111a0f0:	f6 57 04 a9	stp	x22, x21, [sp, #0x40]
+10111a0f4:	f4 4f 05 a9	stp	x20, x19, [sp, #0x50]
+10111a0f8:	fd 7b 06 a9	stp	x29, x30, [sp, #0x60]
+10111a0fc:	fd 83 01 91	add	x29, sp, #0x60
+10111a100:	f3 03 02 aa	mov	x19, x2
+10111a104:	28 00 40 b9	ldr	w8, [x1]
+10111a108:	09 48 95 52	mov	w9, #0xaa40
+10111a10c:	69 ac bf 72	movk	w9, #0xfd63, lsl #16
+10111a110:	08 01 09 0b	add	w8, w8, w9
+10111a114:	69 55 95 52	mov	w9, #0xaaab
+10111a118:	49 55 a5 72	movk	w9, #0x2aaa, lsl #16
+10111a11c:	08 7d 29 9b	smull	x8, w8, w9
+10111a120:	09 fd 60 d3	lsr	x9, x8, #32
+10111a124:	08 fd 7f d3	lsr	x8, x8, #63
+10111a128:	16 09 89 0b	add	w22, w8, w9, asr #2
+10111a12c:	08 03 80 52	mov	w8, #0x18
+10111a130:	29 11 91 52	mov	w9, #0x8889
+10111a134:	09 11 b1 72	movk	w9, #0x8888, lsl #16
+10111a138:	c9 7e a9 9b	umull	x9, w22, w9
+10111a13c:	29 fd 64 d3	lsr	x9, x9, #36
+10111a140:	ca 03 80 52	mov	w10, #0x1e
+10111a144:	29 d9 0a 1b	msub	w9, w9, w10, w22
+10111a148:	28 01 a8 9b	umaddl	x8, w9, w8, x0
+10111a14c:	17 21 07 91	add	x23, x8, #0x1c8
+10111a150:	18 d5 41 b9	ldr	w24, [x8, #0x1d4]
+10111a154:	55 08 40 b9	ldr	w21, [x2, #0x8]
+10111a158:	bf 02 18 6b	cmp	w21, w24
+10111a15c:	0a 03 00 54	b.ge	0x10111a1bc
+10111a160:	60 0a 40 f9	ldr	x0, [x19, #0x10]
+10111a164:	01 f3 7d d3	lsl	x1, x24, #3
+10111a168:	08 00 40 f9	ldr	x8, [x0]
+10111a16c:	08 09 40 f9	ldr	x8, [x8, #0x10]
+10111a170:	02 01 80 52	mov	w2, #0x8
+10111a174:	00 01 3f d6	blr	x8
+10111a178:	f4 03 00 aa	mov	x20, x0
+10111a17c:	68 0e 80 b9	ldrsw	x8, [x19, #0xc]
+10111a180:	a8 00 00 34	cbz	w8, 0x10111a194
+10111a184:	61 02 40 f9	ldr	x1, [x19]
+10111a188:	02 f1 7d d3	lsl	x2, x8, #3
+10111a18c:	e0 03 14 aa	mov	x0, x20
+10111a190:	57 7f 36 95	bl	0x105eb9eec ; symbol stub for: _memcpy
+10111a194:	60 0a 40 f9	ldr	x0, [x19, #0x10]
+10111a198:	61 02 40 f9	ldr	x1, [x19]
+10111a19c:	08 00 40 f9	ldr	x8, [x0]
+10111a1a0:	08 0d 40 f9	ldr	x8, [x8, #0x18]
+10111a1a4:	00 01 3f d6	blr	x8
+10111a1a8:	74 02 00 f9	str	x20, [x19]
+10111a1ac:	78 0a 00 b9	str	w24, [x19, #0x8]
+10111a1b0:	f5 03 18 aa	mov	x21, x24
+10111a1b4:	e8 0e 40 b9	ldr	w8, [x23, #0xc]
+10111a1b8:	f8 03 08 aa	mov	x24, x8
+10111a1bc:	98 08 00 34	cbz	w24, 0x10111a2cc
+10111a1c0:	e8 16 8c 52	mov	w8, #0x60b7
+10111a1c4:	68 c1 b6 72	movk	w8, #0xb60b, lsl #16
+10111a1c8:	c8 7e 28 9b	smull	x8, w22, w8
+10111a1cc:	08 fd 60 d3	lsr	x8, x8, #32
+10111a1d0:	08 01 16 0b	add	w8, w8, w22
+10111a1d4:	09 7d 08 13	asr	w9, w8, #8
+10111a1d8:	28 7d 48 0b	add	w8, w9, w8, lsr #31
+10111a1dc:	09 2d 80 52	mov	w9, #0x168
+10111a1e0:	16 d9 09 1b	msub	w22, w8, w9, w22
+10111a1e4:	f7 02 40 f9	ldr	x23, [x23]
+10111a1e8:	08 7f 40 93	sxtw	x8, w24
+10111a1ec:	18 f1 7d d3	lsl	x24, x8, #3
+10111a1f0:	f9 82 8d 52	mov	w25, #0x6c17
+10111a1f4:	39 d8 a2 72	movk	w25, #0x16c1, lsl #16
+10111a1f8:	1a 2d 80 52	mov	w26, #0x168
+10111a1fc:	08 10 2f 1e	fmov	s8, #1.50000000
+10111a200:	08 00 00 14	b	0x10111a220
+10111a204:	68 02 40 f9	ldr	x8, [x19]
+10111a208:	1b d9 3c f8	str	x27, [x8, w28, sxtw #3]
+10111a20c:	88 07 00 11	add	w8, w28, #0x1
+10111a210:	68 0e 00 b9	str	w8, [x19, #0xc]
+10111a214:	f7 22 00 91	add	x23, x23, #0x8
+10111a218:	18 23 00 f1	subs	x24, x24, #0x8
+10111a21c:	80 05 00 54	b.eq	0x10111a2cc
+10111a220:	fb 02 40 f9	ldr	x27, [x23]
+10111a224:	68 0b 40 b9	ldr	w8, [x27, #0x8]
+10111a228:	09 7d 03 53	lsr	w9, w8, #3
+10111a22c:	29 7d b9 9b	umull	x9, w9, w25
+10111a230:	29 fd 62 d3	lsr	x9, x9, #34
+10111a234:	28 a1 1a 1b	msub	w8, w9, w26, w8
+10111a238:	1f 01 16 6b	cmp	w8, w22
+10111a23c:	c1 fe ff 54	b.ne	0x10111a214
+10111a240:	7c 0e 40 b9	ldr	w28, [x19, #0xc]
+10111a244:	9f 03 15 6b	cmp	w28, w21
+10111a248:	e1 fd ff 54	b.ne	0x10111a204
+10111a24c:	a8 06 00 11	add	w8, w21, #0x1
+10111a250:	a0 02 22 1e	scvtf	s0, w21
+10111a254:	00 08 28 1e	fmul	s0, s0, s8
+10111a258:	09 00 38 1e	fcvtzs	w9, s0
+10111a25c:	1f 01 09 6b	cmp	w8, w9
+10111a260:	35 d5 95 1a	csinc	w21, w9, w21, le
+10111a264:	60 0a 40 f9	ldr	x0, [x19, #0x10]
+10111a268:	a1 7e 7d d3	ubfiz	x1, x21, #3, #32
+10111a26c:	08 00 40 f9	ldr	x8, [x0]
+10111a270:	08 09 40 f9	ldr	x8, [x8, #0x10]
+10111a274:	02 01 80 52	mov	w2, #0x8
+10111a278:	00 01 3f d6	blr	x8
+10111a27c:	f4 03 00 aa	mov	x20, x0
+10111a280:	68 0e 80 b9	ldrsw	x8, [x19, #0xc]
+10111a284:	1b 78 28 f8	str	x27, [x0, x8, lsl #3]
+10111a288:	e8 00 00 34	cbz	w8, 0x10111a2a4
+10111a28c:	61 02 40 f9	ldr	x1, [x19]
+10111a290:	02 f1 7d d3	lsl	x2, x8, #3
+10111a294:	e0 03 14 aa	mov	x0, x20
+10111a298:	15 7f 36 95	bl	0x105eb9eec ; symbol stub for: _memcpy
+10111a29c:	7c 0e 40 b9	ldr	w28, [x19, #0xc]
+10111a2a0:	02 00 00 14	b	0x10111a2a8
+10111a2a4:	1c 00 80 52	mov	w28, #0x0
+10111a2a8:	7f 0e 00 b9	str	wzr, [x19, #0xc]
+10111a2ac:	60 0a 40 f9	ldr	x0, [x19, #0x10]
+10111a2b0:	61 02 40 f9	ldr	x1, [x19]
+10111a2b4:	08 00 40 f9	ldr	x8, [x0]
+10111a2b8:	08 0d 40 f9	ldr	x8, [x8, #0x18]
+10111a2bc:	00 01 3f d6	blr	x8
+10111a2c0:	74 02 00 f9	str	x20, [x19]
+10111a2c4:	75 0a 00 b9	str	w21, [x19, #0x8]
+10111a2c8:	d1 ff ff 17	b	0x10111a20c
+10111a2cc:	fd 7b 46 a9	ldp	x29, x30, [sp, #0x60]
+10111a2d0:	f4 4f 45 a9	ldp	x20, x19, [sp, #0x50]
+10111a2d4:	f6 57 44 a9	ldp	x22, x21, [sp, #0x40]
+10111a2d8:	f8 5f 43 a9	ldp	x24, x23, [sp, #0x30]
+10111a2dc:	fa 67 42 a9	ldp	x26, x25, [sp, #0x20]
+10111a2e0:	fc 6f 41 a9	ldp	x28, x27, [sp, #0x10]
+10111a2e4:	e9 23 c7 6c	ldp	d9, d8, [sp], #0x70
+10111a2e8:	c0 03 5f d6	ret
+
+
+## pop_adjust_movement_support.txt
+
+# Read-only native inspection, Victoria 3 1.14.5 arm64
+# Reproduce: ['/Library/Developer/CommandLineTools/usr/bin/llvm-objdump', '--macho', '--arch=arm64', '--disassemble', '--dis-symname', '__ZN4CPop30AdjustPoliticalMovementSupportE21EPopSupportAdjustment7TPdxRefI18CPoliticalMovementERK45SPopInterestGroupAndMovementSupportUpdateDataRK11CFixedPointRx', '/Users/depro/Library/Application Support/Steam/steamapps/common/Victoria 3/binaries/victoria3.app/Contents/MacOS/victoria3']
+
+/Users/depro/Library/Application Support/Steam/steamapps/common/Victoria 3/binaries/victoria3.app/Contents/MacOS/victoria3:
+(__TEXT,__text) section
+__ZN4CPop30AdjustPoliticalMovementSupportE21EPopSupportAdjustment7TPdxRefI18CPoliticalMovementERK45SPopInterestGroupAndMovementSupportUpdateDataRK11CFixedPointRx:
+1010f24ac:	ff c3 01 d1	sub	sp, sp, #0x70
+1010f24b0:	fc 6f 01 a9	stp	x28, x27, [sp, #0x10]
+1010f24b4:	fa 67 02 a9	stp	x26, x25, [sp, #0x20]
+1010f24b8:	f8 5f 03 a9	stp	x24, x23, [sp, #0x30]
+1010f24bc:	f6 57 04 a9	stp	x22, x21, [sp, #0x40]
+1010f24c0:	f4 4f 05 a9	stp	x20, x19, [sp, #0x50]
+1010f24c4:	fd 7b 06 a9	stp	x29, x30, [sp, #0x60]
+1010f24c8:	fd 83 01 91	add	x29, sp, #0x60
+1010f24cc:	f3 03 05 aa	mov	x19, x5
+1010f24d0:	f5 03 03 aa	mov	x21, x3
+1010f24d4:	f6 03 01 aa	mov	x22, x1
+1010f24d8:	f4 03 00 aa	mov	x20, x0
+1010f24dc:	48 1c 00 12	and	w8, w2, #0xff
+1010f24e0:	a9 b8 93 52	mov	w9, #0x9dc5
+1010f24e4:	89 23 b0 72	movk	w9, #0x811c, lsl #16
+1010f24e8:	09 01 09 4a	eor	w9, w8, w9
+1010f24ec:	6b 32 80 52	mov	w11, #0x193
+1010f24f0:	0b 20 a0 72	movk	w11, #0x100, lsl #16
+1010f24f4:	2a 7d 0b 1b	mul	w10, w9, w11
+1010f24f8:	49 3c 08 53	ubfx	w9, w2, #8, #8
+1010f24fc:	4a 01 09 4a	eor	w10, w10, w9
+1010f2500:	4c 7d 0b 1b	mul	w12, w10, w11
+1010f2504:	4a 5c 10 53	ubfx	w10, w2, #16, #8
+1010f2508:	8c 01 0a 4a	eor	w12, w12, w10
+1010f250c:	8c 7d 0b 1b	mul	w12, w12, w11
+1010f2510:	8c 61 42 4a	eor	w12, w12, w2, lsr #24
+1010f2514:	8b 7d 0b 1b	mul	w11, w12, w11
+1010f2518:	6c 84 40 b9	ldr	w12, [x3, #0x84]
+1010f251c:	8b 01 0b 0a	and	w11, w12, w11
+1010f2520:	6d 3c 40 f9	ldr	x13, [x3, #0x78]
+1010f2524:	0f 03 80 52	mov	w15, #0x18
+1010f2528:	6b 35 2f 9b	smaddl	x11, w11, w15, x13
+1010f252c:	6e 11 40 39	ldrb	w14, [x11, #0x4]
+1010f2530:	ee 01 00 34	cbz	w14, 0x1010f256c
+1010f2534:	50 1c 08 12	and	w16, w2, #0xff000000
+1010f2538:	10 42 0a 2a	orr	w16, w16, w10, lsl #16
+1010f253c:	10 22 09 2a	orr	w16, w16, w9, lsl #8
+1010f2540:	11 02 08 2a	orr	w17, w16, w8
+1010f2544:	20 00 80 52	mov	w0, #0x1
+1010f2548:	f0 03 0b aa	mov	x16, x11
+1010f254c:	01 0a 40 b9	ldr	w1, [x16, #0x8]
+1010f2550:	3f 02 01 6b	cmp	w17, w1
+1010f2554:	40 01 00 54	b.eq	0x1010f257c
+1010f2558:	00 04 00 11	add	w0, w0, #0x1
+1010f255c:	01 72 40 39	ldrb	w1, [x16, #0x1c]
+1010f2560:	10 62 00 91	add	x16, x16, #0x18
+1010f2564:	3f 00 20 6b	cmp	w1, w0, uxtb
+1010f2568:	22 ff ff 54	b.hs	0x1010f254c
+1010f256c:	b0 22 42 39	ldrb	w16, [x21, #0x88]
+1010f2570:	90 01 10 0b	add	w16, w12, w16
+1010f2574:	0f 36 2f 9b	smaddl	x15, w16, w15, x13
+1010f2578:	f0 61 00 91	add	x16, x15, #0x18
+1010f257c:	0f 12 40 39	ldrb	w15, [x16, #0x4]
+1010f2580:	ff fd 03 71	cmp	w15, #0xff
+1010f2584:	80 1f 00 54	b.eq	0x1010f2974
+1010f2588:	ce 01 00 34	cbz	w14, 0x1010f25c0
+1010f258c:	4e 1c 08 12	and	w14, w2, #0xff000000
+1010f2590:	ce 41 0a 2a	orr	w14, w14, w10, lsl #16
+1010f2594:	ce 21 09 2a	orr	w14, w14, w9, lsl #8
+1010f2598:	ce 01 08 2a	orr	w14, w14, w8
+1010f259c:	2f 00 80 52	mov	w15, #0x1
+1010f25a0:	70 09 40 b9	ldr	w16, [x11, #0x8]
+1010f25a4:	df 01 10 6b	cmp	w14, w16
+1010f25a8:	60 01 00 54	b.eq	0x1010f25d4
+1010f25ac:	ef 05 00 11	add	w15, w15, #0x1
+1010f25b0:	70 71 40 39	ldrb	w16, [x11, #0x1c]
+1010f25b4:	6b 61 00 91	add	x11, x11, #0x18
+1010f25b8:	1f 02 2f 6b	cmp	w16, w15, uxtb
+1010f25bc:	22 ff ff 54	b.hs	0x1010f25a0
+1010f25c0:	ab 22 42 39	ldrb	w11, [x21, #0x88]
+1010f25c4:	8b 01 0b 0b	add	w11, w12, w11
+1010f25c8:	0c 03 80 52	mov	w12, #0x18
+1010f25cc:	6b 35 2c 9b	smaddl	x11, w11, w12, x13
+1010f25d0:	6b 61 00 91	add	x11, x11, #0x18
+1010f25d4:	fb cc 9c d2	mov	x27, #0xe667
+1010f25d8:	3b 41 ad f2	movk	x27, #0x6a09, lsl #16
+1010f25dc:	3b 00 c0 f2	movk	x27, #0x1, lsl #32
+1010f25e0:	7c 66 9e 52	mov	w28, #0xf333
+1010f25e4:	9c a0 b6 72	movk	w28, #0xb504, lsl #16
+1010f25e8:	1a d4 90 52	mov	w26, #0x86a0
+1010f25ec:	3a 00 a0 72	movk	w26, #0x1, lsl #16
+1010f25f0:	6c 09 40 f9	ldr	x12, [x11, #0x10]
+1010f25f4:	8b 00 40 f9	ldr	x11, [x4]
+1010f25f8:	7f 05 00 f1	cmp	x11, #0x1
+1010f25fc:	4b 03 00 54	b.lt	0x1010f2664
+1010f2600:	6d b4 91 92	mov	x13, #-0x8da4
+1010f2604:	8d 3b a5 f2	movk	x13, #0x29dc, lsl #16
+1010f2608:	ad 83 d5 f2	movk	x13, #0xac1d, lsl #32
+1010f260c:	ee 68 83 92	mov	x14, #-0x1b48
+1010f2610:	0e 77 aa f2	movk	x14, #0x53b8, lsl #16
+1010f2614:	4e 07 cb f2	movk	x14, #0x583a, lsl #32
+1010f2618:	8d 01 0d 8b	add	x13, x12, x13
+1010f261c:	bf 01 0e eb	cmp	x13, x14
+1010f2620:	e8 01 00 54	b.hi	0x1010f265c
+1010f2624:	0d 80 9c d2	mov	x13, #0xe400
+1010f2628:	6d 81 aa f2	movk	x13, #0x540b, lsl #16
+1010f262c:	4d 00 c0 f2	movk	x13, #0x2, lsl #32
+1010f2630:	7f 01 0d eb	cmp	x11, x13
+1010f2634:	a3 03 00 54	b.lo	0x1010f26a8
+1010f2638:	6b fd 45 d3	lsr	x11, x11, #5
+1010f263c:	6d 08 8f d2	mov	x13, #0x7843
+1010f2640:	8d 36 ae f2	movk	x13, #0x71b4, lsl #16
+1010f2644:	8d 58 cb f2	movk	x13, #0x5ac4, lsl #32
+1010f2648:	8d 4f e1 f2	movk	x13, #0xa7c, lsl #48
+1010f264c:	6b 7d cd 9b	umulh	x11, x11, x13
+1010f2650:	6b fd 47 d3	lsr	x11, x11, #7
+1010f2654:	8b 0d cb 9a	sdiv	x11, x12, x11
+1010f2658:	27 00 00 14	b	0x1010f26f4
+1010f265c:	8d 7d 1a 9b	mul	x13, x12, x26
+1010f2660:	ab 0d cb 9a	sdiv	x11, x13, x11
+1010f2664:	ad b1 03 b0	adrp	x13, 30261 ; 0x108727000
+1010f2668:	ad 41 0c 91	add	x13, x13, #0x310
+1010f266c:	ad 01 40 f9	ldr	x13, [x13]
+1010f2670:	ae 01 1c 8b	add	x14, x13, x28
+1010f2674:	8f 01 1c 8b	add	x15, x12, x28
+1010f2678:	ff 01 1b eb	cmp	x15, x27
+1010f267c:	c2 31 5b fa	ccmp	x14, x27, #0x2, lo
+1010f2680:	02 04 00 54	b.hs	0x1010f2700
+1010f2684:	ac 7d 0c 9b	mul	x12, x13, x12
+1010f2688:	2d 21 9c d2	mov	x13, #0xe109
+1010f268c:	2d da b8 f2	movk	x13, #0xc6d1, lsl #16
+1010f2690:	2d 62 cd f2	movk	x13, #0x6b11, lsl #32
+1010f2694:	2d 3e e5 f2	movk	x13, #0x29f1, lsl #48
+1010f2698:	8c 7d 4d 9b	smulh	x12, x12, x13
+1010f269c:	8d fd 4e 93	asr	x13, x12, #14
+1010f26a0:	ac fd 4c 8b	add	x12, x13, x12, lsr #63
+1010f26a4:	28 00 00 14	b	0x1010f2744
+1010f26a8:	2d 21 9c d2	mov	x13, #0xe109
+1010f26ac:	2d da b8 f2	movk	x13, #0xc6d1, lsl #16
+1010f26b0:	2d 62 cd f2	movk	x13, #0x6b11, lsl #32
+1010f26b4:	2d 3e e5 f2	movk	x13, #0x29f1, lsl #48
+1010f26b8:	8d 7d 4d 9b	smulh	x13, x12, x13
+1010f26bc:	ae fd 4e 93	asr	x14, x13, #14
+1010f26c0:	cd fd 4d 8b	add	x13, x14, x13, lsr #63
+1010f26c4:	0e d4 90 52	mov	w14, #0x86a0
+1010f26c8:	2e 00 a0 72	movk	w14, #0x1, lsl #16
+1010f26cc:	ad 7d 0e 9b	mul	x13, x13, x14
+1010f26d0:	8e 01 0d cb	sub	x14, x12, x13
+1010f26d4:	af 0d cb 9a	sdiv	x15, x13, x11
+1010f26d8:	ed b5 0b 9b	msub	x13, x15, x11, x13
+1010f26dc:	ad 7d 1a 9b	mul	x13, x13, x26
+1010f26e0:	ad 0d cb 9a	sdiv	x13, x13, x11
+1010f26e4:	ce 7d 1a 9b	mul	x14, x14, x26
+1010f26e8:	cb 0d cb 9a	sdiv	x11, x14, x11
+1010f26ec:	ed 35 1a 9b	madd	x13, x15, x26, x13
+1010f26f0:	ab 01 0b 8b	add	x11, x13, x11
+1010f26f4:	ad b1 03 b0	adrp	x13, 30261 ; 0x108727000
+1010f26f8:	ad 41 0c 91	add	x13, x13, #0x310
+1010f26fc:	ad 01 40 f9	ldr	x13, [x13]
+1010f2700:	bf 01 0c eb	cmp	x13, x12
+1010f2704:	ae c1 8c 9a	csel	x14, x13, x12, gt
+1010f2708:	9f 01 0d eb	cmp	x12, x13
+1010f270c:	8c b1 8d 9a	csel	x12, x12, x13, lt
+1010f2710:	2d 21 9c d2	mov	x13, #0xe109
+1010f2714:	2d da b8 f2	movk	x13, #0xc6d1, lsl #16
+1010f2718:	2d 62 cd f2	movk	x13, #0x6b11, lsl #32
+1010f271c:	2d 3e e5 f2	movk	x13, #0x29f1, lsl #48
+1010f2720:	cf 7d 4d 9b	smulh	x15, x14, x13
+1010f2724:	f0 fd 4e 93	asr	x16, x15, #14
+1010f2728:	0f fe 4f 8b	add	x15, x16, x15, lsr #63
+1010f272c:	ee b9 1a 9b	msub	x14, x15, x26, x14
+1010f2730:	ce 7d 0c 9b	mul	x14, x14, x12
+1010f2734:	cd 7d 4d 9b	smulh	x13, x14, x13
+1010f2738:	ae fd 4e 93	asr	x14, x13, #14
+1010f273c:	cd fd 4d 8b	add	x13, x14, x13, lsr #63
+1010f2740:	ec 35 0c 9b	madd	x12, x15, x12, x13
+1010f2744:	7f 01 0c eb	cmp	x11, x12
+1010f2748:	79 b1 8c 9a	csel	x25, x11, x12, lt
+1010f274c:	4b 1c 08 12	and	w11, w2, #0xff000000
+1010f2750:	6a 41 0a 2a	orr	w10, w11, w10, lsl #16
+1010f2754:	49 21 09 2a	orr	w9, w10, w9, lsl #8
+1010f2758:	37 01 08 2a	orr	w23, w9, w8
+1010f275c:	e0 03 14 aa	mov	x0, x20
+1010f2760:	e1 03 17 aa	mov	x1, x23
+1010f2764:	8c 00 00 94	bl	__ZNK4CPop33GetNumPoliticalMovementSupportersE7TPdxRefI18CPoliticalMovementE
+1010f2768:	f8 03 00 aa	mov	x24, x0
+1010f276c:	a9 06 40 f9	ldr	x9, [x21, #0x8]
+1010f2770:	28 7d 1a 9b	mul	x8, x9, x26
+1010f2774:	4a d4 8e 52	mov	w10, #0x76a2
+1010f2778:	8b a8 9d 52	mov	w11, #0xed44
+1010f277c:	29 01 0a 8b	add	x9, x9, x10
+1010f2780:	3f 01 0b eb	cmp	x9, x11
+1010f2784:	a8 01 00 54	b.hi	0x1010f27b8
+1010f2788:	29 03 1c 8b	add	x9, x25, x28
+1010f278c:	3f 01 1b eb	cmp	x9, x27
+1010f2790:	42 01 00 54	b.hs	0x1010f27b8
+1010f2794:	08 7d 19 9b	mul	x8, x8, x25
+1010f2798:	29 21 9c d2	mov	x9, #0xe109
+1010f279c:	29 da b8 f2	movk	x9, #0xc6d1, lsl #16
+1010f27a0:	29 62 cd f2	movk	x9, #0x6b11, lsl #32
+1010f27a4:	29 3e e5 f2	movk	x9, #0x29f1, lsl #48
+1010f27a8:	08 7d 49 9b	smulh	x8, x8, x9
+1010f27ac:	09 fd 4e 93	asr	x9, x8, #14
+1010f27b0:	28 fd 48 8b	add	x8, x9, x8, lsr #63
+1010f27b4:	12 00 00 14	b	0x1010f27fc
+1010f27b8:	3f 03 08 eb	cmp	x25, x8
+1010f27bc:	29 c3 88 9a	csel	x9, x25, x8, gt
+1010f27c0:	1f 01 19 eb	cmp	x8, x25
+1010f27c4:	08 b1 99 9a	csel	x8, x8, x25, lt
+1010f27c8:	2a 21 9c d2	mov	x10, #0xe109
+1010f27cc:	2a da b8 f2	movk	x10, #0xc6d1, lsl #16
+1010f27d0:	2a 62 cd f2	movk	x10, #0x6b11, lsl #32
+1010f27d4:	2a 3e e5 f2	movk	x10, #0x29f1, lsl #48
+1010f27d8:	2b 7d 4a 9b	smulh	x11, x9, x10
+1010f27dc:	6c fd 4e 93	asr	x12, x11, #14
+1010f27e0:	8b fd 4b 8b	add	x11, x12, x11, lsr #63
+1010f27e4:	69 a5 1a 9b	msub	x9, x11, x26, x9
+1010f27e8:	29 7d 08 9b	mul	x9, x9, x8
+1010f27ec:	29 7d 4a 9b	smulh	x9, x9, x10
+1010f27f0:	2a fd 4e 93	asr	x10, x9, #14
+1010f27f4:	49 fd 49 8b	add	x9, x10, x9, lsr #63
+1010f27f8:	68 25 08 9b	madd	x8, x11, x8, x9
+1010f27fc:	e8 07 00 f9	str	x8, [sp, #0x8]
+1010f2800:	e0 23 00 91	add	x0, sp, #0x8
+1010f2804:	ac cc 27 95	bl	__ZNK11CFixedPoint10GetRoundedEv
+1010f2808:	f9 03 00 aa	mov	x25, x0
+1010f280c:	c0 00 80 52	mov	w0, #0x6
+1010f2810:	9f 15 c3 97	bl	__ZN7NCheats9IsEnabledE10ECheatType
+1010f2814:	a8 b1 03 b0	adrp	x8, 30261 ; 0x108727000
+1010f2818:	08 e1 0b 91	add	x8, x8, #0x2f8
+1010f281c:	08 01 40 f9	ldr	x8, [x8]
+1010f2820:	1f 00 00 71	cmp	w0, #0x0
+1010f2824:	48 13 88 9a	csel	x8, x26, x8, ne
+1010f2828:	aa 06 40 f9	ldr	x10, [x21, #0x8]
+1010f282c:	49 7d 1a 9b	mul	x9, x10, x26
+1010f2830:	4b d4 8e 52	mov	w11, #0x76a2
+1010f2834:	8c a8 9d 52	mov	w12, #0xed44
+1010f2838:	4a 01 0b 8b	add	x10, x10, x11
+1010f283c:	5f 01 0c eb	cmp	x10, x12
+1010f2840:	a8 01 00 54	b.hi	0x1010f2874
+1010f2844:	0a 01 1c 8b	add	x10, x8, x28
+1010f2848:	5f 01 1b eb	cmp	x10, x27
+1010f284c:	42 01 00 54	b.hs	0x1010f2874
+1010f2850:	28 7d 08 9b	mul	x8, x9, x8
+1010f2854:	29 21 9c d2	mov	x9, #0xe109
+1010f2858:	29 da b8 f2	movk	x9, #0xc6d1, lsl #16
+1010f285c:	29 62 cd f2	movk	x9, #0x6b11, lsl #32
+1010f2860:	29 3e e5 f2	movk	x9, #0x29f1, lsl #48
+1010f2864:	08 7d 49 9b	smulh	x8, x8, x9
+1010f2868:	09 fd 4e 93	asr	x9, x8, #14
+1010f286c:	28 fd 48 8b	add	x8, x9, x8, lsr #63
+1010f2870:	12 00 00 14	b	0x1010f28b8
+1010f2874:	1f 01 09 eb	cmp	x8, x9
+1010f2878:	0a c1 89 9a	csel	x10, x8, x9, gt
+1010f287c:	3f 01 08 eb	cmp	x9, x8
+1010f2880:	28 b1 88 9a	csel	x8, x9, x8, lt
+1010f2884:	29 21 9c d2	mov	x9, #0xe109
+1010f2888:	29 da b8 f2	movk	x9, #0xc6d1, lsl #16
+1010f288c:	29 62 cd f2	movk	x9, #0x6b11, lsl #32
+1010f2890:	29 3e e5 f2	movk	x9, #0x29f1, lsl #48
+1010f2894:	4b 7d 49 9b	smulh	x11, x10, x9
+1010f2898:	6c fd 4e 93	asr	x12, x11, #14
+1010f289c:	8b fd 4b 8b	add	x11, x12, x11, lsr #63
+1010f28a0:	6a a9 1a 9b	msub	x10, x11, x26, x10
+1010f28a4:	4a 7d 08 9b	mul	x10, x10, x8
+1010f28a8:	49 7d 49 9b	smulh	x9, x10, x9
+1010f28ac:	2a fd 4e 93	asr	x10, x9, #14
+1010f28b0:	49 fd 49 8b	add	x9, x10, x9, lsr #63
+1010f28b4:	68 25 08 9b	madd	x8, x11, x8, x9
+1010f28b8:	e8 07 00 f9	str	x8, [sp, #0x8]
+1010f28bc:	e0 23 00 91	add	x0, sp, #0x8
+1010f28c0:	7d cc 27 95	bl	__ZNK11CFixedPoint10GetRoundedEv
+1010f28c4:	a8 b1 03 b0	adrp	x8, 30261 ; 0x108727000
+1010f28c8:	08 81 0b 91	add	x8, x8, #0x2e0
+1010f28cc:	08 01 40 f9	ldr	x8, [x8]
+1010f28d0:	1f 01 00 eb	cmp	x8, x0
+1010f28d4:	08 c1 80 9a	csel	x8, x8, x0, gt
+1010f28d8:	76 03 00 34	cbz	w22, 0x1010f2944
+1010f28dc:	df 06 00 71	cmp	w22, #0x1
+1010f28e0:	20 01 00 54	b.eq	0x1010f2904
+1010f28e4:	df 0a 00 71	cmp	w22, #0x2
+1010f28e8:	61 04 00 54	b.ne	0x1010f2974
+1010f28ec:	a3 06 40 f9	ldr	x3, [x21, #0x8]
+1010f28f0:	e0 03 14 aa	mov	x0, x20
+1010f28f4:	e1 03 17 aa	mov	x1, x23
+1010f28f8:	e2 03 19 aa	mov	x2, x25
+1010f28fc:	8c 00 00 94	bl	__ZN4CPop33SetNumPoliticalMovementSupportersE7TPdxRefI18CPoliticalMovementExx
+1010f2900:	1d 00 00 14	b	0x1010f2974
+1010f2904:	1f 03 19 eb	cmp	x24, x25
+1010f2908:	6a 03 00 54	b.ge	0x1010f2974
+1010f290c:	69 02 40 f9	ldr	x9, [x19]
+1010f2910:	2a 03 18 cb	sub	x10, x25, x24
+1010f2914:	3f 01 0a eb	cmp	x9, x10
+1010f2918:	29 b1 8a 9a	csel	x9, x9, x10, lt
+1010f291c:	1f 01 09 eb	cmp	x8, x9
+1010f2920:	16 b1 89 9a	csel	x22, x8, x9, lt
+1010f2924:	a3 06 40 f9	ldr	x3, [x21, #0x8]
+1010f2928:	c2 02 18 8b	add	x2, x22, x24
+1010f292c:	e0 03 14 aa	mov	x0, x20
+1010f2930:	e1 03 17 aa	mov	x1, x23
+1010f2934:	7e 00 00 94	bl	__ZN4CPop33SetNumPoliticalMovementSupportersE7TPdxRefI18CPoliticalMovementExx
+1010f2938:	68 02 40 f9	ldr	x8, [x19]
+1010f293c:	08 01 16 cb	sub	x8, x8, x22
+1010f2940:	0c 00 00 14	b	0x1010f2970
+1010f2944:	09 03 19 eb	subs	x9, x24, x25
+1010f2948:	6d 01 00 54	b.le	0x1010f2974
+1010f294c:	1f 01 09 eb	cmp	x8, x9
+1010f2950:	16 b1 89 9a	csel	x22, x8, x9, lt
+1010f2954:	02 03 16 cb	sub	x2, x24, x22
+1010f2958:	a3 06 40 f9	ldr	x3, [x21, #0x8]
+1010f295c:	e0 03 14 aa	mov	x0, x20
+1010f2960:	e1 03 17 aa	mov	x1, x23
+1010f2964:	72 00 00 94	bl	__ZN4CPop33SetNumPoliticalMovementSupportersE7TPdxRefI18CPoliticalMovementExx
+1010f2968:	68 02 40 f9	ldr	x8, [x19]
+1010f296c:	08 01 16 8b	add	x8, x8, x22
+1010f2970:	68 02 00 f9	str	x8, [x19]
+1010f2974:	fd 7b 46 a9	ldp	x29, x30, [sp, #0x60]
+1010f2978:	f4 4f 45 a9	ldp	x20, x19, [sp, #0x50]
+1010f297c:	f6 57 44 a9	ldp	x22, x21, [sp, #0x40]
+1010f2980:	f8 5f 43 a9	ldp	x24, x23, [sp, #0x30]
+1010f2984:	fa 67 42 a9	ldp	x26, x25, [sp, #0x20]
+1010f2988:	fc 6f 41 a9	ldp	x28, x27, [sp, #0x10]
+1010f298c:	ff c3 01 91	add	sp, sp, #0x70
+1010f2990:	c0 03 5f d6	ret
+
+
+## recalculate_pop_ig_support_effect.txt
+
+# Reproduce: ['/Library/Developer/CommandLineTools/usr/bin/llvm-objdump', '--macho', '--arch=arm64', '--disassemble', '--dis-symname', '__ZNK24CRecalculatePopIGSupport14ExecuteDerivedERK19SJominiEffectScopes', '/Users/depro/Library/Application Support/Steam/steamapps/common/Victoria 3/binaries/victoria3.app/Contents/MacOS/victoria3']
+
+/Users/depro/Library/Application Support/Steam/steamapps/common/Victoria 3/binaries/victoria3.app/Contents/MacOS/victoria3:
+(__TEXT,__text) section
+__ZNK24CRecalculatePopIGSupport14ExecuteDerivedERK19SJominiEffectScopes:
+101b29088:	f4 4f be a9	stp	x20, x19, [sp, #-0x20]!
+101b2908c:	fd 7b 01 a9	stp	x29, x30, [sp, #0x10]
+101b29090:	fd 43 00 91	add	x29, sp, #0x10
+101b29094:	f3 03 01 aa	mov	x19, x1
+101b29098:	e8 03 00 aa	mov	x8, x0
+101b2909c:	22 10 40 f9	ldr	x2, [x1, #0x20]
+101b290a0:	00 00 01 91	add	x0, x0, #0x40
+101b290a4:	03 41 00 91	add	x3, x8, #0x10
+101b290a8:	d1 ea fd 97	bl	__ZNK18CJominiScriptValueIbE8GetValueERK19SJominiScriptScopesP12CCrudeRandomRK13SFileLocation
+101b290ac:	80 00 00 34	cbz	w0, 0x101b290bc
+101b290b0:	b9 24 c4 97	bl	__Z24LogicGetCurrentGameStatev
+101b290b4:	08 c0 44 39	ldrb	w8, [x0, #0x130]
+101b290b8:	88 00 00 36	tbz	w8, #0x0, 0x101b290c8
+101b290bc:	fd 7b 41 a9	ldp	x29, x30, [sp, #0x10]
+101b290c0:	f4 4f c2 a8	ldp	x20, x19, [sp], #0x20
+101b290c4:	c0 03 5f d6	ret
+101b290c8:	60 02 40 f9	ldr	x0, [x19]
+101b290cc:	ca 8f 72 94	bl	__ZN12NJominiScope12AccessObjectI8CCountryEERT_RK21CScopeObjectReference
+101b290d0:	f3 03 00 aa	mov	x19, x0
+101b290d4:	20 20 c4 97	bl	__Z27LogicAccessCurrentGameStatev
+101b290d8:	03 22 c4 97	bl	__ZN10CGameState16AccessPopManagerEv
+101b290dc:	e1 03 13 aa	mov	x1, x19
+101b290e0:	fd 7b 41 a9	ldp	x29, x30, [sp, #0x10]
+101b290e4:	f4 4f c2 a8	ldp	x20, x19, [sp], #0x20
+101b290e8:	60 ce d7 17	b	__ZN11CPopManager36UpdatePopsInterestGroupsAndMovementsERK8CCountry
+
+
+## country_and_annual_update_callers.txt
+
+# Read-only direct AArch64 B/BL call-site scan of the arm64 Mach-O __text section.
+# Binary: /Users/depro/Library/Application Support/Steam/steamapps/common/Victoria 3/binaries/victoria3.app/Contents/MacOS/victoria3
+# __text VM base/size/file offset: (4295004032, 99279456, 36736)
+# Excludes indirect calls.
+000000010033dc10: 94377b96 -> 000000010111ca68 (country update); enclosing __ZN15CCountryManager15OnCreateCountryER8CCountryRKS0_7TPdxRefI9CCivilWarE+0x130
+00000001010abf68: 9401c2c0 -> 000000010111ca68 (country update); enclosing __ZN25CPoliticalMovementManager23CreatePoliticalMovementER8CCountryRK26SPoliticalMovementIdentity+0x27c
+000000010111c488: 97fff716 -> 000000010111a0e0 (annual collector); enclosing __ZN11CPopManager36UpdatePopsInterestGroupsAndMovementsEv+0x3c
+000000010111dfe0: 17fff91b -> 000000010111c44c (annual daily-selected update); enclosing __ZN12_GLOBAL__N_146CTickTask_UpdatePopsInterestGroupsAndMovements7ExecuteER31CJominiTickTaskExecutionContext+0x14
+0000000101b290e8: 17d7ce60 -> 000000010111ca68 (country update); enclosing __ZNK24CRecalculatePopIGSupport14ExecuteDerivedERK19SJominiEffectScopes+0x60
+
+
+## modifier_and_define_symbol_addresses.txt
+
+00000001084a8a4e d __ZN13NModifierType33PoliticalMovementPopAttractionAddE
+00000001084a85e8 d __ZN13NModifierType34PoliticalMovementPopAttractionMultE
+0000000108727310 s __ZN8NDefines9NPolitics35MOVEMENT_POP_SUPPORT_ATTRACTION_CAPE
+00000001087272e0 s __ZN8NDefines9NPolitics37MIN_POP_NUMBER_JOIN_OR_LEAVE_MOVEMENTE
+00000001087272f8 s __ZN8NDefines9NPolitics39MAX_POP_FRACTION_JOIN_OR_LEAVE_MOVEMENTE

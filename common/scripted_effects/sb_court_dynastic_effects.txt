@@ -103,10 +103,10 @@ sb_court_snapshot_dynastic_coalitions = {
 }
 sb_court_snapshot_dynastic_house = {
  scope:sb_court_country = { change_variable = { name = sb_court_dynastic_$SIDE$_weight_var add = prev.var:sb_court_represented_weight_var } }
- sb_court_snapshot_dynastic_member = { SIDE = $SIDE$ }
+ if = { limit = { NOT = { this = scope:sb_court_country.var:sb_court_dynastic_nominee_scope } NOT = { this = scope:sb_court_country.var:sb_court_dynastic_rival_scope } } sb_court_snapshot_dynastic_member = { SIDE = $SIDE$ } }
  every_in_list = {
   variable = sb_court_house_members
-  limit = { is_character_alive = yes }
+  limit = { is_character_alive = yes NOT = { this = scope:sb_court_country.var:sb_court_dynastic_nominee_scope } NOT = { this = scope:sb_court_country.var:sb_court_dynastic_rival_scope } }
   sb_court_snapshot_dynastic_member = { SIDE = $SIDE$ }
  }
 }
@@ -193,6 +193,8 @@ sb_court_answer_dynastic_crisis = {
   if = { limit = { always = $CLAIMANT$ } set_variable = sb_court_dynastic_back_claimant_var }
   else = { remove_variable = sb_court_dynastic_back_claimant_var }
   set_variable = { name = sb_court_dynastic_target_var value = sb_court_dynastic_target_fraction }
+  sb_court_enable_recruitment_trial = yes
+  sb_court_initialise_recruitment_trial = yes
   remove_variable = sb_court_dynastic_selection_open_var
   set_variable = sb_court_dynastic_test_pending_var
   # Preserve penalties from earlier revolutions; this personal contest must not
@@ -211,6 +213,7 @@ sb_court_answer_dynastic_crisis = {
    if = { limit = { owner = { var:sb_court_dynastic_original_law_var = 2 } } set_core_ideology = ideology_sb_contested_social_crown }
    add_modifier = { name = sb_court_claimant_mobilisation }
   }
+  sb_court_apply_recruitment_trial = yes
   var:sb_court_dynastic_rival_scope = {
    if = {
     limit = { NOT = { has_role_of_type = agitator } }
@@ -225,7 +228,7 @@ sb_court_answer_dynastic_crisis = {
 }
 sb_court_queue_dynastic_poll = {
  if = {
-  limit = { has_variable = sb_court_dynastic_test_pending_var NOT = { has_variable = sb_court_dynastic_poll_queued_var } }
+  limit = { has_variable = sb_court_dynastic_test_pending_var NOT = { has_variable = sb_court_dynastic_poll_queued_var } NOT = { has_variable = sb_court_recruitment_failed_var } }
   set_variable = sb_court_dynastic_poll_queued_var
   trigger_event = { id = sb_court_succession.991 days = 7 }
  }
@@ -279,6 +282,7 @@ sb_court_progress_dynastic_crisis = {
    if = {
     limit = {
      var:sb_court_dynastic_rival_scope = { political_movement ?= scope:sb_court_country.var:sb_court_dynastic_movement_scope }
+     var:sb_court_dynastic_movement_scope = { sb_court_recruitment_ready = yes }
      OR = {
       AND = { var:sb_court_dynastic_original_law_var = 1 var:sb_court_dynastic_movement_scope = { most_desired_law ?= law_type:law_sb_contested_crown } }
       AND = { var:sb_court_dynastic_original_law_var = 2 var:sb_court_dynastic_movement_scope = { most_desired_law ?= law_type:law_sb_contested_social_crown } }
@@ -343,6 +347,15 @@ sb_court_track_dynastic_war = {
    scope:sb_court_dynastic_rival_country = {
     set_variable = { name = sb_prerogative_var value = 0 }
     set_variable = { name = sb_prerogative_last_change_var value = 0 }
+   }
+   # In a contested succession both princes begin new reigns; neither inherits
+   # their predecessor's Prerogative. A challenged living incumbent retains it.
+   if = {
+    limit = { var:sb_court_dynastic_reason_var = 2 }
+    scope:sb_court_dynastic_incumbent_country = {
+     set_variable = { name = sb_prerogative_var value = 0 }
+     set_variable = { name = sb_prerogative_last_change_var value = 0 }
+    }
    }
    scope:sb_court_dynastic_rebels = { sb_court_copy_dynastic_firearms = yes }
    # Keep the same penalty on both countries even if native IG inheritance omits it.
@@ -647,7 +660,6 @@ sb_court_resolve_dynastic_win = {
    sb_court_capture_vacant_accession = yes
   }
   sb_institutions_reconcile = yes
-  sb_court_open_dunn_judgement = yes
   # Ordinary royal victories grant no constitutional reward; an existing Hamu land contract is handled separately.
  }
 }
@@ -657,6 +669,7 @@ sb_court_acknowledge_dynastic_victory = {
   limit = { exists = scope:sb_court_victor var:sb_court_dynastic_victory_scope ?= scope:sb_court_victor }
   remove_variable = sb_court_dynastic_victory_scope
   sb_change_prerogative = { VALUE = 10 }
+  sb_court_open_dunn_judgement = yes
  }
 }
 
@@ -778,19 +791,24 @@ sb_court_reconcile_dynastic_record = {
 }
 
 # Called after the actual split and after the exact-war reconciliation above.
-# Recheck AI control monthly so taking over a faction removes its assistance.
+# Both factions receive food relief; only AI factions receive the supply discount.
 sb_court_reconcile_dynastic_supply = {
  if = {
   limit = {
-   is_ai = yes
    has_variable = sb_court_dynastic_crisis_var
    exists = var:sb_court_dynastic_war_scope
    exists = var:sb_court_dynastic_opponent_scope
    NOT = { has_variable = sb_court_dynastic_ended_var }
   }
-  if = { limit = { NOT = { has_modifier = sb_court_dynastic_ai_supply } } add_modifier = { name = sb_court_dynastic_ai_supply } }
+  if = { limit = { NOT = { has_modifier = sb_court_wartime_provisions } } add_modifier = { name = sb_court_wartime_provisions } }
+  if = {
+   limit = { is_ai = yes }
+   if = { limit = { NOT = { has_modifier = sb_court_dynastic_ai_supply } } add_modifier = { name = sb_court_dynastic_ai_supply } }
+  }
+  else = { if = { limit = { has_modifier = sb_court_dynastic_ai_supply } remove_modifier = sb_court_dynastic_ai_supply } }
  }
  else = {
+  if = { limit = { has_modifier = sb_court_wartime_provisions } remove_modifier = sb_court_wartime_provisions }
   if = { limit = { has_modifier = sb_court_dynastic_ai_supply } remove_modifier = sb_court_dynastic_ai_supply }
  }
 }
@@ -805,9 +823,11 @@ sb_court_cancel_dynastic_crisis = {
  }
 }
 sb_court_clear_dynastic_record = {
+ sb_court_clear_recruitment_trial = yes
  sb_court_demobilise_dynastic_muster = yes
  if = { limit = { NOT = { has_variable = sb_court_population_return_pending_var } } sb_court_clear_population_return = yes }
  if = { limit = { has_modifier = sb_court_dynastic_ai_supply } remove_modifier = sb_court_dynastic_ai_supply }
+ if = { limit = { has_modifier = sb_court_wartime_provisions } remove_modifier = sb_court_wartime_provisions }
  every_in_list = {
   variable = sb_court_dynastic_roster
   if = {

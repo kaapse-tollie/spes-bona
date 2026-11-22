@@ -1,5 +1,7 @@
 ﻿# ### TO REVIEW ###
 je_sb_zululand_chiefdoms = {
+	activation_description = { always = yes }
+
 	group = je_group_global_international_situations
 	icon = "gfx/interface/icons/event_icons/event_map.dds"
 	scripted_progress_bar = sb_zululand_chiefdom_balance_bar
@@ -31,7 +33,12 @@ je_sb_zululand_chiefdoms = {
 	should_be_involved = { sb_zululand_chiefdoms_involved_actor = yes }
 	should_show_when_not_involved = { always = no }
 	is_shown_when_inactive = { always = no }
-	possible = { sb_zululand_chiefdoms_situation_active = yes }
+	possible = {
+		custom_tooltip = {
+			text = sb_chiefs_contest_open_tt
+			hidden_trigger = { sb_zululand_chiefdoms_situation_active = yes }
+		}
+	}
 
 	scripted_button = je_sb_zululand_increase_policing_button
 	scripted_button = je_sb_zululand_end_policing_button
@@ -61,11 +68,22 @@ je_sb_zululand_chiefdoms = {
 
 	on_weekly_pulse = {
 		effect = {
-			c:NAL ?= { sb_zululand_queue_terminal_outcome = yes }
+			sb_chiefs_weekly_update = yes
 			scope:journal_entry = { sb_zululand_project_chiefdoms_journal = yes }
 		}
 	}
-	invalid = { NOT = { sb_zululand_chiefdoms_situation_active = yes } }
+	outcome = {
+		flags = { hidden invalid_outcome }
+		conclusion_desc = je_standard_failure_conclusion_desc
+		trigger = {
+			custom_tooltip = {
+				text = sb_chiefs_contest_closed_tt
+				hidden_trigger = { NOT = { sb_zululand_chiefdoms_situation_active = yes } }
+			}
+		}
+		effect = {}
+	}
+
 	weight = 1000
 	should_be_pinned_by_default_involved = yes
 	should_be_pinned_by_default_uninvolved_or_context = yes

@@ -136,8 +136,10 @@ class SwaziOutcomes(unittest.TestCase):
         self.assertEqual(2,source.count('RESULT = 2'))
         self.assertNotIn('sb_zulu_apply_swazi_campaign_victory = yes',source)
         self.assertNotIn('sb_zulu_apply_swazi_campaign_defeat = yes',source)
-        timer=fields(statements(find_object(source,'sb_on_spes_bona_wargoal_enforced_by_timer')))['effect']
+        timer_source=find_object(source,'sb_on_spes_bona_wargoal_enforced_by_timer')
+        timer=fields(statements(timer_source))['effect']
         self.assertEqual('enforced_by_timer',fields(timer)['save_temporary_scope_as'])
-        self.assertEqual({'save_temporary_scope_as','sb_klip_river_handle_wargoal_enforced','sb_bechuanaland_track_crisis_wargoal_enforcement'},set(fields(timer)))
+        self.assertEqual({'save_temporary_scope_as','if','sb_klip_river_handle_wargoal_enforced','sb_bechuanaland_track_crisis_wargoal_enforcement'},set(fields(timer)))
+        self.assertNotIn('sb_zulu_swazi_',timer_source)
 
 if __name__=='__main__':unittest.main()

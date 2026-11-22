@@ -37,6 +37,7 @@ sb_court_succession.001 = {
   else = {
    if = { limit = { scope:sb_court_nominee = { is_adult = yes } } custom_tooltip = sb_court_succession.001.a.tt }
    else = { custom_tooltip = sb_court_succession.001.a.minor.tt }
+   custom_tooltip = sb_court_succession.001.a.prerogative.tt
    if = { limit = { sb_court_mpande_retirement = yes } custom_tooltip = sb_court_succession.001.a.retirement.tt }
    custom_tooltip = sb_court_succession.001.a.challenge.tt
   }
@@ -116,6 +117,7 @@ sb_court_succession.004 = { # TO REVIEW
   default_option = yes
   custom_tooltip = sb_court_dynastic_coalitions_tt
   custom_tooltip = sb_court_dynastic_back_incumbent_tt
+  if = { limit = { var:sb_court_dynastic_reason_var = 2 } custom_tooltip = sb_court_succession.004.prerogative.tt }
   custom_tooltip = sb_court_dynastic_sponsor_tt
   custom_tooltip = sb_court_dynastic_force_split_tt
   custom_tooltip = sb_court_dynastic_stakes_tt
@@ -130,6 +132,7 @@ sb_court_succession.004 = { # TO REVIEW
   trigger = { sb_court_displayed_dynastic_pair = yes }
   custom_tooltip = sb_court_dynastic_coalitions_tt
   custom_tooltip = sb_court_dynastic_back_claimant_tt
+  if = { limit = { var:sb_court_dynastic_reason_var = 2 } custom_tooltip = sb_court_succession.004.prerogative.tt }
   custom_tooltip = sb_court_dynastic_sponsor_tt
   custom_tooltip = sb_court_dynastic_force_split_tt
   custom_tooltip = sb_court_dynastic_stakes_tt
@@ -254,7 +257,8 @@ sb_court_succession.007 = { # TO REVIEW
  }
 }
 
-# Manual diagnostic: check the ordinary live entry conditions immediately.
+# Manual diagnostic: check live entry conditions. New one-state choices activate
+# recruitment themselves; never retrofit an existing movement or war here.
 sb_court_succession.990 = {
  orphan = yes # Manual console entry, following Vanilla debug events.
  type = country_event hidden = yes
@@ -262,6 +266,7 @@ sb_court_succession.990 = {
  immediate = {
   sb_court_reconcile_succession = yes
   sb_court_check_claimant_challenge = yes
+  sb_court_enable_recruitment_trial = yes
  }
 }
 # No global weekly scan. This chain exists only while this reserved movement awaits its split.
@@ -273,7 +278,10 @@ sb_court_succession.991 = {
   remove_variable = sb_court_dynastic_poll_queued_var
   if = {
    limit = { has_variable = sb_court_dynastic_crisis_var has_variable = sb_court_dynastic_test_pending_var }
+   sb_court_tick_recruitment_trial = yes
    sb_court_progress_dynastic_crisis = yes
+   sb_court_finish_recruitment_trial_tick = yes
+   sb_court_refresh_recruitment_trial = yes
    sb_court_queue_dynastic_poll = yes
   }
  }

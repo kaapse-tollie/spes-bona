@@ -18,10 +18,13 @@ def definitions(path):
 
 VALUES = definitions('common/script_values/sb_court_politics_values.txt')
 VALUES.update(definitions('common/script_values/sb_court_dynastic_values.txt'))
+VALUES.update(definitions('common/script_values/sb_court_recruitment_values.txt'))
 VALUES.update(definitions('common/script_values/sb_court_muster_values.txt'))
+VALUES.update(definitions('common/script_values/sb_zululand_drift_values.txt'))
 EFFECTS = definitions('common/scripted_effects/sb_court_politics_effects.txt')
+EFFECTS.update(definitions('common/scripted_effects/sb_chiefdoms_contest_effects.txt'))
 ACTIONS = definitions('common/scripted_effects/sb_court_actions_effects.txt')
-for _file in ('coalitions', 'succession', 'rivals', 'episodes', 'cast', 'allegiance', 'concession', 'frontier', 'dynastic', 'force_split', 'muster', 'population_return', 'barracks_return', 'dunn', 'later_princes'):
+for _file in ('house_identity', 'coalitions', 'succession', 'rivals', 'episodes', 'cast', 'allegiance', 'concession', 'frontier', 'dynastic', 'recruitment', 'force_split', 'muster', 'population_return', 'barracks_return', 'dunn', 'later_princes'):
     EFFECTS.update(definitions(f'common/scripted_effects/sb_court_{_file}_effects.txt'))
 EFFECTS.update(definitions('common/scripted_effects/sb_hamu_bargain_effects.txt'))
 TRIGGERS = definitions('common/scripted_triggers/sb_court_politics_triggers.txt')
@@ -29,7 +32,10 @@ TRIGGERS.update(definitions('common/scripted_triggers/sb_court_dunn_triggers.txt
 TRIGGERS.update(definitions('common/scripted_triggers/sb_hamu_bargain_triggers.txt'))
 TRIGGERS.update(definitions('common/scripted_triggers/sb_court_episode_triggers.txt'))
 TRIGGERS.update(definitions('common/scripted_triggers/sb_court_dynastic_triggers.txt'))
+TRIGGERS.update(definitions('common/scripted_triggers/sb_court_recruitment_triggers.txt'))
 TRIGGERS.update(definitions('common/scripted_triggers/sb_court_muster_triggers.txt'))
+TRIGGERS.update(definitions('common/scripted_triggers/sb_chiefdoms_contest_triggers.txt'))
+TRIGGERS['sb_zululand_chiefdoms_situation_active'] = definitions('common/scripted_triggers/sb_zululand_settlement_triggers.txt')['sb_zululand_chiefdoms_situation_active']
 TRIGGERS['sb_institutions_profile_country'] = definitions('common/scripted_triggers/sb_institutions_triggers.txt')['sb_institutions_profile_country']
 TRIGGERS['sb_is_zulu_dynasty_country'] = definitions('common/scripted_triggers/sb_firearms_triggers.txt')['sb_is_zulu_dynasty_country']
 COURT_MODIFIERS = definitions('common/static_modifiers/sb_court_modifiers.txt')
@@ -52,6 +58,7 @@ class CourtRuntime:
         self.country = {'id': 'ZUL', 'vars': {'sb_institutions_active_var': 1}, 'members': members, 'movements': []}
         self.country['ruler'] = members[0] if members else None
         self.global_vars = {}
+        self.containers = {}
         self.scopes = {'root': {'id': 'GBR', 'vars': {}}}
         for m in members:
             m['owner'] = self.country
@@ -75,6 +82,10 @@ class CourtRuntime:
         if key.startswith('global_var:'):
             name, _, tail = key[11:].partition('.')
             found = self.global_vars.get(name)
+            return self.ref(tail, found, scope) if tail and found is not None else found
+        if key.startswith('container:'):
+            name, _, tail = key[10:].partition('.')
+            found = self.containers.get(name)
             return self.ref(tail, found, scope) if tail and found is not None else found
         if key.startswith('var:'):
             name, _, tail = key[4:].partition('.')
@@ -106,7 +117,7 @@ class CourtRuntime:
                 fields = {k:v for k,_,v in value}
                 r = not self.condition(fields.get('limit', []), scope, prev) or self.condition([n for n in value if n[0] != 'limit'], scope, prev)
             elif key == 'custom_tooltip': r = self.condition([n for n in value if n[0] != 'text'], scope, prev)
-            elif key == 'NOT': r = not self.condition(value, scope, prev)
+            elif key == 'NOT': r = not any(self.condition([n], scope, prev) for n in value)
             elif key == 'NOR': r = not any(self.condition([n], scope, prev) for n in value)
             elif key == 'OR': r = any(self.condition([n], scope, prev) for n in value)
             elif key == 'AND': r = self.condition(value, scope, prev)
@@ -126,6 +137,8 @@ class CourtRuntime:
                 r = any(self.condition([n for n in value if n[0] != 'variable'], m, scope) for m in scope.get('members' if f['variable'] == 'sb_court_members' else f['variable'], []))
             elif key == 'country_definition': r = scope.get('id') == value.removeprefix('cd:')
             elif key == 'has_global_variable': r = value in self.global_vars
+            elif key == 'container_exists': r = value in self.containers
+            elif key == 'is_country_alive': r = scope.get('alive', False) == (value == 'yes')
             elif key == 'has_variable': r = value in scope['vars']
             elif key == 'has_modifier': r = value in scope.get('modifiers', {})
             elif key == 'has_trait': r = value in scope.get('traits', set())
@@ -173,7 +186,7 @@ class CourtRuntime:
             if key == 'save_temporary_scope_as':
                 self.scopes[value] = scope
                 continue
-            if key in ('ruler', 'owner') or key.startswith('var:'):
+            if key in ('ruler', 'owner') or key.startswith(('var:', 'global_var:', 'container:')):
                 target = self.ref(key, scope, prev)
                 if target is not None: result += self.calc(value, target, scope)
                 continue
@@ -259,7 +272,7 @@ class CourtRuntime:
                 limit = next(v for k, _, v in value if k == 'limit')
                 for m in scope['movements']:
                     if self.condition(limit,m,scope): self.effect([n for n in value if n[0]!='limit'],m,scope)
-            elif key.startswith(('scope:', 'var:', 'ig:', 'global_var:')) or key in ('owner', 'ruler'):
+            elif key.startswith(('scope:', 'var:', 'ig:', 'global_var:', 'container:')) or key in ('owner', 'ruler'):
                 target = self.ref(key, scope, prev)
                 if target is not None: self.effect(value, target, scope)
             elif key == 'add_treasury': scope['gold_reserves'] += self.ref(value, scope, prev)
@@ -473,7 +486,7 @@ class CourtContractsTests(unittest.TestCase):
         self.assertIn('value = 0.5 min = 0 max = 1', gui)
         self.assertIn('noprogresstexture = "gfx/interface/progressbar/progressbar_green.dds"', gui)
         self.assertIn('value = "[JournalEntry.GetCurrentBarProgress(ScriptedProgressBar.Self)]"', gui)
-        native_gui = (GAME/'gui/journal_entry.gui').read_text(encoding='utf-8-sig')
+        native_gui = (GAME/'gui/shared/progressbars.gui').read_text(encoding='utf-8-sig')
         for asset in re.findall(r'(?:texture|progresstexture|noprogresstexture) = "([^"]+)"', gui):
             self.assertTrue((GAME/asset).is_file(), asset)
         self.assertIn('gfx/interface/progressbar/progressbar_marker.dds', native_gui)
@@ -573,7 +586,7 @@ class CourtContractsTests(unittest.TestCase):
         self.assertEqual(next(v for k, _, v in statements(japan) if k == 'icon'), icon)
         self.assertTrue((GAME/icon.strip('"')).is_file())
         buttons = [v for k, _, v in journal if k == 'scripted_button']
-        self.assertEqual({'sb_court_recognize_successor_button', 'sb_court_introduce_heir_button', 'sb_court_accommodation_button'}, set(buttons))
+        self.assertEqual({'sb_court_recognize_successor_button', 'sb_court_introduce_heir_button'}, set(buttons))
         for key, _, value in journal:
             if key == 'widget':
                 self.assertNotIn(('name', '=', '"com_journal_scripted_buttons"'), value)
@@ -607,7 +620,7 @@ class CourtContractsTests(unittest.TestCase):
         defs=extract_top_level_blocks(self.source('common/scripted_effects/sb_court_constitutional_war_effects.txt'))
         self.assertIn('var:sb_court_civil_war_var ?= scope:target',defs['sb_court_record_war_end'])
         win=defs['sb_court_resolve_won_war']
-        self.assertLess(win.index('remove_variable = sb_court_war_ended_var'),win.index('sb_zululand_resolve_royal_contest'))
+        self.assertLess(win.index('remove_variable = sb_court_war_ended_var'),win.index('sb_chiefs_reserve_war_result'))
         self.assertNotIn('sb_prerogative_var',win)
         self.assertNotIn('is_at_war',win)
         self.assertIn('save_scope_as = sb_court_defeated_country',win)
@@ -622,8 +635,8 @@ class CourtContractsTests(unittest.TestCase):
 
     def test_claimant_must_accept_accommodation_and_coup_does_not_inherit_endorsements(self):
         defs=extract_top_level_blocks(self.source('common/scripted_effects/sb_court_actions_effects.txt'))
-        self.assertIn('var:sb_court_action_actor_scope ?= var:sb_court_restoration_claimant_scope',defs['sb_court_accept_accommodation'])
-        self.assertIn('name = sb_court_action_actor_scope value = var:sb_court_restoration_claimant_scope',defs['sb_court_prepare_opposition_offer'])
+        self.assertNotIn('sb_court_accept_accommodation',defs)
+        self.assertNotIn('sb_court_prepare_opposition_offer',defs)
         hook=self.source('common/on_actions/sb_court_on_actions.txt')
         self.assertIn('scope:previous ?= { is_character_alive = no }',hook)
         self.assertIn('sb_court_capture_accession = yes', hook)
@@ -648,7 +661,7 @@ class CourtContractsTests(unittest.TestCase):
         self.assertIn('sb_court_suspend',actions)
         events=self.source('events/sb_court_politics_events.txt')
         self.assertIn('sb_court_confrontation = { PURGE = yes }', events)
-        self.assertIn('limit = { has_variable = sb_institutions_active_var var:sb_prerogative_var >= 25',events)
+        self.assertNotIn('sb_court_politics.004 =',events)
 
 
 

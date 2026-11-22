@@ -41,8 +41,18 @@ sb_court_dunn.002 = { # TO REVIEW
  type = country_event
  placement = root
  title = sb_court_dunn.002.t
- desc = sb_court_dunn.002.d
- flavor = sb_court_dunn.002.f
+ desc = {
+  first_valid = {
+   triggered_desc = { trigger = { sb_court_dunn_faction_delivery_valid = yes } desc = sb_court_dunn.002.d.faction }
+   triggered_desc = { desc = sb_court_dunn.002.d }
+  }
+ }
+ flavor = {
+  first_valid = {
+   triggered_desc = { trigger = { sb_court_dunn_faction_delivery_valid = yes } desc = sb_court_dunn.002.f.faction }
+   triggered_desc = { desc = sb_court_dunn.002.f }
+  }
+ }
  gui_window = event_window_1char_tabloid
  left_icon = scope:sb_court_dunn_trader
  icon = "gfx/interface/icons/event_icons/event_portrait.dds"
@@ -51,12 +61,29 @@ sb_court_dunn.002 = { # TO REVIEW
  duration = 3
  trigger = { sb_court_dunn_delivery_valid = yes }
  cancellation_trigger = { sb_court_dunn_delivery_valid = no }
- immediate = { global_var:sb_court_dunn_identity_scope = { save_scope_as = sb_court_dunn_trader } }
+ immediate = {
+  global_var:sb_court_dunn_identity_scope = { save_scope_as = sb_court_dunn_trader }
+  sb_court_prepare_dunn_allocation = yes
+ }
  option = {
   name = sb_court_dunn.002.a
   default_option = yes
   custom_tooltip = sb_court_dunn.002.a.tt
   hidden_effect = { sb_court_answer_dunn_delivery = yes }
+ }
+ option = {
+  name = sb_court_dunn.002.b
+  trigger = { custom_tooltip = { text = sb_court_dunn.002.b.valid.tt sb_court_dunn_faction_delivery_valid = yes } }
+  show_as_unavailable = { exists = scope:sb_court_dunn_ally exists = scope:sb_court_dunn_opponent exists = scope:sb_court_dunn_enemy_prince }
+  if = {
+   limit = { sb_court_dunn_faction_delivery_valid = yes }
+   if = { limit = { scope:sb_court_dunn_ally = { has_modifier = sb_court_dunn_armed_following } } custom_tooltip = sb_court_dunn.002.b.ally.refresh.tt }
+   else = { custom_tooltip = sb_court_dunn.002.b.ally.tt }
+   if = { limit = { scope:sb_court_dunn_opponent = { has_modifier = sb_court_dunn_outgunned } } custom_tooltip = sb_court_dunn.002.b.opponent.refresh.tt }
+   else = { custom_tooltip = sb_court_dunn.002.b.opponent.tt }
+   custom_tooltip = sb_court_dunn.002.b.risk.tt
+  }
+  hidden_effect = { sb_court_arm_dunn_followings = yes }
  }
 }
 
@@ -70,7 +97,12 @@ sb_court_dunn.003 = { # TO REVIEW
    triggered_desc = { desc = sb_court_dunn.003.d.no_guns }
   }
  }
- flavor = sb_court_dunn.003.f
+ flavor = {
+  first_valid = {
+   triggered_desc = { trigger = { sb_court_mthonga_can_declare = yes } desc = sb_court_dunn.003.f.mthonga }
+   desc = sb_court_dunn.003.f
+  }
+ }
  gui_window = event_window_2char
  left_icon = scope:sb_court_dunn_king
  right_icon = scope:sb_court_dunn_trader
@@ -82,12 +114,14 @@ sb_court_dunn.003 = { # TO REVIEW
  cancellation_trigger = { sb_court_dunn_judgement_valid = no }
  immediate = {
   ruler = { save_scope_as = sb_court_dunn_king }
-  global_var:sb_court_dunn_identity_scope = { save_scope_as = sb_court_dunn_trader }
+  global_var:sb_court_dunn_identity_scope = { save_scope_as = sb_court_dunn_trader set_interest_group = owner.ig:ig_industrialists }
  }
  option = {
   name = sb_court_dunn.003.a
   custom_tooltip = sb_court_dunn.003.a.tt
+  show_as_tooltip = { ruler = { add_modifier = { name = sb_court_victors_avenged years = 5 } } }
   if = { limit = { c:GBR ?= { is_country_alive = yes } } custom_tooltip = sb_court_dunn.003.a.relations.tt }
+  if = { limit = { sb_court_british_natal_context = yes has_journal_entry = je_sb_adopt_firearms NOT = { has_variable = sb_firearms_modernized_var } } custom_tooltip = sb_court_dunn.003.trade_lost.tt }
   hidden_effect = { sb_court_answer_dunn_judgement = { KEEP = no KILL = yes } }
   ai_chance = { base = 10 }
  }
@@ -95,13 +129,16 @@ sb_court_dunn.003 = { # TO REVIEW
   name = sb_court_dunn.003.b
   default_option = yes
   custom_tooltip = sb_court_dunn.003.b.tt
+  if = { limit = { sb_court_mthonga_can_declare = yes } custom_tooltip = sb_court_dunn.003.b.claim.tt }
   if = { limit = { c:GBR ?= { is_country_alive = yes } } custom_tooltip = sb_court_dunn.003.b.relations.tt }
+  if = { limit = { sb_court_british_natal_context = yes has_journal_entry = je_sb_adopt_firearms NOT = { has_variable = sb_firearms_modernized_var } } custom_tooltip = sb_court_dunn.003.b.trade.tt }
   hidden_effect = { sb_court_answer_dunn_judgement = { KEEP = yes KILL = no } }
   ai_chance = { base = 80 }
  }
  option = {
   name = sb_court_dunn.003.c
   custom_tooltip = sb_court_dunn.003.c.tt
+  if = { limit = { sb_court_british_natal_context = yes has_journal_entry = je_sb_adopt_firearms NOT = { has_variable = sb_firearms_modernized_var } } custom_tooltip = sb_court_dunn.003.trade_lost.tt }
   hidden_effect = { sb_court_answer_dunn_judgement = { KEEP = no KILL = no } }
   ai_chance = { base = 10 }
  }

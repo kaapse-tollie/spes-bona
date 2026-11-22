@@ -1,11 +1,19 @@
 ﻿# Every viewer reads the same actual country and political movement.
 sb_usuthu_activism = {
-	value = 0
-	global_var:sb_zululand_live_zul_scope ?= { every_political_movement = { limit = { is_political_movement_type = movement_sb_zulu_royal } add = political_movement_radicalism } }
+ value = 0
+ if = {
+  limit = { container:sb_zululand_chiefdoms_state ?= { var:sb_chiefs_rebels_scope ?= { is_country_alive = yes var:sb_court_war_alignment_var ?= 1 } } }
+  container:sb_zululand_chiefdoms_state.var:sb_chiefs_rebels_scope = { every_political_movement = { limit = { is_political_movement_type = movement_sb_zulu_royal } add = political_movement_radicalism } }
+ }
+ else = { global_var:sb_zululand_live_zul_scope ?= { every_political_movement = { limit = { is_political_movement_type = movement_sb_zulu_royal } add = political_movement_radicalism } } }
 }
 sb_usuthu_support = {
-	value = 0
-	global_var:sb_zululand_live_zul_scope ?= { every_political_movement = { limit = { is_political_movement_type = movement_sb_zulu_royal } add = political_movement_support } }
+ value = 0
+ if = {
+  limit = { container:sb_zululand_chiefdoms_state ?= { var:sb_chiefs_rebels_scope ?= { is_country_alive = yes var:sb_court_war_alignment_var ?= 1 } } }
+  container:sb_zululand_chiefdoms_state.var:sb_chiefs_rebels_scope = { every_political_movement = { limit = { is_political_movement_type = movement_sb_zulu_royal } add = political_movement_support } }
+ }
+ else = { global_var:sb_zululand_live_zul_scope ?= { every_political_movement = { limit = { is_political_movement_type = movement_sb_zulu_royal } add = political_movement_support } } }
 }
 
 sb_zululand_monthly_commitment = {
@@ -24,65 +32,107 @@ sb_usuthu_action_activism = {
 }
 
 sb_zululand_chiefly_support = {
-	value = 0
-	global_var:sb_zululand_live_zul_scope ?= { every_political_movement = { limit = { is_political_movement_type = movement_sb_zulu_chiefly } add = political_movement_support } }
+ value = 0
+ if = {
+  limit = { container:sb_zululand_chiefdoms_state ?= { var:sb_chiefs_rebels_scope ?= { is_country_alive = yes var:sb_court_war_alignment_var ?= 2 } } }
+  container:sb_zululand_chiefdoms_state.var:sb_chiefs_rebels_scope = { every_political_movement = { limit = { is_political_movement_type = movement_sb_zulu_chiefly } add = political_movement_support } }
+ }
+ else = { global_var:sb_zululand_live_zul_scope ?= { every_political_movement = { limit = { is_political_movement_type = movement_sb_zulu_chiefly } add = political_movement_support } } }
 }
 sb_zululand_chiefly_activism = {
-	value = 0
-	global_var:sb_zululand_live_zul_scope ?= { every_political_movement = { limit = { is_political_movement_type = movement_sb_zulu_chiefly } add = political_movement_radicalism } }
+ value = 0
+ if = {
+  limit = { container:sb_zululand_chiefdoms_state ?= { var:sb_chiefs_rebels_scope ?= { is_country_alive = yes var:sb_court_war_alignment_var ?= 2 } } }
+  container:sb_zululand_chiefdoms_state.var:sb_chiefs_rebels_scope = { every_political_movement = { limit = { is_political_movement_type = movement_sb_zulu_chiefly } add = political_movement_radicalism } }
+ }
+ else = { global_var:sb_zululand_live_zul_scope ?= { every_political_movement = { limit = { is_political_movement_type = movement_sb_zulu_chiefly } add = political_movement_radicalism } } }
 }
-sb_zululand_projected_prerogative = {
-	value = 100
-	if = {
-		limit = { global_var:sb_zululand_live_zul_scope ?= { has_variable = sb_prerogative_var } }
-		add = global_var:sb_zululand_live_zul_scope.var:sb_prerogative_var
-	}
-	divide = 2
-}
+
 sb_zululand_chiefly_action_attraction = {
 	value = 0
 	if = { limit = { c:NAL ?= { has_variable = sb_zululand_chief_patronage_active_var } } add = { value = 0.5 desc = sb_zululand_chiefly_patronage } }
 }
 sb_zululand_bribe_price = {
-	value = 5000
-	multiply = scope:sb_chief_bribe_candidate.sb_court_member_weight
-	if = {
-		limit = { global_var:sb_zululand_live_zul_scope ?= { var:sb_court_weight_var > 0 var:sb_court_representatives_var > 0 } }
-		multiply = global_var:sb_zululand_live_zul_scope.var:sb_court_representatives_var
-		divide = global_var:sb_zululand_live_zul_scope.var:sb_court_weight_var
-	}
+ value = gold_reserves_limit
+ multiply = scope:sb_chief_bribe_candidate.sb_court_pledge_fraction
+ multiply = 0.5
 }
 sb_zululand_bribe_payment = {
 	value = var:sb_zululand_bribe_cost_var
 	multiply = -1
 }
 
-sb_zululand_live_prerogative = {
-	value = 0
-	if = { limit = { global_var:sb_zululand_live_zul_scope ?= { has_variable = sb_prerogative_var } } add = global_var:sb_zululand_live_zul_scope.var:sb_prerogative_var }
+# Country scope: the payable quote is frozen; reserves and shortfall remain live.
+sb_zululand_bribe_shortfall = {
+ value = var:sb_zululand_bribe_cost_var
+ subtract = gold_reserves
+ min = 0
 }
 
-sb_zululand_live_target = {
-	value = 0
-	if = { limit = { global_var:sb_zululand_live_zul_scope ?= { has_variable = sb_prerogative_target_var } } add = global_var:sb_zululand_live_zul_scope.var:sb_prerogative_target_var }
+sb_zululand_projected_activism = { value = sb_usuthu_activism multiply = 100 }
+
+# Natal's own Zulu radicals drive Dynamic AI; Strict retains the three-year delay.
+sb_zululand_reconciliation_ai_chance = {
+ value = 0
+ if = {
+  limit = {
+   country_definition = cd:NAL
+   sb_zululand_contest_interventions_available = yes
+   OR = {
+    AND = {
+     sb_frontier_ai_behavior_dynamic_historical = yes
+     radical_fraction = { culture = cu:zulu value >= 0.20 }
+    }
+    AND = {
+     sb_frontier_ai_behavior_strict_historical = yes
+     c:NAL ?= { je:je_sb_zululand_chiefdoms ?= { journal_entry_age >= 1095 } }
+    }
+   }
+  }
+  value = 25
+ }
 }
 
-sb_zululand_live_drift = {
-	value = 0
-	if = { limit = { global_var:sb_zululand_live_zul_scope ?= { has_variable = sb_prerogative_monthly_change_var } } add = global_var:sb_zululand_live_zul_scope.var:sb_prerogative_monthly_change_var }
+# Dynamic offloading waits for the current claimant's actual return, and rechecks unrest.
+sb_zululand_refugee_ai_chance = {
+ value = sb_zululand_reconciliation_ai_chance
+ if = {
+  limit = { sb_frontier_ai_behavior_dynamic_historical = yes NOT = { sb_zululand_returned_claimant_present = yes } }
+  value = 0
+ }
 }
 
-sb_zululand_live_cooperation = {
-	value = 0
-	if = { limit = { global_var:sb_zululand_live_zul_scope ?= { has_variable = sb_prerogative_cooperation_var } } add = global_var:sb_zululand_live_zul_scope.var:sb_prerogative_cooperation_var }
+# The existing contextless JE supplies both the deadline and its daily countdown.
+sb_chiefs_review_days_left = {
+ value = 3650
+ c:NAL ?= { je:je_sb_zululand_chiefdoms ?= { subtract = journal_entry_age } }
+ min = 0
 }
 
-sb_zululand_live_movement_balance = {
-	value = 0
-	if = { limit = { global_var:sb_zululand_live_zul_scope ?= { has_variable = sb_prerogative_movement_balance_var } } add = global_var:sb_zululand_live_zul_scope.var:sb_prerogative_movement_balance_var }
+# Use the same side as each movement panel; house accounting already excludes
+# duplicated junior backing. A foreign observer never supplies these totals.
+sb_chiefs_royal_prominence = {
+ value = 0
+ if = {
+  limit = { container:sb_zululand_chiefdoms_state ?= { var:sb_chiefs_rebels_scope ?= { is_country_alive = yes var:sb_court_war_alignment_var ?= 1 } } }
+  container:sb_zululand_chiefdoms_state.var:sb_chiefs_rebels_scope = { if = { limit = { has_variable = sb_court_royal_political_weight_var } value = var:sb_court_royal_political_weight_var } }
+ }
+ else = { global_var:sb_zululand_live_zul_scope ?= { if = { limit = { has_variable = sb_court_royal_political_weight_var } value = var:sb_court_royal_political_weight_var } } }
+}
+sb_chiefs_chiefly_prominence = {
+ value = 0
+ if = {
+  limit = { container:sb_zululand_chiefdoms_state ?= { var:sb_chiefs_rebels_scope ?= { is_country_alive = yes var:sb_court_war_alignment_var ?= 2 } } }
+  container:sb_zululand_chiefdoms_state.var:sb_chiefs_rebels_scope = { if = { limit = { has_variable = sb_court_chiefly_political_weight_var } value = var:sb_court_chiefly_political_weight_var } }
+ }
+ else = { global_var:sb_zululand_live_zul_scope ?= { if = { limit = { has_variable = sb_court_chiefly_political_weight_var } value = var:sb_court_chiefly_political_weight_var } } }
 }
 
-sb_zululand_live_reach = {
-	value = 0
-	if = { limit = { global_var:sb_zululand_live_zul_scope ?= { has_variable = sb_institutional_reach_var } } add = global_var:sb_zululand_live_zul_scope.var:sb_institutional_reach_var }
+# 0.1 percentage point per political Prominence advantage, in native 0–1 units.
+sb_chiefs_prominence_pressure = {
+ value = sb_chiefs_royal_prominence
+ subtract = sb_chiefs_chiefly_prominence
+ multiply = 0.001
+ min = -0.30
+ max = 0.30
 }

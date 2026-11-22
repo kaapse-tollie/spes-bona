@@ -1,9 +1,17 @@
 ﻿# on_revolution_start: current scope is original country; native target is the rebels.
 sb_court_track_revolution = {
  save_scope_as = sb_court_country
- scope:target ?= { save_scope_as = sb_court_rebels }
+ if = { limit = { scope:target ?= { civil_war_origin_country ?= scope:sb_court_country exists = var:civil_war_type_var } } scope:target = { save_scope_as = sb_court_rebels } }
  random_civil_war = {
-  limit = { is_civil_war_type = revolution political_movement = { OR = { is_political_movement_type = movement_sb_zulu_royal is_political_movement_type = movement_sb_zulu_chiefly } } }
+  limit = {
+   OR = { scope:sb_court_country = { NOT = { sb_chiefs_contest_country = yes } } sb_chiefs_native_mode = yes }
+   exists = scope:sb_court_rebels
+   is_civil_war_type = revolution civil_war_progress >= 1
+   political_movement = {
+    OR = { is_political_movement_type = movement_sb_zulu_royal is_political_movement_type = movement_sb_zulu_chiefly }
+    type = scope:sb_court_rebels.var:civil_war_type_var
+   }
+  }
   save_scope_as = sb_court_tracked_war
   political_movement = {
    if = { limit = { is_political_movement_type = movement_sb_zulu_royal } scope:sb_court_country = { set_variable = { name = sb_court_rebel_alignment_var value = 1 } } }
@@ -12,6 +20,22 @@ sb_court_track_revolution = {
  }
  if = {
   limit = { exists = scope:sb_court_tracked_war exists = scope:sb_court_rebels }
+  if = {
+   limit = { sb_chiefs_contest_country = yes }
+   container:sb_zululand_chiefdoms_state = {
+    set_variable = { name = sb_chiefs_origin_scope value = scope:sb_court_country }
+    set_variable = { name = sb_chiefs_rebels_scope value = scope:sb_court_rebels }
+    if = { limit = { NOT = { is_target_in_variable_list = { name = sb_chiefs_countries target = scope:sb_court_rebels } } } add_to_variable_list = { name = sb_chiefs_countries target = scope:sb_court_rebels } }
+    set_variable = { name = sb_chiefs_war_scope value = scope:sb_court_tracked_war }
+   }
+  }
+  # Freeze head alignment before moving any member or rebuilding either roster.
+  ruler ?= { save_scope_as = sb_court_split_incumbent }
+  every_in_list = {
+   variable = sb_court_members
+   set_variable = { name = sb_court_split_alignment_var value = var:sb_court_alignment_var }
+   if = { limit = { exists = var:sb_court_house_leader_scope } set_variable = { name = sb_court_split_alignment_var value = var:sb_court_house_leader_scope.var:sb_court_alignment_var } }
+  }
   remove_variable = sb_court_war_ended_var
   set_variable = { name = sb_court_civil_war_var value = scope:sb_court_rebels }
   set_variable = { name = sb_court_war_alignment_var value = 1 }
@@ -37,13 +61,21 @@ sb_court_track_revolution = {
    # Both sides retain the bounded identity record, including exiles.
    scope:sb_court_rebels = { if = { limit = { NOT = { is_target_in_variable_list = { name = sb_court_members target = prev } } } add_to_variable_list = { name = sb_court_members target = prev } } }
    if = {
-    limit = { sb_court_adult_member = yes var:sb_court_alignment_var = scope:sb_court_country.var:sb_court_rebel_alignment_var }
+    limit = {
+     sb_court_adult_member = yes
+     NOT = { this = scope:sb_court_split_incumbent }
+     OR = {
+      AND = { scope:sb_court_country.var:sb_court_rebel_alignment_var = 1 scope:sb_court_country.var:sb_court_restoration_claimant_scope ?= this }
+      var:sb_court_split_alignment_var = scope:sb_court_country.var:sb_court_rebel_alignment_var
+     }
+    }
     set_variable = { name = sb_court_home_scope value = scope:sb_court_rebels }
     # Exiles remain exiles unless selected as the actual royal beneficiary.
     if = { limit = { is_in_exile_pool = no OR = { owner ?= scope:sb_court_country owner ?= scope:sb_court_rebels } } transfer_character = scope:sb_court_rebels }
    }
    else = { set_variable = { name = sb_court_home_scope value = scope:sb_court_country } if = { limit = { sb_court_adult_member = yes owner ?= scope:sb_court_rebels } transfer_character = scope:sb_court_country } }
   }
+  every_in_list = { variable = sb_court_members remove_variable = sb_court_split_alignment_var }
   scope:sb_court_rebels = {
    if = { limit = { var:sb_court_war_alignment_var = 1 } activate_law = law_type:law_monarchy activate_law = law_type:law_autocracy sb_court_install_royal_claimant = yes }
    else = { activate_law = law_type:law_sb_federated_chiefdoms activate_law = law_type:law_sb_chiefly_council sb_court_select_chiefly_head = yes }
@@ -72,9 +104,13 @@ sb_court_resolve_won_war = {
   }
   # Set the terminal receipt before presentation; do not gate an actual win on Prerogative.
   remove_variable = sb_court_war_ended_var
+  # Keep the winner's exact opponent until the earned territorial promise is recorded.
+  if = { limit = { sb_chiefs_contest_country = yes sb_chiefs_recorded_war_pair = yes } sb_chiefs_reserve_war_result = yes }
+  else = {
+  if = { limit = { var:sb_court_war_alignment_var = 1 } activate_law = law_type:law_monarchy activate_law = law_type:law_autocracy sb_court_install_royal_claimant = yes sb_hamu_record_accession = yes }
+  else = { activate_law = law_type:law_sb_federated_chiefdoms activate_law = law_type:law_sb_chiefly_council sb_court_select_chiefly_head = yes }
+  }
   remove_variable = sb_court_civil_war_var
-  if = { limit = { var:sb_court_war_alignment_var = 1 } activate_law = law_type:law_monarchy activate_law = law_type:law_autocracy sb_court_install_royal_claimant = yes sb_zululand_resolve_royal_contest = yes }
-  else = { activate_law = law_type:law_sb_federated_chiefdoms activate_law = law_type:law_sb_chiefly_council sb_court_select_chiefly_head = yes sb_zululand_resolve_chiefly_contest = yes }
   remove_variable = sb_court_war_alignment_var
   save_scope_as = sb_court_country
   if = {

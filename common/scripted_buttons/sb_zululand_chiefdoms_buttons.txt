@@ -9,14 +9,21 @@ je_sb_zululand_increase_policing_button = {
 		NOT = { has_variable = sb_zululand_policing_active_var }
 	}
 	possible = {
-		sb_zululand_contest_interventions_available = yes
+		custom_tooltip = {
+			text = sb_chiefs_intervention_tt
+			hidden_trigger = { sb_zululand_contest_interventions_available = yes }
+		}
 		custom_tooltip = {
 			text = je_sb_zululand_increase_policing_possible_tt
 			hidden_trigger = { authority >= 100 }
 		}
 	}
 	ai_chance = { value = 0 }
-	effect = { sb_zululand_start_policing = yes }
+	effect = {
+		custom_tooltip = sb_chiefs_police_cost_tt
+		custom_tooltip = sb_chiefs_police_pressure_tt
+		hidden_effect = { sb_zululand_start_policing = yes }
+	}
 }
 
 je_sb_zululand_end_policing_button = {
@@ -29,7 +36,11 @@ je_sb_zululand_end_policing_button = {
 	}
 	possible = { always = yes }
 	ai_chance = { value = 0 }
-	effect = { sb_zululand_stop_policing = yes }
+	effect = {
+		custom_tooltip = sb_chiefs_police_refund_tt
+		custom_tooltip = sb_chiefs_police_end_tt
+		hidden_effect = { sb_zululand_stop_policing = yes }
+	}
 }
 
 je_sb_zululand_unload_refugees_button = {
@@ -46,9 +57,17 @@ je_sb_zululand_unload_refugees_button = {
 			hidden_trigger = { sb_zululand_can_unload_refugees = yes }
 		}
 	}
-	ai_chance = { value = 0 }
+	ai_chance = { value = sb_zululand_refugee_ai_chance }
 	effect = {
 		custom_tooltip = je_sb_zululand_unload_refugees_effect_tt
+		custom_tooltip = sb_chiefs_zulu_loyalists_tt
+		custom_tooltip = sb_chiefs_repeal_tt
+		custom_tooltip = sb_natal_shepstone_make_fully_accepted_loyalist_5_tt
+		custom_tooltip = sb_chiefs_repeal_relations_tt
+		custom_tooltip = sb_chiefs_fervour_tt
+		custom_tooltip = sb_chiefs_repeal_attraction_tt
+		custom_tooltip = sb_chiefs_garrison_tt
+		custom_tooltip = sb_chiefs_refugee_attraction_tt
 		hidden_effect = { sb_zululand_unload_zulu_refugees = yes }
 	}
 }
@@ -59,7 +78,7 @@ je_sb_zululand_return_claimant_button = {
 	visible = {
 		country_definition = cd:NAL
 		has_journal_entry = je_sb_zululand_chiefdoms
-		NOT = { has_variable = sb_zululand_claimant_returned_var }
+		NOT = { global_var:sb_zululand_live_zul_scope ?= { var:sb_court_restoration_claimant_scope ?= { has_variable = sb_zululand_claimant_returned_var } } }
 	}
 	possible = {
 		custom_tooltip = {
@@ -67,9 +86,10 @@ je_sb_zululand_return_claimant_button = {
 			hidden_trigger = { sb_zululand_can_return_claimant = yes }
 		}
 	}
-	ai_chance = { value = 0 }
+	ai_chance = { value = sb_zululand_reconciliation_ai_chance }
 	effect = {
 		custom_tooltip = je_sb_zululand_return_claimant_effect_tt
+		if = { limit = { NOT = { has_variable = sb_zululand_claimant_returned_var } } custom_tooltip = sb_chiefs_zulu_loyalists_tt }
 		hidden_effect = { sb_zululand_return_exiled_claimant = yes }
 	}
 }
@@ -83,9 +103,19 @@ je_sb_zululand_sponsor_usuthu_button = {
 		NOT = { has_variable = sb_zululand_usuthu_sponsorship_active_var }
 	}
 	possible = {
-		sb_zululand_contest_interventions_available = yes NOT = { in_default = yes } }
+		custom_tooltip = {
+			text = sb_chiefs_intervention_tt
+			hidden_trigger = { sb_zululand_contest_interventions_available = yes }
+		}
+		NOT = { in_default = yes }
+	}
 	ai_chance = { value = 0 }
-	effect = { sb_zululand_start_usuthu_sponsorship = yes }
+	effect = {
+		custom_tooltip = sb_chiefs_sponsor_cost_tt
+		custom_tooltip = sb_chiefs_sponsor_pull_tt
+		custom_tooltip = sb_chiefs_sponsor_commit_tt
+		hidden_effect = { sb_zululand_start_usuthu_sponsorship = yes }
+	}
 }
 
 je_sb_zululand_end_usuthu_sponsorship_button = {
@@ -98,7 +128,12 @@ je_sb_zululand_end_usuthu_sponsorship_button = {
 	}
 	possible = { always = yes }
 	ai_chance = { value = 0 }
-	effect = { sb_zululand_stop_usuthu_sponsorship = yes }
+	effect = {
+		custom_tooltip = sb_chiefs_sponsor_refund_tt
+		custom_tooltip = sb_chiefs_sponsor_end_tt
+		custom_tooltip = sb_chiefs_sponsor_commit_end_tt
+		hidden_effect = { sb_zululand_stop_usuthu_sponsorship = yes }
+	}
 }
 
 je_sb_zululand_sanction_volunteers_button = {
@@ -110,9 +145,22 @@ je_sb_zululand_sanction_volunteers_button = {
 		NOT = { has_variable = sb_zululand_boer_volunteers_active_var }
 	}
 	possible = {
-		sb_zululand_contest_interventions_available = yes any_scope_pop = { is_pop_type = soldiers total_size > 0 } }
+		custom_tooltip = {
+			text = sb_chiefs_intervention_tt
+			hidden_trigger = { sb_zululand_contest_interventions_available = yes }
+		}
+		custom_tooltip = {
+			text = sb_chiefs_servicemen_tt
+			hidden_trigger = { any_scope_pop = { is_pop_type = soldiers total_size > 0 } }
+		}
+	}
 	ai_chance = { value = 0 }
-	effect = { sb_zululand_start_boer_volunteers = yes }
+	effect = {
+		custom_tooltip = sb_chiefs_volunteer_cost_tt
+		custom_tooltip = sb_chiefs_volunteer_pressure_tt
+		custom_tooltip = sb_chiefs_volunteer_commit_tt
+		hidden_effect = { sb_zululand_start_boer_volunteers = yes }
+	}
 }
 
 je_sb_zululand_end_volunteers_button = {
@@ -125,7 +173,12 @@ je_sb_zululand_end_volunteers_button = {
 	}
 	possible = { always = yes }
 	ai_chance = { value = 0 }
-	effect = { sb_zululand_stop_boer_volunteers = yes }
+	effect = {
+		custom_tooltip = sb_chiefs_volunteer_relief_tt
+		custom_tooltip = sb_chiefs_volunteer_end_tt
+		custom_tooltip = sb_chiefs_volunteer_commit_end_tt
+		hidden_effect = { sb_zululand_stop_boer_volunteers = yes }
+	}
 }
 
 je_sb_zululand_support_chiefs_button = {
@@ -133,9 +186,18 @@ je_sb_zululand_support_chiefs_button = {
 	desc = "je_sb_zululand_support_chiefs_button_desc"
 	visible = { country_definition = cd:NAL has_journal_entry = je_sb_zululand_chiefdoms NOT = { has_variable = sb_zululand_chief_patronage_active_var } }
 	possible = {
-		sb_zululand_contest_interventions_available = yes NOT = { in_default = yes } }
+		custom_tooltip = {
+			text = sb_chiefs_intervention_tt
+			hidden_trigger = { sb_zululand_contest_interventions_available = yes }
+		}
+		NOT = { in_default = yes }
+	}
 	ai_chance = { value = 0 }
-	effect = { sb_zululand_start_chief_patronage = yes }
+	effect = {
+		custom_tooltip = sb_chiefs_patronage_cost_tt
+		custom_tooltip = sb_chiefs_patronage_pull_tt
+		hidden_effect = { sb_zululand_start_chief_patronage = yes }
+	}
 }
 
 je_sb_zululand_end_chief_support_button = {
@@ -144,14 +206,30 @@ je_sb_zululand_end_chief_support_button = {
 	visible = { country_definition = cd:NAL has_journal_entry = je_sb_zululand_chiefdoms has_variable = sb_zululand_chief_patronage_active_var }
 	possible = { always = yes }
 	ai_chance = { value = 0 }
-	effect = { sb_zululand_stop_chief_patronage = yes }
+	effect = {
+		custom_tooltip = sb_chiefs_patronage_refund_tt
+		custom_tooltip = sb_chiefs_patronage_end_tt
+		hidden_effect = { sb_zululand_stop_chief_patronage = yes }
+	}
 }
 
 je_sb_zululand_bribe_chief_button = {
 	name = je_sb_zululand_bribe_chief_button
 	desc = je_sb_zululand_bribe_chief_button_desc
 	visible = { OR = { country_definition = cd:NAL country_definition = cd:TRN } has_journal_entry = je_sb_zululand_chiefdoms }
-	possible = { sb_zululand_can_bribe_chief = yes }
+	possible = {
+		custom_tooltip = {
+			text = sb_chiefs_intervention_tt
+			hidden_trigger = { sb_zululand_contest_interventions_available = yes }
+		}
+		custom_tooltip = {
+			text = sb_chiefs_bribe_available_tt
+			hidden_trigger = { sb_zululand_can_bribe_chief = yes }
+		}
+	}
 	ai_chance = { value = 0 }
-	effect = { hidden_effect = { sb_zululand_offer_chief_bribe = yes } }
+	effect = {
+		custom_tooltip = sb_chiefs_open_bribe_tt
+		hidden_effect = { sb_zululand_offer_chief_bribe = yes }
+	}
 }

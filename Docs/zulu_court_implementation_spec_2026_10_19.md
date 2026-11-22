@@ -1,5 +1,52 @@
 # Zulu court: implementation spec and iteration board
 
+> **10 November 2026 — current partition/house implementation:** see
+> [Thirteen Chiefdoms refinement and persistent houses](zulu_thirteen_chiefs_implementation_2026_11_10.md)
+> and its [pending DP matrix](zulu_thirteen_chiefs_runtime_matrix_2026_11_10.md).
+> That record supersedes the older Prerogative-dependent partition settlement and
+> office-based royal household below. Earlier text and results remain evidence.
+
+## 1 November: Hamu's promise through a constitutional civil war
+
+An existing signed Hamu bargain now survives a Thirteen Chiefdoms constitutional
+split as well as a dynastic split. A real royal victory records the actual winner
+and defeated country before conflict cleanup, including outside an active
+Chiefdoms contest. Temporary faction leadership earns nothing. The earned
+promise waits for ownership of all five coastal provinces before cession;
+genuine third-party loss still cancels it. Repeated callbacks cannot replace the
+saved defeated country or award another NRP. [Implementation and verification](zulu_later_court_implementation_2026_10_30.md#1-november-constitutional-war-promise-repair).
+
+## 31 October, current: Dunn's faction shipment
+
+DP authorised the combined annual choice: **+10 ally Prominence, −10 opposing
+member Prominence, and an independent 1% chance of killing that camp's prince**.
+The alternative retains two Firearms weeks. Prominence modifiers last five years
+and refresh without stacking on the same person. Named current allegiances are
+captured at opening and revalidated on selection; future-heir pledges alone do
+not identify enemies. Existing court reservations and loyal-prince protections
+apply. Both options consume the same delivery, and neither rewards opening the
+popup. [Current contract, calculations and checks](zulu_dunn_shipments_design_2026_10_30.md).
+
+## 31 October: Dunn judgement, succession reset and relief
+
+Dunn's judgement waits three days after the authenticated `.005`
+acknowledgement. The rewritten `.003` offers execution (+10 ruler Popularity
+for five years / −10 GBR relations), retention (+5 relations, support and
+eligible gun deliveries / Mthonga's declaration), or banishment (lose Dunn
+without a diplomatic penalty). Dunn is Industrialists. Retention introduces
+Mthonga directly; it supersedes his separate 1855 appearance/1857 declaration.
+
+New reigns start at **0 Prerogative**, including both contenders after death or
+retirement. A living incumbent, repeated installation and majority within the
+same reign retain their value. The +10 victory acknowledgement is unchanged.
+Retirement eligibility moves to **1 July 1856**, aiming one month earlier with
+the existing support/activism controls. **75% Food Security for both actual
+factions** replaces 150% muster-only relief and ends with the conflict.
+
+The latest replay verifies support convergence and a five/four-province split
+for the saved 57.275% target. Broader military scaling, revised timing and food
+balance remain engine checks. [Current implementation and evidence](zulu_dunn_succession_followup_2026_10_31.md).
+
 ## 30 October, current: separate court sections and 30% succession threshold
 
 DP raised the major succession rival threshold to **30% of succession-pledged Prominence**, replacing the earlier 25% decision recorded below. The same predicate governs death, retirement and revalidation of an open handover. Living-ruler challenges remain **25% of currently pledged Prominence plus P ≤−50**, with existing protections, cooldowns and conflict checks. Neither denominator includes unpledged backing. The retained 1856 fixture still qualifies Cetshwayo at **185/596 = 31.04%**.
@@ -518,3 +565,38 @@ Implemented the agreed Dunn admission/deliveries/judgement, Mthonga declaration,
 Hamu's 1860 availability and Boer bargain. Greater NRP is the actual sponsor's
 Confederal Partner. The existing retirement/claimant-war mechanics are retained.
 [Delivery record, defaults and numbered pending engine scenarios](zulu_later_court_implementation_2026_10_30.md).
+
+## One-state recruitment trial — 30 October 2026
+
+Checkpoint **`dc1f65c` / 0.20.3** preserves the preceding maintenance batch.
+DP authorised the [measured-recruitment prototype](zulu_one_state_coalition_split_proposal_2026_10_30.md).
+The initial delivery required `.990` on an unanswered one-state choice. The
+evening replay never activated it: all five saves lack its variables/modifier,
+and the log has no recruitment samples. The follow-up now enables it through
+either ordinary side-selection option in a new one-state episode, after freezing
+the actual sides and target. An immediate start log makes activation observable.
+The actual rebel coalition determines the target and recruitment Popularity.
+An attraction-only modifier approaches measured native support; readiness gates
+both native eligibility and scripted advancement. Weekly activism stays at five
+points. The 26-sample experiment cannot grant a winner or peaceful settlement on
+failure. Existing movements and the multi-state path are unchanged; no retrofit.
+This is the next DP test build. Convergence and military-allocation checks remain
+pending before release acceptance. See the [evening evidence](compatibility/zulu_second_succession_replay_2026_10_30.md).
+
+**31 October follow-up:** activation is observed, but the 57.275% trial failed
+after 26 samples. Ordinary Pop membership updates are annual, capped per visit;
+the weekly attraction controller did not supply additional recruitment turns.
+`recalculate_pop_ig_support` is a verified country-specific refresh for movements
+as well as IGs. A bounded use with cache separation is the recommended next trial,
+not implemented in this investigation. [Evidence and limits](compatibility/zulu_recruitment_stall_2026_10_31.md).
+
+**31 October, authorised implementation:** the existing weekly poll now performs
+at most 25 native country membership refreshes, only while a valid one-state
+crisis remains pending and outside its readiness band. Sample/advance/expiry
+checks precede the refresh. Calculate the next attraction factor, recalculate
+membership using last week's settled movement modifier, then apply the next
+factor. The following weekly sample reads the resulting support; no additional
+event or queue state is needed. This also advances other movements and IG
+membership in the same country, which DP must measure alongside convergence and
+performance. Existing failed episodes are not reset. Runtime case 155 and a
+pre-choice replay remain pending; no game launch or save migration.

@@ -1,0 +1,186 @@
+﻿# Shared controller. No observer country owns the political result or the clock.
+sb_chiefs_start_clock = {
+ container:sb_zululand_chiefdoms_state ?= {
+  if = {
+   limit = { NOT = { has_variable = sb_chiefs_clock_started_var } }
+   set_global_variable = { name = sb_chiefs_state_scope value = this }
+   set_variable = sb_chiefs_clock_started_var
+   set_variable = { name = sb_chiefs_origin_scope value = global_var:sb_zululand_live_zul_scope }
+   add_to_variable_list = { name = sb_chiefs_countries target = global_var:sb_zululand_live_zul_scope }
+  }
+ }
+}
+
+# Native JE age advances independently of container-variable expiry. Record the
+# last processed day before evaluation so duplicate callbacks cannot repeat it.
+sb_chiefs_weekly_update = {
+ scope:journal_entry ?= {
+  if = {
+   limit = { NOT = { has_variable = sb_chiefs_last_weekly_age_var } }
+   set_variable = { name = sb_chiefs_last_weekly_age_var value = -1 }
+  }
+  if = {
+   limit = { sb_zululand_chiefdoms_situation_active = yes journal_entry_age > var:sb_chiefs_last_weekly_age_var }
+   set_variable = { name = sb_chiefs_last_weekly_age_var value = journal_entry_age }
+   sb_chiefs_evaluate_contest = yes
+  }
+ }
+}
+
+# The movement's native civil_war link identifies the organising object exactly.
+sb_chiefs_refresh_organiser = {
+ container:sb_zululand_chiefdoms_state ?= { remove_variable = sb_chiefs_organising_war_scope }
+ global_var:sb_zululand_live_zul_scope ?= {
+  every_political_movement = {
+   limit = {
+    sb_chiefs_native_mode = yes
+    OR = { is_political_movement_type = movement_sb_zulu_royal is_political_movement_type = movement_sb_zulu_chiefly }
+    exists = civil_war
+    civil_war = { is_civil_war_type = revolution civil_war_progress < 1 }
+   }
+   civil_war = { save_scope_as = sb_chiefs_current_organiser }
+   container:sb_zululand_chiefdoms_state = {
+    set_variable = { name = sb_chiefs_organising_war_scope value = scope:sb_chiefs_current_organiser }
+   }
+  }
+ }
+}
+
+sb_chiefs_evaluate_contest = {
+ if = {
+  limit = { sb_zululand_chiefdoms_situation_active = yes }
+  sb_zululand_enforce_boer_withdrawal = yes
+  sb_chiefs_refresh_organiser = yes
+  if = {
+   limit = { container:sb_zululand_chiefdoms_state = { has_variable = sb_chiefs_winner_scope } }
+   # An authenticated result waits for native territorial reunion. It must not
+   # transfer somebody else's subject or give away an uninvolved state's land.
+   if = {
+    limit = {
+     OR = {
+      NOT = { c:NAL ?= { is_country_alive = yes } }
+      NOT = { container:sb_zululand_chiefdoms_state.var:sb_chiefs_winner_scope ?= { is_country_alive = yes OR = { is_direct_subject_of = c:NAL AND = { is_subject = no container:sb_zululand_chiefdoms_state.var:sb_chiefs_rebels_scope ?= this } } } }
+     }
+    }
+    sb_chiefs_interrupt_contest = yes
+   }
+   else = {
+   container:sb_zululand_chiefdoms_state.var:sb_chiefs_winner_scope ?= {
+    if = {
+     limit = { sb_chiefs_winner_ready = yes }
+     if = {
+      limit = { container:sb_zululand_chiefdoms_state.var:sb_chiefs_winner_alignment_var = 1 sb_chiefs_valid_claimant = yes }
+      sb_zululand_resolve_royal_contest = yes
+     }
+     else_if = {
+      limit = { container:sb_zululand_chiefdoms_state.var:sb_chiefs_winner_alignment_var = 2 }
+      sb_zululand_resolve_chiefly_contest = yes
+     }
+    }
+   }
+   }
+  }
+  else_if = {
+   limit = {
+    OR = {
+     container:sb_zululand_chiefdoms_state = { exists = var:sb_chiefs_organising_war_scope }
+     sb_chiefs_active_split = yes
+    }
+   }
+   # Organising or fighting is neither defeat nor a missing constitutional pair.
+  }
+  else_if = {
+   limit = { NOT = { global_var:sb_zululand_live_zul_scope ?= { sb_chiefs_partition_intact = yes } } }
+   sb_chiefs_interrupt_contest = yes
+  }
+  else = {
+   global_var:sb_zululand_live_zul_scope = {
+    if = {
+     limit = {
+      NOT = { sb_chiefs_native_mode = yes }
+      sb_chiefs_valid_claimant = yes
+      any_political_movement = { is_political_movement_type = movement_sb_zulu_royal political_movement_radicalism >= 1 }
+     }
+     sb_zululand_resolve_royal_contest = yes
+    }
+    else_if = { limit = { sb_chiefs_royal_restored = yes } sb_zululand_resolve_royal_contest = yes }
+    else_if = {
+     limit = {
+      sb_chiefs_chiefly_constitution = yes
+      sb_chiefs_review_due = yes
+     }
+     sb_zululand_resolve_chiefly_contest = yes
+    }
+    # Mixed laws remain pending beyond year ten; the clock is never restarted.
+   }
+  }
+ }
+}
+
+sb_chiefs_interrupt_contest = {
+ container:sb_zululand_chiefdoms_state ?= {
+  var:sb_chiefs_origin_scope ?= { remove_variable = sb_zululand_usuthu_contest_var }
+  var:sb_chiefs_rebels_scope ?= { remove_variable = sb_zululand_usuthu_contest_var }
+ }
+ if = { limit = { NOT = { has_global_variable = sb_nrp_chiefdoms_earned_var } } remove_global_variable = sb_nrp_chiefdoms_promise_var }
+ sb_zululand_cleanup_situation = yes
+}
+
+# Country scope. Remove only this contest's contribution, with repeat-safe cleanup.
+sb_chiefs_clear_country_prominence_pressure = {
+ every_political_movement = {
+  limit = { has_modifier = sb_chiefs_prominence_pressure }
+  remove_modifier = sb_chiefs_prominence_pressure
+ }
+}
+
+# Any caller, including foreign events and the contextless journal.
+sb_chiefs_clear_prominence_pressure = {
+ global_var:sb_zululand_live_zul_scope ?= { sb_chiefs_clear_country_prominence_pressure = yes }
+ container:sb_zululand_chiefdoms_state ?= {
+  var:sb_chiefs_origin_scope ?= { sb_chiefs_clear_country_prominence_pressure = yes }
+  var:sb_chiefs_rebels_scope ?= { sb_chiefs_clear_country_prominence_pressure = yes }
+ }
+}
+
+sb_chiefs_update_prominence_pressure = {
+ sb_chiefs_clear_prominence_pressure = yes
+ if = {
+  limit = { sb_zululand_chiefdoms_situation_active = yes NOT = { sb_chiefs_prominence_pressure = 0 } }
+  if = {
+   limit = { container:sb_zululand_chiefdoms_state ?= { var:sb_chiefs_rebels_scope ?= { is_country_alive = yes var:sb_court_war_alignment_var ?= 1 } } }
+   container:sb_zululand_chiefdoms_state.var:sb_chiefs_rebels_scope = {
+    every_political_movement = {
+     limit = { is_political_movement_type = movement_sb_zulu_royal }
+     add_modifier = { name = sb_chiefs_prominence_pressure multiplier = sb_chiefs_prominence_pressure }
+    }
+   }
+  }
+  else = {
+   global_var:sb_zululand_live_zul_scope ?= {
+    if = { limit = { is_country_alive = yes }
+     every_political_movement = {
+      limit = { is_political_movement_type = movement_sb_zulu_royal }
+      add_modifier = { name = sb_chiefs_prominence_pressure multiplier = sb_chiefs_prominence_pressure }
+     }
+    }
+   }
+  }
+ }
+}
+
+# Country scope after the exact native winner callback, never an inferred winner.
+sb_chiefs_reserve_war_result = {
+ if = { limit = { sb_chiefs_recorded_war_pair = yes }
+ save_scope_as = sb_chiefs_actual_winner
+ container:sb_zululand_chiefdoms_state = {
+  if = {
+   limit = { NOT = { has_variable = sb_chiefs_winner_scope } }
+   set_global_variable = { name = sb_zululand_live_zul_scope value = scope:sb_chiefs_actual_winner }
+   set_variable = { name = sb_chiefs_winner_scope value = scope:sb_chiefs_actual_winner }
+   set_variable = { name = sb_chiefs_winner_alignment_var value = scope:sb_chiefs_actual_winner.var:sb_court_war_alignment_var }
+  }
+ }
+
+ }
+}

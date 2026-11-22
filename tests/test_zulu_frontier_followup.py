@@ -5,6 +5,8 @@ Native shipment accounting, portrait rendering and scheduling remain DP checks.
 from pathlib import Path
 import unittest
 
+from tests.je_outcomes import outcome_field, outcome_nodes
+
 from tests.test_zulu_court_politics import CourtRuntime, character, definitions, EFFECTS
 from tests.test_zulu_institutions_laws import statements
 from tools.check_override_inventory import find_object
@@ -326,13 +328,13 @@ class FirearmsSupplyTests(unittest.TestCase):
             self.assertEqual(40, c['vars']['sb_firearms_supply_weeks_var'])
         arms.update(market_goods_sell_orders=1, shortage=False)
         for _ in range(219): self.tick(rt)
-        self.assertFalse(rt.condition(field(self.journal(), 'complete'), c))
+        self.assertFalse(rt.condition(field(outcome_nodes(self.journal(), 'complete'), 'trigger'), c))
         self.tick(rt)
-        self.assertTrue(rt.condition(field(self.journal(), 'complete'), c))
+        self.assertTrue(rt.condition(field(outcome_nodes(self.journal(), 'complete'), 'trigger'), c))
         self.assertEqual(60, c['vars']['sb_firearms_progress_months_var'])
         self.tick(rt)
         self.assertEqual(260, c['vars']['sb_firearms_supply_weeks_var'])
-        rt.effect(field(self.journal(), 'on_complete'), c)
+        rt.effect(field(outcome_nodes(self.journal(), 'complete'), 'effect'), c)
         self.assertIn('sb_firearms_modernized_var', c['vars'])
         self.assertNotIn('sb_firearms_supply_weeks_var', c['vars'])
         rt.effect(EXTRA_EFFECTS['sb_boost_firearms_progress_50'], c)
@@ -346,7 +348,7 @@ class FirearmsSupplyTests(unittest.TestCase):
                 rt = FrontierRuntime(); c = rt.country
                 self.start(rt)
                 c['ruler']['traits'] = {'innovative'} if innovative else set()
-                rt.effect(field(self.journal(), 'on_complete'), c)
+                rt.effect(field(outcome_nodes(self.journal(), 'complete'), 'effect'), c)
                 self.assertNotIn('sb_new_tactics', c.get('modifiers', {}))
                 self.assertEqual(innovative, 'innovative' in c['ruler']['traits'])
                 self.assertEqual(['sb_firearms.001'], c['events'])

@@ -1,117 +1,51 @@
-﻿# Local presentation of the two Chiefdoms bars, following CMF's existing styles.
-# Prerogative and commitment are projected from the authoritative country/situation.
-flowcontainer = {
-	name = sb_zululand_chiefdoms_progress_bars
-	parentanchor = hcenter
-	direction = vertical
-	spacing = 15
-	textbox = {
-		text = "sb_usuthu_live_readout"
-		tooltip = "sb_usuthu_influence_tooltip"
-		size = { 504 155 }
-		multiline = yes
-	}
-	datamodel = "[JournalEntry.GetScriptedProgressBars]"
-	visible = "[Not( IsDataModelEmpty( JournalEntry.GetScriptedProgressBars ) )]"
-	item = {
-		container = {
-			default_progressbar_horizontal = {
-				visible = "[ScriptedProgressBar.IsDoubleSidedBad]"
-				block "progressbar_size" {
-					size = { 504 30 }
-				}
-				tooltip = "sb_zululand_chiefdom_balance_bar_tooltip"
-
-				blockoverride "noprogresstexture" {
-					noprogresstexture = "gfx/interface/progressbar/progressbar_bad.dds"
-				}
-
-				blockoverride "values" {
-					value = "[JournalEntry.GetCurrentBarProgress(ScriptedProgressBar.Self)]"
-					min = 0
-					max = 1
-				}
-				textbox = {
-					text = "[ScriptedProgressBar.GetDesc]"
-					autoresize = yes
-					align = nobaseline
-					margin_left = 10
-					parentanchor = vcenter
-				}
-				textbox = {
-					text = "[ScriptedProgressBar.GetSecondDesc]"
-					autoresize = yes
-					align = right|nobaseline
-					margin_right = 10
-					parentanchor = right|vcenter
-				}
-
-				#this is hack to get an extra marker on top of the frame (progressbar properties are copied)
-				blockoverride "on_top_of_the_progressbar" {
-					progressbar = {
-						noprogresstexture = "gfx/interface/icons/generic_icons/transparent.dds"
-						progresstexture = "gfx/interface/icons/generic_icons/transparent.dds"
-						size = { 100% 100% }
-						spriteType = Corneredtiled
-						spriteborder = { 4 4 }
-						texture_density = 2
-						skip_initial_animation = yes
-
-						block "values" {}
-						block "direction" {
-							direction = horizontal
-						}
-						block "progress_changed_animation" {
-							using = progressbar_changed_animation
-						}
-						block "animate_negative_change" {
-							animate_negative_changes = yes
-						}
-						marker = {
-
-							widget = {
-								size = { 50 50 }
-								icon = {
-									size = { 65 65 }
-									widgetanchor = center
-									position = { 0 12 }
-
-									block "progress_icon" {
-										texture = "[JournalEntry.GetIcon]"
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-			green_progressbar_horizontal = {
-				visible = "[ScriptedProgressBar.IsDefaultGreen]"
-				block "progressbar_size" {
-					size = { 504 30 }
-				}
-
-				tooltip = "sb_zululand_boer_commitment_bar_tooltip"
-				blockoverride "values" {
-					value = "[JournalEntry.GetCurrentBarProgress(ScriptedProgressBar.Self)]"
-					min = 0
-					max = 1
-				}
-				textbox = {
-					text = "[ScriptedProgressBar.GetDesc]"
-					autoresize = yes
-					align = nobaseline
-					margin_left = 10
-					parentanchor = vcenter
-				}
-				textbox = {
-					text = "[ScriptedProgressBar.GetSecondDesc]"
-					autoresize = yes
-					align = right|nobaseline
-					margin_right = 10
-					parentanchor = right|vcenter
-				}
-			}
-		}
-	}
+﻿flowcontainer = {
+ name = sb_zululand_chiefdoms_progress_bars
+ parentanchor = hcenter direction = vertical spacing = 12
+ flowcontainer = {
+  datacontext = "[GetGlobalVariable('sb_zululand_live_zul_scope').GetCountry]"
+  direction = vertical spacing = 12
+  textbox = { text = "sb_chiefs_contest_status" autoresize = yes multiline = yes minimumsize = { 504 -1 } maximumsize = { 504 -1 } }
+  divider_clean = { }
+  textbox = { text = "sb_chiefs_chiefly_panel" autoresize = yes multiline = yes minimumsize = { 504 -1 } maximumsize = { 504 -1 } }
+  textbox = { text = "sb_chiefs_royal_panel" autoresize = yes multiline = yes minimumsize = { 504 -1 } maximumsize = { 504 -1 } }
+  textbox = { text = "sb_chiefs_support_explanation" autoresize = yes multiline = yes minimumsize = { 504 -1 } maximumsize = { 504 -1 } }
+ }
+ flowcontainer = {
+  direction = vertical spacing = 12
+  datamodel = "[JournalEntry.GetScriptedProgressBars]"
+  item = {
+   container = {
+    bad_progressbar_horizontal = {
+     visible = "[ScriptedProgressBar.IsDefaultBad]"
+     block "progressbar_size" { size = { 504 30 } }
+     blockoverride "values" { value = "[JournalEntry.GetCurrentBarProgress(ScriptedProgressBar.Self)]" min = 0 max = 1 }
+     tooltip = "sb_zululand_chiefdom_balance_bar_tooltip"
+     textbox = { text = "[ScriptedProgressBar.GetDesc]" autoresize = yes margin_left = 10 parentanchor = vcenter }
+     textbox = { text = "[ScriptedProgressBar.GetSecondDesc]" autoresize = yes margin_right = 10 parentanchor = right|vcenter }
+    }
+    green_progressbar_horizontal = {
+     visible = "[ScriptedProgressBar.IsDefaultGreen]"
+     block "progressbar_size" { size = { 504 30 } }
+     blockoverride "values" { value = "[JournalEntry.GetCurrentBarProgress(ScriptedProgressBar.Self)]" min = 0 max = 1 }
+     tooltip = "sb_zululand_boer_commitment_bar_tooltip"
+     textbox = { text = "[ScriptedProgressBar.GetDesc]" autoresize = yes margin_left = 10 parentanchor = vcenter }
+     textbox = { text = "[ScriptedProgressBar.GetSecondDesc]" autoresize = yes margin_right = 10 parentanchor = right|vcenter }
+    }
+   }
+  }
+ }
+ textbox = { datacontext = "[GetGlobalVariable('sb_zululand_live_zul_scope').GetCountry]" text = "sb_chiefs_active_interventions" tooltip = "sb_usuthu_influence_tooltip" autoresize = yes multiline = yes minimumsize = { 504 -1 } maximumsize = { 504 -1 } }
+ flowcontainer = {
+  direction = vertical ignoreinvisible = yes spacing = 8
+  datamodel = "[GetGlobalVariable('sb_chiefs_state_scope').GetList('sb_chiefs_countries')]"
+  item = {
+   flowcontainer = {
+    datacontext = "[Scope.GetCountry]"
+    visible = "[GetScriptedGui('sb_chiefs_roster_country').IsShown(GuiScope.SetRoot(Country.MakeScope).End)]"
+    direction = vertical spacing = 8
+    textbox = { text = "[Country.GetName]" size = { 504 30 } }
+    sb_court_house_roster = { }
+   }
+  }
+ }
 }

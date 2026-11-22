@@ -64,6 +64,10 @@ class DunnRuntime(FrontierRuntime):
             elif key == 'transfer_character': scope['owner'] = self.ref(value,scope,prev)
             elif key == 'change_relations': scope.setdefault('relations',{})[field(value,'country')] = float(field(value,'value'))
             elif key == 'add_character_role': scope.setdefault('roles', set()).add(value)
+            elif key == 'add_modifier':
+                fields = {'name': value} if isinstance(value,str) else dict((k,v) for k,_,v in value)
+                scope.setdefault('modifier_terms',[]).append(fields)
+                super().effect([node],scope,prev)
             elif key == 'trigger_event':
                 fields = dict((k,v) for k,_,v in value)
                 scope.setdefault('event_schedule', []).append((fields['id'], int(fields.get('days',0))))
@@ -107,6 +111,7 @@ class DunnVisitTests(unittest.TestCase):
         self.assertEqual(0, rt.created)
         self.assertIs(rt.mbuyazi, dunn['vars']['sb_court_successor_pledge_scope'])
         self.assertEqual(1, dunn['vars']['sb_court_endorsement_var'])
+        self.assertEqual('owner.ig:ig_industrialists',dunn['interest_group'])
         self.assertIn('sb_court_john_dunn_created_var', rt.global_vars)
 
     def test_dead_or_foreign_dunn_is_not_recreated_or_transferred(self):
@@ -165,7 +170,7 @@ class DunnVisitTests(unittest.TestCase):
         self.assertEqual('scope:sb_court_dunn_trader',field(body,'left_icon'))
         self.assertIn('sb_court_dunn_trader',str(field(body,'immediate')))
         options = [v for k, _, v in body if k == 'option']
-        self.assertEqual(1, len(options))
+        self.assertEqual(2, len(options))
         self.assertEqual('yes', field(options[0], 'default_option'))
 
     def test_event_uses_native_paired_portraits_and_button_effect(self):

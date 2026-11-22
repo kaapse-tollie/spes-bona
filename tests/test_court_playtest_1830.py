@@ -114,11 +114,12 @@ class CourtPlaytest1830(unittest.TestCase):
             self.assertFalse(rt.roster_shown('sb_court_roster_' + section, None))
         self.assertTrue(rt.roster_shown('sb_court_roster_candidate', prince))
         self.assertTrue(rt.roster_shown('sb_court_roster_member', chief))
-        gui = (ROOT/'gui/sb_prerogative_progress_bars.gui').read_text(encoding='utf-8-sig')
+        gui = (ROOT/'gui/sb_prerogative_progress_bars.gui').read_text(encoding='utf-8-sig') + (ROOT/'gui/sb_court_house_roster.gui').read_text(encoding='utf-8-sig')
         calls = [line for line in gui.splitlines() if "GetScriptedGui('sb_court_roster_" in line]
         self.assertEqual(5, len(calls))
         for call in calls:
-            self.assertIn('SetRoot(JournalEntry.GetCountry.MakeScope)', call)
+            self.assertTrue('SetRoot(JournalEntry.GetCountry.MakeScope)' in call or 'SetRoot(Country.MakeScope)' in call)
+            self.assertNotIn('GetPlayer', call)
             self.assertIn('Scope.GetCharacter.IsValid', call)
 
     def test_annual_report_lists_only_changed_records_in_current_scope(self):
@@ -283,9 +284,13 @@ class CourtPlaytest1830(unittest.TestCase):
         for name in ('ZUL_uthumbu_claimed_son', 'ZUL_mbuyazi_successor', 'ZUL_uthumbu_successor'):
             self.assertIn('historical = no', templates[name])
         effects = (ROOT/'common/scripted_effects/sb_court_politics_effects.txt').read_text(encoding='utf-8-sig')
-        registration = next(line for line in effects.splitlines() if 'has_template = ZUL_zibhebhu_kamaphitha' in line)
-        self.assertIn('NOT = { has_variable = sb_court_registered_var }', registration)
-        self.assertIn('set_is_noble = yes', registration)
+        blocks = statements(find_object(effects, 'sb_court_ensure_roster'))
+        registration = next(body for key, _, body in blocks if key == 'every_scope_character'
+                            and any(field == 'limit' and ('has_template', '=', 'ZUL_zibhebhu_kamaphitha') in limits
+                                    for field, _, limits in body))
+        self.assertIn(('set_is_noble', '=', 'yes'), registration)
+        self.assertIn(('NOT', '=', [('has_variable', '=', 'sb_court_registered_var')]),
+                      next(limits for key, _, limits in registration if key == 'limit'))
         cast = (ROOT/'common/scripted_effects/sb_court_cast_effects.txt').read_text(encoding='utf-8-sig')
         self.assertNotIn('set_is_noble', find_object(cast, 'sb_court_register_unpledged_cast'))
         for file in (ROOT/'common/character_interactions').glob('*.txt'):

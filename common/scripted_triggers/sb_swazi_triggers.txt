@@ -72,3 +72,32 @@ sb_swazi_conquest_target_allowed = {
   }
  }
 }
+
+# Called by the native side-joining rule (including AI/sways). Its documented
+# side/initiator scopes must match the live authored play stored on ZUL.
+sb_swazi_defender_join_allowed = {
+ NOT = {
+  AND = {
+   country_definition = cd:NAL
+   exists = scope:target_country
+   exists = scope:enemy_country
+   exists = scope:initiator
+   scope:target_country ?= { country_definition = cd:SWZ has_variable = sb_zulu_swazi_war_active_var }
+   scope:enemy_country ?= {
+    country_definition = cd:ZUL
+    this = scope:initiator
+    has_variable = sb_zulu_swazi_war_active_var
+    trigger_if = {
+     limit = { has_variable = sb_zulu_swazi_play_scope }
+     any_diplomatic_play = {
+      this = scope:enemy_country.var:sb_zulu_swazi_play_scope
+      is_diplomatic_play_type = dp_conquer_state
+      initiator_is = scope:enemy_country
+      target_is = scope:target_country
+     }
+    }
+    trigger_else = { always = no }
+   }
+  }
+ }
+}

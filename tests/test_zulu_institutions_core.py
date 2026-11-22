@@ -8,6 +8,8 @@ from pathlib import Path
 import re
 import unittest
 
+from tests.je_outcomes import outcome_field, outcome_nodes
+
 from tests.test_zulu_institutions_laws import statements
 from tools.check_override_inventory import extract_top_level_blocks, find_object
 
@@ -64,12 +66,13 @@ class Runtime:
         results = []
         for key, op, value in nodes:
             if key == 'custom_tooltip': result = self.condition([n for n in value if n[0] != 'text'], scope)
-            elif key == 'NOT': result = not self.condition(value, scope)
+            elif key == 'NOT': result = not any(self.condition([n], scope) for n in value)
             elif key == 'OR': result = any(self.condition([n], scope) for n in value)
             elif key == 'NOR': result = not any(self.condition([n], scope) for n in value)
             elif key == 'AND': result = self.condition(value, scope)
             elif key in TRIGGERS: result = self.condition(TRIGGERS[key], scope) == (value == 'yes')
             elif key == 'sb_is_zulu_dynasty_country': result = scope.get('tag') == 'ZUL' or (scope.get('tag') == 'NGN' and 'sb_ngu_inherited_zul_content_var' in scope['vars'])
+            elif key == 'sb_chiefs_contest_country': result = scope.get('partition_contest', False) == (value == 'yes')
             elif key == 'has_variable': result = value in scope['vars']
             elif key == 'has_modifier': result = value in scope['modifiers']
             elif key == 'has_global_variable': result = value in self.globals
@@ -81,7 +84,7 @@ class Runtime:
                 result = value.removeprefix('law_type:') in laws
             elif key == 'any_political_movement': result = any(self.condition(value, m) for m in scope['movements'])
             elif key == 'is_political_movement_type': result = value == scope['type']
-            elif key == 'owner': result = self.condition(value, scope['owner'])
+            elif key == 'owner': result = self.condition(value, scope.get('owner', self.zul))
             elif key == 'always': result = value == 'yes'
             else:
                 left = self.number(key, scope); right = self.number(value, scope)
@@ -162,6 +165,9 @@ class Runtime:
                 scope['owner']['bar'] = self.number(fields['value'], scope, prev)
             elif key == 'owner': self.effect(value, scope['owner'], scope)
             elif key == 'sb_court_calculate_backing': scope['vars']['sb_prerogative_cooperation_var'] = scope['cooperation']
+            # Native law cleanup is traced, not simulated by this institutional fixture.
+            elif key in ('scripted_effect_parties_disappearence', 'cleanup_voting_strength_modifiers'):
+                self.calls.append((key, scope['tag']))
             # Court identity/callback behaviour is executed in test_zulu_court_rework;
             # the minor-heir grant is covered in test_zulu_recognition_backing.
             elif key in ('sb_court_check_claimant_challenge', 'sb_court_reconcile_dynastic_record', 'sb_court_update_heir_blocker', 'sb_court_ensure_roster', 'sb_court_select_chiefly_head', 'sb_court_monthly_housekeeping', 'sb_court_sync_chiefly_concessions', 'sb_court_annual_allegiances', 'sb_court_reconcile_minor_backing', 'sb_court_mpande_sons_come_of_age', 'sb_court_deck_monthly', 'sb_court_suspend', 'sb_zululand_suspend_contest_interventions', 'sb_zulu_monthly_dynasty_housekeeping', 'sb_zululand_check_political_settlement'):
@@ -209,40 +215,23 @@ class InstitutionalArithmeticTests(unittest.TestCase):
         court = definitions('common/scripted_effects/sb_court_politics_effects.txt')
         self.assertEqual(['hidden_effect'], [k for k, _, _ in court['sb_court_calculate_backing']])
 
-    def test_title_uses_gui_journal_after_nested_localisation_loses_script_scope(self):
-        # The lobby supplies a JE type, while live JE widgets supply JournalEntry.
-        # SelectLocalization does NOT forward the temporary ROOT/SCOPE bindings
-        # from JournalEntry.GetName. The prior test incorrectly preserved them.
+    def test_type_title_is_context_free_and_live_heading_uses_the_actual_owner(self):
+        # IsInGame is true even when a preview only supplies JournalEntryType.
         loc = {}
         for path in ('sb_l_english.yml', 'sb_institutions_l_english.yml'):
             for line in (ROOT/'localization/english'/path).read_text(encoding='utf-8-sig').splitlines():
                 match = re.fullmatch(r'\s*(\w+):\d* "(.*)"', line)
                 if match: loc[match[1]] = match[2]
+        self.assertEqual('Prerogative', loc['je_sb_zulu_kingdom'])
+        # The context-free key is used in the lobby, type-only in-game hovers
+        # and foreign-country previews. No selector can dereference a missing JE.
+        self.assertNotRegex(loc['je_sb_zulu_kingdom'], r'[\[$]')
+        self.assertTrue(loc['sb_prerogative_live_readout'].startswith('$sb_prerogative_country_title$:'))
+        self.assertEqual("[JournalEntry.GetCountry.GetCustom('sb_prerogative_title')]", loc['sb_prerogative_country_title'])
+        self.assertNotIn('GetPlayer', loc['sb_prerogative_country_title'])
         custom = definitions('common/customizable_localization/sb_court_custom_loc.txt')['sb_prerogative_title']
-        rt = Runtime()
         choices = [{k: v for k, _, v in body} for key, _, body in custom if key == 'text']
-
-        def render(key, in_game, gui_journal=None, script_scope=None):
-            text = loc[key]
-            select = re.fullmatch(r"\[SelectLocalization\(([^,]+), '([^']+)', '([^']+)'\)\]", text)
-            if select:
-                # Missing ROOT/JournalEntry cannot be made safe by accessing
-                # .GetCountry.IsValid; resolve the scope-free condition first.
-                self.assertEqual('IsInGame', select[1])
-                return render(select[2] if in_game else select[3], in_game, gui_journal, script_scope=None)
-            if text.startswith('['):
-                self.assertIsNone(script_scope)
-                self.assertNotIn('ROOT.', text, 'Nested title cannot promote the lost script ROOT')
-                self.assertNotIn('SCOPE.', text, 'Nested title cannot promote the lost script SCOPE')
-                self.assertEqual("[JournalEntry.GetCountry.GetCustom('sb_prerogative_title')]", text)
-                self.assertIsNotNone(gui_journal, 'Lobby title tried to read a missing live JE')
-                actual = next(choice['localization_key'] for choice in choices if rt.condition(choice.get('trigger', []), gui_journal['owner']))
-                return render(actual, in_game, gui_journal)
-            return text
-
-        self.assertEqual('Royal Prerogative', render('je_sb_zulu_kingdom', False))
-        # No variables are initialised, and the unrelated caller/player's law
-        # is the opposite constitution. Only this JE's country selects its name.
+        rt = Runtime()
         for tag in ('ZUL', 'NGN'):
             for law, other_law, expected in (
                 ('law_monarchy', 'law_sb_federated_chiefdoms', 'Royal Prerogative'),
@@ -250,9 +239,9 @@ class InstitutionalArithmeticTests(unittest.TestCase):
                 ('law_social_monarchy', 'law_sb_federated_chiefdoms', 'Royal Prerogative'),
             ):
                 rt.root['laws'] = {other_law}
-                journal = {'owner': country(tag, {law})}
-                for scope in (None, journal['owner'], rt.root):
-                    self.assertEqual(expected, render('je_sb_zulu_kingdom', True, journal, scope))
+                owner = country(tag, {law})
+                selected = next(c['localization_key'] for c in choices if rt.condition(c.get('trigger', []), owner))
+                self.assertEqual(expected, loc[selected])
 
     def test_institutional_reach_has_named_condition(self):
         tooltip = next(body for key, _, body in TRIGGERS['sb_institutions_eligible'] if key == 'custom_tooltip')
@@ -409,7 +398,7 @@ class InstitutionalLifecycleTests(unittest.TestCase):
         rt.call('sb_institutions_reconcile')
         self.assertNotIn('sb_institutions_active_var', rt.zul['vars'])
         self.assertIn(('sb_court_suspend', 'ZUL'), rt.calls)
-        self.assertIn(('sb_zululand_suspend_contest_interventions', 'ZUL'), rt.calls)
+        self.assertNotIn(('sb_zululand_suspend_contest_interventions', 'ZUL'), rt.calls)
         self.assertEqual({}, rt.zul['modifiers'])
         rt.zul['journals'].clear()  # Native invalidation removes the JE.
         rt.zul['laws'].remove('law_parliamentary_republic'); rt.zul['laws'].add('law_monarchy')
@@ -447,7 +436,7 @@ class InstitutionalLifecycleTests(unittest.TestCase):
         from tests.test_zulu_institutions_laws import child
         for terminal in ('complete =', 'on_complete =', 'fail =', 'on_fail =', 'timeout ='):
             self.assertNotIn(terminal, source)
-        invalid = statements(child(source, 'on_invalid'))
+        invalid = statements(outcome_field(source, 'invalid', 'effect'))
         rt = Runtime(); rt.call('sb_institutions_reconcile')
         rt.zul['vars']['sb_prerogative_var'] = 71
         rt.zul['vars']['earned_reward'] = True
@@ -487,6 +476,49 @@ class InstitutionalLifecycleTests(unittest.TestCase):
                 self.assertEqual(3, len(rebels['movements']))
                 self.assertTrue(rebels['vars']['sb_institutions_active_var'])
                 self.assertEqual(original, rt.zul)
+
+    def test_direct_law_activation_waits_for_history_and_country_creation(self):
+        laws = definitions('common/laws/05_sb_chiefly_constitution.txt')
+        hook = {k: v for k, _, v in statements(find_object((ROOT/'common/on_actions/sb_institutions_on_actions.txt').read_text(encoding='utf-8-sig'), 'sb_on_institutions_law'))}
+        for law_name, definition in laws.items():
+            activation = next(v for k, _, v in definition if k == 'on_activate')
+            for tag in ('ZUL', 'REB'):
+                for lobby_ready, alive in ((True, False), (False, True), (False, False)):
+                    with self.subTest(law=law_name, tag=tag, lobby_ready=lobby_ready, alive=alive):
+                        rt = Runtime(); original = deepcopy(rt.zul); foreign = deepcopy(rt.root)
+                        if not lobby_ready: rt.globals.clear()
+                        owner = country(tag)
+                        owner['laws'].discard('law_monarchy' if law_name == 'law_sb_federated_chiefdoms' else 'law_autocracy')
+                        owner['laws'].add(law_name)
+                        owner.update(alive=alive, ai_ready=alive)
+                        if tag == 'REB': owner['vars']['sb_institutions_zulu_profile_var'] = True
+                        before = deepcopy(owner); law = {'owner': owner}
+                        for _ in range(2):
+                            # LawType.on_activate enters the country directly; the on-action
+                            # separately supplies a Law root. Both paths must be safe.
+                            rt.effect(activation, owner)
+                            if rt.condition(hook['trigger'], law): rt.effect(hook['effect'], law)
+                        self.assertEqual(before, owner)
+                        self.assertEqual(original, rt.zul)
+                        self.assertEqual(foreign, rt.root)
+                        self.assertNotIn('vars', law)
+                        if not lobby_ready:
+                            # History owns the opening entry before the bootstrap runs.
+                            owner.update(alive=True, ai_ready=True)
+                            rt.effect([('add_journal_entry', '=', [('type', '=', 'je_sb_zulu_kingdom')])], owner)
+                        owner.update(alive=True, ai_ready=True)
+                        rt.globals['sb_institutions_lobby_ready_global_var'] = True
+                        # Existing bootstrap/post-split reconciliation and later reforms
+                        # must still initialise once, even when both callbacks repeat.
+                        for _ in range(2):
+                            rt.call('sb_institutions_reconcile', owner)
+                            rt.effect(activation, owner)
+                            if rt.condition(hook['trigger'], law): rt.effect(hook['effect'], law)
+                        self.assertEqual({'je_sb_zulu_kingdom'}, owner['journals'])
+                        self.assertEqual(3, len(owner['movements']))
+                        self.assertTrue(owner['vars']['sb_institutions_active_var'])
+                        self.assertEqual(original, rt.zul)
+                        self.assertEqual(foreign, rt.root)
 
     def test_law_callback_still_handles_reforms_and_reentry_for_finished_countries(self):
         hook = {k: v for k, _, v in statements(find_object((ROOT/'common/on_actions/sb_institutions_on_actions.txt').read_text(encoding='utf-8-sig'), 'sb_on_institutions_law'))}

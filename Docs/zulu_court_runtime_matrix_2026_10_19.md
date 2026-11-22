@@ -659,3 +659,103 @@ pending; existing DP results elsewhere in this matrix are unchanged.
 | 150. Marker, independent sections and viewed court | Three sections start closed and toggle independently. Their bounded content never widens the JE; current and succession summaries remain visible while closed and use their separate supporters/totals. Inspect both ZUL and a foreign court view. The fixed gold divider is at −50 (one quarter across); the moving current-P marker still tracks the value, including crossing/overlapping the divider. Effects and threshold hover remain accessible. Loyal princes display their actual allegiance. Under Federated Chiefdoms, no dynastic divider appears and both royal-rule summaries become inapplicability explanations without deleting political records. Check long names, scrolling and character navigation with all three panels open. | Source contracts pass; native rendering pending DP. |
 
 Static handoff for 149–150: 174 focused checks pass; full discovery has 979 passes, one unchanged localisation failure and eight skips. CMF, overrides and map/naval checks pass. Independent source review has no blocking findings. Advisory Tiger totals match the prior baseline. None of these results marks native rendering or retirement replay as performed.
+
+## 30 October: one-state recruitment trial — automatic entry follow-up
+
+See [setup and tuning](zulu_one_state_coalition_split_proposal_2026_10_30.md#implemented-trial-and-how-to-run-it).
+Restart from before movement creation, then choose a side in `.004` normally.
+No console command is required in this follow-up. Confirm the immediate
+`SB recruitment trial started:` log and **Mustering the Coalition** modifier.
+The September onward autosaves already contain the old movement and cannot
+exercise initialisation. No migration or retroactive movement replacement.
+
+The 22:23–22:24 replay again produced one province and one staffed rebel battalion,
+but none of its saves/logs shows trial activation. Record it as **old path observed,
+recruitment not exercised**, not failed convergence. [Evidence](compatibility/zulu_second_succession_replay_2026_10_30.md).
+
+| Scenario | Check | Status |
+|---|---|---|
+| 151. Native support convergence | Test frozen rebel shares of 25%, 50% and 75%, both player choices, and living-ruler/retirement cases. Keep weekly total, popular, military and wealth support from `SB recruitment trial` debug lines. Confirm five-point activism, a bounded changing attraction modifier and a split within the test window. The saved 248:185 case should recruit towards Mbuyazi's 57.275% when Cetshwayo is backed. | **Failed, 31 October, 57.275% case:** active controller reaches factor 32 but support stays about 10–11%; saved failure at 26 samples, no organising war. Native annual membership cadence explains the bottleneck. Other cases remain pending; [next-trial recommendation](compatibility/zulu_recruitment_stall_2026_10_31.md). |
+| 152. Native territory and usable forces | Record provinces, staffed battalions, manpower, conscripts, commanders and food supply immediately after division. Repeat matched checkpoints: stronger coalition backing must give a meaningful military advantage, not just more provinces. No army rebuilding occurs in this path. | Pending DP. |
+| 153. Trial boundaries and cleanup | Call `.990` without an eligible pending choice, after movement creation and in multi-state ZUL; it must not arm a later war or retrofit the old one. Test participant death, cancellation, actual winners, support loss before division and state-count changes. A failed 26-sample trial logs failure and stops scripted polling without awarding an outcome; reload its checkpoint. Existing movements and multi-state muster remain unchanged. | Pending DP. |
+| 154. Normal side-choice activation | Without `.990`, answer either `.004` side choice from before movement creation. Confirm one immediate start log with the correct actual rebel and frozen target, the attraction-only modifier, then weekly support samples. Repeat/opening previews must not create another movement, restart the sample count or change the quoted side. | **Activation observed, 31 October:** claimant-backed replay has correct saved rebel4481/target, modifier and weekly samples. Start log's character name is blank, although saved reference is valid. Other choice/repeated-preview engine checks remain pending. |
+
+Initial source handoff for 151–153: 104 focused checks pass; independent review reports
+144 passing checks and no remaining blocking finding. Full discovery has 992
+passes, eight existing skips and the unchanged localisation-review failure
+(1,001 total). Validator 15/17: unit/localisation gates share that existing issue;
+CMF, compatibility, map/naval and script-contract checks pass. Advisory Tiger
+matches the previous baseline. Qualified scripted advancement is not proof of
+native rebel creation; convergence and usable-force allocation remain unverified.
+
+Evening follow-up for 151–154: **105** focused checks pass; independent review ran
+**145** related checks with no blocking finding. Full discovery: **993 passed,
+eight existing skips, one unchanged localisation failure** out of 1,002 tests.
+Validator remains 15/17, with the same unit/localisation issue and unchanged
+advisory Tiger totals. [Evidence and full validation record](compatibility/zulu_second_succession_replay_2026_10_30.md).
+
+## 31 October: bounded country membership refresh
+
+The first active replay in case 151 remains recorded as failed. This follow-up
+requires a restart from **before the side choice**, not the failed April episode.
+
+| Scenario | Check | Status |
+|---|---|---|
+| 155. Native refresh timing, scope and side effects | Replay both choices and the 25%/50%/75% shares, including the saved 57.275% target. Keep the weekly support samples and new `SB recruitment refresh:` lines. Each eligible sample 1–25 refreshes membership using the previous week's attraction; sample 26 permits success before expiry but no further refresh. Compare Pop membership, combined/military/wealth/popular support, other movement membership and IG clout before/after. Confirm a meaningful staffed military split, not only territory. Measure tick cost while recruitment is pending. Readiness, cancellation, participant death, state-count change, advancement and active war stop refreshes; multi-state and unrelated-country controls receive none. Repeat the failed April checkpoint to confirm it is not silently rearmed. | Pending DP. Source tests verify ordering, country scope and the 25-refresh bound; they record the native effect request without simulating recruitment or allocation. |
+
+Source handoff: 109 focused and 149 independent review checks pass. Full discovery:
+997 passes, eight existing historical skips, one unchanged localisation failure;
+validator 15/17. Compatibility/CMF/map/naval checks pass. Advisory Tiger retains
+1,076 existing errors; no diagnostic names the recruitment files.
+[Detailed validation record](compatibility/zulu_recruitment_stall_2026_10_31.md#authorised-follow-up-bounded-refresh-implemented).
+
+## 31 October evening: observed split and Dunn/succession follow-up
+
+**Case 155 partial result:** the subsequent replay reached 57.781% combined
+support against the saved 57.275% target on sample 20. April–August saves show
+five provinces for the actual rebels and four for the original country. This
+supersedes the earlier stalled replay as the latest observation, while retaining
+its evidence. The other shares/choices, force staffing, repeatability and tick
+cost remain pending. DP reports that this war works much better; food losses
+remain a problem. [Hashes, log and current changes](zulu_dunn_succession_followup_2026_10_31.md).
+
+| Scenario | Check | Status |
+|---|---|---|
+| 156. Dunn after One Royal Homestead | Replay Cetshwayo's victory over Mbuyazi with admitted Dunn. Leave `.005` open: no `.003` yet. Acknowledge it: paired judgement appears three days later once. Check Industrialists, long names, conditional Mthonga prose, and each tooltip. | Pending DP. |
+| 157. Dunn's three judgements | Execute: +10 ruler Popularity for five years, −10 GBR, no more deliveries. Retain: support/+5 GBR, eligible two-week annual deliveries, Mthonga introduced with Claimant and no free backer; no automatic 1857 declaration elsewhere. Banish: living trader leaves and deliveries cease without relations change. Repeat/stale answers cannot duplicate rewards or recreate unavailable characters. | Pending DP. |
+| 158. New reign and July lead-in | Peaceful/death/minority succession starts P at 0. Both contested retirement candidates start at 0; same-sovereign majority/reinstallation preserves earned P. Living incumbent keeps his value; `.005` adds 10 once. Replay from before July 1856 and record choice, movement and war dates; aim for December without bypassing readiness or forcing a dated war. | Pending DP. |
+| 159. Shared partial provisions | In native one-state and scripted multi-state wars, both actual countries receive one +75% Food Security modifier regardless of player/AI. No 150% modifier remains. Compare food security, shortages and population losses over the war; residual famine is possible. Exact end, either winner and missing-war recovery remove relief from both sides, leaving unrelated wars/countries unchanged. | Pending DP. |
+
+All four are new engine checks. Static interpretation does not reproduce native
+recruitment, starvation, rendering or calendar scheduling. No game was launched.
+
+Source acceptance: 160 focused tests pass, independently reproduced. Full
+discovery has 1,005 passes, eight historical skips and the same existing
+localisation-review failure (1,014 tests). Validator 15/17; CMF, compatibility,
+map/naval and delayed-event contracts pass. Tiger remains advisory with 1,076
+errors and 148 warnings; the warning change concerns untouched scope-deduction
+paths. [Full acceptance details](zulu_dunn_succession_followup_2026_10_31.md#acceptance).
+
+## 31 October: Dunn's annual faction allocation
+
+The [authorised combined shipment](zulu_dunn_shipments_design_2026_10_30.md)
+supersedes the single-option delivery in earlier cases. No game was launched.
+
+| Scenario | Check | Status |
+|---|---|---|
+| 160. National or faction guns | Open `.002` with a faithful house and genuine rival camp. Opening gives nothing. A grants two Firearms weeks; B gives the named ally +10 and named opponent −10 Prominence for five years, zero Firearms progress, and one 1% death roll against that opponent's prince. Check full names, portraits, probability, wrapping and native modifier icons. | Pending DP; source-executed choices and probability boundaries pass. |
+| 161. Stale and protected targets | Keep the popup open while an actor dies, defects, moves country, loses representation, the ruler changes, or a court conflict is reserved. B becomes unavailable without choosing replacements; A remains where delivery itself is valid. Future-only pledges, loyal princes and Mpande's protected sons cannot become enemy targets. Completion/Dunn's departure cancels delivery. | Pending DP; scripted invalidation and negative controls pass. |
+| 162. Repetition, caps and death | Repeat delivery annually: fresh eligible houses are preferred, otherwise five years refresh without stacking; cap-100 allies only qualify for renewal. One house member's modifier contributes once to house weight. Repeat-click cannot award another pair/roll or two weeks. Inspect an actual lethal result: only the named prince dies, his supporters survive and lose their obsolete commitments; no automatic loyalty, annexation or constitutional reward. Verify modifiers expire after five years and receipt/scopes survive save/load. | Pending DP; receipt, refresh, capped values and explicit source death-callback checks pass. |
+
+Acceptance: **96 focused passes** independently repeated; full discovery
+**1,017 passes / eight historical skips / one existing localisation-review
+failure** (1,026 tests). Validator 15/17; its two failing gates report the same
+unrelated review drift. Tiger remains advisory. [Details and output](zulu_dunn_shipments_design_2026_10_30.md#implementation-verification).
+
+## 1 November: Hamu's promise and the Thirteen Chiefdoms split
+
+| Scenario | Check | Status |
+|---|---|---|
+| 163. Signed Hamu promise across constitutional war | From a checkpoint before the split with an existing signed Hamu contract, divide the promised coast between the authentic uSuthu/amaKhosi factions. The monthly check retains the promise without earning it. Test Hamu winning as the original country and as the rebels: the real victory retains the defeated owner through cleanup, waits for all five provinces to reunify, then creates the sponsor's NRP Confederal Partner once. Repeat callbacks/monthly checks; no second reward. Any promised province genuinely lost to a third country must still cancel the contract. A temporary faction installation or another king's victory earns nothing. Repeat the existing dynastic route as a control. | Pending DP. Source-executed split, receipt, foreign-owner and delayed-reunion regressions pass; native callback order has not been replayed. |
+| 164. First Chiefly Council after the British handoff | Start before Britain's annexation play with a living Zibhebhu. Record his character ID. Check that a surviving ZUL recovers him and that a recreated ZUL appoints that same chief on late partition. At a late partition where Vanilla never introduced him, expect one canonical Mandlakazi chief. Test an early Klip partition and a known dead chief as controls. Hover the government choices, chiefdoms interventions and incidents as NAL and TRN. Each consequence should have its own bullet and each unmet condition should explain how to satisfy it. | DP observed Mehlokazulu Nyawo in the original May–September 1881 saves. Replay with the correction pending. |
+| 165. Return the actual royal claimant | Before British annexation enforcement, record the living ruler and heir IDs. Verify their preservation through recreation, partition and CAP exile. Permit the claimant's return: the same person appears in ZUL as uSuthu's agitator, without coronation or duplicate rewards. Repeat early Klip partition, reversal before NAL exists, wartime succession and a genuinely deceased claimant. A later reserved dynastic crisis must retain its own movement priority. | Pending DP. The old May–September 1881 saves instead show generated Msushwana Mpungose as a Pro-Slavery agitator. Source-executed handoff and priority checks pass; [investigation](compatibility/zulu_claimant_return_2026_11_05.md). |
