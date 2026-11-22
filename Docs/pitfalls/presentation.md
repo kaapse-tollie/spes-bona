@@ -4,7 +4,7 @@ Read when: Tooltip evaluation, localisation context, journal widgets, portraits 
 
 [Topic index](../../common_pitfalls.md) · [Repository instructions](../../AGENTS.md)
 
-Engine-specific claims concern investigated Victoria 3 1.14.x builds. Recheck
+Engine-specific claims concern investigated Victoria 3 1.14.x and 1.15.0–1.15.1 builds. Recheck
 against the target build and preserve each rule's evidence limits; see the
 [version and evidence guidance](../../common_pitfalls.md#evidence-and-version-limits).
 
@@ -34,10 +34,14 @@ convenience can conceal the real failure.
 `JournalEntryType.GetName` supplies no script root; promoting a missing
 `ROOT` can fail before a validity test. `SelectLocalization` can create a
 fresh data container without temporary `ROOT`, `SCOPE` or `THIS` bindings.
-Use scope-free lobby checks such as `IsInGame` before selecting text that
-requires an in-game context. For that text, use the actual widget context,
-such as `JournalEntry.GetCountry` where available, or keep scoped text in the
-outer row. `GetPlayer` is not a substitute for the displayed object's owner.
+`IsInGame` distinguishes the lobby from a campaign; it does not prove that a
+`JournalEntry` object exists. An in-game type or progress preview can still lack
+that instance. Keep type-only titles safe without it, and use the actual widget
+context, such as `JournalEntry.GetCountry`, only where supplied. Scoped text can
+remain in the outer row. `GetPlayer` is not a substitute for the displayed
+object's owner. Test in-game previews without an instance as well as lobby and
+live-instance rendering; the [reported hover failure](../compatibility/1_15_0_playtest_1850_2026_11_07.md#prerogative-preview-hover--play115-04)
+exposes that distinction, with its correction and engine replay still pending.
 
 <a id="ui-04"></a>
 
@@ -89,6 +93,13 @@ A visual threshold is only one entry condition, so its explanation must name
 the relevant backing pool and preserve eligibility/cooldown qualifications.
 Native marker overlap and tooltip hit areas still need rendering verification.
 
+Check the full journal and the outliner separately. CMF's compact renderer reads
+the native bar definition, not SB's full-journal widget, and omits its labels.
+When replacing a two-sided balance with a 0–100 progress measure, update both
+the native style and the custom widget's style selector. An obsolete coloured
+background and moving marker can misrepresent progress even when the saved
+value is correct. See the [Chiefdoms presentation check](../compatibility/chiefdoms_presentation_2026_11_12.md).
+
 <a id="ui-08"></a>
 
 ## UI-08 — Use supported journal fields and renderers
@@ -98,6 +109,15 @@ The default pin field is
 trigger can make automatic `_goal` text redundant. Adding CMF's scripted-button
 widget does not replace the default button grid. Inspect the existing renderer
 before adding a second one.
+
+Trace the instantiated type through inheritance. A declared CMF helper is not
+necessarily used by the current outliner. In 1.15.1 / CMF 1.67.3, international
+situation rows inherit Vanilla's `journal_entry_scripted_progress_bars`; the
+separate `com_journal_outliner_progress_bars` helper is not invoked there.
+Frame margins can paint beyond the row's nominal height. Retain enough spacing
+between rows; an empty `blockoverride` can remove the base type's safe spacing.
+The [Confederation overlap correction](../compatibility/diplomatic_joining_and_outliner_2026_11_13.md)
+changes only that spacing and still requires a rendering check.
 
 <a id="ui-09"></a>
 
@@ -151,3 +171,15 @@ from immediate changes, and explain values and available actions. Keep internal
 variable names and implementation commentary out of ordinary prose. Follow
 comparable DLC presentation and the review-marker rules in [localisation review policy](../policies/localisation-review.md);
 moving a marker must never manufacture approval.
+
+<a id="ui-14"></a>
+
+## UI-14 — A reusable GUI type needs a named type group
+
+Use the installed declaration grammar, `types group_name { type widget_name =
+flowcontainer { … } }`, rather than a script-style `types = { … }`. A balanced
+brace check does not validate GUI grammar. Reused roster widgets also need an
+explicit Country context; a JournalEntry or player context can silently show
+foreign observers' records. Check the shared declaration against Vanilla/CMF,
+triage real parser diagnostics separately from an outdated validator schema,
+and verify both embedding contexts and character links in-game.

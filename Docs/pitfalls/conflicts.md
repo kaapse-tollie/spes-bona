@@ -46,6 +46,18 @@ commitments, progress and cleanup by the actual participants and winner,
 not a presumed surviving tag. A movement leader is not automatically the
 country's ruler.
 
+In Victoria 3 1.15.2 a defending overlord can take leadership before
+`on_diplomatic_play_started` receives `scope:target`. For a play against a
+subject, identify the subject through the opening demand and confirm its side
+in that exact play. Share that identification between the duplicate check and
+the play-start callback. Inside `any_diplomatic_play`, `this` is the play.
+Use explicit country references when checking the initiator and defender.
+
+If a start callback assigns optional backers, resolve their choices before
+launch. Verify the committed participants on each side and who holds each
+counter-demand with either defensive leader. The save's `involved` list
+also includes countries that have yet to choose a side. [Klip River save and engine investigation](../compatibility/klip_river_secession_backers_2026_11_21.md)
+
 <a id="war-05"></a>
 
 ## WAR-05 — A territorial target is not an army allocation
@@ -56,6 +68,21 @@ provincial path uses movement support; multi-state proposals also depend on
 geography and native military rules. Classify the origin before splitting:
 two resulting one-state countries do not imply a one-state origin. One owned
 state is not itself a blanket bar to ideological revolution.
+
+A recruitment-readiness experiment must gate this movement's native
+`revolution.possible` as well as scripted advancement: withholding the scripted
+progress effect alone does not stop native creation. Keep the adjustable
+attraction component separate from activism. A recruitment/advancement test budget
+must also cover an organising war which has stalled; its existence is not proof
+of a qualified advance. Issuing progress is not proof of actual rebel creation. Check final-sample success before expiry and never fabricate a
+peaceful result when the experiment fails. The [one-state trial](../zulu_one_state_coalition_split_proposal_2026_10_30.md)
+has source-executed checks, not verified in-engine convergence.
+
+Before attributing a replay's result to an experimental controller, verify its
+saved activation state, owned modifier and diagnostic log. A console-only entry
+can leave a normal player replay on the old path. Exercise the actual event
+options in regression checks and log activation before the first delayed pulse;
+absence of controller evidence is not failed convergence.
 
 <a id="war-06"></a>
 
@@ -77,6 +104,13 @@ exact play and parties while preserving legitimate territorial recovery.
 required peace term; retaining old territory is not proof that a conquest or
 subject goal succeeded.
 
+In 1.15.2, `no_mirror` suppresses the reverse goal. The opponent can still
+hold an independent demand and continue fighting after the timer enforces.
+For an objective that should decide the war, match the timer and the enforced
+goal to their original play and participants, then explicitly resolve that
+war. Verify that combat ends and the normal war-end settlement runs once.
+[Blood River saves and replay checks](../compatibility/blood_river_timer_design_2026_09_12.md)
+
 <a id="war-08"></a>
 
 ## WAR-08 — Victory callbacks do not prove territorial reunion is complete
@@ -86,6 +120,13 @@ needed actors before country removal and check actual ownership before applying
 regional restoration. Cancellation, a dead contender or a missing war object
 is not a substitute for an authenticated winner. Exercise both winners and
 the native cleanup order in the engine.
+
+A territorial promise shared by dynastic and constitutional wars must recognise
+both controllers' exact faction records. Capture the defeated country before
+clearing those records; repeated accession callbacks must not replace that
+earned reunion identity with a later opponent. A split across the recorded pair
+can wait for reunification, but third-party ownership remains a genuine loss.
+Source-executed tests establish this handoff, not native reunion timing.
 
 <a id="war-09"></a>
 
@@ -132,6 +173,14 @@ assistance belongs to the tracked participants and needs terminal cleanup;
 repeated pulses must not remobilise already-mobilised formations. Native
 recruitment, caps, training, allocation and demobilisation require engine
 checks.
+
+If relief is intended for both native one-state and scripted multi-state splits,
+attach it to the common exact-war lifecycle, not only the muster helper. The
+31 October replay received no old relief because its forces were allocated
+natively. Keep its application independent of AI-only supply discounts, and
+remove it at exact-war end as well as finalisation/missing-war recovery. A food
+security addition is partial relief after native costs/shortages; it is not
+commercial grain production or a guarantee against starvation.
 
 <a id="war-13"></a>
 

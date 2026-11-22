@@ -5,7 +5,7 @@
 - Change only what the task requires; preserve unrelated work already present.
 - SB requires all Victoria 3 DLC, including DLC whose content SB does not directly use. Design against that baseline; do not add no-DLC alternatives unless DP changes this policy.
 - Use British English in player-facing text and documentation. Preserve script identifiers and quoted upstream names.
-- Existing `# ### REVIEWED ###` markers record DP's approval. Preserve them; changes within reviewed localisation namespaces are limited to spelling or grammar. If mechanics require a substantive rewrite, ask DP to supply or approve the replacement before editing it.
+- Existing `# ### REVIEWED ###` markers record DP's approval. Preserve them; changes within reviewed localisation namespaces are limited to spelling, grammar or minor necessary syntax-only compatibility fixes that preserve the approved wording, meaning, tone and intended presentation. `TO REVIEW` prose may be revised within the task's scope; retain its marker until DP approves it. Substantive changes to reviewed text still require DP's replacement or approval. Apply the complete localisation policy below.
 - Leave launching Victoria 3 to check launch errors to DP. Do not launch the game for this purpose. Run relevant static validation and inspect existing logs as needed; record launch checks awaiting DP as pending.
 
 ## Read for the task
@@ -15,8 +15,12 @@
 | Change or review Victoria 3 scripts; debug a regression | [Pitfall index](common_pitfalls.md), then the applicable topic and rule sections. Search selected files first; follow the index's guidance for expanding the search. |
 | Change a cross-country chain or a helper called from another country's event or a diplomatic-play callback | Relevant [scope rules](Docs/pitfalls/scope.md) and [event lifecycle rules](Docs/pitfalls/events.md). Trace every handoff and verify helper routing with a foreign root. |
 | Edit or review localisation, classify review markers, or write event/journal flavour prose | Read the complete [localisation review policy](Docs/policies/localisation-review.md) before acting. |
-| Draft or substantially rewrite event prose or choices; review event presentation | Use the `victoria-3-events` skill from the active skill catalogue. Apply it within the localisation policy's approval boundaries. |
+| Design, implement or review journal entries (JEs), their linked narrative chains or CMF journal presentation | Use [victoria-3-journal-entries](</Users/depro/.codex/skills/victoria-3-journal-entries/SKILL.md>) from the active skill catalogue. Follow its task index and load only the relevant references. |
+| Work centred on individual events: draft or substantially rewrite prose or choices; review event presentation | Use [victoria-3-events](</Users/depro/.codex/skills/victoria-3-events/SKILL.md>) from the active skill catalogue. Apply it within the localisation policy's approval boundaries. |
 | Design regression checks, inspect saves or diagnose a crash | Relevant [verification and diagnosis rules](Docs/pitfalls/verification.md). |
+
+For JE-led prose work, use the JE skill's prose route for linked events. Add the
+events skill when the task calls for specialised event-window or visual guidance.
 
 Read supporting investigations when their evidence is needed. Historical reports
 explain observations and limits; current feature specifications determine intent.

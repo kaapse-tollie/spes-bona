@@ -22,26 +22,26 @@ def text(path: str) -> str:
 
 
 class RebaseTests(unittest.TestCase):
-    def test_release_metadata_targets_1_14_5_and_cmf_1_66_x(self):
-        self.assertIn('supported_version="1.14.5"', text("descriptor.mod"))
-        self.assertIn('version="0.20.2"', text("descriptor.mod"))
+    def test_release_metadata_targets_1_15_2_and_cmf_1_67_x(self):
+        self.assertIn('supported_version="1.15.2"', text("descriptor.mod"))
+        self.assertIn('version="0.21.0"', text("descriptor.mod"))
         metadata = json.loads(text(".metadata/metadata.json"))
-        self.assertEqual("1.14.5", metadata["supported_game_version"])
-        self.assertEqual("0.20.2", metadata["version"])
+        self.assertEqual("1.15.2", metadata["supported_game_version"])
+        self.assertEqual("0.21.0", metadata["version"])
         relationships = [item for item in metadata["relationships"] if item["id"] == CMF_ID]
-        self.assertEqual(["1.66.*"], [item["version"] for item in relationships])
+        self.assertEqual(["1.67.*"], [item["version"] for item in relationships])
 
         inventory = json.loads(text("Docs/compatibility/override_inventory.json"))
-        self.assertEqual("1.14.5", inventory["target_game_version"])
-        self.assertEqual("25629520", inventory["target_steam_build"])
-        self.assertEqual("1.14-openbeta", inventory["target_steam_branch"])
+        self.assertEqual("1.15.2", inventory["target_game_version"])
+        self.assertEqual("26763837", inventory["target_steam_build"])
+        self.assertEqual("public", inventory["target_steam_branch"])
         self.assertEqual("529341", inventory["target_core_depot"])
         self.assertEqual(
-            "5521822647051867164", inventory["target_core_depot_manifest"]
+            "5942745929618312121", inventory["target_core_depot_manifest"]
         )
         self.assertEqual(3, inventory["schema_version"])
-        self.assertEqual(39, len(inventory["same_path_files"]))
-        self.assertEqual(123, len(inventory["keyed_overrides"]))
+        self.assertEqual(40, len(inventory["same_path_files"]))
+        self.assertEqual(151, len(inventory["keyed_overrides"]))
         self.assertEqual(18, len(inventory["state_region_blocks"]))
         self.assertEqual(1, len(inventory["additive_overrides"]))
         self.assertEqual(8, len(inventory["localization_replace_files"]))
@@ -54,9 +54,35 @@ class RebaseTests(unittest.TestCase):
             + inventory["localization_key_collisions"]
             + inventory["upstream_contracts"]
         )
-        self.assertEqual({"2026-09-04", "2026-09-05", "2026-09-12", "2026-09-19", "2026-09-20", "2026-10-16", "2026-10-17", "2026-10-18", "2026-10-25", "2026-10-27", "2026-10-28", "2026-10-29"}, {entry["rebase_date"] for entry in reviewed_entries})
+        depot = json.loads(text("Docs/compatibility/evidence/1_15_2_implementation/current_target.json"))
+        changed = {item["path"].removeprefix("game/") for item in depot["entries"]}
+        for entry in reviewed_entries:
+            source = (entry.get("upstream") or {}).get("path") or entry.get("path")
+            if entry.get("upstream_file"):
+                source = "localization/english/" + entry["upstream_file"]
+            if source in changed:
+                self.assertEqual("2026-11-19", entry["rebase_date"], source)
+                continue
+            if entry.get("dependency_baseline", {}).get("path") == "common/political_movements/ycom_02_cultural_movement.txt":
+                self.assertEqual("2026-11-19", entry["rebase_date"])
+                continue
+            if entry.get("mod_path") == "common/political_movements/zzz_sb_chiefdoms_uprising_overrides.txt" and entry.get("key") == "movement_reactionary":
+                self.assertEqual("2026-11-13", entry["rebase_date"])
+                continue
+            expected_date = ("2026-11-10" if entry.get("mod_path") in {
+                "common/political_movements/zz_sb_absolutist_override.txt",
+                "common/political_movements/zz_sb_minority_rights_movement_override.txt",
+                "common/political_movements/zzz_sb_cape_political_movement_overrides.txt",
+                "common/political_movements/zzz_sb_chiefdoms_uprising_overrides.txt",
+                "common/scripted_rules/zz_sb_swazi_join_rules.txt",
+            } else "2026-11-07" if entry.get("mod_path") in {
+                "common/scripted_rules/zz_sb_swazi_join_rules.txt",
+                "common/laws/zz_sb_law_journal_readiness.txt",
+                "common/scripted_effects/zz_sb_law_journal_readiness_effects.txt",
+            } else "2026-11-05")
+            self.assertIn(entry["rebase_date"], {expected_date, "2026-11-11"})
         self.assertEqual(
-            {"1.14.5"},
+            {"1.15.2"},
             {entry["upstream_version"] for entry in inventory["same_path_files"]},
         )
         self.assertEqual(
@@ -71,16 +97,16 @@ class RebaseTests(unittest.TestCase):
             if item["name"] == "Community Mod Framework"
         ]
         self.assertEqual(1, len(dependencies))
-        self.assertEqual("1.66.0", dependencies[0]["version"])
-        self.assertEqual("1.66.*", dependencies[0]["version_range"])
-        self.assertEqual("1.66.0", dependencies[0]["release_tag"])
-        self.assertEqual("release-1.66.0.zip", dependencies[0]["asset_name"])
+        self.assertEqual("1.67.9", dependencies[0]["version"])
+        self.assertEqual("1.67.*", dependencies[0]["version_range"])
+        self.assertEqual("1.67.9", dependencies[0]["release_tag"])
+        self.assertEqual("release-1.67.9.zip", dependencies[0]["asset_name"])
         self.assertEqual(
-            "807c32ff42b75714a3a0e090c0db3357b5e46ed7",
+            "9103c9cb4130d46cb18204d588def1266e5c1555",
             dependencies[0]["commit"],
         )
         self.assertEqual(
-            "79dd0d434e6ffb617147ad1b91b73e6306139adfffcadf6774eeb32db3a09b8b",
+            "2c702bbf99fd96804366896521832d18519a6a33e94519d49160de0ece7e04ae",
             dependencies[0]["asset_sha256"],
         )
 

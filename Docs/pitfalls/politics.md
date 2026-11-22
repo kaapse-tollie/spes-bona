@@ -69,6 +69,19 @@ The UI's Activism accessor is `political_movement_radicalism`.
 immediate assignment or a monthly increment. Growth and civil-war progress
 require their own checks.
 
+In the inspected 1.14.5 engine, ordinary Pop political membership updates use an
+annual cohort; each visit limits movement changes to 10% of political participants
+(minimum ten individuals for small Pops). Weekly attraction changes do not create
+weekly recruitment turns. `recalculate_pop_ig_support` forces a country-specific
+turn, but updates other movements and IG membership too. Preserve native cache
+boundaries between modifier changes, recalculation and support sampling; do not
+assume a same-effect-block query is fresh. A periodic controller can refresh with
+the previous interval's settled modifier, apply the next modifier afterwards,
+and read support on the next interval. This deliberately delays feedback; bound
+the refresh count and measure effects on other local movements and IGs. See the [failed recruitment trial](../compatibility/zulu_recruitment_stall_2026_10_31.md)
+for save evidence and reproducible native excerpts. Targeted-refresh convergence
+and its political side effects remain untested.
+
 <a id="pol-07"></a>
 
 ## POL-07 — Movement membership is not an exhaustive division of an IG
@@ -82,6 +95,13 @@ lists possible ideologies for pressured IG leaders; it does not automatically
 stack them as the movement's core platform. An agitator role also does not
 guarantee attachment to a particular movement; verify the actual character
 link before advancing a character-led conflict.
+
+Equal `character_support_weight` values do not bind an agitator to the intended
+cause: the installed engine favours the current movement with its stickiness
+multiplier. Give an explicitly designated story leader priority only within that
+story's active context, and let a later dedicated conflict take precedence.
+Preserve the character's broader ideology. Check the actual movement's character
+list in saves; a role or faction trait alone is insufficient evidence.
 
 <a id="pol-08"></a>
 
@@ -132,3 +152,29 @@ relationship, not membership in a domestic faction. Native loyalty and ruler
 popularity already feed other calculations. Audit existing contributions and
 update intervals before replacing a custom value with a native one, so economic
 dependence, popularity or other inputs are not counted twice.
+
+<a id="pol-13"></a>
+
+## POL-13 — Present opponents and future successors are different relationships
+
+A helper selecting constitutional opponents or eligible princes need not exclude
+characters personally loyal to the ruler. For an action against a current rival
+camp, use the representative's present endorsement and actual patron; validate
+that patron independently, including loyal-prince protections. A future-heir
+pledge is not evidence of present opposition. Capture the displayed participants
+once and revalidate them together before applying effects. Dunn shipment
+regressions exercise loyal princes, future-only pledges and a changed patron;
+native popup persistence and rendering remain DP checks.
+
+<a id="pol-14"></a>
+
+## POL-14 — Gate the cause and uprising mode, not the whole movement
+
+An ideological movement may supply both revolution and secession definitions.
+A scoped restriction must inspect both possible blocks while leaving unrelated
+cultural/religious causes and outside countries intact. Preserve already started
+conflicts rather than deleting them through an eligibility change. When copying
+CMF definitions, compare complete bodies allowing only the intended gate; do not
+silently lose its geographical or timing hooks. Blocking native uprising does
+not prove actual Activism can reach an event endpoint: test that endpoint and
+expiry ordering in the engine. See the [Chiefdoms implementation](../zulu_thirteen_chiefs_implementation_2026_11_10.md).

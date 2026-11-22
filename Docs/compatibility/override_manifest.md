@@ -1,10 +1,13 @@
 # Spes Bona Override Manifest
 
-Target game version: Victoria 3 `1.14.5` Open Beta Update 4 (Steam build `25629520`, Steam branch `1.14-openbeta`, core depot manifest `5521822647051867164`).
+Target game version: Victoria 3 `1.15.2` (Steam build `26763837`, Steam branch `public`, core depot manifest `5942745929618312121`).
 
-Pinned dependency: Community Mod Framework `1.66.0`, commit `807c32ff42b75714a3a0e090c0db3357b5e46ed7`. The launcher relationship is `1.66.*`. Static validation uses the official GitHub `release-1.66.0.zip` asset with SHA-256 `79dd0d434e6ffb617147ad1b91b73e6306139adfffcadf6774eeb32db3a09b8b`; it does not treat the temporarily reverted Workshop payload as authoritative.
+Pinned dependency: Community Mod Framework `1.67.9`, commit `9103c9cb4130d46cb18204d588def1266e5c1555`, plus `sb-1.15.2-r1`. The launcher relationship is `1.67.*`. Static validation uses the official GitHub `release-1.67.9.zip` asset with SHA-256 `2c702bbf99fd96804366896521832d18519a6a33e94519d49160de0ece7e04ae`; moving latest/Workshop payloads are not substituted.
 
 The canonical machine-readable inventory is `Docs/compatibility/override_inventory.json`. It records every exact-path collision and keyed override with ownership, intended delta, load-order semantics, review date, and pinned source hashes. The complete OB1 semantic decisions are recorded in `Docs/compatibility/1_14_0_open_beta_1_rebase.md`. Schema version 3 also locks otherwise silent key/source collisions and non-shadowed upstream caller contracts.
+
+Native 1.15.2 scopes both Paralegal event AI checks through the optional state owner.
+SB now inherits the event. The inventory contains 40 exact-path files.
 
 Run the complete local gate from the repository root:
 
@@ -15,23 +18,56 @@ python3 -B tools/validate.py \
   --tiger
 ```
 
-The validator reads the exact CMF tag, asset, and digest from the inventory and verifies that release plus the pinned compatibility patch. It fails closed on a different tag, asset, digest, metadata version, installed Steam build, branch, or core depot manifest. `--skip-cmf-sync` is available for offline work only. Tiger's current Victoria 3 `1.14` schema coverage is advisory; the repository's semantic and hash gates remain authoritative.
+The validator reads the exact CMF tag, asset, and digest from the inventory and verifies that release plus the pinned compatibility patch. It fails closed on a different tag, asset, digest, metadata version, installed Steam build, branch, or core depot manifest. `--skip-cmf-sync` is available for offline work only. Installed Tiger 1.19.0 lacks the new JE/event schema and is not a 1.15 target validator. Repository semantic/hash checks remain mandatory, with engine verification separate.
 
-On Depro's development machine, the canonical CMF path is `/Users/depro/Documents/Paradox Interactive/Victoria 3/mod/Community Mod Framework`. Its contents are rebuilt from the verified GitHub release asset plus patch `sb-1.14.3-r1`. Upstream metadata remains unchanged; the patch revision and full installed-tree hash are locked separately.
+On Depro's development machine, the canonical CMF path is `/Users/depro/Documents/Paradox Interactive/Victoria 3/mod/Community Mod Framework`. Its contents are rebuilt from the verified GitHub release asset plus patch `sb-1.15.2-r1`. Upstream metadata remains unchanged; the patch revision and full installed-tree hash are locked separately.
 
 ## Inventory Surface
 
 The current lock covers:
 
-- `39` exact-path files;
-- `123` keyed `REPLACE`, `TRY_REPLACE`, or `REPLACE_OR_CREATE` objects;
+- `40` exact-path files;
+- `151` keyed `REPLACE`, `TRY_REPLACE`, or `REPLACE_OR_CREATE` objects;
 - `18` intentionally changed state-region blocks;
 - one registered additive `zz_` override;
-- all nine localization replace files plus key-level, multi-source pins for the 20 previously silent Vanilla key collisions;
+- all eight localization replace files plus key-level, multi-source pins for the 20 previously silent Vanilla key collisions;
 - two non-shadowed current AI caller/scoring contracts (`ai_strategy_default` and `state_transfer`); and
 - no approved `replace_path` directives.
 
 The exact-path set includes Southern African history, the Highveld event baseline, the regional state file, the province raster, terrain, locators, and spline network. Generated and binary files use hash parity; textual files also require a reviewed source diff. Every OB1 source-only drift result is repinned only after a recorded semantic decision.
+
+## Current 1.15.2 port
+
+The inventory verifies all 573 changed or added core paths, 25 Vanilla contracts
+for the CMF patch, and the full installed CMF tree. SB keeps its ordinary-war
+participation rule for dominions. All eight subject definitions use the new
+native protection behaviour. The province raster includes the Pommern correction.
+[Implementation and digest comparison](1_15_2_implementation.md) · [DP replay](1_15_2_runtime_matrix.md)
+
+## Historical 1.15.1 port
+
+The [11 November implementation report](cmf_1_67_3_and_1_15_1_patch_2026_11_11.md)
+records the four-file CMF release review and the full 1.15.0-to-1.15.1 depot delta.
+The [19 November dependency update](cmf_1_67_9_update_2026_11_19.md) pins two payloads and fourteen
+native contracts. CMF supplies the six secession flags and dynamic bar renderers.
+The inventory tracks all 24 copied CMF definitions against this installation.
+
+SB imports the corrected labour ideology, cultural-minority secession flag,
+Armed Forces ownership attraction and colonial-claim infamy block. Native copper
+is 9/21/35 in Namaqualand/Zambia/Katanga. SB's Griqua setup, map repairs and
+performance changes remain intact. The 1.15.1 depot and CMF patch/native/tree
+checks are mandatory in the inventory validator.
+
+The [1.15.0 implementation](1_15_0_implementation.md) remains historical evidence.
+DP acceptance for this hotfix is separate and pending in the
+[1.15.1 runtime checklist](1_15_1_runtime_matrix.md).
+
+## Earlier implementation notes (historical)
+
+The notes below preserve earlier review decisions and follow-ups. Their version
+numbers, then-current inventories, patch ownership, map topology and GUI descriptions
+are historical where superseded by the 1.15 reports above; they are not current
+installation instructions or runtime certification.
 
 The Initial Enthusiasm helper retains Vanilla's exact grant and adds hidden expiry
 bookkeeping only for NAL's Zulu cultural movement. Its annexation replacement

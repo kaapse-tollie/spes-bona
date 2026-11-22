@@ -1,11 +1,42 @@
 # Blood River: decisive timed victory
 
-Status: **REVERTED following DP's failed engine test, 2026-09-12.** Both Blood River
-goals again require assent; the decisive-timer hook, winner lock and timer promises
-in goal descriptions have been removed. Opposing-country/Natal targets and the
-earlier once-only formation-event fixes remain. ORA–BST remains on its design hold.
+## Victoria 3 1.15.2, 19 November 2026
 
-## Failed engine test and rollback
+The first side to complete its Natal timer wins the Blood River war. ORA wins
+by completing **Secure Natal** and ZUL wins by completing **Defend Natal**.
+Both goals retain their native progress rates and `no_mirror`.
+
+The January and February 1839 autosaves show why the war stayed open.
+On 1 January, ORA was at 95% and ZUL at 0%. On 1 February,
+ORA's goal had `status=executed` and `execution_method=occupation_timer`.
+ZUL's original demand was still active at 0%. Play `16777220` still had a war,
+both countries still pointed to that play, and only ORA's demand was recorded
+as accepted.
+
+The 1.15.2 timer callback identifies the winner and the play. Each Natal
+goal's own enforcement effect records its holder's accepted demand. On the
+next game day the mod checks both pieces of evidence and calls
+`resolve_play_for` on the original war. The usual war-end event then delivers
+the winner's settlement once. If both timers complete in one update, the
+first timer decides the result. An ordinary peace before either timer
+completes follows its agreed terms. [1.15.2 effect reference](https://github.com/Victoria-3-Modding-Co-op/Modding-Digests/blob/0e94618d6a1b1599d4c78cc074282598de4d59b2/1.15.2/docs/effects.log)
+
+An existing save with a live Blood River war can recover on either original
+participant's next monthly pulse. Exactly one accepted demand identifies an
+earlier timer winner. With both demands accepted and no recorded timer winner,
+the war continues under its existing peace rules.
+
+**In-game checks pending.** After a full game restart, resume the 1 January
+checkpoint through ORA's timer and the following day, or resume the 1 February
+checkpoint through the next monthly pulse. In both, confirm the war closes for
+all participants and ORA receives the Natalia founding event once. In a ZUL
+defence victory, confirm the war closes and ZUL receives its victory event once.
+The script tests cover both routes, both callback orders, contested settlements
+and unrelated wars. The full suite ran 1,184 tests with 10 skipped and zero
+failures. Integrated validation reported 15 passes and two existing warnings.
+[Blood River regression tests](../../tests/test_blood_river_outcome_events.py)
+
+## Historical 1.14.2 engine test and rollback, 12 September 2026
 
 DP reports that completing the goal did not force the war to end. Read-only
 inspection of the 13:18 `autosave.v3` (metadata date 1839.11.1) confirms:
@@ -42,9 +73,9 @@ retained in `evidence/blood_river_timer_2026_09_12/rollback_validation.txt`.
 No game was launched and no save was modified.
 The already executed goal in the inspected save is not undone by this script rollback.
 
-## Historical implementation below — reverted
+## Historical 1.14.2 implementation (reverted)
 
-## Implemented behavior
+### Implemented behavior
 
 Both Blood River goals now permit native occupation timers and use
 `mirrored_wargoal = { method = no_mirror }`. ORA's objective remains ZUL's Natal
@@ -91,7 +122,7 @@ installs only the two Natal objectives. The new hook is in `on_wargoal_enforced`
 where the engine explicitly documents the timer marker; it does not infer timer
 completion from a generic goal's `on_enforced` effect.
 
-## Engine API evidence
+### Engine API evidence
 
 Read-only inspection of the installed 1.14.2 executable's effect registry help
 confirms `resolve_play_for` is an effect that ends the play for one side with its
@@ -110,7 +141,7 @@ Local precedents and contracts:
 - Vanilla `game/common/war_goal_types/war_goal_types.md`: timer rates, assent and
   `no_mirror` eligibility; `common/defines/00_defines.txt` supplies the rates.
 
-## Verification
+### Verification
 
 Five new regression checks cover timer eligibility, exact actor/play guards,
 lock/record/resolution ordering, recursive callback protection and lifecycle reset,
@@ -133,7 +164,7 @@ rebase run; that run predates the intervening Natal/TRN fixes and is not an exac
 before/after diagnostic comparison. These totals are not a clean engine-load result.
 `git diff --check` also passed.
 
-## Fresh-game checks left to DP
+### Fresh-game checks from the September investigation
 
 - ORA timer reaches 100: Blood River ends with ORA victory and all its participants
   leave that conflict; Natalia's existing formation follow-up is delivered once.

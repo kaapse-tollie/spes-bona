@@ -12,6 +12,13 @@ against the target build and preserve each rule's evidence limits; see the
 
 ## EVT-01 — Dispatch, open popup, answered choice and terminal outcome are distinct
 
+In Victoria 3 1.15.2, `trigger_event` with an event ID and a delay checks the
+destination's `trigger` in the recipient's scope before queuing the event. It
+checks again when the delay expires. Set each prerequisite on its owner before
+calling `trigger_event`. A later write can leave the sender waiting for an
+appeal the game already discarded. Regression tests should evaluate the actual
+destination trigger at dispatch and again at delivery. [Klip River appeal replay](../compatibility/klip_river_secession_backers_2026_11_21.md#appeal-rejected-at-dispatch)
+
 A dispatch timeout may permit retry before an event opens. Once open, its
 reservation must last until answer, expiry or cancellation. Clearing it in
 `immediate` can allow the next pulse to queue a duplicate. Model only the

@@ -4,7 +4,7 @@ Read when: Counters, projections, snapshots, rankings, arithmetic or random sele
 
 [Topic index](../../common_pitfalls.md) · [Repository instructions](../../AGENTS.md)
 
-Engine-specific claims concern investigated Victoria 3 1.14.x builds. Recheck
+Engine-specific claims concern investigated Victoria 3 1.14.x and 1.15.0 builds. Recheck
 against the target build and preserve each rule's evidence limits; see the
 [version and evidence guidance](../../common_pitfalls.md#evidence-and-version-limits).
 
@@ -59,6 +59,12 @@ boundaries; a negative multiplier can reverse a deduction. Recheck units when
 scaling counters, caps, seeds, rewards, archives and UI projections. Existing
 saved counters are not rescaled by a source edit.
 
+Check numeric literals against the engine reader's precision before trusting
+host-language arithmetic tests. A mathematically valid coefficient can fail to
+load. After rounding a rejected literal, verify the original error tolerance and
+retest parsing; Python's acceptance does not establish engine acceptance. See
+the [1.15 launch evidence](../compatibility/1_15_0_launch_debug_2026_11_05.md).
+
 <a id="state-05"></a>
 
 ## STATE-05 — Group totals and representative values have different uses
@@ -68,6 +74,14 @@ represents a group, aggregate each eligible member once and rank by the value
 the rule actually requires. Do not count native trait or office bonuses twice.
 Several actors writing one state-level cache will overwrite one another unless
 their contributions are aggregated first.
+
+A total can also contain exclusions specific to one mechanic. A recruitment
+pool may omit actors already contributing through native recruitment, while
+political backing still needs those actors counted once. Reusing the former
+can make a valid role change reduce apparent political strength. Keep the pools
+explicit and test the transition with the same people before and after it.
+The [Chiefdoms pressure implementation](../compatibility/chiefdoms_prominence_2026_11_15.md)
+tests that accounting in source; native target convergence remains a separate check.
 
 <a id="state-06"></a>
 

@@ -36,22 +36,32 @@ event/journal flavour prose.
 
 ## Common combinations
 
-- Cross-country event chains: `SCP` for actor and state ownership; `EVT` for delivery,
-  choices and cleanup.
+- Journal-entry work: follow the [JE skill route](AGENTS.md#read-for-the-task) for
+  design, prose and CMF guidance. Add relevant `UI` rules for widget or tooltip
+  changes; select other topics by the mechanics or lifecycle being changed.
+- For cross-country events, trace who owns each variable and when the recipient
+  must qualify. If the answer determines who joins a diplomatic play, also check
+  who leads the defence. [Scope ownership](Docs/pitfalls/scope.md#scp-03) ·
+  [Event eligibility at dispatch](Docs/pitfalls/events.md#evt-01) ·
+  [Defending subjects and overlords](Docs/pitfalls/conflicts.md#war-04)
 - Country creation callbacks: `LIFE` for readiness, `SCP` for scope boundaries, and
   the affected subsystem, such as `POL` for inherited-law or movement effects.
 - Tooltip changes: `UI` plus the topic governing the effect being previewed.
 - War settlement and restoration: `WAR` and `LIFE`; add `STATE` when restoring
   snapshots or committing outcomes.
+- Global participation/permission restrictions: [SCP-10](Docs/pitfalls/scope.md#scp-10)
+  for negating compound conditions; test unrelated countries and absent story state.
+- Clipped or overlapping journal bars: [UI-08](Docs/pitfalls/presentation.md#ui-08)
+  for the actual inherited renderer, frame margins and overridden spacing.
 - Upstream changes: `UPSTREAM` plus each affected subsystem.
 - Regression tests, crash diagnosis and replay plans: `VERIFY` plus the rule
   describing the failure mechanism.
 
 ## Evidence and version limits
 
-These lessons come from investigations of Victoria 3 1.14.x, including native
-inspection of 1.14.5. Treat implementation details as version-bound: recheck them
-against the target build's script documentation, Vanilla and DLC examples, and
+These lessons come from investigations of Victoria 3 1.14.x and 1.15.0–1.15.2, including
+native inspection of 1.14.5, 1.15.0 and 1.15.2. Treat implementation details as
+version-bound: recheck them against the target build's script documentation, Vanilla and DLC examples, and
 the effective Community Mod Framework (CMF) definitions. Hail Columbia and Gates
 of the Bosphorus provide useful implementation examples, but an example from
 another version is not an API contract. Supporting investigations live in

@@ -1,4 +1,4 @@
-version="0.20.3"
+version="0.21.0"
 tags={
 	"Alternative History"
 	"Historical"
@@ -6,4 +6,4 @@ tags={
 	"Gameplay"
 }
 name="Spes Bona - A Southern Africa Flavour Pack"
-supported_version="1.14.5"
+supported_version="1.15.2"

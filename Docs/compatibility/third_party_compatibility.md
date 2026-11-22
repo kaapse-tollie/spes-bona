@@ -1,10 +1,10 @@
 # Third-Party Compatibility Notes
 
-Target game version: Victoria 3 `1.14.5` Open Beta Update 4, Steam build `25629520`, branch `1.14-openbeta`.
+Target game version: Victoria 3 `1.15.2`, Steam build `26763837`, branch `public`.
 
-Required framework: Community Mod Framework `1.66.0` with patch `sb-1.14.3-r1`. The launcher dependency is pinned to `1.66.*`. Release validation pins exact tag `1.66.0`, commit `807c32ff42b75714a3a0e090c0db3357b5e46ed7`, asset `release-1.66.0.zip`, and SHA-256 `79dd0d434e6ffb617147ad1b91b73e6306139adfffcadf6774eeb32db3a09b8b`.
+Required framework: Community Mod Framework `1.67.9` with patch `sb-1.15.2-r1`. The launcher dependency is pinned to `1.67.*`. Release validation pins exact tag `1.67.9`, commit `9103c9cb4130d46cb18204d588def1266e5c1555`, asset `release-1.67.9.zip`, and SHA-256 `2c702bbf99fd96804366896521832d18519a6a33e94519d49160de0ece7e04ae`.
 
-The [Workshop change log](https://steamcommunity.com/sharedfiles/filedetails/changelog/3385002128) reported “Reverted to 1.13 version” during this beta. Treat the [official GitHub 1.66.0 release](https://github.com/Victoria-3-Modding-Co-op/Community-Mod-Framework/releases/tag/1.66.0) as authoritative until the Workshop payload is unambiguous. Normal validation follows that exact tag and digest, not GitHub's moving latest release.
+Use the verified [official GitHub 1.67.9 release](https://github.com/Victoria-3-Modding-Co-op/Community-Mod-Framework/releases/tag/1.67.9) with the pinned patch. Validation follows that exact tag and digest, not a moving latest release or an assumed Workshop payload.
 
 Spes Bona is a Southern Africa map, population, and flavor overhaul. It is not a light overlay.
 
@@ -34,7 +34,7 @@ The three intentional isolated passable Bechuanaland pockets are allowlisted by 
 
 SB does not use a treaty-history `replace_path`. Its exact-path `00_historical_treaties.txt` shadows Vanilla and changes the Southern African startup rows; uniquely named treaty files remain additive. Another mod changing the same Vanilla filename requires a merged patch.
 
-SB does not override Vanilla 1.14.5's treaty-port inheritance on-action. It also relies on CMF 1.66.0's standard and double-sided journal widgets and ships no competing journal GUI copy.
+SB does not override native treaty-port inheritance. Its 27 JEs use 1.15 outcomes; CMF supplies the active and concluded journal interfaces and renders native dynamic bars. SB sets a six-point gap between stacked scripted bars in CMF’s shared outliner row. SB's bespoke Chiefdom/Prerogative widgets remain separate; see the [JE report](1_15_0_je_implementation.md).
 
 ## Global Keyed Overrides
 
@@ -45,7 +45,7 @@ is unchanged, followed by hidden expiry bookkeeping for NAL's Zulu cultural
 movement only. Mods replacing that helper must retain the scoped record call for
 SB's annexation modifier preservation. No generic modifier copying is provided.
 
-The Cultural Supremacy override is rebased to patched CMF 1.66.0 and Vanilla 1.14.3's explicit-country primary-culture API, while retaining only SB's CAP exclusion. Both CMF and SB carry the API migration; these bodies and all 16 pinned CMF contracts still match the 1.14.5 baseline. The existing patch is retained without new payloads.
+The 24 copied CMF definitions retain their framework hooks and SB rules. CMF supplies the six native secession opt-ins. The patch carries the ideology and progress-bar fixes and merges native party dominance into all eleven CMF party files. [CMF comparison](1_15_2_implementation.md#community-mod-framework)
 
 ## Hail Columbia
 
@@ -55,10 +55,20 @@ This is an explicit deferred release gate, not permission to weaken either mod's
 
 ## Validation Authority
 
-Tiger is useful for advisory parser diagnostics. DP performs the pending 1.14.5 cold launch, fresh-start log audit, and focused engine cases in `1_14_5_runtime_matrix.md` to verify current runtime and load-order behavior. The `1_13_11_runtime_matrix.md` evidence remains historical and separate.
+Installed Tiger 1.19.0 lacks 1.15 outcomes and once-only fields and is not used
+as a target validator. DP performs the fresh all-DLC launch and focused engine
+cases in the [1.15.2 runtime checklist](1_15_2_runtime_matrix.md). Source checks do not
+certify native event timing, GUI rendering or engine load order.
 
-Current dependency: CMF `1.66.0` plus `sb-1.14.3-r1`. The patch manifest and expected installed-tree digest are pinned by the compatibility inventory. See `Docs/compatibility/1_14_5_rebase.md` and `Docs/compatibility/1_14_5_runtime_matrix.md`; earlier matrices remain historical evidence.
+Current dependency: CMF `1.67.9` plus `sb-1.15.2-r1`. The patch manifest and complete
+installed-tree digest are pinned by the compatibility inventory. See the
+[implementation report](1_15_2_implementation.md); older reports remain historical.
 
+## Historical movement-contest note
+
+The following records the earlier implementation, not the current interface
+inventory. Consult the current source inventory and implementation report before
+adding a compatibility patch.
 
 ## Zululand movement contest
 

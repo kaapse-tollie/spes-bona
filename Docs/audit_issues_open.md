@@ -1,20 +1,166 @@
 # Spes Bona Audit Issues — Open
 
-Last refreshed: 2026-10-30
+Last refreshed: 2026-11-22
 
 Approved implementation baseline: `51c98bf32fc9f9049c99f858f5a558bdfde0dffe`
 
-Target: Victoria 3 `1.14.5` Open Beta Update 4, Steam build `25629520`, branch `1.14-openbeta`, core depot manifest `5521822647051867164`
+Current implementation target: Victoria 3 `1.15.2`, Steam build `26763837`, branch `public`, core depot manifest `5942745929618312121`
 
-Dependency baseline: Community Mod Framework `1.66.0`, commit `807c32ff42b75714a3a0e090c0db3357b5e46ed7`, plus `sb-1.14.3-r1`
+Installed dependency: Community Mod Framework `1.67.9`, commit `9103c9cb4130d46cb18204d588def1266e5c1555`, plus `sb-1.15.2-r1`
+
+The [CMF 1.67.9 update](compatibility/cmf_1_67_9_update_2026_11_19.md) moves the four-point bar gap to the shared outliner row. DP’s fresh-campaign visual checks are pending.
+
+The [combined CMF 1.67.3 / game 1.15.1 patch](compatibility/cmf_1_67_3_and_1_15_1_patch_2026_11_11.md)
+imports the reviewed hotfix deltas while retaining SB's Griqua setup and
+performance changes. **DP's [fresh-start hotfix checks](compatibility/1_15_1_runtime_matrix.md)
+remain pending.** Full static validation passes: **15 PASS, two existing WARN, zero FAIL**.
+The [11 November launch review](compatibility/1_15_1_launch_review_2026_11_11.md)
+finds no new compatibility-patch parser/scope errors in the supplied capture.
+Panama's mismatch is present in native map data. The pre-existing unused
+Chiefdoms scope record was subsequently removed with DP's approval after a
+reader audit; all 43 focused tests pass. Visual and gameplay acceptance remains pending.
+The [7 November smoke pass](compatibility/1_15_0_fresh_smoke_bolivia_2026_11_07.md)
+applies to the preceding 1.15.0 target. No save migration is included.
+
+The working-tree port follows the [approved design](compatibility/1_15_0_rebase_design_2026_11_05.md) and [implementation plan](compatibility/1_15_0_implementation_plan.md). Release version is `0.21.0`; source implementation does not certify runtime compatibility. The preceding 1.14.5/CMF 1.66.0 baseline remains recorded in its historical reports.
+
+## Cape Colonial Affairs playtest — 19 November 2026
+
+`PLAY115-08` · **Source and autosaves reviewed. Player replay pending.** DP reports
+difficulty with CAP's usual Frontier Colonisation enactment in 1.15.x.
+
+1.15 added Internal Colonisation (`law_internal_colonization`) to Colonial Affairs.
+It requires Colonisation technology, and CAP meets its colonial country-type
+condition. Vanilla Colonialist **approves** Internal Colonisation and Colonial
+Exploitation and is **neutral** on Frontier Colonisation and No Colonial Affairs.
+The installed 1.15.2 ideology file matches the 1.15.0 depot hash. SB's pre-1.15
+Colonialist mirror at `1a3d7c3` already lists Frontier as neutral. The exact
+1.14.5 Vanilla stance remains unverified. [Paradox 1.15 release notes](https://steamcommunity.com/games/529340/announcements/detail/680766201707627232) · [1.15.0 depot record](compatibility/evidence/1_15_0_implementation/current_target.json)
+
+CAP's Imperial Establishment and colonial Industrialists use Vanilla Colonialist.
+Internal gives them a preferred alternative and would make a subsequent switch
+to Frontier less attractive. The Frontier Settlers and Eastern Cape Separatist
+League still strongly favour Frontier. Three 1.15.2 observer saves from May to
+October 1842 show No Colonial Affairs active and Per-Capita Taxation in progress.
+The Imperial Establishment was in government and the Frontier Settlers were
+outside it in the May save. The cause of the player enactment issue remains open.
+[Cape interest groups](../common/scripted_effects/sb_interest_group_identity_effects.txt) · [SB ideology stances](../common/ideologies/sb_ideologies.txt)
+
+Replay a fresh player CAP start and compare Frontier's eligibility and support
+from the opening No Colonial Affairs and after Internal. Record the cabinet,
+interest-group and movement support, and whether enactment can start and pass.
+Review where Internal should count in Cape settler pressure and the balance bar,
+whose direct law checks still list Frontier, Resettlement and Exploitation.
+[Frontier eligibility](../common/laws/00_sb_governance_principles.txt) · [Settler pressure](../common/on_actions/sb_cape_on_action_handlers.txt) · [Cape balance bar](../common/scripted_progress_bars/sb_progress_bars.txt)
+
+## Griqualand East playtest — 14 November 2026
+
+`GLE-20261114-01`: **source correction applied; DP replay pending**. GLE's existing
+founding candidates and five-province transfer footprint now accept Cape-owned
+as well as Xhosa-owned land. Other owners remain excluded. Replay acceptance
+from before the petition is resolved; this does not repair an already completed
+settlement. See the [fix and verification record](compatibility/gle_natal_playtest_2026_11_14.md).
+DP clarified that Natal's reported extra +20% bonuses came from Farmers and
+Extraction Economy; its sugar-only trait remains unchanged and needs no fix.
+
+## Thirteen Chiefdoms playtest — 14 November 2026
+
+`ZUL-CHIEFS-20261114`: **source corrections applied; DP replay pending**.
+Five January–May 1886 autosaves confirm frozen container timers and establish
+ZUL's weekly tribute/budget figures. The [investigation and checks](compatibility/chiefdoms_playtest_2026_11_14.md)
+record the JE-age clock, movement Prominence totals, 15% temporary tribute and
+withdrawal from the current Boer/NRP undertaking on joining Natal's overlord.
+DP approved halving Chiefdoms bribes after the scaling comparison; the reduction
+is applied to new quotes only. Domestic court patronage prices are unchanged.
+The later [May–September 1889 follow-up](compatibility/chiefdoms_followup_2026_11_14.md)
+finds Dinuzulu alive in exile and diagnoses the obsolete flag blocking claimant
+selection. It adds successor returns without repeat rewards, explicit agitator
+careers, Natal AI weights, a whole-day review countdown and stronger uSuthu
+opposition to Chiefly Council. The earlier disappearance observation and
+reported 81% discrepancy remain unproven causes; no character is recreated or
+save rewritten. The 100% endpoint remains unchanged.
+15 November: DP approved [full political backing and capped target pressure](zulu_chiefdoms_prominence_design_2026_11_15.md).
+Source now applies 0.1 percentage point per royal prominence advantage, bounded
+at ±30 points. Dynamic AI requires ≥20% Natal Zulu radicals for claimant return,
+and that unrest plus the current claimant actually returned/present for refugee
+offloading. Strict Historical retains its three-year delay. Source checks and
+remaining engine gates are in the [implementation report](compatibility/chiefdoms_prominence_2026_11_15.md).
+
+## Thirteen Chiefdoms refinement — 10 November 2026
+
+`ZUL-CHIEFS-20261110`: **source implemented; DP engine acceptance pending**.
+The [current record](zulu_thirteen_chiefs_implementation_2026_11_10.md) separates
+partition from Prerogative, adds the one ten-year review/event-restoration model,
+scoped competing-uprising restriction, payer-G bribery and persistent shared house
+views. [Every runtime row remains pending](zulu_thirteen_chiefs_runtime_matrix_2026_11_10.md).
+The native-war alternative is explicitly test-only until exclusion of all foreign
+regular participants is demonstrated. No broader IR or country-profile rollout is
+included; prior closed playtests do not certify the new path.
 
 ## Status
 
-This register tracks **open work only**: the five machine-readable deferred gates and the separate content item below, the remaining FA-round items, the OB1 follow-up findings, playtest follow-ups, and content-design decisions awaiting DP. Closed tickets from every audit round live in [audit_issues_completed.md](audit_issues_completed.md).
+This register tracks **open work only**: the 1.15 follow-ups and selected extensions, the five machine-readable deferred gates and the separate content item below, the remaining FA-round items, the OB1 follow-up findings, playtest follow-ups, and content-design decisions awaiting DP. The 1.15.0 core rebase is closed; the 1.15.1 hotfix awaits DP runtime acceptance; accepted core tickets and other closed audit items live in [audit_issues_completed.md](audit_issues_completed.md).
 
-The [2026-10-13 checkpoint review](compatibility/checkpoint_review_2026_10_13.md) records four unit-test failures, one error, and five historical skips, plus compatibility drift against the installed 1.14.5 game. The 0.20.2 rebase resolves those baseline/bookkeeping issues; rebase results and explicitly conditional historical checks are recorded in the [1.14.5 rebase report](compatibility/1_14_5_rebase.md). That validation recorded 15 PASS, two WARN and zero failed gates. The [17 October spawn audit](compatibility/boer_spawn_setup_2026_10_17.md) now records one unrelated unit-test failure, also reported by the localisation gate: the existing `.050` Pretorius spelling correction differs from its reviewed-text baseline. Engine certification remains pending.
+The [2026-10-13 checkpoint review](compatibility/checkpoint_review_2026_10_13.md) records four unit-test failures, one error, and five historical skips, plus compatibility drift against the installed 1.14.5 game. The 0.20.2 rebase resolves those baseline/bookkeeping issues; rebase results and explicitly conditional historical checks are recorded in the [1.14.5 rebase report](compatibility/1_14_5_rebase.md). That validation recorded 15 PASS, two WARN and zero failed gates. The [17 October spawn audit](compatibility/boer_spawn_setup_2026_10_17.md) recorded one unrelated unit-test failure, also reported by the localisation gate: the existing `.050` Pretorius spelling correction differed from its reviewed-text baseline. That historical review mismatch is resolved by the 7 November approval below.
 
-Static success is not runtime certification. Strict release certification remains contingent on every engine-only case in `Docs/compatibility/1_14_5_runtime_matrix.md`; every unrun row remains `Engine pending`. Earlier runtime matrices remain historical evidence.
+Static success is not runtime certification. Core acceptance does not certify every engine-only case in the [1.15 runtime matrix](compatibility/1_15_0_runtime_matrix.md); unrun and unitemised checks remain recorded for release verification. Earlier runtime matrices remain historical evidence.
+
+DP's [1870 follow-up](compatibility/1_15_0_playtest_1870_2026_11_07.md) records
+observational passes for the resumed campaign's crash, journal/war, once-only
+and map/resource checklist, with no SB errors seen. The subsequent fresh-start
+smoke test also passes; Bolivia's HQ warning coincides with complete Chilean
+occupation of its coast, with native port routes preserved. Two SB encoding
+warnings received BOM-only corrections. These observations do not claim
+individual coverage of every stress case; unattributed diagnostics are not
+established SB regression failures.
+
+**Core rebase closed by DP, 7 November 2026.** DP approved the
+[localisation review packet](compatibility/1_15_0_localisation_gate_review_2026_11_07.md):
+three baseline entries were reconciled and one stale queue row removed, with no
+prose or marker changes. The full validator reports **15 PASS, two WARN, zero
+FAIL**. See the [closure record](compatibility/1_15_0_closure_2026_11_07.md).
+Deferred release gates, targeted engine coverage and diagnostic follow-ups below
+remain separate; no release, commit or version bump is included.
+
+## Victoria 3 1.15 — remaining verification and secondary extensions
+
+**Core implementation accepted and closed by DP, 7 November 2026.** See the [closure record](compatibility/1_15_0_closure_2026_11_07.md); the six native once-only migrations are included in the accepted port. The rows below retain separate verification, diagnostic and extension work.
+The [extension priority discussion](compatibility/1_15_0_extension_priorities_2026_11_07.md)
+records DP's selection of the Zulu court/institutions glossary pilot first.
+The four-term pilot is now implemented; the remaining sequence and later designs are provisional;
+the agreed later destinations remain unchanged.
+The [D1–D8 register](compatibility/1_15_0_modding_digest_review_2026_11_05.md#decisions-to-settle-when-building-the-plan)
+records authority and status; the [design](compatibility/1_15_0_rebase_design_2026_11_05.md)
+holds evidence and boundaries. `EXT115` is the first extension tranche after
+the core rebase. Deferred tickets select timing and investigation scope, not
+unreviewed mechanics or immediate implementation.
+
+| ID | Status / timing | Work and acceptance boundary |
+| --- | --- | --- |
+| `PLAY115-01` | Source correction applied; engine replay pending | Native `paralegal_discrimination.1` calls country-only AI predicates from state scope. The exact-path event shadow adds only two owner wrappers; native byte parity and AI-path regressions pass. Restart and replay before the event's once-only state has been consumed. See the [six-month investigation](compatibility/1_15_0_first_six_months_2026_11_05.md#paralegal-discrimination-ai-scope). |
+| `PLAY115-02` | HQ warning investigated; runtime cause open | Riograndense naval HQ 634 logs no port travel position between the May and June saves; country 296 is eliminated on 10 May and its HQ is absent by June. Relevant port/history/spline/graph sources match Vanilla. Wartime control or HQ retirement is a hypothesis; retain an immediate replay save if the warning recurs with a controlled port. No speculative map change. See the [HQ evidence and limits](compatibility/1_15_0_first_six_months_2026_11_05.md#riograndense-naval-hq). |
+| `CRASH115-03` | DP observed pass (resumed); original cause unresolved | The 14:01 crash after an observer toggle fails in the native investment-pool modifier-name tooltip, separate from law/JE creation. No direct SB/CMF override or bad BST investment-pool source was found. Preserve the April–August 1855 saves; distinguish ordinary hover from both observer transitions and existing-save state. No speculative gameplay/UI patch. See [evidence and focused replay](compatibility/1_15_0_observer_crash_2026_11_07.md). |
+| `PLAY115-07` | No established SB attribution; separate diagnostic follow-up | DP confirms a resumed campaign, reports chat checks 3–6 as fine and saw no SB-related log errors. The January 1875 intake retains treaty, character-root AI and naval diagnostics, with no established SB cause. Preserve them for source/caller attribution rather than counting them as SB rebase failures. See [accepted observations and subsequent smoke pass](compatibility/1_15_0_playtest_1870_2026_11_07.md). |
+| `RES115-01` | Deferred; resource audit after native-copper port | Revisit copper geology/extraction, technology/discovery timing, state allocation and economic balance; audit all lead proxies. Northern Cape's eight confirmed proxy lead levels were removed in phase one. Hereroland has a real lead rationale; Namaqualand's two lead levels remain an explicit uncertainty. Reconcile research and gameplay totals without duplicating native parent capacity. Keep the separate `RES-DISC-01` gold/oil semantics issue visible. |
+| `CMF115-01` | Upstream debug-only defect; no live SB patch | CMF’s orphan `com_debug.2` example leads to an undefined combined timeout conclusion key in `com_international_situation.txt`. No SB caller exists; preserve the minimal patch and revisit only if that example becomes live. See the [bounded CMF JE audit](compatibility/evidence/1_15_0_journal_implementation/cmf_source_audit.json). |
+| `EXT115-02` | Four-term pilot implemented and statically verified; DP rendering/prose review and wider rollout pending | Amabutho, amaKhosi, uSuthu and Umkhosi now have native glossary definitions and one body-text link each, following the [brief](research/zulu_glossary_pilot_2026_11_07.md), [main review / Vanilla comparison](research/zulu_glossary_review_2026_11_07.md) and DP's implementation instruction. See the [implementation and verification record](compatibility/1_15_0_zulu_glossary_pilot_2026_11_07.md). Preserve existing labels and review markers; generic uSuthu/“Great Chiefs” naming questions remain separate. Select later historical scopes through the [scope-owner workflow](compatibility/1_15_0_rebase_design_2026_11_05.md#glossary-workflow). |
+| `EXT115-03` | Deferred; priority JE extension | Evaluate JE scaling modifiers against manual modifier maintenance. Preserve numerical effects, scope, stacking and cleanup; no automatic performance claim. |
+| `EXT115-04` | Deferred; JE extension | Add useful JE map modes after selecting information/legend design. Verify foreign ownership, split states and actual rendering. |
+| `EXT115-05` | Deferred; priority JE extension | Use scripted progress-bar conditions to explain real progress contributors. Verify arithmetic parity, conditional visibility and tooltips. |
+| `EXT115-06` | Deferred; JE extension | Scripted button costs/icons/tags and selected uses such as proclaiming an heir. Displayed `cost` neither checks nor charges resources; automation is a separate behaviour decision. Verify availability, payment, repeated clicks and resulting state. |
+| `EXT115-07` | Deferred investigation; JE extension | Objective-associated JEs: establish where previews help and whether an objective is appropriate. Association alone does not activate content. |
+| `EXT115-08` | Deferred; secondary extension | Regnal numbers, especially ZUL. Reconcile historical numbering and existing naming/succession before adoption; verify repeated names and display. |
+| `EXT115-09` | Deferred investigation; secondary extension | Hidden modifiers for AI-versus-AI historical/dynamic bookkeeping. Identify appropriate hidden effects without obscuring consequential player information. |
+| `EXT115-10` | Deferred investigation; secondary extension | Regional exile pools, potentially for “ZUZ” as DP wrote. Confirm intended actor/tag before design; review access, return, country loss and character-role interactions. |
+| `EXT115-11` | Deferred; JE extension grouping | SB currently uses native Historical Content, Global International Situations and Expeditions groups. Design useful SB thematic groups while preserving country/shared contexts, activation and participation; verify ordering, visibility and illustrations. See [1850 grouping note](compatibility/1_15_0_playtest_1850_2026_11_07.md#journal-groups--ext115-11). |
+| `EXT115-12` | Deferred investigation; Prerogative JE extension | Review Russia's Emperor and Autocrat group, widgets and linked entries for lessons applicable to SB's court design. This records an example to investigate, not adoption of its mechanics. See [reference and scope](compatibility/1_15_0_playtest_1850_2026_11_07.md#russia--prerogative-extension--ext115-12). |
+| `CHAR115-01` | Deferred; Characters, Companies, IDEOLOGY rework | Dynamic institution names and character-role backgrounds. Tentatively `v0.23.*`; follow the thematic patch if its version changes. This does not defer schema fixes required for 1.15 compatibility. |
+| `RC115-01` | Deferred; `v1.0.0.rc` | Weighted music if suitable Creative Commons material is found. Record exact licences/attribution and mod redistribution rights, then verify weights and playback. |
+| `RC115-02` | Deferred; `v1.0.0.rc` | Weighted loading screens after SB artwork exists; verify selection and presentation. |
+
+Power bloc effects and the strait grievance multiplier are explicitly skipped /
+N/A in the design inventory; they are not open work tickets. None of these
+entries closes the existing performance, map/spline or historical content gates.
 
 ## Major content refactor TODO — unified South African Republic (ZAR)
 
@@ -45,6 +191,18 @@ DP should collect comparable timings/profiler output at a fixed game speed and m
 **`IR-20261030-01` — Deferred design TODO by DP on 30 October 2026: Institutional Reach expansion.** [Regional reform research](institutional_reach_regional_reform_research_2026_10_30.md) evaluates Swazi, Gaza and potentially Basotho, research penalties and the proposed IR100/technology arithmetic. Revisit the proposed IR-scaled Society/Production research penalties (up to −25%), technology contributions and country-specific reform objectives together. Exact values, technology-count convention, penalty stacking and regional rollout remain undecided; retain the current IR model for now and do not enable Zulu claimant helpers for other tags. The broader balance pass below remains open.
 
 **`BST-20261030-01` — Deferred investigation TODO by DP on 30 October 2026: Lesotho starvation after the mountain retreat.** Retain a **pre-annexation** retreat/famine checkpoint. The latest five autosaves are already post-annexation. Inspect the 5,000-person single-Pop retreat transfer and conditional 14-level conscription assistance against remaining agricultural employment, subsistence capacity and food supply. Neither missing refugees nor insufficient base population is established by the retained saves. Diagnose the cause before choosing population, arable-land or military-support changes; no balance change is authorised by this entry.
+
+**1 November follow-up — investigation reopened by DP; next trial selected, not implemented.** The [new five-save investigation](compatibility/bst_lesotho_famine_2026_11_01.md) covers July–November 1841 **before annexation**, with The Mountain Refuge active. Lesotho loses 874 people net; maize employment stays at 20. Native inspection confirms that Serfdom's 50% protected-subsistence-employment floor blocks recruitment from subsistence at only 10.85% staffing. Vacant arable capacity and existing farmer qualifications do not bypass that restriction. Conscription is inactive in these saves. The selected proposal is a BST-owned Drakensberg hiring exemption for the existing 60-month refuge period, plus a 24-month +0.50 Food Security bridge; retain the current population transfer for the first comparison. A 10–20% mixed-household transfer remains a separate option. Original saves/logs are archived under git-ignored `generated/diagnostics/bst_lesotho_famine_2026_11_01`; source hashes, extracted observations and native evidence are retained with the report. DP still needs a pre-retreat checkpoint and, after implementation, hiring/output, relief-expiry and ownership-loss tests. This does not reopen the deferred IR expansion or change the baseline population setup.
+
+**1 November clarification — second proposal, superseded by DP's decision below:** DP highlighted that subsistence farms themselves supply grain. The [second proposal](compatibility/bst_lesotho_famine_2026_11_01.md#revised-first-trial--actual-food-production) replaced the proposed direct Food Security bridge with **+0.50 subsistence-farm throughput**, alongside the local −0.50 protected-employment offset, both for 60 months. At unchanged saved staffing, this increases subsistence grain from 1.17212 to about 1.66050. It would have kept the 5,000-person transfer unchanged and evaluated food supply, hiring and expiry before adding further relief. This package was not implemented; retain it as design history alongside the diagnostic evidence.
+
+**1 November decision — implemented, engine replay pending:** DP rejected the extra hiring exemption and selected **only +50% subsistence-farm throughput for ten years**. The Mountain Refuge now has that sole effect; its former −15% goods-input and +10% in-kind subsistence bonuses are removed. The existing country-scope grant uses `years = 10`. No population, Serfdom, Food Security or Mountain King changes. This is the authoritative implementation choice; the earlier packages above are historical proposals. Verify actual grain output, starvation and expiry from before the retreat grant. See the [implemented decision](compatibility/bst_lesotho_famine_2026_11_01.md#implemented-decision--throughput-only-for-ten-years).
+
+**1 November playtest follow-up — Shepstone-equivalent bonus implemented:** DP reports the throughput-only trial is insufficient and requests Shepstone's subsistence bonus. The Mountain Refuge now additionally has **+30% Subsistence Output**, exactly matching `amendment_sb_shepstone_system`, alongside +50% subsistence-farm throughput for the same ten years. This supersedes the earlier sole-effect restriction; the additive interpretation was stated before implementation. Shepstone's tax, employment-protection, arable-reservation and migration effects are not copied. Check in-kind income, food affordability and starvation in the next replay; recovery remains unverified. See the [current follow-up](compatibility/bst_lesotho_famine_2026_11_01.md#current-follow-up--match-shepstones-subsistence-bonus).
+
+**1 November current trial — balanced refugee workforce implemented; DP replay pending:** DP subsequently disabled the throughput line and reports famine with only +30% in-kind Subsistence Output. After the [income replay](compatibility/bst_subsistence_income_replay_2026_11_01.md), DP approved making the existing 5,000-person refugee cohort **2,500 workers and 2,500 dependants**. The [replacement transfer](compatibility/bst_refuge_workforce_ratio_2026_11_01.md) conserves total people, retains religion, native destination-profession rules and selected-donor wealth/literacy, and prevents duplicate delivery. Native removal/creation still resets some Pop metadata; this is an explicit trial, not a migration clone. The +30% income bonus and ten-year duration remain, and the throughput line stays commented out. No extra hiring, law, military or food changes. Replay from before the retreat to verify the arrival increment and subsequent employment/starvation; this does not close the famine investigation.
+
+**3 November DP replay — balanced-workforce trial accepted:** DP reports that the trial works. The immediate Lesotho famine blocker is resolved in the reported playtest; retain the 5,000-person 50:50 arrival cohort and current ten-year +30% Subsistence Output bonus. No further relief increase is requested. Detailed population accounting, metadata preservation and expiry checks were not individually reported; keep those under the broader pre-release balance verification, without treating them as new failures or requiring another immediate replay. See the [playtest follow-up](compatibility/bst_refuge_workforce_ratio_2026_11_01.md#playtest-follow-up--3-november-2026).
 
 ## Major pre-release balance TODO — Bantu starting positions
 
@@ -185,13 +343,13 @@ python3 -B tools/check_override_inventory.py \
 git diff --check
 ```
 
-The direct checker must report zero drift against build `25629520`, branch `1.14-openbeta`, core depot manifest `5521822647051867164`, and CMF `1.66.0` plus `sb-1.14.3-r1`. The suite must also verify the depot delta, structured spline merge, localisation review boundaries and queue, subject/war contracts, AI-incorporation overrides, naval-port connectivity, delayed-event lifecycle, changed-file BOM state, and absence of stale live-baseline labels.
+The direct checker must report zero drift against build `26591675`, branch `public`, core depot manifest `5537848810174326853`, and CMF `1.67.9` plus `sb-1.15.1-r2`. The suite must also verify the depot delta, structured spline merge, localisation review boundaries and queue, subject/war contracts, AI-incorporation overrides, naval-port connectivity, delayed-event lifecycle, changed-file BOM state, and absence of stale live-baseline labels.
 
-Tiger currently advertises older schema support, so any Victoria 3 `1.14` Tiger diagnostic is advisory unless its schema has been updated. Repository semantic gates remain mandatory. A test that actually fails is a blocker; it cannot be relabelled `Engine pending`.
+Installed Tiger 1.19.0 lacks 1.15 JE outcomes and native once-only fields; it is not run as a target validator. See the [schema evidence](compatibility/evidence/1_15_0_implementation/tiger_schema.json). Repository semantic gates remain mandatory. A test that actually fails is a blocker; it cannot be relabelled `Engine pending`.
 
 Release support becomes strict only after every runtime-matrix row is recorded with a fresh campaign on the target build, exact command/save/load order, UTC timestamp, and rotated-log hashes, and fresh logs contain no new SB-authored errors.
 
-Current dependency: CMF `1.66.0` plus `sb-1.14.3-r1`. The patch manifest and expected installed-tree digest are pinned by the compatibility inventory. See `Docs/compatibility/1_14_5_rebase.md` and `Docs/compatibility/1_14_5_runtime_matrix.md`; earlier matrices remain historical evidence.
+Current dependency: CMF `1.67.9` plus `sb-1.15.1-r2`. The patch manifest and expected installed-tree digest are pinned by the compatibility inventory. See the [dependency report](compatibility/cmf_1_67_9_update_2026_11_19.md) and the [game hotfix matrix](compatibility/1_15_1_runtime_matrix.md).
 
 
 ## Resource discovery follow-up — 18 October 2026

@@ -4,6 +4,26 @@ Closed tickets from every audit round, newest first. Nothing here requires actio
 as provenance for what was found and how each item was resolved. Open work lives in
 [audit_issues_open.md](audit_issues_open.md).
 
+## Victoria 3 1.15.0 core rebase — 2026-11-07
+
+**Closed by DP after approval of the remaining localisation reconciliation.**
+The [closure record](compatibility/1_15_0_closure_2026_11_07.md) records the full
+validation pass, resumed gameplay and fresh-start smoke evidence. These tickets
+are accepted core work; unitemised engine stress cases and separate diagnostic
+or release follow-ups remain in the runtime matrix and open register.
+
+| ID | Outcome |
+| --- | --- |
+| `RB115-01` | **Closed — core rebase accepted.** Pinned Victoria 3 1.15.0 and CMF 1.67.2 + `sb-1.15.0-r2`; map, native resources, JEs, API changes and reviewed localisation reconciled. Full validator: 15 PASS, two WARN, zero FAIL. Release version remains 0.20.3. See the [implementation record](compatibility/1_15_0_implementation.md). |
+| `LAUNCH115-01` | **Closed — launch corrections accepted.** Harbour/coastal-graphics, JE schema, survey parsing and encoding fixes retained; later fresh-start smoke passes. The two subsequent BOM-only corrections await confirmation at the next ordinary restart. See the [fresh-smoke evidence](compatibility/1_15_0_fresh_smoke_bolivia_2026_11_07.md). |
+| `PLAY115-03` | **Closed — preview correction accepted.** Cape shows route-specific event/effect previews; Caledon uses native single-reward presentation. DP observed pass in resumed gameplay. See the [correction report](compatibility/1_15_0_playtest_1850_fixes_2026_11_07.md). |
+| `PLAY115-04` | **Closed — context correction accepted.** Prerogative previews tolerate a missing JournalEntry context while live widgets retain country-specific titles. DP observed pass; see the [correction report](compatibility/1_15_0_playtest_1850_fixes_2026_11_07.md). |
+| `PLAY115-05` | **Closed — Natal timers accepted.** Secure Natal / Defend Natal enforce after holding the objective, with existing settlement contracts preserved. DP observed pass; see the [correction report](compatibility/1_15_0_playtest_1850_fixes_2026_11_07.md). |
+| `PLAY115-06` | **Closed — Natalia participation guard accepted.** The marked ZUL–SWZ play excludes Natalia from SWZ's defending side while retaining ordinary diplomacy. DP observed pass; see the [correction report](compatibility/1_15_0_playtest_1850_fixes_2026_11_07.md). |
+| `CRASH115-01` | **Closed — institutional readiness guard accepted.** Direct law callbacks cannot activate the institutional JE before country readiness. Source regressions and subsequent DP gameplay pass; the exact historical split replay was not itemised. See the [crash evidence](compatibility/1_15_0_crash_2026_11_07.md). |
+| `CRASH115-02` | **Closed — wider law-callback corrections accepted.** Thirteen additional JE-addition sites defer unfinished-country work and recheck eligibility/duplicates, preserving ready-country timing. DP observed law/JE pass; other native controls were not individually reported. See the [audit and coverage](compatibility/law_callback_readiness_2026_11_07.md). |
+| `EXT115-01` | **Closed within the core rebase.** Six country-local once-only migrations preserve shared/resettable state and intended effect timing. DP observed pass; queue, cancellation, save/load and retag stress cases were not individually itemised. No speed claim; `FA-26R` eligibility timing remains separate. See the [source inventory](compatibility/evidence/1_15_0_implementation/once_only_inventory.json) and [runtime coverage](compatibility/1_15_0_runtime_matrix.md). |
+
 ## Playtest correction — 2026-10-17
 
 | ID | Outcome |

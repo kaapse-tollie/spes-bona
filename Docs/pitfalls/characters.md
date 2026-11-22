@@ -104,3 +104,31 @@ visitor therefore needs explicit registry/home removal, not just
 `transfer_character`, when the design removes their political following.
 Source-executed fixtures reproduced the residual house weight; preserve the
 separate intended treatment of royal exiles.
+
+<a id="char-11"></a>
+
+## CHAR-11 — A persistent house is not the office its head holds
+
+Reassigning a royal household ID on every accession changes the represented
+constituency and can duplicate a junior claimant's own weight. Keep authored
+house identity separate from ruler/heir roles; assign explicit founders before
+inheriting membership. Count living members once through the selected head.
+Changing that head changes which recorded commitments represent the total,
+not the members' private records. Across a split, preserve the actual home
+country and place principal contenders explicitly so neither belongs to both
+war rosters. Source-executed house and snapshot tests establish accounting;
+native succession, character transfer and shared GUI still require replay.
+
+<a id="char-12"></a>
+
+## CHAR-12 — Character maintenance must follow the active story
+
+Moving a succession-dependent story out of an institution does not update the
+guards inside its shared character helpers. A live monthly caller can still do
+nothing if selection requires the former institution's flag. Trace both the
+caller and internal gates; retain life, adulthood, retirement and renunciation
+requirements. Test an active successor story after the original institution
+ends, with a dead claimant and a newly eligible heir. The
+[partition follow-up](../compatibility/chiefdoms_followup_2026_11_14.md) reproduces
+the failed selection in source fixtures; native return, role attachment and
+mortality remain separate engine checks.

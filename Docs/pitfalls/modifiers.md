@@ -4,7 +4,7 @@ Read when: Durations, decay, repeated grants or modifier cleanup.
 
 [Topic index](../../common_pitfalls.md) · [Repository instructions](../../AGENTS.md)
 
-Engine-specific claims concern investigated Victoria 3 1.14.x builds. Recheck
+Engine-specific claims concern investigated Victoria 3 1.14.x and 1.15.1 builds. Recheck
 against the target build and preserve each rule's evidence limits; see the
 [version and evidence guidance](../../common_pitfalls.md#evidence-and-version-limits).
 
@@ -15,10 +15,19 @@ against the target build and preserve each rule's evidence limits; see the
 Country
 event `duration` is measured in months in the inspected build. Script duration
 arithmetic uses 30-day months and 365-day years; calendar boundaries and pulse
-counts are different. Use an actual timed marker for an elapsed-time deadline,
-and define precedence when success and expiry coincide. Date comparisons use
-`game_date`; the plausible-looking `current_date` was rejected by the target
-validator.
+counts are different. Use a native age value or a timed marker on an object whose
+expiry is established, and define precedence when success and expiry coincide.
+Date comparisons use `game_date`; the plausible-looking `current_date` was
+rejected by the target validator.
+
+A duration parsing and appearing in a save does not establish that its holder
+participates in native expiry. In the [1.15.1 container investigation](../compatibility/chiefdoms_playtest_2026_11_14.md#review-clock),
+two script-container counters stayed unchanged across 120 days while country
+counters decayed. Both a displayed deadline and a deduplication receipt can
+freeze this way. Prefer the JE's native `journal_entry_age` for a JE-age deadline;
+compare repeated saves before trusting a custom holder's timers. Test the old
+frozen state too. Static fixtures that manually remove the marker do not prove
+engine expiry, and source corrections still require native replay.
 
 <a id="mod-02"></a>
 

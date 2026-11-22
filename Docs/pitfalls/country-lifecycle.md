@@ -4,7 +4,7 @@ Read when: Country creation, annexation, restoration, inheritance or creation ca
 
 [Topic index](../../common_pitfalls.md) · [Repository instructions](../../AGENTS.md)
 
-Engine-specific claims concern investigated Victoria 3 1.14.x builds. Recheck
+Engine-specific claims concern investigated Victoria 3 1.14.x, 1.15.0 and 1.15.2 builds. Recheck
 against the target build and preserve each rule's evidence limits; see the
 [version and evidence guidance](../../common_pitfalls.md#evidence-and-version-limits).
 
@@ -19,6 +19,23 @@ guard the actual owner and use the ready-country handoff. In the inspected
 build, `is_country_alive` requires a non-zero state count. Static callback
 fixtures must include the incomplete phase and cannot replace engine replay;
 see the [creation-order investigation](../compatibility/zulu_contested_crown_2026_10_27.md#follow-up-rebel-country-creation-crash--guarded-replay-pending).
+
+Trace direct database callbacks as well as on-actions: guarding
+`on_law_activated` does not protect a law's separate `on_activate`. When both
+enter the same helper, guard its current-country entry and retain the existing
+completed-country retry. Test both actual callers, the pre-history phase and
+the ready-country handoff. The [1.15 direct-law crash](../compatibility/1_15_0_crash_2026_11_07.md)
+reconfirmed the creation order; the shared guard passes source fixtures but
+awaits engine replay. `is_country_alive` excludes this pre-land phase, not every
+possible incomplete native object elsewhere in country creation.
+
+If no existing ready-country handoff owns the skipped JE, preserve delivery with
+a bounded deferred call and recheck the current law/story eligibility and any
+existing entry. Do not make scheduling depend on readiness that is known to be
+false at dispatch. Take a delivery reservation at the appropriate phase so a
+cancelled attempt cannot block a later valid activation. The
+[wider law-callback audit](../compatibility/law_callback_readiness_2026_11_07.md)
+covers these source contracts; native scheduling and save/load remain unverified.
 
 <a id="life-02"></a>
 
@@ -40,6 +57,12 @@ characters, movements and other objects despite stored references to them.
 Preserve required living actors before their owning country disappears and
 restore them after the receiving country is ready. Capture ruler and heir
 before moving either, because succession can change the next accessor.
+
+A reversible enforcement needs a receipt for the people actually moved. Refresh
+their identities at enforcement, since succession can occur after play setup;
+on reversal restore that pair rather than an unenforced, stale opening snapshot.
+Source-executed annexation fixtures can verify this ownership boundary, but the
+native callbacks and restored roles still require replay.
 
 <a id="life-04"></a>
 
@@ -67,6 +90,13 @@ Missing explicit
 technology grants in a helper do not prove missing research. Compare completed
 technologies, active research, the creation origin and the founding date.
 A fixed technology floor can erase the intended inheritance behaviour.
+
+In 1.15.2, `create_country` checks whether the new country can enact its
+origin's laws before it receives land. A geographical requirement can therefore
+cause the engine to select another law in the same group. For a required
+founding law, test the tag's eligibility before land transfer and run the
+founding effect with an alternate law already active. Replay from before
+formation and check the active law's activation date.
 
 <a id="life-07"></a>
 

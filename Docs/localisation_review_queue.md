@@ -11,6 +11,38 @@ This is the pending review register for new or changed non-event/JE localisation
 
 ## Pending keys
 
+| File | Keys | Context |
+| --- | --- | --- |
+| `localization/english/sb_zulu_glossary_l_english.yml` | `glossary_sb_amabutho` | Zulu glossary pilot title; pending DP prose/render review. |
+| `localization/english/sb_zulu_glossary_l_english.yml` | `glossary_sb_amabutho_desc` | Zulu glossary pilot: age regiments, military/labour service and women's participation; pending DP prose/render review. |
+| `localization/english/sb_zulu_glossary_l_english.yml` | `glossary_sb_amakhosi` | Zulu glossary pilot title; pending DP prose/render review. |
+| `localization/english/sb_zulu_glossary_l_english.yml` | `glossary_sb_amakhosi_desc` | Zulu glossary pilot: chiefs/rulers and the singular inkosi; pending DP prose/render review. |
+| `localization/english/sb_zulu_glossary_l_english.yml` | `glossary_sb_usuthu` | Zulu glossary pilot title; pending DP prose/render review. |
+| `localization/english/sb_zulu_glossary_l_english.yml` | `glossary_sb_usuthu_desc` | Zulu glossary pilot: Cetshwayo's following and its continuation under Dinuzulu; pending DP prose/render review. |
+| `localization/english/sb_zulu_glossary_l_english.yml` | `glossary_sb_umkhosi` | Zulu glossary pilot title; pending DP prose/render review. |
+| `localization/english/sb_zulu_glossary_l_english.yml` | `glossary_sb_umkhosi_desc` | Zulu glossary pilot: nineteenth-century royal first-fruits festival; pending DP prose/render review. |
+| `localization/english/sb_1_15_journal_conclusions_l_english.yml` | `sb_bechuanaland_british_conclusion` | 1.15 outcome conclusion; awaiting DP prose/render review. |
+| `localization/english/sb_1_15_journal_conclusions_l_english.yml` | `sb_bechuanaland_boer_swa_conclusion` | 1.15 outcome conclusion; awaiting DP prose/render review. |
+| `localization/english/sb_1_15_journal_conclusions_l_english.yml` | `sb_bst_oranje_conclusion` | 1.15 outcome conclusion; awaiting DP prose/render review. |
+| `localization/english/sb_1_15_journal_conclusions_l_english.yml` | `sb_bst_basotho_conclusion` | 1.15 outcome conclusion; awaiting DP prose/render review. |
+| `localization/english/sb_contested_crown_l_english.yml` | `sb_court_coalition_recruitment` | 30 October: attraction-only modifier for the one-state recruitment test build; native effects show its current strength. |
+| `localization/english/sb_court_dunn_l_english.yml` | `sb_court_victors_avenged` | 31 October: +10 ruler Popularity for five years after executing Dunn; native effect preview. |
+| `localization/english/sb_court_dunn_l_english.yml` | `sb_court_dunn_armed_following` | 31 October: five-year +10 Prominence for a named ally receiving Dunn's shipment; refreshes without stacking. |
+| `localization/english/sb_court_dunn_l_english.yml` | `sb_court_dunn_outgunned` | 31 October: five-year −10 Prominence for a named member of the opposing camp. |
+
+Dunn's `sb_court_dunn.002` remains **TO REVIEW** after adding the authorised
+faction allocation: named ally/opponent, separate Prominence and 1% death-risk
+tooltips, and an unchanged two-week Firearms alternative. The event skill and
+installed `shogunate.2` informed the coalition tradeoff; Dunn retains his existing
+single portrait. [Shipment design and implementation](zulu_dunn_shipments_design_2026_10_30.md).
+
+Dunn's `sb_court_dunn.003` remains **TO REVIEW** after the 31 October rewrite:
+resentment of an enemy's intermediary, distinct execution/retention/banishment
+tradeoffs and conditional Mthonga introduction. Used the event skill and installed
+`shogunate.2`; retained paired portraits. New-reign Prerogative previews in
+`sb_court_succession.001`/`.004` also remain under their existing **TO REVIEW**
+markers. [Writing and implementation record](zulu_dunn_succession_followup_2026_10_31.md).
+
 The brothers' coming-of-age events `sb_court_succession.006` (The Two Brothers)
 and `.007` (The Other Brother) in `localization/english/sb_court_succession_l_english.yml`
 are **TO REVIEW**, added 29 October. The installed `shogunate.2` provides the
@@ -75,15 +107,9 @@ text explains the internal preservation; the only new key is the modifier name.
 | `localization/english/sb_court_politics_l_english.yml` | `kaZokufa` | Historical amaCube chief, distinct from fictional Sigananda Zulu. |
 | `localization/english/sb_court_politics_l_english.yml` | `sb_court_house_esiklebheni` | Langazana's separately represented establishment. |
 | `localization/english/sb_court_politics_l_english.yml` | `sb_court_house_cube` | Sigananda's separately represented following. |
-| `localization/english/sb_diamond_mines_l_english.yml` | `building_sb_diamond_mine_dynamite` | Existing diamond label reused by the native discovery mine. |
-| `localization/english/sb_diamond_mines_l_english.yml` | `building_sb_diamond_mine_dynamite_lens_option` | Existing diamond label reused by the native discovery mine. |
-| `localization/english/sb_diamond_mines_l_english.yml` | `building_sb_diamond_mine_dynamite_discovered_resource` | Existing diamond label reused by the native discovery mine. |
-| `localization/english/sb_diamond_mines_l_english.yml` | `building_sb_diamond_mine_pumpjacks` | Existing diamond label reused by the native discovery mine. |
-| `localization/english/sb_diamond_mines_l_english.yml` | `building_sb_diamond_mine_pumpjacks_lens_option` | Existing diamond label reused by the native discovery mine. |
-| `localization/english/sb_diamond_mines_l_english.yml` | `building_sb_diamond_mine_pumpjacks_discovered_resource` | Existing diamond label reused by the native discovery mine. |
-| `localization/english/sb_diamond_mines_l_english.yml` | `building_sb_diamond_mine_pneumatic_tools` | Existing diamond label reused by the native discovery mine. |
-| `localization/english/sb_diamond_mines_l_english.yml` | `building_sb_diamond_mine_pneumatic_tools_lens_option` | Existing diamond label reused by the native discovery mine. |
-| `localization/english/sb_diamond_mines_l_english.yml` | `building_sb_diamond_mine_pneumatic_tools_discovered_resource` | Existing diamond label reused by the native discovery mine. |
+| `localization/english/sb_diamond_mines_l_english.yml` | `notification_sb_diamond_survey_discovery_name` | Owner’s regional diamond survey notification. |
+| `localization/english/sb_diamond_mines_l_english.yml` | `notification_sb_diamond_survey_discovery_desc` | Owner’s regional diamond survey notification. |
+| `localization/english/sb_diamond_mines_l_english.yml` | `notification_sb_diamond_survey_discovery_tooltip` | Owner’s regional diamond survey notification. |
 | `localization/english/sb_natal_interwar_l_english.yml` | `sb_zululand_annexation_movement_attraction` | Name of the fresh annexation bonus, separate from preserved Initial Enthusiasm; no bookkeeping prose. |
 | `localization/english/sb_war_goal_contracts_l_english.yml` | `war_goal_sb_reestablish_responsible_colony_type_name` | Technical subject-restoration UI text. |
 | `localization/english/sb_war_goal_contracts_l_english.yml` | `war_goal_sb_reestablish_responsible_colony_type_desc` | Technical subject-restoration UI text. |
@@ -225,7 +251,7 @@ text explains the internal preservation; the only new key is the modifier name.
 | `localization/english/sb_court_politics_l_english.yml` | `sb_court_recognize_successor_button_desc` | Recognition grants roughly half of supporting Prominence as future pledges, preserving existing promises; pending DP review. |
 | `localization/english/sb_court_politics_l_english.yml` | `sb_court_recognize_successor_tt` | Recognition grants roughly half of supporting Prominence as future pledges, preserving existing promises; pending DP review. |
 | `localization/english/sb_institutions_l_english.yml` | `sb_prerogative_breakdown` | Zulu institutional/court implementation; pending DP prose review. |
-| `localization/english/sb_institutions_l_english.yml` | `sb_prerogative_live_readout` | Zulu institutional/court implementation; pending DP prose review. |
+| `localization/english/sb_institutions_l_english.yml` | `sb_prerogative_live_readout` | 7 November: owner-specific Royal/Chiefly title now appears in the live readout; values unchanged. Pending DP prose/layout review. |
 | `localization/english/sb_institutions_l_english.yml` | `sb_prerogative_military` | Zulu institutional/court implementation; pending DP prose review. |
 | `localization/english/sb_institutions_l_english.yml` | `sb_prerogative_political` | Zulu institutional/court implementation; pending DP prose review. |
 | `localization/english/sb_natal_crisis_l_english.yml` | `sb_klip_river_county_020_a_dynasty_tt` | Zulu institutional/court implementation; pending DP prose review. |
@@ -271,7 +297,7 @@ text explains the internal preservation; the only new key is the modifier name.
 | `localization/english/sb_court_politics_l_english.yml` | `sb_court_adult_member_available_tt` | Readable institutional/court requirement; pending DP prose review. |
 | `localization/english/sb_institutions_l_english.yml` | `sb_institutions_social_mobility_available_tt` | Readable institutional/court requirement; pending DP prose review. |
 | `localization/english/sb_institutions_l_english.yml` | `sb_institutions_reach_positive_tt` | Readable Institutional Reach condition; pending DP prose review. |
-| `localization/english/sb_institutions_l_english.yml` | `sb_prerogative_country_title` | Dynamic in-game title; 19 October second correction reads the GUI's JournalEntry because the nested localisation loses ROOT/SCOPE. Lobby fallback verified by DP; live title pending DP. |
+| `localization/english/sb_institutions_l_english.yml` | `sb_prerogative_country_title` | 7 November: used only by the live readout, where JournalEntry exists. Type-only JE names are context-free. Pending DP rendering review. |
 | `localization/english/sb_institutions_l_english.yml` | `sb_prerogative_base_legitimacy` | 27 October: renamed Courtly Politics at DP's request; −25 Legitimacy at IR 50. Pending DP rendering review. |
 | `localization/english/sb_institutions_l_english.yml` | `sb_prerogative_effects_active` | Shows the IR-scaled base Legitimacy deduction alongside applied Prerogative modifiers; pending DP rendering review. |
 | `localization/english/sb_institutions_l_english.yml` | `sb_prerogative_effects_none` | Prerogative tooltip when neither modifier is present; pending DP prose review. |
@@ -444,7 +470,6 @@ New/replaced event namespaces `sb_zulu_court.200`, `.201`, `.210`–`.215` are T
 | `localization/english/sb_zulu_court_l_english.yml` | `sb_court_campaign_firearms_tt` | TO REVIEW: collected guns grant up to 10 percentage points of firearms adoption when the outcome option is selected; 26 October. |
 | `localization/english/sb_zulu_court_l_english.yml` | `sb_court_campaign_defeated_ruler_tt` | TO REVIEW: permanent −25 Popularity loss on clicking the Blood River/Swazi defeat option; preview uses present tense (27 October). |
 | `localization/english/sb_zulu_court_l_english.yml` | `sb_court_campaign_defeat_prerogative_tt` | TO REVIEW: −25 Prerogative loss on acknowledging the Blood River defeat; updated option preview, 29 October. |
-| `localization/english/sb_swazi_frontier_l_english.yml` | `sb_swazi_frontier.098.prerogative_after_blood_river` | TO REVIEW: −50 Prerogative on Swazi defeat after an acknowledged Blood River defeat; ordinary Swazi defeat retains −30, 29 October. |
 | `localization/english/sb_zulu_court_l_english.yml` | `sb_court_campaign_opposition_tt` | TO REVIEW: named house and rival coalition in the defeat report. |
 | `localization/english/sb_zulu_court_l_english.yml` | `sb_court_campaign_defector_tt` | TO REVIEW: each of the two least prominent eligible incumbent-supporting houses defects to the same named rival as the largest uncommitted house; Ndlela is excluded. Blood River/Swazi defeat, 27 October. |
 | `localization/english/sb_zulu_court_l_english.yml` | `sb_court_gathering_royal_flavour` | TO REVIEW: new court outcome/report wording. |
@@ -552,7 +577,7 @@ Zulu-facing event namespaces `sb_natal_crisis.020`, `.026`, `.080`, `.081` and `
 | --- | --- | --- |
 | `localization/english/sb_court_muster_l_english.yml` | `building_sb_court_muster` | Temporary levy recruitment building for multi-state claimant wars. |
 | `localization/english/sb_court_muster_l_english.yml` | `sb_court_muster_conscription_suspended` | Native conscription restriction while the replacement muster is active. |
-| `localization/english/sb_court_muster_l_english.yml` | `sb_court_wartime_provisions` | Temporary Food Security relief for both scripted multi-state claimant-war factions; removed with the muster. |
+| `localization/english/sb_court_muster_l_english.yml` | `sb_court_wartime_provisions` | Temporary 75% Food Security relief for both actual claimant-war factions, including native one-state splits; removed when the tracked conflict ends. |
 
 | `localization/english/sb_zulu_names_l_english.yml` | `Bathonyile` | 29 October: documented clan/given name or royal patronymic; pending DP review. |
 | `localization/english/sb_zulu_names_l_english.yml` | `Biyela` | 29 October: documented clan/given name or royal patronymic; pending DP review. |
@@ -632,3 +657,76 @@ No reviewed namespace was rewritten. Rendering remains pending DP.
 | `localization/english/sb_court_politics_l_english.yml` | `sb_court_challenge_unavailable` | 30 October: separate challenge/succession sections and thresholds; pending DP prose review. |
 | `localization/english/sb_court_politics_l_english.yml` | `sb_court_succession_summary_royal` | 30 October: separate challenge/succession sections and thresholds; pending DP prose review. |
 | `localization/english/sb_court_politics_l_english.yml` | `sb_court_succession_unavailable` | 30 October: separate challenge/succession sections and thresholds; pending DP prose review. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_chiefs_intervention_tt` | 4 November playtest follow-up for DP review. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_chiefs_servicemen_tt` | 4 November playtest follow-up for DP review. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_chiefs_bribe_available_tt` | 4 November playtest follow-up for DP review. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_chiefs_open_bribe_tt` | Price is shown before the bribe is paid. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_chiefs_police_cost_tt` | 4 November playtest follow-up for DP review. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_chiefs_police_pressure_tt` | 4 November playtest follow-up for DP review. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_chiefs_police_refund_tt` | 4 November playtest follow-up for DP review. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_chiefs_police_end_tt` | 4 November playtest follow-up for DP review. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_chiefs_sponsor_cost_tt` | 4 November playtest follow-up for DP review. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_chiefs_sponsor_pull_tt` | 4 November playtest follow-up for DP review. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_chiefs_sponsor_commit_tt` | 4 November playtest follow-up for DP review. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_chiefs_sponsor_refund_tt` | 4 November playtest follow-up for DP review. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_chiefs_sponsor_end_tt` | 4 November playtest follow-up for DP review. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_chiefs_sponsor_commit_end_tt` | 4 November playtest follow-up for DP review. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_chiefs_volunteer_cost_tt` | 4 November playtest follow-up for DP review. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_chiefs_volunteer_pressure_tt` | 4 November playtest follow-up for DP review. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_chiefs_volunteer_commit_tt` | 4 November playtest follow-up for DP review. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_chiefs_volunteer_relief_tt` | 4 November playtest follow-up for DP review. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_chiefs_volunteer_end_tt` | 4 November playtest follow-up for DP review. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_chiefs_volunteer_commit_end_tt` | 4 November playtest follow-up for DP review. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_chiefs_patronage_cost_tt` | 4 November playtest follow-up for DP review. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_chiefs_patronage_pull_tt` | 4 November playtest follow-up for DP review. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_chiefs_patronage_refund_tt` | 4 November playtest follow-up for DP review. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_chiefs_patronage_end_tt` | 4 November playtest follow-up for DP review. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_chiefs_zulu_loyalists_tt` | 4 November playtest follow-up for DP review. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_chiefs_repeal_tt` | 4 November playtest follow-up for DP review. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_chiefs_repeal_relations_tt` | 4 November playtest follow-up for DP review. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_chiefs_fervour_tt` | 4 November playtest follow-up for DP review. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_chiefs_repeal_attraction_tt` | 4 November playtest follow-up for DP review. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_chiefs_garrison_tt` | 4 November playtest follow-up for DP review. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_chiefs_refugee_attraction_tt` | 4 November playtest follow-up for DP review. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_chiefs_bribe_funds_tt` | 4 November playtest follow-up for DP review. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_chiefs_bribe_target_tt` | 4 November playtest follow-up for DP review. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_chiefs_contest_open_tt` | 4 November playtest follow-up for DP review. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_chiefs_contest_closed_tt` | 4 November playtest follow-up for DP review. |
+| `localization/english/sb_natal_crisis_l_english.yml` | `ai_strategy_sb_xhosa_frontier_defence` | 4 November playtest follow-up for DP review. |
+| `localization/english/sb_natal_crisis_l_english.yml` | `ai_strategy_sb_xhosa_frontier_defence_desc` | 4 November playtest follow-up for DP review. |
+| `localization/english/replace/dynamic_state_and_hub_names_l_english.yml` | `HUB_NAME_STATE_NATAL_city_boer` | 4 November playtest follow-up for DP review. |
+| `localization/english/sb_war_goal_contracts_l_english.yml` | `sb_natalia_swazi_defender_blocked_tt` | 7 November: reason Natalia cannot join the Swazi defending side in the marked frontier dispute. Pending DP prose review. |
+
+## Chiefdoms refinement — 10 November 2026
+
+New/changed general text awaiting DP review (existing reviewed namespaces preserved):
+
+| `localization/english/sb_chiefdoms_refinement_l_english.yml` | `sb_chiefs_contest_status` | Chiefdoms refinement; DP review pending. |
+| `localization/english/sb_chiefdoms_refinement_l_english.yml` | `sb_chiefs_status_review` | 14 November follow-up: whole-day countdown to the existing JE-age deadline; removes raw hour suffix. DP rendering review pending. |
+| `localization/english/sb_chiefdoms_refinement_l_english.yml` | `sb_chiefs_status_waiting` | 14 November: chiefly settlement condition after ten years; DP review pending. |
+| `localization/english/sb_chiefdoms_refinement_l_english.yml` | `sb_chiefs_status_organising` | Chiefdoms refinement; DP review pending. |
+| `localization/english/sb_chiefdoms_refinement_l_english.yml` | `sb_chiefs_status_war` | Chiefdoms refinement; DP review pending. |
+| `localization/english/sb_chiefdoms_refinement_l_english.yml` | `sb_chiefs_status_reunion` | Chiefdoms refinement; DP review pending. |
+| `localization/english/sb_chiefdoms_refinement_l_english.yml` | `sb_chiefs_chiefly_panel` | 14 November: aggregate house Prominence added beside native movement values; DP rendering review pending. |
+| `localization/english/sb_chiefdoms_refinement_l_english.yml` | `sb_chiefs_royal_panel` | 14 November: aggregate house Prominence added beside native movement values; DP rendering review pending. |
+| `localization/english/sb_chiefdoms_refinement_l_english.yml` | `sb_chiefs_claimant_named` | Chiefdoms refinement; DP review pending. |
+| `localization/english/sb_chiefdoms_refinement_l_english.yml` | `sb_chiefs_claimant_vacant` | Chiefdoms refinement; DP review pending. |
+| `localization/english/sb_chiefdoms_refinement_l_english.yml` | `sb_chiefs_chief_named` | Chiefdoms refinement; DP review pending. |
+| `localization/english/sb_chiefdoms_refinement_l_english.yml` | `sb_chiefs_chief_vacant` | Chiefdoms refinement; DP review pending. |
+| `localization/english/sb_chiefdoms_refinement_l_english.yml` | `sb_chiefs_support_explanation` | 15 November: full political backing, signed 0.1-point prominence pressure, ±30-point cap and current target adjustment; DP rendering/prose review pending. |
+| `localization/english/sb_chiefdoms_refinement_l_english.yml` | `sb_chiefs_prominence_pressure` | 15 November: native modifier name for the balance of chiefly backing; DP review pending. |
+| `localization/english/sb_chiefdoms_refinement_l_english.yml` | `sb_chiefs_escalation_event` | Chiefdoms refinement; DP review pending. |
+| `localization/english/sb_chiefdoms_refinement_l_english.yml` | `sb_chiefs_escalation_native` | Chiefdoms refinement; DP review pending. |
+| `localization/english/sb_chiefdoms_refinement_l_english.yml` | `sb_chiefs_active_interventions` | Chiefdoms refinement; DP review pending. |
+| `localization/english/sb_chiefdoms_refinement_l_english.yml` | `sb_chiefs_foreign_armies_excluded_tt` | Chiefdoms refinement; DP review pending. |
+| `localization/english/sb_chiefdoms_refinement_l_english.yml` | `sb_chiefdoms_native_test` | Chiefdoms refinement; DP review pending. |
+| `localization/english/sb_chiefdoms_refinement_l_english.yml` | `sb_chiefdoms_native_test_desc` | Chiefdoms refinement; DP review pending. |
+| `localization/english/sb_chiefdoms_refinement_l_english.yml` | `sb_court_house_members_heading` | Chiefdoms refinement; DP review pending. |
+| `localization/english/sb_chiefdoms_refinement_l_english.yml` | `sb_court_house_dingane` | Chiefdoms refinement; DP review pending. |
+| `localization/english/sb_chiefdoms_refinement_l_english.yml` | `sb_court_house_mpande` | Chiefdoms refinement; DP review pending. |
+| `localization/english/sb_chiefdoms_refinement_l_english.yml` | `sb_court_house_gqugqu` | Chiefdoms refinement; DP review pending. |
+| `localization/english/sb_chiefdoms_refinement_l_english.yml` | `sb_court_house_cetshwayo` | Chiefdoms refinement; DP review pending. |
+| `localization/english/sb_chiefdoms_refinement_l_english.yml` | `sb_court_house_mbuyazi` | Chiefdoms refinement; DP review pending. |
+| `localization/english/sb_boer_republics_l_english.yml` | `sb_youth` | Youth trait name. Awaiting DP review. |
+| `localization/english/sb_boer_republics_l_english.yml` | `sb_youth_desc` | Youth expiry conditions. Awaiting DP review. |
+| `localization/english/sb_boer_republics_l_english.yml` | `sb_marthinus_groot_boere_mandate` | Appointment popularity modifier. Awaiting DP review. |

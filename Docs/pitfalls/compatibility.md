@@ -49,12 +49,25 @@ normal synchronisation cannot erase the patch.
 
 <a id="upstream-05"></a>
 
-## UPSTREAM-05 — A depot delta covers only its exact endpoints
+## UPSTREAM-05 — A source delta covers only its exact endpoints
 
 Missing historical inputs
 can prevent reproducing an old comparison without implying current corruption.
 Keep historical reproduction separate from mandatory current-build, manifest
 and payload checks. Verify every pinned override against its actual baseline.
+
+For version upgrades, consult the [local Modding Digests index](../../../References/modding_digests.md)
+and check the digest's comparison versions and included file types. A release
+summary may include work already ported from a beta; a documentation change may
+only add an annotation. Verify the effective target source before treating either
+as a new defect. Write findings, their dispositions, evidence links and unresolved
+decisions into the dated compatibility investigation; do not leave them only in
+chat. A digest does not replace missing historical sources or engine checks.
+
+Check official removals across authored definitions as well as copied Vanilla
+objects. In 1.15.2 the removed subject-protection field appeared in seven custom
+subject types and one keyed override. Only the override appeared as upstream
+object drift. [Subject compatibility review](../compatibility/1_15_2_implementation.md#subjects-and-diplomacy)
 
 <a id="upstream-06"></a>
 

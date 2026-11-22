@@ -4,7 +4,7 @@ Read when: Regression design, save inspection, crash attribution or engine repla
 
 [Topic index](../../common_pitfalls.md) · [Repository instructions](../../AGENTS.md)
 
-Engine-specific claims concern investigated Victoria 3 1.14.x builds. Recheck
+Engine-specific claims concern investigated Victoria 3 1.14.x and 1.15.0 builds. Recheck
 against the target build and preserve each rule's evidence limits; see the
 [version and evidence guidance](../../common_pitfalls.md#evidence-and-version-limits).
 
@@ -87,6 +87,34 @@ adjacency and graph connectivity can pass while a deployed spline is rejected.
 Inspect the generated graph and authored ports, then verify launch acceptance
 and actual movement separately. Do not repin a changed hash without review or
 call a static pass proof of successful AI deployment.
+
+Check each changed port's declared province, locator and paired land/naval anchor
+identities. A valid offshore route does not prove the land anchor exists or the
+locator sits in the port province. Use unmodified native controls and fixtures
+that deliberately break each relation. Generated map tables may also use a
+different text reader from scripts: compare encoding with the corresponding
+native file, not a blanket BOM rule. These checks caught gaps in the
+[1.15 launch investigation](../compatibility/1_15_0_launch_debug_2026_11_05.md);
+native harbour generation and movement remain separate engine gates.
+
+Native parity can preserve a native map inconsistency. Compare the declared port
+province with both native and mod raster samples before attributing a mismatch
+to the mod. The [1.15.1 Panama review](../compatibility/1_15_1_launch_review_2026_11_11.md)
+establishes identical mismatched source data, not successful native port operation.
+
+For a country-specific HQ warning, inspect contemporaneous coastal control and
+occupation as well as ownership before changing the map. The missing-connection
+wording alone does not establish missing map data; the
+[occupied-coast investigation](../compatibility/1_15_0_fresh_smoke_bolivia_2026_11_07.md)
+records intact native routes alongside loss of the country's controlled coast.
+
+A cached naval graph can retain generic landing harbours on land a mod makes
+impassable. Check harbour destinations against the effective passability mask,
+not just designated building ports or sea reachability. Preserve actual port
+splines separately; removing obsolete leaf landings must not remove through
+routes. Runtime node IDs may include nodes created before the cached records,
+so establish their ordering before mapping IDs to file indices. See the
+[impassable-coast evidence](../compatibility/1_15_0_launch_retest_2026_11_05.md).
 
 <a id="verify-09"></a>
 

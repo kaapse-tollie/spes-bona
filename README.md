@@ -24,15 +24,17 @@ Spes Bona is a Victoria 3 regional flavor mod for greater Southern Africa built 
 
 ## Requirements
 
-- Victoria 3 `1.14.5` Open Beta Update 4 (Steam build `25629520`, branch `1.14-openbeta`)
-- Community Mod Framework `1.66.0` with patch `sb-1.14.3-r1`
+- Victoria 3 `1.15.2` (Steam build `26763837`, branch `public`), all DLC
+- Community Mod Framework `1.67.9` with patch `sb-1.15.2-r1`
 
-SB **0.20.2** targets this exact beta with the existing CMF patch. See the
-[1.14.5 rebase report](Docs/compatibility/1_14_5_rebase.md) and
-[DP's pending fresh-game checks](Docs/compatibility/1_14_5_runtime_matrix.md).
-The [2026-10-13 checkpoint review](Docs/compatibility/checkpoint_review_2026_10_13.md)
-remains historical evidence. ORA–BST's workaround remains on hold;
-Victoria 3 1.15 remains deferred. The approved Zulu institutional and court redesign is now implemented for DP verification; wider country profiles remain deferred. See the [implementation and pending engine matrix](Docs/zulu_institutions_implementation_2026_10_18.md).
+The working tree targets 1.15.2 and carries SB release version **0.21.0**.
+The [port report](Docs/compatibility/1_15_2_implementation.md) records the game
+and CMF changes. DP’s [fresh-campaign replay](Docs/compatibility/1_15_2_runtime_matrix.md)
+covers subjects, parties, mobilisation, battle casualties, journal rendering and the map.
+The [1.15.0 core closure on 7 November](Docs/compatibility/1_15_0_closure_2026_11_07.md)
+remains historical acceptance; separate release gates remain open.
+The [1.14.5 rebase](Docs/compatibility/1_14_5_rebase.md) and earlier checkpoint
+reports remain historical evidence. The approved Zulu institutional and court redesign is now implemented for DP verification; wider country profiles remain deferred. See the [implementation and pending engine matrix](Docs/zulu_institutions_implementation_2026_10_18.md).
 
 ## Compatibility
 
@@ -60,6 +62,11 @@ The live repository documentation is the source of truth:
 - [Resource-update contributor and maintainer guide](Docs/resource_update_guide.md)
 - [Resource-balance executive summary](Docs/resource_balance_summary.md)
 
+Current port target: **Victoria 3 1.15.2**, fresh campaigns with all DLC.
+See the [core closure and remaining limits](Docs/compatibility/1_15_0_closure_2026_11_07.md)
+and [current DP runtime checks](Docs/compatibility/1_15_2_runtime_matrix.md). Static checks
+are not engine certification.
+
 ## Validation
 
 Run the validation suite from the repository root:
@@ -68,7 +75,7 @@ Run the validation suite from the repository root:
 python3 tools/validate.py
 ```
 
-Validation checks the pinned CMF `1.66.0` + `sb-1.14.3-r1` installation without changing it. Install or repair the canonical sibling directory `../Community Mod Framework` with `python3 -B tools/sync_cmf.py`: it verifies the exact release archive, applies the pinned patch in staging, verifies the resulting tree, and installs with rollback. `--check` is read-only; `--force` retains the patch; `--latest` is rejected for this pinned dependency. `--skip-cmf-sync` omits the synchronizer check but retains the installed-tree integrity check.
+Validation checks the pinned CMF `1.67.9` + `sb-1.15.2-r1` installation without changing it. Install or repair the canonical sibling directory `../Community Mod Framework` with `python3 -B tools/sync_cmf.py`: it verifies the exact release archive, applies the pinned patch in staging, verifies the resulting tree, and installs with rollback. `--check` is read-only; `--force` retains the patch; `--latest` is rejected for this pinned dependency. `--skip-cmf-sync` omits the synchronizer check but retains the installed-tree integrity check.
 
 When the proprietary dependencies are available, include explicit Vanilla/CMF comparison and Tiger validation:
 
@@ -80,7 +87,13 @@ python3 tools/validate.py \
 
 Missing proprietary dependencies report `SKIP`; CI does not require them. Tiger is useful for parser validation, but cold-launch logs and fresh-start smoke tests remain authoritative. Do not rely on filewatcher hot reload for map-data or startup-history changes.
 
-Release validation is pinned to CMF `1.66.0`, commit `807c32ff42b75714a3a0e090c0db3357b5e46ed7`, and GitHub asset SHA-256 `79dd0d434e6ffb617147ad1b91b73e6306139adfffcadf6774eeb32db3a09b8b`. The launcher dependency is `1.66.*`. During the 1.14 beta audit, the Workshop change log reported a reversion to its 1.13 payload, so use the exact GitHub asset until the Workshop copy is unambiguous.
+SB's naval graph removes obsolete native harbour leaves on its impassable coast.
+`python3 -B tools/check_naval_network.py` checks its exact derivation without
+writing. After an upstream graph or impassability change, rebuild explicitly with
+`--write-network`, review the node/edge delta, then update the inventory and map
+hashes. See the [launch retest evidence](Docs/compatibility/1_15_0_launch_retest_2026_11_05.md).
+
+Release validation is pinned to CMF `1.67.9`, commit `9103c9cb4130d46cb18204d588def1266e5c1555`, and GitHub asset SHA-256 `2c702bbf99fd96804366896521832d18519a6a33e94519d49160de0ece7e04ae`. The launcher dependency is `1.67.*`. During the 1.14 beta audit, the Workshop change log reported a reversion to its 1.13 payload, so use the exact GitHub asset until the Workshop copy is unambiguous.
 
 On the primary development machine, the verified release plus the pinned compatibility patch is installed at `/Users/depro/Documents/Paradox Interactive/Victoria 3/mod/Community Mod Framework`.
 
@@ -96,4 +109,4 @@ What still matters most:
 - major pre-release balance pass for BST, SWZ, ZUL and GZA starting technologies, economies and literacy: [TODO and saved research briefs](Docs/audit_issues_open.md#major-pre-release-balance-todo--bantu-starting-positions)
 - small presentation and content polish
 
-The current dependency is the verified CMF release **plus** `sb-1.14.3-r1`; an unpatched release is unsupported. Install with `python3 -B tools/sync_cmf.py`. `--check` verifies the complete patched file tree without modifying it. See [the 1.14.5 rebase](Docs/compatibility/1_14_5_rebase.md).
+The current dependency is the verified CMF release **plus** `sb-1.15.2-r1`; an unpatched release is unsupported. Install with `python3 -B tools/sync_cmf.py`. `--check` verifies the complete patched file tree without modifying it. See the [1.15.2 dependency review](Docs/compatibility/1_15_2_implementation.md#community-mod-framework).
