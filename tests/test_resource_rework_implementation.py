@@ -9,6 +9,7 @@ from tools import validate
 ROOT = Path(__file__).resolve().parents[1]
 STATE_PATH = ROOT / "map_data/state_regions/04_subsaharan_africa.txt"
 GATE_PATH = ROOT / "common/scripted_effects/sb_resource_technology_gates_effects.txt"
+SURVEY_PATH = ROOT / "common/scripted_effects/sb_diamond_surveys.txt"
 ON_ACTION_PATH = ROOT / "common/on_actions/sb_mineral_discoveries_on_actions.txt"
 DISCOVERY_TRIGGER_PATH = ROOT / "common/scripted_triggers/sb_mineral_discoveries_triggers.txt"
 KIMBERLEY_PATH = ROOT / "common/scripted_effects/sb_griqualand_west_effects.txt"
@@ -23,6 +24,7 @@ COAL = "building_coal_mine"
 FISH = "building_fishing_wharf"
 IRON = "building_iron_mine"
 LEAD = "building_lead_mine"
+COPPER = "building_copper_mine"
 SULFUR = "building_sulfur_mine"
 WHALE = "building_whaling_station"
 GOLD = "building_gold_field"
@@ -31,13 +33,13 @@ RUBBER = "building_rubber_plantation"
 OIL = "building_oil_rig"
 
 RESOURCE_ORDER = (
-    ARABLE, WOOD, COAL, FISH, IRON, LEAD, SULFUR, WHALE,
+    ARABLE, WOOD, COAL, FISH, IRON, LEAD, COPPER, SULFUR, WHALE,
     GOLD, DIAMOND, RUBBER, OIL,
 )
 
 EXPECTED_CONFIGURED = {
     "STATE_CAPE_COLONY": {ARABLE: 33, WOOD: 4, FISH: 12, WHALE: 4},
-    "STATE_NORTHERN_CAPE": {ARABLE: 6, WOOD: 1, FISH: 2, LEAD: 8, DIAMOND: 4},
+    "STATE_NORTHERN_CAPE": {ARABLE: 6, WOOD: 1, FISH: 2, DIAMOND: 4},
     "STATE_GRIQUALAND_WEST": {ARABLE: 4, IRON: 20, DIAMOND: 20},
     "STATE_BECHUANALAND": {ARABLE: 4, GOLD: 2},
     "STATE_EASTERN_CAPE": {ARABLE: 28, WOOD: 6, COAL: 2, FISH: 2, WHALE: 2},
@@ -52,7 +54,7 @@ EXPECTED_CONFIGURED = {
     "STATE_LOURENCO_MARQUES": {ARABLE: 32, WOOD: 10, FISH: 2, WHALE: 4, RUBBER: 16, OIL: 6},
     "STATE_ZAMBEZI": {ARABLE: 60, WOOD: 11, COAL: 7, IRON: 9, SULFUR: 1, GOLD: 5, DIAMOND: 10, RUBBER: 16},
     "STATE_HEREROLAND": {ARABLE: 18, WOOD: 2, FISH: 6, LEAD: 10},
-    "STATE_NAMAQUALAND": {ARABLE: 5, FISH: 7, LEAD: 2, WHALE: 3, DIAMOND: 14},
+    "STATE_NAMAQUALAND": {ARABLE: 5, FISH: 7, LEAD: 2, COPPER: 9, WHALE: 3, DIAMOND: 14},
 }
 
 EXPECTED_TOTALS = {
@@ -61,7 +63,8 @@ EXPECTED_TOTALS = {
     COAL: 149,
     FISH: 33,
     IRON: 46,
-    LEAD: 20,
+    LEAD: 12,
+    COPPER: 9,
     SULFUR: 1,
     WHALE: 17,
     GOLD: 92,
@@ -77,6 +80,7 @@ DOCUMENTED_RESOURCE_NAMES = {
     FISH: "Fishing",
     IRON: "Iron",
     LEAD: "Lead",
+    COPPER: "Copper",
     SULFUR: "Sulfur",
     WHALE: "Whaling",
     GOLD: "Gold potential",
@@ -111,8 +115,6 @@ def static_resources(state_block: str) -> dict[str, int]:
             result[resource] = int(value)
     for block in nested_blocks(state_block, "resource"):
         resource = re.search(r"\btype\s*=\s*\"?(building_[A-Za-z0-9_]+)\"?", block).group(1)
-        if resource.startswith("building_sb_diamond_mine_"):
-            resource = DIAMOND
         amounts = re.findall(r"\b(?:undiscovered_amount|discovered_amount)\s*=\s*(\d+)", block)
         result[resource] = result.get(resource, 0) + sum(map(int, amounts))
     return result
@@ -141,6 +143,10 @@ class ResourceReworkImplementationTests(unittest.TestCase):
             if re.search(rf"\badd_resource_potential\s*=\s*{re.escape(resource)}\b", stage):
                 amount += 1
             configured[state][resource] += amount
+
+        deposits = object_block(SURVEY_PATH.read_text(encoding="utf-8-sig"), "sb_register_diamond_deposits")
+        for state, levels in re.findall(r"s:(STATE_\w+)\s*=\s*\{\s*sb_register_diamond_deposit\s*=\s*\{\s*LEVELS = (\d+)", deposits):
+            configured[state][DIAMOND] += int(levels)
 
         # The established Kimberley event creates one mine and adds 19 remaining levels.
         kimberley = KIMBERLEY_PATH.read_text(encoding="utf-8-sig")
@@ -232,6 +238,12 @@ class ResourceReworkImplementationTests(unittest.TestCase):
             label = DOCUMENTED_RESOURCE_NAMES[resource]
             label_pattern = r"\s+".join(map(re.escape, label.lower().split()))
             prose_pattern = rf"\b{value}\s+{label_pattern}\b"
+            if resource in {LEAD, COPPER}:
+                current_policy = design.split("## 1.15.1 compatibility update", 1)[1].split("## Decision rule", 1)[0]
+                self.assertRegex(current_policy.lower(), prose_pattern)
+                for linked in (guide, summary):
+                    self.assertIn("resource_gameplay_overrides.md#1151-compatibility-update--11-november-2026", linked)
+                continue
             self.assertRegex(guide, prose_pattern)
             self.assertRegex(summary, prose_pattern)
             self.assertRegex(

@@ -1,0 +1,150 @@
+﻿# Population reconstruction for the mountain-retreat trial.
+# Pop scope; event .020 selects the largest eligible Sotho donor. Runtime
+# create_pop needs literal profession/religion definitions, hence the dispatch.
+# Preserve total people, native profession conversion, religion and the donor's
+# wealth/literacy. The arrival cohort gets 2,500 workers and 2,500 dependants; native
+# merging/growth may subsequently change the combined Pop's displayed ratio.
+
+sb_bst_transfer_mountain_refugees = {
+	if = {
+		limit = {
+			culture = cu:sotho
+			total_size >= 5000
+			exists = c:BST
+			state = {
+				state_region = s:STATE_VRYSTAAT
+				owner = { sb_bst_oranje_frontier_actor = yes }
+			}
+			c:BST ?= {
+				sb_bst_controls_only_drakensberg = yes
+				NOT = { has_variable = sb_bst_mountain_refugees_transferred_var }
+			}
+			exists = s:STATE_DRAKENSBERG.region_state:BST
+		}
+		switch = {
+			trigger = is_pop_type
+			peasants = { sb_bst_select_refugee_religion = { SOURCE_POP_TYPE = peasants ARRIVAL_POP_TYPE = laborers } }
+			farmers = { sb_bst_select_refugee_religion = { SOURCE_POP_TYPE = farmers ARRIVAL_POP_TYPE = farmers } }
+			machinists = { sb_bst_select_refugee_religion = { SOURCE_POP_TYPE = machinists ARRIVAL_POP_TYPE = machinists } }
+			capitalists = { sb_bst_select_refugee_religion = { SOURCE_POP_TYPE = capitalists ARRIVAL_POP_TYPE = capitalists } }
+			aristocrats = { sb_bst_select_refugee_religion = { SOURCE_POP_TYPE = aristocrats ARRIVAL_POP_TYPE = aristocrats } }
+			soldiers = { sb_bst_select_refugee_religion = { SOURCE_POP_TYPE = soldiers ARRIVAL_POP_TYPE = soldiers } }
+			bureaucrats = { sb_bst_select_refugee_religion = { SOURCE_POP_TYPE = bureaucrats ARRIVAL_POP_TYPE = bureaucrats } }
+			officers = { sb_bst_select_refugee_religion = { SOURCE_POP_TYPE = officers ARRIVAL_POP_TYPE = officers } }
+			laborers = { sb_bst_select_refugee_religion = { SOURCE_POP_TYPE = laborers ARRIVAL_POP_TYPE = laborers } }
+			engineers = { sb_bst_select_refugee_religion = { SOURCE_POP_TYPE = engineers ARRIVAL_POP_TYPE = engineers } }
+			clergymen = { sb_bst_select_refugee_religion = { SOURCE_POP_TYPE = clergymen ARRIVAL_POP_TYPE = clergymen } }
+			slaves = {
+				if = {
+					limit = { c:BST = { has_slavery = yes } }
+					sb_bst_select_refugee_religion = { SOURCE_POP_TYPE = slaves ARRIVAL_POP_TYPE = slaves }
+				}
+				else = {
+					sb_bst_select_refugee_religion = { SOURCE_POP_TYPE = slaves ARRIVAL_POP_TYPE = laborers }
+				}
+			}
+			academics = { sb_bst_select_refugee_religion = { SOURCE_POP_TYPE = academics ARRIVAL_POP_TYPE = academics } }
+			clerks = { sb_bst_select_refugee_religion = { SOURCE_POP_TYPE = clerks ARRIVAL_POP_TYPE = clerks } }
+			shopkeepers = { sb_bst_select_refugee_religion = { SOURCE_POP_TYPE = shopkeepers ARRIVAL_POP_TYPE = shopkeepers } }
+		}
+	}
+}
+
+sb_bst_select_refugee_religion = {
+	switch = {
+		trigger = religion
+		rel:animist = { sb_bst_prepare_refugee_cohort = { SOURCE_POP_TYPE = $SOURCE_POP_TYPE$ ARRIVAL_POP_TYPE = $ARRIVAL_POP_TYPE$ RELIGION = animist } }
+		rel:catholic = { sb_bst_prepare_refugee_cohort = { SOURCE_POP_TYPE = $SOURCE_POP_TYPE$ ARRIVAL_POP_TYPE = $ARRIVAL_POP_TYPE$ RELIGION = catholic } }
+		rel:protestant = { sb_bst_prepare_refugee_cohort = { SOURCE_POP_TYPE = $SOURCE_POP_TYPE$ ARRIVAL_POP_TYPE = $ARRIVAL_POP_TYPE$ RELIGION = protestant } }
+		rel:orthodox = { sb_bst_prepare_refugee_cohort = { SOURCE_POP_TYPE = $SOURCE_POP_TYPE$ ARRIVAL_POP_TYPE = $ARRIVAL_POP_TYPE$ RELIGION = orthodox } }
+		rel:oriental_orthodox = { sb_bst_prepare_refugee_cohort = { SOURCE_POP_TYPE = $SOURCE_POP_TYPE$ ARRIVAL_POP_TYPE = $ARRIVAL_POP_TYPE$ RELIGION = oriental_orthodox } }
+		rel:sunni = { sb_bst_prepare_refugee_cohort = { SOURCE_POP_TYPE = $SOURCE_POP_TYPE$ ARRIVAL_POP_TYPE = $ARRIVAL_POP_TYPE$ RELIGION = sunni } }
+		rel:shiite = { sb_bst_prepare_refugee_cohort = { SOURCE_POP_TYPE = $SOURCE_POP_TYPE$ ARRIVAL_POP_TYPE = $ARRIVAL_POP_TYPE$ RELIGION = shiite } }
+		rel:ibadi = { sb_bst_prepare_refugee_cohort = { SOURCE_POP_TYPE = $SOURCE_POP_TYPE$ ARRIVAL_POP_TYPE = $ARRIVAL_POP_TYPE$ RELIGION = ibadi } }
+		rel:jewish = { sb_bst_prepare_refugee_cohort = { SOURCE_POP_TYPE = $SOURCE_POP_TYPE$ ARRIVAL_POP_TYPE = $ARRIVAL_POP_TYPE$ RELIGION = jewish } }
+		rel:mahayana = { sb_bst_prepare_refugee_cohort = { SOURCE_POP_TYPE = $SOURCE_POP_TYPE$ ARRIVAL_POP_TYPE = $ARRIVAL_POP_TYPE$ RELIGION = mahayana } }
+		rel:gelugpa = { sb_bst_prepare_refugee_cohort = { SOURCE_POP_TYPE = $SOURCE_POP_TYPE$ ARRIVAL_POP_TYPE = $ARRIVAL_POP_TYPE$ RELIGION = gelugpa } }
+		rel:theravada = { sb_bst_prepare_refugee_cohort = { SOURCE_POP_TYPE = $SOURCE_POP_TYPE$ ARRIVAL_POP_TYPE = $ARRIVAL_POP_TYPE$ RELIGION = theravada } }
+		rel:confucian = { sb_bst_prepare_refugee_cohort = { SOURCE_POP_TYPE = $SOURCE_POP_TYPE$ ARRIVAL_POP_TYPE = $ARRIVAL_POP_TYPE$ RELIGION = confucian } }
+		rel:hindu = { sb_bst_prepare_refugee_cohort = { SOURCE_POP_TYPE = $SOURCE_POP_TYPE$ ARRIVAL_POP_TYPE = $ARRIVAL_POP_TYPE$ RELIGION = hindu } }
+		rel:shinto = { sb_bst_prepare_refugee_cohort = { SOURCE_POP_TYPE = $SOURCE_POP_TYPE$ ARRIVAL_POP_TYPE = $ARRIVAL_POP_TYPE$ RELIGION = shinto } }
+		rel:sikh = { sb_bst_prepare_refugee_cohort = { SOURCE_POP_TYPE = $SOURCE_POP_TYPE$ ARRIVAL_POP_TYPE = $ARRIVAL_POP_TYPE$ RELIGION = sikh } }
+		rel:atheist = { sb_bst_prepare_refugee_cohort = { SOURCE_POP_TYPE = $SOURCE_POP_TYPE$ ARRIVAL_POP_TYPE = $ARRIVAL_POP_TYPE$ RELIGION = atheist } }
+	}
+}
+
+sb_bst_prepare_refugee_cohort = {
+	state = { save_temporary_scope_as = sb_bst_refugee_source_state }
+	save_scope_value_as = { name = sb_bst_refugee_wealth value = wealth }
+	save_scope_value_as = { name = sb_bst_refugee_literacy value = literacy_rate }
+	s:STATE_DRAKENSBERG.region_state:BST = {
+		# Isolate the arrivals until metadata is restored. Never set the wealth
+		# or literacy of an existing resident Pop after a native merge.
+		if = {
+			limit = { NOT = { any_scope_pop = { culture = cu:promethean } } }
+			sb_bst_replace_refugee_cohort = { SOURCE_POP_TYPE = $SOURCE_POP_TYPE$ ARRIVAL_POP_TYPE = $ARRIVAL_POP_TYPE$ RELIGION = $RELIGION$ STAGING_CULTURE = promethean }
+		}
+		else_if = {
+			limit = { NOT = { any_scope_pop = { culture = cu:ainu } } }
+			sb_bst_replace_refugee_cohort = { SOURCE_POP_TYPE = $SOURCE_POP_TYPE$ ARRIVAL_POP_TYPE = $ARRIVAL_POP_TYPE$ RELIGION = $RELIGION$ STAGING_CULTURE = ainu }
+		}
+		else_if = {
+			limit = { NOT = { any_scope_pop = { culture = cu:maori } } }
+			sb_bst_replace_refugee_cohort = { SOURCE_POP_TYPE = $SOURCE_POP_TYPE$ ARRIVAL_POP_TYPE = $ARRIVAL_POP_TYPE$ RELIGION = $RELIGION$ STAGING_CULTURE = maori }
+		}
+	}
+}
+
+sb_bst_replace_refugee_cohort = {
+	# State scope. Revalidate before the irreversible source debit. The native
+	# state effect removes exactly 5,000 from the matching source group (its
+	# remainder pass handles integer rounding); no unrelated Pops are selected.
+	if = {
+		limit = {
+			state_region = s:STATE_DRAKENSBERG
+			owner = c:BST
+			owner = { NOT = { has_variable = sb_bst_mountain_refugees_transferred_var } }
+			NOT = { any_scope_pop = { culture = cu:$STAGING_CULTURE$ } }
+			exists = scope:sb_bst_refugee_source_state
+			scope:sb_bst_refugee_source_state ?= {
+				state_region = s:STATE_VRYSTAAT
+				owner = { sb_bst_oranje_frontier_actor = yes }
+				any_scope_pop = {
+					culture = cu:sotho
+					religion = rel:$RELIGION$
+					is_pop_type = $SOURCE_POP_TYPE$
+					total_size >= 5000
+				}
+			}
+		}
+		owner = { set_variable = sb_bst_mountain_refugees_transferred_var }
+		scope:sb_bst_refugee_source_state = {
+			kill_population_in_state = {
+				value = 5000
+				culture = cu:sotho
+				religion = rel:$RELIGION$
+				pop_type = $SOURCE_POP_TYPE$
+			}
+		}
+		create_pop = {
+			culture = $STAGING_CULTURE$
+			religion = $RELIGION$
+			pop_type = $ARRIVAL_POP_TYPE$
+			size = 5000
+			working_adult_ratio = 0.50
+		}
+		every_scope_pop = {
+			limit = { culture = cu:$STAGING_CULTURE$ }
+			set_pop_wealth = {
+				update_loyalties = no
+				wealth_distribution = { value = scope:sb_bst_refugee_wealth }
+			}
+			set_pop_literacy = {
+				literacy_rate = { value = scope:sb_bst_refugee_literacy }
+			}
+			# Last: this can merge the arrivals with existing Sotho residents.
+			change_pop_culture = { target = cu:sotho value = 1.00 }
+		}
+	}
+}
+

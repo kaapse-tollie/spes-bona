@@ -9,6 +9,18 @@
 **Evidence baseline:** [full resource audit, 24 August 2026](../../References/Resource%20rework/sb_full_resource_audit_2026-08-24/README.md)
 **Implementation guide:** [Resource Update: Contributor and Maintainer Guide](resource_update_guide.md)
 
+## 1.15.1 compatibility update — 11 November 2026
+
+The port follows native copper: Namaqualand **9**, Zambia **21** and Katanga
+**35**, for **65** across the regional file. The researched SB allocation contains
+Namaqualand's 9; Zambia and Katanga remain unchanged native state blocks.
+Northern Cape's eight lead proxy levels remain removed. Hereroland 10 and
+Namaqualand 2 lead remain, giving the SB allocation **12 lead** and **9 copper**.
+The historical tables below retain their dated research/comparison baselines.
+See the [hotfix report](compatibility/cmf_1_67_3_and_1_15_1_patch_2026_11_11.md).
+The copper-focused follow-up remains RES115-01 in the
+[open register](audit_issues_open.md#victoria-3-115--remaining-verification-and-secondary-extensions).
+
 ## Decision rule
 
 The full resource audit remains the evidence record, including every lower, central,
@@ -17,11 +29,11 @@ applies the maintainer's explicit gameplay layer below. These entries are balanc
 state-specialisation choices; they must not be cited later as revised historical
 estimates.
 
-"Configured horizon" includes static capacity, native undiscovered reserves, and every
-one-time scripted stage. On 18 October 2026 the eight technology-gated diamond deposits
-were converted to native undiscovered reserves without changing any capacity or
-technology threshold. Discovery now requires the corresponding mine technology and
-the normal engine discovery roll. Kimberley retains its event-driven 1 + 19 route.
+"Configured horizon" includes static capacity, native reserves, diamond survey
+budgets and the one-time scripted stages. Each of the eight diamond deposits
+opens to annual surveys when a territorial owner researches the regional
+technology. A successful survey reveals capacity for the same Diamond Mines
+building used by Kimberley's event-driven 1 + 19 route.
 Iron and coal stages still add usable capacity with an owner-visible notification.
 
 The eight legacy gold/oil callbacks are unchanged. Inspection of the installed native
@@ -118,9 +130,10 @@ Vanilla counts each unsplit parent state once. Old SB includes its scripted addi
 
 - Static caps and crop slots live in
   [`map_data/state_regions/04_subsaharan_africa.txt`](../map_data/state_regions/04_subsaharan_africa.txt).
-- Native diamond reserves live in the state-region file; three otherwise equivalent
-  mine definitions in `common/buildings/sb_diamond_mines.txt` provide their different
-  technology requirements. Their discoverable group inherits ordinary mining bonuses.
+- The [regional survey register](../common/scripted_effects/sb_diamond_surveys.txt)
+  defines each diamond budget and technology. There is one active survey calendar
+  per region. The [mine](../common/buildings/sb_diamond_mines.txt) applies its
+  construction requirement to the local owner in split states.
 - The remaining scripted technology stages live in
   [`common/scripted_effects/sb_resource_technology_gates_effects.txt`](../common/scripted_effects/sb_resource_technology_gates_effects.txt).
 - Technology acquisition, starting-technology catch-up, and later ownership changes
@@ -138,7 +151,6 @@ Vanilla counts each unsplit parent state once. Old SB includes its scripted addi
 The executable contract is locked by
 [`tests/test_resource_rework_implementation.py`](../tests/test_resource_rework_implementation.py),
 which reconstructs every configured state value and the regional totals from the live
-state file, gate stages, and Kimberley event. `tests/test_diamond_discovery.py` checks
-the eight undiscovered reserves, native technology requirements, unchanged mine
-economics, Kimberley's separate route, and De Beers support. Engine rolls remain
-pending DP's fresh-game verification.
+state file, survey register, gate stages and Kimberley event. `tests/test_diamond_discovery.py`
+checks annual odds, territorial eligibility, delayed finds, remaining reserves,
+Kimberley's separate route and De Beers support. DP's fresh-game checks are pending.

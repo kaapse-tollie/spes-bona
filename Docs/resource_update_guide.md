@@ -1,5 +1,10 @@
 # Resource Update: Contributor and Maintainer Guide
 
+**1.15 port update:** native copper and the removal of Northern Cape's lead
+proxy supersede the dated pre-port allocation below. See the
+[current resource record](resource_gameplay_overrides.md#1151-compatibility-update--11-november-2026)
+and RES115-01 for the separate copper audit.
+
 **Implemented:** 25 August 2026
 
 **Status:** live in the mod; a fresh campaign is required
@@ -59,15 +64,14 @@ The affected state identifiers are:
 
 ## How to read the totals
 
-The **configured horizon** is the static cap plus native undiscovered reserves and
-every one-time technology stage. It is a ceiling used for design
+The **configured horizon** includes static capacity, native reserves, diamond survey
+budgets and one-time technology stages. It is a ceiling used for design
 comparison, not a claim that every level is available in 1836.
 
 - Static arable, wood, fishing, whaling, ordinary mines, crop slots, rubber, and
   initial discoverable resources are defined in the state-region file.
-- Eight diamond deposits start as **undiscovered** reserves. Their mine definitions
-  require Dynamite, Pumpjacks, or Pneumatic Tools, matching the former gates. The
-  normal engine discovery system reveals capacity and supplies the discovery toast.
+- Eight regions start with **95 hidden diamond levels** in total. An owner who has
+  researched the regional technology can discover capacity for Diamond Mines.
 - Technology-gated iron and coal stages remain immediately usable with custom toasts.
 - The legacy gold/oil callbacks retain their existing capacity effects. Native
   inspection on 18 October found that these do not add undiscovered reserves; the
@@ -86,12 +90,17 @@ playtesting values; their fresh-campaign pass/fail checks are recorded there.
 
 ## Technology-gate architecture
 
-Diamond discovery uses the native state-region `resource` entries and each resource
-building's `unlocking_technologies`. The 95 undiscovered diamond levels are already in
-the map definition, but cannot be discovered before their mine's technology is
-available under native rules. No technology callback grants them usable capacity.
-Three mine definitions share the existing diamond labels and production methods;
-all inherit ordinary mining bonuses through the discoverable diamond group.
+The first qualifying territorial owner starts a 365-day survey window for the
+region. Each year one qualifying state supplies its owner's discovery modifier.
+The base annual chance is 7.04%. A successful survey reports on day 0–364, after
+checking the technology of whoever then owns the surveyed province. An ineligible
+owner cancels that find and leaves the reserve intact. The next window opens on
+the original anniversary. Foreign investment rights confer no survey eligibility.
+
+All finds expand buildable capacity for the same Diamond Mines building. In a
+split region each owner needs the regional technology to build or expand its own
+mines. Existing mines continue operating after conquest. See the [survey
+lifecycle and playtest cases](compatibility/frontier_playtest_2026_11_04.md#owner-only-surveys).
 
 The remaining scripted stages call the same idempotent effect when:
 
@@ -99,11 +108,11 @@ The remaining scripted stages call the same idempotent effect when:
 2. a campaign starts with that technology already researched; or
 3. ownership of an affected state changes to an eligible country.
 
-Each scripted stage has one global completion flag. Native diamond reserves belong
-to the state region and are not re-added by ownership changes or technology hooks.
+Each of those stages has one global completion flag. Diamond reserves are recorded
+once per geographic region at campaign start.
 
 The table lists unchanged resource budgets and eligibility thresholds. Diamond
-entries require a subsequent engine discovery; the other entries retain their
+entries require a successful survey. The other entries retain their
 existing scripted effects.
 
 | Technology | Configured additions |
@@ -131,7 +140,7 @@ replaced by the audit's literal crop recommendation.
 
 For a balance-only change within the existing evidence range:
 
-1. update the state file or technology stage;
+1. update the state file, survey register or technology stage;
 2. add the decision and rationale to the override record;
 3. update the expected state and regional totals in
    [`test_resource_rework_implementation.py`](../tests/test_resource_rework_implementation.py);

@@ -2,6 +2,8 @@ from pathlib import Path
 import re
 import unittest
 
+from tests.je_outcomes import outcome_field, outcome_nodes
+
 from tools import validate
 
 
@@ -62,7 +64,7 @@ class NatalInterwarTests(unittest.TestCase):
             ),
             3,
         )
-        invalid = object_block_from_source(journal, "invalid")
+        invalid = outcome_field(journal, "invalid", "trigger")
         self.assertIn("has_variable = sb_natalia_great_trek_disabled_var", invalid)
 
         trigger = object_block_from_source(completion, "trigger")
@@ -355,7 +357,7 @@ class NatalInterwarTests(unittest.TestCase):
             "law_commercialized_agriculture",
         ):
             self.assertIn(law, amendment)
-        self.assertIn("tax_land_add = 0.03", amendment)
+        self.assertIn("tax_land_add = 0.1", amendment)
         self.assertNotIn("country_tax_income_add", amendment)
         self.assertIn("building_subsistence_output_mult = 0.30", amendment)
         self.assertIn(
@@ -933,8 +935,8 @@ class NatalInterwarTests(unittest.TestCase):
             "common/journal_entries/1-13_sb_natal_interwar.txt",
             "je_sb_natal_indenture_program_v2",
         )
-        on_complete = object_block_from_source(journal, "on_complete")
-        on_invalid = object_block_from_source(journal, "on_invalid")
+        on_complete = outcome_field(journal, "complete", "effect")
+        on_invalid = outcome_field(journal, "invalid", "effect")
         amendment = object_block(
             "common/amendments/sb_amendments.txt",
             "amendment_sb_natal_indian_indenture_status",

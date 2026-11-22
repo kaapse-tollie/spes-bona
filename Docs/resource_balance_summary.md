@@ -1,5 +1,10 @@
 # Resource Balance Executive Summary
 
+**1.15 port update:** native copper and the removal of Northern Cape's lead
+proxy supersede the dated pre-port allocation below. See the
+[current resource record](resource_gameplay_overrides.md#1151-compatibility-update--11-november-2026)
+and RES115-01 for the separate copper audit.
+
 SB's live Southern African resource allocation now uses the completed 17-state audit
 as its evidence baseline and a separately recorded gameplay layer as its final design.
 The evidence ranges remain unchanged; balance selections are not presented as new
@@ -17,10 +22,10 @@ tables are indexed in the external
 ## Live rules
 
 - Static caps implement the final 17-state design.
-- Eight diamond deposits contain 95 levels of native undiscovered reserves. Their
-  mine definitions require the existing Dynamite, Pumpjacks, or Pneumatic Tools gate;
-  engine discovery determines when capacity appears. Kimberley's event-led 20 levels
-  remain separate and unchanged.
+- Eight regional deposits hold 95 hidden diamond levels. A territorial owner's
+  Dynamite, Pumpjacks or Pneumatic Tools opens the region's annual surveys. A
+  successful report adds capacity for Diamond Mines. Kimberley's event provides
+  its separate 20 levels.
 - Iron and coal additions remain immediately usable and post one-time notifications.
 - The remaining scripted gates retain technology-acquisition, game-start, and
   state-owner-change hooks. The eight legacy gold/oil stages are unchanged: native

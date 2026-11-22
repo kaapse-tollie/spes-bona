@@ -1,0 +1,114 @@
+﻿# A geological reserve belongs to the state region for its entire lifetime.
+sb_register_diamond_deposits = {
+	s:STATE_VRYSTAAT = { sb_register_diamond_deposit = { LEVELS = 5 TECH = dynamite } }
+	s:STATE_NORTHERN_CAPE = { sb_register_diamond_deposit = { LEVELS = 4 TECH = pumpjacks } }
+	s:STATE_TRANSVAAL = { sb_register_diamond_deposit = { LEVELS = 20 TECH = pumpjacks } }
+	s:STATE_NAMAQUALAND = { sb_register_diamond_deposit = { LEVELS = 14 TECH = pumpjacks } }
+	s:STATE_NORTHERN_TRANSVAAL = { sb_register_diamond_deposit = { LEVELS = 6 TECH = pneumatic_tools } }
+	s:STATE_DRAKENSBERG = { sb_register_diamond_deposit = { LEVELS = 6 TECH = pneumatic_tools } }
+	s:STATE_BOTSWANA = { sb_register_diamond_deposit = { LEVELS = 30 TECH = pneumatic_tools } }
+	s:STATE_ZAMBEZI = { sb_register_diamond_deposit = { LEVELS = 10 TECH = pneumatic_tools } }
+}
+
+sb_register_diamond_deposit = {
+	if = {
+		limit = { NOT = { has_variable = sb_diamond_reserve_size } }
+		set_variable = { name = sb_diamond_reserve_size value = $LEVELS$ }
+		set_variable = { name = sb_diamond_remaining value = $LEVELS$ }
+		set_variable = { name = sb_diamond_gate value = flag:$TECH$ }
+		every_scope_state = { sb_diamond_check_new_owner = yes }
+	}
+}
+
+# State scope. Once any territorial owner qualifies, the region keeps its own calendar.
+sb_diamond_check_new_owner = {
+	if = {
+		limit = {
+			state_region = {
+				has_variable = sb_diamond_gate
+				NOT = { has_variable = sb_diamond_surveys_started }
+			}
+		}
+		if = {
+			limit = { sb_diamond_owner_has_survey_technology = yes }
+			state_region = { sb_start_diamond_surveys = yes }
+		}
+		else_if = {
+			limit = { state_region.var:sb_diamond_gate = flag:dynamite }
+			owner = { set_variable = sb_diamond_waiting_for_dynamite }
+		}
+		else_if = {
+			limit = { state_region.var:sb_diamond_gate = flag:pumpjacks }
+			owner = { set_variable = sb_diamond_waiting_for_pumpjacks }
+		}
+		else = { owner = { set_variable = sb_diamond_waiting_for_pneumatic_tools } }
+	}
+}
+
+# Country scope. Only a landholder reaching a previously awaited gate inspects its states.
+sb_diamond_check_research = {
+	if = {
+		limit = { has_variable = sb_diamond_waiting_for_$TECH$ has_technology_researched = $TECH$ }
+		remove_variable = sb_diamond_waiting_for_$TECH$
+		every_scope_state = {
+			limit = {
+				state_region = {
+					has_variable = sb_diamond_gate
+					var:sb_diamond_gate = flag:$TECH$
+					NOT = { has_variable = sb_diamond_surveys_started }
+				}
+			}
+			state_region = { sb_start_diamond_surveys = yes }
+		}
+	}
+}
+
+sb_start_diamond_surveys = {
+	if = {
+		limit = { NOT = { has_variable = sb_diamond_surveys_started } }
+		set_variable = sb_diamond_surveys_started
+		sb_roll_diamond_survey_year = yes
+	}
+}
+
+# One qualified fragment represents a split region for this roll. The province
+# pins a successful survey to land that survives state mergers and annexations.
+sb_roll_diamond_survey_year = {
+	random_scope_state = {
+		limit = { sb_diamond_owner_has_survey_technology = yes }
+		random = {
+			chance = owner.sb_diamond_annual_discovery_chance
+			save_scope_as = sb_diamond_survey_state
+			# The native random_province iterator rejects state input in 1.15.
+			random_province_in_southern_africa_old = {
+				limit = { state = scope:sb_diamond_survey_state }
+				save_scope_as = sb_diamond_survey_province
+			}
+			state_region = {
+				set_variable = { name = sb_diamond_pending_site value = scope:sb_diamond_survey_province }
+				trigger_event = { on_action = sb_deliver_diamond_survey days = { 0 364 } }
+			}
+		}
+	}
+	trigger_event = { on_action = sb_next_diamond_survey_year days = 365 }
+}
+
+sb_deliver_diamond_find = {
+	var:sb_diamond_pending_site = { save_scope_as = sb_diamond_site }
+	remove_variable = sb_diamond_pending_site
+	if = {
+		limit = {
+			exists = scope:sb_diamond_site.state.owner
+			scope:sb_diamond_site.state = { sb_diamond_owner_has_survey_technology = yes }
+		}
+		save_scope_value_as = { name = sb_diamond_found_levels value = sb_diamond_find_size }
+		# 1.14.5 reads change_resource_potential.amount as a literal integer.
+		while = {
+			count = scope:sb_diamond_found_levels
+			change_resource_potential = { type = building_diamond_mine amount = 1 }
+		}
+		change_variable = { name = sb_diamond_remaining subtract = scope:sb_diamond_found_levels }
+		save_scope_as = sb_diamond_found_region
+		scope:sb_diamond_site.state.owner = { post_notification = sb_diamond_survey_discovery }
+	}
+}

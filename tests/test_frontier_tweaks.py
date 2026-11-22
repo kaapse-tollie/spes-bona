@@ -2,6 +2,8 @@ from pathlib import Path
 import re
 import unittest
 
+from tests.je_outcomes import outcome_field, outcome_nodes
+
 from tools import validate
 
 
@@ -249,7 +251,8 @@ class FrontierTweaksTests(unittest.TestCase):
         for tag in ("TRN", "ORA", "ZPB", "LYD", "NAL", "SGO"):
             self.assertIn(f"country_definition = cd:{tag}", event)
         self.assertEqual(2, event.count("\n\toption = {"))
-        self.assertEqual(2, event.count("set_variable = sb_great_trek_normalized_var"))
+        self.assertIn("fire_only_once = yes", event)
+        self.assertNotIn("sb_great_trek_normalized_var", event)
 
         sources = "\n".join(
             text(path)
@@ -396,10 +399,10 @@ class FrontierTweaksTests(unittest.TestCase):
             "common/journal_entries/1-07_sb_bst_frontier.txt",
             "je_sb_bst_ora_frontier",
         )
-        complete = object_block_from_source(journal, "complete")
-        on_complete = object_block_from_source(journal, "on_complete")
-        fail = object_block_from_source(journal, "fail")
-        on_fail = object_block_from_source(journal, "on_fail")
+        complete = outcome_field(journal, "complete", "trigger")
+        on_complete = outcome_field(journal, "complete", "effect")
+        fail = outcome_field(journal, "fail", "trigger")
+        on_fail = outcome_field(journal, "fail", "effect")
         triggers = text("common/scripted_triggers/sb_bst_triggers.txt")
         events = text("events/sb_bst_frontier_events.txt")
         oranje_result = object_block_from_source(events, "sb_bst_frontier.300")
@@ -439,7 +442,7 @@ class FrontierTweaksTests(unittest.TestCase):
             "je_sb_settle_drakensberg",
         )
         possible = object_block_from_source(journal, "possible")
-        invalid = object_block_from_source(journal, "invalid")
+        invalid = outcome_field(journal, "invalid", "trigger")
         monthly = text("common/on_actions/sb_bst_on_actions.txt")
 
         self.assertIn("sb_bst_holds_drakensberg = yes", possible)

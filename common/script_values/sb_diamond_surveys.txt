@@ -1,0 +1,41 @@
+﻿# Country scope. Annual probability of at least one discovery, in percent.
+# With a daily percentage d, the first four terms of 100 * (1 - (1 - d/100)^365)
+# give the installed rates to within 0.001 percentage points.
+sb_diamond_annual_discovery_chance = {
+	value = 1
+	add = modifier:country_resource_discovery_chance_mult
+	min = 0
+	multiply = define:NEconomy|BASE_RESOURCE_DISCOVER_CHANCE
+	save_temporary_value_as = sb_diamond_daily_chance
+	value = -727.44171
+	multiply = scope:sb_diamond_daily_chance
+	add = 803.803
+	multiply = scope:sb_diamond_daily_chance
+	subtract = 664.3
+	multiply = scope:sb_diamond_daily_chance
+	add = 365
+	multiply = scope:sb_diamond_daily_chance
+	min = 0
+	max = 100
+}
+
+# State-region scope. Native discovery adds a random bonus to the minimum
+# find. Both are based on the original deposit and the last find is capped.
+sb_diamond_find_size = {
+	value = var:sb_diamond_reserve_size
+	multiply = define:NEconomy|RESOURCE_DISCOVER_MIN_FRACTION
+	round = yes
+	min = 1
+	add = {
+		integer_range = {
+			min = 0
+			max = {
+				value = var:sb_diamond_reserve_size
+				multiply = define:NEconomy|RESOURCE_DISCOVER_MAX_FRACTION
+				round = yes
+				min = 1
+			}
+		}
+	}
+	max = var:sb_diamond_remaining
+}

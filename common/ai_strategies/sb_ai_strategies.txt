@@ -215,6 +215,37 @@ ai_strategy_sb_klip_river_secession_resistance = {
 	}
 }
 
+# Use Vanilla's Taiping resistance weight while the Xhosa press their frontier claim.
+ai_strategy_sb_xhosa_frontier_defence = {
+	icon = "gfx/interface/icons/ai_strategy_icons/protect_region.dds"
+	type = diplomatic
+	possible = {
+		is_ai = yes
+		country_definition = cd:XHO
+		OR = {
+			has_variable = sb_xhosa_story_launch_lease_var
+			exists = var:sb_xhosa_story_play_scope
+		}
+	}
+	diplomatic_play_boldness = {
+		value = 0
+		if = {
+			limit = {
+				scope:diplomatic_play ?= {
+					initiator ?= c:XHO
+					OR = {
+						is_diplomatic_play_type = dp_sb_xhosa_war_7
+						is_diplomatic_play_type = dp_sb_xhosa_war_8
+						is_diplomatic_play_type = dp_sb_xhosa_war_9
+					}
+				}
+			}
+			add = 1000
+		}
+	}
+	weight = { value = 10000 }
+}
+
 # Bounded support for the Portuguese colonial programme. It raises the desired
 # fleet rather than creating ships, and pressures only Kongo-held North Angola.
 ai_strategy_sb_portuguese_african_planning = {

@@ -31,6 +31,7 @@ on_state_owner_change = {
 
 sb_on_mineral_discoveries_game_started = {
 	effect = {
+		sb_register_diamond_deposits = yes
 		every_country = {
 			limit = { is_country_alive = yes }
 			sb_apply_resource_technology_gates = yes
@@ -41,6 +42,9 @@ sb_on_mineral_discoveries_game_started = {
 sb_on_mineral_discoveries_acquired_technology = {
 	effect = {
 		sb_apply_resource_technology_gates = yes
+		sb_diamond_check_research = { TECH = dynamite }
+		sb_diamond_check_research = { TECH = pumpjacks }
+		sb_diamond_check_research = { TECH = pneumatic_tools }
 	}
 }
 
@@ -63,7 +67,18 @@ sb_on_mineral_discoveries_state_owner_change = {
 	}
 	effect = {
 		owner ?= { sb_apply_resource_technology_gates = yes }
+		sb_diamond_check_new_owner = yes
 	}
+}
+
+sb_next_diamond_survey_year = {
+	trigger = { var:sb_diamond_remaining > 0 }
+	effect = { sb_roll_diamond_survey_year = yes }
+}
+
+sb_deliver_diamond_survey = {
+	trigger = { exists = var:sb_diamond_pending_site var:sb_diamond_remaining > 0 }
+	effect = { sb_deliver_diamond_find = yes }
 }
 
 sb_on_kimberley_yearly_pulse = {

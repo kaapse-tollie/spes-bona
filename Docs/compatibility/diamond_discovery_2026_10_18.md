@@ -1,5 +1,16 @@
 # Technology-gated diamond discovery — 18 October 2026
 
+**Subsequent implementation.** SB now uses [owner-only annual surveys](frontier_playtest_2026_11_04.md#owner-only-surveys).
+The comparison below records the earlier native implementation and its investigation.
+
+**4 November playtest correction.** The installed engine treats multiple entries
+in a mine's technology list as alternatives. The original three definitions
+therefore admitted Prospecting on its own. The current stage lists require only
+their respective later technology. Native split-region and foreign-investor
+eligibility still apply. The May–September 1881 save evidence and the regional
+thresholds are recorded in the [frontier playtest](frontier_playtest_2026_11_04.md).
+The original assessment below records the design and evidence available in October.
+
 Target: the existing SB 0.20.2 maintenance batch, Victoria 3 1.14.5 build 25629520.
 All resource budgets, production methods, construction costs and technology thresholds
 are retained. No game launch or save migration is included.
