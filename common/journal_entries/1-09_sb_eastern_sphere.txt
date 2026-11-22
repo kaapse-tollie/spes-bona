@@ -5,6 +5,8 @@
 #   file during the planned file-scope cleanup.
 
 je_sb_consolidating_gaza = {
+	activation_description = { always = yes }
+
 	group = je_group_historical_content
 
 	icon = "gfx/interface/icons/event_icons/event_default.dds"
@@ -28,51 +30,92 @@ je_sb_consolidating_gaza = {
 		desc = je_sb_consolidating_gaza_status
 	}
 
-	complete = {
-		hidden_trigger = {
-			NOT = { has_variable = sb_gaza_consolidation_grace_var }
-		}
-		s:STATE_LOURENCO_MARQUES = {
-			any_scope_state = {
-				owner = root
-				turmoil < 0.25
-			}
-		}
-		s:STATE_ZAMBEZIA = {
-			any_scope_state = {
-				owner = root
-				turmoil < 0.25
-				is_incorporated = yes
-			}
-		}
-	}
-
-	fail = {
-		custom_tooltip = {
-			text = je_sb_consolidating_gaza_fail_soshangane_tt
+	outcome = {
+		header = je_standard_completion_header
+		effect_header = je_standard_on_completion_header
+		color = "gold_positive"
+		conclusion_desc = je_standard_completion_conclusion_desc
+		trigger = {
 			hidden_trigger = {
-				ruler = {
-					NOT = { has_template = GZA_soshangane }
+				NOT = { has_variable = sb_gaza_consolidation_grace_var }
+			}
+			s:STATE_LOURENCO_MARQUES = {
+				any_scope_state = {
+					owner = root
+					turmoil < 0.25
+				}
+			}
+			s:STATE_ZAMBEZIA = {
+				any_scope_state = {
+					owner = root
+					turmoil < 0.25
+					is_incorporated = yes
+				}
+			}
+		}
+		effect = {
+			sb_gaza_completion_effect = yes
+		}
+		event_outcome_desc = {
+			first_valid = {
+				triggered_desc = {
+					trigger = { always = yes }
+					desc = event_effects_sb_gaza.090_tt
 				}
 			}
 		}
 	}
 
-	invalid = {
-		OR = {
-			NOT = { has_variable = sb_gaza_intro_sequence_completed_var }
+	outcome = {
+		header = je_standard_failure_header
+		effect_header = je_standard_on_failure_header
+		color = "blue_negative"
+		conclusion_desc = je_standard_failure_conclusion_desc
+		trigger = {
 			custom_tooltip = {
-				text = je_sb_consolidating_gaza_invalid_subject_tt
+				text = je_sb_consolidating_gaza_fail_soshangane_tt
 				hidden_trigger = {
-					is_subject = yes
+					ruler = {
+						NOT = { has_template = GZA_soshangane }
+					}
 				}
 			}
-			custom_tooltip = {
-				text = je_sb_consolidating_gaza_invalid_holdings_tt
-				hidden_trigger = {
-					NOT = { sb_gaza_has_target_holdings = yes }
+		}
+		effect = {
+			sb_gaza_failure_effect = yes
+		}
+		event_outcome_desc = {
+			first_valid = {
+				triggered_desc = {
+					trigger = { always = yes }
+					desc = event_effects_sb_gaza.095_tt
 				}
 			}
+		}
+	}
+
+	outcome = {
+		flags = { hidden invalid_outcome }
+		conclusion_desc = je_standard_failure_conclusion_desc
+		trigger = {
+			OR = {
+				NOT = { has_variable = sb_gaza_intro_sequence_completed_var }
+				custom_tooltip = {
+					text = je_sb_consolidating_gaza_invalid_subject_tt
+					hidden_trigger = {
+						is_subject = yes
+					}
+				}
+				custom_tooltip = {
+					text = je_sb_consolidating_gaza_invalid_holdings_tt
+					hidden_trigger = {
+						NOT = { sb_gaza_has_target_holdings = yes }
+					}
+				}
+			}
+		}
+		effect = {
+			sb_gaza_clear_runtime = yes
 		}
 	}
 
@@ -82,41 +125,13 @@ je_sb_consolidating_gaza = {
 		}
 	}
 
-	on_complete = {
-		sb_gaza_completion_effect = yes
-	}
-
-	event_outcome_completed_desc = {
-		first_valid = {
-			triggered_desc = {
-				trigger = { always = yes }
-				desc = event_effects_sb_gaza.090_tt
-			}
-		}
-	}
-
-	on_fail = {
-		sb_gaza_failure_effect = yes
-	}
-
-	event_outcome_failed_desc = {
-		first_valid = {
-			triggered_desc = {
-				trigger = { always = yes }
-				desc = event_effects_sb_gaza.095_tt
-			}
-		}
-	}
-
-	on_invalid = {
-		sb_gaza_clear_runtime = yes
-	}
-
 	weight = 1000
 	should_be_pinned_by_default_uninvolved_or_context = yes
 }
 
 je_sb_delagoa_route_to_sea = {
+	activation_description = { always = yes }
+
 	group = je_group_historical_content
 
 	icon = "gfx/interface/icons/event_icons/event_trade.dds"
@@ -133,59 +148,68 @@ je_sb_delagoa_route_to_sea = {
 		desc = je_sb_delagoa_route_to_sea_status
 	}
 
-	complete = {
-		custom_tooltip = {
-			text = sb_delagoa_transvaal_railway_complete_tt
-			sb_has_railway_in_transvaal = yes
+	outcome = {
+		header = je_standard_completion_header
+		effect_header = je_standard_on_completion_header
+		color = "gold_positive"
+		conclusion_desc = je_standard_completion_conclusion_desc
+		trigger = {
+			custom_tooltip = {
+				text = sb_delagoa_transvaal_railway_complete_tt
+				sb_has_railway_in_transvaal = yes
+			}
+			custom_tooltip = {
+				text = sb_delagoa_east_transvaal_railway_complete_tt
+				sb_has_railway_in_east_transvaal = yes
+			}
+			custom_tooltip = {
+				text = sb_delagoa_northern_transvaal_railway_complete_tt
+				sb_has_railway_in_northern_transvaal = yes
+			}
+			custom_tooltip = {
+				text = sb_delagoa_market_leader_transit_complete_tt
+				sb_delagoa_actor_has_trade_through = yes
+			}
 		}
-		custom_tooltip = {
-			text = sb_delagoa_east_transvaal_railway_complete_tt
-			sb_has_railway_in_east_transvaal = yes
-		}
-		custom_tooltip = {
-			text = sb_delagoa_northern_transvaal_railway_complete_tt
-			sb_has_railway_in_northern_transvaal = yes
-		}
-		custom_tooltip = {
-			text = sb_delagoa_market_leader_transit_complete_tt
-			sb_delagoa_actor_has_trade_through = yes
-		}
-	}
-
-	invalid = {
-		OR = {
-			exists = c:SAF
-			has_variable = sb_delagoa_route_complete_var
-			has_global_variable = sb_delagoa_route_complete_global_var
-			NOT = { sb_delagoa_has_valid_gateway = yes }
-			NOT = { sb_is_delagoa_route_actor = yes }
-		}
-	}
-
-	on_complete = {
-		set_global_variable = sb_delagoa_route_complete_global_var
-		set_variable = sb_delagoa_route_complete_var
-		sb_imperial_confederation_start_sea_access_warning_if_needed = yes
-		trigger_event = { id = sb_delagoa.020 days = 1 popup = yes }
-		s:STATE_LOURENCO_MARQUES = {
-			random_scope_state = {
-				limit = {
-					owner = {
-						owns_entire_state_region = STATE_LOURENCO_MARQUES
+		effect = {
+			set_global_variable = sb_delagoa_route_complete_global_var
+			set_variable = sb_delagoa_route_complete_var
+			sb_imperial_confederation_start_sea_access_warning_if_needed = yes
+			trigger_event = { id = sb_delagoa.020 days = 1 popup = yes }
+			s:STATE_LOURENCO_MARQUES = {
+				random_scope_state = {
+					limit = {
+						owner = {
+							owns_entire_state_region = STATE_LOURENCO_MARQUES
+						}
 					}
+					owner = { trigger_event = { id = sb_delagoa.021 days = 1 popup = yes } }
 				}
-				owner = { trigger_event = { id = sb_delagoa.021 days = 1 popup = yes } }
+			}
+		}
+		event_outcome_desc = {
+			first_valid = {
+				triggered_desc = {
+					trigger = { always = yes }
+					desc = event_effects_sb_delagoa.020_tt
+				}
 			}
 		}
 	}
 
-	event_outcome_completed_desc = {
-		first_valid = {
-			triggered_desc = {
-				trigger = { always = yes }
-				desc = event_effects_sb_delagoa.020_tt
+	outcome = {
+		flags = { hidden invalid_outcome }
+		conclusion_desc = je_standard_failure_conclusion_desc
+		trigger = {
+			OR = {
+				exists = c:SAF
+				has_variable = sb_delagoa_route_complete_var
+				has_global_variable = sb_delagoa_route_complete_global_var
+				NOT = { sb_delagoa_has_valid_gateway = yes }
+				NOT = { sb_is_delagoa_route_actor = yes }
 			}
 		}
+		effect = {}
 	}
 
 	weight = 1000
@@ -193,6 +217,8 @@ je_sb_delagoa_route_to_sea = {
 }
 
 je_sb_imperial_confederation_scheme = {
+	activation_description = { always = yes }
+
 	group = je_group_global_international_situations
 
 	icon = "gfx/interface/icons/event_icons/waving_flag.dds"
@@ -244,60 +270,66 @@ je_sb_imperial_confederation_scheme = {
 		desc = je_sb_imperial_confederation_scheme_status
 	}
 
-	custom_completion_header = je_sb_imperial_confederation_scheme_imperial_victory
-
-	complete = {
-		custom_tooltip = {
-			text = je_sb_imperial_confederation_success_confederate_tt
-			exists = c:SAF
+	outcome = {
+		header = je_sb_imperial_confederation_scheme_imperial_victory
+		effect_header = je_standard_on_completion_header
+		color = "gold_positive"
+		conclusion_desc = je_standard_completion_conclusion_desc
+		trigger = {
+			custom_tooltip = {
+				text = je_sb_imperial_confederation_success_confederate_tt
+				exists = c:SAF
+			}
+		}
+		effect = {
+			set_global_variable = sb_imperial_confederation_terminal_je_settled_var
+			sb_imperial_confederation_clear_runtime = yes
 		}
 	}
 
-	custom_failure_header = je_sb_imperial_confederation_scheme_failure
-
-	fail = {
-		OR = {
-			custom_tooltip = {
-				text = je_sb_imperial_confederation_failure_sea_access_tt
-				sb_imperial_confederation_sea_access_failure_ready = yes
-			}
-			custom_tooltip = {
-				text = je_sb_imperial_confederation_failure_terminal_tt
-				OR = {
-					has_global_variable = sb_imperial_confederation_scheme_failed_var
-					AND = {
-						has_global_variable = sb_imperial_confederation_scheme_resolved_var
-						NOT = { exists = c:SAF }
+	outcome = {
+		header = je_sb_imperial_confederation_scheme_failure
+		effect_header = je_standard_on_failure_header
+		color = "blue_negative"
+		conclusion_desc = je_standard_failure_conclusion_desc
+		trigger = {
+			OR = {
+				custom_tooltip = {
+					text = je_sb_imperial_confederation_failure_sea_access_tt
+					sb_imperial_confederation_sea_access_failure_ready = yes
+				}
+				custom_tooltip = {
+					text = je_sb_imperial_confederation_failure_terminal_tt
+					OR = {
+						has_global_variable = sb_imperial_confederation_scheme_failed_var
+						AND = {
+							has_global_variable = sb_imperial_confederation_scheme_resolved_var
+							NOT = { exists = c:SAF }
+						}
 					}
 				}
-			}
-			custom_tooltip = {
-				text = je_sb_imperial_confederation_failure_no_boers_tt
-				NOT = { sb_imperial_confederation_has_live_boer_participant = yes }
-			}
-			custom_tooltip = {
-				text = je_sb_imperial_confederation_failure_british_war_tt
-				sb_imperial_confederation_britain_at_war_with_participant = yes
-			}
-			custom_tooltip = {
-				text = je_sb_imperial_confederation_failure_subject_escape_tt
-				sb_imperial_confederation_bound_subject_escaped = yes
+				custom_tooltip = {
+					text = je_sb_imperial_confederation_failure_no_boers_tt
+					NOT = { sb_imperial_confederation_has_live_boer_participant = yes }
+				}
+				custom_tooltip = {
+					text = je_sb_imperial_confederation_failure_british_war_tt
+					sb_imperial_confederation_britain_at_war_with_participant = yes
+				}
+				custom_tooltip = {
+					text = je_sb_imperial_confederation_failure_subject_escape_tt
+					sb_imperial_confederation_bound_subject_escaped = yes
+				}
 			}
 		}
-	}
-
-	on_complete = {
-		set_global_variable = sb_imperial_confederation_terminal_je_settled_var
-		sb_imperial_confederation_clear_runtime = yes
-	}
-
-	on_fail = {
-		if = {
-			limit = { NOT = { has_global_variable = sb_imperial_confederation_scheme_failed_var } }
-			sb_imperial_confederation_fail_scheme = yes
+		effect = {
+			if = {
+				limit = { NOT = { has_global_variable = sb_imperial_confederation_scheme_failed_var } }
+				sb_imperial_confederation_fail_scheme = yes
+			}
+			set_global_variable = sb_imperial_confederation_terminal_je_settled_var
+			sb_imperial_confederation_clear_runtime = yes
 		}
-		set_global_variable = sb_imperial_confederation_terminal_je_settled_var
-		sb_imperial_confederation_clear_runtime = yes
 	}
 
 	weight = 1000
@@ -306,6 +338,8 @@ je_sb_imperial_confederation_scheme = {
 }
 
 je_sb_confederate_southern_africa = {
+	activation_description = { always = yes }
+
 	group = je_group_historical_content
 
 	icon = "gfx/interface/icons/event_icons/waving_flag.dds"
@@ -326,24 +360,29 @@ je_sb_confederate_southern_africa = {
 		desc = je_sb_confederate_southern_africa_status
 	}
 
-	complete = {
-		custom_tooltip = {
-			text = je_sb_confederate_southern_africa_complete_tt
-			sb_confederated_south_africa_controls_required_region = yes
+	outcome = {
+		header = je_standard_completion_header
+		effect_header = je_standard_on_completion_header
+		color = "gold_positive"
+		conclusion_desc = je_standard_completion_conclusion_desc
+		trigger = {
+			custom_tooltip = {
+				text = je_sb_confederate_southern_africa_complete_tt
+				sb_confederated_south_africa_controls_required_region = yes
+			}
 		}
-	}
-
-	on_complete = {
-		add_modifier = {
-			name = sb_confederated_south_africa_unified
-			days = normal_modifier_time
-		}
-		c:GBR ?= {
-			if = {
-				limit = { is_country_alive = yes }
-				add_modifier = {
-					name = sb_gbr_unified_southern_africa
-					days = normal_modifier_time
+		effect = {
+			add_modifier = {
+				name = sb_confederated_south_africa_unified
+				days = normal_modifier_time
+			}
+			c:GBR ?= {
+				if = {
+					limit = { is_country_alive = yes }
+					add_modifier = {
+						name = sb_gbr_unified_southern_africa
+						days = normal_modifier_time
+					}
 				}
 			}
 		}

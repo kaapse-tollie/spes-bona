@@ -6,7 +6,7 @@ from unittest import mock
 
 from tools import cmf_patch, sync_cmf, validate, check_override_inventory as inventory
 from tools import build_1_14_2_depot_delta as delta
-from test_sync_cmf import release_archive, fake_opener
+from test_sync_cmf import VERSION, release_archive, fake_opener
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -21,14 +21,14 @@ class PatchedCmfTests(unittest.TestCase):
         self.archive = release_archive()
         pristine = self.base / "pristine"
         pristine.mkdir()
-        sync_cmf.extract_release(self.archive, pristine, "1.66.0")
+        sync_cmf.extract_release(self.archive, pristine, VERSION)
         tree = pristine / "payload"
         payload = self.base / "files/common/example.txt"
         payload.parent.mkdir(parents=True)
         payload.write_bytes(b"patched")
         self.manifest = self.base / "manifest.json"
         self.patch = {
-            "schema_version": 1, "revision": cmf_patch.REVISION, "base_tag": "1.66.0",
+            "schema_version": 1, "revision": cmf_patch.REVISION, "base_tag": VERSION,
             "base_asset_sha256": cmf_patch.digest(self.archive),
             "base_tree_sha256": cmf_patch.tree_digest(tree),
             "files": [{"path": "common/example.txt", "payload": "files/common/example.txt",
@@ -41,16 +41,16 @@ class PatchedCmfTests(unittest.TestCase):
         self.opener, self.calls = fake_opener(archive=self.archive)
 
     def sync(self, **kwargs):
-        return sync_cmf.synchronize(self.target, tag="1.66.0",
+        return sync_cmf.synchronize(self.target, tag=VERSION,
             expected_sha256=self.patch["base_asset_sha256"], opener=self.opener,
             patch_manifest=self.manifest, **kwargs)
 
     def test_install_is_patched_repeatable_and_preserves_other_files(self):
-        self.assertEqual(("updated", "1.66.0"), self.sync())
+        self.assertEqual(("updated", VERSION), self.sync())
         self.assertEqual(b"patched", (self.target / "common/example.txt").read_bytes())
         self.assertEqual(b"example", (self.target / "gui/example.gui").read_bytes())
-        self.assertEqual(("current", "1.66.0"), self.sync(check_only=True))
-        self.assertEqual(("updated", "1.66.0"), self.sync(force=True))
+        self.assertEqual(("current", VERSION), self.sync(check_only=True))
+        self.assertEqual(("updated", VERSION), self.sync(force=True))
         cmf_patch.verify_install(self.target, self.manifest)
 
     def test_check_rejects_unpatched_partial_and_extra_files_without_writing(self):
@@ -96,6 +96,24 @@ class PatchedCmfTests(unittest.TestCase):
         self.patch["files"][0]["payload"] = "../outside"
         self.manifest.write_text(json.dumps(self.patch))
         with self.assertRaisesRegex(ValueError, "unsafe"):
+            cmf_patch.load_patch(self.manifest)
+
+    def test_gui_patch_exception_is_exact_and_payload_checked(self):
+        entry = self.patch["files"][0]
+        entry["path"] = "gui/com_gui_progressbars.gui"
+        entry["payload"] = "files/" + entry["path"]
+        payload = self.base / entry["payload"]
+        payload.parent.mkdir(parents=True)
+        payload.write_bytes(b"patched")
+        self.manifest.write_text(json.dumps(self.patch))
+        cmf_patch.load_patch(self.manifest)
+        payload.write_bytes(b"tampered")
+        with self.assertRaisesRegex(ValueError, "payload hash mismatch"):
+            cmf_patch.load_patch(self.manifest)
+        entry["path"] = "gui/unrelated.gui"
+        entry["payload"] = "files/" + entry["path"]
+        self.manifest.write_text(json.dumps(self.patch))
+        with self.assertRaisesRegex(ValueError, "unexpected CMF patch target"):
             cmf_patch.load_patch(self.manifest)
 
 

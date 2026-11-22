@@ -1,0 +1,221 @@
+{
+  "date": "2026-11-05",
+  "status": "Implementation complete in working tree; source regressions resolved. Pre-existing localisation review gate and DP engine certification remain open.",
+  "target": {
+    "game": "1.15.0",
+    "build": "26453692",
+    "core_manifest": "7727600027425614094",
+    "cmf": "1.67.1",
+    "patch": "sb-1.15.0-r1",
+    "sb_release_version": "0.20.3"
+  },
+  "baseline": "baseline.json",
+  "command": "/opt/homebrew/bin/python3 -B generated/rebase_1_15_0/run_logged_validation.py --skip-cmf-sync --tiger --game-root '/Users/depro/Library/Application Support/Steam/steamapps/common/Victoria 3/game' --cmf-root '../Community Mod Framework'",
+  "logging": "The local wrapper invokes ordinary validate.main(); only unit command output capture is expanded to preserve the full log. It uses the same command, environment, exit status and Check mapping as validate.run_command.",
+  "independent_checks": {
+    "sync_cmf_check": "PASS; exact installed release/patch tree, read-only, no network",
+    "override_inventory": "PASS: 39 same-path, 124 keyed, 18 state blocks, 1 additive, 8 localisation replace, 20 localisation key collisions, 2 native caller contracts",
+    "backup_hashes": "PASS: all 1092 captured source hashes reverified",
+    "localisation_before_after": "The same four pre-existing queue/namespace problems remain; no new issue. Coverage 107 reviewed, 195 to review.",
+    "live_delayed_dispatches": "Identical before/after multiset: 444, SHA-256 775f54acdcb3860344a84a9fe056b8cf2d44711167efb1bb672e2af769ae7d70"
+  },
+  "targeted_checks": [
+    {
+      "scope": "CMF installation, patch and semantic integration",
+      "tests": 55,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 5
+    },
+    {
+      "scope": "Territorial follow-up and movement precision",
+      "tests": 23,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "scope": "JEs and linked regressions",
+      "tests": 153,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "scope": "Map, history, resources, naval controls",
+      "tests": 59,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    {
+      "scope": "Root source overlays, once-only and frontier regressions",
+      "tests": 57,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    {
+      "scope": "Contested crown current contracts and logic",
+      "tests": 78,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "scope": "Current metadata after reviewed pin refresh",
+      "tests": 14,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  ],
+  "targeted_count_limit": "These suites overlap. Do not sum them into an independent aggregate test count.",
+  "once_only_audit": {
+    "source_files": 382,
+    "event_call_sites": 549,
+    "indexed_helpers_and_callers": 1160,
+    "indexed_variables": 1138,
+    "parameterised_accesses": 89,
+    "resolved_parameter_bindings": 68,
+    "definition_index_entries": 2018,
+    "event_local_gate_candidates_retained": 2
+  },
+  "bookkeeping_reduction": {
+    "removed_variables": 6,
+    "removed_literal_reads": 6,
+    "removed_literal_writes": 7,
+    "total_removed_source_operations": 13,
+    "performance": "Source operation count only; no measured dispatch/pulse/time improvement."
+  },
+  "engine": "All RT15 rows remain Engine pending. No game launched. No performance measurement or old-save certification.",
+  "known_limits": [
+    "Installed Tiger1.19.0 lacks target JE/event schema and is reported WARN without execution as a target validator.",
+    "Benin and Bas Congo lack coastal graph nodes in both native and SB; unchanged-native river-port cases remain runtime warnings, not inferred passes.",
+    "Four pre-existing localisation gate findings remain unchanged.",
+    "Five existing release gates BC-20, BC-22, CP-07, QUAL-09, SUP-05 remain open.",
+    "Whitespace checks report14 native state-history indentation lines and38 unchanged upstream CMF GUI lines; retained to preserve imported source."
+  ],
+  "delivery_checks": {
+    "local_link_destinations": 276,
+    "missing_paths": 0,
+    "pre_existing_anchor_findings": [
+      "Docs/audit_issues_open.md -> compatibility/bst_lesotho_famine_2026_11_01.md#revised-first-trial--actual-food-production",
+      "Docs/audit_issues_open.md -> compatibility/bst_lesotho_famine_2026_11_01.md#implemented-decision--throughput-only-for-ten-years"
+    ],
+    "new_anchor_findings": 0,
+    "patch_apply_check": "PASS against captured changed-file baseline",
+    "whitespace": {
+      "native_state_history_indentation_lines": 14,
+      "unchanged_upstream_cmf_gui_lines": 38,
+      "new_authored_whitespace_findings": 0
+    },
+    "cmf_whitespace_method": "SequenceMatcher equal blocks between pristine1.67.1 and patch payload establish all38 trailing lines are unchanged upstream."
+  },
+  "full_suite": {
+    "tests": 1081,
+    "passed": 1072,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 8,
+    "seconds": 211.989,
+    "failing_test": "FAIL: test_repository_manifests_are_current (test_validate.RepositoryValidatorTests.test_repository_manifests_are_current)",
+    "failure_scope": "Only the unchanged pre-existing localisation queue/review findings."
+  },
+  "validator": {
+    "pass": 12,
+    "warn": 2,
+    "skip": 1,
+    "fail": 2,
+    "failing_gates": [
+      "unit tests",
+      "localization"
+    ],
+    "same_underlying_issue": true,
+    "sync_skip": "Explicit offline run; independent sync_cmf.py --check passes."
+  },
+  "logs": {
+    "validation_final.log": {
+      "path": "generated/rebase_1_15_0/validation_final.log",
+      "sha256": "583b02d55eee87e32ed003bc2ba3495cd3204f8302650ac39f21d17a37c6abe6"
+    },
+    "unit_tests_final.log": {
+      "path": "generated/rebase_1_15_0/unit_tests_final.log",
+      "sha256": "3c603f51b5e7c3979a30299339be58ecab50a34f9e7d6082306cfb279ef54385"
+    },
+    "run_logged_validation.py": {
+      "path": "generated/rebase_1_15_0/run_logged_validation.py",
+      "sha256": "f4b813d29a72e72043edcc767f655cb1fbd307a2f75de2add279ef973fdaa003"
+    }
+  },
+  "checks": [
+    {
+      "status": "PASS",
+      "name": "CMF release pin"
+    },
+    {
+      "status": "SKIP",
+      "name": "CMF release sync"
+    },
+    {
+      "status": "PASS",
+      "name": "CMF compatibility"
+    },
+    {
+      "status": "FAIL",
+      "name": "unit tests"
+    },
+    {
+      "status": "PASS",
+      "name": "local override inventory"
+    },
+    {
+      "status": "PASS",
+      "name": "map data"
+    },
+    {
+      "status": "FAIL",
+      "name": "localization"
+    },
+    {
+      "status": "PASS",
+      "name": "on-action router"
+    },
+    {
+      "status": "PASS",
+      "name": "stale symbols"
+    },
+    {
+      "status": "PASS",
+      "name": "unused symbols"
+    },
+    {
+      "status": "PASS",
+      "name": "runtime script contracts"
+    },
+    {
+      "status": "WARN",
+      "name": "deferred release gates"
+    },
+    {
+      "status": "PASS",
+      "name": "1.15.0 release invariants"
+    },
+    {
+      "status": "PASS",
+      "name": "delayed-event lifecycle"
+    },
+    {
+      "status": "PASS",
+      "name": "naval network connectivity"
+    },
+    {
+      "status": "PASS",
+      "name": "Vanilla/CMF override comparison"
+    },
+    {
+      "status": "WARN",
+      "name": "vic3-tiger"
+    }
+  ]
+}

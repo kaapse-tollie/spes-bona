@@ -27,14 +27,14 @@ class RepositoryValidatorTests(unittest.TestCase):
             inventory.write_text(json.dumps({
                 "dependencies": [{
                     "name": "Community Mod Framework",
-                    "version": "1.66.0",
-                    "release_tag": "1.66.0",
-                    "asset_name": "release-1.66.0.zip",
+                    "version": "1.67.9",
+                    "release_tag": "1.67.9",
+                    "asset_name": "release-1.67.9.zip",
                     "asset_sha256": digest,
                 }],
             }))
             command = validate.cmf_sync_command(Path(temporary) / "cmf", inventory)
-            self.assertEqual("1.66.0", command[command.index("--tag") + 1])
+            self.assertEqual("1.67.9", command[command.index("--tag") + 1])
             self.assertEqual(digest, command[command.index("--sha256") + 1])
             self.assertNotIn("--latest", command)
 
@@ -192,6 +192,22 @@ class RepositoryValidatorTests(unittest.TestCase):
         self.assertEqual({"example.1"}, destinations)
         self.assertEqual(count, reversed_count)
         self.assertEqual(digest, reversed_digest)
+
+    def test_delayed_inventory_ignores_disabled_native_dispatches(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "common/journal_entries").mkdir(parents=True)
+            (root / "events").mkdir()
+            (root / "common/journal_entries/example.txt").write_text(
+                'je_example = {\n'
+                '# trigger_event = { id = example.disabled days = 0 popup = yes }\n'
+                'trigger_event = { id = example.live days = 2 } # disabled text above\n'
+                '}\n'
+            )
+            self.assertEqual(
+                [("common/journal_entries/example.txt", "example.live", (("days", "2"),), "default")],
+                list(validate.iter_delayed_dispatches(root)),
+            )
 
     def test_braced_parser_ignores_comment_and_quoted_braces(self):
         source = 'event = { text = "{quoted}" # } ignored\n effect = { value = 1 } }'

@@ -1,0 +1,95 @@
+﻿# Country scope: keep ready-country timing; postpone only unfinished-country JE activation.
+sb_add_technocracy_journal_when_ready = {
+	if = {
+		limit = { sb_law_journal_country_ready = yes }
+		add_journal_entry = { type = je_technocracy }
+	}
+	else = {
+		trigger_event = { id = sb_law_journal.001 days = 1 }
+	}
+}
+
+sb_add_king_in_parliament_journal_when_ready = {
+	if = {
+		limit = { sb_law_journal_country_ready = yes }
+		add_journal_entry = { type = je_king_in_parliament }
+	}
+	else = {
+		trigger_event = { id = sb_law_journal.002 days = 1 }
+	}
+}
+
+sb_add_divided_monarchists_journal_when_ready = {
+	if = {
+		limit = { sb_law_journal_country_ready = yes }
+		add_journal_entry = { type = je_divided_monarchists }
+	}
+	else = {
+		trigger_event = { id = sb_law_journal.003 days = 1 }
+	}
+}
+
+sb_add_spain_provisional_government_journal_when_ready = {
+	if = {
+		limit = { sb_law_journal_country_ready = yes }
+		add_journal_entry = { type = je_spain_provisional_government }
+	}
+	else = {
+		trigger_event = { id = sb_law_journal.004 days = 1 }
+	}
+}
+
+sb_add_abolish_monarchy_journal_when_ready = {
+	if = {
+		limit = { sb_law_journal_country_ready = yes }
+		add_journal_entry = { type = je_abolish_monarchy }
+	}
+	else = {
+		trigger_event = { id = sb_law_journal.005 days = 1 }
+	}
+}
+
+REPLACE:transition_off_of_monarchy_effects = {
+	crown_land_republic_effect = yes
+	transition_off_of_monarchy_law_effects = yes
+	if = {
+		limit = {
+			any_interest_group = {
+				has_ideology = ideology:ideology_constitutionalist
+			}
+		}
+		every_interest_group = {
+			limit = {
+				has_ideology = ideology:ideology_constitutionalist
+			}
+			remove_ideology = ideology_constitutionalist
+			add_ideology = ideology_republican
+		}
+	}
+	if = {
+		limit = {
+			NOR = {
+				game_date <= 1836.1.2
+				has_journal_entry = je_abolish_monarchy
+				has_variable = monarchy_stamped_out_var
+				has_variable = rcw_russian_faction
+				ig:ig_landowners ?= {
+					has_ideology = ideology:ideology_republican_paternalistic
+				}
+			}
+		}
+		set_variable = {
+			name = abolishing_monarchy_var
+			value = 0
+		}
+		sb_add_abolish_monarchy_journal_when_ready = yes
+	}
+}
+
+REPLACE:country_launch_abolish_monarchy_effect = {
+	set_variable = {
+		name = abolishing_monarchy_var
+		value = 0
+	}
+	sb_add_abolish_monarchy_journal_when_ready = yes
+}

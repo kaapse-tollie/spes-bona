@@ -2,6 +2,8 @@ from pathlib import Path
 import re
 import unittest
 
+from tests.je_outcomes import outcome_field, outcome_nodes
+
 from tools import validate
 
 
@@ -160,8 +162,8 @@ class PinkMapBechuanalandIntegrationTests(unittest.TestCase):
             monthly,
         )
 
-        for lifecycle in ("on_complete", "on_fail", "on_invalid"):
-            block = object_block_from_source(journal, lifecycle, lifecycle)
+        for lifecycle in ("complete", "fail", "invalid"):
+            block = outcome_field(journal, lifecycle, "effect")
             self.assertIn(
                 "sb_bechuanaland_remove_british_botswana_claim = yes", block
             )

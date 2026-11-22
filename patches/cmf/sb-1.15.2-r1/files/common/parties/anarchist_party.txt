@@ -1,0 +1,389 @@
+﻿# Niche party for anarchists in specific circumstances
+
+# ANZFP - Australia & New Zealand Flavor Pack
+# USFP etc..
+# MoH - Mandate of Heaven
+
+anarchist_party = {
+	color = { 0 0 0 }
+	name = {
+		first_valid = {
+
+			# ANZFP
+			triggered_desc = {
+				desc = anz_party_freedom_group
+				trigger = {
+					anzfp_is_active = yes
+					anz_country_is_pakeha = yes
+				}
+			}
+			triggered_desc = {
+				desc = anz_party_anarchistclub
+				trigger = {
+					anzfp_is_active = yes
+					country_has_primary_culture = cu:australian
+				}
+			}
+
+			triggered_desc = {
+				desc = party_cnt
+				trigger = {
+					c:SPA ?= THIS
+				}
+			}
+			triggered_desc = {
+				desc = party_socialist_league
+				trigger = {
+					c:GBR ?= THIS
+				}
+			}
+			triggered_desc = {
+				desc = party_anarcho_communist_federation
+				trigger = {
+					c:FRA ?= THIS
+				}
+			}
+			triggered_desc = {
+				desc = party_social_revolution_group
+				trigger = {
+					c:POR ?= this
+					NOT = {
+						has_technology_researched = mass_propaganda
+					}
+				}
+			}
+			triggered_desc = {
+				desc = party_portuguese_anarchist_federation
+				trigger = {
+					c:POR ?= this
+					has_technology_researched = mass_propaganda
+				}
+			}
+			triggered_desc = {
+				desc = party_young_socialists
+				trigger = {
+					OR = {
+						country_has_primary_culture = cu:norwegian
+						country_has_primary_culture = cu:danish
+					}
+				}
+			}
+			triggered_desc = {
+				desc = party_italian_syndicalist_union
+				trigger = {
+					OR = {
+						country_has_primary_culture = cu:north_italian
+						country_has_primary_culture = cu:south_italian
+					}
+					NOR = {
+						c:AUS ?= this
+						c:KUK ?= this
+						c:HRE ?= this
+					}
+				}
+			}
+			# MoH
+			triggered_desc = {
+				desc = party_zhigong
+				trigger = {
+					mandate_o_h_is_active = yes
+					OR = {
+						country_has_primary_culture = cu:han
+						country_has_primary_culture = cu:hakka
+						country_has_primary_culture = cu:miao
+						country_has_primary_culture = cu:min
+						country_has_primary_culture = cu:zhuang
+						country_has_primary_culture = cu:yi
+						country_has_primary_culture = cu:yue
+					}
+				}
+			}
+			triggered_desc = {
+				desc = party_anarchist
+				trigger = {
+					always = yes
+				}
+			}
+		}
+	}
+	icon = {
+		default = "/gfx/interface/icons/political_parties/anarchist.dds"
+	}
+	unlocking_technologies = {
+		anarchism
+	}
+	# THIS IS RUN ONLY ONCE AT GAME START
+	valid_for_country = {
+		always = yes
+	}
+	available_for_interest_group = {
+		trigger_if = {
+			limit = {
+				ig_is_member_of_dominant_party = { PARTY = anarchist }
+			}
+			always = yes
+		}
+		trigger_else = {
+			owner = {
+				country_has_voting_franchise = yes
+				OR = {
+					py:anarchist_party ?= {
+						party_has_members = yes
+					}
+					any_interest_group = {
+						ig_counts_as_marginal = no
+						leader ?= {
+							OR = {
+								has_ideology = ideology:ideology_anarchist
+								has_ideology = ideology:ideology_nihilist
+							}
+						}
+					}
+				}
+				vic1877_country_uses_alternate_parties = no
+			}
+			leader ?= {
+				OR = {
+					has_ideology = ideology:ideology_anarchist
+					has_ideology = ideology:ideology_nihilist
+				}
+			}
+		}
+	}
+	
+	# Root - IG considering joining
+	# scope:number - the number of IGs that would join this party before the root IG
+	join_weight = {
+		value = {
+			value = -5
+			desc = "base_value"
+		}
+		if = {
+			limit = {
+				owner = {
+					c:BIC ?= this
+					is_subject = yes
+					OR = {
+						has_modifier = modifier_india_crown_rule
+						has_modifier = modifier_india_company_rule
+						has_modifier = modifier_india_company_rule_upgraded
+					}
+				}
+				OR = {
+					is_interest_group_type = ig_industrialists
+					is_interest_group_type = ig_armed_forces
+				}
+			}
+			add = {
+				value = -100
+				desc = "india_colonial_government"
+			}
+		}
+		if = { # anarchists like anarchism
+			limit = {
+				leader ?= { has_ideology = ideology:ideology_anarchist }
+			}
+			add = {
+				value = 6
+				desc = "from_anarchy"
+			}
+		}
+		if = { # strong anarchists like anarchism
+			limit = {
+				is_powerful = yes
+				leader ?= { has_ideology = ideology:ideology_anarchist }
+			}
+			add = {
+				value = 10
+				desc = "powerful_anarachists"
+			}
+		}
+		if = { # anarchists don't like the revolution being hijacked
+			limit = {
+				leader ?= {
+					has_ideology = ideology:ideology_anarchist
+				}
+				owner = {
+					has_law_or_variant = law_type:law_council_republic
+					ruler = {
+						has_ideology = ideology:ideology_vanguardist
+					}
+				}
+			}
+			add = {
+				value = 10
+				desc = "from_vanguard_anarchy"
+			}
+		}
+		if = { # anarchists will make their own party if there is no communist party to join
+			limit = {
+				leader ?= {
+					has_ideology = ideology:ideology_anarchist
+				}
+				owner = {
+					NOT = {
+						any_interest_group = {
+							ig_counts_as_marginal = no
+							leader ?= {
+								OR = {
+									has_ideology = ideology:ideology_communist_leader
+									has_ideology = ideology:ideology_vanguardist
+								}
+							}
+						}
+					}
+				}
+			}
+			add = {
+				value = 5
+				desc = "from_no_communists"
+			}
+		}
+		if = { # anti-censorship
+			limit = {
+				owner ?= {
+					OR = {
+						has_law_or_variant = law_type:law_censorship
+						has_law_or_variant = law_type:law_outlawed_dissent
+					}
+				}
+				law_stance = {
+					law = law_type:law_censorship
+					value < neutral
+				}
+			}
+			add = {
+				value = 3
+				desc = from_censorship
+			}
+		}
+		if = { # against land-based taxation
+			limit = {
+				owner ?= {
+					has_law_or_variant = law_type:law_land_based_taxation
+				}
+				law_stance = {
+					law = law_type:law_land_based_taxation
+					value < neutral
+				}
+			}
+			add = {
+				value = 3
+				desc = "from_land_tax"
+			}
+		}
+		if = { # anticlerical
+			limit = {
+				law_enactment_stance = {
+					law = law_type:law_state_atheism
+					value > neutral
+				}
+			}
+			add = {
+				value = 3
+				desc = "from_anticlerical"
+			}
+		}
+		if = { # anti-peasant levies
+			limit = {
+				owner ?= {
+					has_law_or_variant = law_type:law_peasant_levies
+				}
+				law_stance = {
+					law = law_type:law_peasant_levies
+					value < neutral
+				}
+				# ANZFP
+				trigger_if = {
+					limit = {
+						anzfp_is_active = yes
+					}
+					anz_particularist_ideologies = yes
+				}
+			}
+			add = {
+				value = 3
+				desc = "from_peasant_levies"
+			}
+		}
+		if = { # anti-serfdom
+			limit = {
+				owner ?= {
+					has_law_or_variant = law_type:law_serfdom
+				}
+				law_stance = {
+					law = law_type:law_serfdom
+					value < neutral
+				}
+			}
+			add = {
+				value = 3
+				desc = "from_serfdom"
+			}
+		}
+		if = { # general anti-slavery
+			limit = {
+				owner ?= {
+					OR = {
+						has_law_or_variant = law_type:law_legacy_slavery
+						has_law_or_variant = law_type:law_slave_trade
+						has_law_or_variant = law_type:law_colonial_slavery
+					}
+				}
+				law_enactment_stance = {
+					law = law_type:law_slavery_banned
+					value > neutral
+				}
+				# ANZFP
+				trigger_if = {
+					limit = {
+						anzfp_is_active = yes
+					}
+					anz_anti_slavery_ideologies = yes
+				}
+			}
+			add = {
+				value = 3
+				desc = "from_slavery"
+			}
+		}
+		if = {
+			limit = {
+				ig_is_member_of_dominant_party = { PARTY = anarchist }
+			}
+			add = {
+				value = 1000
+				desc = "amendment_anarchist_party_dominance"
+			}
+		}
+		if = {
+			limit = {
+				scope:number = 1
+				is_powerful = no
+				ig_counts_as_marginal = no
+			}
+			multiply = {
+				value = 2
+				desc = "from_influential_supporting_member"
+			}
+		}
+		else_if = {
+			limit = {
+				scope:number = 2
+			}
+			multiply = {
+				value = 0.5
+				desc = "from_two_prior_members"
+			}
+		}
+		else_if = {
+			limit = {
+				scope:number >= 3
+			}
+			multiply = {
+				value = 0.0
+				desc = "from_three_or_more_prior_members"
+			}
+		}
+	}
+}

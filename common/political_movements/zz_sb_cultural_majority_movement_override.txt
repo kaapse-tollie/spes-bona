@@ -16,40 +16,29 @@ REPLACE:movement_cultural_majority = {
 
 	can_cause_obstinance = yes
 
-	creation_trigger = {
+    creation_trigger = {
 		NOT = { country_definition = cd:CAP }
-		NOR = { # Will not spawn if you're an un-unified German or Italian state
-			AND = {
-				OR = {
-					country_has_primary_culture = cu:north_german
-					country_has_primary_culture = cu:south_german
-				}
-				NOT = {
-					c:GER ?= this
-				}
-			}
-			AND = {
-				OR = {
-					country_has_primary_culture = cu:north_italian
-					country_has_primary_culture = cu:south_italian
-				}
-				NOR = {
-					c:ITA ?= this
-					c:AUS ?= this
-					c:KUK ?= this
-				}
-			}
-		}
-	}
+        # Will not spawn if you're an un-unified German, Italian, or Yugoslav state
+        NOR = {
+            country_has_german_national_movement = yes
+            country_has_italian_national_movement = yes
+            country_has_yugoslav_national_movement = yes
+        }
+    }
 
 	creation_weight = {
 		value = 100
 	}
 	on_created = {}
 
-	disband_trigger = {
-		owner = { country_definition = cd:CAP }
-	}
+    disband_trigger = {
+        OR = {
+			owner = { country_definition = cd:CAP }
+            country_has_german_national_movement = yes
+            country_has_italian_national_movement = yes
+            country_has_yugoslav_national_movement = yes
+        }
+    }
 
 	character_support_trigger = {
 		culture = {
@@ -339,6 +328,20 @@ REPLACE:movement_cultural_majority = {
 				desc = "anz_POP_NOT_T5"
 			}
 		}
+
+        if = {
+            limit = {
+                owner ?= {
+                    any_political_movement = {
+                        is_political_movement_type = movement_anti_communist
+                    }
+                }
+            }
+            multiply = {
+                value = 0.5
+                desc = "POP_ANTI_COMMUNIST_MOVEMENT_LOSSES"
+            }
+        }
 	}
 
 	revolution = {
@@ -394,9 +397,9 @@ REPLACE:movement_cultural_majority = {
 				else_if = {
 					limit = {
 						primary_cultures_percent_state = {
-							target_country = owner
-							value >= 0.1
-						}
+                            target_country = owner
+                            value >= 0.1
+                        }
 					}
 					add = 50
 				}
@@ -452,18 +455,7 @@ REPLACE:movement_cultural_majority = {
 	}
 
 	additional_radicalism_factors = {
-		if = {
-			limit = {
-				owner.ruler ?= {
-					NOT = { culture = { is_primary_culture_of = root.owner } }
-				}
-			}
-
-			add = {
-				value = 0.1
-				desc = "RULER_NOT_PRIMARY_CULTURE"
-			}
-		}
+        add = movement_radicalism_ruler_not_primary_culture
 
 		add = {
 			value = "owner.average_sol"
@@ -542,18 +534,6 @@ REPLACE:movement_cultural_majority = {
 			}
 		}
 
-		if = {
-			limit = {
-				this.days_since_movement_defeated <= very_long_modifier_time
-			}
-			add = { # (x-y)/y - ([1, 7300]-7300)/7300
-				desc = "movement_suppressed_after_civil_war"
-				value = this.days_since_movement_defeated
-				subtract = very_long_modifier_time
-				divide = {
-					value = very_long_modifier_time
-				}
-			}
-		}
+		add = movement_radicalism_suppressed_after_civil_war
 	}
 }

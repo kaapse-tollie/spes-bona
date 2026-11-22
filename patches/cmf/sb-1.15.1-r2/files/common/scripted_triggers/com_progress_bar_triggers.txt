@@ -1,0 +1,51 @@
+﻿####---------- Progress Bar Styling Effects ----------####
+# Documentation: https://github.com/Victoria-3-Modding-Co-op/Community-Mod-Framework/wiki/Stylized-Journal-Progress-Bars
+
+# Check whether the given progress bar id exists
+# Parameters:
+# - progress_bar = progress bar localization key
+REPLACE_OR_CREATE:exists_com_progress_bar = {
+    custom_description = {
+        text = exists_com_progress_bar
+        any_in_list = {
+            variable = com_progress_bar_cache
+            has_tag = com_$progress_bar$
+        }
+        any_container = {
+            has_tag = com_$progress_bar$
+        }
+    }
+}
+
+# Check whether the given progress bar has been hidden
+# Parameters:
+# - progress_bar = progress bar localization key
+REPLACE_OR_CREATE:is_com_progress_bar_hidden = {
+    custom_description = {
+        text = is_com_progress_bar_hidden
+        test_in_com_progress_bar_scope = {
+            progress_bar = $progress_bar$
+            trigger = "has_variable = com_hide_progress_bar"
+        }
+    }
+}
+
+# Wrapper trigger to check triggers in 'scope:com_$progress_bar$'' easily
+# Parameters:
+# - progress_bar = progress bar localization key
+# - trigger = trigger or series of triggers to be checked in 'scope:com_$progress_bar$''
+REPLACE_OR_CREATE:test_in_com_progress_bar_scope = {
+    hidden_trigger = {
+		trigger_if = {
+			limit = { NOT = { exists = scope:com_$progress_bar$ } }
+            any_in_list = {
+                variable = com_progress_bar_cache
+                has_tag = com_$progress_bar$
+                save_temporary_scope_as = com_$progress_bar$
+            }
+		}
+    }
+	scope:com_$progress_bar$ ?= {
+		$trigger$
+    }
+}

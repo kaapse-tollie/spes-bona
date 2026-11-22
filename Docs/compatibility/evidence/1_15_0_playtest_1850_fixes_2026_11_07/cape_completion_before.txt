@@ -1,0 +1,209 @@
+outcome = {
+		header = je_sb_cape_politics_completion_header
+		effect_header = je_sb_cape_politics_resolution_header
+		color = "gold_positive"
+		conclusion_desc = je_standard_completion_conclusion_desc
+		trigger = {
+			OR = {
+				custom_tooltip = {
+					text = je_sb_cape_politics_complete_liberal_revolution
+					has_variable = sb_cape_liberal_revolution_settler_outcome_var
+				}
+				AND = {
+					custom_tooltip = {
+						text = je_sb_cape_politics_complete_liberal
+						scope:journal_entry = {
+							"scripted_bar_progress(sb_cape_balance_bar)" >= 90
+						}
+					}
+					custom_tooltip = {
+						text = je_sb_cape_politics_complete_cultral_exclusion
+						has_law = law_type:law_cultural_exclusion
+					}
+				}
+					AND = {
+						custom_tooltip = {
+							text = je_sb_cape_politics_complete_settler
+							scope:journal_entry = {
+								"scripted_bar_progress(sb_cape_balance_bar)" <= -90
+							}
+						}
+						custom_tooltip = {
+								text = je_sb_cape_politics_complete_frontier_pacified
+								NOT = { c:XHO ?= { is_country_alive = yes } }
+						}
+					}
+				AND = {
+					custom_tooltip = {
+						text = je_sb_cape_politics_complete_compromise
+						scope:journal_entry = {
+							"scripted_bar_progress(sb_cape_balance_bar)" >= -30
+							"scripted_bar_progress(sb_cape_balance_bar)" <= 30
+						}
+					}
+						custom_tooltip = {
+							text = je_sb_cape_politics_complete_cultral_exclusion
+							has_law = law_type:law_cultural_exclusion
+						}
+						custom_tooltip = {
+								text = je_sb_cape_politics_complete_frontier_pacified
+								NOT = { c:XHO ?= { is_country_alive = yes } }
+						}
+				}
+
+				custom_tooltip = {
+					text = je_sb_cape_politics_complete_secession
+					OR = {
+						has_variable = sb_albany_sanctioned_var
+						has_variable = sb_albany_refused_var
+					}
+				}
+				custom_tooltip = {
+					text = je_sb_cape_politics_complete_timeout
+					game_date >= 1885.1.1
+				}
+
+			}
+		}
+		effect = {
+			hidden_effect = {
+				if = {
+					limit = {
+						game_date < 1880.1.1
+					}
+					s:STATE_EASTERN_CAPE = {
+						add_homeland = cu:anglo_african
+					}
+					s:STATE_CAPE_COLONY = {
+						add_homeland = cu:anglo_african
+					}
+					s:STATE_NORTHERN_CAPE = {
+						add_homeland = cu:anglo_african
+					}
+				}
+				if = {
+					limit = {
+						has_variable = sb_cape_liberal_revolution_settler_outcome_var
+					}
+					trigger_event = { id = sb_cape.125 popup = yes }
+				}
+				else_if = {
+					limit = {
+						OR = {
+							has_variable = sb_albany_sanctioned_var
+							has_variable = sb_albany_refused_var
+						}
+					}
+					trigger_event = { id = sb_cape.100 popup = yes }
+				}
+				else_if = {
+					limit = {
+						scope:journal_entry = {
+							"scripted_bar_progress(sb_cape_balance_bar)" >= 90
+						}
+						has_law = law_type:law_cultural_exclusion
+					}
+					trigger_event = { id = sb_cape.100 popup = yes }
+				}
+				else_if = {
+					limit = {
+							scope:journal_entry = {
+								"scripted_bar_progress(sb_cape_balance_bar)" <= -90
+							}
+							NOT = { c:XHO ?= { is_country_alive = yes } }
+					}
+					trigger_event = { id = sb_cape.101 popup = yes }
+				}
+				else_if = {
+					limit = {
+							scope:journal_entry = {
+								"scripted_bar_progress(sb_cape_balance_bar)" >= -30
+								"scripted_bar_progress(sb_cape_balance_bar)" <= 30
+							}
+							has_law = law_type:law_cultural_exclusion
+							NOT = { c:XHO ?= { is_country_alive = yes } }
+					}
+					trigger_event = { id = sb_cape.102 popup = yes }
+				}
+				else = {
+					trigger_event = { id = sb_cape.104 popup = yes }
+				}
+				scope:journal_entry = {
+					if = {
+						limit = { has_modifier = sb_cape_political_tensions }
+						remove_modifier = sb_cape_political_tensions
+					}
+					if = {
+						limit = { has_modifier = sb_cape_liberal_ascendant }
+						remove_modifier = sb_cape_liberal_ascendant
+					}
+					if = {
+						limit = { has_modifier = sb_cape_liberal_dominant }
+						remove_modifier = sb_cape_liberal_dominant
+					}
+					if = {
+						limit = { has_modifier = sb_cape_settler_ascendant }
+						remove_modifier = sb_cape_settler_ascendant
+					}
+					if = {
+						limit = { has_modifier = sb_cape_settler_dominant }
+						remove_modifier = sb_cape_settler_dominant
+					}
+				}
+				remove_variable = sb_cape_balance_current
+				remove_variable = sb_cape_balance_applied_band_var
+				remove_variable = sb_cape_tensions_initialized_var
+				remove_variable = sb_cape_tensions_event_pending_var
+				remove_variable = sb_albany_crisis_var
+			}
+		}
+		event_outcome_desc = {
+			first_valid = {
+				triggered_desc = {
+					trigger = {
+						has_variable = sb_cape_liberal_revolution_settler_outcome_var
+					}
+					desc = event_effects_sb_cape.125_tt
+				}
+				triggered_desc = {
+					trigger = {
+						OR = {
+							has_variable = sb_albany_sanctioned_var
+							has_variable = sb_albany_refused_var
+							AND = {
+								scope:journal_entry = {
+									"scripted_bar_progress(sb_cape_balance_bar)" >= 90
+								}
+								has_law = law_type:law_cultural_exclusion
+							}
+						}
+					}
+					desc = event_effects_sb_cape.100_tt
+				}
+				triggered_desc = {
+					trigger = {
+						scope:journal_entry = {
+							"scripted_bar_progress(sb_cape_balance_bar)" <= -90
+						}
+						NOT = { c:XHO ?= { is_country_alive = yes } }
+					}
+					desc = event_effects_sb_cape.101_tt
+				}
+				triggered_desc = {
+					trigger = {
+						scope:journal_entry = {
+							"scripted_bar_progress(sb_cape_balance_bar)" >= -30
+							"scripted_bar_progress(sb_cape_balance_bar)" <= 30
+						}
+						has_law = law_type:law_cultural_exclusion
+						NOT = { c:XHO ?= { is_country_alive = yes } }
+					}
+					desc = event_effects_sb_cape.102_tt
+				}
+				triggered_desc = {
+					trigger = { always = yes }
+					desc = event_effects_sb_cape.104_tt
+				}
+			}
+		}
+	}

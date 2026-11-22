@@ -1,0 +1,913 @@
+﻿# Party for IG's that want free trade when it is not passed yet
+# Should usually only appear when the Landowners want Free Trade
+
+# ANZFP - Australia & New Zealand Flavor Pack
+# USFP etc..
+
+free_trade_party = {
+	color = { 240 110 60 }
+	name = {
+		first_valid = {
+
+			# ANZFP
+			triggered_desc = {
+				desc = anz_party_ast_freetrade
+				trigger = {
+					anzfp_is_active = yes
+					country_has_primary_culture = cu:australian
+				}
+			}
+			triggered_desc = {
+				desc = party_democrat_party
+				trigger = {
+					anzfp_is_active = yes
+					anz_country_is_pakeha = yes
+				}
+			}
+
+			triggered_desc = {
+				desc = party_democratic_alliance
+				trigger = {
+					c:FRA ?= THIS
+				}
+			}
+			triggered_desc = {
+				desc = party_peelites
+				trigger = {
+					c:GBR ?= THIS
+				}
+			}
+			triggered_desc = {
+				desc = party_old_lantmanna_party
+				trigger = {
+					c:SWE ?= THIS
+				}
+			}
+			triggered_desc = {
+				desc = party_communications_clique
+				trigger = {
+					c:CHI ?= THIS
+				}
+			}
+			triggered_desc = {
+				desc = party_taikunate_free_trade
+				trigger = {
+					c:JAP ?= THIS
+					has_law_or_variant = law_type:law_landed_voting
+					country_is_taikunate = yes
+				}
+			}
+			triggered_desc = {
+				desc = party_ezo_free_trade
+				trigger = {
+					c:EZO ?= THIS
+					has_variable = ezo_republic_var
+					has_law_or_variant = law_type:law_landed_voting
+				}
+			}
+			triggered_desc = {
+				desc = party_constitutional_reform_party
+				trigger = {
+					country_has_primary_culture = cu:japanese
+					OR = {
+						has_law_or_variant = law_type:law_landed_voting
+						has_law_or_variant = law_type:law_wealth_voting
+					}
+					NOT = { has_technology_researched = investment_banks }
+				}
+			}
+			triggered_desc = {
+				desc = party_shimpoto
+				trigger = {
+					country_has_primary_culture = cu:japanese
+					OR = {
+						has_law_or_variant = law_type:law_census_voting
+						AND = {
+							OR = {
+								has_law_or_variant = law_type:law_wealth_voting
+								has_law_or_variant = law_type:law_landed_voting
+							}
+							has_technology_researched = investment_banks
+						}
+					}
+				}
+			}
+			triggered_desc = {
+				desc = party_seiyuhonto
+				trigger = {
+					country_has_primary_culture = cu:japanese
+					OR = {
+						has_law_or_variant = law_type:law_universal_suffrage
+						has_law_or_variant = law_type:law_single_party_state
+					}
+					any_interest_group = {
+						NOT = {
+							is_interest_group_type = ig_industrialists
+						}
+						party ?= {
+							is_party_type = free_trade_party
+						}
+					}
+				}
+			}
+			triggered_desc = {
+				desc = party_jitsugyo_doshikai
+				trigger = {
+					country_has_primary_culture = cu:japanese
+					OR = {
+						has_law_or_variant = law_type:law_universal_suffrage
+						has_law_or_variant = law_type:law_single_party_state # Should never happen
+					}
+					NOT = { # Only the Industrialists can be here
+						any_interest_group = {
+							NOT = {
+								is_interest_group_type = ig_industrialists
+							}
+							party ?= {
+								is_party_type = free_trade_party
+							}
+						}
+					}
+				}
+			}
+			triggered_desc = {
+				desc = party_national_party
+				trigger = {
+					c:CHL ?= THIS
+				}
+			}
+			triggered_desc = {
+				desc = party_independent_party
+				trigger = {
+					c:POR ?= this
+					has_law = law_type:law_oligarchy
+				}
+			}
+			triggered_desc = {
+				desc = party_liberal_regenerator_party
+				trigger = {
+					c:POR ?= this
+					ruler ?= {
+						NOT = {
+							has_template = POR_maria_ii_de_braganca
+						}
+					}
+				}
+			}
+			triggered_desc = {
+				desc = party_party_of_peaceful_renovation
+				trigger = {
+					c:RUS ?= THIS
+					has_law = law_type:law_monarchy
+				}
+			}
+			triggered_desc = {
+				desc = party_constitutional_union_party
+				trigger = {
+					c:USA ?= THIS
+					NOT = {
+						has_global_variable = american_civil_war
+					}
+				}
+			}
+			#USFP
+			triggered_desc = {
+				desc = party_liberal_republican_party
+				trigger = {
+					is_usfp_active = yes
+					exists = c:USA
+					THIS = c:USA
+					has_global_variable = american_civil_war
+				}
+			}
+			triggered_desc = {
+				desc = party_federalist_party
+				trigger = {
+					c:NEN ?= THIS
+				}
+			}
+			triggered_desc = {
+				desc = party_free_minded_venstre
+				trigger = {
+					country_has_primary_culture = cu:norwegian
+				}
+			}
+			triggered_desc = {
+				desc = party_free_conservative_party
+				trigger = {
+					OR = {
+						country_has_primary_culture = cu:north_german
+						country_has_primary_culture = cu:south_german
+					}
+				}
+			}
+			triggered_desc = {
+				desc = party_free_trade
+				trigger = {
+					always = yes
+				}
+			}
+		}
+	}
+	icon = {
+		default = "/gfx/interface/icons/political_parties/free_trade.dds"
+	}
+	unlocking_technologies = {
+		stock_exchange
+	}
+	# THIS IS RUN ONLY ONCE AT GAME START
+	valid_for_country = {
+		always = yes
+	}
+	available_for_interest_group = {
+		trigger_if = {
+			limit = {
+				ig_is_member_of_dominant_party = { PARTY = free_trade }
+			}
+			always = yes
+		}
+		trigger_else = {
+			owner = {
+				country_has_voting_franchise = yes
+				OR = {
+					py:free_trade_party ?= {
+						party_has_members = yes
+					}
+					any_interest_group = {
+						ig_counts_as_marginal = no
+						OR = {
+							is_interest_group_type = ig_industrialists
+							leader ?= {
+								has_ideology = ideology:ideology_market_liberal
+							}
+							# Vic1877: propertarian capitalists & defense contractors also belong here
+							leader ?= {
+								vic1877_leader_is_propertarian = yes
+							}
+							vic1877_ig_is_defense_contractor = yes
+						}
+					}
+				}
+				vic1877_country_uses_alternate_parties = no
+			}
+		}
+	}
+	
+	# Root - IG considering joining
+	# scope:number - the number of IGs that would join this party before the root IG
+	join_weight = {
+		value = {
+			value = -5
+			desc = "base_value"
+		}
+		if = {
+			limit = {
+				owner = {
+					c:BIC ?= this
+					is_subject = yes
+					OR = {
+						has_modifier = modifier_india_crown_rule
+						has_modifier = modifier_india_company_rule
+						has_modifier = modifier_india_company_rule_upgraded
+					}
+				}
+				OR = {
+					is_interest_group_type = ig_industrialists
+					is_interest_group_type = ig_armed_forces
+				}
+			}
+			add = {
+				value = -100
+				desc = "india_colonial_government"
+			}
+		}
+		
+		if = {
+			limit = {
+				owner = {
+					is_in_geographic_region = geographic_region_south_america
+					any_primary_culture = {
+						has_discrimination_trait = language_hispanophone
+					}
+				}
+			}
+			add = {
+				value = -10
+				desc = "south_america_two_party_system"
+			}
+		}
+
+		if = {
+			limit = {
+				owner = {
+					is_in_geographic_region = geographic_region_north_america
+					OR = {
+						country_has_primary_culture = cu:yankee
+						country_has_primary_culture = cu:dixie
+					}
+					has_law_or_variant = law_type:law_presidential_republic
+				}
+			}
+			add = {
+				value = -10
+				desc = "usa_two_party_system"
+			}
+		}
+		# Spain and Portugal have two parties at game start
+		if = {
+			limit = {
+				owner = {
+					has_law = law_type:law_oligarchy
+					OR = {
+						country_has_primary_culture = cu:spanish
+						country_has_primary_culture = cu:portuguese
+					}
+				}
+			}
+			add = {
+				value = -10
+				desc = "from_two_party_system"
+			}
+		}
+		
+		if = { # # industrialists/market liberals split from liberals as the economy modernises
+			limit = {
+				OR = {
+					leader ?= {
+						has_ideology = ideology:ideology_market_liberal
+					}
+					has_ideology = ideology:ideology_plutocratic
+					# Vic1877
+					leader ?= {
+						vic1877_leader_is_propertarian = yes
+					}
+					vic1877_ig_is_defense_contractor = yes
+				}
+			}
+			add = {
+				desc = "from_liberal_economy_laws"
+				if = {
+					limit = {
+						owner = {
+							OR = {
+								has_law_or_variant = law_type:law_laissez_faire
+								has_law_or_variant = law_type:law_interventionism
+							}
+						}
+					}
+					add = 2
+				}
+				if = {
+					limit = {
+						owner = {
+							OR = {
+								has_law_or_variant = law_type:law_free_trade
+								has_law_or_variant = law_type:law_protectionism
+							}
+						}
+					}
+					add = 1
+				}
+				if = {
+					limit = {
+						owner = {
+							OR = {
+								has_law_or_variant = law_type:law_tenant_farmers
+								has_law_or_variant = law_type:law_commercialized_agriculture
+							}
+						}
+					}
+					add = 1
+				}
+				if = {
+					limit = {
+						owner = {
+							has_law_or_variant = law_type:law_slavery_banned
+						}
+					}
+					add = 1
+				}
+			}
+		}
+		# powerful capitalists likely to form their own party
+		if = {
+			limit = {
+				is_powerful = yes
+				OR = {
+					leader ?= {
+						has_ideology = ideology:ideology_market_liberal
+					}
+					has_ideology = ideology:ideology_plutocratic
+					# Vic1877
+					leader ?= {
+						vic1877_leader_is_propertarian = yes
+					}
+				}
+				NOT = {
+					owner = {
+						has_law_or_variant = law_type:law_universal_suffrage
+					}
+				}
+			}
+			add = {
+				value = 10
+				desc = "from_powerful_capitalists"
+			}
+		}
+		# weaker market liberals fall behind powerful industrialists
+		if = {
+			limit = {
+				is_powerful = no
+				owner = {
+					ig:ig_industrialists ?= {
+						is_powerful = yes
+					}
+				}
+				OR = {
+					leader ?= {
+						has_ideology = ideology:ideology_market_liberal
+					}
+					# Vic1877
+					leader ?= {
+						vic1877_leader_is_propertarian = yes
+					}
+					vic1877_ig_is_defense_contractor = yes
+				}
+			}
+			add = {
+				value = 5
+				desc = "from_powerful_capitalists_other"
+			}
+		}
+		if = { # landowners and industrialists hate labor rights
+			limit = {
+				owner = {
+					OR = {
+						has_law_or_variant = law_type:law_regulatory_bodies
+						has_law_or_variant = law_type:law_worker_protections
+					}
+				}
+				OR = {
+					law_enactment_stance = {
+						law = law_type:law_no_workers_rights
+						value > neutral
+					}
+					vic1877_ig_is_defense_contractor = yes
+				}
+			}
+			add = {
+				value = 5
+				desc = "from_labor_rights"
+			}
+		}
+		if = { # conservatives hate welfare
+			limit = {
+				owner = {
+					OR = {
+						has_law_or_variant = law_type:law_wage_subsidies
+						has_law_or_variant = law_type:law_old_age_pension
+					}
+				}
+				OR = {
+					law_enactment_stance = {
+						law = law_type:law_poor_laws
+						value > neutral
+					}
+					has_ideology = ideology:ideology_individualist
+				}
+			}
+			add = {
+				value = 5
+				desc = "from_welfare"
+			}
+		}
+		if = { # capitalists hate children
+			limit = {
+				owner = {
+					NOT = { has_law_or_variant = law_type:law_child_labor_allowed }
+				}
+				OR = {
+					law_enactment_stance = {
+						law = law_type:law_child_labor_allowed
+						value > neutral
+					}
+					# Vic1877
+					leader ?= {
+						vic1877_leader_is_propertarian = yes
+					}
+				}
+			}
+			add = {
+				value = 3
+				desc = "from_hates_children"
+			}
+		}
+		if = { # capitalists want free trade
+			limit = {
+				owner = {
+					NOT = { has_law_or_variant = law_type:law_free_trade }
+				}
+				OR = {
+					law_enactment_stance = {
+						law = law_type:law_free_trade
+						value > neutral
+					}
+
+					# ANZFP
+					trigger_if = {
+						limit = {
+							anzfp_is_active = yes
+						}
+						leader = {
+							has_ideology = ideology:ideology_anz_georgist
+						}
+					}
+
+					# Vic1877
+					leader ?= {
+						vic1877_leader_is_propertarian = yes
+					}
+				}
+			}
+			add = {
+				value = 3
+				desc = "from_no_free_trade"
+			}
+		}
+		if = { # capitalists want to have power
+			limit = {
+				owner = {
+					NOR = {
+						has_law_or_variant = law_type:law_oligarchy
+						has_law_or_variant = law_type:law_wealth_voting
+					}
+				}
+				OR = {
+					has_ideology = ideology:ideology_plutocratic
+
+					# ANZFP
+					trigger_if = {
+						limit = {
+							anzfp_is_active = yes
+						}
+						anz_plutocratic_ideologies = yes
+					}
+				}
+			}
+			add = {
+				value = 3
+				desc = "from_no_oligarchy_wealth_voting"
+			}
+		}
+		if = { # liberal-capitalist anti-autocracy alliance
+			limit = {
+				owner = {
+					has_law_or_variant = law_type:law_autocracy
+				}
+				OR = {
+					law_enactment_stance = {
+						law = law_type:law_wealth_voting
+						value > neutral
+					}
+					# ANZFP
+					trigger_if = {
+						limit = {
+							anzfp_is_active = yes
+						}
+						anz_republican_ideologies = yes
+					}	
+				}
+			}
+			add = {
+				value = 3
+				desc = "from_autocracy"
+			}
+		}
+		if = { # capitalist-reactionary anti-democracy alliance
+			limit = {
+				owner = {
+					has_law_or_variant = law_type:law_universal_suffrage
+				}
+				OR = {
+					law_stance = {
+						law = law_type:law_universal_suffrage
+						value < neutral
+					}
+					# ANZFP
+					trigger_if = {
+						limit = {
+							anzfp_is_active = yes
+						}
+						anz_paternalistic_ideologies = yes
+					}
+				}
+			}
+			add = {
+				value = 3
+				desc = "from_universal_suffrage"
+			}
+		}
+		if = { # capitalist-meritocratic taxation alliance
+			limit = {
+				owner = {
+					has_technology_researched = currency_standards
+					NOT = { has_law_or_variant = law_type:law_per_capita_based_taxation }
+				}
+				OR = {
+					law_enactment_stance = {
+						law = law_type:law_per_capita_based_taxation
+						value > neutral
+					}
+
+					# ANZFP
+					trigger_if = {
+						limit = {
+							anzfp_is_active = yes
+						}
+						anz_plutocratic_ideologies = yes
+					}
+				}
+
+				# ANZFP
+				trigger_if = {
+					limit = {
+						anzfp_is_active = yes
+					}
+					NOT = { leader = { has_ideology = ideology:ideology_anz_georgist } }
+				}
+			}
+			add = {
+				value = 3
+				desc = "from_no_per_capita_tax"
+			}
+		}
+		if = { # capitalist-conservative taxation alliance
+			limit = {
+				owner = {
+					has_law_or_variant = law_type:law_graduated_taxation
+				}
+				law_stance = {
+					law = law_type:law_graduated_taxation
+					value < neutral
+				}
+				# ANZFP
+				trigger_if = {
+					limit = {
+						anzfp_is_active = yes
+					}
+					NOT = { leader = { has_ideology = ideology:ideology_anz_georgist } }
+				}
+				trigger_else = { 
+					always = no
+				}
+			}
+			add = {
+				value = 3
+				desc = "from_graduated_taxation"
+			}
+		}
+		if = { # opposition to command economy
+			limit = {
+				owner = {
+					has_technology_researched = central_planning
+					has_law_or_variant = law_type:law_command_economy
+				}
+				OR = {
+					law_stance = {
+						law = law_type:law_command_economy
+						value < neutral
+					}
+					# ANZFP
+					trigger_if = {
+						limit = {
+							anzfp_is_active = yes
+						}
+						OR = {
+							anz_paternalistic_ideologies = yes
+							anz_laissez_faire_ideologies = yes
+							anz_agrarian_ideologies = yes
+						}
+					}
+					# Vic1877
+					leader ?= {
+						vic1877_leader_is_propertarian = yes
+					}
+				}
+			}
+			add = {
+				value = 3
+				desc = "from_command_economy"
+			}
+		}
+		if = { # pro-private schools
+			limit = {
+				owner = {
+					has_technology_researched = academia
+					NOT = {
+						has_law_or_variant = law_type:law_private_schools
+					}
+				}
+				law_enactment_stance = {
+					law = law_type:law_private_schools
+					value > neutral
+				}
+			}
+			add = {
+				value = 3
+				desc = "from_lack_of_private_schools"
+			}
+		}
+		if = { # protectionism bad
+			limit = {
+				leader ?= {
+					has_ideology = ideology:ideology_protectionist
+				}
+			}
+			add = {
+				value = -10
+				desc = from_protectionist_leader
+			}
+		}
+		if = { # universal suffrage Industrialists - prevents forming of impotent parties
+			limit = {
+				scope:number <= 1
+				is_interest_group_type = ig_industrialists
+				owner = {
+					OR = {
+						has_law_or_variant = law_type:law_universal_suffrage
+						has_law_or_variant = law_type:law_census_voting
+					}
+				}
+			}
+			add = {
+				desc = "from_late_industrialists"
+				if = {
+					limit = {
+						owner = {
+							has_law_or_variant = law_type:law_universal_suffrage
+						}
+					}
+					add = -10
+				}
+				if = {
+					limit = {
+						owner = {
+							has_law_or_variant = law_type:law_census_voting
+						}
+					}
+					add = -5
+				}
+			}
+		}
+		if = {
+			limit = {
+				ig_is_member_of_dominant_party = { PARTY = free_trade }
+			}
+			add = {
+				value = 1000
+				desc = "amendment_free_trade_party_dominance"
+			}
+		}
+		if = {
+			limit = {
+				is_interest_group_type = ig_industrialists
+				is_powerful = yes
+			}
+			multiply = {
+				value = 2
+				desc = "from_archetype_party"
+			}
+		}
+		if = {
+			limit = {
+				scope:number = 1
+				is_powerful = no
+				ig_counts_as_marginal = no
+			}
+			multiply = {
+				value = 2
+				desc = "from_influential_supporting_member"
+			}
+		}
+		else_if = {
+			limit = {
+				scope:number = 2
+			}
+			multiply = {
+				value = 0.5
+				desc = "from_two_prior_members"
+			}
+		}
+		else_if = {
+			limit = {
+				scope:number >= 3
+			}
+			multiply = {
+				value = 0.0
+				desc = "from_three_or_more_prior_members"
+			}
+		}
+		if = { # anti-orleanist
+			limit = {
+				leader ?= {
+					OR = {
+						has_ideology = ideology:ideology_bonapartist
+						has_ideology = ideology:ideology_legitimist
+					}
+				}
+				owner = {
+					any_interest_group = {
+						has_party = yes
+						party = {
+							is_party_type = free_trade_party
+						}
+						is_powerful = yes
+						leader ?= {
+							has_ideology = ideology:ideology_orleanist
+						}
+					}
+				}
+			}
+			add = {
+				value = -5
+				desc = "from_french_monarchist_rival"
+			}
+		}
+		if = { # anti-legitimist
+			limit = {
+				leader ?= {
+					OR = {
+						has_ideology = ideology:ideology_bonapartist
+						has_ideology = ideology:ideology_orleanist
+					}
+				}
+				owner = {
+					any_interest_group = {
+						has_party = yes
+						party = {
+							is_party_type = free_trade_party
+						}
+						is_powerful = yes
+						leader ?= {
+							has_ideology = ideology:ideology_legitimist
+						}
+					}
+				}
+			}
+			add = {
+				value = -5
+				desc = "from_french_monarchist_rival"
+			}
+		}
+		if = { # anti-bonapartist
+			limit = {
+				leader ?= {
+					OR = {
+						has_ideology = ideology:ideology_legitimist
+						has_ideology = ideology:ideology_orleanist
+					}
+				}
+				owner = {
+					any_interest_group = {
+						has_party = yes
+						party = {
+							is_party_type = free_trade_party
+						}
+						is_powerful = yes
+						leader ?= {
+							has_ideology = ideology:ideology_bonapartist
+						}
+					}
+				}
+			}
+			add = {
+				value = -5
+				desc = "from_french_monarchist_rival"
+			}
+		}
+		if = {
+			limit = {
+				owner = {
+					country_has_primary_culture = cu:brazilian
+					NOT = {
+						OR = {
+							has_technology_researched = socialism
+							has_technology_researched = corporatism
+							has_technology_researched = anarchism
+						}
+					}
+				}
+			}
+			add = {
+				value = -10
+				desc = "from_two_party_system"
+			}
+		}
+
+		add = {
+			value = usfp_party_weight_free_trade_add
+		}
+
+
+	}
+}

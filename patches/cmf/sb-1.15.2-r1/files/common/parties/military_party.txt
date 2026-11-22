@@ -1,0 +1,612 @@
+﻿# Fallback party for Armed Forces
+
+# ANZFP - Australia & New Zealand Flavor Pack
+# USFP etc..
+# MoH - Mandate of Heaven
+
+military_party = {
+	color = { 132 100 53 }
+	name = {
+		first_valid = {
+
+			# ANZFP
+			triggered_desc = {
+				desc = anz_party_nationalists
+				trigger = {
+					anzfp_is_active = yes
+					country_has_primary_culture = cu:australian
+				}
+			}
+			triggered_desc = {
+				desc = party_fatherland_front
+				trigger = {
+					exists = c:AUS
+					c:AUS ?= THIS
+					any_interest_group = {
+						is_in_government = yes
+						party ?= {
+							is_party_type = military_party
+						}
+					}
+					has_law_or_variant = law_type:law_single_party_state
+					has_variable = fatherland_front_var
+				}
+			}
+			triggered_desc = {
+				desc = party_true_peoples_party
+				trigger = {
+					c:MON ?= THIS
+				}
+			}
+			triggered_desc = {
+				desc = party_national_party
+				trigger = {
+					c:SER ?= THIS
+				}
+			}
+			triggered_desc = {
+				desc = party_union_of_rights
+				trigger = {
+					c:FRA ?= THIS
+				}
+			}
+			triggered_desc = {
+				desc = party_imperial_clan_party
+				trigger = {
+					c:CHI ?= THIS
+					has_law = law_type:law_monarchy
+				}
+			}
+			# MoH
+			triggered_desc = {
+				desc = party_nbis
+				trigger = {
+					mandate_o_h_is_active = yes
+					exists = c:CHI
+					THIS = c:CHI
+					NOT = {
+						has_law = law_type:law_monarchy
+						has_law = law_type:law_council_republic
+						has_law = law_type:law_peasant_levies
+					}
+					has_law = law_type:law_secret_police
+				}
+			}
+			triggered_desc = {
+				desc = party_fengtian
+				trigger = {
+					mandate_o_h_is_active = yes
+					exists = c:MCH
+					THIS = c:MCH
+				}
+			}
+			triggered_desc = {
+				desc = party_russian_assembly
+				trigger = {
+					c:RUS ?= THIS
+					has_law = law_type:law_monarchy
+				}
+			}
+			triggered_desc = {
+				desc = party_russian_all_military_union
+				trigger = {
+					c:RUS ?= THIS
+					NOT = { has_law = law_type:law_monarchy }
+				}
+			}
+			triggered_desc = {
+				desc = party_taikunate_military
+				trigger = {
+					c:JAP ?= THIS
+					has_law_or_variant = law_type:law_landed_voting
+					country_is_taikunate = yes
+				}
+			}
+			triggered_desc = {
+				desc = party_ezo_military
+				trigger = {
+					c:EZO ?= THIS
+					has_variable = ezo_republic_var
+					has_law_or_variant = law_type:law_landed_voting
+				}
+			}
+			triggered_desc = {
+				desc = party_dai_nippon_kyokai
+				trigger = {
+					c:JAP ?= THIS
+					has_law_or_variant = law_type:law_landed_voting
+					NOT = {
+						country_is_taikunate = yes
+					}
+				}
+			}
+			triggered_desc = {
+				desc = party_teikokuto
+				trigger = {
+					c:JAP ?= THIS
+					has_law = law_type:law_monarchy
+					NOT = {
+						has_law_or_variant = law_type:law_landed_voting
+					}
+				}
+			}
+			triggered_desc = {
+				desc = party_patriotic_union
+				trigger = {
+					country_has_primary_culture = cu:spanish
+				}
+			}
+			triggered_desc = {
+				desc = party_regressivist_party
+				trigger = {
+					country_has_primary_culture = cu:brazilian
+				}
+			}
+			triggered_desc = {
+				desc = party_national_peoples_party
+				trigger = {
+					OR = {
+						country_has_primary_culture = cu:north_german
+						country_has_primary_culture = cu:south_german
+					}
+					NAND = {
+						any_interest_group = {
+							is_in_government = yes
+							party ?= {
+								is_party_type = fascist_party
+							}
+						}
+						has_law_or_variant = law_type:law_single_party_state
+						has_variable = fatherland_front_var
+					}
+				}
+			}
+			triggered_desc = {
+				desc = party_military
+				trigger = {
+					always = yes
+				}
+			}
+		}
+	}
+	icon = {
+		default = "/gfx/interface/icons/political_parties/military.dds"
+	}
+	# THIS IS RUN ONLY ONCE AT GAME START
+	valid_for_country = {
+		always = yes
+	}
+	available_for_interest_group = {
+		trigger_if = {
+			limit = {
+				ig_is_member_of_dominant_party = { PARTY = military }
+			}
+			always = yes
+		}
+		trigger_else = {
+			owner = {
+				country_has_voting_franchise = yes
+				OR = {
+					py:military_party ?= {
+						party_has_members = yes
+					}
+					ig:ig_armed_forces ?= {
+						ig_counts_as_marginal = no
+					}
+				}
+			}
+		}
+	}
+	
+	# Root - IG considering joining
+	# scope:number - the number of IGs that would join this party before the root IG
+	# scope:founding_party - yes if the root IG would be founding this party rather than joining an existing one
+	join_weight = {
+		value = {
+			value = -5
+			desc = "base_value"
+		}
+		if = {
+			limit = {
+				owner = {
+					c:BIC ?= this
+					is_subject = yes
+					OR = {
+						has_modifier = modifier_india_crown_rule
+						has_modifier = modifier_india_company_rule
+						has_modifier = modifier_india_company_rule_upgraded
+					}
+				}
+				OR = {
+					is_interest_group_type = ig_industrialists
+					is_interest_group_type = ig_armed_forces
+				}
+			}
+			add = {
+				value = -100
+				desc = "india_colonial_government"
+			}
+		}
+		if = {
+			limit = {
+				owner = {
+					is_in_geographic_region = geographic_region_south_america
+					any_primary_culture = {
+						has_discrimination_trait = language_hispanophone
+					}
+				}
+			}
+			add = {
+				value = -10
+				desc = "south_america_two_party_system"
+			}
+		}
+		
+		if = {
+			limit = {
+				owner = {
+					is_in_geographic_region = geographic_region_north_america
+					OR = {
+						country_has_primary_culture = cu:yankee
+						country_has_primary_culture = cu:dixie
+					}
+					has_law_or_variant = law_type:law_presidential_republic
+				}
+			}
+			add = {
+				value = -10
+				desc = "usa_two_party_system"
+			}
+		}
+		if = { # nobody will join if the armed forces don't join
+			limit = {
+				scope:founding_party = no
+				NOT = { is_interest_group_type = ig_armed_forces }
+				OR = {
+					NOT = { exists = owner.py:military_party }
+					AND = {
+						exists = owner.py:military_party
+						owner = {
+							ig:ig_armed_forces ?= {
+								NOT = { is_member_of_party = owner.py:military_party }
+							}
+						}
+					}
+				}
+			}
+			add = {
+				value = -20
+				desc = "from_no_army_in_party" # this should probably never actually display in game because the party won't exist
+			}
+		}
+		if = { # a party for powerful soldiers
+			limit = {
+				is_interest_group_type = ig_armed_forces
+				is_powerful = yes
+			}
+			add = {
+				value = 10
+				desc = "from_strong_military"
+			}
+		}
+		if = { # jingoists like the military party
+			limit = {
+				leader ?= { has_ideology = ideology:ideology_jingoist_leader }
+			}
+			add = {
+				value = 10
+				desc = "from_jingoist"
+			}
+		}
+		if = { # conservatives like police
+			limit = {
+				owner = {
+					has_technology_researched = law_enforcement
+					has_law_or_variant = law_type:law_no_police
+				}
+				OR = {
+					law_stance = {
+						law = law_type:law_no_police
+						value < neutral
+					}
+					# ANZFP
+					trigger_if = {
+						limit = {
+							anzfp_is_active = yes
+						}
+						anz_paternalistic_ideologies = yes
+					}
+				}
+			}
+			add = {
+				value = 3
+				desc = "from_no_police"
+			}
+		}
+		if = { # anti-peasant levies
+			limit = {
+				owner ?= {
+					has_law_or_variant = law_type:law_peasant_levies
+				}
+				OR = {
+					law_stance = {
+						law = law_type:law_peasant_levies
+						value < neutral
+					}
+					# ANZFP
+					trigger_if = {
+						limit = {
+							anzfp_is_active = yes
+						}
+						anz_particularist_ideologies = yes
+					}
+				}
+			}
+			add = {
+				value = 3
+				desc = "from_peasant_levies"
+			}
+		}
+		if = { # loyalist/proletarian/meritocratic alliance for tax reform
+			limit = {
+				owner ?= {
+					NOT = {
+						has_law_or_variant = law_type:law_proportional_taxation
+					}
+				}
+				OR = {
+					law_enactment_stance = {
+						law = law_type:law_proportional_taxation
+						value > neutral
+					}
+					# ANZFP
+					trigger_if = {
+						limit = {
+							anzfp_is_active = yes
+						}
+						leader = {
+							has_ideology = ideology:ideology_anz_georgist
+						}
+					}
+				}
+			}
+			add = {
+				value = 3
+				desc = "from_lacking_tax_laws"
+			}
+		}
+
+		# alliance for stricter internal security
+		if = {
+			limit = {
+				owner = {
+					OR = {
+						has_law_or_variant = law_type:law_no_home_affairs
+						has_law_or_variant = law_type:law_guaranteed_liberties
+					}
+				}
+				law_enactment_stance = {
+					law = law_type:law_secret_police
+					value > neutral
+				}
+			}
+			add = {
+				value = 3
+				desc = "from_liberty"
+			}
+		}
+		if = { # conservatives like censorship
+			limit = {
+				owner = {
+					OR = { 
+						has_law_or_variant = law_type:law_right_of_assembly
+						has_law_or_variant = law_type:law_protected_speech
+					}
+				}
+				OR = {
+					law_enactment_stance = {
+						law = law_type:law_censorship
+						value > neutral
+					}
+					# ANZFP
+					trigger_if = {
+						limit = {
+							anzfp_is_active = yes
+						}
+						anz_patriarchal_ideologies = yes
+					}
+				}
+			}
+			add = {
+				value = 3
+				desc = "from_no_censorship"
+			}
+		}
+		if = { # authoritarians like militarism
+			limit = {
+				leader ?= {
+					has_ideology = ideology:ideology_authoritarian
+				}
+			}
+			add = {
+				value = 5
+				desc = from_authoritarian
+			}
+		}
+		if = { # Carlists and Miguelists were against participating in electoral politics for a good while
+			limit = {
+				NOT = { owner = { has_technology_researched = corporatism } }
+				leader = {
+					OR = {
+						character_has_carlist_ideology = yes
+						character_has_miguelist_ideology = yes
+					}
+				}
+			}
+			add = {
+				value = -20
+				desc = "from_traditionalist_monarchism"
+			}
+		}
+		# Vic1877: under the alternate party system, the military party catches non-propertarian armed forces
+		if = {
+			limit = {
+				owner = { vic1877_country_uses_alternate_parties = yes }
+				is_interest_group_type = ig_armed_forces
+				OR = {
+					leader = {
+						NOR = {
+							has_ideology = ideology:ideology_market_liberal
+							vic1877_leader_is_propertarian = yes
+						}
+					}
+					vic1877_ig_is_defense_contractor = no
+				}
+			}
+			add = {
+				value = 10
+				desc = "non_propertarian_armed_forces"
+			}
+		}
+		# Vic1877: under the alternate party system, the military party draws ethno-nationalist leaders
+		if = {
+			limit = {
+				owner = { vic1877_country_uses_alternate_parties = yes }
+				leader ?= {
+					has_ideology = ideology:ideology_ethno_nationalist
+				}
+			}
+			add = {
+				value = 15
+				desc = "ideology_ethno_nationalist"
+			}
+		}
+		if = { # French Monarchists
+			limit = {
+				OR = {
+					AND = {
+						leader ?= {
+							has_ideology = ideology:ideology_legitimist
+						}
+						owner.py:military_party ?= {
+							any_member = {
+								is_powerful = yes
+								leader ?= {
+									OR = {
+										has_ideology = ideology:ideology_bonapartist
+										has_ideology = ideology:ideology_orleanist
+									}
+								}
+							}
+						}
+					}
+					AND = {
+						leader ?= {
+							has_ideology = ideology:ideology_bonapartist
+						}
+						owner.py:military_party ?= {
+							any_member = {
+								is_powerful = yes
+								leader ?= {
+									OR = {
+										has_ideology = ideology:ideology_legitimist
+										has_ideology = ideology:ideology_orleanist
+									}
+								}
+							}
+						}
+					}
+					AND = {
+						leader ?= {
+							has_ideology = ideology:ideology_orleanist
+						}
+						owner.py:military_party ?= {
+							any_member = {
+								is_powerful = yes
+								leader ?= {
+									OR = {
+										has_ideology = ideology:ideology_bonapartist
+										has_ideology = ideology:ideology_legitimist
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			add = {
+				value = -5
+				desc = "from_french_monarchist_rival"
+			}
+		}
+		if = {
+			limit = {
+				leader ?= {
+					NOR = {
+						has_ideology = ideology:ideology_liberal_leader
+						has_ideology = ideology:ideology_republican_leader
+						has_ideology = ideology:ideology_radical
+						has_ideology = ideology:ideology_communist_leader
+						has_ideology = ideology:ideology_vanguardist
+					}
+				}
+				owner = {
+					c:FRA ?= this
+					has_law = law_type:law_monarchy
+				}
+			}
+			add = {
+				value = -10
+				desc = "from_monarchist_leanings"
+			}
+		}
+		if = {
+			limit = {
+				ig_is_member_of_dominant_party = { PARTY = military }
+			}
+			add = {
+				value = 1000
+				desc = "amendment_military_party_dominance"
+			}
+		}
+		if = {
+			limit = {
+				is_interest_group_type = ig_armed_forces
+				is_powerful = yes
+			}
+			multiply = {
+				value = 2
+				desc = "from_archetype_party"
+			}
+		}
+		if = {
+			limit = {
+				scope:number = 1
+				is_powerful = no
+				ig_counts_as_marginal = no
+			}
+			multiply = {
+				value = 2
+				desc = "from_influential_supporting_member"
+			}
+		}
+		else_if = {
+			limit = {
+				scope:number = 2
+			}
+			multiply = {
+				value = 0.5
+				desc = "from_two_prior_members"
+			}
+		}
+		else_if = {
+			limit = {
+				scope:number >= 3
+			}
+			multiply = {
+				value = 0.0
+				desc = "from_three_or_more_prior_members"
+			}
+		}
+	}
+}

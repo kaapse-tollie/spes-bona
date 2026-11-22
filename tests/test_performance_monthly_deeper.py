@@ -54,7 +54,7 @@ class Runtime:
     def condition(self, nodes, scope):
         for key, _, value in nodes:
             if key == 'OR': result = any(self.condition([node], scope) for node in value)
-            elif key == 'NOT': result = not self.condition(value, scope)
+            elif key == 'NOT': result = not any(self.condition([node], scope) for node in value)
             elif key == 'any_country':
                 result = False
                 for country in self.countries:

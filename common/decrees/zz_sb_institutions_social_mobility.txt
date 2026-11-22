@@ -1,12 +1,20 @@
-﻿# Vanilla 1.14.5: preserve caste restrictions and native weekly decree invalidation.
+﻿# Keep native decree eligibility and block Social Mobility during SB institutions.
 REPLACE:decree_promote_social_mobility = {
 	texture = "gfx/interface/icons/decree/decree_promote_social_mobility.dds"
+	country_trigger = {
+		custom_tooltip = {
+			text = tsarpoints_decree_not_upgraded_tt
+			NOT = { has_variable = tsarpoints_upgraded_promote_social_mobility }
+			NOT = { overlord ?= { has_variable = tsarpoints_upgraded_promote_social_mobility } }
+		}
+	}
 
 	state_trigger = {
 		custom_tooltip = {
 			text = sb_institutions_social_mobility_available_tt
 			owner ?= { NOT = { has_variable = sb_institutions_active_var } }
 		}
+		NOT = { has_decree = decree_promote_social_mobility_tsarpoints }
 		NOT = {
 			AND = {
 				owner ?= {
@@ -107,6 +115,126 @@ REPLACE:decree_promote_social_mobility = {
 				literacy_rate < 0.5
 			}
 			add = 500
+		}
+		if = {
+			limit = {
+				scope:country = {
+					has_journal_entry = je_tp_tsar_crown_of_perfection
+					NOT = { has_variable = je_tp_tsar_crown_of_perfection_button_1_complete }
+				}
+				is_capital = yes
+			}
+			add = 1000
+		}
+		if = {
+			limit = {
+				scope:country = {
+					has_variable = ai_ukraine_renaissance_accelerate
+				}
+				state_region = { is_homeland = cu:ukrainian }
+			}
+			add = 250
+		}
+		if = {
+			limit = {
+				scope:country = {
+					has_variable = ai_belarus_renaissance_accelerate
+				}
+				state_region = { is_homeland = cu:byelorussian }
+			}
+			add = 250
+		}
+		if = {
+			limit = {
+				scope:country = {
+					OR = {
+						has_strategy = ai_strategy_reactionary_agenda
+						has_strategy = ai_strategy_conservative_agenda
+						has_strategy = ai_strategy_maintain_mandate_of_heaven
+					}
+				}
+			}
+			multiply = 0.5
+		}
+		if = {
+			limit = {
+				scope:country = {
+					OR = {
+						has_strategy = ai_strategy_progressive_agenda
+						has_strategy = ai_strategy_egalitarian_agenda
+					}
+				}
+			}
+			multiply = 1.5
+		}
+		if = {
+			limit = {
+				is_incorporated = no
+			}
+			multiply = 0.25
+		}
+		if = {
+			limit = {
+				is_capital = yes
+			}
+			multiply = 2
+		}
+		if = {
+			limit = {
+				is_capital = yes
+				scope:country = {
+					has_journal_entry = je_tp_pool_develop_capital
+				}
+			}
+			multiply = 1.5
+		}
+		if = {
+			limit = {
+				scope:country ?= {
+					has_journal_entry = je_tp_fav_parochial
+					has_variable = tp_fav_home_state
+					var:tp_fav_home_state ?= root
+				}
+			}
+			multiply = 1.5
+		}
+		if = {
+			limit = {
+				scope:country = {
+					has_variable = ai_ukraine_renaissance_repress
+				}
+				state_region = { is_homeland = cu:ukrainian }
+			}
+			multiply = 0.25
+		}
+		if = {
+			limit = {
+				scope:country = {
+					has_variable = ai_belarus_renaissance_repress
+				}
+				state_region = { is_homeland = cu:byelorussian }
+			}
+			multiply = 0.25
+		}
+		if = {
+			limit = {
+				scope:country = {
+					has_variable = ai_ukraine_renaissance_moderate
+				}
+				state_region = { is_homeland = cu:ukrainian }
+				cultural_renaissance_fervor_is_high = { CULTURE = ukrainian }
+			}
+			multiply = 0.5
+		}
+		if = {
+			limit = {
+				scope:country = {
+					has_variable = ai_belarus_renaissance_moderate
+				}
+				state_region = { is_homeland = cu:byelorussian }
+				cultural_renaissance_fervor_is_high = { CULTURE = byelorussian }
+			}
+			multiply = 0.5
 		}
 	}
 }

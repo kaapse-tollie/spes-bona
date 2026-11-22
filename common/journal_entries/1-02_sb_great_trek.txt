@@ -38,6 +38,8 @@
 # ==============================================================================
 
 je_sb_great_trek = {
+	activation_description = { always = yes }
+
 	group = je_group_historical_content
 
 	icon = "gfx/interface/icons/je_icons/je_great_trek.dds"
@@ -106,21 +108,50 @@ je_sb_great_trek = {
 
 	# JE completes when BOTH stages are done (AND logic — both custom_tooltips
 	# must be true simultaneously).
-	complete = {
-		custom_tooltip = {
-			text = je_sb_great_trek_stage1_tt
-			has_variable = sb_trek_stage1_complete
+	outcome = {
+		header = je_standard_completion_header
+		effect_header = je_standard_on_completion_header
+		color = "gold_positive"
+		conclusion_desc = je_standard_completion_conclusion_desc
+		trigger = {
+			custom_tooltip = {
+				text = je_sb_great_trek_stage1_tt
+				has_variable = sb_trek_stage1_complete
+			}
+			custom_tooltip = {
+				text = je_sb_great_trek_stage2_tt
+				has_variable = sb_trek_stage2_complete
+			}
 		}
-		custom_tooltip = {
-			text = je_sb_great_trek_stage2_tt
-			has_variable = sb_trek_stage2_complete
+		effect = {
+			set_variable = sb_great_trek_completed_var
+			c:GBR ?= {
+				sb_unlock_imperial_confederation_scheme = yes
+			}
 		}
 	}
 
-	on_complete = {
-		set_variable = sb_great_trek_completed_var
-		c:GBR ?= {
-			sb_unlock_imperial_confederation_scheme = yes
+	outcome = {
+		flags = { hidden invalid_outcome }
+		conclusion_desc = je_standard_failure_conclusion_desc
+		trigger = {
+			OR = {
+				has_variable = sb_natalia_great_trek_disabled_var
+				AND = {
+					is_subject = yes
+					NOT = {
+						OR = {
+							country_definition = cd:SGO
+							country_definition = cd:NRP
+						}
+					}
+				}
+			}
+		}
+		effect = {
+			every_scope_state = {
+				remove_modifier = sb_trek_migration_pull
+			}
 		}
 	}
 
@@ -242,28 +273,9 @@ je_sb_great_trek = {
 
 	# Invalidates if the republic becomes a subject (e.g., annexed by Britain).
 	# A subjected Boer republic can't conduct an independent trek.
-	invalid = {
-		OR = {
-			has_variable = sb_natalia_great_trek_disabled_var
-			AND = {
-				is_subject = yes
-				NOT = {
-					OR = {
-						country_definition = cd:SGO
-						country_definition = cd:NRP
-					}
-				}
-			}
-		}
-	}
 
 	# Cleanup on invalidation: remove migration pull so it doesn't linger
 	# on states that are now under foreign control.
-	on_invalid = {
-		every_scope_state = {
-			remove_modifier = sb_trek_migration_pull
-		}
-	}
 
 	# High weight for journal priority.
 	weight = 1000

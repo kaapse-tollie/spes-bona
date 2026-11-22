@@ -1,4 +1,5 @@
 from pathlib import Path
+import hashlib
 import re
 import subprocess
 import tempfile
@@ -51,12 +52,15 @@ class LaunchErrorTests(unittest.TestCase):
             self.assertEqual({a, b}, set(repair.link_endpoints(key)))
             self.assertEqual(style, key & 63)
 
-    def test_launch_repair_reproduces_deployed_asset_and_rejects_old_links(self):
+    def test_historical_launch_repair_and_current_authored_routes(self):
         original = subprocess.check_output(['git', 'show', BASELINE + ':' + SPLINE], cwd=ROOT)
         with self.assertRaisesRegex(ValueError, 'encodes'):
             repair.validate_link_endpoints(spline.parse(original))
         current = (ROOT / SPLINE).read_bytes()
-        self.assertEqual(current, repair.repair(original))
+        self.assertEqual(
+            "9b9f7b30295ce5581e610016a73e5b239f7dffb831bc6ee6ce24b25b8011709c",
+            hashlib.sha256(repair.repair(original)).hexdigest(),
+        )
         model = spline.parse(current)
         repair.validate_link_endpoints(model)
         points = spline.record_map(model.points)
@@ -68,10 +72,15 @@ class LaunchErrorTests(unittest.TestCase):
         endpoints = {frozenset(repair.link_endpoints(link.key)) for link in model.links}
         for a, b in [(121304, 25804), (121303, 26003), (25503, 26203), (122104, 26300)]:
             self.assertIn(frozenset((a, b)), endpoints)
-        # The OB1 European changes remain byte-for-byte intact.
-        original_points = spline.record_map(spline.parse(original).points)
+        # Current native European changes are preserved outside the SB delta.
+        game = validate.find_game_root(None)
+        self.assertIsNotNone(game)
+        original_points = spline.record_map(spline.parse((game / SPLINE).read_bytes()).points)
         for anchor in (8388908, 8391908, 8392008, 277150838):
-            self.assertEqual(original_points[anchor], points[anchor])
+            if anchor in original_points:
+                self.assertEqual(original_points[anchor], points[anchor])
+            else:
+                self.assertNotIn(anchor, points)
 
     def test_repair_texture_alias_matches_shipped_ob1_asset(self):
         game = validate.find_game_root(None)

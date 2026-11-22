@@ -67,7 +67,7 @@ class OverrideInventoryTests(unittest.TestCase):
             "supported_game_version": "1.14.0",
             "relationships": [{
                 "id": "com.github.Victoria-3-Modding-Co-op.Community-Mod-Framework",
-                "version": "1.66.*",
+                "version": "1.67.*",
             }],
         }))
         (self.mod / "common/test.txt").write_text("mod copy\n")
@@ -99,12 +99,12 @@ class OverrideInventoryTests(unittest.TestCase):
             "generated_for_commit_baseline": "1" * 40,
             "dependencies": [{
                 "name": "Community Mod Framework",
-                "version": "1.66.0",
-                "version_range": "1.66.*",
-                "commit": "807c32ff42b75714a3a0e090c0db3357b5e46ed7",
-                "release_tag": "1.66.0",
-                "asset_name": "release-1.66.0.zip",
-                "asset_sha256": "79dd0d434e6ffb617147ad1b91b73e6306139adfffcadf6774eeb32db3a09b8b",
+                "version": "1.67.9",
+                "version_range": "1.67.*",
+                "commit": "9103c9cb4130d46cb18204d588def1266e5c1555",
+                "release_tag": "1.67.9",
+                "asset_name": "release-1.67.9.zip",
+                "asset_sha256": "2c702bbf99fd96804366896521832d18519a6a33e94519d49160de0ece7e04ae",
             }],
             "approved_replace_paths": [],
             "state_region_blocks": [],
@@ -170,6 +170,30 @@ class OverrideInventoryTests(unittest.TestCase):
         self.assertTrue(any("unmanifested keyed override" in error for error in errors))
         (self.mod / "common/laws/mod.txt").write_text('REPLACE:foo = { value = 3 }\n')
         self.assertTrue(any("mod object hash drift" in error for error in self.validate()))
+
+    def test_dependency_baseline_checks_declared_directive_and_object_hash(self):
+        cmf = self.mod.parent / 'cmf'
+        source = cmf / 'common/laws/com_test.txt'
+        source.parent.mkdir(parents=True)
+        # This fixture supplies one CMF definition, not the unrelated CMF API files.
+        expected = CHECKER.validate(self.mod, self.game, self.inventory, cmf_root=cmf, steam_app_manifest=self.appmanifest)
+        for directive in ('REPLACE', 'REPLACE_OR_CREATE'):
+            with self.subTest(directive=directive):
+                source.write_text(f'{directive}:foo = {{ value = 1 }}\n')
+                inv = copy.deepcopy(self.inventory)
+                baseline = {
+                    'path': 'common/laws/com_test.txt',
+                    'file_sha256': digest(source),
+                    'object_sha256': object_digest(source.read_text(), 'foo', directive),
+                }
+                if directive != 'REPLACE': baseline['directive'] = directive
+                inv['keyed_overrides'][0]['dependency_baseline'] = baseline
+                errors = CHECKER.validate(self.mod, self.game, inv, cmf_root=cmf, steam_app_manifest=self.appmanifest)
+                self.assertEqual(expected, errors)
+                source.write_text(f'{directive}:foo = {{ value = 99 }}\n')
+                baseline['file_sha256'] = digest(source)
+                errors = CHECKER.validate(self.mod, self.game, inv, cmf_root=cmf, steam_app_manifest=self.appmanifest)
+                self.assertTrue(any('dependency baseline object hash drift' in e for e in errors))
 
     def test_unregistered_additive_zz_file_fails(self):
         (self.mod / "common/history/ai").mkdir(parents=True, exist_ok=True)
@@ -423,7 +447,7 @@ class OverrideInventoryTests(unittest.TestCase):
         (self.mod / ".metadata/metadata.json").write_text(json.dumps(metadata))
         errors = self.validate()
         self.assertTrue(any("supported_game_version" in error for error in errors))
-        self.assertTrue(any("version 1.66.*" in error for error in errors))
+        self.assertTrue(any("version 1.67.*" in error for error in errors))
 
     def test_non_shadowed_upstream_contract_is_hash_and_object_pinned(self):
         inventory = copy.deepcopy(self.inventory)
@@ -487,7 +511,7 @@ class OverrideInventoryTests(unittest.TestCase):
         (cmf / "common/scripted_effects").mkdir(parents=True)
         (cmf / "common/console_command_macros").mkdir(parents=True)
         (cmf / "gui/com_journal_injects").mkdir(parents=True)
-        (cmf / ".metadata/metadata.json").write_text(json.dumps({"version": "1.66.0"}))
+        (cmf / ".metadata/metadata.json").write_text(json.dumps({"version": "1.67.9"}))
         (cmf / "common/scripted_effects/com_international_situation_effects.txt").write_text(
             "com_set_situation_left_title = { set_variable = { } }\n"
             "com_set_situation_right_title = { set_variable = { } }\n"
@@ -502,7 +526,7 @@ class OverrideInventoryTests(unittest.TestCase):
 
         (cmf / "common/console_command_macros/com_macros.txt").write_text("")
         errors = CHECKER.validate(self.mod, self.game, self.inventory, cmf)
-        self.assertTrue(any("CMF 1.66.0 API com_container" in error for error in errors))
+        self.assertTrue(any("CMF 1.67.9 API com_container" in error for error in errors))
 
 
 if __name__ == "__main__":

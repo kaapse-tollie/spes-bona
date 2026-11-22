@@ -13,6 +13,13 @@ REPLACE:retire_commander = {
 	}
 
 	possible = {
+		trigger_if = {
+			limit = { has_variable = com_block_retire_var }
+			custom_tooltip = {
+				text = com_block_retire_interaction_trigger
+				NOT = { has_variable = com_block_retire_var }
+			}
+		}
 		is_ruler_of_own_country = no
 		interest_group ?= {
 			is_insurrectionary = no
@@ -66,9 +73,16 @@ REPLACE:retire_commander = {
 				character_execute_immediate_coup = yes
 			}
 		}
+		else_if = {
+			limit = {
+				rlit_pushkin_needed_for_golden_age = yes
+			}
+			rlit_pushkin_force_duel_effect = yes
+		}
 		else = {
 			hidden_effect = {
 				replace_character_roles = { remove = { general admiral } }
+				retired_commander_becomes_politician_roll_effect = { CHANCE_MULT = define:NCharacters|RETIRED_COMMANDER_POLITICIAN_FORCED_CHANCE_MULT }
 				retire_character_if_should_be_culled = yes
 			}
 
@@ -198,11 +212,44 @@ REPLACE:retire_commander = {
 		}
 		if = {
 			limit = {
-				owner = {
-					country_definition = cd:BST
+				save_temporary_scope_as = tp_retire_candidate_scope
+				owner ?= {
+					has_journal_entry = je_tp_fav_bootlicker
+					is_at_war = no
+					OR = {
+						var:tp_bootlicker_rival_1 ?= scope:tp_retire_candidate_scope
+						var:tp_bootlicker_rival_2 ?= scope:tp_retire_candidate_scope
+						var:tp_bootlicker_rival_3 ?= scope:tp_retire_candidate_scope
+					}
 				}
 			}
+			add = 100
+		}
+		if = {
+			limit = {
+				character_is_rival_french_house = yes
+				owner ?= {
+					is_at_war = no
+				}
+			}
+			add = 50
+		}
+		if = {
+			limit = {
+				has_template = RUS_alexander_pushkin
+			}
+			multiply = 0
+		}
+		if = {
+			limit = {
+				character_matches_divided_monarchists_ai_path = yes
+			}
+			multiply = 0
+		}
+		if = {
+			limit = { owner = { country_definition = cd:BST } }
 			add = -1000
 		}
+
 	}
 }

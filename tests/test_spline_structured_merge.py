@@ -43,17 +43,11 @@ def external_input_paths() -> dict[str, Path] | None:
             ),
         )
     ).expanduser()
-    game_root = Path(
-        os.environ.get(
-            "VIC3_GAME_ROOT",
-            str(
-                Path.home()
-                / "Library/Application Support/Steam/steamapps/common/"
-                "Victoria 3/game"
-            ),
-        )
-    ).expanduser()
-    new = game_root / "gfx/map/spline_network/spline_network.splnet"
+    # Historical reproduction must never silently use the installed new target.
+    new = Path(os.environ.get(
+        "SB_SPLINE_1_14_0_OB1",
+        str(ROOT / "generated/rebase_1_15_0/vanilla_1_14_5.splnet"),
+    )).expanduser()
     if not old.is_file() or not new.is_file():
         return None
     return {"old": old, "new": new}

@@ -1,0 +1,145 @@
+﻿namespace = sb_law_journal
+
+# One deferred attempt after native country creation. Recheck current eligibility and
+# duplicates in immediate, so scheduling is allowed while the country is unfinished.
+# Destroyed countries and superseded law changes do not retry.
+sb_law_journal.001 = {
+	type = country_event
+	hidden = yes
+	immediate = {
+		if = {
+			limit = {
+				sb_law_journal_country_ready = yes
+				has_law_or_variant = law_type:law_technocracy
+				NOT = { has_journal_entry = je_technocracy }
+			}
+			add_journal_entry = { type = je_technocracy }
+		}
+	}
+}
+
+sb_law_journal.002 = {
+	type = country_event
+	hidden = yes
+	immediate = {
+		if = {
+			limit = {
+				sb_law_journal_country_ready = yes
+				has_law = law_type:law_monarchy
+				has_variable = king_in_parliament_possible
+				OR = {
+					has_law_or_variant = law_type:law_landed_voting
+					has_law_or_variant = law_type:law_wealth_voting
+					has_law_or_variant = law_type:law_census_voting
+					has_law_or_variant = law_type:law_universal_suffrage
+					has_law_or_variant = law_type:law_single_party_state
+				}
+				NOT = { has_journal_entry = je_king_in_parliament }
+			}
+			add_journal_entry = { type = je_king_in_parliament }
+		}
+	}
+}
+
+sb_law_journal.003 = {
+	type = country_event
+	hidden = yes
+	immediate = {
+		if = {
+			limit = {
+				sb_law_journal_country_ready = yes
+				c:FRA ?= this
+				has_dlc_feature = voice_of_the_people_content
+				game_date > 1836.1.1
+				OR = {
+					has_law_or_variant = law_type:law_monarchy
+					has_law_or_variant = law_type:law_social_monarchy
+				}
+				NOT = { has_variable = one_true_french_dynasty }
+				NOT = { has_journal_entry = je_divided_monarchists }
+			}
+			add_journal_entry = { type = je_divided_monarchists }
+		}
+	}
+}
+
+sb_law_journal.004 = {
+	type = country_event
+	hidden = yes
+	immediate = {
+		if = {
+			limit = {
+				sb_law_journal_country_ready = yes
+				c:SPA ?= this
+				has_dlc_feature = ip4_content
+				is_revolutionary = no
+				is_secessionist = no
+				game_date > 1836.1.1
+				OR = {
+					has_law_or_variant = law_type:law_monarchy
+					has_law_or_variant = law_type:law_social_monarchy
+				}
+				NOT = { has_journal_entry = je_spain_provisional_government }
+			}
+			add_journal_entry = { type = je_spain_provisional_government }
+		}
+	}
+}
+
+sb_law_journal.005 = {
+	type = country_event
+	hidden = yes
+	immediate = {
+		if = {
+			limit = {
+				sb_law_journal_country_ready = yes
+				NOT = { has_journal_entry = je_abolish_monarchy }
+				OR = {
+					# Enactment-start route: retain the native monarchy/enacting-law contract.
+					AND = {
+						has_law = law_type:law_monarchy
+						OR = {
+							is_enacting_law = law_type:law_corporate_state
+							is_enacting_law = law_type:law_presidential_republic
+							is_enacting_law = law_type:law_parliamentary_republic
+							is_enacting_law = law_type:law_council_republic
+						}
+					}
+					# Direct activation route: retain the native post-monarchy exclusions.
+					AND = {
+						OR = {
+							has_law_or_variant = law_type:law_presidential_republic
+							has_law_or_variant = law_type:law_parliamentary_republic
+							has_law_or_variant = law_type:law_council_republic
+							has_law_or_variant = law_type:law_corporate_state
+						}
+						NOR = {
+							game_date <= 1836.1.2
+							has_variable = monarchy_stamped_out_var
+							has_variable = rcw_russian_faction
+							ig:ig_landowners ?= { has_ideology = ideology:ideology_republican_paternalistic }
+						}
+					}
+				}
+			}
+			add_journal_entry = { type = je_abolish_monarchy }
+		}
+	}
+}
+
+sb_law_journal.006 = {
+	type = country_event
+	hidden = yes
+	immediate = {
+		if = {
+			limit = {
+				sb_law_journal_country_ready = yes
+				sb_is_inboekstelsel_eligible_country = yes
+				sb_has_inboekstelsel_law = yes
+				has_variable = sb_inboekstelsel_reopen_required_var
+				NOT = { has_journal_entry = je_sb_inboekstelsel_system }
+			}
+			sb_ensure_inboekstelsel_journal_entry = yes
+		}
+	}
+}

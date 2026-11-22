@@ -6,7 +6,11 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from tools import build_1_14_5_depot_delta as delta
+from tests.je_outcomes import outcome_field, outcome_nodes
+from tests.test_zulu_institutions_laws import statements
+
+from tools import build_1_14_5_depot_delta as historical_delta
+from tools import check_1_15_2_target as delta
 from tools import check_override_inventory as inventory, validate
 from tests.test_usuthu_movement_contest import parse
 
@@ -30,23 +34,23 @@ def child(nodes, key):
 
 class CurrentTargetTests(unittest.TestCase):
     def test_exact_build_and_manifest_identity(self):
-        self.assertIsNotNone(GAME, "1.14.5 validation requires the installed game")
+        self.assertIsNotNone(GAME, "1.15.2 validation requires the installed game")
         app_path = inventory.find_steam_app_manifest(GAME)
         self.assertIsNotNone(app_path, "current Steam build identity is mandatory")
         app = inventory.parse_vdf(app_path.read_text())["AppState"]
-        self.assertEqual("25629520", app["buildid"])
-        self.assertEqual("5521822647051867164", app["InstalledDepots"]["529341"]["manifest"])
-        self.assertEqual("1.14-openbeta", app["UserConfig"]["BetaKey"])
+        self.assertEqual("26763837", app["buildid"])
+        self.assertEqual("5942745929618312121", app["InstalledDepots"]["529341"]["manifest"])
+        self.assertEqual("public", app.get("UserConfig", {}).get("BetaKey", "public"))
         settings = json.loads((GAME.parent / "launcher/launcher-settings.json").read_text())
-        self.assertEqual("1.14.5", settings["rawVersion"])
+        self.assertEqual("1.15.2", settings["rawVersion"])
 
     def test_current_manifest_and_installed_payload_are_mandatory(self):
         self.assertIsNotNone(GAME, "current installed payload is mandatory")
         current = delta.depot.decode_manifest(delta.depot.default_manifest_path(delta.NEW), delta.NEW)
         data = json.loads(delta.OUTPUT.read_text())
         self.assertEqual(delta.depot._manifest_summary(delta.NEW), data["new_manifest"])
-        self.assertEqual({"added": 2, "changed": 147, "removed": 0, "total": 149}, data["counts"])
-        self.assertEqual(149, len(data["entries"]))
+        self.assertEqual({"changed": 560, "added": 13}, data["counts"])
+        self.assertEqual(573, len(data["entries"]))
         for entry in data["entries"]:
             self.assertEqual(current.records[entry["path"]].evidence(), entry["new"])
         delta.verify_current_target(GAME)
@@ -77,10 +81,10 @@ class CurrentTargetTests(unittest.TestCase):
                 delta.depot.verify_current_payload({"entries": [entry]}, game)
 
     def test_retained_historical_pair_reproduces_report(self):
-        old_path = delta.depot.default_manifest_path(delta.OLD)
+        old_path = historical_delta.depot.default_manifest_path(historical_delta.OLD)
         if not old_path.is_file():
-            self.skipTest("historical 1.14.4 manifest unavailable; current 1.14.5 checks remain mandatory")
-        self.assertEqual(delta.depot.normalized_json(delta.build_delta()), delta.OUTPUT.read_text())
+            self.skipTest("historical 1.14.4 manifest unavailable; current 1.15.2 checks remain mandatory")
+        self.assertEqual(historical_delta.depot.normalized_json(historical_delta.build_delta()), historical_delta.OUTPUT.read_text())
 
 
 class PortParityTests(unittest.TestCase):
@@ -101,18 +105,19 @@ class PortParityTests(unittest.TestCase):
         self.assertEqual(vanilla, sb)
 
     def test_scramble_is_native_except_growth_and_cleanup(self):
-        vanilla = parse(read(GAME, "common/journal_entries/00_scramble_for_africa.txt"))
-        sb = parse(read(ROOT, "common/journal_entries/zz_sb_scramble_for_africa_override.txt"))
+        vanilla = statements(read(GAME, "common/journal_entries/00_scramble_for_africa.txt"))
+        sb = statements(read(ROOT, "common/journal_entries/zz_sb_scramble_for_africa_override.txt"))
         name = "sb_scramble_for_africa_colonial_growth"
         add = ("add_modifier", "=", [("name", "=", name), ("months", "=", "-1")])
         remove = ("if", "=", [("limit", "=", [("has_modifier", "=", name)]),
                                ("remove_modifier", "=", name)])
         ensure = ("if", "=", [("limit", "=", [("NOT", "=", [("has_modifier", "=", name)])]), add])
         child(sb, "immediate").remove(add)
-        child(sb, "on_complete").remove(remove)
-        child(sb, "on_fail").remove(remove)
+        child(outcome_nodes(sb, "complete"), "effect").remove(remove)
+        child(outcome_nodes(sb, "fail"), "effect").remove(remove)
+        child(outcome_nodes(sb, "timeout"), "effect").remove(remove)
         child(child(sb, "on_weekly_pulse"), "effect").remove(ensure)
-        self.assertIn(("is_at_war", "=", "no"), child(sb, "fail"))
+        self.assertIn(("is_at_war", "=", "no"), child(outcome_nodes(sb, "fail"), "trigger"))
         self.assertEqual(vanilla, sb)
 
     def test_all_native_formations_except_preserved_portuguese_armies(self):

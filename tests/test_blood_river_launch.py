@@ -44,7 +44,7 @@ class LaunchContext:
 
     def evaluate(self, nodes, actor):
         def check(key, op, value):
-            if key == 'NOT': return not self.evaluate(value, actor)
+            if key == 'NOT': return not any(self.evaluate([n], actor) for n in value)
             if key == 'OR': return any(self.evaluate([n], actor) for n in value)
             if key == 'AND': return self.evaluate(value, actor)
             if key.startswith(('c:', 'scope:', 'var:', 'container:')):

@@ -32,7 +32,6 @@ REPLACE:ai_can_incorporate_state = {
 		AND = {
 			OR = {
 				is_homeland_of_country_cultures = root
-				"years_to_incorporate(root)" <= define:NAI|INCORPORATE_STATE_MAX_YEARS
 				primary_cultures_percent_state = {
 					target_country = root
 					value >= 0.5
@@ -47,6 +46,7 @@ REPLACE:ai_can_incorporate_state = {
 						is_incorporated = yes
 					}
 				}
+				"years_to_incorporate(root)" <= define:NAI|INCORPORATE_STATE_MAX_YEARS
 			}
 		}
 		sb_regional_ai_should_incorporate = yes
@@ -56,8 +56,8 @@ REPLACE:ai_can_incorporate_state = {
 REPLACE:ai_will_incorporate_state = {
 	OR = {
 		AND = {
-			ai_can_incorporate_state = yes
 			state_population >= define:NAI|INCORPORATE_STATE_MIN_POPULATION
+			ai_can_incorporate_state = yes
 		}
 		sb_regional_ai_should_incorporate = yes
 	}
@@ -66,6 +66,7 @@ REPLACE:ai_will_incorporate_state = {
 REPLACE:ai_colony_will_incorporate_state = {
 	OR = {
 		AND = {
+			state_population >= define:NAI|INCORPORATE_STATE_MIN_POPULATION
 			OR = {
 				region = root.capital.region
 				any_neighbouring_state = {
@@ -74,7 +75,6 @@ REPLACE:ai_colony_will_incorporate_state = {
 				}
 				ai_can_incorporate_state = yes
 			}
-			state_population >= define:NAI|INCORPORATE_STATE_MIN_POPULATION
 		}
 		sb_regional_ai_should_incorporate = yes
 	}

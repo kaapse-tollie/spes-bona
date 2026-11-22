@@ -11,8 +11,8 @@ import zipfile
 from tools import sync_cmf
 
 
-VERSION = "1.66.0"
-EXPECTED_RELEASE_SHA256 = "79dd0d434e6ffb617147ad1b91b73e6306139adfffcadf6774eeb32db3a09b8b"
+VERSION = "1.67.9"
+EXPECTED_RELEASE_SHA256 = "2c702bbf99fd96804366896521832d18519a6a33e94519d49160de0ece7e04ae"
 
 
 class Response:
@@ -123,7 +123,7 @@ class CmfSynchronizationTests(unittest.TestCase):
         self.assertEqual(EXPECTED_RELEASE_SHA256, sync_cmf.PINNED_SHA256)
         self.assertEqual(
             "https://api.github.com/repos/Victoria-3-Modding-Co-op/"
-            "Community-Mod-Framework/releases/tags/1.66.0",
+            "Community-Mod-Framework/releases/tags/1.67.9",
             sync_cmf.tagged_release_url(sync_cmf.PINNED_TAG),
         )
 
@@ -163,7 +163,7 @@ class CmfSynchronizationTests(unittest.TestCase):
             make_installed(target, "1.65.0", marker="keep")
             opener, calls = fake_opener(requested_tag=VERSION, release_tag="1.67.0")
 
-            with self.assertRaisesRegex(sync_cmf.SyncError, "expected exact tag '1.66.0'"):
+            with self.assertRaisesRegex(sync_cmf.SyncError, "expected exact tag '1.67.9'"):
                 sync_cmf.synchronize(
                     target,
                     tag=VERSION,
@@ -268,7 +268,7 @@ class CmfSynchronizationTests(unittest.TestCase):
             target = Path(temporary) / "Community Mod Framework"
             make_installed(target, "1.65.0", marker="keep")
 
-            with self.assertRaisesRegex(sync_cmf.SyncError, "exactly one release-1.66.0.zip"):
+            with self.assertRaisesRegex(sync_cmf.SyncError, "exactly one release-1.67.9.zip"):
                 sync_cmf.synchronize(
                     target,
                     tag=VERSION,

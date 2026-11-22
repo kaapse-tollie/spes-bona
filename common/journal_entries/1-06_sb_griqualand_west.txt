@@ -3,6 +3,8 @@
 # Empty milestone opener JEs are intentionally avoided.
 
 je_sb_griqualand_west_migrant_labour = {
+	activation_description = { always = yes }
+
 	group = je_group_historical_content
 
 	icon = "gfx/interface/icons/event_icons/event_map.dds"
@@ -57,25 +59,37 @@ je_sb_griqualand_west_migrant_labour = {
 		}
 	}
 
-	complete = {
-		OR = {
-			custom_tooltip = {
-				text = je_sb_griqualand_west_migrant_labour_anglo_african_complete_tt
-				s:STATE_GRIQUALAND_WEST = {
-					is_homeland = cu:anglo_african
+	outcome = {
+		header = je_standard_completion_header
+		effect_header = je_standard_on_completion_header
+		color = "gold_positive"
+		conclusion_desc = je_standard_completion_conclusion_desc
+		trigger = {
+			OR = {
+				custom_tooltip = {
+					text = je_sb_griqualand_west_migrant_labour_anglo_african_complete_tt
+					s:STATE_GRIQUALAND_WEST = {
+						is_homeland = cu:anglo_african
+					}
 				}
-			}
-			custom_tooltip = {
-				text = je_sb_griqualand_west_migrant_labour_boer_complete_tt
-				s:STATE_GRIQUALAND_WEST = {
-					is_homeland = cu:boer
+				custom_tooltip = {
+					text = je_sb_griqualand_west_migrant_labour_boer_complete_tt
+					s:STATE_GRIQUALAND_WEST = {
+						is_homeland = cu:boer
+					}
 				}
 			}
 		}
+		effect = {}
 	}
 
-	invalid = {
-		NOT = { p:x68B5E8.state.owner = root }
+	outcome = {
+		flags = { hidden invalid_outcome }
+		conclusion_desc = je_standard_failure_conclusion_desc
+		trigger = {
+			NOT = { p:x68B5E8.state.owner = root }
+		}
+		effect = {}
 	}
 
 	weight = 900

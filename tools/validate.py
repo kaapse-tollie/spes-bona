@@ -22,7 +22,7 @@ import zlib
 
 ROOT = Path(__file__).resolve().parents[1]
 CMF_ID = "com.github.Victoria-3-Modding-Co-op.Community-Mod-Framework"
-CMF_PINNED_VERSION = "1.66.0"
+CMF_PINNED_VERSION = "1.67.9"
 DEFAULT_CMF_ROOT = ROOT.parent / "Community Mod Framework"
 TEXT_ROOTS = ("common", "events", "localization", "map_data")
 TRIGGER_EVENT_RE = re.compile(r"\btrigger_event\s*=\s*\{")
@@ -323,7 +323,7 @@ def normalize_event_block(block: str) -> str:
 def iter_delayed_dispatches(root: Path = ROOT) -> Iterable[tuple[str, str, tuple[tuple[str, str], ...], str]]:
     for base in ("common", "events"):
         for path in sorted((root / base).rglob("*.txt")):
-            text = path.read_text(encoding="utf-8-sig", errors="ignore")
+            text = mask_script_comments(path.read_text(encoding="utf-8-sig", errors="ignore"))
             for match in TRIGGER_EVENT_RE.finditer(text):
                 block = extract_braced(text, match.start())
                 timings = tuple(TIMING_RE.findall(block))
@@ -524,6 +524,8 @@ def check_map_data() -> Check:
     state_path = ROOT / manifest["state_region_file"]
     blocks = parse_state_blocks(state_path)
     errors: list[str] = []
+    if not state_path.read_bytes().startswith(b"\xef\xbb\xbf"):
+        errors.append("state-region script requires a UTF-8 BOM")
     province_map = ROOT / manifest["province_map"]
     if sha256(province_map) != manifest["province_map_sha256"]:
         errors.append("province raster hash changed; regenerate and review adjacency")
@@ -558,6 +560,10 @@ def check_map_data() -> Check:
         errors.append("duplicate state ids: " + ", ".join(map(str, duplicate_state_ids)))
 
     terrain_path = ROOT / manifest["terrain_file"]
+    # This generated table uses a different reader from state-region scripts.
+    # Match the native 1.15 table, whose first terrain entry has no BOM prefix.
+    if terrain_path.read_bytes().startswith(b"\xef\xbb\xbf"):
+        errors.append("generated province terrain table must match native BOM-free encoding")
     terrain_records: dict[str, str] = {}
     duplicate_terrain: set[str] = set()
     for province, terrain in TERRAIN_RE.findall(terrain_path.read_text(encoding="utf-8-sig")):
@@ -615,6 +621,11 @@ def check_map_data() -> Check:
             )
             repair_launch_spline.validate_link_endpoints(spline_model)
             spline_points = spline_structured_merge.record_map(spline_model.points)
+            for state, identifier in state_ids.items():
+                naval_anchor = (1 << 23) + identifier * 100
+                land_anchor = identifier * 100 + 3
+                if naval_anchor in spline_points and land_anchor not in spline_points:
+                    errors.append(f"{state} naval anchor {naval_anchor} has no land-port anchor {land_anchor}")
             for sample in manifest["spline_samples"]:
                 state, kind, identifier = sample["state"], sample["kind"], sample["anchor"]
                 hubs = dict(HUB_RE.findall(blocks[state]))
@@ -1239,7 +1250,7 @@ def check_release_invariants() -> Check:
         "sb_bechuanaland_project_corridor_journal = yes",
     ):
         if token not in journal:
-            errors.append(f"Bechuanaland JE is missing its CMF 1.66 journal projection: {token}")
+            errors.append(f"Bechuanaland JE is missing its CMF 1.67 journal projection: {token}")
     for token in (
         "com_set_situation_left_title =",
         "com_set_situation_right_title =",
@@ -1310,7 +1321,7 @@ def check_release_invariants() -> Check:
                 )
 
     detail = f"{war_goal_count} complete scripted war-goal blocks"
-    return Check("1.14.5 release invariants", "FAIL" if errors else "PASS", "; ".join(errors or [detail]))
+    return Check("1.15.2 release invariants", "FAIL" if errors else "PASS", "; ".join(errors or [detail]))
 
 
 def check_local_override_inventory() -> Check:
@@ -1652,6 +1663,12 @@ def main() -> int:
         tiger = shutil.which("vic3-tiger")
         if tiger is None or game_root is None:
             checks.append(Check("vic3-tiger", "SKIP", "binary or game root not available"))
+        elif subprocess.run([tiger, "--version"], capture_output=True, text=True).stdout.strip() == "vic3-tiger 1.19.0":
+            checks.append(Check(
+                "vic3-tiger", "WARN",
+                "1.19.0 schema lacks 1.15 JE outcomes and once-only event fields; "
+                "not run as a target validator. See evidence/1_15_0_implementation/tiger_schema.json."
+            ))
         else:
             # Load CMF as a dependency through Tiger's config. A physical merge
             # would incorrectly audit CMF itself as part of the target mod.

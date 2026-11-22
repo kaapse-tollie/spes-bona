@@ -26,10 +26,12 @@ class NavalNetworkTests(unittest.TestCase):
         self.assertGreater(checker_index, game_root_index)
         self.assertIn('"naval network connectivity"', validator[game_root_index:checker_index])
 
-    def test_mod_does_not_shadow_the_generated_vanilla_network(self):
-        self.assertFalse((ROOT / "common/travel_network/naval_network.txt").exists())
+    def test_mod_network_is_exactly_the_derived_impassable_coast_correction(self):
+        native = (self.game_root / naval.NETWORK_PATH).read_text(encoding="utf-8-sig")
+        expected = naval.prune_impassable_harbours(native, naval.impassable_provinces(self.state_paths))
+        self.assertEqual(expected.encode("utf-8-sig"), (ROOT / naval.NETWORK_PATH).read_bytes())
 
-    def test_lourenco_marques_uses_the_locator_and_ob1_naval_node_province(self):
+    def test_lourenco_marques_retains_its_authored_building_port_and_locator(self):
         ports = {port.state: port.province for port in self.ports}
         self.assertEqual(EXPECTED_PORT_COUNT, len(ports))
         self.assertEqual("x54CDC5", ports[LOURENCO_MARQUES])
@@ -62,32 +64,35 @@ class NavalNetworkTests(unittest.TestCase):
         self.assertAlmostEqual(4838.494629, float(locator_match.group(1)), places=5)
         self.assertAlmostEqual(907.506287, float(locator_match.group(2)), places=5)
 
-    def test_every_sb_state_port_has_a_connected_current_harbor_node(self):
-        if self.game_root is None:
-            self.fail("current 1.14.5 naval validation requires the installed game")
-        network_path = (
-            self.game_root / "common/travel_network/naval_network.txt"
-        )
-        self.assertTrue(network_path.is_file())
-        self.assertEqual(naval.EXPECTED_1_14_5_SHA256, naval.sha256(network_path))
-
+    def test_current_network_against_sb_and_unmodified_native_control(self):
+        self.assertIsNotNone(self.game_root, "1.15 validation requires installed game")
+        network_path = self.game_root / "common/travel_network/naval_network.txt"
+        self.assertEqual(naval.EXPECTED_1_15_SHA256, naval.sha256(network_path))
         network = naval.parse_naval_network(network_path)
-        self.assertEqual(naval.EXPECTED_1_14_5_NODE_COUNT, len(network.nodes))
-        self.assertEqual(
-            naval.EXPECTED_1_14_5_CONNECTION_COUNT, len(network.connections)
-        )
-        self.assertEqual((), naval.validate_state_ports(network, self.ports))
-
-        lourenco_nodes = network.nodes_for_province("x54CDC5")
-        self.assertTrue(lourenco_nodes)
-        self.assertTrue(
-            any(
-                node.type in naval.HARBOR_NODE_TYPES
-                and network.degrees[node.index] > 0
-                for node in lourenco_nodes
-            )
-        )
-        self.assertEqual((), network.nodes_for_province("x361897"))
+        self.assertEqual(naval.EXPECTED_1_15_NODE_COUNT, len(network.nodes))
+        self.assertEqual(naval.EXPECTED_1_15_CONNECTION_COUNT, len(network.connections))
+        native_ports = naval.parse_state_ports([
+            self.game_root / "map_data/state_regions" / path.name
+            for path in self.state_paths
+        ])
+        native = {port.state: port for port in native_ports}
+        effective = naval.parse_naval_network(ROOT / naval.NETWORK_PATH)
+        errors = naval.validate_state_ports(effective, self.ports)
+        native_errors = naval.validate_state_ports(network, native_ports)
+        # Hereroland's generic coastal nodes are all impassable in SB. Its
+        # actual building port comes from the unchanged native spline instead.
+        self.assertEqual(naval.NATIVE_ACCESS_PENDING | {'STATE_HEREROLAND'},
+                         {error.split()[0] for error in errors})
+        self.assertEqual(tuple(e for e in errors if not e.startswith('STATE_HEREROLAND ')), native_errors)
+        self.assertEqual(30, len(self.ports) - len(errors))
+        self.assertEqual(29, len(native_ports) - len(native_errors))
+        for port in self.ports:
+            if port.state in naval.NATIVE_ACCESS_PENDING:
+                self.assertEqual(native[port.state].province, port.province)
+                self.assertEqual(set(native[port.state].provinces), set(port.provinces))
+        lourenco = next(port for port in self.ports if port.state == LOURENCO_MARQUES)
+        self.assertIn(lourenco.province, lourenco.provinces)
+        self.assertEqual((), naval.validate_state_ports(effective, (lourenco,)))
 
     def test_validator_rejects_missing_non_harbor_and_disconnected_ports(self):
         network = naval.parse_naval_network_text(
@@ -109,11 +114,29 @@ class NavalNetworkTests(unittest.TestCase):
         self.assertEqual(
             (
                 "STATE_NON_HARBOR port x000002 has no harbor node (types: sea)",
-                "STATE_DISCONNECTED port x000003 harbor node has degree 0",
+                "STATE_DISCONNECTED port x000003 harbor has no route to a sea node",
                 "STATE_MISSING port x000004 has no naval node",
             ),
             naval.validate_state_ports(network, ports),
         )
+
+    def test_state_membership_and_isolated_harbor_chain_are_rejected(self):
+        network = naval.parse_naval_network_text("""
+            nodes = {
+                { province=x000001 x=0 y=0 type=harbor }
+                { province=x000002 x=1 y=1 type=harbor }
+                { province=x000003 x=2 y=2 type=sea }
+            }
+            connections = { { from=0 to=1 } }
+        """)
+        ports = (
+            naval.StatePort("STATE_INVALID", "x000004", Path("fixture"), ("x000001",)),
+            naval.StatePort("STATE_ISOLATED", "x000001", Path("fixture"), ("x000001",)),
+        )
+        self.assertEqual((
+            "STATE_INVALID port x000004 is outside its state region",
+            "STATE_ISOLATED port x000001 harbor has no route to a sea node",
+        ), naval.validate_state_ports(network, ports))
 
     def test_state_parser_uses_only_direct_port_assignments(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -132,7 +155,7 @@ STATE_FIXTURE = {
                 encoding="utf-8",
             )
             self.assertEqual(
-                (naval.StatePort("STATE_FIXTURE", "x000001", path),),
+                (naval.StatePort("STATE_FIXTURE", "x000001", path, ("x000001",), 9999),),
                 naval.parse_state_ports([path]),
             )
 

@@ -7,8 +7,10 @@ from copy import deepcopy
 from hashlib import sha256
 from itertools import product
 import unittest
+from unittest.mock import patch
 
 from tests.test_performance_pass import Runtime
+from tests.test_zulu_court_politics import TRIGGERS
 from tests.test_zulu_institutions_laws import ROOT, CMF, read, statements
 from tools.check_override_inventory import find_object
 
@@ -114,7 +116,8 @@ class PrecisionPerformanceTests(unittest.TestCase):
             read(CMF, 'common/political_movements/ycom_02_cultural_movement.txt'),
             'movement_cultural_majority', directive='REPLACE')), 'pop_support_weight')
         movement_sets = ([], ['movement_liberal'], ['movement_reactionary'], ['movement_fascist'],
-                         ['movement_liberal', 'movement_fascist', 'movement_reactionary'])
+                         ['movement_liberal', 'movement_fascist', 'movement_reactionary'],
+                         ['movement_anti_communist'], ['movement_liberal', 'movement_anti_communist'])
         for fraction, movements, status, anz_active, pop_type in product(
                 (-0.01, 0, 0.00001, 0.5, 1), movement_sets, (None, 'suppressed', 'bolstered'),
                 (False, True), ('peasants', 'shopkeepers', 'officers')):
@@ -132,8 +135,12 @@ class PrecisionPerformanceTests(unittest.TestCase):
                         if not (fraction == 0 and entry[0] == '"POP_RADICAL_MOVEMENT_LOSSES"')]
             self.assertEqual(expected, b.breakdown)
             if fraction == 0:
-                self.assertEqual(0, b.visits)
-                if movements: self.assertGreater(a.visits, 0)
+                # 1.15 adds an independent anti-communist scan even for non-radicals.
+                # Only the radical-poaching scan is eliminated by SB's guard.
+                anti_visits = next((i + 1 for i, name in enumerate(movements)
+                                    if name == 'movement_anti_communist'), len(movements))
+                self.assertEqual(anti_visits, b.visits)
+                if movements: self.assertGreater(a.visits, b.visits)
             else: self.assertEqual(a.visits, b.visits)
 
     def test_nguni_keeps_every_requirement_and_avoids_safety_scan_when_ineligible(self):
@@ -159,16 +166,43 @@ class PrecisionPerformanceTests(unittest.TestCase):
             if not truth['has_technology_researched'] or not truth['sb_nguni_formation_lands_tt']:
                 self.assertNotIn('sb_nguni_settlements_resolved_tt', visits)
 
-    def test_frontier_law_only_reorders_the_three_existing_alternatives(self):
+    def test_frontier_law_checks_boer_republics_before_the_native_geography(self):
         nodes = definition('common/laws/00_sb_governance_principles.txt', 'law_frontier_colonization', 'REPLACE')
         alternatives = field(field(nodes, 'can_enact'), 'OR')
+        before_klip = deepcopy(alternatives)
+        field(before_klip[0][2], 'OR').remove(('country_definition', '=', 'cd:KLR'))
         self.assertEqual('6eeaa6a9d20b7b9bb322734b255ac8e1b1c13d9398917d09477e1773740c0f17',
-                         digest(sorted(alternatives, key=repr)))
+                         digest(sorted(before_klip, key=repr)))
         boer = alternatives[0][2]
-        for tag, culture in product(('TRN', 'ZPB', 'LYD', 'NAL', 'CAP', 'FRA'), ('boer', 'british')):
+        eligible = ('TRN', 'ZPB', 'LYD', 'NAL', 'KLR')
+        for tag, culture in product((*eligible, 'CAP', 'FRA'), ('boer', 'british')):
             actor = {'id': tag, 'primary_cultures': {'cu:'+culture}}
-            self.assertEqual(culture == 'boer' and tag in ('TRN', 'ZPB', 'LYD', 'NAL'),
+            self.assertEqual(culture == 'boer' and tag in eligible,
                              PulseRuntime().condition(boer, actor))
+
+    def test_klip_spawn_replaces_inherited_resettlement_and_keeps_frontier(self):
+        trigger = definition('common/scripted_triggers/sb_great_trek_triggers.txt',
+                             'sb_can_use_frontier_colonization')
+        law = definition('common/laws/00_sb_governance_principles.txt', 'law_frontier_colonization', 'REPLACE')
+        spawn = definition('common/scripted_effects/sb_boer_commandant_effects.txt',
+                           'sb_apply_boer_republic_spawn_setup')
+        frontier = 'law_type:law_frontier_colonization'
+        colonial_laws = {frontier, 'law_type:law_no_colonial_affairs', 'law_type:law_colonial_resettlement'}
+        branches = [node for node in spawn if node[0] in ('if', 'else_if')
+                    and any(key == 'activate_law' and law in colonial_laws for key, _, law in node[2])]
+        with patch.dict(TRIGGERS, {'sb_can_use_frontier_colonization': trigger,
+                                   'country_is_colonial_or_company': [('always', '=', 'no')]}):
+            for inherited in colonial_laws:
+                with self.subTest(inherited=inherited):
+                    actor = {'id': 'KLR', 'primary_cultures': {'cu:boer'}, 'vars': {},
+                             'states': [], 'laws': {inherited}}
+                    runtime = PulseRuntime()
+                    self.assertTrue(runtime.condition(field(law, 'can_enact'), actor))
+                    actor['states'] = [{'state_region': 's:STATE_NATAL'}]
+                    for effect, _, replacement in runtime.branches(branches, actor):
+                        self.assertEqual('activate_law', effect)
+                        actor['laws'] = {replacement}
+                    self.assertEqual({frontier}, actor['laws'])
 
     def monthly(self):
         effects = field(definition(CAPE, 'sb_on_cape_monthly_pulse_country'), 'effect')

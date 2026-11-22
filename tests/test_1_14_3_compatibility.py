@@ -1,6 +1,5 @@
-"""Historical 1.14.3 evidence and the still-current CMF compatibility patch."""
+"""Historical 1.14.3 evidence and current CMF/SB compatibility contracts."""
 
-import hashlib
 import json
 from pathlib import Path
 import re
@@ -64,27 +63,42 @@ class HistoricalEvidenceTests(unittest.TestCase):
                 delta.depot.decode_manifest(altered, delta.NEW)
 
 
-class RetainedCmfPatchTests(unittest.TestCase):
-    def test_territorial_goals_equal_vanilla_except_cmf_hook(self):
+class CurrentCmfPatchTests(unittest.TestCase):
+    def test_territorial_goals_are_native_with_only_authored_sb_deltas(self):
         self.assertIsNotNone(GAME)
         for filename in ("00_annex_country.txt", "03_conquer_state.txt", "21_return_state.txt"):
             relative = "common/war_goal_types/" + filename
             with self.subTest(goal=filename):
                 self.assertFalse((ROOT / relative).exists())
-                patched = (cmf_patch.DEFAULT_MANIFEST.parent / "files" / relative).read_text(encoding="utf-8-sig")
+                self.assertFalse((ROOT.parent / "Community Mod Framework" / relative).exists())
                 vanilla = (GAME / relative).read_text(encoding="utf-8-sig")
-                hook = "tlim_land_grab_war_goal_possible_trigger = yes"
-                self.assertEqual(1, patched.count(hook))
-                self.assertEqual(tokens(vanilla), tokens(patched.replace(hook, "")))
-                self.assertIn("method = territorial", patched)
-                self.assertNotIn("assent_required", patched)
-                self.assertIn("country_infamy_value" if filename.startswith("00_") else "state_infamy_value", patched)
+                if filename == "21_return_state.txt":
+                    continue
+                key = "annex_country" if filename.startswith("00_") else "conquer_state"
+                sbfile = "zz_sb_zululand_annex_handoff.txt" if key == "annex_country" else "zz_sb_swazi_conquest_override.txt"
+                body = inventory.find_object((ROOT / "common/war_goal_types" / sbfile).read_text(encoding="utf-8-sig"), key, directive="REPLACE")
+                native = inventory.find_object(vanilla, key)
+                self.assertNotIn("tlim_land_grab", body)
+                if key == "conquer_state":
+                    self.assertEqual(2, body.count("sb_swazi_conquest_target_allowed = yes"))
+                    body = body.replace("sb_swazi_conquest_target_allowed = yes", "")
+                else:
+                    # The foreign-target handoff remains exactly the existing SB effect;
+                    # all remaining fields must reproduce current native behaviour.
+                    start = body.index("\ton_enforced = {")
+                    end = body.index("\n\tmirrored_wargoal", start)
+                    handoff = body[start:end]
+                    self.assertIn("var:sb_british_zulu_annex_play_scope ?= scope:diplomatic_play", handoff)
+                    self.assertIn("scope:target_country = { sb_zululand_shelter_mandlakazi_chief = yes }", handoff)
+                    self.assertIn("sb_british_shelter_preannex_zulu_royals = yes", handoff)
+                    a = native.index("\ton_enforced = {"); b = native.index("\n\tmirrored_wargoal", a)
+                    body = body[:start] + native[a:b] + body[end:]
+                self.assertEqual(tokens(native), tokens(body.removeprefix("REPLACE:")))
 
     def test_cultural_api_matches_vanilla_and_preserves_cmf_extensions(self):
         self.assertIsNotNone(GAME)
-        patch = cmf_patch.load_patch()
-        entry = next(e for e in patch["files"] if e["path"] == MOVEMENT)
-        source = (cmf_patch.DEFAULT_MANIFEST.parent / entry["payload"]).read_text(encoding="utf-8-sig")
+        # CMF supplies both the cultural API and the minority secession flag.
+        source = (ROOT.parent / "Community Mod Framework" / MOVEMENT).read_text(encoding="utf-8-sig")
         sb = (ROOT / SB_MOVEMENT).read_text(encoding="utf-8-sig")
         vanilla = (GAME / "common/political_movements/02_cultural_movement.txt").read_text(encoding="utf-8-sig")
         comparisons = re.compile(r"primary_cultures_percent_state\s*=\s*\{\s*target_country\s*=\s*owner\s+value\s*>=\s*([\d.]+)\s*\}")
@@ -94,19 +108,12 @@ class RetainedCmfPatchTests(unittest.TestCase):
             self.assertEqual(expected, comparisons.findall(text))
             self.assertEqual(1, text.count('add = "this.primary_cultures_percent_state(owner)"'))
             self.assertNotRegex(text, r"primary_cultures_percent_state\s*(?:>=|<=|>|<)")
-        # Undo only the API migration: all upstream CMF extensions and sibling
-        # movement definitions must reproduce the immutable release file.
-        old = re.sub(
-            r"(?m)^(\s*)primary_cultures_percent_state = \{\n\s*target_country = owner\n\s*value >= ([\d.]+)\n\s*\}",
-            lambda m: m[1] + "primary_cultures_percent_state >= " + m[2], source,
-        ).replace("primary_cultures_percent_state(owner)", "primary_cultures_percent_state")
-        self.assertEqual(entry["original_sha256"], hashlib.sha256(old.encode("utf-8-sig")).hexdigest())
         cmf_body = inventory.find_object(source, "movement_cultural_majority", directive="REPLACE")
         sb_body = inventory.find_object(sb, "movement_cultural_majority", directive="REPLACE")
         self.assertEqual(1, sb_body.count("NOT = { country_definition = cd:CAP }"))
         self.assertEqual(1, sb_body.count("owner = { country_definition = cd:CAP }"))
         without_cap = sb_body.replace("NOT = { country_definition = cd:CAP }", "")
-        without_cap = re.sub(r"disband_trigger\s*=\s*\{\s*owner\s*=\s*\{\s*country_definition\s*=\s*cd:CAP\s*\}\s*\}", "", without_cap)
+        without_cap = without_cap.replace("owner = { country_definition = cd:CAP }", "")
         from tests.test_performance_pass import canonical_trigger
         from tests.test_zulu_institutions_laws import child, statements
         old_filter = child(child(cmf_body, 'additional_radicalism_factors'), 'any_political_movement')
@@ -121,10 +128,18 @@ class RetainedCmfPatchTests(unittest.TestCase):
         self.assertEqual(tokens(cmf_body), tokens(without_cap))
 
     def test_current_patch_identity_and_upstream_contracts(self):
-        self.assertEqual("sb-1.14.3-r1", cmf_patch.REVISION)
+        self.assertEqual("sb-1.15.2-r1", cmf_patch.REVISION)
         patch = cmf_patch.load_patch()
-        self.assertEqual("1.66.0", patch["base_tag"])
-        self.assertEqual(5, len(patch["files"]))
+        self.assertEqual("1.67.9", patch["base_tag"])
+        previous = json.loads((ROOT / "patches/cmf/sb-1.15.1-r2/manifest.json").read_text())
+        for entry in previous["files"]:
+            self.assertIn(entry, patch["files"])
+        self.assertEqual(13, len(patch["files"]))
+        self.assertEqual(25, len(patch["upstream_contracts"]))
+        contracts = {(e["path"], e["key"]): e for e in patch["upstream_contracts"]}
+        for old in previous["upstream_contracts"]:
+            current = contracts[old["path"], old["key"]]
+            self.assertEqual(old["object_sha256"], current["object_sha256"])
         self.assertIsNotNone(GAME)
         cmf_patch.verify_upstream(GAME)
         cmf_patch.verify_install(ROOT.parent / "Community Mod Framework")

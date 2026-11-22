@@ -250,6 +250,7 @@ sb_on_spes_bona_diplomatic_play_started = {
 			if = { limit = { has_global_variable = sb_natal_story_initiator_demand_accepted_global_var } remove_global_variable = sb_natal_story_initiator_demand_accepted_global_var }
 			if = { limit = { has_global_variable = sb_natal_story_target_demand_accepted_global_var } remove_global_variable = sb_natal_story_target_demand_accepted_global_var }
 			if = { limit = { has_global_variable = sb_natal_story_war_resolved_global_var } remove_global_variable = sb_natal_story_war_resolved_global_var }
+			if = { limit = { has_global_variable = sb_natal_story_timed_winner_global_var } remove_global_variable = sb_natal_story_timed_winner_global_var }
 			set_global_variable = sb_natal_story_war_active_global_var
 			# Resolve Blood River balance at DP start so the support / no-support
 			# outcome is deterministic before war and cannot reroll on later joins.
@@ -1062,6 +1063,26 @@ sb_on_spes_bona_war_end = {
 sb_on_spes_bona_wargoal_enforced_by_timer = {
 	effect = {
 		save_temporary_scope_as = enforced_by_timer
+		# The admitted play has one Natal objective per leader. Its goal-specific
+		# enforcement receipt is checked after native goal processing finishes.
+		if = {
+			limit = {
+				NOT = { has_global_variable = sb_natal_story_timed_winner_global_var }
+				exists = scope:actor
+				exists = scope:target
+				exists = scope:diplomatic_play
+				scope:diplomatic_play = {
+					sb_natal_story_is_bound_war = yes
+					OR = {
+						AND = { initiator = scope:actor target = scope:target }
+						AND = { target = scope:actor initiator = scope:target }
+					}
+				}
+			}
+			scope:diplomatic_play = { save_scope_as = sb_natal_timed_play }
+			set_global_variable = { name = sb_natal_story_timed_winner_global_var value = scope:actor }
+			scope:actor = { trigger_event = { id = sb_natal_crisis.097 days = 1 } }
+		}
 		sb_klip_river_handle_wargoal_enforced = yes
 		sb_bechuanaland_track_crisis_wargoal_enforcement = yes
 	}

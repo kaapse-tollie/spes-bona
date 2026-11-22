@@ -1,6 +1,6 @@
-﻿# Shared 1.14 story-Humiliation recording and terminal resolution.
-# The assent-required goal can only record a peace choice. The diplomatic play
-# itself owns the one 0/1/2-side truth table and resolves after the final peace.
+﻿# Shared story-goal recording and terminal resolution.
+# Natal objective timers request victory in the admitted war. Its terminal
+# callback owns story delivery. Ordinary peace uses the accepted demands.
 
 # Current country = ZUL; the calling event's ROOT is ORA. The reply carries the
 # exact container as a saved scope, not a timed country bit as its identity.
@@ -766,6 +766,7 @@ sb_story_humiliation_clear_natal_state = {
 	sb_natal_story_clear_refusal_generation = yes
 	if = { limit = { has_global_variable = sb_natal_story_initiator_demand_accepted_global_var } remove_global_variable = sb_natal_story_initiator_demand_accepted_global_var }
 	if = { limit = { has_global_variable = sb_natal_story_target_demand_accepted_global_var } remove_global_variable = sb_natal_story_target_demand_accepted_global_var }
+	if = { limit = { has_global_variable = sb_natal_story_timed_winner_global_var } remove_global_variable = sb_natal_story_timed_winner_global_var }
 	if = { limit = { has_global_variable = sb_natal_story_war_active_global_var } remove_global_variable = sb_natal_story_war_active_global_var }
 	# Exact play actors, not fixed tags: the cleanup also reaches a retagged survivor.
 	scope:sb_natal_resolved_initiator ?= {
@@ -813,30 +814,23 @@ sb_story_humiliation_martinus_stand_down = {
 	}
 }
 
-# Root = enforcing country; scope:target and scope:diplomatic_play come from
-# on_wargoal_enforced. Timer enforcement is diagnostic-only and cannot resolve.
-sb_story_humiliation_record_enforcement = {
-	# Timer callbacks are evidence of exhaustion only. They authorize no story
-	# demand and therefore leave no sticky outcome record.
+# Called only by Defend Natal and Secure Natal. Their native on_enforced hook
+# provides the holder as root, target_country and the exact diplomatic_play.
+sb_natal_story_record_objective = {
 	if = {
 		limit = {
-			NOT = { exists = scope:enforced_by_timer }
 			has_global_variable = sb_natal_story_war_active_global_var
-			scope:diplomatic_play ?= { is_diplomatic_play_type = dp_sb_natal_crisis initiator ?= { country_definition = cd:ZUL } target ?= { country_definition = cd:ORA } }
+			has_variable = sb_natal_war_active_var
+			scope:target_country ?= { has_variable = sb_natal_war_active_var }
 			OR = {
-				c:ORA ?= { has_variable = sb_natal_story_play_scope var:sb_natal_story_play_scope = scope:diplomatic_play }
-				c:ZUL ?= { has_variable = sb_natal_story_play_scope var:sb_natal_story_play_scope = scope:diplomatic_play }
+				var:sb_natal_story_play_scope ?= scope:diplomatic_play
+				scope:target_country ?= { var:sb_natal_story_play_scope ?= scope:diplomatic_play }
 			}
-			OR = {
-				AND = {
-					country_definition = cd:ORA
-					has_variable = sb_natal_war_active_var
-					scope:target_country ?= { country_definition = cd:ZUL has_variable = sb_natal_war_active_var }
-				}
-				AND = {
-					country_definition = cd:ZUL
-					has_variable = sb_natal_war_active_var
-					scope:target_country ?= { country_definition = cd:ORA has_variable = sb_natal_war_active_var }
+			scope:diplomatic_play ?= {
+				is_diplomatic_play_type = dp_sb_natal_crisis
+				OR = {
+					AND = { initiator = root target = scope:target_country }
+					AND = { target = root initiator = scope:target_country }
 				}
 			}
 		}
@@ -857,7 +851,44 @@ sb_story_humiliation_record_enforcement = {
 			set_global_variable = sb_natal_story_target_demand_accepted_global_var
 		}
 	}
-	else_if = {
+}
+
+# Current scope is the original play. A live pre-fix save can already have
+# one accepted goal without ever having received the new timer callback.
+sb_natal_story_finish_enforced_war = {
+	if = {
+		limit = { sb_natal_story_is_bound_war = yes }
+		if = {
+			limit = { NOT = { has_global_variable = sb_natal_story_timed_winner_global_var } }
+			if = {
+				limit = {
+					has_global_variable = sb_natal_story_initiator_demand_accepted_global_var
+					NOT = { has_global_variable = sb_natal_story_target_demand_accepted_global_var }
+				}
+				set_global_variable = { name = sb_natal_story_timed_winner_global_var value = initiator }
+			}
+			else_if = {
+				limit = {
+					has_global_variable = sb_natal_story_target_demand_accepted_global_var
+					NOT = { has_global_variable = sb_natal_story_initiator_demand_accepted_global_var }
+				}
+				set_global_variable = { name = sb_natal_story_timed_winner_global_var value = target }
+			}
+		}
+		if = {
+			limit = {
+				OR = {
+					AND = { global_var:sb_natal_story_timed_winner_global_var ?= initiator has_global_variable = sb_natal_story_initiator_demand_accepted_global_var }
+					AND = { global_var:sb_natal_story_timed_winner_global_var ?= target has_global_variable = sb_natal_story_target_demand_accepted_global_var }
+				}
+			}
+			resolve_play_for = global_var:sb_natal_story_timed_winner_global_var
+		}
+	}
+}
+
+sb_story_humiliation_record_enforcement = {
+	if = {
 		limit = {
 			NOT = { exists = scope:enforced_by_timer }
 			has_global_variable = sb_martinus_story_war_active_global_var
@@ -954,6 +985,10 @@ sb_natal_story_resolve_bound_result = {
 		limit = {
 			has_global_variable = sb_natal_story_initiator_demand_accepted_global_var
 			has_global_variable = sb_natal_story_target_demand_accepted_global_var
+			NOR = {
+				global_var:sb_natal_story_timed_winner_global_var ?= scope:sb_natal_resolved_initiator
+				global_var:sb_natal_story_timed_winner_global_var ?= scope:sb_natal_resolved_target
+			}
 		}
 		scope:sb_natal_resolved_initiator = { save_scope_as = sb_natal_terminal_recipient }
 		scope:sb_natal_resolved_target = { save_scope_as = sb_natal_terminal_counterparty }
@@ -962,7 +997,13 @@ sb_natal_story_resolve_bound_result = {
 	}
 	# 1: the initiator demand means the saved Zulu-side actor won.
 	else_if = {
-		limit = { has_global_variable = sb_natal_story_initiator_demand_accepted_global_var }
+		limit = {
+			has_global_variable = sb_natal_story_initiator_demand_accepted_global_var
+			OR = {
+				NOT = { has_global_variable = sb_natal_story_target_demand_accepted_global_var }
+				global_var:sb_natal_story_timed_winner_global_var ?= scope:sb_natal_resolved_initiator
+			}
+		}
 		scope:sb_natal_resolved_initiator = { save_scope_as = sb_natal_terminal_recipient }
 		scope:sb_natal_resolved_target = { save_scope_as = sb_natal_terminal_counterparty }
 		scope:sb_natal_terminal_recipient = { sb_natal_story_begin_terminal_zulu_victory = yes }
@@ -985,8 +1026,8 @@ sb_natal_story_resolve_bound_result = {
 	}
 }
 
-# Root = diplomatic play. Each route uses the same mutually exclusive truth table:
-# both accepted -> mutual stand-down; initiator only; target only; neither -> status quo.
+# Root = diplomatic play. A recorded Natal timer wins. Otherwise mutual assent
+# or white peace gives a stand-down, and a single accepted demand gives victory.
 sb_story_humiliation_resolve = {
 	if = {
 		limit = {

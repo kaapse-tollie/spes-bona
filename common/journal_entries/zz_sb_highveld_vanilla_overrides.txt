@@ -9,9 +9,9 @@
 # HOW: The REPLACE: prefix overwrites the vanilla definition. We set:
 #   - is_shown_in_lobby = always no  (hidden from country picker)
 #   - possible = always no           (can never activate)
-#   - complete = always no           (can never complete normally)
-#   - fail = always yes              (immediately fails if somehow active)
-#   - on_fail = empty                (no effects on failure)
+#   - completion outcome = always no (can never complete normally)
+#   - failure outcome = always yes   (immediately fails if somehow active)
+#   - failure effect = empty        (no effects on failure)
 #   - weight = 0                     (lowest priority)
 #
 # VANILLA FILE: common/journal_entries/??_struggle_for_the_highveld.txt
@@ -20,6 +20,8 @@
 # ==============================================================================
 
 REPLACE:je_struggle_for_the_highveld = {
+	activation_description = { always = yes }
+
 	group = je_group_historical_content
 
 	is_shown_in_lobby = {
@@ -30,18 +32,32 @@ REPLACE:je_struggle_for_the_highveld = {
 		always = no
 	}
 
-	complete = {
-		always = no
+	outcome = {
+		header = je_standard_completion_header
+		effect_header = je_standard_on_completion_header
+		color = "gold_positive"
+		conclusion_desc = je_standard_completion_conclusion_desc
+		trigger = {
+			always = no
+		}
+		effect = {}
 	}
 
-	# Immediately fail if somehow activated (safety net).
-	fail = {
-		always = yes
+	outcome = {
+		header = je_standard_failure_header
+		effect_header = je_standard_on_failure_header
+		color = "blue_negative"
+		conclusion_desc = je_standard_failure_conclusion_desc
+		trigger = {
+			always = yes
+		}
+		effect = {
+		}
 	}
 
-	# Empty on_fail — no side effects from the override.
-	on_fail = {
-	}
+	# Failure outcome immediately concludes any accidentally activated instance.
+
+	# Failure has no side effects.
 
 	weight = 0
 }

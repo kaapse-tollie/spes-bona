@@ -12,6 +12,11 @@ import re
 import subprocess
 import sys
 
+try:
+    from tools import build_1_14_5_depot_delta, check_1_15_1_target, check_1_15_2_target
+except ImportError:
+    import build_1_14_5_depot_delta, check_1_15_1_target, check_1_15_2_target
+
 HARD_REPLACE_RE = re.compile(
     r"^[ \t]*(REPLACE|TRY_REPLACE|REPLACE_OR_CREATE):([^\s=]+)\s*=\s*\{", re.MULTILINE
 )
@@ -21,6 +26,24 @@ SKIP_TOP_LEVEL = {".git", ".claude", ".prime"}
 STEAM_APP_ID = "529340"
 CORE_DEPOT_ID = "529341"
 SUPPORTED_TARGETS = {
+    "1.15.2": {
+        "build": "26763837",
+        "branch": "public",
+        "core_depot": CORE_DEPOT_ID,
+        "core_manifest": "5942745929618312121",
+    },
+    "1.15.1": {
+        "build": "26591675",
+        "branch": "public",
+        "core_depot": CORE_DEPOT_ID,
+        "core_manifest": "5537848810174326853",
+    },
+    "1.15.0": {
+        "build": "26453692",
+        "branch": "public",
+        "core_depot": CORE_DEPOT_ID,
+        "core_manifest": "7727600027425614094",
+    },
     "1.14.5": {
         "build": "25629520",
         "branch": "1.14-openbeta",
@@ -47,12 +70,12 @@ SUPPORTED_TARGETS = {
     }
 }
 CMF_NAME = "Community Mod Framework"
-CMF_VERSION = "1.66.0"
-CMF_COMMIT = "807c32ff42b75714a3a0e090c0db3357b5e46ed7"
-CMF_DEPENDENCY_RANGE = "1.66.*"
-CMF_RELEASE_TAG = "1.66.0"
-CMF_ASSET_NAME = "release-1.66.0.zip"
-CMF_ASSET_SHA256 = "79dd0d434e6ffb617147ad1b91b73e6306139adfffcadf6774eeb32db3a09b8b"
+CMF_VERSION = "1.67.9"
+CMF_COMMIT = "9103c9cb4130d46cb18204d588def1266e5c1555"
+CMF_DEPENDENCY_RANGE = "1.67.*"
+CMF_RELEASE_TAG = "1.67.9"
+CMF_ASSET_NAME = "release-1.67.9.zip"
+CMF_ASSET_SHA256 = "2c702bbf99fd96804366896521832d18519a6a33e94519d49160de0ece7e04ae"
 
 
 def sha256_bytes(data: bytes) -> str:
@@ -732,18 +755,19 @@ def validate(
         return errors
     target = inventory.get("target_game_version")
     validate_release_metadata(root, inventory, errors, steam_app_manifest)
-    if target == "1.14.5":
+    depot_check = {
+        "1.14.5": build_1_14_5_depot_delta,
+        "1.15.1": check_1_15_1_target,
+        "1.15.2": check_1_15_2_target,
+    }.get(target)
+    if depot_check is not None:
         try:
-            from tools import build_1_14_5_depot_delta
-        except ImportError:
-            import build_1_14_5_depot_delta
-        try:
-            build_1_14_5_depot_delta.verify_current_target(game_root)
+            depot_check.verify_current_target(game_root)
         except (OSError, ValueError, KeyError) as exc:
-            errors.append(f"current 1.14.5 depot evidence: {exc}")
+            errors.append(f"current {target} depot evidence: {exc}")
     if cmf_root is not None:
         validate_cmf_checkout(cmf_root, errors)
-    if inventory.get("target_game_version") in {"1.14.2", "1.14.3", "1.14.5"}:
+    if target in {"1.14.2", "1.14.3", "1.14.5", "1.15.1", "1.15.2"}:
         try:
             from tools import cmf_patch
         except ImportError:
@@ -832,7 +856,7 @@ def validate(
                         errors.append(f"{label}: dependency baseline file hash drift")
                     try:
                         text = text_cache.setdefault(baseline_path, baseline_path.read_text(encoding="utf-8-sig"))
-                        block = find_object(text, entry["key"], directive="REPLACE")
+                        block = find_object(text, entry["key"], directive=baseline.get("directive", "REPLACE"))
                         if baseline.get("object_sha256") != sha256_bytes(block.encode("utf-8")):
                             errors.append(f"{label}: dependency baseline object hash drift")
                     except ValueError as exc:

@@ -78,3 +78,67 @@ sb_cape_repair_balance_band = {
 		sb_cape_sync_balance_band = yes
 	}
 }
+
+# Every Cape conclusion keeps the original homeland → event → cleanup order.
+# Only the dispatch is visible; rewards remain owned by the event option.
+sb_cape_finish_politics = {
+	hidden_effect = {
+		if = {
+			limit = {
+				game_date < 1880.1.1
+			}
+			s:STATE_EASTERN_CAPE = {
+				add_homeland = cu:anglo_african
+			}
+			s:STATE_CAPE_COLONY = {
+				add_homeland = cu:anglo_african
+			}
+			s:STATE_NORTHERN_CAPE = {
+				add_homeland = cu:anglo_african
+			}
+		}
+	}
+	trigger_event = {
+		id = $EVENT$
+		popup = yes
+	}
+	hidden_effect = {
+		scope:journal_entry = {
+			if = {
+				limit = {
+					has_modifier = sb_cape_political_tensions
+				}
+				remove_modifier = sb_cape_political_tensions
+			}
+			if = {
+				limit = {
+					has_modifier = sb_cape_liberal_ascendant
+				}
+				remove_modifier = sb_cape_liberal_ascendant
+			}
+			if = {
+				limit = {
+					has_modifier = sb_cape_liberal_dominant
+				}
+				remove_modifier = sb_cape_liberal_dominant
+			}
+			if = {
+				limit = {
+					has_modifier = sb_cape_settler_ascendant
+				}
+				remove_modifier = sb_cape_settler_ascendant
+			}
+			if = {
+				limit = {
+					has_modifier = sb_cape_settler_dominant
+				}
+				remove_modifier = sb_cape_settler_dominant
+			}
+		}
+		remove_variable = sb_cape_balance_current
+		remove_variable = sb_cape_balance_applied_band_var
+		remove_variable = sb_cape_tensions_initialized_var
+		remove_variable = sb_cape_tensions_event_pending_var
+		remove_variable = sb_albany_crisis_var
+	}
+}

@@ -4,6 +4,8 @@ import json
 import re
 import unittest
 
+from tests.je_outcomes import outcome_field
+
 from tools import validate
 
 
@@ -107,7 +109,7 @@ class RhodesianVentureTests(unittest.TestCase):
             "common/journal_entries/1-12_sb_rhodesian_venture.txt",
             "je_sb_rhodesian_venture",
         )
-        invalid = validate.extract_braced(journal, journal.index("invalid = {"))
+        invalid = outcome_field(journal, "invalid", "trigger")
         for token in (
             "in_default = yes",
             "is_subject = yes",

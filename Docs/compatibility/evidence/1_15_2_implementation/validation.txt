@@ -1,0 +1,42 @@
+19 November 2026 — public build 26763837; CMF 1.67.9 + sb-1.15.2-r1; SB 0.20.3
+python3 -B tools/validate.py --game-root <installed game> --cmf-root "../Community Mod Framework" --tiger
+
+[PASS] CMF release pin: exact tag 1.67.9, SHA-256 2c702bbf99fd96804366896521832d18519a6a33e94519d49160de0ece7e04ae
+[PASS] CMF release sync
+[PASS] CMF compatibility
+[PASS] unit tests
+[PASS] local override inventory
+[PASS] map data
+[PASS] localization: event/JE review coverage: 107 reviewed, 195 to review
+[PASS] on-action router
+[PASS] stale symbols
+[PASS] unused symbols: 3 reviewed definition-only symbols
+[PASS] runtime script contracts: no known engine-rejected script forms
+[WARN] deferred release gates: 5 unresolved gates: BC-20, BC-22, CP-07, QUAL-09, SUP-05
+[PASS] 1.15.2 release invariants: 87 complete scripted war-goal blocks
+[PASS] delayed-event lifecycle
+[PASS] naval network connectivity
+[PASS] Vanilla/CMF override comparison
+[WARN] vic3-tiger: 1.19.0 schema lacks 1.15 JE outcomes and once-only event fields; not run as a target validator. See evidence/1_15_0_implementation/tiger_schema.json.
+
+17/17 checks passed, warned, or skipped; 0 failed.
+
+python3 -B -m unittest discover -s tests -v
+Ran 1180 tests in 60.455s
+
+OK (skipped=10)
+
+Historical-input skips
+test_historical_depot_evidence_rebuilds_when_manifests_retained (test_1_14_2_compatibility.BetaRebaseTests.test_historical_depot_evidence_rebuilds_when_manifests_retained) ... skipped 'exact historical 1.14.0/1.14.2 manifests are not retained'
+test_historical_installed_payload_only_on_exact_1_14_2_build (test_1_14_2_compatibility.BetaRebaseTests.test_historical_installed_payload_only_on_exact_1_14_2_build) ... skipped 'historical 1.14.2 payload is not installed'
+test_historical_installed_payload_only_on_its_exact_build (test_1_14_3_compatibility.HistoricalEvidenceTests.test_historical_installed_payload_only_on_its_exact_build) ... skipped 'historical 1.14.3 build is not installed'
+test_historical_manifest_tampering_is_rejected_when_available (test_1_14_3_compatibility.HistoricalEvidenceTests.test_historical_manifest_tampering_is_rejected_when_available) ... skipped 'historical 1.14.3 Steam manifest unavailable'
+test_historical_report_reproduces_when_both_manifests_are_retained (test_1_14_3_compatibility.HistoricalEvidenceTests.test_historical_report_reproduces_when_both_manifests_are_retained) ... skipped 'historical 1.14.2/1.14.3 Steam manifests unavailable'
+test_retained_historical_pair_reproduces_report (test_1_14_5_compatibility.CurrentTargetTests.test_retained_historical_pair_reproduces_report) ... skipped 'historical 1.14.4 manifest unavailable; current 1.15.2 checks remain mandatory'
+test_committed_artifact_rebuilds_from_exact_manifests_when_retained (test_1_14_depot_delta.DepotDeltaEvidenceTests.test_committed_artifact_rebuilds_from_exact_manifests_when_retained) ... skipped 'exact retained Steam manifests are not installed'
+test_decoder_rejects_a_same_size_manifest_with_different_hash (test_1_14_depot_delta.DepotDeltaEvidenceTests.test_decoder_rejects_a_same_size_manifest_with_different_hash) ... skipped 'exact retained old Steam manifest is not installed'
+test_installed_new_side_matches_manifest_when_ob1_is_present (test_1_14_depot_delta.DepotDeltaEvidenceTests.test_installed_new_side_matches_manifest_when_ob1_is_present) ... skipped 'historical OB1 payload is not the installed build'
+test_depot_delta_reproduces_from_both_pinned_manifests (test_1_15_1_compatibility.CurrentPatchTests.test_depot_delta_reproduces_from_both_pinned_manifests) ... skipped 'Historical 1.15.0/1.15.1 manifest pair unavailable'
+
+python3 -B tools/sync_cmf.py --check
+Community Mod Framework is current at 1.67.9 + sb-1.15.2-r1.

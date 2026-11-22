@@ -41,6 +41,8 @@ class OutcomeRuntime(EventRuntime):
         self.containers = {}
         self.globals = {'sb_natal_story_war_active_global_var'}
         self.contexts = {}
+        self.peace_requests = []
+        self.peace_event_scopes = {}
         for actor in (self.country, self.ora):
             actor['vars']['sb_natal_story_play_scope'] = self.play
         self.scopes['root'] = self.play
@@ -71,6 +73,7 @@ class OutcomeRuntime(EventRuntime):
             elif key == 'has_global_variable': result = value in self.globals
             elif key == 'is_country_alive': result = scope.get('alive', False) == (value == 'yes')
             elif key == 'country_definition': result = scope['id'] == value.removeprefix('cd:')
+            elif key == 'is_war': result = scope.get('is_war', False) == (value == 'yes')
             elif key == 'is_diplomatic_play_type': result = scope.get('type') == value
             else: result = super().condition([node], scope, prev)
             if not result: return False
@@ -96,11 +99,26 @@ class OutcomeRuntime(EventRuntime):
                 self.containers[f['name']] = target
                 self.effect(f['on_created'], target, scope)
             elif key == 'destroy_container': self.containers.pop(scope['id'])
+            elif key == 'save_temporary_scope_as': self.scopes[value] = scope
             elif key in ('initiator', 'target') or key.startswith(('container:', 'c:')):
                 target = self.ref(key, scope, prev)
                 if target is not None: self.effect(value, target, scope)
-            elif key == 'set_global_variable': self.globals.add(value)
-            elif key == 'remove_global_variable': self.globals.discard(value)
+            elif key == 'set_global_variable':
+                if isinstance(value, list):
+                    f = fields(value)
+                    self.global_vars[f['name']] = self.ref(f['value'], scope, prev)
+                    self.globals.add(f['name'])
+                else:
+                    self.globals.add(value)
+            elif key == 'remove_global_variable':
+                self.globals.discard(value)
+                self.global_vars.pop(value, None)
+            elif key == 'trigger_event' and fields(value).get('id') == 'sb_natal_crisis.097':
+                assert fields(value)['days'] == '1'
+                self.peace_event_scopes[scope['id']] = dict(self.scopes)
+                super().effect([node], scope, prev)
+            elif key == 'resolve_play_for':
+                self.peace_requests.append((scope, self.ref(value, scope, prev)))
             elif key == 'clamp_variable':
                 f = fields(value)
                 scope['vars'][f['name']] = max(float(f['min']), min(float(f['max']), scope['vars'][f['name']]))
@@ -203,7 +221,7 @@ class BloodRiverOutcomeEvents(unittest.TestCase):
         rt.globals.discard('sb_natal_story_initiator_demand_accepted_global_var')
         for actor in (z,rt.ora):actor['vars']['sb_natal_story_play_scope']=rt.play
         rt.scopes.update(root=z,diplomatic_play=rt.play,target_country=rt.ora)
-        rt.effect(STORY['sb_story_humiliation_record_enforcement'],z)
+        rt.effect(STORY['sb_natal_story_record_objective'],z)
         self.assertIs(king,z['vars']['sb_court_blood_river_ruler_scope'])
         z['ruler']=prince
         for actor in (z,rt.ora):actor['vars']['sb_natal_story_play_scope']=None
@@ -215,15 +233,137 @@ class BloodRiverOutcomeEvents(unittest.TestCase):
         self.assertIn('sb_court_blood_river_victory',king['modifiers'])
         self.assertNotIn('sb_court_blood_river_victory',prince.get('modifiers',{}))
 
-    def test_timer_alone_cannot_supply_a_recovery_victory(self):
-        rt=self.stranded_play(accepted=());z=rt.country
-        for actor in (z,rt.ora):actor['vars']['sb_natal_story_play_scope']=rt.play
-        rt.scopes.update(root=z,diplomatic_play=rt.play,target_country=rt.ora,enforced_by_timer=True)
-        rt.effect(STORY['sb_story_humiliation_record_enforcement'],z)
-        self.assertNotIn('sb_natal_story_initiator_demand_accepted_global_var',rt.globals)
-        for actor in (z,rt.ora):actor['vars']['sb_natal_story_play_scope']=None
-        rt.effect(STORY['sb_natal_story_recover_generation'],z)
-        self.assertNotIn('sb_natal_terminal_outcome_state',rt.containers)
+    def live_war(self, route='guns'):
+        rt = self.stranded_play(route, accepted=())
+        rt.play['is_war'] = True
+        for actor in (rt.country, rt.ora):
+            actor['vars']['sb_natal_story_play_scope'] = rt.play
+        return rt
+
+    def record_goal(self, rt, holder, opponent, goal=None):
+        if goal is None:
+            goal = 'sb_natal_defend' if holder is rt.country else 'sb_natal_control'
+        source = (ROOT / 'common/war_goal_types/sb_story_war_goals.txt').read_text(encoding='utf-8-sig')
+        rt.scopes.update(root=holder, diplomatic_play=rt.play, target_country=opponent)
+        rt.effect(fields(statements(find_object(source, goal)))['on_enforced'], holder)
+
+    def timer_notice(self, rt, holder, opponent, play):
+        source = (ROOT / 'common/on_actions/sb_diplomatic_play_on_action_handlers.txt').read_text(encoding='utf-8-sig')
+        adapter = fields(statements(find_object(source, 'sb_on_spes_bona_wargoal_enforced_by_timer')))['effect']
+        rt.scopes.update(root=holder, actor=holder, target=opponent, diplomatic_play=play)
+        # The other two handlers govern separate frontier wars.
+        rt.effect([node for node in adapter if node[0] not in (
+            'sb_klip_river_handle_wargoal_enforced', 'sb_bechuanaland_track_crisis_wargoal_enforcement')], holder)
+
+    def deliver_timed_peace(self, rt, holder):
+        event = fields(statements(find_object(EVENT_TEXT, 'sb_natal_crisis.097')))
+        rt.scopes = dict(rt.peace_event_scopes[holder['id']], root=holder)
+        rt.scopes.pop('diplomatic_play', None)  # Only the explicitly saved play is needed next day.
+        if rt.condition(event['trigger'], holder):
+            rt.effect(event['immediate'], holder)
+
+    def test_either_blood_river_timer_requests_real_peace_then_waits_for_war_end(self):
+        for side, number in (('initiator', '080'), ('target', '070')):
+            for route in ('guns', 'refusal'):
+                for notice_first in (True, False):
+                    with self.subTest(side=side, route=route, notice_first=notice_first):
+                        rt = self.live_war(route)
+                        winner = rt.play[side]
+                        opponent = rt.ora if winner is rt.country else rt.country
+                        if notice_first:
+                            self.timer_notice(rt, winner, opponent, rt.play)
+                        self.record_goal(rt, winner, opponent)
+                        if not notice_first:
+                            self.timer_notice(rt, winner, opponent, rt.play)
+                        self.timer_notice(rt, winner, opponent, rt.play)
+                        self.assertEqual(['sb_natal_crisis.097'], winner.get('events', []))
+                        self.assertEqual([], rt.peace_requests)
+                        self.deliver_timed_peace(rt, winner)
+                        self.assertEqual([(rt.play, winner)], rt.peace_requests)
+                        self.assertNotIn('sb_natal_terminal_outcome_state', rt.containers)
+                        rt.resolve()
+                        self.deliver_timed_peace(rt, winner)
+                        rt.resolve()
+                        self.assertEqual(1, len(rt.peace_requests))
+                        self.assertEqual(1, winner['events'].count('sb_natal_crisis.' + number))
+
+    def test_first_timer_survives_opposing_final_enforcement(self):
+        for side in ('initiator', 'target'):
+            rt = self.live_war()
+            winner = rt.play[side]
+            other = rt.ora if winner is rt.country else rt.country
+            self.record_goal(rt, winner, other)
+            self.timer_notice(rt, winner, other, rt.play)
+            self.record_goal(rt, other, winner)
+            self.timer_notice(rt, other, winner, rt.play)
+            self.assertNotIn('sb_natal_crisis.097', other.get('events', []))
+            self.deliver_timed_peace(rt, winner)
+            self.assertEqual([(rt.play, winner)], rt.peace_requests)
+            rt.resolve()
+            self.assertIn('sb_natal_crisis.' + ('080' if side == 'initiator' else '070'), winner['events'])
+            self.assertNotIn('sb_natal_crisis.082', rt.country.get('events', []))
+
+    def test_enforced_goal_belongs_to_the_original_actors_after_a_retag(self):
+        rt = self.live_war()
+        rt.ora['id'] = 'SAF'
+        rt.countries['c:ORA'] = {'id': 'replacement-ORA', 'vars': {}}
+        self.record_goal(rt, rt.ora, rt.country)
+        self.timer_notice(rt, rt.ora, rt.country, rt.play)
+        self.deliver_timed_peace(rt, rt.ora)
+        self.assertEqual([(rt.play, rt.ora)], rt.peace_requests)
+        self.assertEqual({}, rt.countries['c:ORA']['vars'])
+
+    def test_timer_requires_exact_play_opposed_leaders_and_an_enforced_natal_goal(self):
+        for invalid in ('another war', 'wrong play type', 'third party', 'same side', 'pre-war', 'broken link', 'no receipt', 'stale event'):
+            with self.subTest(invalid=invalid):
+                rt = self.live_war()
+                play = rt.play
+                holder, opponent = rt.ora, rt.country
+                if invalid == 'another war': play = dict(rt.play, id='other play')
+                if invalid == 'wrong play type': play['type'] = 'dp_annex_war'
+                if invalid == 'third party': holder = {'id':'TRN', 'vars':{}}
+                if invalid == 'same side': opponent = holder
+                if invalid == 'pre-war': play['is_war'] = False
+                if invalid == 'broken link': opponent['vars']['sb_natal_story_play_scope'] = None
+                self.timer_notice(rt, holder, opponent, play)
+                if invalid in ('no receipt', 'stale event'):
+                    self.assertIn('sb_natal_crisis.097', holder['events'])
+                    if invalid == 'no receipt':
+                        self.record_goal(rt, holder, opponent, 'sb_story_humiliation')
+                    else:
+                        self.record_goal(rt, holder, opponent)
+                        holder['vars']['sb_natal_story_play_scope'] = dict(rt.play, id='later play')
+                    self.deliver_timed_peace(rt, holder)
+                else:
+                    self.assertNotIn('sb_natal_crisis.097', holder.get('events', []))
+                self.assertEqual([], rt.peace_requests)
+
+    def test_monthly_recovers_one_already_enforced_goal_in_a_live_save(self):
+        source = (ROOT / 'common/on_actions/sb_regional_on_action_handlers.txt').read_text(encoding='utf-8-sig')
+        monthly = fields(statements(find_object(source, 'sb_on_natal_story_orphan_monthly')))
+        for accepted in ((), ('target',), ('initiator',), ('initiator','target')):
+            rt = self.live_war()
+            for side in accepted:
+                rt.globals.add(f'sb_natal_story_{side}_demand_accepted_global_var')
+            rt.scopes['root'] = rt.country
+            if rt.condition(monthly['trigger'], rt.country):
+                rt.effect(monthly['effect'], rt.country)
+            expected = [(rt.play, rt.play[accepted[0]])] if len(accepted) == 1 else []
+            self.assertEqual(expected, rt.peace_requests, accepted)
+            self.assertNotIn('sb_natal_terminal_outcome_state', rt.containers)
+
+    def test_unrelated_timer_cannot_supply_a_natal_victory(self):
+        for changed in ('play', 'holder', 'target'):
+            rt = self.stranded_play(accepted=())
+            z = rt.country
+            for actor in (z, rt.ora): actor['vars']['sb_natal_story_play_scope'] = rt.play
+            rt.scopes.update(root=z, diplomatic_play=rt.play, target_country=rt.ora, enforced_by_timer=True)
+            if changed == 'play': rt.scopes['diplomatic_play'] = {**rt.play, 'id': 'unrelated'}
+            elif changed == 'holder': rt.scopes['root'] = {'id': 'GBR', 'vars': {}}
+            else: rt.scopes['target_country'] = {'id': 'SWZ', 'vars': {}}
+            rt.effect(STORY['sb_natal_story_record_objective'], rt.scopes['root'])
+            self.assertNotIn('sb_natal_story_initiator_demand_accepted_global_var', rt.globals)
+            self.assertNotIn('sb_natal_story_target_demand_accepted_global_var', rt.globals)
 
     def test_monthly_hook_recovers_the_stranded_play_without_a_second_queue(self):
         rt=self.stranded_play();z=rt.country

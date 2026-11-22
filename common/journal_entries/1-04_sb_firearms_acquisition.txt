@@ -5,6 +5,8 @@
 # Imports and domestic production use the same market-supply test.
 
 je_sb_adopt_firearms = {
+	activation_description = { always = yes }
+
 	group = je_group_historical_content
 
 	icon = "gfx/interface/icons/event_icons/event_military.dds"
@@ -70,31 +72,36 @@ je_sb_adopt_firearms = {
 		}
 	}
 
-	complete = {
-		custom_tooltip = {
-			text = je_sb_adopt_firearms_completion_tt
-			OR = {
-				has_variable = sb_firearms_modernized_var
-				var:sb_firearms_supply_weeks_var >= 260
+	outcome = {
+		header = je_standard_completion_header
+		effect_header = je_standard_on_completion_header
+		color = "gold_positive"
+		conclusion_desc = je_standard_completion_conclusion_desc
+		trigger = {
+			custom_tooltip = {
+				text = je_sb_adopt_firearms_completion_tt
+				OR = {
+					has_variable = sb_firearms_modernized_var
+					var:sb_firearms_supply_weeks_var >= 260
+				}
 			}
 		}
-	}
-
-	on_complete = {
-		custom_tooltip = je_sb_adopt_firearms_remove_penalties_tt
-		show_as_tooltip = {
-			sb_apply_firearms_completion_rewards = yes
-		}
-		hidden_effect = {
-			set_variable = sb_firearms_modernized_var
-			sb_remove_iron_age_weapons_modifiers = yes
-			if = {
-				limit = { has_variable = sb_firearms_applied_tier_var }
-				remove_variable = sb_firearms_applied_tier_var
+		effect = {
+			custom_tooltip = je_sb_adopt_firearms_remove_penalties_tt
+			show_as_tooltip = {
+				sb_apply_firearms_completion_rewards = yes
 			}
-			remove_variable = sb_firearms_supply_weeks_var
-			remove_variable = sb_firearms_progress_months_var
-			trigger_event = { id = sb_firearms.001 }
+			hidden_effect = {
+				set_variable = sb_firearms_modernized_var
+				sb_remove_iron_age_weapons_modifiers = yes
+				if = {
+					limit = { has_variable = sb_firearms_applied_tier_var }
+					remove_variable = sb_firearms_applied_tier_var
+				}
+				remove_variable = sb_firearms_supply_weeks_var
+				remove_variable = sb_firearms_progress_months_var
+				trigger_event = { id = sb_firearms.001 }
+			}
 		}
 	}
 

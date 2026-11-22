@@ -585,7 +585,7 @@ def verify_current_payload(delta: Mapping[str, object], game_root: Path) -> None
         else:
             errors.append("{} has unsupported installed kind {!r}".format(path, kind))
     if errors:
-        raise ValueError("installed OB1 payload does not match:\n- " + "\n- ".join(errors))
+        raise ValueError("installed depot payload does not match:\n- " + "\n- ".join(errors))
 
 
 def default_manifest_path(identity: ManifestIdentity) -> Path:

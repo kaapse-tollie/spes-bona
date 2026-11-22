@@ -1,0 +1,58 @@
+{
+  "date": "2026-11-07",
+  "user_reported_campaign_year": 1850,
+  "campaign_status": "Live and running; DP otherwise reports it seems fine. This is provisional feedback, not certification of unexercised scenarios.",
+  "notes": {
+    "cape_preview": "Show the triggered event and possible effects per completion route, rather than only Spirit of the Cape Settled.",
+    "caledon_preview": "Use native DLC presentation for the single event/reward; no alternative outcome is involved in the reported possible-effects display.",
+    "journal_groups": "DP asks whether grouping is still to do. Existing entries use native groups; no SB custom group definitions exist.",
+    "prerogative_hover": "DP locates the missing JournalEntry context error on the preview bar, after tag switching/journal browsing. No screenshot was available to inspect in this message.",
+    "russia_extension": "Investigate Emperor and Autocrat lessons/features for Prerogative as a deferred JE extension.",
+    "natal_goals": "DP explicitly clarified: enforce Secure Natal / Defend Natal after holding the objective, not a settlement duration.",
+    "natalia_intervention": "Natalia should not join the Swazi defending side against ZUL in the scripted play."
+  },
+  "captures": {
+    "error.log": {
+      "path": "generated/rebase_1_15_0/playtest_1850_2026_11_07/error.log",
+      "sha256": "e0fe5fc47394a7a399d56b29bb69714a86a643d80a235be859981b3658a40866"
+    },
+    "system.log": {
+      "path": "generated/rebase_1_15_0/playtest_1850_2026_11_07/system.log",
+      "sha256": "9d0703f9b6520b28532d19d6eb5dd0281ff6847b22e98e38441db1545af9dd46"
+    },
+    "content_load.json": {
+      "path": "generated/rebase_1_15_0/playtest_1850_2026_11_07/content_load.json",
+      "sha256": "f565e23d319df3ff6f1f1259520fb7256671eb6a368788e6637d085e642e9f9d"
+    },
+    "save": {
+      "source_name": "autosave.v3",
+      "game_date": "1851.2.1",
+      "path": "generated/rebase_1_15_0/playtest_1850_2026_11_07/autosave.v3",
+      "sha256": "fba8ff7feae699e89f20e953935c7ecb62cdde328fb6823b7b9f2476c9544724",
+      "stable_size_and_mtime_during_capture": true
+    }
+  },
+  "reported_hover_error_in_captured_live_log": false,
+  "evidence_limit": "The supplied hover excerpt is preserved separately; it is not present in the captured current error.log. The later autosave is 1851.2.1 and does not reconstruct the exact hovered UI or earlier event/play context.",
+  "source_findings": {
+    "cape": "Event dispatch is hidden inside the effect and event_outcome_desc selects one first_valid branch from current conditions; it does not present each potential route independently.",
+    "caledon": "The Oranje outcome has an unconditional event_outcome_desc; events sb_bst_frontier.300 and .310 each have one option.",
+    "prerogative": "je_sb_zulu_kingdom selects sb_prerogative_country_title on IsInGame. That key requires JournalEntry.GetCountry. The existing render fixture always provides JournalEntry whenever in_game is true; the supplied error demonstrates the missing in-game/no-instance case.",
+    "groups": {
+      "je_group_historical_content": 18,
+      "je_group_global_international_situations": 4,
+      "je_group_expeditions": 2,
+      "count_scope": "Source-defined je_sb_* entries; this is not a claim all entries are active for every country."
+    },
+    "natal_timer": "Both custom goals set assent_required and lack mirrored_wargoal. Native 1.15 documentation requires removing the timer exclusion and providing the mirror contract as well as a resolvable contestion_type. Story timer and final-peace callbacks are intentionally separate and need review.",
+    "natalia": "The scripted ZUL-SWZ event opens native dp_conquer_state. SB stores the exact play in sb_zulu_swazi_play_scope but has no scripted-rules override restricting Natalia side joining. Check both manual and AI/sway paths; keep the restriction local to this conflict."
+  },
+  "work_performed": "Read-only source/log/save inspection plus documentation. No gameplay, GUI, localisation, tests, dependency, save or version changes; no engine launch or live UI control.",
+  "next_implementation_checks": [
+    "Contextless in-game preview, lobby, active JE and foreign-country titles",
+    "Cape every completion route and overlapping-trigger priority; preview has no effects",
+    "Caledon one-option preview and original delayed recipient/reward",
+    "Both Natal timer directions, control loss/recovery, mirror, later peace and exactly-once settlement",
+    "Natalia manual/AI/sway joining blocked only for the marked ZUL-SWZ defending side"
+  ]
+}

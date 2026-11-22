@@ -1,0 +1,114 @@
+[
+  {
+    "file": "common/political_movements/zz_sb_absolutist_override.txt",
+    "line": 131,
+    "path": [
+      "REPLACE:movement_royalist_absolutist",
+      "character_support_trigger",
+      "OR",
+      "AND",
+      "NOT"
+    ],
+    "children": [
+      "law_stance",
+      "law_stance"
+    ],
+    "body": "NOT = {\n\t\t\t\t\tlaw_stance = {\n\t\t\t\t\t\tlaw = law_type:law_monarchy\n\t\t\t\t\t\tvalue < approve\n\t\t\t\t\t}\n\t\t\t\t\tlaw_stance = {\n\t\t\t\t\t\tlaw = law_type:law_autocracy\n\t\t\t\t\t\tvalue < approve\n\t\t\t\t\t}\n\t\t\t\t}"
+  },
+  {
+    "file": "common/political_movements/zzz_sb_chiefdoms_uprising_overrides.txt",
+    "line": 5931,
+    "path": [
+      "REPLACE:movement_reactionary",
+      "creation_trigger",
+      "NOT"
+    ],
+    "children": [
+      "is_usfp_active",
+      "usfp_country_is_american"
+    ],
+    "body": "NOT = {\n\t\t\tis_usfp_active = yes\n\t\t\tusfp_country_is_american = yes #Reactionary is too monarchist for america\n\t\t}"
+  },
+  {
+    "file": "common/scripted_effects/sb_court_cast_effects.txt",
+    "line": 193,
+    "path": [
+      "sb_court_preview_brother_backing",
+      "if",
+      "else_if",
+      "limit",
+      "NOT"
+    ],
+    "children": [
+      "$OTHER$",
+      "var:sb_court_brothers_second_backer_scope"
+    ],
+    "body": "NOT = { $OTHER$ = { has_template = ZUL_cetshwayo_heir } var:sb_court_brothers_second_backer_scope ?= { sb_court_brothers_available_backer = yes } }"
+  },
+  {
+    "file": "events/sb_bechuanaland_corridor_events.txt",
+    "line": 1272,
+    "path": [
+      "sb_bechuanaland_corridor.032",
+      "cancellation_trigger",
+      "NOT"
+    ],
+    "children": [
+      "sb_bechuanaland_caprivi_boer_choice_is_valid",
+      "container:sb_bechuanaland_corridor_state"
+    ],
+    "body": "NOT = {\n\t\t\tsb_bechuanaland_caprivi_boer_choice_is_valid = yes\n\t\t\tcontainer:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_crisis_direct_route_var }\n\t\t}"
+  },
+  {
+    "file": "events/sb_bechuanaland_corridor_events.txt",
+    "line": 1343,
+    "path": [
+      "sb_bechuanaland_corridor.033",
+      "cancellation_trigger",
+      "NOT"
+    ],
+    "children": [
+      "sb_bechuanaland_caprivi_boer_choice_is_valid",
+      "container:sb_bechuanaland_corridor_state"
+    ],
+    "body": "NOT = {\n\t\t\tsb_bechuanaland_caprivi_boer_choice_is_valid = yes\n\t\t\tcontainer:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_crisis_proxy_route_var }\n\t\t}"
+  },
+  {
+    "file": "events/sb_martinus_confederation_events.txt",
+    "line": 246,
+    "path": [
+      "sb_martinus_confederation.010",
+      "option",
+      "trigger",
+      "NOT"
+    ],
+    "children": [
+      "sb_martinus_bound_coercive_pending_event_authority",
+      "scope:sb_martinus_coercive_receipt_scope"
+    ],
+    "body": "NOT = { sb_martinus_bound_coercive_pending_event_authority = yes scope:sb_martinus_coercive_receipt_scope ?= { has_variable = sb_martinus_stage_010_pending_var } }"
+  },
+  {
+    "file": "events/sb_natal_crisis_events.txt",
+    "line": 1149,
+    "path": [
+      "sb_natal_crisis.085",
+      "option",
+      "trigger",
+      "NOT"
+    ],
+    "children": [
+      "country_definition",
+      "is_country_alive",
+      "is_at_war",
+      "is_active_in_diplomatic_play",
+      "aggressive_diplomatic_plays_permitted",
+      "NOT",
+      "NOT",
+      "NOT",
+      "NOT",
+      "c:ZUL"
+    ],
+    "body": "NOT = {\n\t\t\tcountry_definition = cd:GBR\n\t\t\tis_country_alive = yes\n\t\t\tis_at_war = no\n\t\t\tis_active_in_diplomatic_play = no\n\t\t\taggressive_diplomatic_plays_permitted = yes\n\t\t\tNOT = { has_truce_with = c:ZUL }\n\t\t\tNOT = { has_variable = sb_anglo_zulu_pressure_launch_lease_var }\n\t\t\tNOT = { has_variable = sb_port_natal_british_annex_launch_lease_var }\n\t\t\tNOT = { has_variable = sb_british_zulu_annex_play_scope }\n\t\t\tc:ZUL ?= {\n\t\t\t\tis_country_alive = yes\n\t\t\t\tis_subject = no\n\t\t\t\tis_at_war = no\n\t\t\t\tis_active_in_diplomatic_play = no\n\t\t\t\thas_variable = sb_port_natal_raid_var\n\t\t\t\tany_scope_state = { state_region = s:STATE_ZULULAND }\n\t\t\t}\n\t\t }"
+  }
+]

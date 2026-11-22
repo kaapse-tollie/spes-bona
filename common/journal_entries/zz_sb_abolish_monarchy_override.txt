@@ -1,14 +1,14 @@
-﻿# Spes Bona compatibility override:
-# Boer republic transitions should not trigger the vanilla monarchist-cleanup JE
-# that rewrites Landowner/Groot-Boere ideology.
-
+﻿# SB: retain native 1.15 cleanup while excluding Boer republic transitions.
+# triggered by on_law_enactment_started
 REPLACE:je_abolish_monarchy = {
 	icon = "gfx/interface/icons/event_icons/event_portrait.dds"
 
 	group = je_group_internal_affairs
 
-	possible = {
-		NOT = { country_has_primary_culture = cu:boer }
+	possible = { NOT = { country_has_primary_culture = cu:boer } }
+
+	activation_description = {
+		always = yes
 	}
 
 	on_monthly_pulse = {
@@ -40,65 +40,93 @@ REPLACE:je_abolish_monarchy = {
 		}
 	}
 
-	complete = {
-		scope:journal_entry = {
-			is_goal_complete = yes
-		}
-		NOT = { country_has_monarchy_law = yes }
-		NOT = {
-			any_civil_war = {
-				civil_war_progress >= 0.75
-				is_civil_war_type = revolution
-			}
-		}
-		NOT = {
-			any_interest_group = {
-				law_stance = {
-					law = law_type:law_monarchy
-					value > neutral
-				}
-				is_powerful = yes
-			}
-		}
-	}
-
 	immediate = {
 		ig:ig_landowners ?= {
 			save_scope_as = landowners_ig
 		}
 	}
 
-	on_complete = {
-		set_variable = stamped_out_monarchy_var
-		trigger_event = {
-			id = 1848.2
+	outcome = {
+		header = je_standard_completion_header
+		effect_header = je_standard_on_completion_header
+		color = "gold_positive"
+		conclusion_desc = je_standard_completion_conclusion_desc
+		trigger = {
+			scope:journal_entry = {
+				is_goal_complete = yes
+			}
+			NOT = { country_has_monarchy_law = yes }
+			NOT = {
+				any_civil_war = {
+					civil_war_progress >= 0.75
+					is_civil_war_type = revolution
+				}
+			}
+			NOT = {
+				any_interest_group = {
+					law_stance = {
+						law = law_type:law_monarchy
+						value > neutral
+					}
+					is_powerful = yes
+				}
+			}
 		}
-		if = {
-			limit = { has_journal_entry = je_warlord_china }
-			chi_add_1_fragile_unity = yes
-			set_variable = china_warlord_abolished_monarchy
+		effect = {
+			set_variable = stamped_out_monarchy_var
+			ig:ig_intelligentsia ?= {
+				if = {
+					limit = {
+						has_ideology = ideology:ideology_autocratic
+					}
+					remove_ideology = ideology_autocratic
+					add_ideology = ideology_republican
+				}
+				if = {
+					limit = {
+						has_ideology = ideology:ideology_constitutionalist
+					}
+					remove_ideology = ideology_constitutionalist
+					add_ideology = ideology_republican
+				}
+			}
+			trigger_event = {
+				id = 1848.2
+			}
+			if = {
+				limit = { has_journal_entry = je_warlord_china }
+				chi_add_1_fragile_unity = yes
+				set_variable = china_warlord_abolished_monarchy
+			}
 		}
-	}
-
-	event_outcome_completed_desc = {
-		first_valid = {
-			triggered_desc = {
-				desc = event_effects_1848.2_tt
+		event_outcome_desc = {
+			first_valid = {
+				triggered_desc = {
+					desc = event_effects_1848.2_tt
+				}
 			}
 		}
 	}
 
-	invalid = {
-		OR = {
-			country_has_primary_culture = cu:boer
-			NOR = {
-				is_enacting_law = law_type:law_presidential_republic
-				is_enacting_law = law_type:law_parliamentary_republic
-				is_enacting_law = law_type:law_council_republic
-				has_law_or_variant = law_type:law_presidential_republic
-				has_law_or_variant = law_type:law_parliamentary_republic
-				has_law_or_variant = law_type:law_council_republic
+	outcome = {
+		flags = { hidden invalid_outcome }
+		conclusion_desc = je_standard_failure_conclusion_desc
+		trigger = {
+			OR = {
+				country_has_primary_culture = cu:boer
+				NOR = {
+					is_enacting_law = law_type:law_presidential_republic
+					is_enacting_law = law_type:law_parliamentary_republic
+					is_enacting_law = law_type:law_council_republic
+					has_law_or_variant = law_type:law_presidential_republic
+					has_law_or_variant = law_type:law_parliamentary_republic
+					has_law_or_variant = law_type:law_council_republic
+				}
+
 			}
+		}
+		effect = {
+			je_abolish_monarchy_cleanup = yes
 		}
 	}
 
@@ -115,4 +143,5 @@ REPLACE:je_abolish_monarchy = {
 	weight = 100
 
 	should_be_pinned_by_default_uninvolved_or_context = no
+
 }

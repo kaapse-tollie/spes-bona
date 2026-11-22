@@ -1,4 +1,6 @@
 ﻿je_sb_consolidation_of_south_west_africa = {
+	activation_description = { always = yes }
+
 	group = je_group_historical_content
 
 	icon = "gfx/interface/icons/notification_icons/colonial.dds"
@@ -49,41 +51,175 @@
 		}
 	}
 
-	complete = {
-		custom_tooltip = {
-			text = je_sb_consolidation_of_south_west_africa_tt_ports
-			p:xDEAA3C.state.owner = root
-			p:xB04050.state.owner = root
-		}
-		custom_tooltip = {
-			text = je_sb_consolidation_of_south_west_africa_tt_events
-			has_variable = sb_nam_stage_100_done_var
-			has_variable = sb_nam_stage_110_done_var
-			has_variable = sb_nam_stage_120_done_var
-			has_variable = sb_nam_stage_130_done_var
-		}
-		custom_tooltip = {
-			text = je_sb_consolidation_of_south_west_africa_tt_namaqualand
-			any_scope_state = {
-				state_region = s:STATE_NAMAQUALAND
-				owner = root
-				num_provinces >= 35
+	outcome = {
+		header = je_standard_completion_header
+		effect_header = je_standard_on_completion_header
+		color = "gold_positive"
+		conclusion_desc = je_standard_completion_conclusion_desc
+		trigger = {
+			custom_tooltip = {
+				text = je_sb_consolidation_of_south_west_africa_tt_ports
+				p:xDEAA3C.state.owner = root
+				p:xB04050.state.owner = root
+			}
+			custom_tooltip = {
+				text = je_sb_consolidation_of_south_west_africa_tt_events
+				has_variable = sb_nam_stage_100_done_var
+				has_variable = sb_nam_stage_110_done_var
+				has_variable = sb_nam_stage_120_done_var
+				has_variable = sb_nam_stage_130_done_var
+			}
+			custom_tooltip = {
+				text = je_sb_consolidation_of_south_west_africa_tt_namaqualand
+				any_scope_state = {
+					state_region = s:STATE_NAMAQUALAND
+					owner = root
+					num_provinces >= 35
+				}
+			}
+			custom_tooltip = {
+				text = je_sb_consolidation_of_south_west_africa_tt_hereroland
+				any_scope_state = {
+					state_region = s:STATE_HEREROLAND
+					owner = root
+					num_provinces >= 71
+				}
 			}
 		}
-		custom_tooltip = {
-			text = je_sb_consolidation_of_south_west_africa_tt_hereroland
-			any_scope_state = {
-				state_region = s:STATE_HEREROLAND
-				owner = root
-				num_provinces >= 71
+		effect = {
+			set_variable = sb_nam_consolidation_resolved_var
+			sb_nam_clear_final_harshness_flags = yes
+			sb_nam_clear_administration_package_flags = yes
+			if = {
+				limit = {
+					scope:journal_entry = {
+						"scripted_bar_progress(sb_nam_rule_harshness_bar)" >= 10
+					}
+				}
+				set_variable = sb_nam_final_harshness_10_var
+			}
+			else_if = {
+				limit = {
+					scope:journal_entry = {
+						"scripted_bar_progress(sb_nam_rule_harshness_bar)" >= 7
+					}
+				}
+				set_variable = sb_nam_final_harshness_7_var
+			}
+			else_if = {
+				limit = {
+					scope:journal_entry = {
+						"scripted_bar_progress(sb_nam_rule_harshness_bar)" >= 5
+					}
+				}
+				set_variable = sb_nam_final_harshness_5_var
+			}
+			else_if = {
+				limit = {
+					scope:journal_entry = {
+						"scripted_bar_progress(sb_nam_rule_harshness_bar)" >= 2
+					}
+				}
+				set_variable = sb_nam_final_harshness_2_var
+			}
+			else = {
+				set_variable = sb_nam_final_harshness_0_var
+			}
+			if = {
+				limit = {
+					scope:journal_entry = {
+						"scripted_bar_progress(sb_nam_rule_harshness_bar)" >= 9
+					}
+				}
+				set_variable = sb_nam_administration_exterminatory_var
+			}
+			else_if = {
+				limit = {
+					scope:journal_entry = {
+						"scripted_bar_progress(sb_nam_rule_harshness_bar)" >= 6
+					}
+				}
+				set_variable = sb_nam_administration_extractive_var
+			}
+			else_if = {
+				limit = {
+					scope:journal_entry = {
+						"scripted_bar_progress(sb_nam_rule_harshness_bar)" >= 3
+					}
+				}
+				set_variable = sb_nam_administration_charter_var
+			}
+			else = {
+				set_variable = sb_nam_administration_mission_var
+			}
+			if = {
+				limit = {
+					NOT = { country_definition = cd:GBR }
+					NOT = { country_definition = cd:CAP }
+					NOT = { country_definition = cd:SAF }
+				}
+				trigger_event = { id = sb_nam.140 days = 1 popup = yes }
+			}
+			else = {
+				sb_nam_seed_minority_rights_from_harshness = yes
+			}
+			sb_nam_clear_consolidation_runtime = yes
+		}
+		event_outcome_desc = {
+			first_valid = {
+				triggered_desc = {
+					trigger = {
+						OR = {
+							country_definition = cd:GBR
+							country_definition = cd:CAP
+							country_definition = cd:SAF
+						}
+					}
+					desc = event_effects_sb_nam.140_direct_tt
+				}
+				triggered_desc = {
+					trigger = {
+						scope:journal_entry = {
+							"scripted_bar_progress(sb_nam_rule_harshness_bar)" >= 9
+						}
+					}
+					desc = sb_nam_140_exterminatory_tt
+				}
+				triggered_desc = {
+					trigger = {
+						scope:journal_entry = {
+							"scripted_bar_progress(sb_nam_rule_harshness_bar)" >= 6
+						}
+					}
+					desc = sb_nam_140_extractive_tt
+				}
+				triggered_desc = {
+					trigger = {
+						scope:journal_entry = {
+							"scripted_bar_progress(sb_nam_rule_harshness_bar)" >= 3
+						}
+					}
+					desc = sb_nam_140_charter_tt
+				}
+				triggered_desc = {
+					trigger = { always = yes }
+					desc = sb_nam_140_mission_tt
+				}
 			}
 		}
 	}
 
-	invalid = {
-		OR = {
-			NOT = { p:xDEAA3C.state.owner = root }
-			NOT = { p:xB04050.state.owner = root }
+	outcome = {
+		flags = { hidden invalid_outcome }
+		conclusion_desc = je_standard_failure_conclusion_desc
+		trigger = {
+			OR = {
+				NOT = { p:xDEAA3C.state.owner = root }
+				NOT = { p:xB04050.state.owner = root }
+			}
+		}
+		effect = {
+			sb_nam_clear_consolidation_runtime = yes
 		}
 	}
 
@@ -94,138 +230,13 @@
 		}
 	}
 
-	on_complete = {
-		set_variable = sb_nam_consolidation_resolved_var
-		sb_nam_clear_final_harshness_flags = yes
-		sb_nam_clear_administration_package_flags = yes
-		if = {
-			limit = {
-				scope:journal_entry = {
-					"scripted_bar_progress(sb_nam_rule_harshness_bar)" >= 10
-				}
-			}
-			set_variable = sb_nam_final_harshness_10_var
-		}
-		else_if = {
-			limit = {
-				scope:journal_entry = {
-					"scripted_bar_progress(sb_nam_rule_harshness_bar)" >= 7
-				}
-			}
-			set_variable = sb_nam_final_harshness_7_var
-		}
-		else_if = {
-			limit = {
-				scope:journal_entry = {
-					"scripted_bar_progress(sb_nam_rule_harshness_bar)" >= 5
-				}
-			}
-			set_variable = sb_nam_final_harshness_5_var
-		}
-		else_if = {
-			limit = {
-				scope:journal_entry = {
-					"scripted_bar_progress(sb_nam_rule_harshness_bar)" >= 2
-				}
-			}
-			set_variable = sb_nam_final_harshness_2_var
-		}
-		else = {
-			set_variable = sb_nam_final_harshness_0_var
-		}
-		if = {
-			limit = {
-				scope:journal_entry = {
-					"scripted_bar_progress(sb_nam_rule_harshness_bar)" >= 9
-				}
-			}
-			set_variable = sb_nam_administration_exterminatory_var
-		}
-		else_if = {
-			limit = {
-				scope:journal_entry = {
-					"scripted_bar_progress(sb_nam_rule_harshness_bar)" >= 6
-				}
-			}
-			set_variable = sb_nam_administration_extractive_var
-		}
-		else_if = {
-			limit = {
-				scope:journal_entry = {
-					"scripted_bar_progress(sb_nam_rule_harshness_bar)" >= 3
-				}
-			}
-			set_variable = sb_nam_administration_charter_var
-		}
-		else = {
-			set_variable = sb_nam_administration_mission_var
-		}
-		if = {
-			limit = {
-				NOT = { country_definition = cd:GBR }
-				NOT = { country_definition = cd:CAP }
-				NOT = { country_definition = cd:SAF }
-			}
-			trigger_event = { id = sb_nam.140 days = 1 popup = yes }
-		}
-		else = {
-			sb_nam_seed_minority_rights_from_harshness = yes
-		}
-		sb_nam_clear_consolidation_runtime = yes
-	}
-
-	event_outcome_completed_desc = {
-		first_valid = {
-			triggered_desc = {
-				trigger = {
-					OR = {
-						country_definition = cd:GBR
-						country_definition = cd:CAP
-						country_definition = cd:SAF
-					}
-				}
-				desc = event_effects_sb_nam.140_direct_tt
-			}
-			triggered_desc = {
-				trigger = {
-					scope:journal_entry = {
-						"scripted_bar_progress(sb_nam_rule_harshness_bar)" >= 9
-					}
-				}
-				desc = sb_nam_140_exterminatory_tt
-			}
-			triggered_desc = {
-				trigger = {
-					scope:journal_entry = {
-						"scripted_bar_progress(sb_nam_rule_harshness_bar)" >= 6
-					}
-				}
-				desc = sb_nam_140_extractive_tt
-			}
-			triggered_desc = {
-				trigger = {
-					scope:journal_entry = {
-						"scripted_bar_progress(sb_nam_rule_harshness_bar)" >= 3
-					}
-				}
-				desc = sb_nam_140_charter_tt
-			}
-			triggered_desc = {
-				trigger = { always = yes }
-				desc = sb_nam_140_mission_tt
-			}
-		}
-	}
-
-	on_invalid = {
-		sb_nam_clear_consolidation_runtime = yes
-	}
-
 	weight = 1000
 	should_be_pinned_by_default_uninvolved_or_context = yes
 }
 
 je_sb_map_namibian_coast = {
+	activation_description = { always = yes }
+
 	group = je_group_expeditions
 	icon = "gfx/interface/icons/event_icons/event_map.dds"
 
@@ -261,78 +272,89 @@ je_sb_map_namibian_coast = {
 		}
 	}
 
-	complete = {
-		custom_tooltip = {
-			text = je_sb_map_namibian_coast_complete_tt
-			scope:journal_entry = {
-				"scripted_bar_progress(sb_namibian_coast_survey_progress_bar)" >= 30
-			}
-		}
-	}
-
-	on_complete = {
-		trigger_event = { id = sb_nam.014 popup = yes }
-	}
-
-	event_outcome_completed_desc = {
-		first_valid = {
-			triggered_desc = {
-				trigger = { always = yes }
-				desc = sb_nam_014_a_tt
-			}
-		}
-	}
-
-	fail = {
-		custom_tooltip = {
-			text = je_sb_map_namibian_coast_fail_tt
-			scope:journal_entry = {
-				"scripted_bar_progress(sb_namibian_coast_expedition_peril_bar)" >= 8
-			}
-		}
-	}
-
-	on_fail = {
-		trigger_event = { id = sb_nam.015 popup = yes }
-	}
-
-	event_outcome_failed_desc = {
-		first_valid = {
-			triggered_desc = {
-				trigger = { always = yes }
-				desc = sb_nam_015_a_tt
-			}
-		}
-	}
-
-	invalid = {
-		OR = {
-			in_default = yes
-			is_subject = yes
-			NOT = { is_country_type = recognized }
-			NOT = { sb_nam_has_qualifying_overseas_colonial_law = yes }
-			NOT = {
-				OR = {
-					country_rank = rank_value:great_power
-					country_rank = rank_value:major_power
+	outcome = {
+		header = je_standard_completion_header
+		effect_header = je_standard_on_completion_header
+		color = "gold_positive"
+		conclusion_desc = je_standard_completion_conclusion_desc
+		trigger = {
+			custom_tooltip = {
+				text = je_sb_map_namibian_coast_complete_tt
+				scope:journal_entry = {
+					"scripted_bar_progress(sb_namibian_coast_survey_progress_bar)" >= 30
 				}
 			}
-			NOT = {
-				any_scope_character = {
-					has_variable = expedition_leader_var
+		}
+		effect = {
+			trigger_event = { id = sb_nam.014 popup = yes }
+		}
+		event_outcome_desc = {
+			first_valid = {
+				triggered_desc = {
+					trigger = { always = yes }
+					desc = sb_nam_014_a_tt
 				}
 			}
-			has_global_variable = sb_namibian_coast_race_closed_var
 		}
 	}
 
-	on_invalid = {
-		if = {
-			limit = { has_global_variable = sb_namibian_coast_race_closed_var }
-			trigger_event = { id = sb_nam.016 popup = yes }
+	outcome = {
+		header = je_standard_failure_header
+		effect_header = je_standard_on_failure_header
+		color = "blue_negative"
+		conclusion_desc = je_standard_failure_conclusion_desc
+		trigger = {
+			custom_tooltip = {
+				text = je_sb_map_namibian_coast_fail_tt
+				scope:journal_entry = {
+					"scripted_bar_progress(sb_namibian_coast_expedition_peril_bar)" >= 8
+				}
+			}
 		}
-		else = {
+		effect = {
 			trigger_event = { id = sb_nam.015 popup = yes }
+		}
+		event_outcome_desc = {
+			first_valid = {
+				triggered_desc = {
+					trigger = { always = yes }
+					desc = sb_nam_015_a_tt
+				}
+			}
+		}
+	}
+
+	outcome = {
+		flags = { hidden invalid_outcome }
+		conclusion_desc = je_standard_failure_conclusion_desc
+		trigger = {
+			OR = {
+				in_default = yes
+				is_subject = yes
+				NOT = { is_country_type = recognized }
+				NOT = { sb_nam_has_qualifying_overseas_colonial_law = yes }
+				NOT = {
+					OR = {
+						country_rank = rank_value:great_power
+						country_rank = rank_value:major_power
+					}
+				}
+				NOT = {
+					any_scope_character = {
+						has_variable = expedition_leader_var
+					}
+				}
+				has_global_variable = sb_namibian_coast_race_closed_var
+			}
+		}
+		effect = {
+			if = {
+				limit = { has_global_variable = sb_namibian_coast_race_closed_var }
+				trigger_event = { id = sb_nam.016 popup = yes }
+			}
+			else = {
+				trigger_event = { id = sb_nam.015 popup = yes }
+			}
 		}
 	}
 

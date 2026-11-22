@@ -6,8 +6,9 @@ from pathlib import Path, PurePosixPath
 import re
 
 
-DEFAULT_MANIFEST = Path(__file__).resolve().parents[1] / "patches/cmf/sb-1.14.3-r1/manifest.json"
-REVISION = "sb-1.14.3-r1"
+DEFAULT_MANIFEST = Path(__file__).resolve().parents[1] / "patches/cmf/sb-1.15.2-r1/manifest.json"
+REVISION = "sb-1.15.2-r1"
+GUI_PATCH_TARGETS = {"gui/com_gui_progressbars.gui"}
 
 
 def digest(data: bytes) -> str:
@@ -46,7 +47,7 @@ def load_patch(path: Path = DEFAULT_MANIFEST) -> dict:
         if entry["path"] in seen:
             raise ValueError("duplicate CMF patch target")
         seen.add(entry["path"])
-        if not entry["path"].startswith("common/") or entry["payload"] != "files/" + entry["path"]:
+        if (not entry["path"].startswith("common/") and entry["path"] not in GUI_PATCH_TARGETS) or entry["payload"] != "files/" + entry["path"]:
             raise ValueError("unexpected CMF patch target")
         for key in ("original_sha256", "sha256"):
             if re.fullmatch(r"[0-9a-f]{64}", str(entry.get(key, ""))) is None:

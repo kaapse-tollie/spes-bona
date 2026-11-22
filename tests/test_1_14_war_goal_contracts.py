@@ -114,7 +114,7 @@ class FocusedOverrideRebaseTests(unittest.TestCase):
         source = text("common/subject_types/zz_sb_dominion_override.txt")
         dominion = object_block(source, "subject_type_dominion", "REPLACE")
         self.assertEqual(
-            "4245cf6bb01386d3647fe1d786946c63d5aee5872cb1c6e932c5a05a8031d1fb",
+            "0aa49de257e6901563208086bcdac8e5da7da1191f5a8d8eaed0ff0cac4c8afa",
             hashlib.sha256(dominion.encode("utf-8")).hexdigest(),
         )
         self.assertEqual("make_dominion", scalar(dominion, "re_establish_war_goal"))
@@ -131,7 +131,7 @@ class FocusedOverrideRebaseTests(unittest.TestCase):
             source.splitlines()[1],
         )
         self.assertEqual(
-            "cfcd76c6d207315261e5b6a5cda5c2b04ac4363a13c14f751069e79aa2050e3b",
+            "5781267e379594bd2b96a9fa3bfaba00577a085688683e8ea9dc9eee8ebbdac7",
             hashlib.sha256(armed_forces.encode("utf-8")).hexdigest(),
         )
 

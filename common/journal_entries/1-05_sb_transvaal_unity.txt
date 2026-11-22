@@ -5,6 +5,8 @@
 # Swazi frontier pressure content.
 
 je_sb_transvaal_unity = {
+	activation_description = { always = yes }
+
 	group = je_group_historical_content
 
 	icon = "gfx/interface/icons/je_icons/je_great_trek.dds"
@@ -42,81 +44,103 @@ je_sb_transvaal_unity = {
 		}
 	}
 
-	complete = {
-		sb_transvaal_unity_readiness = yes
-		custom_tooltip = {
-			text = je_sb_transvaal_unity_progress_tt
-			has_variable = sb_transvaal_unity_progress
-			var:sb_transvaal_unity_progress >= 36
+	outcome = {
+		header = je_standard_completion_header
+		effect_header = je_standard_on_completion_header
+		color = "gold_positive"
+		conclusion_desc = je_standard_completion_conclusion_desc
+		trigger = {
+			sb_transvaal_unity_readiness = yes
+			custom_tooltip = {
+				text = je_sb_transvaal_unity_progress_tt
+				has_variable = sb_transvaal_unity_progress
+				var:sb_transvaal_unity_progress >= 36
+			}
 		}
-	}
-
-	on_complete = {
-		set_variable = sb_transvaal_unity_resolved_var
-		if = {
-			limit = {
-				c:LYD ?= {
-					is_country_alive = yes
+		effect = {
+			set_variable = sb_transvaal_unity_resolved_var
+			if = {
+				limit = {
+					c:LYD ?= {
+						is_country_alive = yes
+					}
+				}
+				s:STATE_EAST_TRANSVAAL = {
+					add_homeland = cu:boer
+				}
+				if = {
+					limit = {
+						is_ai = yes
+						c:LYD ?= { is_ai = yes }
+					}
+					set_variable = sb_trn_ai_lyd_unity_buildout_var
+				}
+				annex_with_incorporation = c:LYD
+				if = {
+					limit = { has_variable = sb_trn_ai_lyd_unity_buildout_var }
+					s:STATE_EAST_TRANSVAAL.region_state:TRN ?= {
+						sb_boer_ai_economy_create_maize_farm = yes
+						sb_boer_ai_economy_create_livestock_ranch = yes
+					}
+					remove_variable = sb_trn_ai_lyd_unity_buildout_var
 				}
 			}
-			s:STATE_EAST_TRANSVAAL = {
-				add_homeland = cu:boer
+			if = {
+				limit = { has_modifier = sb_boer_principality_status }
+				remove_modifier = sb_boer_principality_status
 			}
 			if = {
 				limit = {
-					is_ai = yes
-					c:LYD ?= { is_ai = yes }
+					NOT = { has_modifier = sb_boer_grand_principality_status }
 				}
-				set_variable = sb_trn_ai_lyd_unity_buildout_var
+				add_modifier = {
+					name = sb_boer_grand_principality_status
+				}
 			}
-			annex_with_incorporation = c:LYD
 			if = {
-				limit = { has_variable = sb_trn_ai_lyd_unity_buildout_var }
-				s:STATE_EAST_TRANSVAAL.region_state:TRN ?= {
-					sb_boer_ai_economy_create_maize_farm = yes
-					sb_boer_ai_economy_create_livestock_ranch = yes
+				limit = {
+					NOT = { has_claim = s:STATE_EAST_TRANSVAAL }
+					c:SWZ ?= {
+						is_country_alive = yes
+						is_subject = no
+						NOT = { has_variable = sb_swazi_boer_pressure_resolved_var }
+						OR = {
+							p:x73CDE8.state.owner = this
+							p:x25A652.state.owner = this
+							p:x50A011.state.owner = this
+							p:x452304.state.owner = this
+						}
+					}
 				}
-				remove_variable = sb_trn_ai_lyd_unity_buildout_var
+				trigger_event = { id = sb_swazi_border.1 days = 21 popup = yes }
+			}
+			remove_variable = sb_transvaal_unity_progress
+		}
+		event_outcome_desc = {
+			first_valid = {
+				triggered_desc = {
+					trigger = { always = yes }
+					desc = event_effects_sb_transvaal_unity_tt
+				}
 			}
 		}
-		if = {
-			limit = { has_modifier = sb_boer_principality_status }
-			remove_modifier = sb_boer_principality_status
-		}
-		if = {
-			limit = {
-				NOT = { has_modifier = sb_boer_grand_principality_status }
-			}
-			add_modifier = {
-				name = sb_boer_grand_principality_status
-			}
-		}
-		if = {
-			limit = {
-				NOT = { has_claim = s:STATE_EAST_TRANSVAAL }
-				c:SWZ ?= {
-					is_country_alive = yes
-					is_subject = no
-					NOT = { has_variable = sb_swazi_boer_pressure_resolved_var }
-					OR = {
-						p:x73CDE8.state.owner = this
-						p:x25A652.state.owner = this
-						p:x50A011.state.owner = this
-						p:x452304.state.owner = this
+	}
+
+	outcome = {
+		flags = { hidden invalid_outcome }
+		conclusion_desc = je_standard_failure_conclusion_desc
+		trigger = {
+			OR = {
+				is_subject = yes
+				NOT = {
+					c:LYD ?= {
+						is_country_alive = yes
 					}
 				}
 			}
-			trigger_event = { id = sb_swazi_border.1 days = 21 popup = yes }
 		}
-		remove_variable = sb_transvaal_unity_progress
-	}
-
-	event_outcome_completed_desc = {
-		first_valid = {
-			triggered_desc = {
-				trigger = { always = yes }
-				desc = event_effects_sb_transvaal_unity_tt
-			}
+		effect = {
+			remove_variable = sb_transvaal_unity_progress
 		}
 	}
 
@@ -138,27 +162,14 @@ je_sb_transvaal_unity = {
 		}
 	}
 
-	invalid = {
-		OR = {
-			is_subject = yes
-			NOT = {
-				c:LYD ?= {
-					is_country_alive = yes
-				}
-			}
-		}
-	}
-
-	on_invalid = {
-		remove_variable = sb_transvaal_unity_progress
-	}
-
 	weight = 900
 	should_be_pinned_by_default_uninvolved_or_context = yes
 	transferable = no
 }
 
 je_sb_zpb_crackdown = {
+	activation_description = { always = yes }
+
 	group = je_group_historical_content
 
 	icon = "gfx/interface/icons/je_icons/je_great_trek.dds"
@@ -183,56 +194,70 @@ je_sb_zpb_crackdown = {
 		}
 	}
 
-	complete = {
-		owns_entire_state_region = STATE_NORTHERN_TRANSVAAL
-	}
-
-	on_complete = {
-		if = {
-			limit = { has_variable = sb_zpb_crackdown_active_var }
-			remove_variable = sb_zpb_crackdown_active_var
+	outcome = {
+		header = je_standard_completion_header
+		effect_header = je_standard_on_completion_header
+		color = "gold_positive"
+		conclusion_desc = je_standard_completion_conclusion_desc
+		trigger = {
+			owns_entire_state_region = STATE_NORTHERN_TRANSVAAL
 		}
-		if = {
-			limit = { NOT = { has_variable = sb_zpb_lawlessness_resolved_var } }
-			set_variable = sb_zpb_lawlessness_resolved_var
-		}
-		change_relations = {
-			country = c:GBR
-			value = 10
-		}
-	}
-
-	timeout = 1825
-
-	on_timeout = {
-		if = {
-			limit = { has_variable = sb_zpb_crackdown_active_var }
-			remove_variable = sb_zpb_crackdown_active_var
-		}
-		if = {
-			limit = { NOT = { has_variable = sb_zpb_lawlessness_resolved_var } }
-			set_variable = sb_zpb_lawlessness_resolved_var
-		}
-		trigger_event = { id = sb_boer_conventions.145 popup = yes }
-	}
-
-	invalid = {
-		OR = {
-			is_subject = yes
-			NOT = {
-				c:ZPB ?= {
-					is_country_alive = yes
-				}
+		effect = {
+			if = {
+				limit = { has_variable = sb_zpb_crackdown_active_var }
+				remove_variable = sb_zpb_crackdown_active_var
+			}
+			if = {
+				limit = { NOT = { has_variable = sb_zpb_lawlessness_resolved_var } }
+				set_variable = sb_zpb_lawlessness_resolved_var
+			}
+			change_relations = {
+				country = c:GBR
+				value = 10
 			}
 		}
 	}
 
-	on_invalid = {
-		if = {
-			limit = { has_variable = sb_zpb_crackdown_active_var }
-			remove_variable = sb_zpb_crackdown_active_var
+	outcome = {
+		flags = { hidden invalid_outcome }
+		conclusion_desc = je_standard_failure_conclusion_desc
+		trigger = {
+			OR = {
+				is_subject = yes
+				NOT = {
+					c:ZPB ?= {
+						is_country_alive = yes
+					}
+				}
+			}
+		}
+		effect = {
+			if = {
+				limit = { has_variable = sb_zpb_crackdown_active_var }
+				remove_variable = sb_zpb_crackdown_active_var
+			}
 		}
 	}
+
+	outcome = {
+		header = JOURNAL_ENTRY_TIMEOUT
+		effect_header = JOURNAL_ENTRY_ON_TIMEOUT
+		flags = { timeout }
+		conclusion_desc = JOURNAL_ENTRY_TIMEOUT_CONCLUSION_DESC
+		effect = {
+			if = {
+				limit = { has_variable = sb_zpb_crackdown_active_var }
+				remove_variable = sb_zpb_crackdown_active_var
+			}
+			if = {
+				limit = { NOT = { has_variable = sb_zpb_lawlessness_resolved_var } }
+				set_variable = sb_zpb_lawlessness_resolved_var
+			}
+			trigger_event = { id = sb_boer_conventions.145 popup = yes }
+		}
+	}
+
+	timeout = 1825
 
 	weight = 850
 	should_be_pinned_by_default_uninvolved_or_context = yes
@@ -241,6 +266,8 @@ je_sb_zpb_crackdown = {
 }
 
 je_sb_zpb_unity = {
+	activation_description = { always = yes }
+
 	group = je_group_historical_content
 
 	icon = "gfx/interface/icons/je_icons/je_great_trek.dds"
@@ -279,55 +306,82 @@ je_sb_zpb_unity = {
 		}
 	}
 
-	complete = {
-		government_legitimacy >= 50
-		ig:ig_intelligentsia ?= { is_in_government = no }
-		ig:ig_trade_unions ?= { is_in_government = no }
-		OR = {
-			has_law = law_type:law_national_supremacy
-			has_law = law_type:law_ethnostate
+	outcome = {
+		header = je_standard_completion_header
+		effect_header = je_standard_on_completion_header
+		color = "gold_positive"
+		conclusion_desc = je_standard_completion_conclusion_desc
+		trigger = {
+			government_legitimacy >= 50
+			ig:ig_intelligentsia ?= { is_in_government = no }
+			ig:ig_trade_unions ?= { is_in_government = no }
+			OR = {
+				has_law = law_type:law_national_supremacy
+				has_law = law_type:law_ethnostate
+			}
+			has_law = law_type:law_national_militia
+			sb_has_expanded_inboekstelsel_amendment = yes
+			active_law:lawgroup_army_model ?= {
+				has_amendment = amendment_type:amendment_sb_commando_corps
+			}
+			c:ZPB ?= {
+				is_country_alive = yes
+				relations:root >= relations_threshold:amicable
+			}
+			root.gdp > {
+				value = c:ZPB.gdp
+				multiply = 1.25
+			}
+			custom_tooltip = {
+				text = je_sb_zpb_unity_progress_tt
+				has_variable = sb_zpb_unity_progress
+				var:sb_zpb_unity_progress >= 36
+			}
 		}
-		has_law = law_type:law_national_militia
-		sb_has_expanded_inboekstelsel_amendment = yes
-		active_law:lawgroup_army_model ?= {
-			has_amendment = amendment_type:amendment_sb_commando_corps
-		}
-		c:ZPB ?= {
-			is_country_alive = yes
-			relations:root >= relations_threshold:amicable
-		}
-		root.gdp > {
-			value = c:ZPB.gdp
-			multiply = 1.25
-		}
-		custom_tooltip = {
-			text = je_sb_zpb_unity_progress_tt
-			has_variable = sb_zpb_unity_progress
-			var:sb_zpb_unity_progress >= 36
+		effect = {
+			if = {
+				limit = {
+					c:ZPB ?= {
+						is_country_alive = yes
+					}
+				}
+				s:STATE_NORTHERN_TRANSVAAL = {
+					add_homeland = cu:boer
+				}
+				annex_with_incorporation = c:ZPB
+			}
+			if = {
+				limit = { has_variable = sb_zpb_unity_active_var }
+				remove_variable = sb_zpb_unity_active_var
+			}
+			if = {
+				limit = { NOT = { has_variable = sb_zpb_lawlessness_resolved_var } }
+				set_variable = sb_zpb_lawlessness_resolved_var
+			}
+			remove_variable = sb_zpb_unity_progress
 		}
 	}
 
-	on_complete = {
-		if = {
-			limit = {
-				c:ZPB ?= {
-					is_country_alive = yes
+	outcome = {
+		flags = { hidden invalid_outcome }
+		conclusion_desc = je_standard_failure_conclusion_desc
+		trigger = {
+			OR = {
+				is_subject = yes
+				NOT = {
+					c:ZPB ?= {
+						is_country_alive = yes
+					}
 				}
 			}
-			s:STATE_NORTHERN_TRANSVAAL = {
-				add_homeland = cu:boer
+		}
+		effect = {
+			if = {
+				limit = { has_variable = sb_zpb_unity_active_var }
+				remove_variable = sb_zpb_unity_active_var
 			}
-			annex_with_incorporation = c:ZPB
+			remove_variable = sb_zpb_unity_progress
 		}
-		if = {
-			limit = { has_variable = sb_zpb_unity_active_var }
-			remove_variable = sb_zpb_unity_active_var
-		}
-		if = {
-			limit = { NOT = { has_variable = sb_zpb_lawlessness_resolved_var } }
-			set_variable = sb_zpb_lawlessness_resolved_var
-		}
-		remove_variable = sb_zpb_unity_progress
 	}
 
 	on_monthly_pulse = {
@@ -369,25 +423,6 @@ je_sb_zpb_unity = {
 		}
 	}
 
-	invalid = {
-		OR = {
-			is_subject = yes
-			NOT = {
-				c:ZPB ?= {
-					is_country_alive = yes
-				}
-			}
-		}
-	}
-
-	on_invalid = {
-		if = {
-			limit = { has_variable = sb_zpb_unity_active_var }
-			remove_variable = sb_zpb_unity_active_var
-		}
-		remove_variable = sb_zpb_unity_progress
-	}
-
 	weight = 850
 	should_be_pinned_by_default_uninvolved_or_context = yes
 	transferable = no
@@ -395,6 +430,8 @@ je_sb_zpb_unity = {
 }
 
 je_sb_pacifying_eastern_transvaal = {
+	activation_description = { always = yes }
+
 	group = je_group_historical_content
 
 	icon = "gfx/interface/icons/je_icons/je_great_trek.dds"
@@ -410,26 +447,36 @@ je_sb_pacifying_eastern_transvaal = {
 		}
 	}
 
-	complete = {
-		owns_entire_state_region = STATE_EAST_TRANSVAAL
-		sb_east_transvaal_has_boer_settler_critical_mass = yes
-	}
-
-	on_complete = {
-		set_variable = sb_eastern_transvaal_frontier_resolved_var
-		s:STATE_EAST_TRANSVAAL = {
-			add_homeland = cu:boer
+	outcome = {
+		header = je_standard_completion_header
+		effect_header = je_standard_on_completion_header
+		color = "gold_positive"
+		conclusion_desc = je_standard_completion_conclusion_desc
+		trigger = {
+			owns_entire_state_region = STATE_EAST_TRANSVAAL
+			sb_east_transvaal_has_boer_settler_critical_mass = yes
 		}
-	}
-
-	invalid = {
-		OR = {
-			is_subject = yes
-			NOT = { has_variable = sb_commandant_general_visible_var }
+		effect = {
+			set_variable = sb_eastern_transvaal_frontier_resolved_var
 			s:STATE_EAST_TRANSVAAL = {
-				is_homeland = cu:boer
+				add_homeland = cu:boer
 			}
 		}
+	}
+
+	outcome = {
+		flags = { hidden invalid_outcome }
+		conclusion_desc = je_standard_failure_conclusion_desc
+		trigger = {
+			OR = {
+				is_subject = yes
+				NOT = { has_variable = sb_commandant_general_visible_var }
+				s:STATE_EAST_TRANSVAAL = {
+					is_homeland = cu:boer
+				}
+			}
+		}
+		effect = {}
 	}
 
 	weight = 840

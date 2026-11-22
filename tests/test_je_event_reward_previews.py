@@ -2,21 +2,15 @@ from pathlib import Path
 import re
 import unittest
 
+from tests.je_outcomes import direct_fields, outcome_field, outcome_nodes
+
 from tools import validate
 
 
 ROOT = Path(__file__).resolve().parents[1]
 
 COMPLETION_PREVIEWS = {
-    "je_sb_cape_politics": (
-        "event_effects_sb_cape.100_tt",
-        "event_effects_sb_cape.101_tt",
-        "event_effects_sb_cape.102_tt",
-        "event_effects_sb_cape.104_tt",
-        "event_effects_sb_cape.125_tt",
-    ),
     "je_sb_transvaal_unity": ("event_effects_sb_transvaal_unity_tt",),
-    "je_sb_bst_ora_frontier": ("sb_bst_frontier_300_boer_settlers_tt",),
     "je_sb_consolidation_of_south_west_africa": (
         "event_effects_sb_nam.140_direct_tt",
         "sb_nam_140_exterminatory_tt",
@@ -36,6 +30,7 @@ COMPLETION_PREVIEWS = {
 
 NATIVE_COMPLETION_PREVIEWS = {
     "je_sb_adopt_firearms": "sb_apply_firearms_completion_rewards",
+    "je_sb_bst_ora_frontier": "custom_tooltip = sb_bst_frontier_300_boer_settlers_tt",
 }
 
 FAILURE_PREVIEWS = {
@@ -82,7 +77,7 @@ class JournalEventRewardPreviewTests(unittest.TestCase):
     def test_completion_event_rewards_have_vanilla_style_previews(self):
         for journal_name, expected_keys in COMPLETION_PREVIEWS.items():
             with self.subTest(journal=journal_name):
-                outcome = field_block(self.journals[journal_name], "event_outcome_completed_desc")
+                outcome = outcome_field(self.journals[journal_name], "complete", "event_outcome_desc")
                 self.assertTrue(outcome, f"{journal_name} has no completion outcome preview")
                 for key in expected_keys:
                     self.assertIn(f"desc = {key}", outcome)
@@ -90,7 +85,7 @@ class JournalEventRewardPreviewTests(unittest.TestCase):
     def test_meaningful_failure_events_have_previews(self):
         for journal_name, expected_keys in FAILURE_PREVIEWS.items():
             with self.subTest(journal=journal_name):
-                outcome = field_block(self.journals[journal_name], "event_outcome_failed_desc")
+                outcome = outcome_field(self.journals[journal_name], "fail", "event_outcome_desc")
                 self.assertTrue(outcome, f"{journal_name} has no failure outcome preview")
                 for key in expected_keys:
                     self.assertIn(f"desc = {key}", outcome)
@@ -98,21 +93,41 @@ class JournalEventRewardPreviewTests(unittest.TestCase):
     def test_direct_completion_event_dispatches_cannot_hide_rewards(self):
         missing = []
         for journal_name, journal in self.journals.items():
-            on_complete = field_block(journal, "on_complete")
+            if 'color = "gold_positive"' not in journal:
+                continue
+            if journal_name == "je_sb_cape_politics":
+                # Cape now has five independently displayed native outcomes;
+                # all routes and shared dispatch are checked below and in the
+                # exhaustive pre-change comparison fixture.
+                continue
+            on_complete = outcome_field(journal, "complete", "effect")
             if "trigger_event" not in on_complete:
                 continue
             native_preview = field_block(on_complete, "show_as_tooltip")
             native_reward = NATIVE_COMPLETION_PREVIEWS.get(journal_name)
-            if not field_block(journal, "event_outcome_completed_desc") and not (
-                native_reward and f"{native_reward} = yes" in native_preview
+            if not outcome_field(journal, "complete", "event_outcome_desc") and not (
+                native_reward and native_reward in native_preview
             ):
                 missing.append(journal_name)
         self.assertEqual([], missing)
 
+    def test_cape_exposes_each_ending_and_caledon_has_no_false_alternatives(self):
+        endings = [dict(direct_fields(v)) for k, v in direct_fields(self.journals["je_sb_cape_politics"])
+                   if k == "outcome" and 'color = "gold_positive"' in v]
+        self.assertEqual(5, len(endings))
+        for fields, number in zip(endings, ("125", "100", "101", "102", "104")):
+            self.assertEqual(f"sb_cape.{number}.t", fields["header"])
+            self.assertEqual("je_standard_on_completion_header", fields["effect_header"])
+            self.assertIn(f"EVENT = sb_cape.{number}", fields["effect"])
+            self.assertIn(f"desc = event_effects_sb_cape.{number}_tt", fields["event_outcome_desc"])
+            self.assertIn(f"event_effects_sb_cape.{number}_tt", self.localization)
+        for kind in ("complete", "fail"):
+            self.assertFalse(outcome_field(self.journals["je_sb_bst_ora_frontier"], kind, "event_outcome_desc"))
+
     def test_single_firearms_outcome_uses_native_effects_and_modifier_breakdown(self):
         journal = self.journals["je_sb_adopt_firearms"]
-        self.assertFalse(field_block(journal, "event_outcome_completed_desc"))
-        on_complete = field_block(journal, "on_complete")
+        self.assertFalse(outcome_field(journal, "complete", "event_outcome_desc"))
+        on_complete = outcome_field(journal, "complete", "effect")
         helper = NATIVE_COMPLETION_PREVIEWS["je_sb_adopt_firearms"]
         self.assertIn(f"{helper} = yes", field_block(on_complete, "show_as_tooltip"))
         event = (ROOT / "events/sb_firearms_events.txt").read_text(encoding="utf-8-sig")
@@ -127,7 +142,7 @@ class JournalEventRewardPreviewTests(unittest.TestCase):
         self.assertNotIn("prerogative", reward + event)
 
     def test_firearms_completion_exposes_only_its_named_requirement(self):
-        complete = field_block(self.journals["je_sb_adopt_firearms"], "complete")
+        complete = outcome_field(self.journals["je_sb_adopt_firearms"], "complete", "trigger")
         requirement = field_block(complete, "custom_tooltip")
         self.assertIn("text = je_sb_adopt_firearms_completion_tt", requirement)
         self.assertIn("has_variable = sb_firearms_modernized_var", requirement)
@@ -147,9 +162,9 @@ class JournalEventRewardPreviewTests(unittest.TestCase):
         problems = []
         for journal_name in COMPLETION_PREVIEWS:
             journal = self.journals[journal_name]
-            outcomes = [field_block(journal, "event_outcome_completed_desc")]
+            outcomes = [outcome_field(journal, "complete", "event_outcome_desc")]
             if journal_name in FAILURE_PREVIEWS:
-                outcomes.append(field_block(journal, "event_outcome_failed_desc"))
+                outcomes.append(outcome_field(journal, "fail", "event_outcome_desc"))
             for outcome in outcomes:
                 for match in re.finditer(r"^\s*triggered_desc\s*=\s*\{", outcome, re.MULTILINE):
                     description = validate.extract_braced(outcome, match.start())

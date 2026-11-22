@@ -206,25 +206,24 @@ class StoryWarRouteTests(unittest.TestCase):
                 self.assertIn(f"contestion_type = {contestion}", goal)
                 self.assertIn(f"target_type = {target_type}", goal)
                 self.assertIn("state_region = s:STATE_NATAL", goal)
-                self.assertIn("assent_required", goal)
-                self.assertNotIn("mirrored_wargoal", goal)
+                self.assertNotIn("assent_required", goal)
+                self.assertIn("mirrored_wargoal = { method = no_mirror }", goal)
                 self.assertNotIn("annexes_entire_state", goal)
                 enforced = object_block_from_source(goal, "on_enforced")
-                self.assertEqual("on_enforced = { sb_story_humiliation_record_enforcement = yes }", enforced.strip())
+                self.assertEqual("on_enforced = { sb_natal_story_record_objective = yes }", enforced.strip())
                 for suffix in ("", "_type_name", "_type_desc", "_desc", "_sway_desc"):
                     self.assertIn(f"war_goal_{name}{suffix}:0", text("localization/english/sb_war_goal_contracts_l_english.yml"))
 
-    def test_failed_blood_river_decisive_timer_is_not_routed(self):
-        # DP's test executed the goal at 100% without ending the war. Keep the
-        # failed force-resolution path out until an engine-verified replacement.
-        for path in (
-            "common/scripted_effects/sb_story_war_effects.txt",
-            "common/on_actions/sb_diplomatic_play_on_action_handlers.txt",
-        ):
-            script = uncommented(text(path))
-            self.assertNotIn("sb_natal_story_resolve_timer_victory", script)
-            self.assertNotIn("sb_natal_story_timer_winner_scope_global_var", script)
-            self.assertNotIn("resolve_play_for", script)
+    def test_only_the_timer_callback_queues_blood_river_peace(self):
+        handlers = "common/on_actions/sb_diplomatic_play_on_action_handlers.txt"
+        timer = object_block(handlers, "sb_on_spes_bona_wargoal_enforced_by_timer")
+        self.assertIn("trigger_event = { id = sb_natal_crisis.097 days = 1 }", timer)
+        self.assertNotIn("sb_natal_crisis.097", object_block(handlers, "sb_on_spes_bona_wargoal_enforced"))
+        self.assertNotIn("resolve_play_for", uncommented(text(handlers)))
+        source = uncommented(text("common/scripted_effects/sb_story_war_effects.txt"))
+        finish = object_block_from_source(source, "sb_natal_story_finish_enforced_war")
+        self.assertIn("resolve_play_for", finish)
+        self.assertNotIn("resolve_play_for", source.replace(finish, "", 1))
 
     def test_story_humiliation_records_then_uses_one_idempotent_close_resolver(self):
         handlers_path = "common/on_actions/sb_diplomatic_play_on_action_handlers.txt"
@@ -243,7 +242,7 @@ class StoryWarRouteTests(unittest.TestCase):
 
         self.assertIn("scope:initiator ?=", started)
         self.assertEqual(
-            3, recorder.count("NOT = { exists = scope:enforced_by_timer }")
+            2, recorder.count("NOT = { exists = scope:enforced_by_timer }")
         )
         self.assertNotIn("sb_story_humiliation_timer_seen_global_var", recorder)
         story_goal = object_block(
@@ -1103,12 +1102,13 @@ class StoryWarRouteTests(unittest.TestCase):
             "sb_on_spes_bona_diplomatic_play_started",
         )
 
-        for launcher, lease in (
-            (secession, "sb_klip_river_secession_launch_lease_var"),
-            (punitive, "sb_klip_river_punitive_launch_lease_var"),
-        ):
+        for route, launcher in (("secession", secession), ("punitive", punitive)):
+            lease = f"sb_klip_river_{route}_launch_lease_var"
             self.assertNotIn("random_diplomatic_play", launcher)
-            self.assertIn("any_diplomatic_play", launcher)
+            preflight = f"sb_klip_river_{route}_preflight"
+            self.assertIn(f"{preflight} = yes", launcher)
+            self.assertIn("any_diplomatic_play", object_block(
+                "common/scripted_triggers/sb_klip_river_county_triggers.txt", preflight))
             self.assertLess(launcher.index(lease), launcher.index("create_diplomatic_play"))
             self.assertGreater(launcher.rindex(lease), launcher.index("create_diplomatic_play"))
 
@@ -1139,7 +1139,7 @@ class StoryWarRouteTests(unittest.TestCase):
         self.assertEqual(
             back_down.count("var:sb_klip_river_punitive_play_scope = root"), 1
         )
-        self.assertIn("scope:actor ?= { country_definition = cd:ZUL }", war_end)
+        self.assertIn("sb_klip_river_reconcile_secession_settlement = yes", war_end)
         self.assertIn("set_variable = sb_klip_river_punitive_ended_var", war_end)
         self.assertIn("var:sb_klip_river_secession_play_scope = root", war_end)
         self.assertIn("var:sb_klip_river_punitive_play_scope = root", war_end)
@@ -1181,9 +1181,13 @@ class StoryWarRouteTests(unittest.TestCase):
         # Return State may merge/delete the old ZUL state object. Read provinces
         # and the real subject relationship instead of that object's later owner.
         fulfilled = object_block(triggers_path, "sb_klip_river_punitive_demands_fulfilled")
-        self.assertIn("p:xBBCA32.state.owner = c:NAL", fulfilled)
-        self.assertIn("is_direct_subject_of = c:NAL", fulfilled)
-        self.assertIn("is_subject_type = subject_type_protectorate", fulfilled)
+        frontier = "sb_klip_river_natal_holds_frontier"
+        protectorate = "sb_klip_river_allied_zulu_protectorate"
+        self.assertIn(frontier + " = yes", fulfilled)
+        self.assertIn(protectorate + " = yes", fulfilled)
+        self.assertIn("p:xBBCA32.state.owner = c:NAL", object_block(triggers_path, frontier))
+        self.assertIn("is_direct_subject_of = c:NAL", object_block(triggers_path, protectorate))
+        self.assertIn("is_subject_type = subject_type_protectorate", object_block(triggers_path, protectorate))
         self.assertIn("sb_klip_river_secession_delivery_currently_permanently_invalid = yes", housekeeping)
         self.assertIn("sb_klip_river_punitive_delivery_currently_permanently_invalid = yes", housekeeping)
 

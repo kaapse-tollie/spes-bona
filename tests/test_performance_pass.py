@@ -29,12 +29,11 @@ def canonical_trigger(nodes):
         return ('NOT', item)
     terms = []
     for key, op, value in nodes:
-        if key in ('OR', 'NOR'):
+        if key in ('OR', 'NOR', 'NOT'):
             item = combine('OR', [canonical_trigger([n]) for n in value])
-            terms.append(negate(item) if key == 'NOR' else item)
-        elif key in ('AND', 'NOT'):
-            item = canonical_trigger(value)
-            terms.append(negate(item) if key == 'NOT' else item)
+            terms.append(negate(item) if key in ('NOR', 'NOT') else item)
+        elif key == 'AND':
+            terms.append(canonical_trigger(value))
         elif isinstance(value, list):
             item = canonical_trigger(value)
             if key == 'any_political_movement' and item[0] == 'OR':
@@ -53,6 +52,8 @@ class Runtime(CourtRuntime):
 
     def ref(self, key, scope, prev=None):
         if key == 'acceptance_status_4': return 60
+        if key.strip('"') == 'workplace.num_building_assets_of_group(bg_military_industry)':
+            return scope['workplace']['military_industry_assets']
         return super().ref(key.strip('"'), scope, prev)
 
     def condition(self, nodes, scope, prev=None):
@@ -72,7 +73,7 @@ class Runtime(CourtRuntime):
                         break
             elif key.startswith('c:'): result = scope['id'] == key[2:]
             elif key == 'sb_uses_authored_zulu_movements': result = scope.get('authored', False) == (value == 'yes')
-            elif key in ('country_has_voting_franchise', 'is_insurrectionary', 'is_in_government'):
+            elif key in ('country_has_voting_franchise', 'is_insurrectionary', 'is_in_government', 'is_employed'):
                 result = scope.get(key, False) == (value == 'yes')
             elif key == 'is_primary_culture_of':
                 result = scope['id'] in self.ref(value, scope, prev)['primary_cultures']
@@ -209,14 +210,17 @@ class PerformanceParityTests(unittest.TestCase):
             self.assertLessEqual(rt.war_scans, before_scans)
             if prerogative > -50 or flag: self.assertEqual(0, rt.war_scans)
 
-    def test_armed_forces_scores_and_breakdown_match_native_plus_sb_modifier(self):
+    def armed_forces_weights(self):
         old = body(GAME, 'common/interest_groups/00_armed_forces.txt', 'ig_armed_forces', 'pop_weight')
         # This was SB's only numerical delta before optimisation.
         anchor = '\t\t\t\t\tadd = 50\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\n\t\tadd = {\n\t\t\tdesc = "SAMURAI_TRADITIONS"'
         self.assertEqual(1, old.count(anchor))
         old = old.replace(anchor, anchor.replace('\t\t\t}\n\t\t}', '\t\t\t\tadd = owner.modifier:country_sb_aristocrats_armed_forces_attraction_add\n\t\t\t}\n\t\t}', 1))
         new = body(ROOT, 'common/interest_groups/zz_sb_armed_forces_override.txt', 'ig_armed_forces', 'pop_weight', 'REPLACE')
-        old, new = statements(old), statements(new)
+        return statements(old), statements(new)
+
+    def test_armed_forces_scores_and_breakdown_match_native_plus_sb_modifier(self):
+        old, new = self.armed_forces_weights()
         for pop_type, wage, government, accepted, incorporated, army, imperial in product(
                 ('soldiers', 'officers', 'aristocrats', 'laborers', 'bureaucrats'),
                 ('very_low', 'low', 'medium', 'high', 'very_high'), (None, False, True),
@@ -232,6 +236,30 @@ class PerformanceParityTests(unittest.TestCase):
             self.assertAlmostEqual(a.calc(old, pop), b.calc(new, pop))
             self.assertEqual(a.breakdown, b.breakdown)
             self.assertLessEqual(b.checks.get('military_wage_level', 0), a.checks.get('military_wage_level', 0))
+
+    def test_ownership_attraction_keeps_native_cap_employment_and_tooltip(self):
+        old, new = self.armed_forces_weights()
+        for strata, employed, assets, wage, government in product(
+                ('lower', 'middle', 'upper'), (False, True), (0, 1, 75, 100),
+                ('very_low', 'low', 'medium', 'high', 'very_high'), (None, False, True)):
+            country = {'id': 'ALK', 'laws': {'law_type:law_professional_army'},
+                       'military_wage_level': wage,
+                       'modifiers': {'country_sb_aristocrats_armed_forces_attraction_add': 50}}
+            pop = {'owner': country, 'is_pop_type': 'aristocrats', 'pop_acceptance': 60,
+                   'state': {'is_incorporated': True}, 'strata': strata,
+                   'is_employed': employed, 'workplace': {'military_industry_assets': assets},
+                   'pop_employment_building_group': 'bg_military_industry',
+                   'pop_loyalist_fraction': .4, 'pop_radical_fraction': .2}
+            a, b = Runtime(), Runtime()
+            for rt in (a, b):
+                if government is not None:
+                    rt.scopes['interest_group'] = {'is_in_government': government,
+                        'leader': {'popularity': -40},
+                        'modifiers': {'interest_group_in_government_attraction_mult': .15}}
+            self.assertAlmostEqual(a.calc(old, pop), b.calc(new, pop))
+            self.assertEqual(a.breakdown, b.breakdown)
+            expected = min(assets * 2, 150) if strata == 'upper' and employed else 0
+            self.assertEqual(expected, dict(b.breakdown)['"MILITARY_INDUSTRY_OWNERSHIP"'])
 
     def test_cape_region_guard_keeps_split_ownership_and_avoids_unrelated_states(self):
         source = read(ROOT, 'common/on_actions/sb_cape_on_action_handlers.txt')

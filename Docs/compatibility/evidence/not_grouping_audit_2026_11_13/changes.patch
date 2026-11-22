@@ -1,0 +1,342 @@
+--- before/Docs/compatibility/chiefdoms_uprising_contracts_1_15_1.json
++++ after/Docs/compatibility/chiefdoms_uprising_contracts_1_15_1.json
+@@ -1,6 +1,6 @@
+ {
+   "baseline": "Victoria 3 1.15.1 / CMF 1.67.3 + sb-1.15.1-r1",
+-  "allowed_difference": "Only possible = sb_chiefs_other_uprising_allowed in revolution/secession; CMF hooks retained.",
++  "allowed_difference": "Only possible = sb_chiefs_other_uprising_allowed in revolution/secession, plus explicit AND inside the reactionary movement's NOT around the USFP-active/American-country conjunction; CMF hooks and pinned dependency hashes retained. See not_grouping_audit_2026_11_13.md.",
+   "contracts": [
+     {
+       "key": "movement_anti_slavery",
+--- before/Docs/compatibility/override_inventory.json
++++ after/Docs/compatibility/override_inventory.json
+@@ -3172,12 +3172,12 @@
+       "mod_path": "common/political_movements/zzz_sb_chiefdoms_uprising_overrides.txt",
+       "directive": "REPLACE",
+       "key": "movement_reactionary",
+-      "mod_object_sha256": "66a4b41da5b50871e79d52bc1324d2e86eae603d635a911f45de26424565046a",
+-      "scope": "Actual Thirteen Chiefdoms polity and its recorded constitutional counterpart only",
+-      "intent": "Preserve effective CMF definition; add only the scoped competing-ideological-uprising possible gate, including ideological secession mode. No changes to cultural or religious causes.",
+-      "load_order": "keyed replacement; last effective REPLACE wins",
+-      "owner": "Spes Bona maintainers",
+-      "rebase_date": "2026-11-11",
++      "mod_object_sha256": "ee2b8566c1465cb00fee2183b1a5653c82a7a9f0f842236ff3ba5a7766e1b57c",
++      "scope": "Uprising gate: actual Thirteen Chiefdoms polity and its recorded constitutional counterpart only. Creation exception: American countries while USFP is active.",
++      "intent": "Preserve effective CMF definition and the scoped competing-ideological-uprising gate. Correct the inherited USFP exception to NOT { AND { active American } }, preventing suppression of unrelated countries. No changes to cultural or religious causes. See not_grouping_audit_2026_11_13.md.",
++      "load_order": "keyed replacement; last effective REPLACE wins",
++      "owner": "Spes Bona maintainers",
++      "rebase_date": "2026-11-13",
+       "upstream": {
+         "path": "common/political_movements/00_ideological_movements.txt",
+         "key": "movement_reactionary",
+--- before/Docs/pitfalls/scope.md
++++ after/Docs/pitfalls/scope.md
+@@ -135,3 +135,10 @@
+ applying a local veto. Test the native truth table and a fresh unrelated play;
+ a harness implementing `NOT` as `not all(children)` can certify the wrong
+ behaviour. See the [1.15.1 joining-rule reproduction](../compatibility/diplomatic_joining_and_outliner_2026_11_13.md).
++
++Do not convert every multi-child `NOT`: an intentional "neither condition"
++check needs NOR. Conversely, a cancellation or fallback intended to complement
++an eligible `A AND B` branch must become true when **either** prerequisite is
++lost. Test both single-invalid cases. Copying the block from a dependency does
++not establish its correctness; retain the upstream pin and document any narrow
++correction. See the [SB-wide follow-up audit](../compatibility/not_grouping_audit_2026_11_13.md).
+--- before/common/political_movements/zzz_sb_chiefdoms_uprising_overrides.txt
++++ after/common/political_movements/zzz_sb_chiefdoms_uprising_overrides.txt
+@@ -5929,8 +5929,10 @@
+ 		}
+ 		#USFP
+ 		NOT = {
+-			is_usfp_active = yes
+-			usfp_country_is_american = yes #Reactionary is too monarchist for america
++			AND = {
++				is_usfp_active = yes
++				usfp_country_is_american = yes #Reactionary is too monarchist for america
++			}
+ 		}
+ 		
+ 	}
+--- before/common/scripted_effects/sb_court_cast_effects.txt
++++ after/common/scripted_effects/sb_court_cast_effects.txt
+@@ -190,7 +190,7 @@
+   limit = { sb_court_brother_needs_backing = { OTHER = $OTHER$ ADDITIONAL = $ADDITIONAL$ } }
+   if = { limit = { var:sb_court_brothers_backer_scope ?= { sb_court_brothers_available_backer = yes } } custom_tooltip = $TEXT$ }
+   else_if = {
+-   limit = { NOT = { $OTHER$ = { has_template = ZUL_cetshwayo_heir } var:sb_court_brothers_second_backer_scope ?= { sb_court_brothers_available_backer = yes } } }
++   limit = { NOT = { AND = { $OTHER$ = { has_template = ZUL_cetshwayo_heir } var:sb_court_brothers_second_backer_scope ?= { sb_court_brothers_available_backer = yes } } } }
+    custom_tooltip = sb_court_succession.006.no_backer
+   }
+   if = {
+--- before/events/sb_bechuanaland_corridor_events.txt
++++ after/events/sb_bechuanaland_corridor_events.txt
+@@ -1270,8 +1270,10 @@
+ 
+ 	cancellation_trigger = {
+ 		NOT = {
+-			sb_bechuanaland_caprivi_boer_choice_is_valid = yes
+-			container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_crisis_direct_route_var }
++			AND = {
++				sb_bechuanaland_caprivi_boer_choice_is_valid = yes
++				container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_crisis_direct_route_var }
++			}
+ 		}
+ 	}
+ 
+@@ -1341,8 +1343,10 @@
+ 
+ 	cancellation_trigger = {
+ 		NOT = {
+-			sb_bechuanaland_caprivi_boer_choice_is_valid = yes
+-			container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_crisis_proxy_route_var }
++			AND = {
++				sb_bechuanaland_caprivi_boer_choice_is_valid = yes
++				container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_crisis_proxy_route_var }
++			}
+ 		}
+ 	}
+ 
+--- before/events/sb_martinus_confederation_events.txt
++++ after/events/sb_martinus_confederation_events.txt
+@@ -243,7 +243,7 @@
+ 
+ 	option = {
+ 		name = sb_martinus_confederation.010.b
+-		trigger = { NOT = { sb_martinus_bound_coercive_pending_event_authority = yes scope:sb_martinus_coercive_receipt_scope ?= { has_variable = sb_martinus_stage_010_pending_var } } }
++		trigger = { NOT = { AND = { sb_martinus_bound_coercive_pending_event_authority = yes scope:sb_martinus_coercive_receipt_scope ?= { has_variable = sb_martinus_stage_010_pending_var } } } }
+ 		hidden_effect = {
+ 			if = {
+ 				limit = { has_variable = sb_martinus_coercive_generation_scope var:sb_martinus_coercive_generation_scope = scope:sb_martinus_coercive_receipt_scope }
+--- before/events/sb_natal_crisis_events.txt
++++ after/events/sb_natal_crisis_events.txt
+@@ -1147,24 +1147,26 @@
+ 			is_country_alive = yes
+ 			c:ZUL ?= { is_country_alive = yes is_subject = no has_variable = sb_port_natal_raid_var any_scope_state = { state_region = s:STATE_ZULULAND } }
+ 			NOT = {
+-			country_definition = cd:GBR
+-			is_country_alive = yes
+-			is_at_war = no
+-			is_active_in_diplomatic_play = no
+-			aggressive_diplomatic_plays_permitted = yes
+-			NOT = { has_truce_with = c:ZUL }
+-			NOT = { has_variable = sb_anglo_zulu_pressure_launch_lease_var }
+-			NOT = { has_variable = sb_port_natal_british_annex_launch_lease_var }
+-			NOT = { has_variable = sb_british_zulu_annex_play_scope }
+-			c:ZUL ?= {
+-				is_country_alive = yes
+-				is_subject = no
+-				is_at_war = no
+-				is_active_in_diplomatic_play = no
+-				has_variable = sb_port_natal_raid_var
+-				any_scope_state = { state_region = s:STATE_ZULULAND }
+-			}
+-		 }
++				AND = {
++					country_definition = cd:GBR
++					is_country_alive = yes
++					is_at_war = no
++					is_active_in_diplomatic_play = no
++					aggressive_diplomatic_plays_permitted = yes
++					NOT = { has_truce_with = c:ZUL }
++					NOT = { has_variable = sb_anglo_zulu_pressure_launch_lease_var }
++					NOT = { has_variable = sb_port_natal_british_annex_launch_lease_var }
++					NOT = { has_variable = sb_british_zulu_annex_play_scope }
++					c:ZUL ?= {
++						is_country_alive = yes
++						is_subject = no
++						is_at_war = no
++						is_active_in_diplomatic_play = no
++						has_variable = sb_port_natal_raid_var
++						any_scope_state = { state_region = s:STATE_ZULULAND }
++					}
++				}
++			}
+ 		}
+ 		trigger_event = { id = sb_natal_crisis.085 days = 30 popup = yes }
+ 	}
+--- before/tests/test_1850_playtest_fixes.py
++++ after/tests/test_1850_playtest_fixes.py
+@@ -25,7 +25,7 @@
+     for key, op, value in nodes:
+         if key == 'text': continue
+         if key == 'OR': result = any(condition([n], case) for n in value)
+-        elif key == 'NOT': result = not condition(value, case)
++        elif key == 'NOT': result = not any(condition([n], case) for n in value)
+         elif key in ('AND', 'hidden_trigger', 'custom_tooltip', 'scope:journal_entry', 'c:XHO'):
+             result = condition(value, case)
+         elif key == 'has_variable': result = value in case['variables']
+--- before/tests/test_1_14_0_rebase.py
++++ after/tests/test_1_14_0_rebase.py
+@@ -55,6 +55,9 @@
+             + inventory["upstream_contracts"]
+         )
+         for entry in reviewed_entries:
++            if entry.get("mod_path") == "common/political_movements/zzz_sb_chiefdoms_uprising_overrides.txt" and entry.get("key") == "movement_reactionary":
++                self.assertEqual("2026-11-13", entry["rebase_date"])
++                continue
+             expected_date = ("2026-11-10" if entry.get("mod_path") in {
+                 "common/political_movements/zz_sb_absolutist_override.txt",
+                 "common/political_movements/zz_sb_minority_rights_movement_override.txt",
+--- before/tests/test_blood_river_launch.py
++++ after/tests/test_blood_river_launch.py
+@@ -44,7 +44,7 @@
+ 
+     def evaluate(self, nodes, actor):
+         def check(key, op, value):
+-            if key == 'NOT': return not self.evaluate(value, actor)
++            if key == 'NOT': return not any(self.evaluate([n], actor) for n in value)
+             if key == 'OR': return any(self.evaluate([n], actor) for n in value)
+             if key == 'AND': return self.evaluate(value, actor)
+             if key.startswith(('c:', 'scope:', 'var:', 'container:')):
+--- before/tests/test_boer_ai_economy_buildouts.py
++++ after/tests/test_boer_ai_economy_buildouts.py
+@@ -58,7 +58,7 @@
+                 elif key == "OR": result = any(evaluate([n], obj) for n in val)
+                 elif key == "NOR": result = not any(evaluate([n], obj) for n in val)
+                 elif key == "AND": result = evaluate(val, obj)
+-                elif key == "NOT": result = not evaluate(val, obj)
++                elif key == "NOT": result = not any(evaluate([n], obj) for n in val)
+                 elif key == "is_ai": result = obj["ai"] == (val == "yes")
+                 elif key == "country_definition": result = obj["tag"] == val.removeprefix("cd:")
+                 elif key == "any_scope_building": result = any(evaluate(val, b) for b in obj["buildings"])
+--- before/tests/test_bst_refugee_cohort.py
++++ after/tests/test_bst_refugee_cohort.py
+@@ -61,7 +61,7 @@
+ 
+     def condition(self, nodes, scope):
+         for key, op, value in nodes:
+-            if key == "NOT": result = not self.condition(value, scope)
++            if key == "NOT": result = not any(self.condition([n], scope) for n in value)
+             elif key == "exists": result = self.ref(value, scope) is not None
+             elif key == "has_variable": result = value in scope["vars"]
+             elif key == "has_slavery": result = scope["slavery"] == (value == "yes")
+--- before/tests/test_chiefdoms_refinement.py
++++ after/tests/test_chiefdoms_refinement.py
+@@ -190,7 +190,7 @@
+         m['owner']=c.nal;self.assertTrue(c.condition(T['sb_chiefs_other_uprising_allowed'],m))
+         for path in ['zz_sb_cultural_majority_movement_override.txt','zz_sb_cultural_minority_movement_override.txt']:
+             self.assertNotIn('sb_chiefs_other_uprising_allowed',source('common/political_movements/'+path))
+-    def test_new_movement_overrides_only_add_documented_gate(self):
++    def test_new_movement_overrides_only_add_documented_gate_and_usfp_grouping_fix(self):
+         report=json.loads(source('Docs/compatibility/chiefdoms_uprising_contracts_1_15_1.json'))
+         out=source('common/political_movements/zzz_sb_chiefdoms_uprising_overrides.txt')
+         for row in report['contracts']:
+@@ -200,6 +200,11 @@
+             actual=find_object(out,row['key'],directive='REPLACE')
+             actual=re.sub(r'\s*possible = \{ sb_chiefs_other_uprising_allowed = yes \}', '', actual)
+             actual=re.sub(r'\s*sb_chiefs_other_uprising_allowed = yes','',actual)
++            if row['key']=='movement_reactionary':
++                # Keep the installed CMF hash; permit only the documented NAND correction.
++                actual,count=re.subn(r'NOT\s*=\s*\{\s*AND\s*=\s*\{\s*(is_usfp_active = yes\s*usfp_country_is_american = yes #[^\n]*\n\s*)\}\s*\}',
++                                     r'NOT = { \1 }',actual)
++                self.assertEqual(1,count)
+             self.assertEqual(re.sub(r'\s+','',original),re.sub(r'\s+','',actual),row['key'])
+     def test_ir_exit_preserves_contest_and_shared_country_ui(self):
+         core=source('common/scripted_effects/sb_institutions_effects.txt')
+--- before/tests/test_klip_punitive_protectorate.py
++++ after/tests/test_klip_punitive_protectorate.py
+@@ -84,7 +84,7 @@
+         if key == 'OR':
+             return any(evaluate([node], state, actor, root) for node in value)
+         if key == 'NOT':
+-            return not evaluate(value, state, actor, root)
++            return not any(evaluate([node], state, actor, root) for node in value)
+         if key == 'AND':
+             return evaluate(value, state, actor, root)
+         if key == 'owner':
+--- before/tests/test_klip_river_colonial_delivery.py
++++ after/tests/test_klip_river_colonial_delivery.py
+@@ -37,7 +37,7 @@
+ def evaluate(nodes, country='NAL', busy=False):
+     def check(key, value):
+         if key == 'NOT':
+-            return not evaluate(value, country, busy)
++            return not any(evaluate([node], country, busy) for node in value)
+         if key == 'OR':
+             return any(evaluate([node], country, busy) for node in value)
+         if key.startswith('c:'):
+--- before/tests/test_klip_river_option_tooltips.py
++++ after/tests/test_klip_river_option_tooltips.py
+@@ -13,7 +13,7 @@
+ def marker_condition(nodes, flags, day, ready=True):
+     def check(key, value):
+         if key == 'NOT':
+-            return not marker_condition(value, flags, day, ready)
++            return not any(marker_condition([node], flags, day, ready) for node in value)
+         if key == 'has_variable':
+             return value in flags and (flags[value] is None or flags[value] > day)
+         if key.endswith('_preflight'):
+--- before/tests/test_law_journal_readiness.py
++++ after/tests/test_law_journal_readiness.py
+@@ -85,7 +85,7 @@
+         for key, op, value in nodes:
+             if key in ('OR', 'AND', 'NOT', 'NOR'):
+                 values = [self.gate([n], owner) for n in value]
+-                result = {'OR': any(values), 'AND': all(values), 'NOT': not all(values), 'NOR': not any(values)}[key]
++                result = {'OR': any(values), 'AND': all(values), 'NOT': not any(values), 'NOR': not any(values)}[key]
+             elif key in self.triggers: result = self.gate(self.triggers[key], owner) == (value == 'yes')
+             elif key == 'has_global_variable': result = self.lobby_ready
+             elif key == 'has_variable': result = value in owner['variables']
+--- before/tests/test_performance_monthly_deeper.py
++++ after/tests/test_performance_monthly_deeper.py
+@@ -54,7 +54,7 @@
+     def condition(self, nodes, scope):
+         for key, _, value in nodes:
+             if key == 'OR': result = any(self.condition([node], scope) for node in value)
+-            elif key == 'NOT': result = not self.condition(value, scope)
++            elif key == 'NOT': result = not any(self.condition([node], scope) for node in value)
+             elif key == 'any_country':
+                 result = False
+                 for country in self.countries:
+--- before/tests/test_performance_pass.py
++++ after/tests/test_performance_pass.py
+@@ -29,12 +29,11 @@
+         return ('NOT', item)
+     terms = []
+     for key, op, value in nodes:
+-        if key in ('OR', 'NOR'):
++        if key in ('OR', 'NOR', 'NOT'):
+             item = combine('OR', [canonical_trigger([n]) for n in value])
+-            terms.append(negate(item) if key == 'NOR' else item)
+-        elif key in ('AND', 'NOT'):
+-            item = canonical_trigger(value)
+-            terms.append(negate(item) if key == 'NOT' else item)
++            terms.append(negate(item) if key in ('NOR', 'NOT') else item)
++        elif key == 'AND':
++            terms.append(canonical_trigger(value))
+         elif isinstance(value, list):
+             item = canonical_trigger(value)
+             if key == 'any_political_movement' and item[0] == 'OR':
+--- before/tests/test_zulu_court_politics.py
++++ after/tests/test_zulu_court_politics.py
+@@ -110,7 +110,7 @@
+                 fields = {k:v for k,_,v in value}
+                 r = not self.condition(fields.get('limit', []), scope, prev) or self.condition([n for n in value if n[0] != 'limit'], scope, prev)
+             elif key == 'custom_tooltip': r = self.condition([n for n in value if n[0] != 'text'], scope, prev)
+-            elif key == 'NOT': r = not self.condition(value, scope, prev)
++            elif key == 'NOT': r = not any(self.condition([n], scope, prev) for n in value)
+             elif key == 'NOR': r = not any(self.condition([n], scope, prev) for n in value)
+             elif key == 'OR': r = any(self.condition([n], scope, prev) for n in value)
+             elif key == 'AND': r = self.condition(value, scope, prev)
+--- before/tests/test_zulu_institutions_core.py
++++ after/tests/test_zulu_institutions_core.py
+@@ -66,7 +66,7 @@
+         results = []
+         for key, op, value in nodes:
+             if key == 'custom_tooltip': result = self.condition([n for n in value if n[0] != 'text'], scope)
+-            elif key == 'NOT': result = not self.condition(value, scope)
++            elif key == 'NOT': result = not any(self.condition([n], scope) for n in value)
+             elif key == 'OR': result = any(self.condition([n], scope) for n in value)
+             elif key == 'NOR': result = not any(self.condition([n], scope) for n in value)
+             elif key == 'AND': result = self.condition(value, scope)
+--- before/tests/test_zulu_institutions_laws.py
++++ after/tests/test_zulu_institutions_laws.py
+@@ -59,7 +59,7 @@
+         if key == 'OR': result = any(gate([n], state) for n in value)
+         elif key == 'AND': result = gate(value, state)
+         elif key == 'NOR': result = not any(gate([n], state) for n in value)
+-        elif key == 'NOT': result = not gate(value, state)
++        elif key == 'NOT': result = not any(gate([n], state) for n in value)
+         elif key == 'has_variable': result = value in state.get('flags', set())
+         elif key == 'has_law': result = value.removeprefix('law_type:') in state.get('laws', set())
+         elif key == 'sb_institutions_profile_country': result = state.get('profile', False) == (value == 'yes')

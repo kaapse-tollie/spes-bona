@@ -58,7 +58,7 @@ class BoerAIEconomyBuildoutTests(unittest.TestCase):
                 elif key == "OR": result = any(evaluate([n], obj) for n in val)
                 elif key == "NOR": result = not any(evaluate([n], obj) for n in val)
                 elif key == "AND": result = evaluate(val, obj)
-                elif key == "NOT": result = not evaluate(val, obj)
+                elif key == "NOT": result = not any(evaluate([n], obj) for n in val)
                 elif key == "is_ai": result = obj["ai"] == (val == "yes")
                 elif key == "country_definition": result = obj["tag"] == val.removeprefix("cd:")
                 elif key == "any_scope_building": result = any(evaluate(val, b) for b in obj["buildings"])

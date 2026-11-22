@@ -19,7 +19,6 @@ REPLACE:movement_royalist_absolutist = {
 				country_has_voting_franchise = yes
 			}
 			has_variable = monarchy_stamped_out_var
-			has_law = law_type:law_bakufu
 			sb_uses_authored_zulu_movements = yes
 			any_political_movement = {
 				OR = {
@@ -27,6 +26,8 @@ REPLACE:movement_royalist_absolutist = {
 					is_political_movement_type = movement_miguelist
 				}
 			}
+			has_law = law_type:law_bakufu
+			has_council_republic_law = yes
 		}
 	}
 	on_disbanded = {
@@ -38,6 +39,7 @@ REPLACE:movement_royalist_absolutist = {
 					NOT = {
 						has_variable = monarchy_stamped_out_var
 					}
+					NOT = { has_council_republic_law = yes }
 					NOT = {
 						any_political_movement = {
 							is_political_movement_type = movement_royalist_constitutional
@@ -49,6 +51,7 @@ REPLACE:movement_royalist_absolutist = {
 				create_political_movement = { type = movement_royalist_constitutional }
 			}
 		}
+		fold_movement_into_anti_communist_movement_effect = yes
 	}
 	
 	creation_trigger = {
@@ -96,6 +99,14 @@ REPLACE:movement_royalist_absolutist = {
 	}
 	on_created = {
 		add_movement_enthusiasm_modifier = yes
+		if = {
+			limit = {
+				owner ?= {
+					country_has_primary_culture = cu:russian
+				}
+			}
+			set_core_ideology = ideology_tsarist_movement
+		}
 	}
 	
 	character_support_trigger = {
@@ -329,13 +340,14 @@ REPLACE:movement_royalist_absolutist = {
 			max = 0.7 # Starts more powerful but caps out early
 		}
 		
-		# Grey_PLP
+		# Grey_PLP - always put last
 		multiply = {
 			value = mog_plp_movement_mainland_general_pop_support_weight_incorporation_percent_mult
 		}
 	}
 	
 	revolution = {
+		possible = { sb_chiefs_other_uprising_allowed = yes }
 		weight = {
 			value = 100
 		}
@@ -365,6 +377,7 @@ REPLACE:movement_royalist_absolutist = {
 	
 	secession = {
 		possible = {
+			sb_chiefs_other_uprising_allowed = yes
 			political_movement_support >= 0.05
 			scope:clout <= 0
 		}
@@ -405,70 +418,17 @@ REPLACE:movement_royalist_absolutist = {
 	}
 	
 	additional_radicalism_factors = {
-		owner ?= {
-			if = {
-				limit = {
-					has_law = law_type:law_monarchy
-				}
-				
-				if = {
-					limit = {
-						OR = {
-							is_enacting_law = law_type:law_presidential_republic
-							is_enacting_law = law_type:law_parliamentary_republic
-							is_enacting_law = law_type:law_corporate_state
-							is_enacting_law = law_type:law_theocracy
-							is_enacting_law = law_type:law_council_republic
-						}
-					}
-					
-					add = {
-						value = 0.25
-						desc = "MONARCHY_BEING_ABOLISHED"
-					}
-				}
-				else = {
-					add = { # Only care about legitimacy in the context of a monarchy that isn't under direct threat
-						value = 50
-						subtract = legitimacy
-						multiply = 0.005
-						desc = "concept_legitimacy"
-					}
-				}
-			}
-		}
-		
-		if = {
-			limit = {
-				owner = {
-					any_neighbouring_state = {
-						owner = {
-							NOT = { THIS = ROOT.owner }
-							any_political_movement = {
-								is_political_movement_type = movement_royalist_absolutist
-								is_insurrectionary = yes
-							}
-						}
-					}
-				}
-			}
-			add = {
-				desc = "NEIGHBOURING_COUNTRY_WITH_REVOLUTION"
-				value = 0.15
-			}
-		}
+        add = movement_radicalism_royalist_monarchy_abolished
+
         if = {
             limit = {
-                this.days_since_movement_defeated <= very_long_modifier_time
+                neighboring_country_has_insurrectionary_movement_trigger = { TYPE = movement_royalist_absolutist }
             }
-            add = { # (x-y)/y - ([1, 7300]-7300)/7300
-                desc = "movement_suppressed_after_civil_war"
-                value = this.days_since_movement_defeated
-                subtract = very_long_modifier_time
-                divide = {
-                    value = very_long_modifier_time
-                }
+            add = {
+                desc = "NEIGHBOURING_COUNTRY_WITH_REVOLUTION"
+                value = 0.15
             }
         }
+        add = movement_radicalism_suppressed_after_civil_war
 	}
 }
