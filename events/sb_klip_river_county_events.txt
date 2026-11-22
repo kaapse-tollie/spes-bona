@@ -194,14 +194,7 @@ sb_klip_river_county.020 = {
 		if = { limit = { exists = scope:sb_court_frontier_broker } custom_tooltip = sb_court_frontier_broker_named_tt }
 		hidden_effect = {
 			sb_court_klip_broker = yes
-			c:NAL ?= {
-				sb_klip_river_create_county = yes
-				if = {
-					limit = { sb_klip_river_ora_can_receive_appeal = yes }
-					c:ORA ?= { trigger_event = { id = sb_klip_river_county.004 days = 6 popup = yes } }
-				}
-				else = { sb_klip_river_queue_secession_delivery = yes }
-			}
+			c:NAL ?= { sb_klip_river_create_county = yes }
 		}
 		ai_chance = {
 			base = 30
@@ -296,13 +289,7 @@ sb_klip_river_county.004 = {
 	icon = "gfx/interface/icons/event_icons/event_default.dds"
 	duration = 3
 
-	trigger = {
-		country_definition = cd:ORA
-		is_country_alive = yes
-		is_subject = no
-		c:KLR ?= { is_country_alive = yes }
-		c:NAL ?= { has_variable = sb_klip_river_secession_active_var }
-	}
+	trigger = { sb_klip_river_ora_can_answer_appeal = yes }
 
 	immediate = {
 		c:NAL ?= { save_scope_as = sb_klip_natal_scope }
@@ -314,8 +301,10 @@ sb_klip_river_county.004 = {
 		name = sb_klip_river_county.004.a
 		custom_tooltip = sb_klip_river_county_004_a_tt
 		hidden_effect = {
-			sb_klip_river_record_ora_backing = yes
-				c:NAL ?= { sb_klip_river_queue_secession_delivery = yes }
+			if = {
+				limit = { sb_klip_river_ora_can_answer_appeal = yes }
+				sb_klip_river_record_ora_backing = yes
+			}
 		}
 		ai_chance = {
 			base = 60
@@ -329,13 +318,22 @@ sb_klip_river_county.004 = {
 	option = {
 		name = sb_klip_river_county.004.b
 		default_option = yes
-		hidden_effect = { c:NAL ?= { sb_klip_river_queue_secession_delivery = yes } }
 		ai_chance = {
 			base = 40
 			modifier = { trigger = { has_variable = sb_great_trek_completed_var } add = -15 }
 			modifier = { trigger = { NOT = { has_variable = sb_great_trek_completed_var } } add = 35 }
 			modifier = { trigger = { owns_entire_state_region = STATE_DRAKENSBERG } add = -15 }
 			modifier = { trigger = { NOT = { owns_entire_state_region = STATE_DRAKENSBERG } } add = 15 }
+		}
+	}
+
+	after = {
+		c:NAL ?= {
+			if = {
+				limit = { has_variable = sb_klip_river_ora_appeal_pending_var has_variable = sb_klip_river_secession_delivery_pending_var }
+				remove_variable = sb_klip_river_ora_appeal_pending_var
+				sb_klip_river_queue_secession_delivery = yes
+			}
 		}
 	}
 }
@@ -540,7 +538,12 @@ sb_klip_river_county.082 = {
 			country_definition = cd:LYD
 		}
 	}
-	option = { name = sb_klip_river_county.082.a default_option = yes ai_chance = { base = 100 } }
+	option = {
+		name = sb_klip_river_county.082.a
+		default_option = yes
+		sb_acknowledge_klip_host_arrival = yes
+		ai_chance = { base = 100 }
+	}
 }
 
 sb_klip_river_county.090 = {

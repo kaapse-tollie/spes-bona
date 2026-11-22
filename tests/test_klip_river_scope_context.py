@@ -104,7 +104,7 @@ class KlipRiverScopeContextTests(unittest.TestCase):
                 self.assertNotRegex(trigger, r'\broot\b')
                 self.assertRegex(trigger, r'p:x[0-9A-F]+\.state.owner = c:NAL')
         secession = object_block(TRIGGERS, 'sb_klip_river_secession_preflight')
-        self.assertIn('initiator = c:ZUL target = c:NAL', secession)
+        self.assertIn('any_diplomatic_play = { sb_klip_river_is_secession_against_natal = yes }', secession)
         punitive = object_block(TRIGGERS, 'sb_klip_river_punitive_preflight')
         self.assertIn('initiator = c:NAL target = c:ZUL', punitive)
 

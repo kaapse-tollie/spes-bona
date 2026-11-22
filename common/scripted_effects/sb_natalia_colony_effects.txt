@@ -422,18 +422,26 @@ sb_exile_natalia_boer_leadership = {
 			save_scope_as = natal_exiled_leader
 		}
 	}
-	scope:natal_exiled_leader ?= {
-		if = {
-			limit = {
-				NOT = { has_role_of_type = politician }
+	if = {
+		limit = {
+			exists = scope:natal_refugee_receiver
+			scope:natal_exiled_leader ?= {
+				OR = { NOT = { has_template = TRN_andries_pretorius } NOT = { c:TRN ?= { is_country_alive = yes } } }
 			}
-			add_character_role = politician
 		}
-		transfer_character = scope:natal_refugee_receiver
-		set_interest_group = scope:natal_refugee_receiver.ig:ig_landowners
-		if = {
-			limit = { has_variable = sb_klip_river_deferred_exile_var }
-			remove_variable = sb_klip_river_deferred_exile_var
+		scope:natal_exiled_leader ?= {
+			if = {
+				limit = {
+					NOT = { has_role_of_type = politician }
+				}
+				add_character_role = politician
+			}
+			transfer_character = scope:natal_refugee_receiver
+			set_interest_group = scope:natal_refugee_receiver.ig:ig_landowners
+			if = {
+				limit = { has_variable = sb_klip_river_deferred_exile_var }
+				remove_variable = sb_klip_river_deferred_exile_var
+			}
 		}
 	}
 }
@@ -490,7 +498,10 @@ sb_finalize_british_natal_colony = {
 		remove_variable = sb_natalia_ultimatum_truce_var
 	}
 	sb_mark_natalia_boer_leadership_for_deferred_exile = yes
-	sb_exile_natalia_boer_leadership = yes
+	if = {
+		limit = { NOT = { any_scope_character = { has_template = TRN_andries_pretorius has_variable = sb_klip_river_deferred_exile_var } } }
+		sb_exile_natalia_boer_leadership = yes
+	}
 	sb_apply_british_natal_colony_setup = yes
 	sb_annul_natalia_boer_treaties = yes
 	if = {
@@ -523,6 +534,7 @@ sb_trigger_selected_natal_refugee_receiver_followup = {
 				country_definition = cd:ORA
 			}
 		}
+		set_variable = { name = sb_klip_household_notice_host value = flag:ora }
 		scope:natal_refugee_receiver = {
 			trigger_event = { id = sb_natal_crisis.116 days = 1 popup = yes }
 		}
@@ -534,8 +546,13 @@ sb_trigger_selected_natal_refugee_receiver_followup = {
 				country_definition = cd:TRN
 			}
 		}
+		set_variable = { name = sb_klip_household_notice_host value = flag:trn }
 		scope:natal_refugee_receiver = {
-			trigger_event = { id = sb_natal_crisis.117 days = 1 popup = yes }
+			if = {
+				limit = { has_variable = sb_trn_return_notice_pending }
+				set_variable = sb_trn_return_households_due
+			}
+			else = { trigger_event = { id = sb_natal_crisis.117 days = 1 popup = yes } }
 		}
 	}
 	else_if = {
@@ -657,167 +674,141 @@ sb_support_natalia_against_britain = {
 	sb_join_natalia_against_britain = yes
 }
 
-# Boer refugees from Natal move inland toward whichever republic receives them.
+# The receiver's event always draws the standard departure from Natal.
 sb_trigger_natal_refugee_migration_effect = {
-	save_temporary_scope_as = natal_refugee_coordinator
 	c:NAL ?= {
-		save_scope_as = natalia_source
+		if = { limit = { has_variable = sb_klip_household_notice_host } remove_variable = sb_klip_household_notice_host }
+		sb_klip_river_distribute_boer_emigrants = yes
 	}
-	set_variable = {
-		name = sb_natal_refugee_receiver_count_var
-		value = 0
-	}
+}
+
+sb_klip_river_capture_refugee_capital = {
 	if = {
-		limit = { c:ORA ?= { is_country_alive = yes } }
-		c:ORA.capital ?= {
-			save_scope_as = natal_refugee_receiver_a
+		limit = { is_country_alive = yes }
+		capital ?= { save_temporary_scope_as = $DESTINATION$ }
+	}
+}
+
+# Pop scope. Only whole, positive quotas have a native move.
+sb_klip_river_move_refugee_quota = {
+	if = {
+		limit = {
+			exists = scope:sb_natal_refugee_$TAG$_capital
+			exists = scope:sb_natal_refugee_$TAG$_quota
 		}
-		change_variable = {
-			name = sb_natal_refugee_receiver_count_var
-			add = 1
+		if = {
+			limit = { scope:sb_natal_refugee_$TAG$_quota > 0 }
+			move_partial_pop = {
+				state = scope:sb_natal_refugee_$TAG$_capital
+				population = scope:sb_natal_refugee_$TAG$_quota
+			}
 		}
 	}
+}
+
+# Country scope is the source of the emigrants. A held receiver event can have a foreign ROOT.
+sb_klip_river_distribute_boer_emigrants = {
 	if = {
-		limit = { c:TRN ?= { is_country_alive = yes } }
-		c:TRN.capital ?= {
-			if = {
-				limit = { NOT = { exists = scope:natal_refugee_receiver_a } }
-				save_scope_as = natal_refugee_receiver_a
-			}
-			else_if = {
-				limit = { NOT = { exists = scope:natal_refugee_receiver_b } }
-				save_scope_as = natal_refugee_receiver_b
+		limit = {
+			is_country_alive = yes
+			NOT = { has_variable = sb_klip_river_boer_population_moved_var }
+		}
+		set_variable = sb_klip_river_boer_population_moved_var
+		c:TRN ?= { sb_klip_river_capture_refugee_capital = { DESTINATION = sb_natal_refugee_trn_capital } }
+		c:ORA ?= { sb_klip_river_capture_refugee_capital = { DESTINATION = sb_natal_refugee_ora_capital } }
+		c:ZPB ?= { sb_klip_river_capture_refugee_capital = { DESTINATION = sb_natal_refugee_zpb_capital } }
+		c:LYD ?= { sb_klip_river_capture_refugee_capital = { DESTINATION = sb_natal_refugee_lyd_capital } }
+		save_temporary_scope_value_as = {
+			name = sb_natal_refugee_non_ora_count
+			value = {
+				value = 0
+				if = { limit = { exists = scope:sb_natal_refugee_trn_capital } add = 1 }
+				if = { limit = { exists = scope:sb_natal_refugee_zpb_capital } add = 1 }
+				if = { limit = { exists = scope:sb_natal_refugee_lyd_capital } add = 1 }
 			}
 		}
-		change_variable = {
-			name = sb_natal_refugee_receiver_count_var
-			add = 1
-		}
-	}
-	if = {
-		limit = { c:ZPB ?= { is_country_alive = yes } }
-		c:ZPB.capital ?= {
-			if = {
-				limit = { NOT = { exists = scope:natal_refugee_receiver_a } }
-				save_scope_as = natal_refugee_receiver_a
-			}
-			else_if = {
-				limit = { NOT = { exists = scope:natal_refugee_receiver_b } }
-				save_scope_as = natal_refugee_receiver_b
-			}
-			else_if = {
-				limit = { NOT = { exists = scope:natal_refugee_receiver_c } }
-				save_scope_as = natal_refugee_receiver_c
-			}
-		}
-		change_variable = {
-			name = sb_natal_refugee_receiver_count_var
-			add = 1
-		}
-	}
-	if = {
-		limit = { c:LYD ?= { is_country_alive = yes } }
-		c:LYD.capital ?= {
-			if = {
-				limit = { NOT = { exists = scope:natal_refugee_receiver_a } }
-				save_scope_as = natal_refugee_receiver_a
-			}
-			else_if = {
-				limit = { NOT = { exists = scope:natal_refugee_receiver_b } }
-				save_scope_as = natal_refugee_receiver_b
-			}
-			else_if = {
-				limit = { NOT = { exists = scope:natal_refugee_receiver_c } }
-				save_scope_as = natal_refugee_receiver_c
-			}
-			else_if = {
-				limit = { NOT = { exists = scope:natal_refugee_receiver_d } }
-				save_scope_as = natal_refugee_receiver_d
-			}
-		}
-		change_variable = {
-			name = sb_natal_refugee_receiver_count_var
-			add = 1
-		}
-	}
-	# Tooltip evaluation does not execute the counter initialization above.
-	if = {
-		limit = { scope:natal_refugee_coordinator ?= { has_variable = sb_natal_refugee_receiver_count_var } }
+		# Tooltips can traverse the effect before the destinations and count are set.
 		if = {
 			limit = {
-				exists = scope:natalia_source
-				scope:natal_refugee_coordinator.var:sb_natal_refugee_receiver_count_var > 0
+				exists = scope:sb_natal_refugee_non_ora_count
+				OR = {
+					exists = scope:sb_natal_refugee_trn_capital
+					exists = scope:sb_natal_refugee_ora_capital
+					exists = scope:sb_natal_refugee_zpb_capital
+					exists = scope:sb_natal_refugee_lyd_capital
+				}
 			}
-			c:NAL ?= {
-				every_scope_state = {
-					every_scope_pop = {
-						limit = {
-							culture = cu:boer
-						}
-						if = {
-							limit = {
-								scope:natal_refugee_coordinator.var:sb_natal_refugee_receiver_count_var == 1
-							}
-							move_partial_pop = {
-								state = scope:natal_refugee_receiver_a
-								population_ratio = 0.95
-							}
-						}
-						else_if = {
-							limit = {
-								scope:natal_refugee_coordinator.var:sb_natal_refugee_receiver_count_var == 2
-							}
-							move_partial_pop = {
-								state = scope:natal_refugee_receiver_a
-								population_ratio = 0.475
-							}
-							move_partial_pop = {
-								state = scope:natal_refugee_receiver_b
-								population_ratio = 0.9048
-							}
-						}
-						else_if = {
-							limit = {
-								scope:natal_refugee_coordinator.var:sb_natal_refugee_receiver_count_var == 3
-							}
-							move_partial_pop = {
-								state = scope:natal_refugee_receiver_a
-								population_ratio = 0.3167
-							}
-							move_partial_pop = {
-								state = scope:natal_refugee_receiver_b
-								population_ratio = 0.4634
-							}
-							move_partial_pop = {
-								state = scope:natal_refugee_receiver_c
-								population_ratio = 0.8636
-							}
-						}
-						else_if = {
-							limit = {
-								scope:natal_refugee_coordinator.var:sb_natal_refugee_receiver_count_var >= 4
-							}
-							move_partial_pop = {
-								state = scope:natal_refugee_receiver_a
-								population_ratio = 0.2375
-							}
-							move_partial_pop = {
-								state = scope:natal_refugee_receiver_b
-								population_ratio = 0.3115
-							}
-							move_partial_pop = {
-								state = scope:natal_refugee_receiver_c
-								population_ratio = 0.4524
-							}
-							move_partial_pop = {
-								state = scope:natal_refugee_receiver_d
-								population_ratio = 0.8261
+			every_scope_state = {
+				every_scope_pop = {
+					limit = { culture = cu:boer }
+					save_temporary_scope_value_as = {
+						name = sb_natal_refugee_departing
+						value = { value = total_size multiply = 0.95 floor = yes }
+					}
+					save_temporary_scope_value_as = {
+						name = sb_natal_refugee_ora_quota
+						value = {
+							value = 0
+							if = {
+								limit = { exists = scope:sb_natal_refugee_ora_capital }
+								value = scope:sb_natal_refugee_departing
+								if = { limit = { scope:sb_natal_refugee_non_ora_count > 0 } divide = 10 floor = yes }
 							}
 						}
 					}
+					save_temporary_scope_value_as = {
+						name = sb_natal_refugee_shared_pool
+						value = {
+							value = scope:sb_natal_refugee_departing
+							subtract = scope:sb_natal_refugee_ora_quota
+							if = {
+								limit = { exists = scope:sb_natal_refugee_trn_capital }
+								subtract = { value = scope:sb_natal_refugee_departing divide = 2 floor = yes }
+							}
+						}
+					}
+					# Divide from LYD back to TRN. Flooring the last share first gives
+					# spare people to TRN, then ZPB, then LYD.
+					save_temporary_scope_value_as = {
+						name = sb_natal_refugee_lyd_quota
+						value = {
+							value = 0
+							if = {
+								limit = { exists = scope:sb_natal_refugee_lyd_capital }
+								value = scope:sb_natal_refugee_shared_pool
+								divide = scope:sb_natal_refugee_non_ora_count
+								floor = yes
+							}
+						}
+					}
+					save_temporary_scope_value_as = {
+						name = sb_natal_refugee_zpb_quota
+						value = {
+							value = 0
+							if = {
+								limit = { exists = scope:sb_natal_refugee_zpb_capital }
+								value = scope:sb_natal_refugee_shared_pool
+								subtract = scope:sb_natal_refugee_lyd_quota
+								if = { limit = { exists = scope:sb_natal_refugee_trn_capital } divide = 2 floor = yes }
+							}
+						}
+					}
+					# TRN receives its reserved half and its share of the pool.
+					save_temporary_scope_value_as = {
+						name = sb_natal_refugee_trn_quota
+						value = {
+							value = scope:sb_natal_refugee_departing
+							subtract = scope:sb_natal_refugee_ora_quota
+							subtract = scope:sb_natal_refugee_lyd_quota
+							subtract = scope:sb_natal_refugee_zpb_quota
+						}
+					}
+					sb_klip_river_move_refugee_quota = { TAG = trn }
+					sb_klip_river_move_refugee_quota = { TAG = ora }
+					sb_klip_river_move_refugee_quota = { TAG = zpb }
+					sb_klip_river_move_refugee_quota = { TAG = lyd }
 				}
 			}
 		}
 	}
-	remove_variable = sb_natal_refugee_receiver_count_var
 }

@@ -332,9 +332,8 @@ sb_cleanup_trn_generated_commanders = {
 			limit = {
 				is_character_alive = yes
 				has_role_of_type = general
-				NOT = { has_template = TRN_andries_pretorius }
-				NOT = { has_template = TRN_marthinus_wessel_pretorius }
-				NOT = { has_template = TRN_stephanus_schoeman }
+				is_historical = no
+				is_ruler_of_own_country = no
 			}
 			remove_character_role = general
 		}
@@ -558,59 +557,16 @@ sb_spawn_transvaal_republic_v2 = {
 				template = TRN_louis_tregardt
 			}
 		}
-			if = {
-				limit = {
-					NOT = {
-						any_scope_character = {
-							has_template = TRN_stephanus_schoeman
-						}
-				}
-			}
-			create_character = {
-				template = TRN_stephanus_schoeman
-				ig_leader = yes
-					interest_group = ig_armed_forces
-				}
-			}
-				sb_martinus_ensure_trn_pretorius_cast = yes
-				if = {
-					limit = {
-						c:NAL ?= {
-						is_country_alive = yes
-					ruler = {
-						has_template = TRN_andries_pretorius
-					}
-					}
-				}
-				random_scope_character = {
-					limit = {
-						has_template = TRN_marthinus_wessel_pretorius
-						is_character_alive = yes
-					}
-					set_interest_group = c:TRN.ig:ig_landowners
-					set_as_interest_group_leader = yes
-					set_character_as_ruler = yes
-				}
-			}
-		else = {
-			if = {
-				limit = {
-					NOT = {
-						any_scope_character = {
-							has_template = TRN_andries_pretorius
-						}
-					}
-				}
-				create_character = {
-					template = TRN_andries_pretorius
-					ruler = yes
-					is_general = yes
-					ig_leader = yes
-					interest_group = ig_landowners
-					ideology = ideology_sb_volksraad_elitism_leader
-				}
-			}
+		sb_receive_boer_founder = { TEMPLATE = ORA_hendrik_potgieter PERSON = sb_western_hendrik TAG = TRN GROUP = ig_armed_forces }
+		sb_receive_boer_founder = { TEMPLATE = TRN_stephanus_schoeman PERSON = sb_western_schoeman TAG = TRN GROUP = ig_armed_forces }
+		sb_receive_boer_founder = { TEMPLATE = TRN_marthinus_wessel_pretorius PERSON = sb_western_marthinus TAG = TRN GROUP = ig_landowners }
+		scope:sb_western_hendrik ?= {
+			set_as_interest_group_leader = yes
+			set_character_as_ruler = yes
 		}
+		sb_receive_boer_founder = { TEMPLATE = TRN_andries_pretorius PERSON = sb_western_andries TAG = TRN GROUP = ig_landowners }
+		scope:sb_western_andries ?= { set_as_interest_group_leader = yes }
+		sb_receive_klip_boer_return = yes
 		if = {
 			limit = { NOT = { has_journal_entry = je_sb_great_trek } }
 			add_journal_entry = { type = je_sb_great_trek }
@@ -622,40 +578,13 @@ sb_spawn_transvaal_republic_v2 = {
 		}
 		if = {
 			limit = { exists = scope:trn_pretorius_commando_scope }
-			random_scope_character = {
+			every_scope_character = {
 				limit = {
-					has_template = TRN_andries_pretorius
-					is_character_alive = yes
+					sb_active_boer_politician = yes
+					OR = { has_template = ORA_hendrik_potgieter has_template = TRN_andries_pretorius }
 				}
-				if = {
-					limit = {
-						NOT = { has_role_of_type = general }
-					}
-					add_character_role = general
-				}
+				if = { limit = { NOT = { has_role_of_type = general } } add_character_role = general }
 				transfer_to_formation = scope:trn_pretorius_commando_scope
-			}
-			if = {
-				limit = {
-					NOT = {
-						any_scope_character = {
-							has_template = TRN_andries_pretorius
-							is_character_alive = yes
-							has_role_of_type = general
-						}
-					}
-				}
-				random_scope_character = {
-					limit = {
-						has_template = TRN_marthinus_wessel_pretorius
-						is_character_alive = yes
-					}
-					if = {
-						limit = { NOT = { has_role_of_type = general } }
-						add_character_role = general
-					}
-					transfer_to_formation = scope:trn_pretorius_commando_scope
-				}
 			}
 		}
 		sb_cleanup_trn_generated_commanders = yes
@@ -698,21 +627,6 @@ sb_spawn_transvaal_republic_v2 = {
 # Shared Zoutpansberg split setup so event branches can offer a play-as choice
 # without duplicating the full spawn / migration / government wiring.
 sb_found_zoutpansberg_republic = {
-	c:TRN ?= {
-		if = {
-			limit = {
-				any_scope_character = {
-					has_template = TRN_stephanus_schoeman
-				}
-			}
-			random_scope_character = {
-				limit = {
-					has_template = TRN_stephanus_schoeman
-				}
-				save_scope_as = zpb_ruler_scope
-			}
-		}
-	}
 	if = {
 		limit = {
 			NOT = { exists = c:ZPB }
@@ -764,38 +678,15 @@ sb_found_zoutpansberg_republic = {
 			limit = { NOT = { has_journal_entry = je_sb_great_trek } }
 			add_journal_entry = { type = je_sb_great_trek }
 		}
+		sb_receive_boer_founder = { TEMPLATE = ORA_hendrik_potgieter PERSON = sb_northern_hendrik TAG = ZPB GROUP = ig_armed_forces }
+		sb_receive_boer_founder = { TEMPLATE = TRN_stephanus_schoeman PERSON = sb_northern_schoeman TAG = ZPB GROUP = ig_armed_forces }
+		scope:sb_northern_schoeman ?= { set_as_interest_group_leader = yes }
 		if = {
-			limit = {
-				exists = scope:zpb_ruler_scope
-			}
-			scope:zpb_ruler_scope ?= {
-				transfer_character = c:ZPB
-				set_interest_group = c:ZPB.ig:ig_armed_forces
-				set_as_interest_group_leader = yes
-				set_character_as_ruler = yes
-				if = {
-					limit = {
-						NOT = { has_role_of_type = general }
-					}
-					add_character_role = general
-				}
-				if = {
-					limit = {
-						NOT = { has_role_of_type = politician }
-					}
-					add_character_role = politician
-				}
-			}
+			limit = { exists = scope:sb_northern_hendrik }
+			scope:sb_northern_hendrik = { set_character_as_ruler = yes }
 		}
-			else = {
-				create_character = {
-					template = TRN_stephanus_schoeman
-					ruler = yes
-					is_general = yes
-					ig_leader = yes
-					interest_group = ig_armed_forces
-				}
-			}
+		else = { scope:sb_northern_schoeman ?= { set_character_as_ruler = yes } }
+		ruler ?= { if = { limit = { NOT = { has_role_of_type = general } } add_character_role = general } }
 			if = {
 				limit = { exists = scope:sb_boer_starting_commando_scope }
 				ruler ?= {
@@ -866,15 +757,6 @@ sb_found_zoutpansberg_republic = {
 }
 
 	sb_found_lydenburg_republic = {
-		c:ORA ?= {
-			random_scope_character = {
-				limit = {
-					has_template = ORA_hendrik_potgieter
-					NOT = { is_ruler_of_own_country = yes }
-				}
-				save_scope_as = lyd_potgieter_scope
-			}
-		}
 		if = {
 			limit = {
 				NOT = { exists = c:LYD }
@@ -980,37 +862,11 @@ sb_found_zoutpansberg_republic = {
 					}
 				}
 			}
-			if = {
-				limit = {
-					exists = scope:lyd_potgieter_scope
-				}
-				scope:lyd_potgieter_scope ?= {
-					transfer_character = c:LYD
-					set_interest_group = c:LYD.ig:ig_landowners
-					set_as_interest_group_leader = yes
-					set_character_as_ruler = yes
-					if = {
-						limit = {
-							NOT = { has_role_of_type = general }
-						}
-						add_character_role = general
-					}
-					if = {
-						limit = {
-							NOT = { has_role_of_type = politician }
-						}
-						add_character_role = politician
-					}
-				}
-			}
-			else = {
-				create_character = {
-					template = LYD_cornelis_potgieter
-					ruler = yes
-					is_general = yes
-					ig_leader = yes
-					interest_group = ig_armed_forces
-				}
+			sb_receive_boer_founder = { TEMPLATE = LYD_cornelis_potgieter PERSON = sb_eastern_cornelis TAG = LYD GROUP = ig_armed_forces }
+			scope:sb_eastern_cornelis ?= {
+				set_as_interest_group_leader = yes
+				set_character_as_ruler = yes
+				if = { limit = { NOT = { has_role_of_type = general } } add_character_role = general }
 			}
 			if = {
 				limit = { exists = scope:sb_boer_starting_commando_scope }

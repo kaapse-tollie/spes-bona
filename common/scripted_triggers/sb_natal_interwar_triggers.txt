@@ -153,6 +153,8 @@ sb_natal_gandhi_catalyst_available = {
 
 sb_natal_zulu_settlement_ready = {
 	sb_zululand_normalized_nal_protectorate = yes
+	NOT = { has_variable = sb_klip_river_secession_settlement_pending_var }
+	NOT = { has_variable = sb_klip_river_secession_partial_protectorate_var }
 	OR = {
 		NOT = { has_variable = sb_natal_klip_river_settlement_var }
 		sb_klip_river_punitive_demands_fulfilled = yes
@@ -409,4 +411,16 @@ sb_natal_story_terminal_zulu_defeat_event_authority = {
 		has_variable = sb_natal_terminal_outcome_zulu_defeat_var
 		var:sb_natal_terminal_recipient_scope = root
 	}
+}
+
+# Current scope is a play, including when entered from a country-rooted callback.
+sb_natal_story_is_bound_war = {
+	is_diplomatic_play_type = dp_sb_natal_crisis
+	is_war = yes
+	has_global_variable = sb_natal_story_war_active_global_var
+	NOT = { has_global_variable = sb_natal_story_war_resolved_global_var }
+	exists = initiator
+	exists = target
+	initiator = { var:sb_natal_story_play_scope ?= prev }
+	target = { var:sb_natal_story_play_scope ?= prev }
 }

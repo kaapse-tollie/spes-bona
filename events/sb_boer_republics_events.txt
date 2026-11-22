@@ -200,6 +200,7 @@ sb_boer_republics.121 = {
 
 sb_boer_republics.130 = {
 	type = country_event
+	fire_only_once = yes
 	placement = root
 
 	title = sb_boer_republics.130.t
@@ -224,13 +225,12 @@ sb_boer_republics.130 = {
 			country_definition = cd:SGO
 		}
 		country_has_primary_culture = cu:boer
-		NOT = { has_variable = sb_great_trek_normalized_var }
 	}
 
 	option = {
 		name = sb_boer_republics.130.a
 		default_option = yes
-		set_variable = sb_great_trek_normalized_var
+		hidden_effect = { sb_record_trn_grondwet = yes }
 		if = {
 			limit = { has_modifier = sb_trek_frontier_republic }
 			remove_modifier = sb_trek_frontier_republic
@@ -249,7 +249,23 @@ sb_boer_republics.130 = {
 		}
 		activate_law = law_type:law_protectionism
 		activate_law = law_type:law_landed_voting
-		sb_transition_ruler_landowner_leadership = yes
+		if = {
+			limit = {
+				NAND = {
+					country_definition = cd:TRN
+					OR = {
+						ruler ?= { has_template = TRN_marthinus_wessel_pretorius }
+						AND = {
+							ruler.interest_group ?= ig:ig_landowners
+							ig:ig_landowners.leader ?= {
+								OR = { has_template = TRN_andries_pretorius has_template = TRN_marthinus_wessel_pretorius }
+							}
+						}
+					}
+				}
+			}
+			sb_transition_ruler_landowner_leadership = yes
+		}
 		if = {
 			limit = {
 				country_definition = cd:TRN
@@ -274,7 +290,6 @@ sb_boer_republics.130 = {
 
 	option = {
 		name = sb_boer_republics.130.b
-		set_variable = sb_great_trek_normalized_var
 		if = {
 			limit = { has_modifier = sb_trek_centralizing_republic }
 			remove_modifier = sb_trek_centralizing_republic
@@ -369,6 +384,96 @@ sb_boer_republics.131 = {
 		}
 		ai_chance = {
 			base = 0
+		}
+	}
+}
+
+# A separate appointment is due only when adoption was the second milestone.
+sb_boer_republics.132 = {
+	type = country_event
+	placement = root
+	title = sb_boer_republics.132.t
+	desc = sb_boer_republics.132.d
+	flavor = sb_boer_republics.132.f
+	gui_window = event_window_1char_tabloid
+	left_icon = scope:sb_trn_marthinus
+	icon = "gfx/interface/icons/event_icons/event_portrait.dds"
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	duration = 3
+
+	trigger = {
+		country_definition = cd:TRN
+		var:sb_trn_marthinus_appointment ?= flag:separate
+		scope:sb_trn_marthinus ?= { sb_trn_appointment_candidate = yes }
+	}
+	option = {
+		name = sb_boer_republics.132.a
+		default_option = yes
+		sb_appoint_trn_marthinus = { DELIVERY = separate }
+	}
+}
+
+# One political return notice, including the household receipt only if TRN owns it.
+sb_boer_republics.133 = {
+	type = country_event
+	placement = root
+	title = sb_boer_republics.133.t
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					var:sb_trn_marthinus_appointment ?= flag:combined
+					scope:sb_trn_marthinus ?= { sb_trn_appointment_candidate = yes }
+					scope:sb_returning_andries ?= { is_character_alive = yes owner ?= c:TRN }
+				}
+				desc = sb_boer_republics.133.d.both
+			}
+			triggered_desc = {
+				trigger = { var:sb_trn_marthinus_appointment ?= flag:combined scope:sb_trn_marthinus ?= { sb_trn_appointment_candidate = yes } }
+				desc = sb_boer_republics.133.d.son
+			}
+			triggered_desc = {
+				trigger = { scope:sb_returning_andries ?= { owner ?= c:TRN is_interest_group_leader = yes is_character_alive = yes } }
+				desc = sb_boer_republics.133.d.father
+			}
+			triggered_desc = {
+				trigger = { scope:sb_returning_andries ?= { owner ?= c:TRN is_character_alive = yes } }
+				desc = sb_boer_republics.133.d.present
+			}
+			desc = sb_boer_republics.133.d
+		}
+	}
+	flavor = {
+		first_valid = {
+			triggered_desc = { trigger = { has_variable = sb_trn_return_punitive_host } desc = sb_boer_republics.133.f.punitive }
+			triggered_desc = { trigger = { has_variable = sb_trn_return_households_due } desc = sb_boer_republics.133.f.households }
+			desc = sb_boer_republics.133.f
+		}
+	}
+	event_image = { video = "gfx/event_pictures/africa_construction_colony.bk2" }
+	icon = "gfx/interface/icons/event_icons/event_default.dds"
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	duration = 3
+
+	trigger = { country_definition = cd:TRN has_variable = sb_trn_return_notice_pending }
+	option = {
+		name = sb_boer_republics.133.a
+		default_option = yes
+		if = {
+			limit = { has_variable = sb_trn_return_notice_pending }
+			hidden_effect = { remove_variable = sb_trn_return_notice_pending }
+			sb_appoint_trn_marthinus = { DELIVERY = combined }
+			if = {
+				limit = { has_variable = sb_trn_return_households_due }
+				custom_tooltip = sb_natal_refugee_boer_pop_move_tt
+				hidden_effect = {
+					remove_variable = sb_trn_return_households_due
+					sb_trigger_natal_refugee_migration_effect = yes
+				}
+			}
+			hidden_effect = {
+				if = { limit = { has_variable = sb_trn_return_punitive_host } remove_variable = sb_trn_return_punitive_host }
+			}
 		}
 	}
 }

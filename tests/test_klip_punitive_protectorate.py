@@ -84,7 +84,7 @@ def evaluate(nodes, state, actor='NAL', root='NAL'):
         if key == 'OR':
             return any(evaluate([node], state, actor, root) for node in value)
         if key == 'NOT':
-            return not evaluate(value, state, actor, root)
+            return not any(evaluate([node], state, actor, root) for node in value)
         if key == 'AND':
             return evaluate(value, state, actor, root)
         if key == 'owner':
@@ -102,11 +102,15 @@ def evaluate(nodes, state, actor='NAL', root='NAL'):
             return state['owners'][key[2:].split('.')[0]] == value[2:]
         if key == 'country_definition':
             return value == 'cd:' + actor
+        if key == 'has_global_variable':
+            return value in state.get('globals', {})
         if key == 'has_variable':
             return value in country_flags(state, actor)
         if key.endswith(' >'):
             return script_value(key[:-2], state, actor) > script_value(value, state, actor)
         if key == 'exists':
+            if value.startswith('global_var:'):
+                return value[11:] in state.get('globals', {})
             assert value == 'var:sb_klip_river_punitive_play_scope'
             return state['play_exists']
         parents = {'NAL': state['natal_overlord'], 'ZUL': state['overlord']}
@@ -128,7 +132,8 @@ def evaluate(nodes, state, actor='NAL', root='NAL'):
             return False  # No pre-existing Chiefdoms modifier in the founding fixture.
         if key == 'owns_entire_state_region':
             return state['zululand_owner'] == actor
-        facts = {'is_country_alive': actor != 'ZUL' or state['zulu_alive'],
+        alive = {'ZUL': state['zulu_alive'], 'KLR': state.get('county_alive', False)}
+        facts = {'is_country_alive': alive.get(actor, True),
                  'is_subject': parents.get(actor) is not None,
                  'is_at_war': state['war'], 'is_active_in_diplomatic_play': state['play']}
         return facts[key] == (value == 'yes')
@@ -147,6 +152,7 @@ def selected_outcome(state):
 @lru_cache(None)
 def effect_nodes(name):
     path = (ENTHUSIASM_EFFECT if name == 'add_movement_enthusiasm_modifier' else
+            'common/scripted_effects/sb_boer_leadership_effects.txt' if name == 'sb_restore_punitive_andries' else
             EFFECTS if name.startswith('sb_klip_river_') else
             NATAL_EFFECTS if name.startswith('sb_natal_') else ZUL_EFFECTS)
     return expression(find_object(text(path), name, directive='REPLACE' if path == ENTHUSIASM_EFFECT else None))
@@ -237,7 +243,8 @@ def run_effect(name, state, actor='NAL', root='NAL', nodes=None, arguments=None,
                 variables(state, current).pop(value, None)
             elif key == 'transfer_subject':
                 assert value == 'c:ZUL'
-                state['overlord'] = current
+                if state.get('transfer_succeeds', True):
+                    state['overlord'] = current
             elif key == 'change_subject_type':
                 assert current == 'ZUL'
                 state['subject_type'] = value

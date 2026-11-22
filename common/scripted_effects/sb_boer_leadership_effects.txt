@@ -1,0 +1,201 @@
+﻿# Transfer a living founder without carrying either of his old country's offices.
+sb_move_boer_politician = {
+	if = {
+		limit = { NOT = { owner ?= c:$TAG$ } }
+		if = { limit = { is_interest_group_leader = yes } remove_as_interest_group_leader = yes }
+		if = { limit = { is_ruler_of_own_country = yes } remove_character_role = ruler }
+		transfer_character = c:$TAG$
+	}
+	if = { limit = { NOT = { has_role_of_type = politician } } add_character_role = politician }
+	if = { limit = { NOT = { interest_group ?= c:$TAG$.ig:$GROUP$ } } set_interest_group = c:$TAG$.ig:$GROUP$ }
+}
+
+# Called only at a founding. Older campaigns can still introduce an unused template.
+# Leave somebody who has already gone to another republic in that republic.
+sb_receive_boer_founder = {
+	random_character = {
+		limit = {
+			has_template = $TEMPLATE$
+			sb_active_boer_politician = yes
+			OR = { owner ?= c:ORA owner ?= c:TRN owner ?= c:$TAG$ }
+		}
+		save_scope_as = $PERSON$
+	}
+	if = {
+		limit = { NOT = { exists = scope:$PERSON$ } NOT = { is_template_used = $TEMPLATE$ } }
+		create_character = {
+			template = $TEMPLATE$
+			ruler = no
+			ig_leader = no
+			interest_group = $GROUP$
+			on_created = { save_scope_as = $PERSON$ }
+		}
+	}
+	scope:$PERSON$ ?= { sb_move_boer_politician = { TAG = $TAG$ GROUP = $GROUP$ } }
+}
+
+# A return_state goal can remove Natal's last state and its cast before the settlement
+# callback. The colonial authorities hold the displaced commandant during that play.
+sb_shelter_punitive_andries = {
+	random_scope_character = {
+		limit = { has_template = TRN_andries_pretorius sb_active_boer_politician = yes }
+		set_global_variable = { name = sb_klip_sheltered_andries value = this }
+		if = { limit = { c:CAP ?= { is_country_alive = yes } } transfer_character = c:CAP }
+		else_if = { limit = { c:GBR ?= { is_country_alive = yes } } transfer_character = c:GBR }
+		else = { transfer_character = c:ZUL }
+	}
+}
+
+sb_restore_punitive_andries = {
+	if = {
+		limit = {
+			exists = global_var:sb_klip_sheltered_andries
+			NOT = { has_global_variable = sb_klip_boers_departed }
+			c:NAL ?= { is_country_alive = yes }
+		}
+		global_var:sb_klip_sheltered_andries = {
+			if = {
+				limit = { sb_active_boer_politician = yes }
+				sb_move_boer_politician = { TAG = NAL GROUP = ig_landowners }
+			}
+		}
+		remove_global_variable = sb_klip_sheltered_andries
+	}
+}
+
+# Both positive endings call this at commitment. An older queued arrival can also prove the departure.
+sb_record_klip_boer_departure = {
+	if = {
+		limit = { NOT = { has_global_variable = sb_klip_boers_departed } }
+		set_global_variable = sb_klip_boers_departed
+		c:TRN ?= { if = { limit = { is_country_alive = yes } sb_receive_klip_boer_return = yes } }
+	}
+}
+
+# An arrival already queued in an old save can carry TRN's political handoff itself.
+sb_acknowledge_klip_host_arrival = {
+	if = { limit = { country_definition = cd:TRN } save_temporary_scope_as = sb_klip_open_trn_arrival }
+	hidden_effect = { sb_record_klip_boer_departure = yes }
+	if = {
+		limit = {
+			country_definition = cd:TRN
+			has_variable = sb_trn_return_notice_pending
+			NOR = { has_variable = sb_trn_return_households_due has_variable = sb_trn_return_punitive_host }
+		}
+		hidden_effect = {
+			remove_variable = sb_trn_return_notice_pending
+			random_scope_character = { limit = { sb_trn_appointment_candidate = yes } save_scope_as = sb_trn_marthinus }
+		}
+		if = {
+			limit = { ig:ig_landowners.leader ?= { has_template = TRN_andries_pretorius } }
+			custom_tooltip = sb_boer_republics.133.tt.father
+		}
+		sb_appoint_trn_marthinus = { DELIVERY = combined }
+	}
+}
+
+# TRN scope. The political handoff is independent of the households' chosen host.
+sb_receive_klip_boer_return = {
+	# Older saves kept the ordinary departure on NAL and the punitive distribution on ZUL.
+	if = {
+		limit = {
+			NOT = { has_global_variable = sb_klip_boers_departed }
+			OR = {
+				c:NAL ?= { has_variable = sb_klip_river_boer_flight_started_var }
+				c:ZUL ?= { has_variable = sb_klip_river_boer_population_moved_var }
+			}
+		}
+		set_global_variable = sb_klip_boers_departed
+	}
+	if = {
+		limit = {
+			has_global_variable = sb_klip_boers_departed
+			NOT = { has_variable = sb_trn_klip_return_recorded }
+		}
+		set_variable = sb_trn_klip_return_recorded
+		# Only adoption grants the modifier or opens the Lydenburg secession in older saves.
+		if = {
+			limit = {
+				OR = {
+					has_modifier = sb_trek_centralizing_republic
+					has_variable = sb_lydenburg_spawn_var
+					has_variable = sb_lydenburg_spawned_var
+				}
+			}
+			set_variable = sb_trn_grondwet_adopted
+		}
+		random_character = {
+			limit = {
+				has_template = TRN_andries_pretorius
+				sb_active_boer_politician = yes
+				OR = {
+					owner ?= c:NAL owner ?= c:ZUL owner ?= c:ORA
+					owner ?= c:TRN owner ?= c:ZPB owner ?= c:LYD
+					global_var:sb_klip_sheltered_andries ?= this
+				}
+			}
+			save_scope_as = sb_returning_andries
+			sb_move_boer_politician = { TAG = TRN GROUP = ig_landowners }
+			if = { limit = { has_variable = sb_klip_river_deferred_exile_var } remove_variable = sb_klip_river_deferred_exile_var }
+			if = {
+				limit = { NOT = { c:TRN.ig:ig_landowners.leader ?= { has_template = TRN_marthinus_wessel_pretorius } } }
+				set_as_interest_group_leader = yes
+			}
+		}
+		if = { limit = { has_global_variable = sb_klip_sheltered_andries } remove_global_variable = sb_klip_sheltered_andries }
+		if = {
+			limit = { has_variable = sb_trn_grondwet_adopted NOT = { has_variable = sb_trn_marthinus_appointment } }
+			random_scope_character = { limit = { sb_trn_appointment_candidate = yes } save_scope_as = sb_trn_marthinus }
+			if = { limit = { exists = scope:sb_trn_marthinus } set_variable = { name = sb_trn_marthinus_appointment value = flag:combined } }
+		}
+		if = {
+			limit = { OR = { exists = scope:sb_returning_andries var:sb_trn_marthinus_appointment ?= flag:combined } }
+			set_variable = sb_trn_return_notice_pending
+			if = {
+				limit = { NOT = { exists = scope:sb_klip_open_trn_arrival } }
+				trigger_event = { id = sb_boer_republics.133 days = 1 popup = yes }
+			}
+		}
+	}
+}
+
+sb_record_trn_grondwet = {
+	if = {
+		limit = { country_definition = cd:TRN NOT = { has_variable = sb_trn_grondwet_adopted } }
+		sb_receive_klip_boer_return = yes
+		set_variable = sb_trn_grondwet_adopted
+		if = {
+			limit = { has_global_variable = sb_klip_boers_departed NOT = { has_variable = sb_trn_marthinus_appointment } }
+			random_scope_character = { limit = { sb_trn_appointment_candidate = yes } save_scope_as = sb_trn_marthinus }
+			if = {
+				limit = { exists = scope:sb_trn_marthinus }
+				set_variable = { name = sb_trn_marthinus_appointment value = flag:separate }
+				trigger_event = { id = sb_boer_republics.132 days = 3 popup = yes }
+			}
+		}
+	}
+}
+
+sb_appoint_trn_marthinus = {
+	if = {
+		limit = {
+			country_definition = cd:TRN
+			has_global_variable = sb_klip_boers_departed
+			has_variable = sb_trn_grondwet_adopted
+			var:sb_trn_marthinus_appointment ?= flag:$DELIVERY$
+			scope:sb_trn_marthinus ?= { sb_trn_appointment_candidate = yes }
+		}
+		custom_tooltip = sb_boer_republics.132.tt.office
+		if = { limit = { scope:sb_trn_marthinus = { has_trait = sb_youth } } custom_tooltip = sb_boer_republics.132.tt.youth }
+		custom_tooltip = sb_boer_republics.132.tt.mandate
+		hidden_effect = {
+			set_variable = { name = sb_trn_marthinus_appointment value = flag:recognised }
+			scope:sb_trn_marthinus = {
+				if = { limit = { has_trait = sb_youth } remove_trait = sb_youth }
+				sb_move_boer_politician = { TAG = TRN GROUP = ig_landowners }
+				if = { limit = { is_interest_group_leader = no } set_as_interest_group_leader = yes }
+				add_modifier = { name = sb_marthinus_groot_boere_mandate months = 48 }
+			}
+		}
+	}
+}

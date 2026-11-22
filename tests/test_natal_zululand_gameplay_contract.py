@@ -377,6 +377,29 @@ class NatalZululandGameplayContractTests(unittest.TestCase):
         self.assertIn("type = liberate_subject", secondary)
         self.assertNotIn("primary_demand = yes", secondary)
 
+    def test_klip_river_founds_a_boer_republic_under_spies(self):
+        create = object_block("common/scripted_effects/sb_klip_river_county_effects.txt",
+                              "sb_klip_river_create_county")
+        klr = shortest_named_block_containing(create, "c:KLR", "KLR_andries_theodorus_spies")
+        preset = klr.index("effect_starting_politics_conservative = yes")
+        setup = "sb_apply_boer_republic_spawn_setup = yes"
+        self.assertIn(setup, klr)
+        for law in ("national_supremacy", "elected_bureaucrats", "agrarianism",
+                    "land_based_taxation", "homesteading", "discrete_inboekstelsel"):
+            enact = klr.index(f"activate_law = law_type:law_{law}")
+            self.assertLess(preset, enact)
+            self.assertLess(enact, klr.index(setup))
+        self.assertLess(klr.index("create_military_formation ="), klr.index("create_character ="))
+        self.assertLess(klr.index("set_character_as_ruler = yes"), klr.index(setup))
+        commando = "sb_klip_river_commando_scope"
+        self.assertIn(f"save_scope_as = {commando}", object_block_from_source(klr, "create_military_formation"))
+        ruler = object_block_from_source(klr[klr.index(setup):], "ruler ?")
+        self.assertIn(f"exists = scope:{commando}", ruler)
+        self.assertIn("has_role_of_type = general", ruler)
+        self.assertIn(f"transfer_to_formation = scope:{commando}", ruler)
+        self.assertNotIn("sb_boer_preserve_inherited_peripheral_laws_var", klr)
+        self.assertNotIn("remove_ruling_interest_group", klr[klr.index(setup):])
+
     def test_klip_river_county_and_reduced_natalia_keep_explicit_boundaries(self):
         effects_path = "common/scripted_effects/sb_klip_river_county_effects.txt"
         flight = object_block(

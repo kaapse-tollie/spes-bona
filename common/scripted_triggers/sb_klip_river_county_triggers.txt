@@ -26,9 +26,20 @@ sb_klip_river_county_ready_for_commission = {
 }
 
 sb_klip_river_ora_can_receive_appeal = {
+	exists = c:ORA
 	c:ORA ?= {
 		is_country_alive = yes
 		is_subject = no
+	}
+}
+
+sb_klip_river_ora_can_answer_appeal = {
+	country_definition = cd:ORA
+	sb_klip_river_ora_can_receive_appeal = yes
+	c:KLR ?= { is_country_alive = yes }
+	c:NAL ?= {
+		has_variable = sb_klip_river_ora_appeal_pending_var
+		has_variable = sb_klip_river_secession_delivery_pending_var
 	}
 }
 
@@ -50,6 +61,20 @@ sb_zulu_controls_initial_swaziland = {
 	p:x452304.state.owner = c:ZUL
 }
 
+# Diplomatic play scope. Britain's automatic intervention can make Natal a target ally.
+sb_klip_river_is_secession_against_natal = {
+	is_diplomatic_play_type = dp_sb_klip_river_secession
+	initiator_is = c:ZUL
+	OR = {
+		target_is = c:NAL
+		AND = {
+			target_is = c:GBR
+			any_scope_target_ally = { this = c:NAL is_direct_subject_of = c:GBR }
+		}
+	}
+	c:ZUL = { play_participant_has_war_goal_of_type_against = { type = annex_country target = c:NAL } }
+}
+
 # Exact pre-create checks. Receipts and launchers both call these because an option can be held.
 # Natal is a British colony. These scripted plays bypass diplomatic status;
 # ordinary permission to start plays must not gate the colonial actor.
@@ -59,6 +84,7 @@ sb_klip_river_secession_preflight = {
 	is_at_war = no
 	is_active_in_diplomatic_play = no
 	NOT = { has_variable = sb_klip_river_secession_play_scope }
+	NOT = { has_variable = sb_klip_river_ora_appeal_pending_var }
 	p:x279045.state.owner = c:NAL
 	c:KLR ?= {
 		is_country_alive = yes
@@ -77,8 +103,8 @@ sb_klip_river_secession_preflight = {
 		is_active_in_diplomatic_play = no
 		NOT = { has_war_with = c:NAL }
 		NOT = { has_war_with = c:KLR }
-		NOT = { any_diplomatic_play = { initiator = c:ZUL target = c:NAL is_diplomatic_play_type = dp_sb_klip_river_secession } }
 	}
+	NOT = { any_diplomatic_play = { sb_klip_river_is_secession_against_natal = yes } }
 }
 
 sb_klip_river_punitive_preflight = {
@@ -143,12 +169,19 @@ sb_klip_river_punitive_delivery_currently_permanently_invalid = {
 }
 
 # Province ownership survives split-state merging; a saved ZUL state may not.
-sb_klip_river_punitive_demands_fulfilled = {
-	country_definition = cd:NAL
+sb_klip_river_natal_holds_frontier = {
 	p:xBBCA32.state.owner = c:NAL
 	p:xDE0EDE.state.owner = c:NAL
 	p:x552449.state.owner = c:NAL
 	p:x279045.state.owner = c:NAL
+}
+
+sb_klip_river_natal_recovered_county = {
+	NOT = { c:KLR ?= { is_country_alive = yes } }
+	sb_klip_river_natal_holds_frontier = yes
+}
+
+sb_klip_river_allied_zulu_protectorate = {
 	c:ZUL ?= {
 		is_country_alive = yes
 		is_subject_type = subject_type_protectorate
@@ -161,4 +194,15 @@ sb_klip_river_punitive_demands_fulfilled = {
 			}
 		}
 	}
+}
+
+sb_klip_river_secession_demands_fulfilled = {
+	sb_klip_river_natal_recovered_county = yes
+	sb_klip_river_allied_zulu_protectorate = yes
+}
+
+sb_klip_river_punitive_demands_fulfilled = {
+	country_definition = cd:NAL
+	sb_klip_river_natal_holds_frontier = yes
+	sb_klip_river_allied_zulu_protectorate = yes
 }

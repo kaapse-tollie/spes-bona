@@ -858,71 +858,18 @@ sb_found_natalia_after_blood_river = {
 		set_variable = { name = keep_current_ruler_var days = 7 }
 		sb_apply_natalia_blood_river_military_setup = yes
 	}
-	# If TRN already exists when Natalia is founded, Natalia should inherit
-	# Andries while Marthinus takes over the inland republic. This now covers
-	# both older compatibility saves and the live V2 "TRN formed before NAL"
-	# branch.
-	hidden_effect = {
-		if = {
-			limit = {
-				c:TRN ?= {
-					is_country_alive = yes
-					any_scope_character = {
-						has_template = TRN_andries_pretorius
-						is_character_alive = yes
-					}
-				}
-			}
-			c:TRN ?= {
-				sb_martinus_ensure_trn_pretorius_cast = yes
-				random_scope_character = {
-					limit = {
-						has_template = TRN_andries_pretorius
-					}
-					save_scope_as = andries_pretorius_scope
-				}
-				random_scope_character = {
-					limit = {
-						has_template = TRN_marthinus_wessel_pretorius
-					}
-					set_character_as_ruler = yes
-					set_interest_group = c:TRN.ig:ig_landowners
-				}
-			}
-			scope:andries_pretorius_scope ?= {
-				transfer_character = c:NAL
-				set_character_as_ruler = yes
-				add_character_role = politician
-				set_interest_group = c:NAL.ig:ig_landowners
-			}
-			c:TRN ?= {
-				if = {
-					limit = {
-						is_player = yes
-						NOT = { has_variable = sb_natalia_trn_player_handoff_offered_var }
-					}
-					set_variable = sb_natalia_trn_player_handoff_offered_var
-					trigger_event = { id = sb_natal_crisis.071 days = 1 popup = yes }
-				}
-			}
+	c:NAL ?= {
+		sb_receive_boer_founder = { TEMPLATE = TRN_andries_pretorius PERSON = sb_natal_andries TAG = NAL GROUP = ig_landowners }
+		scope:sb_natal_andries ?= {
+			set_character_as_ruler = yes
+			if = { limit = { NOT = { has_role_of_type = general } } add_character_role = general }
 		}
 	}
-	c:NAL ?= {
+	c:TRN ?= {
 		if = {
-			limit = {
-				NOT = {
-					any_scope_character = {
-						has_template = TRN_andries_pretorius
-					}
-				}
-			}
-			create_character = {
-				template = TRN_andries_pretorius
-				ruler = yes
-				is_general = yes
-				interest_group = ig_landowners
-				ideology = ideology_sb_volksraad_elitism_leader
-			}
+			limit = { is_player = yes exists = scope:sb_natal_andries NOT = { has_variable = sb_natalia_trn_player_handoff_offered_var } }
+			set_variable = sb_natalia_trn_player_handoff_offered_var
+			trigger_event = { id = sb_natal_crisis.071 days = 1 popup = yes }
 		}
 	}
 	c:NAL ?= {

@@ -6,9 +6,7 @@ This does not emulate play creation or tooltip execution in the engine.
 import re
 import unittest
 
-from tests.test_natal_zululand_gameplay_contract import (
-    object_block, object_block_from_source, nested_blocks,
-)
+from tests.test_natal_zululand_gameplay_contract import object_block, nested_blocks
 
 TRIGGERS = 'common/scripted_triggers/sb_klip_river_county_triggers.txt'
 EFFECTS = 'common/scripted_effects/sb_klip_river_county_effects.txt'
@@ -37,7 +35,7 @@ def expression(source):
 def evaluate(nodes, country='NAL', busy=False):
     def check(key, value):
         if key == 'NOT':
-            return not evaluate(value, country, busy)
+            return not any(evaluate([node], country, busy) for node in value)
         if key == 'OR':
             return any(evaluate([node], country, busy) for node in value)
         if key.startswith('c:'):
@@ -53,7 +51,7 @@ def evaluate(nodes, country='NAL', busy=False):
             owner = 'NAL' if key == 'p:x279045.state.owner' else 'KLR'
             return owner == (country if value == 'this' else value[2:])
         if key == 'has_variable':
-            assert value.endswith('_play_scope')
+            assert value.endswith('_play_scope') or value == 'sb_klip_river_ora_appeal_pending_var'
             return False
         if key == 'has_war_with':
             return False
@@ -98,19 +96,16 @@ class KlipRiverColonialDeliveryTests(unittest.TestCase):
                 natal = '\n'.join(nested_blocks(cleanup, 'c:NAL ?'))
                 self.assertIn(f'remove_variable = sb_klip_river_{route}_delivery_pending_var', natal)
 
-    def test_refugee_counter_reads_are_nested_behind_existence_guard(self):
+    def test_refugee_quota_preview_waits_for_the_destination_count(self):
         effect = object_block('common/scripted_effects/sb_natalia_colony_effects.txt',
-                              'sb_trigger_natal_refugee_migration_effect')
+                              'sb_klip_river_distribute_boer_emigrants')
+        count = 'scope:sb_natal_refugee_non_ora_count'
         guards = [b for b in nested_blocks(effect, 'if')
-                  if 'has_variable = sb_natal_refugee_receiver_count_var'
-                  in object_block_from_source(b, 'limit')]
+                  if ('exists', count) in dict(expression(b))['limit']]
         self.assertEqual(1, len(guards))
         guard = guards[0]
-        limit = object_block_from_source(guard, 'limit')
-        self.assertNotIn('.var:', limit)
-        self.assertIn('scope:natal_refugee_coordinator ?=', limit)
-        self.assertEqual(5, guard.count('.var:sb_natal_refugee_receiver_count_var'))
-        self.assertNotIn('.var:sb_natal_refugee_receiver_count_var', effect.replace(guard, ''))
+        self.assertIn('divide = ' + count, guard)
+        self.assertNotIn(count, effect.replace(guard, ''))
 
 
 if __name__ == '__main__':

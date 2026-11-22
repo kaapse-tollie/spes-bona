@@ -13,7 +13,7 @@ EVENTS = 'events/sb_klip_river_county_events.txt'
 def marker_condition(nodes, flags, day, ready=True):
     def check(key, value):
         if key == 'NOT':
-            return not marker_condition(value, flags, day, ready)
+            return not any(marker_condition([node], flags, day, ready) for node in value)
         if key == 'has_variable':
             return value in flags and (flags[value] is None or flags[value] > day)
         if key.endswith('_preflight'):

@@ -17,7 +17,7 @@ class BoerSpawnArmyTests(unittest.TestCase):
     def test_blood_river_army_precedes_transferred_or_new_pretorius(self):
         source = object_block(NATAL, 'sb_found_natalia_after_blood_river')
         muster = source.index('sb_apply_natalia_blood_river_military_setup = yes')
-        for effect in ('transfer_character = c:NAL', 'create_character =',
+        for effect in ('sb_receive_boer_founder =', 'set_character_as_ruler = yes',
                        'sb_apply_natalia_boer_republic_setup = yes'):
             self.assertLess(muster, source.index(effect))
         natal = nested_blocks(source, 'c:NAL ?')
@@ -25,7 +25,7 @@ class BoerSpawnArmyTests(unittest.TestCase):
         setup = next(block for block in natal
                      if 'sb_apply_natalia_boer_republic_setup = yes' in block)
         self.assertIn('transfer_to_formation = scope:sb_natalia_commando_scope', setup)
-        self.assertGreater(source.index('transfer_to_formation'), source.index('create_character'))
+        self.assertGreater(source.index('transfer_to_formation'), source.index('sb_receive_boer_founder'))
 
     def test_peaceful_and_guns_routes_muster_before_retief_or_generic_ruler(self):
         source = object_block(NATAL, 'sb_found_natalia_peacefully')
@@ -43,23 +43,23 @@ class BoerSpawnArmyTests(unittest.TestCase):
     def test_transvaal_package_precedes_commissioning_and_cleanup_stays_last(self):
         spawn = object_block(TREK, 'sb_spawn_transvaal_republic_v2')
         for commission in ('sb_apply_boer_republic_spawn_setup = yes', 'create_character =',
-                           'sb_martinus_ensure_trn_pretorius_cast = yes'):
+                           'sb_receive_boer_founder ='):
             self.assertLess(spawn.index('sb_seed_trn_v2_start_package = yes'), spawn.index(commission))
         package = object_block(TREK, 'sb_seed_trn_v2_start_package')
         self.assertIn('create_military_formation =', package)
-        self.assertNotIn('sb_martinus_ensure_trn_pretorius_cast', package)
+        self.assertNotIn('sb_receive_boer_founder', package)
         self.assertNotIn('add_character_role = general', package)
         self.assertIn('NOT = { has_variable = sb_trn_starting_commando_created_var }', package)
-        # Choose Andries/Marthinus before assigning command; early assignment
-        # would commission the fallback son before the father's creation.
+        # Assign the founding commandants only after the historical cast arrives.
         self.assertGreater(spawn.index('transfer_to_formation = scope:trn_pretorius_commando_scope'),
-                           spawn.rindex('create_character ='))
+                           spawn.rindex('sb_receive_boer_founder ='))
         assignments = next(block for block in nested_blocks(spawn, 'if')
                            if 'limit = { exists = scope:trn_pretorius_commando_scope }' in block)
         self.assertIn('has_template = TRN_andries_pretorius', assignments)
-        self.assertIn('has_template = TRN_marthinus_wessel_pretorius', assignments)
+        self.assertIn('has_template = ORA_hendrik_potgieter', assignments)
+        self.assertNotIn('TRN_marthinus_wessel_pretorius', assignments)
         self.assertGreater(spawn.index('sb_cleanup_trn_generated_commanders = yes'),
-                           spawn.rindex('create_character ='))
+                           spawn.rindex('sb_receive_boer_founder ='))
 
     def test_zoutpansberg_and_lydenburg_muster_before_baseline_commissions_ruler(self):
         setup = object_block(BOER, 'sb_apply_boer_republic_spawn_setup')

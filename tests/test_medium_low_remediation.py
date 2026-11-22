@@ -299,6 +299,7 @@ class MediumLowRemediationTests(unittest.TestCase):
                 "sb_on_griqualand_sequence_watchdog_monthly",
                 "sb_on_natal_story_orphan_monthly",
                 "sb_on_klip_river_orphan_monthly",
+                "sb_on_klip_river_zulu_exodus_monthly",
                 "sb_on_zululand_chiefdoms_orphan_monthly",
                 "sb_on_natal_colony_monthly_pulse_country",
                 "sb_on_port_natal_monthly_pulse_country",

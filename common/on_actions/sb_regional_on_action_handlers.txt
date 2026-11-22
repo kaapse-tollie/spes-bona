@@ -89,6 +89,21 @@ sb_on_klip_river_orphan_monthly = {
 	effect = { sb_klip_river_recover_orphaned_generations = yes }
 }
 
+# Natal cannot run its settlement pulse after losing its last state.
+sb_on_klip_river_zulu_exodus_monthly = {
+	trigger = {
+		country_definition = cd:ZUL
+		has_variable = sb_klip_river_punitive_active_var
+		NOT = { c:NAL ?= { is_country_alive = yes } }
+		p:x279045.state.owner = this
+		NOR = {
+			any_diplomatic_play = { is_diplomatic_play_type = dp_sb_klip_river_punitive_expedition }
+			any_scope_war = { diplomatic_play ?= { is_diplomatic_play_type = dp_sb_klip_river_punitive_expedition } }
+		}
+	}
+	effect = { sb_klip_river_finalize_punitive_zulu_victory = yes }
+}
+
 sb_on_natal_story_orphan_monthly = {
 	trigger = {
 		is_country_alive = yes
@@ -96,7 +111,11 @@ sb_on_natal_story_orphan_monthly = {
 			AND = {
 				has_global_variable = sb_natal_story_war_active_global_var
 				has_variable = sb_natal_story_play_scope
-				NOT = { exists = var:sb_natal_story_play_scope }
+				OR = {
+					NOT = { exists = var:sb_natal_story_play_scope }
+					has_global_variable = sb_natal_story_initiator_demand_accepted_global_var
+					has_global_variable = sb_natal_story_target_demand_accepted_global_var
+				}
 			}
 			AND = { container_exists = sb_natal_guns_bargain_generation_state NOT = { sb_natal_story_guns_bargain_generation_is_valid = yes } }
 			AND = { container_exists = sb_natal_refusal_generation_state NOT = { sb_natal_story_refusal_generation_is_valid = yes } }
@@ -107,6 +126,7 @@ sb_on_natal_story_orphan_monthly = {
 		}
 	}
 	effect = {
+		var:sb_natal_story_play_scope ?= { sb_natal_story_finish_enforced_war = yes }
 		sb_natal_story_recover_generation = yes
 		sb_natal_story_recover_terminal_outcome = yes
 	}

@@ -594,6 +594,22 @@ sb_natal_crisis.050 = {
 	}
 }
 
+# Give the engine a tick to finish enforcing the objective before closing its war.
+sb_natal_crisis.097 = {
+	type = country_event
+	hidden = yes
+
+	trigger = {
+		exists = scope:sb_natal_timed_play
+		var:sb_natal_story_play_scope ?= scope:sb_natal_timed_play
+		global_var:sb_natal_story_timed_winner_global_var ?= root
+	}
+
+	immediate = {
+		scope:sb_natal_timed_play = { sb_natal_story_finish_enforced_war = yes }
+	}
+}
+
 # Bounded receipt/generation watchdog. It can arrive on either original
 # participant, including a retagged successor, and performs no story reward.
 sb_natal_crisis.098 = {
@@ -1147,24 +1163,26 @@ sb_natal_crisis.085 = {
 			is_country_alive = yes
 			c:ZUL ?= { is_country_alive = yes is_subject = no has_variable = sb_port_natal_raid_var any_scope_state = { state_region = s:STATE_ZULULAND } }
 			NOT = {
-			country_definition = cd:GBR
-			is_country_alive = yes
-			is_at_war = no
-			is_active_in_diplomatic_play = no
-			aggressive_diplomatic_plays_permitted = yes
-			NOT = { has_truce_with = c:ZUL }
-			NOT = { has_variable = sb_anglo_zulu_pressure_launch_lease_var }
-			NOT = { has_variable = sb_port_natal_british_annex_launch_lease_var }
-			NOT = { has_variable = sb_british_zulu_annex_play_scope }
-			c:ZUL ?= {
-				is_country_alive = yes
-				is_subject = no
-				is_at_war = no
-				is_active_in_diplomatic_play = no
-				has_variable = sb_port_natal_raid_var
-				any_scope_state = { state_region = s:STATE_ZULULAND }
+				AND = {
+					country_definition = cd:GBR
+					is_country_alive = yes
+					is_at_war = no
+					is_active_in_diplomatic_play = no
+					aggressive_diplomatic_plays_permitted = yes
+					NOT = { has_truce_with = c:ZUL }
+					NOT = { has_variable = sb_anglo_zulu_pressure_launch_lease_var }
+					NOT = { has_variable = sb_port_natal_british_annex_launch_lease_var }
+					NOT = { has_variable = sb_british_zulu_annex_play_scope }
+					c:ZUL ?= {
+						is_country_alive = yes
+						is_subject = no
+						is_at_war = no
+						is_active_in_diplomatic_play = no
+						has_variable = sb_port_natal_raid_var
+						any_scope_state = { state_region = s:STATE_ZULULAND }
+					}
+				}
 			}
-		 }
 		}
 		trigger_event = { id = sb_natal_crisis.085 days = 30 popup = yes }
 	}
@@ -2204,6 +2222,7 @@ sb_natal_crisis.116 = {
 		name = sb_natal_crisis.116.a
 		default_option = yes
 		custom_tooltip = sb_natal_refugee_boer_pop_move_tt
+		sb_acknowledge_klip_host_arrival = yes
 		hidden_effect = {
 			sb_trigger_natal_refugee_migration_effect = yes
 		}
@@ -2237,6 +2256,7 @@ sb_natal_crisis.117 = {
 		name = sb_natal_crisis.117.a
 		default_option = yes
 		custom_tooltip = sb_natal_refugee_boer_pop_move_tt
+		sb_acknowledge_klip_host_arrival = yes
 		hidden_effect = {
 			sb_trigger_natal_refugee_migration_effect = yes
 		}

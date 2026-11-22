@@ -315,14 +315,6 @@ sb_on_trek_monthly_pulse_country = {
 			# or sync the active TRN-ORA confederal subject relationship.
 			if = {
 				limit = {
-					country_definition = cd:TRN
-					is_country_alive = yes
-				}
-				sb_martinus_ensure_trn_pretorius_cast = yes
-			}
-
-			if = {
-				limit = {
 					sb_martinus_ora_can_receive_cape_alignment = yes
 				NOT = { has_variable = sb_martinus_cape_alignment_pending_var }
 			}
@@ -817,5 +809,20 @@ sb_on_zpb_monthly_pulse_country = {
 					1 = { trigger_event = { id = sb_boer_conventions.143 days = 120 popup = yes } }
 				}
 			}
+	}
+}
+
+# Queued on Marthinus himself at creation. Evaluate age at delivery.
+sb_marthinus_35th_birthday = {
+	effect = {
+		if = {
+			limit = {
+				has_template = TRN_marthinus_wessel_pretorius
+				is_character_alive = yes
+				age >= 35
+				has_trait = sb_youth
+			}
+			remove_trait = sb_youth
+		}
 	}
 }
