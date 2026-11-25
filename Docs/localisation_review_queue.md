@@ -13,6 +13,18 @@ This is the pending review register for new or changed non-event/JE localisation
 
 | File | Keys | Context |
 | --- | --- | --- |
+| `localization/english/sb_l_english.yml` | `amendment_sb_imperial_administration` | Crown appointments in the Cape and British Natal. |
+| `localization/english/sb_l_english.yml` | `amendment_sb_imperial_administration_desc` | Appointments, their expiry and military staffing. |
+| `localization/english/sb_l_english.yml` | `sb_crown_appointments_reform_lock_tt` | Bureaucracy reform and amendment repeal restriction. |
+| `localization/english/sb_interest_groups_l_english.yml` | `ideology_sb_anglo_colonialism` | Cape and British Natal garrison ideology. |
+| `localization/english/sb_interest_groups_l_english.yml` | `ideology_sb_anglo_colonialism_desc` | The garrisons’ colonial policy. |
+| `localization/english/sb_war_goal_contracts_l_english.yml` | `war_goal_sb_zulu_take_power_type_name` | Zulu civil-war demand. |
+| `localization/english/sb_war_goal_contracts_l_english.yml` | `war_goal_sb_zulu_take_power_type_desc` | Zulu civil-war demand. |
+| `localization/english/sb_war_goal_contracts_l_english.yml` | `war_goal_sb_zulu_take_power` | Zulu civil-war demand. |
+| `localization/english/sb_war_goal_contracts_l_english.yml` | `war_goal_sb_zulu_take_power_desc` | Zulu civil-war demand. |
+| `localization/english/sb_war_goal_contracts_l_english.yml` | `war_goal_sb_zulu_take_power_sway_desc` | Zulu civil-war demand. |
+| `localization/english/sb_cultures_l_english.yml` | `sb_raid_transfer` | Temporary identity during the raid transfer. |
+| `localization/english/sb_bst_l_english.yml` | `sb_bst_raid_ora_tt` | Frontier raid payment, captive eligibility and slavery law. |
 | `localization/english/sb_zulu_glossary_l_english.yml` | `glossary_sb_amabutho` | Zulu glossary pilot title; pending DP prose/render review. |
 | `localization/english/sb_zulu_glossary_l_english.yml` | `glossary_sb_amabutho_desc` | Zulu glossary pilot: age regiments, military/labour service and women's participation; pending DP prose/render review. |
 | `localization/english/sb_zulu_glossary_l_english.yml` | `glossary_sb_amakhosi` | Zulu glossary pilot title; pending DP prose/render review. |
@@ -225,7 +237,7 @@ text explains the internal preservation; the only new key is the modifier name.
 | `localization/english/sb_zululand_settlement_l_english.yml` | `je_sb_zululand_sponsor_usuthu_button` | Chiefdoms movement contest implementation; preserved labels or revised explanation. |
 | `localization/english/sb_zululand_settlement_l_english.yml` | `je_sb_zululand_unload_refugees_button` | Chiefdoms movement contest implementation; preserved labels or revised explanation. |
 | `localization/english/sb_zululand_settlement_l_english.yml` | `je_sb_zululand_unload_refugees_button_desc` | Chiefdoms movement contest implementation; preserved labels or revised explanation. |
-| `localization/english/sb_zululand_settlement_l_english.yml` | `je_sb_zululand_unload_refugees_possible_tt` | Chiefdoms movement contest implementation; preserved labels or revised explanation. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `je_sb_zululand_unload_refugees_possible_tt` | Requires Zulu peasant households in Natal, the Shepstone System and an eligible destination in Zululand. |
 | `localization/english/sb_zululand_settlement_l_english.yml` | `sb_zululand_boer_commitment_bar` | Chiefdoms movement contest implementation; preserved labels or revised explanation. |
 | `localization/english/sb_zululand_settlement_l_english.yml` | `sb_zululand_boer_commitment_bar_high` | Chiefdoms movement contest implementation; preserved labels or revised explanation. |
 | `localization/english/sb_zululand_settlement_l_english.yml` | `sb_zululand_boer_commitment_bar_low` | Chiefdoms movement contest implementation; preserved labels or revised explanation. |
@@ -730,3 +742,48 @@ New/changed general text awaiting DP review (existing reviewed namespaces preser
 | `localization/english/sb_boer_republics_l_english.yml` | `sb_youth` | Youth trait name. Awaiting DP review. |
 | `localization/english/sb_boer_republics_l_english.yml` | `sb_youth_desc` | Youth expiry conditions. Awaiting DP review. |
 | `localization/english/sb_boer_republics_l_english.yml` | `sb_marthinus_groot_boere_mandate` | Appointment popularity modifier. Awaiting DP review. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `subject_type_sb_nrp_protectorate` | Vryheid protectorate, vanilla diplomatic label. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `subject_type_sb_nrp_protectorate_no_icon` | Vryheid protectorate, vanilla diplomatic label. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_nrp_protectorate` | Vryheid protectorate, vanilla diplomatic label. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_nrp_protectorate_action_name` | Vryheid protectorate, vanilla diplomatic label. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_nrp_protectorate_action_propose_name` | Vryheid protectorate, vanilla diplomatic label. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_nrp_protectorate_action_break_name` | Vryheid protectorate, vanilla diplomatic label. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_nrp_protectorate_action_ask_to_break_name` | Vryheid protectorate, vanilla diplomatic label. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_nrp_protectorate_desc` | Vryheid protectorate, vanilla diplomatic label. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_nrp_protectorate_pact_desc` | Vryheid protectorate, vanilla diplomatic label. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_nrp_protectorate_action_notification_name` | Vryheid protectorate, vanilla diplomatic label. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_nrp_protectorate_action_notification_desc` | Vryheid protectorate, vanilla diplomatic label. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_nrp_protectorate_action_notification_break_name` | Vryheid protectorate, vanilla diplomatic label. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_nrp_protectorate_action_notification_break_desc` | Vryheid protectorate, vanilla diplomatic label. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_nrp_protectorate_action_notification_third_party_break_name` | Vryheid protectorate, vanilla diplomatic label. |
+| `localization/english/sb_zululand_settlement_l_english.yml` | `sb_nrp_protectorate_action_notification_third_party_break_desc` | Vryheid protectorate, vanilla diplomatic label. |
+| `localization/english/sb_war_goal_contracts_l_english.yml` | `war_goal_sb_reestablish_nrp_protectorate_type_name` | Vryheid protectorate restoration. |
+| `localization/english/sb_war_goal_contracts_l_english.yml` | `war_goal_sb_reestablish_nrp_protectorate_type_desc` | Vryheid protectorate restoration. |
+| `localization/english/sb_war_goal_contracts_l_english.yml` | `war_goal_sb_reestablish_nrp_protectorate` | Vryheid protectorate restoration. |
+| `localization/english/sb_war_goal_contracts_l_english.yml` | `war_goal_sb_reestablish_nrp_protectorate_desc` | Vryheid protectorate restoration. |
+| `localization/english/sb_namibia_l_english.yml` | `sb_nam_017_completion_tt` | Warren and South West Africa policy rework. |
+| `localization/english/sb_namibia_l_english.yml` | `sb_nam_017_missions_tt` | Warren and South West Africa policy rework. |
+| `localization/english/sb_namibia_l_english.yml` | `sb_nam_017_company_tt` | Warren and South West Africa policy rework. |
+| `localization/english/sb_namibia_l_english.yml` | `sb_nam_017_settler_tt` | Warren and South West Africa policy rework. |
+| `localization/english/sb_namibia_l_english.yml` | `sb_nam_017_ruthless_tt` | Warren and South West Africa policy rework. |
+| `localization/english/sb_namibia_l_english.yml` | `sb_nam_017_swa_tt` | Warren and South West Africa policy rework. |
+| `localization/english/sb_namibia_l_english.yml` | `company_sb_south_west_africa_company` | Warren and South West Africa policy rework. |
+| `localization/english/sb_namibia_l_english.yml` | `company_sb_south_west_africa_company_desc` | Warren and South West Africa policy rework. |
+| `localization/english/sb_namibia_l_english.yml` | `dyn_c_sb_south_west_africa_company` | Warren and South West Africa policy rework. |
+| `localization/english/sb_namibia_l_english.yml` | `dyn_c_sb_south_west_africa_company_adj` | Warren and South West Africa policy rework. |
+| `localization/english/sb_namibia_l_english.yml` | `sb_nam_policy_missions` | Warren and South West Africa policy rework. |
+| `localization/english/sb_namibia_l_english.yml` | `sb_nam_policy_settler` | Warren and South West Africa policy rework. |
+| `localization/english/sb_namibia_l_english.yml` | `sb_nam_policy_ruthless` | Warren and South West Africa policy rework. |
+| `localization/english/sb_namibia_l_english.yml` | `sb_nam_policy_ruthless_sol` | Warren and South West Africa policy rework. |
+| `localization/english/sb_namibia_l_english.yml` | `sb_nam_administrative_capacity` | Warren and South West Africa policy rework. |
+| `localization/english/sb_namibia_l_english.yml` | `sb_nam_company_slot` | Warren and South West Africa policy rework. |
+| `localization/english/sb_bechuanaland_corridor_l_english.yml` | `sb_warren_cape_yield_tt` | Warren and South West Africa policy rework. |
+| `localization/english/sb_bechuanaland_corridor_l_english.yml` | `sb_warren_ask_tt` | Warren and South West Africa policy rework. |
+| `localization/english/sb_bechuanaland_corridor_l_english.yml` | `sb_warren_offer_direct_tt` | Warren and South West Africa policy rework. |
+| `localization/english/sb_bechuanaland_corridor_l_english.yml` | `sb_warren_offer_proxy_tt` | Warren and South West Africa policy rework. |
+| `localization/english/sb_bechuanaland_corridor_l_english.yml` | `sb_warren_offer_neutral_tt` | Warren and South West Africa policy rework. |
+| `localization/english/sb_bechuanaland_corridor_l_english.yml` | `sb_warren_kimberley_yield_tt` | Warren and South West Africa policy rework. |
+| `localization/english/sb_bechuanaland_corridor_l_english.yml` | `sb_warren_stand_firm_tt` | Warren and South West Africa policy rework. |
+| `localization/english/sb_bechuanaland_corridor_l_english.yml` | `dp_sb_bechuanaland_warren_kimberley_locked` | Warren and South West Africa policy rework. |
+| `localization/english/sb_bechuanaland_corridor_l_english.yml` | `dp_sb_bechuanaland_warren_kimberley_locked_desc` | Warren and South West Africa policy rework. |
+| `localization/english/sb_bechuanaland_corridor_l_english.yml` | `dp_sb_bechuanaland_warren_kimberley_locked_tooltip` | Warren and South West Africa policy rework. |

@@ -80,7 +80,11 @@ sb_hamu_boundary_valid = {
 }
 sb_hamu_boundary_answer_valid = {
  has_variable = sb_hamu_boundary_offer_var
- c:NRP ?= { sb_hamu_boundary_valid = yes overlord ?= prev }
+ c:NRP ?= {
+  has_variable = sb_hamu_boundary_open_var sb_hamu_boundary_valid = yes sb_hamu_boundary_authority_current = yes
+  trigger_if = { limit = { exists = scope:sb_hamu_protector } overlord ?= scope:sb_hamu_protector }
+  OR = { AND = { is_player = yes this = prev } AND = { is_player = no overlord ?= prev } }
+ }
 }
 
 # Sponsor scope. Only the authenticated defeated faction may still hold promised land.

@@ -23,8 +23,57 @@ sb_chiefs_weekly_update = {
    limit = { sb_zululand_chiefdoms_situation_active = yes journal_entry_age > var:sb_chiefs_last_weekly_age_var }
    set_variable = { name = sb_chiefs_last_weekly_age_var value = journal_entry_age }
    sb_chiefs_evaluate_contest = yes
+   if = {
+    limit = { sb_zululand_chiefdoms_situation_active = yes }
+    sb_chiefs_ai_review_stops = yes
+    sb_chiefs_sync_intervention_movements = yes
+   }
   }
  }
+}
+
+# The JE reads each movement on its rebel side if that side exists, otherwise on the live country.
+sb_chiefs_save_intervention_sides = {
+ global_var:sb_zululand_live_zul_scope ?= {
+  save_temporary_scope_as = sb_chiefs_royal_side
+  save_temporary_scope_as = sb_chiefs_chiefly_side
+ }
+ container:sb_zululand_chiefdoms_state.var:sb_chiefs_rebels_scope ?= {
+  if = { limit = { is_country_alive = yes var:sb_court_war_alignment_var ?= 1 } save_temporary_scope_as = sb_chiefs_royal_side }
+  else_if = { limit = { is_country_alive = yes var:sb_court_war_alignment_var ?= 2 } save_temporary_scope_as = sb_chiefs_chiefly_side }
+ }
+}
+
+sb_chiefs_sync_intervention_movements = {
+ sb_chiefs_save_intervention_sides = yes
+ global_var:sb_zululand_live_zul_scope ?= { sb_chiefs_sync_country_interventions = yes }
+ container:sb_zululand_chiefdoms_state.var:sb_chiefs_origin_scope ?= {
+  if = { limit = { NOT = { this = global_var:sb_zululand_live_zul_scope } } sb_chiefs_sync_country_interventions = yes }
+ }
+ container:sb_zululand_chiefdoms_state.var:sb_chiefs_rebels_scope ?= {
+  if = { limit = { NOT = { this = global_var:sb_zululand_live_zul_scope } } sb_chiefs_sync_country_interventions = yes }
+ }
+}
+
+sb_chiefs_sync_country_interventions = {
+ every_political_movement = {
+  limit = { is_political_movement_type = movement_sb_zulu_royal }
+  sb_chiefs_sync_movement_modifier = { SIDE = sb_chiefs_royal_side PAYER = NAL FLAG = sb_zululand_policing_active_var MODIFIER = sb_usuthu_policing }
+  sb_chiefs_sync_movement_modifier = { SIDE = sb_chiefs_royal_side PAYER = TRN FLAG = sb_zululand_usuthu_sponsorship_active_var MODIFIER = sb_usuthu_sponsorship }
+  sb_chiefs_sync_movement_modifier = { SIDE = sb_chiefs_royal_side PAYER = TRN FLAG = sb_zululand_boer_volunteers_active_var MODIFIER = sb_usuthu_volunteers }
+ }
+ every_political_movement = {
+  limit = { is_political_movement_type = movement_sb_zulu_chiefly }
+  sb_chiefs_sync_movement_modifier = { SIDE = sb_chiefs_chiefly_side PAYER = NAL FLAG = sb_zululand_chief_patronage_active_var MODIFIER = sb_zululand_chiefly_patronage }
+ }
+}
+
+sb_chiefs_sync_movement_modifier = {
+ if = {
+  limit = { owner ?= scope:$SIDE$ c:$PAYER$ ?= { has_variable = $FLAG$ } }
+  if = { limit = { NOT = { has_modifier = $MODIFIER$ } } add_modifier = { name = $MODIFIER$ } }
+ }
+ else_if = { limit = { has_modifier = $MODIFIER$ } remove_modifier = $MODIFIER$ }
 }
 
 # The movement's native civil_war link identifies the organising object exactly.

@@ -7,6 +7,8 @@ modifier at ±30 points, and retains the 100% restoration threshold. The
 [implementation report](compatibility/chiefdoms_prominence_2026_11_15.md) records
 the changes and verification limits. Alternatives below retain the design reasoning.
 
+The intervention register records the confirmed AI policies for British Natal and Transvaal. [Thirteen Chiefs AI design, 24 November](zulu_chiefdoms_natal_ai_interventions_2026_11_24.md)
+
 ## Decision register
 
 | Item | Status | Position |

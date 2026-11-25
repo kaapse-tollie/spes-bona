@@ -2,9 +2,19 @@
 
 Status: `0.20.0` rebase contract recorded for Victoria 3 `1.14.0` Open Beta 1; every engine-only case remains pending until a fresh runtime pass.
 
-This file preserves the design discussion for rebuilding `sb_natal_interwar.030` and its downstream Zulu-restoration story. The **Decision register** and the OB1 lifecycle addendum below are the authoritative implementation contract; earlier alternatives and later historical working lists are retained for audit context.
+This file preserves the design discussion for rebuilding `sb_natal_interwar.030` and its downstream Zulu-restoration story. The November 2026 Vryheid amendment governs NRP's founding and boundary demand. The decision register and OB1 lifecycle addendum cover the earlier settlement.
 
 > **Implementation warning:** `Docs/natal_zululand_postwar_settlement_proposal.md` is a superseded snapshot that predates the Natal-administered ZUL, shared Chiefdoms Situation, and independent-NRP boundary design. Do not use it as the coding specification.
+
+## Vryheid amendment, 24 November 2026
+
+The Thirteen Chiefs volunteer dispatch announces the departure of 500 people from Boer Servicemen households. Those still in Zululand settle in the Nieuwe Republiek when it is granted. The greater grant contains five provinces. On either the Chiefs or Hamu route the final inland republic keeps **`xE1E455` and `xE882CE`**, including Zululand’s mine in `xE1E455`. The boundary returns `xBE6FEE`, `x904EBE` and `x9E9742` to the territorial beneficiary. [Playtest evidence and current intervention rules](zulu_chiefdoms_natal_ai_interventions_2026_11_24.md)
+
+Both the Thirteen Chiefs settlement and Hamu's bargain establish the Nieuwe Republiek as a protectorate of its Boer sponsor. Vryheid keeps its own government. Lucas Meyer commands the republic when it forms during his adult lifetime. Outside that window, an adult Boer commands it. Meyer led Dinuzulu's Boer volunteers and became president of the Nieuwe Republiek in 1884. [University of Pretoria, “President L. J. Meyer”, pp. 47–48](https://repository.up.ac.za/bitstreams/c2fa7141-24a1-402e-93c5-761d41aca5b6/download#page=1)
+
+The Thirteen Chiefs boundary demand is due 30 days after the grant. Self-governing Natal issues it directly. Britain issues it for Crown-colony Natal. An unrelated war can run while the authorities exchange the demand. A truce with the defender or a conflict across the disputed boundary postpones the letter until a monthly retry. In Hamu's bargain, the monthly check opens once Britain controls the rest of Zululand. Either founding lets the Transvaal player stay in Pretoria or take charge in Vryheid, and the demand follows that choice. In the Thirteen Chiefs settlement, acceptance returns the three coastal districts and starts the 24-month union clock. Refusal commits Pretoria to the protectorate's defence. The diplomatic play waits until its principals can act.
+
+The June–October 1885 autosaves record the land grant on 21 April, a Zulu commandant, a pending boundary demand and British, Natalian and Zulu participation in the Selangor and Siam conflicts. A pending independent Chiefdoms republic in that state can receive its protectorate and a Boer founder at its first boundary review. The February 1886 checkpoint instead has a newly formed protectorate with a generated Boer president. Its next monthly review or the first boundary letter can seat Meyer. Once the first government is confirmed, ordinary succession takes over.
 
 ## Design problem
 
@@ -754,8 +764,8 @@ The incidents should not recalculate economic dependence or bureaucracy. Those v
 - If the claimant dies or is assassinated, apply `10` points of Zibhebhu movement, remove the returned claimant, and make the dynasty-appropriate successor the active uSuthu claimant: Dinuzulu for Cetshwayo's line, the selected son for Mbuyazi's line, and a deliberately invented next-generation successor for the Dingane/Uthumbo line.
 - Uthumbo and that invented successor must both be identified internally and in research notes as speculative characters. Their event prose may present them as people in the game world, but must not claim that either identity is historically verified.
 - If an eligible TRN exists, the successor produces **An uSuthu Appeal to Pretoria**. It may be folded into the claimant-death notification for AI–AI play, but a player TRN receives the request visibly. The appeal is an immediate opportunity for material aid, not a gate on the separate sponsorship or volunteer buttons.
-- An accepted Boer appeal transfers `500` servicemen people from TRN to ZUL, adds `20` points to Boer commitment, and applies `7` points of uSuthu movement. The source must have sufficient servicemen; behavior when fewer than 500 are available remains open.
-- Player TRN receives a genuine choice. Accepting performs the transfer and immediate score effects; declining performs none of them. Neither answer locks **Sponsor the uSuthu** or **Sanction Boer Volunteers**—those situation actions remain independently available while their ordinary conditions are met.
+- A dispatched appeal moves 500 people from a Boer Servicemen pop to royalist-held Zululand, awards 20 commitment and raises target uSuthu Activism by five points, decaying over a year. A smaller donor leaves the appeal pending.
+- Transvaal receives a one-option departure announcement. Sponsorship and the standing volunteer order can be used independently.
 - AI TRN uses situation-aware weights. Strict Historical accepts whenever the material transfer can be performed. Dynamic Historical accepts at `80%` while the uSuthu strictly lead the principal balance and `60%` otherwise; default or declared bankruptcy forces refusal. Disabled uses neutral `50/50` weights. These AI weights never constrain a player TRN.
 - The claimant retains the earlier death/survival rule matrix: player NAL and Dynamic Historical use `80/20`, Strict Historical guarantees death, and Disabled uses `50/50`.
 
@@ -812,8 +822,8 @@ The two-part Nieuwe Republiek prerequisite is **agreed**. It preserves the histo
 DP has selected explicit first-test footprints. DP confirmed that the supplied `939742` identifier means the existing map province `x9E9742`.
 
 - Greater Nieuwe Republiek: `xE1E455 xE882CE xBE6FEE x904EBE x9E9742`.
-- Reduced Nieuwe Republiek after peaceful cutback: `xBE6FEE xE882CE`.
-- Peaceful cutback back to reduced Crown-restored ZUL: `xE1E455 x904EBE x9E9742`.
+- Reduced Nieuwe Republiek after peaceful cutback: `xE1E455 xE882CE`.
+- Peaceful cutback back to reduced Crown-restored ZUL: `xBE6FEE x904EBE x9E9742`.
 
 Both the greater and reduced NRP footprints are connected in the current adjacency manifest. The peaceful cutback restores the three disputed provinces to reduced ZUL. It does **not** annex them to Natal and creates no Natal corridor.
 
@@ -838,7 +848,7 @@ This is more dramatic but considerably more brittle: it requires two rapid provi
 
 This avoids a new country but erases the Nieuwe Republiek's four-year independent existence and turns the volunteer bargain into ordinary SAR expansion. It remains contrary to the research brief and to the agreed requirement that Boer intervention create the republic rather than merely enlarge TRN.
 
-Decision: **B, agreed by DP**. The Boer-backed uSuthu result creates the larger claimed concession as real temporary New Republican territory. A subsequent British boundary settlement cuts it back to the two-province inland Vryheid footprint and restores `xE1E455 x904EBE x9E9742` to reduced ZUL. No part of the accepted cutback goes directly to Natal.
+Decision: **B, agreed by DP**. The Boer-backed uSuthu result creates the larger claimed concession as real temporary New Republican territory. A subsequent British boundary settlement cuts it back to the two-province inland Vryheid footprint and restores `xBE6FEE x904EBE x9E9742` to reduced ZUL. No part of the accepted cutback goes directly to Natal.
 
 ### Autonomy-drift endpoint variants
 
@@ -962,7 +972,7 @@ Agreed flow:
 1. Boer-backed uSuthu victory creates independent NRP in the larger concession and gives it its own ruler, government, flag, colour, and diplomacy.
 2. NRP receives the standard Boer country package and the existing 25-year compact with the stored patron TRN: a defensive pact, reciprocal transit rights, and reciprocal trade privileges. Its Great Trek JE targets `STATE_ZULULAND`.
 3. Exactly 30 days after NRP is created and its Boer compacts are established, the constitutionally appropriate imperial actor demands the recognized boundary from NRP. GBR leads while NAL remains an ordinary British colony; self-governing or independent NAL leads in its own name, with British backing where the imperial relationship still applies.
-4. If NRP accepts, `xE1E455 x904EBE x9E9742` return to reduced ZUL and NRP survives in `xBE6FEE xE882CE`.
+4. If NRP accepts, `xBE6FEE x904EBE x9E9742` return to reduced ZUL and NRP survives in `xE1E455 xE882CE`.
 5. If NRP refuses, TRN receives the defensive-commitment event. Acceptance turns NRP into TRN's existing Boer confederal-partner subject before the locked diplomatic play begins. Refusal breaks the defensive pact, reduces NRP–TRN relations by 50, and leaves NRP as principal. Union with TRN cannot resolve while the boundary demand or war remains active.
 
 The compact is real and visible, and its existing treaty helpers should be reused rather than duplicated. The scripted commitment event owns the transition into confederal subjecthood or the explicit repudiation of the defensive pact, so the two branches cannot leave contradictory military obligations behind.
@@ -1094,7 +1104,7 @@ This pass concerns an ordinary engine-created Zulu cultural secession after NAL 
 - `on_secession_start` supplies NAL as `ROOT` and the uprising country as `scope:target`. SB already detects a ZUL secession in that hook and opens the Boer-aid story.
 - The engine-created ZUL initially inherits NAL's constitutional order. Its restoration package must therefore run after the engine has finished creating the secession country, rather than directly inside the first secession callback.
 - The pre-rebuild accepted-aid effect did not create NRP. It transferred `xE1E455 xE882CE x1A084B xBFA16B x41C070` from `STATE_ZULULAND` to TRN and created a five-year treaty containing military assistance and only 10 units of small arms. The rebuild replaced that legacy surface with greater-NRP creation and the bounded three-year aid package rather than correcting the direct transfer in place.
-- The existing greater-NRP footprint is `xE1E455 xE882CE xBE6FEE x904EBE x9E9742`; the reduced footprint after the imperial boundary settlement is `xBE6FEE xE882CE`.
+- The existing greater-NRP footprint is `xE1E455 xE882CE xBE6FEE x904EBE x9E9742`; the reduced footprint after the imperial boundary settlement is `xE1E455 xE882CE`.
 - Vanilla supports multiple goods-transfer articles in one treaty, so grain and small arms can be represented separately. A treaty `binding_period`, however, is a minimum lock rather than an automatic expiry; a genuinely three-year aid package therefore needs explicit 36-month cleanup.
 - The military contingent is a Dragoons unit, avoiding the incompatible technology requirement attached to Shrapnel Artillery. Artillery is not transferred as treaty goods.
 
@@ -1116,7 +1126,7 @@ flowchart TD
     H --> I
     I -->|"NAL wins"| J["ZUL is reabsorbed; NAL or GBR sends the imperial boundary ultimatum to NRP"]
     I -->|"ZUL wins"| K["ZUL survives and honours the greater NRP concession; no boundary ultimatum"]
-    J -->|"NRP accepts"| L["Reduced NRP keeps xBE6FEE and xE882CE; three disputed provinces return to NAL"]
+    J -->|"NRP accepts"| L["Reduced NRP keeps xE1E455 and xE882CE; three disputed provinces return to NAL"]
     J -->|"NRP refuses"| M["NAL: Annex NRP; NRP: Return State Zululand against NAL"]
 ```
 
@@ -1139,7 +1149,7 @@ flowchart TD
 - Declining reduces TRN's relations with ZUL by 20 and improves its relations with GBR by 5 and NAL by 15.
 - Acceptance is not blocked by a manpower shortfall. It transfers up to 1,000 existing Boer servicemen from TRN to ZUL, using every available eligible person if fewer than 1,000 exist; it never creates people or converts civilian professions to fill the shortfall.
 - If NAL defeats and reabsorbs the Zulu secession after NRP has formed, NAL or GBR sends the imperial boundary ultimatum to NRP. This is a NAL/GBR–NRP postwar issue; defeated ZUL is not recreated and is not a participant.
-- In that Natal-victory boundary settlement, peaceful acceptance cuts NRP back to `xBE6FEE xE882CE` and returns `xE1E455 x904EBE x9E9742` to NAL. A visible NAL event executes and reports the transfer, and a livestock-ranch floor guarantees that the reduced republic retains one ranch. Refusal gives NAL an Annex NRP demand and gives NRP a reciprocal Return State demand for NAL-held `STATE_ZULULAND`. The constitutionally appropriate GBR/NAL actor may open the play, but the territorial war-goal holders remain NAL and NRP.
+- In that Natal-victory boundary settlement, peaceful acceptance cuts NRP back to `xE1E455 xE882CE` and returns `xBE6FEE x904EBE x9E9742` to NAL. A visible NAL event executes and reports the transfer, and a livestock-ranch floor guarantees that the reduced republic retains one ranch. Refusal gives NAL an Annex NRP demand and gives NRP a reciprocal Return State demand for NAL-held `STATE_ZULULAND`. The constitutionally appropriate GBR/NAL actor may open the play, but the territorial war-goal holders remain NAL and NRP.
 - If rebel ZUL wins after TRN has intervened, ZUL honours the land concession that purchased Boer assistance. Greater NRP survives in all five agreed provinces and receives no imperial boundary ultimatum from this branch.
 - The existing Thirteen Chiefdoms/uSuthu NRP boundary chain remains unchanged: its beneficiary is living Crown-restored ZUL and its refusal play retains the already agreed reciprocal ZUL–NRP Return State demands.
 - Player TRN always receives a genuine Accept/Refuse choice when the appeal's territorial gates are satisfied; fiscal distress does not disable either option.
@@ -1174,7 +1184,7 @@ No design choices remain open.
 - The imperial boundary demand is scheduled exactly 30 days after NRP is created and its compact setup completes. It is one-shot and invalidates if the two territorial claimants or their Zululand fragments no longer exist.
 - GBR issues the demand while NAL is an ordinary British colony. Responsible-colony, dominion, and independent NAL issue it themselves; GBR backs a self-governing NAL where the continuing imperial relationship permits.
 - Temporary diplomatic blockers defer the demand. If the selected initiator is dead or permanently invalid, the other eligible GBR/NAL actor substitutes; if neither can act, the demand lapses, NRP permanently keeps the larger concession, and it remains independent without a later scripted TRN-union route.
-- Britain's coastal cutback is resolved through a demand and possible diplomatic confrontation, not automatically. Acceptance cuts NRP back to `xBE6FEE xE882CE` and returns `xE1E455 x904EBE x9E9742` to reduced ZUL. It transfers no province or corridor directly to Natal. On refusal, ZUL and NRP receive reciprocal Return State goals over the other's `STATE_ZULULAND` fragment: a British/ZUL victory extinguishes NRP, while an NRP/TRN victory extinguishes ZUL.
+- Britain's coastal cutback is resolved through a demand and possible diplomatic confrontation, not automatically. Acceptance cuts NRP back to `xE1E455 xE882CE` and returns `xBE6FEE x904EBE x9E9742` to reduced ZUL. It transfers no province or corridor directly to Natal. On refusal, ZUL and NRP receive reciprocal Return State goals over the other's `STATE_ZULULAND` fragment: a British/ZUL victory extinguishes NRP, while an NRP/TRN victory extinguishes ZUL.
 - The boundary demand gives NRP only Accept or Refuse. Refusal is final and immediately asks TRN whether to assume NRP's defence; it does not lead to another NRP backdown choice.
 - AI NRP alone chooses whether the imperial demand is accepted or refused. It evaluates the feasibility of resistance from TRN's strength and network, including—but not being guaranteed by—player control of TRN. Only refusal exposes the support decision to player TRN.
 - The feasibility roll compares `TRN + confederal ORA` against `NAL + ZUL` when NAL is self-governing or independent. While NAL remains an ordinary British colony, the opposing pool is instead `NAL + ZUL + aligned CAP + 10% of GBR`, using army power projection throughout. CAP contributes only if alive and inside Britain's subject hierarchy.
@@ -1203,7 +1213,7 @@ No design choices remain open.
 - The defection event gives Zibhebhu `5` points only if NAL's average Zulu acceptance is at least 50 and its average Zulu SoL is at least ZUL's average Zulu SoL. Failing either test gives uSuthu `5` points.
 - Claimant survival gives uSuthu `7` points. Claimant death gives Zibhebhu `10` points and advances the dynasty-appropriate successor. The earlier death matrix is retained: Player/Dynamic `80/20`, Strict `100/0`, Disabled `50/50`.
 - Uthumbo and the invented successor used for the Dingane/Uthumbo branch are explicitly speculative and must never be labelled as historically attested.
-- An accepted Boer appeal moves 500 servicemen people from TRN to ZUL, adds `20` Boer-commitment progress, and gives uSuthu `7` points.
+- The volunteer announcement records the arrival of 500 people from Boer Servicemen households in Zululand, 20 commitment and five points of temporary target uSuthu Activism.
 - Player TRN chooses whether to answer the appeal. Declining applies no immediate appeal effects but does not lock either recurring Boer situation action.
 - AI TRN uses situation-aware appeal weights: Strict accepts, Dynamic accepts at `80%` while uSuthu leads and `60%` otherwise, and Disabled uses `50/50`; default or declared bankruptcy forces Dynamic refusal.
 - Sponsor the uSuthu costs TRN `£250` weekly, produces `0.25` monthly uSuthu movement, and adds `2` Boer-commitment progress per month. AI activates it with positive reserves or at least `£500` positive weekly cash flow, and stops only when both in debt/deficit and running negative weekly cash flow.
@@ -1277,7 +1287,7 @@ They remain useful balance references. Any that survive must be reassigned expli
 - Activation cooldown, Authority-deficit shutdown, and AI behavior for Natal policing.
 - How Unload Zulu Refugees behaves when ZUL controls too little Zululand to receive the full transfer.
 - Exact claimant-death timing, the successor's radical/organization shock, and whether Boer volunteer sanctioning is locked until that succession.
-- What occurs when TRN has fewer than 500 servicemen available for an accepted Boer appeal.
+- Verify delivery when an initially undersized Boer Servicemen pop first reaches 500.
 - Activation rules and AI safety for sanctioned volunteers, plus validation of the intended `1%` servicemen-mortality modifier semantics in engine.
 - Exact randomized dates for the three guaranteed incidents, whether every one must occur before month 18, and the amount/duration of the relaxed hut-tax payment reduction.
 - The Boer-commitment bar's starting value. Its `0–100` scale, action gains, and requirement for NRP creation are agreed.

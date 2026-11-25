@@ -141,8 +141,9 @@ class PinkMapBechuanalandIntegrationTests(unittest.TestCase):
             "je_sb_bechuanaland_corridor",
         )
 
-        self.assertIn("any_country = {", grant)
-        self.assertIn("has_variable = sb_nam_consolidation_resolved_var", grant)
+        self.assertIn("sb_nam_controls_administration_territory = { ADMINISTRATOR = SWA }", grant)
+        self.assertIn("sb_bechuanaland_british_namibia_precludes_corridor = yes", grant)
+        self.assertNotIn("sb_nam_consolidation_resolved_var", grant)
         self.assertIn("is_subject_of = c:GBR", grant)
         self.assertIn(
             "NOT = { has_global_variable = sb_bechuanaland_corridor_open_global_var }",
@@ -219,8 +220,8 @@ class PinkMapBechuanalandIntegrationTests(unittest.TestCase):
         for country in ("GBR", "CAP"):
             self.assertRegex(
                 british_namibia,
-                rf"c:{country}\s*\?=\s*\{{\s*"
-                r"has_variable\s*=\s*sb_nam_consolidation_resolved_var\s*\}",
+                rf"c:{country}\s*\?=\s*\{{[^{{]*"
+                rf"sb_nam_controls_administration_territory = \{{ ADMINISTRATOR = {country} \}}",
             )
         self.assertIn(
             "NOT = { sb_bechuanaland_british_namibia_precludes_corridor = yes }",

@@ -1,0 +1,290 @@
+﻿# Policy IDs match the four options in sb_nam.017.
+sb_nam_offer_policy_report = {
+	if = {
+		limit = {
+			sb_nam_has_survey_station = yes
+			NOR = {
+				has_variable = sb_nam_policy_report_pending_var
+				has_variable = sb_nam_selected_policy_var
+			}
+		}
+		set_variable = sb_nam_policy_report_pending_var
+		trigger_event = { id = sb_nam.017 popup = yes }
+	}
+}
+
+sb_nam_complete_coastal_survey = {
+	sb_nam_finalize_coastal_expedition_success = yes
+	if = {
+		limit = { sb_nam_has_survey_station = yes }
+		every_scope_character = {
+			limit = { has_variable = expedition_leader_var NOT = { has_trait = explorer } }
+			add_trait = explorer
+		}
+		sb_nam_cleanup_coastal_expedition = yes
+		sb_nam_offer_policy_report = yes
+	}
+	else = { trigger_event = { id = sb_nam.016 popup = yes } }
+}
+
+sb_nam_choose_policy = {
+	if = {
+		limit = { sb_nam_policy_report_is_pending = yes }
+		remove_variable = sb_nam_policy_report_pending_var
+		set_variable = { name = sb_nam_selected_policy_var value = $POLICY$ }
+		if = {
+			limit = { NOT = { var:sb_nam_selected_policy_var = 2 } }
+			set_variable = { name = sb_nam_policy_expiry_var value = game_date }
+			change_variable = { name = sb_nam_policy_expiry_var add = long_modifier_time }
+			sb_nam_sync_regional_policy = yes
+		}
+		sb_nam_try_found_policy_colony = yes
+	}
+}
+
+sb_nam_sync_state_policy = {
+	if = {
+		limit = {
+			owner ?= { has_variable = sb_nam_policy_expiry_var var:sb_nam_policy_expiry_var > game_date }
+		}
+		if = {
+			limit = {
+				owner = { var:sb_nam_selected_policy_var = 1 }
+				NOT = { has_modifier = sb_nam_policy_missions }
+			}
+			add_modifier = { name = sb_nam_policy_missions days = sb_nam_state_policy_days_left }
+		}
+		else_if = {
+			limit = {
+				owner = { var:sb_nam_selected_policy_var = 3 }
+				NOT = { has_modifier = sb_nam_policy_settler }
+			}
+			add_modifier = { name = sb_nam_policy_settler days = sb_nam_state_policy_days_left }
+		}
+		else_if = {
+			limit = {
+				owner = { var:sb_nam_selected_policy_var = 4 }
+				NOT = { has_modifier = sb_nam_policy_ruthless }
+			}
+			add_modifier = { name = sb_nam_policy_ruthless days = sb_nam_state_policy_days_left }
+		}
+	}
+}
+
+sb_nam_sync_regional_policy = {
+	every_scope_state = {
+		limit = { sb_nam_is_policy_region = yes }
+		sb_nam_sync_state_policy = yes
+	}
+}
+
+sb_nam_apply_administrative_capacity = {
+	if = {
+		limit = { NOT = { has_modifier = sb_nam_administrative_capacity } }
+		add_modifier = { name = sb_nam_administrative_capacity months = -1 }
+	}
+}
+
+sb_nam_try_found_policy_colony = {
+	if = {
+		limit = {
+			has_variable = sb_nam_selected_policy_var
+			NOT = { has_variable = sb_nam_policy_colony_founded_var }
+			sb_nam_can_found_policy_colony = yes
+			sb_nam_controls_both_consolidation_ports = yes
+		}
+		save_temporary_scope_as = sb_nam_policy_founder
+		create_country = {
+			tag = SWA
+			origin = scope:sb_nam_policy_founder
+			province = p:xB04050
+		}
+		c:SWA ?= {
+			if = {
+				limit = { p:xB04050.state.owner = THIS }
+				set_variable = { name = sb_nam_policy_founder_var value = scope:sb_nam_policy_founder }
+			}
+		}
+		if = {
+			limit = { sb_nam_seeded_policy_colony_is_pending = yes }
+			trigger_event = { id = sb_nam.018 days = 1 }
+		}
+	}
+}
+
+# Country scope is the sponsor. Only its provisional foothold may be returned.
+sb_nam_reconcile_seeded_policy_colony = {
+	if = {
+		limit = {
+			OR = { p:xDEAA3C.state.owner = THIS p:xDEAA3C.state.owner = c:SWA }
+		}
+		sb_nam_finish_policy_colony = yes
+	}
+	else = {
+		c:SWA = { remove_variable = sb_nam_policy_founder_var }
+		s:STATE_HEREROLAND = {
+			set_owner_of_provinces = { country = PREV provinces = { xB04050 } }
+		}
+	}
+}
+
+# Country scope is the expedition sponsor. The delayed event uses the saved founder.
+sb_nam_finish_policy_colony = {
+	save_temporary_scope_as = sb_nam_policy_founder
+	set_variable = sb_nam_policy_colony_founded_var
+
+	if = {
+		limit = { var:sb_nam_selected_policy_var = 2 }
+		c:SWA = { set_country_type = company }
+		create_diplomatic_pact = { country = c:SWA type = chartered_company }
+	}
+	else = { create_diplomatic_pact = { country = c:SWA type = colony } }
+
+	every_scope_state = {
+		limit = { sb_nam_is_policy_region = yes }
+		set_state_owner = c:SWA
+	}
+
+	c:SWA = {
+		set_variable = {
+			name = sb_nam_selected_policy_var
+			value = scope:sb_nam_policy_founder.var:sb_nam_selected_policy_var
+		}
+		if = {
+			limit = { scope:sb_nam_policy_founder = { has_variable = sb_nam_policy_expiry_var } }
+			set_variable = {
+				name = sb_nam_policy_expiry_var
+				value = scope:sb_nam_policy_founder.var:sb_nam_policy_expiry_var
+			}
+		}
+		scope:sb_nam_policy_founder = {
+			every_primary_culture = {
+				c:SWA = {
+					if = { limit = { NOT = { PREV = { is_primary_culture_of = c:SWA } } } add_primary_culture = PREV }
+				}
+			}
+		}
+		if = {
+			limit = { cu:british = { NOT = { is_primary_culture_of = scope:sb_nam_policy_founder } } }
+			remove_primary_culture = cu:british
+		}
+		set_capital = STATE_HEREROLAND
+		capital = { set_state_type = incorporated }
+		if = {
+			limit = { NOT = { has_technology_researched = sb_namibian_coastal_access } }
+			add_technology_researched = sb_namibian_coastal_access
+		}
+		sb_nam_apply_selected_policy_laws = yes
+		sb_nam_apply_administrative_capacity = yes
+		if = {
+			limit = { var:sb_nam_selected_policy_var = 4 var:sb_nam_policy_expiry_var > game_date }
+			add_modifier = { name = sb_nam_policy_ruthless_sol days = sb_nam_country_policy_days_left }
+		}
+		sb_nam_sync_regional_policy = yes
+	}
+	if = { limit = { has_variable = sb_nam_policy_expiry_var } remove_variable = sb_nam_policy_expiry_var }
+	s:STATE_NAMAQUALAND = { add_claim = c:SWA }
+	s:STATE_HEREROLAND = { add_claim = c:SWA }
+	sb_nam_assign_german_swa_ruler = yes
+
+	if = {
+		limit = { var:sb_nam_selected_policy_var = 2 }
+		sb_nam_establish_swa_company = yes
+	}
+	sb_nam_offer_swa_play_as_to_player_overlord = yes
+}
+
+# SWA country scope, with the founder saved by the administration setup.
+sb_nam_apply_selected_policy_laws = {
+	activate_law = law_type:law_colonial_administration
+	activate_law = law_type:law_subjecthood
+	sb_nam_apply_swa_subjecthood_amendment = yes
+	activate_law = law_type:law_no_workers_rights
+	activate_law = law_type:law_child_labor_allowed
+	activate_law = law_type:law_no_social_security
+	activate_law = law_type:law_migration_controls
+
+	if = {
+		limit = { var:sb_nam_selected_policy_var = 4 }
+		activate_law = law_type:law_autocracy
+		activate_law = law_type:law_outlawed_dissent
+		activate_law = law_type:law_slave_trade
+	}
+	else = {
+		activate_law = law_type:law_oligarchy
+		activate_law = law_type:law_censorship
+	}
+	if = {
+		limit = { OR = { var:sb_nam_selected_policy_var = 1 var:sb_nam_selected_policy_var = 3 } }
+		activate_law = law_type:law_agrarianism
+		activate_law = law_type:law_colonial_resettlement
+	}
+	else = {
+		activate_law = law_type:law_extraction_economy
+		activate_law = law_type:law_colonial_exploitation
+	}
+	if = {
+		limit = {
+			var:sb_nam_selected_policy_var = 1
+			scope:sb_nam_policy_founder = {
+				OR = {
+					has_law_or_variant = law_type:law_state_religion
+					has_law_or_variant = law_type:law_freedom_of_conscience
+				}
+			}
+		}
+		activate_law = law_type:law_state_religion
+		activate_law = law_type:law_religious_schools
+	}
+	else = { activate_law = law_type:law_no_schools }
+	if = {
+		limit = { var:sb_nam_selected_policy_var = 1 has_technology_researched = medical_degrees }
+		activate_law = law_type:law_charitable_health_system
+	}
+	else = { activate_law = law_type:law_no_health_system }
+	if = {
+		limit = { var:sb_nam_selected_policy_var = 1 }
+		activate_law = law_type:law_slavery_banned
+	}
+}
+
+sb_nam_establish_swa_company = {
+	add_modifier = { name = sb_nam_company_slot months = -1 }
+	add_company = company_type:company_sb_south_west_africa_company
+	company:company_sb_south_west_africa_company ?= {
+		set_company_state_region = scope:sb_nam_policy_founder.capital.state_region
+		add_owned_country = c:SWA
+	}
+	if = {
+		limit = { sb_nam_company_is_linked = yes }
+		set_variable = { name = sb_nam_company_payments_left_var value = 120 }
+	}
+	else = { remove_modifier = sb_nam_company_slot }
+}
+
+sb_nam_maintain_swa_company = {
+	if = {
+		limit = { has_variable = sb_nam_company_payments_left_var }
+		add_treasury = -2000
+		change_variable = { name = sb_nam_company_payments_left_var subtract = 1 }
+		if = {
+			limit = { var:sb_nam_company_payments_left_var <= 0 }
+			remove_variable = sb_nam_company_payments_left_var
+		}
+	}
+	if = {
+		limit = { has_modifier = sb_nam_company_slot NOT = { sb_nam_company_is_linked = yes } }
+		remove_modifier = sb_nam_company_slot
+	}
+}
+
+sb_nam_offer_extermination_orders = {
+	if = {
+		limit = {
+			sb_nam_extermination_orders_available = yes
+			NOT = { has_variable = sb_nam_extermination_pending_var }
+		}
+		set_variable = { name = sb_nam_extermination_pending_var months = 4 }
+		trigger_event = { id = sb_nam.201 popup = yes }
+	}
+}

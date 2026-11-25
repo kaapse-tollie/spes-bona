@@ -8,6 +8,7 @@ from pathlib import Path
 import unittest
 
 from tests.test_zulu_institutions_laws import statements
+from tests.test_chiefdoms_refinement import Contest, entity
 from tools.check_override_inventory import find_object
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -84,17 +85,25 @@ class AuthoredMovementHandoffTests(unittest.TestCase):
         self.assertEqual('GBR', runtime.event_root)
 
     def test_chief_patronage_uses_tracked_country_and_never_harms_royal_or_unrelated_movements(self):
-        runtime = InterventionRuntime()
-        runtime.globals['sb_zululand_live_zul_scope'] = 'REV'
-        before = deepcopy(runtime.countries)
-        runtime.call('sb_zululand_start_chief_patronage')
-        self.assertEqual({'sb_zululand_chiefly_patronage'}, runtime.countries['REV']['movements'][0]['modifiers'])
-        self.assertEqual(before['REV']['movements'][1:], runtime.countries['REV']['movements'][1:])
-        self.assertEqual(before['ZUL'], runtime.countries['ZUL'])
-        self.assertEqual(before['GBR'], runtime.countries['GBR'])
-        runtime.call('sb_zululand_stop_chief_patronage')
-        runtime.call('sb_zululand_stop_chief_patronage')
-        self.assertEqual(before, runtime.countries)
+        runtime = Contest()
+        successor = entity('REV', alive=True)
+        runtime.globals['sb_zululand_live_zul_scope'] = successor
+        runtime.scopes['root'] = runtime.britain
+        types = ('movement_sb_zulu_chiefly', 'movement_sb_zulu_royal', 'movement_modernizer')
+        for country in (successor, runtime.zul):
+            country['movements'] = [entity(t, owner=country, movement_type=t, modifiers=set(),
+                                           support=.23, activism=.64) for t in types]
+        runtime.run('sb_zululand_start_chief_patronage', runtime.nal)
+        self.assertEqual([{'sb_zululand_chiefly_patronage'}, set(), set()],
+                         [m['modifiers'] for m in successor['movements']])
+        self.assertTrue(all(not m['modifiers'] for m in runtime.zul['movements']))
+        for _ in range(2):
+            runtime.run('sb_zululand_stop_chief_patronage', runtime.nal)
+        for country in (successor, runtime.zul):
+            self.assertEqual([(set(), .23, .64)] * 3,
+                             [(m['modifiers'], m['support'], m['activism']) for m in country['movements']])
+        self.assertFalse(runtime.nal['modifiers'])
+        self.assertEqual({}, runtime.britain['vars'])
 
     def test_retired_native_mutation_and_fixed_lobbies_are_absent(self):
         source = EFFECTS.read_text(encoding='utf-8-sig')

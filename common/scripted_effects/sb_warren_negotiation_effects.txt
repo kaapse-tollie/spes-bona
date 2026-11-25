@@ -1,0 +1,234 @@
+﻿# The Corridor owns the reservation. Each dispatch has its own sequence number,
+# including an unbacked replacement for a pledge that is no longer available.
+sb_bechuanaland_open_warren_decision = {
+	sb_bechuanaland_reserve_warren_decision = yes
+	container:sb_bechuanaland_corridor_state = {
+		set_variable = { name = sb_warren_phase_var value = $PHASE$ }
+		set_variable = { name = sb_warren_choice_window_var months = 4 }
+		if = { limit = { NOT = { has_variable = sb_warren_sequence_var } } set_variable = { name = sb_warren_sequence_var value = 0 } }
+		change_variable = { name = sb_warren_sequence_var add = 1 }
+	}
+	save_scope_value_as = {
+		name = sb_warren_event_sequence
+		value = container:sb_bechuanaland_corridor_state.var:sb_warren_sequence_var
+	}
+}
+
+sb_bechuanaland_store_warren_demand = {
+	save_temporary_scope_as = sb_warren_demanded_state
+	owner = { save_temporary_scope_as = sb_warren_demanded_owner }
+	container:sb_bechuanaland_corridor_state = {
+		set_variable = { name = sb_warren_$DEMAND$_state value = scope:sb_warren_demanded_state }
+		set_variable = { name = sb_warren_$DEMAND$_owner value = scope:sb_warren_demanded_owner }
+	}
+}
+
+sb_bechuanaland_start_warren_negotiation = {
+	if = {
+		limit = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_warren_gbr_source_var } }
+		s:STATE_BECHUANALAND = {
+			random_scope_state = {
+				limit = { num_provinces >= 1 }
+				sb_bechuanaland_store_warren_demand = { DEMAND = bechuanaland }
+			}
+		}
+		s:STATE_GRIQUALAND_WEST = {
+			random_scope_state = {
+				limit = { num_provinces >= 1 }
+				sb_bechuanaland_store_warren_demand = { DEMAND = griqualand }
+			}
+		}
+	}
+	else = {
+		s:STATE_BECHUANALAND.region_state:SGO ?= {
+			sb_bechuanaland_store_warren_demand = { DEMAND = bechuanaland }
+		}
+	}
+	if = {
+		limit = { sb_bechuanaland_warren_demand_is_current = yes }
+		random_country = {
+			limit = { sb_bechuanaland_swa_active_sponsor = yes }
+			save_temporary_scope_as = sb_warren_sponsor
+			container:sb_bechuanaland_corridor_state = {
+				set_variable = { name = sb_warren_sponsor_scope value = scope:sb_warren_sponsor }
+			}
+		}
+		if = {
+			limit = { NOT = { sb_bechuanaland_warren_sponsor_is_current = yes } }
+			sb_bechuanaland_send_warren_answer = { OFFER = 0 }
+		}
+		else_if = {
+			limit = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_warren_gbr_source_var } }
+			sb_bechuanaland_consult_warren_sponsor = yes
+		}
+		else = {
+			sb_bechuanaland_open_warren_decision = { PHASE = 1 }
+			container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_warren_defender_scope = {
+				trigger_event = { id = sb_bechuanaland_corridor.011 days = 3 popup = yes }
+			}
+		}
+	}
+	else = { sb_bechuanaland_cancel_warren_negotiation = yes }
+}
+
+sb_bechuanaland_consult_warren_sponsor = {
+	if = {
+		limit = { sb_bechuanaland_warren_sponsor_is_current = yes }
+		sb_bechuanaland_open_warren_decision = { PHASE = 2 }
+		container:sb_bechuanaland_corridor_state.var:sb_warren_sponsor_scope = {
+			trigger_event = { id = sb_bechuanaland_corridor.012 days = 3 popup = yes }
+		}
+	}
+	else = { sb_bechuanaland_send_warren_answer = { OFFER = 0 } }
+}
+
+sb_bechuanaland_send_warren_answer = {
+	if = {
+		limit = {
+			NOT = { sb_bechuanaland_warren_sponsor_is_current = yes }
+			container:sb_bechuanaland_corridor_state = { has_variable = sb_warren_sponsor_scope }
+		}
+		container:sb_bechuanaland_corridor_state = { remove_variable = sb_warren_sponsor_scope }
+	}
+	container:sb_bechuanaland_corridor_state = { set_variable = { name = sb_warren_offer_var value = $OFFER$ } }
+	sb_bechuanaland_open_warren_decision = { PHASE = 3 }
+	container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_warren_defender_scope = {
+		trigger_event = { id = sb_bechuanaland_corridor.013 days = 1 popup = yes }
+	}
+}
+
+sb_bechuanaland_close_warren_negotiation = {
+	container:sb_bechuanaland_corridor_state ?= {
+		if = { limit = { has_variable = sb_warren_phase_var } remove_variable = sb_warren_phase_var }
+		if = { limit = { has_variable = sb_warren_choice_window_var } remove_variable = sb_warren_choice_window_var }
+	}
+	sb_bechuanaland_finish_warren_attempt = yes
+	sb_bechuanaland_clear_escalation_decision = yes
+}
+
+sb_bechuanaland_cancel_warren_negotiation = {
+	sb_bechuanaland_close_warren_negotiation = yes
+	sb_bechuanaland_reset_warren_attempt_country_flags = yes
+	container:sb_bechuanaland_corridor_state ?= {
+		if = { limit = { has_variable = sb_warren_launch_confirmed_var } remove_variable = sb_warren_launch_confirmed_var }
+		if = { limit = { has_variable = sb_warren_sponsor_scope } remove_variable = sb_warren_sponsor_scope }
+		if = { limit = { has_variable = sb_warren_offer_var } remove_variable = sb_warren_offer_var }
+		if = { limit = { has_variable = sb_warren_bechuanaland_state } remove_variable = sb_warren_bechuanaland_state }
+		if = { limit = { has_variable = sb_warren_bechuanaland_owner } remove_variable = sb_warren_bechuanaland_owner }
+		if = { limit = { has_variable = sb_warren_griqualand_state } remove_variable = sb_warren_griqualand_state }
+		if = { limit = { has_variable = sb_warren_griqualand_owner } remove_variable = sb_warren_griqualand_owner }
+	}
+}
+
+sb_bechuanaland_accept_warren_terms = {
+	sb_bechuanaland_close_warren_negotiation = yes
+	if = {
+		limit = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_warren_gbr_source_var } }
+		container:sb_bechuanaland_corridor_state.var:sb_warren_bechuanaland_state = { set_state_owner = c:CAP }
+		container:sb_bechuanaland_corridor_state.var:sb_warren_griqualand_state = { set_state_owner = c:CAP }
+		sb_cap_ai_incorporate_griqualand_west = yes
+	}
+	else = { c:CAP = { annex = c:SGO } }
+	sb_bechuanaland_set_british_crisis_victory = yes
+}
+
+sb_bechuanaland_repair_warren_negotiation = {
+	if = {
+		limit = { container:sb_bechuanaland_corridor_state ?= { has_variable = sb_warren_phase_var } }
+		if = {
+			limit = { NOT = { sb_bechuanaland_warren_demand_is_current = yes } }
+			sb_bechuanaland_cancel_warren_negotiation = yes
+		}
+		else_if = {
+			limit = {
+				NOT = { sb_bechuanaland_warren_sponsor_is_current = yes }
+				container:sb_bechuanaland_corridor_state = {
+					OR = { var:sb_warren_phase_var < 3 var:sb_warren_offer_var > 0 }
+				}
+			}
+			sb_bechuanaland_send_warren_answer = { OFFER = 0 }
+		}
+		else_if = {
+			limit = {
+				container:sb_bechuanaland_corridor_state = {
+					var:sb_warren_phase_var = 2
+					NOT = { has_variable = sb_warren_choice_window_var }
+				}
+			}
+			sb_bechuanaland_send_warren_answer = { OFFER = 0 }
+		}
+		else_if = {
+			limit = { container:sb_bechuanaland_corridor_state = { NOT = { has_variable = sb_warren_choice_window_var } } }
+			sb_bechuanaland_accept_warren_terms = yes
+		}
+	}
+}
+
+sb_bechuanaland_stand_firm_over_warren = {
+	sb_bechuanaland_close_warren_negotiation = yes
+	container:sb_bechuanaland_corridor_state = {
+		set_variable = sb_warren_launch_confirmed_var
+		set_variable = sb_bechuanaland_crisis_escalation_pending_var
+		if = {
+			limit = { var:sb_warren_offer_var = 1 }
+			set_variable = sb_bechuanaland_crisis_direct_route_var
+		}
+		else_if = {
+			limit = { var:sb_warren_offer_var = 2 }
+			set_variable = sb_bechuanaland_crisis_proxy_route_var
+		}
+		if = {
+			limit = { var:sb_warren_offer_var > 0 }
+			set_variable = { name = sb_bechuanaland_crisis_swa_overlord_scope value = var:sb_warren_sponsor_scope }
+			set_variable = sb_bechuanaland_crisis_influence_deferred_var
+		}
+	}
+	if = {
+		limit = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_warren_gbr_source_var } }
+		sb_bechuanaland_launch_kimberley_warren = yes
+	}
+	else_if = {
+		limit = { container:sb_bechuanaland_corridor_state = { var:sb_warren_offer_var = 0 } }
+		container:sb_bechuanaland_corridor_state = { remove_variable = sb_bechuanaland_crisis_escalation_pending_var }
+		sb_bechuanaland_start_cap_sgo_annex_war = yes
+	}
+	else = {
+		sb_bechuanaland_refresh_crisis_launch_participants = yes
+		if = {
+			limit = { container:sb_bechuanaland_corridor_state = { var:sb_warren_offer_var = 1 } }
+			sb_bechuanaland_launch_warren_direct_crisis = yes
+		}
+		else = { sb_bechuanaland_launch_warren_proxy_crisis = yes }
+	}
+	if = {
+		limit = { container:sb_bechuanaland_corridor_state ?= { has_variable = sb_warren_launch_confirmed_var } }
+		sb_bechuanaland_cancel_warren_negotiation = yes
+	}
+}
+
+sb_bechuanaland_apply_confirmed_warren_offer = {
+	if = {
+		limit = { container:sb_bechuanaland_corridor_state ?= { has_variable = sb_warren_launch_confirmed_var } }
+		container:sb_bechuanaland_corridor_state = { remove_variable = sb_warren_launch_confirmed_var }
+		if = {
+			limit = { sb_bechuanaland_warren_sponsor_is_current = yes }
+			container:sb_bechuanaland_corridor_state.var:sb_warren_sponsor_scope = {
+				if = {
+					limit = { container:sb_bechuanaland_corridor_state = { var:sb_warren_offer_var = 1 } }
+					change_infamy = 15
+					change_relations = { country = c:GBR value = -20 }
+				}
+				else_if = {
+					limit = { container:sb_bechuanaland_corridor_state = { var:sb_warren_offer_var = 2 } }
+					change_infamy = 5
+					change_relations = { country = c:GBR value = -5 }
+				}
+				else = {
+					change_relations = { country = c:GBR value = 10 }
+					sb_bechuanaland_shift_boer_influence_5 = yes
+					add_modifier = { name = sb_prestige_loss_small months = 120 }
+				}
+			}
+		}
+	}
+}

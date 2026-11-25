@@ -1,0 +1,51 @@
+﻿on_become_subject = { on_actions = { sb_on_crown_relationship_changed } }
+on_become_independent = { on_actions = { sb_on_crown_relationship_changed } }
+on_monthly_pulse_country = { on_actions = { sb_check_crown_administration } }
+
+sb_on_crown_relationship_changed = {
+	trigger = { sb_is_crown_garrison_country = yes }
+	effect = {
+		if = {
+			limit = {
+				has_variable = sb_british_garrison_var
+				is_subject = yes
+				NOT = { is_direct_subject_of = c:GBR }
+			}
+			sb_stand_down_british_garrison = yes
+		}
+		else = {
+			# A same-overlord pact replacement can briefly leave the colony independent.
+			trigger_event = { on_action = sb_check_crown_administration days = 1 }
+		}
+	}
+}
+
+sb_check_crown_administration = {
+	trigger = { sb_is_crown_garrison_country = yes }
+	effect = {
+		sb_migrate_legacy_crown_administration = yes
+		if = {
+			limit = {
+				has_variable = sb_british_garrison_var
+				NOT = { is_direct_subject_of = c:GBR }
+			}
+			sb_stand_down_british_garrison = yes
+		}
+		else_if = {
+			limit = {
+				has_variable = sb_crown_appointments_var
+				is_direct_subject_of = c:GBR
+			}
+			if = {
+				limit = {
+					OR = {
+						is_subject_type = subject_type_sb_responsible_colony
+						is_subject_type = subject_type_sb_responsible_colony_monarchy
+					}
+				}
+				sb_end_crown_appointments = yes
+			}
+			else = { sb_uphold_crown_appointments = yes }
+		}
+	}
+}

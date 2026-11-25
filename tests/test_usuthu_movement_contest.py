@@ -70,11 +70,10 @@ class UsuthuMovementContestTests(unittest.TestCase):
         for forced in ('create_political_lobby','add_lobby_member','royalist_networks','create_political_movement'):
             self.assertNotIn(forced,setup)
         patron=object_block('common/scripted_effects/sb_usuthu_politics_effects.txt','sb_zululand_start_chief_patronage')
-        self.assertIn('movement_sb_zulu_chiefly',patron)
-        self.assertNotIn('movement_sb_zulu_royal',patron)
+        self.assertIn('sb_chiefs_sync_intervention_movements = yes',patron)
         for action in ('policing','usuthu_sponsorship','boer_volunteers'):
             for op in ('start','stop'):
-                self.assertIn('movement_sb_zulu_royal',object_block(EFFECTS,f'sb_zululand_{op}_{action}'))
+                self.assertIn('sb_chiefs_sync_intervention_movements = yes',object_block(EFFECTS,f'sb_zululand_{op}_{action}'))
         mark=object_block('common/scripted_effects/sb_usuthu_politics_effects.txt','sb_zululand_mark_boer_commitment')
         self.assertIn('>= 100',mark)
         self.assertNotIn('stop_',mark)
@@ -98,7 +97,8 @@ class UsuthuMovementContestTests(unittest.TestCase):
         self.assertNotIn('gold_reserves >=',event)
         self.assertGreaterEqual(event.count('has_variable = sb_zululand_bribe_open_var'),3)
         self.assertEqual(2,event.count('sb_zululand_neutral_chief = yes'))
-        self.assertIn('add_treasury = sb_zululand_bribe_payment',event)
+        self.assertIn('name = sb_chiefs_payment value = sb_zululand_bribe_payment',event)
+        self.assertLess(event.index('sb_zululand_close_bribe_offer = yes'),event.index('add_treasury = scope:sb_chiefs_payment'))
         self.assertIn('default_option = yes',event)
         neutral = object_block(TRIGGERS,'sb_zululand_neutral_chief')
         self.assertIn('owner ?= global_var:sb_zululand_live_zul_scope',neutral)

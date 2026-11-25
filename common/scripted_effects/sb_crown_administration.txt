@@ -1,0 +1,130 @@
+﻿# Country scope throughout, including when Britain is the event root.
+sb_establish_crown_administration = {
+	if = {
+		limit = { NOT = { has_variable = sb_crown_administration_initialized_var } }
+		set_variable = sb_crown_administration_initialized_var
+		set_variable = sb_british_garrison_var
+		set_variable = sb_crown_appointments_var
+		sb_apply_british_garrison_identity = yes
+		sb_uphold_crown_appointments = yes
+	}
+}
+
+sb_uphold_crown_appointments = {
+	if = {
+		limit = { NOT = { has_law = law_type:law_military_bureaucrats } }
+		activate_law = law_type:law_military_bureaucrats
+	}
+	active_law:lawgroup_bureaucracy ?= {
+		if = {
+			limit = { NOT = { has_amendment = amendment_type:amendment_sb_imperial_administration } }
+			add_amendment = {
+				type = amendment_sb_imperial_administration
+				sponsor = prev.ig:ig_armed_forces
+			}
+		}
+	}
+}
+
+sb_end_crown_appointments = {
+	if = {
+		limit = { has_variable = sb_crown_appointments_var }
+		remove_variable = sb_crown_appointments_var
+		# Honour the protected law at a British grant. After an actual change
+		# of overlord the country already controls its own bureaucracy.
+		if = {
+			limit = {
+				is_direct_subject_of = c:GBR
+				is_subject_type = subject_type_colony
+				NOT = { has_law = law_type:law_military_bureaucrats }
+			}
+			activate_law = law_type:law_military_bureaucrats
+		}
+		every_law = {
+			limit = { type = law_type:law_military_bureaucrats }
+			every_scope_amendment = {
+				limit = { type = amendment_type:amendment_sb_imperial_administration }
+				remove_amendment = yes
+			}
+		}
+	}
+}
+
+sb_stand_down_british_garrison = {
+	sb_end_crown_appointments = yes
+	if = {
+		limit = { has_variable = sb_british_garrison_var }
+		remove_variable = sb_british_garrison_var
+	}
+	ig:ig_armed_forces ?= {
+		set_interest_group_name = ig_armed_forces
+		if = {
+			limit = { has_ideology = ideology:ideology_sb_imperialist }
+			remove_ideology = ideology_sb_imperialist
+		}
+		if = {
+			limit = { has_ideology = ideology:ideology_sb_anglo_colonialism }
+			remove_ideology = ideology_sb_anglo_colonialism
+		}
+		if = {
+			limit = { has_ideology = ideology:ideology_colonialist }
+			remove_ideology = ideology_colonialist
+		}
+		if = {
+			limit = { has_ideology = ideology:ideology_patriotic }
+			remove_ideology = ideology_patriotic
+		}
+		if = {
+			limit = { NOT = { has_ideology = ideology:ideology_jingoist } }
+			add_ideology = ideology_jingoist
+		}
+		if = {
+			limit = { NOT = { has_ideology = ideology:ideology_loyalist } }
+			add_ideology = ideology_loyalist
+		}
+		if = {
+			limit = { NOT = { has_ideology = ideology:ideology_militarist } }
+			add_ideology = ideology_militarist
+		}
+	}
+}
+
+# Temporary pre-amendment save conversion. See the workspace TODO register.
+sb_migrate_legacy_crown_administration = {
+	if = {
+		limit = {
+			sb_is_crown_garrison_country = yes
+			is_country_alive = yes
+			NOT = { has_variable = sb_crown_administration_initialized_var }
+		}
+		set_variable = sb_crown_administration_initialized_var
+		if = {
+			limit = { has_law = law_type:law_sb_imperial_administration }
+			if = {
+				limit = {
+					is_direct_subject_of = c:GBR
+					sb_is_ordinary_colonial_subject = yes
+				}
+				set_variable = sb_crown_appointments_var
+				sb_uphold_crown_appointments = yes
+			}
+			else = { activate_law = law_type:law_military_bureaucrats }
+		}
+		# The old start hook could give British Natal the Boer platform again.
+		if = {
+			limit = { c:NAL ?= this }
+			ig:ig_armed_forces ?= {
+				if = {
+					limit = { has_ideology = ideology:ideology_sb_boer_commando_republicanism }
+					remove_ideology = ideology_sb_boer_commando_republicanism
+				}
+			}
+		}
+		if = {
+			limit = { is_direct_subject_of = c:GBR }
+			set_variable = sb_british_garrison_var
+			sb_apply_british_garrison_identity = yes
+		}
+		else = { sb_stand_down_british_garrison = yes }
+	}
+}

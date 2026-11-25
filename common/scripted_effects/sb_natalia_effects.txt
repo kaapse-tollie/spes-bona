@@ -278,8 +278,16 @@ sb_apply_natalia_boer_republic_setup = {
 # a Boer corridor victory without replaying starting tech, an 1840 election,
 # the Great Trek journal, or a new twenty-year British truce.
 sb_restore_natalia_after_boer_corridor_victory = {
+	# A held settlement may be the first action in a pre-amendment save.
+	sb_migrate_legacy_crown_administration = yes
 	random_scope_character = {
-		limit = { has_variable = sb_martin_west_var }
+		limit = {
+			has_variable = sb_martin_west_var
+			NAND = {
+				owner = { has_variable = sb_crown_administration_initialized_var }
+				interest_group ?= { is_interest_group_type = ig_armed_forces }
+			}
+		}
 		transfer_character = c:GBR
 	}
 	if = {
@@ -318,7 +326,10 @@ sb_restore_natalia_after_boer_corridor_victory = {
 	sb_apply_boer_commandant_general_baseline = yes
 	activate_law = law_type:law_national_supremacy
 	sb_ensure_boer_supremacist_movement = yes
-	activate_law = law_type:law_elected_bureaucrats
+	if = {
+		limit = { NOT = { has_variable = sb_crown_administration_initialized_var } }
+		activate_law = law_type:law_elected_bureaucrats
+	}
 	activate_law = law_type:law_agrarianism
 	activate_law = law_type:law_land_based_taxation
 	activate_law = law_type:law_homesteading

@@ -24,7 +24,7 @@ GREATER_NRP_PROVINCES = {
     "x904EBE",
     "x9E9742",
 }
-REDUCED_NRP_PROVINCES = {"xBE6FEE", "xE882CE"}
+REDUCED_NRP_PROVINCES = {"xE1E455", "xE882CE"}
 
 
 def text(path: str) -> str:
@@ -463,15 +463,23 @@ class ZululandPostwarSettlementTests(unittest.TestCase):
 
         self.assertEqual(GREATER_NRP_PROVINCES, province_values(finalize))
         self.assertNotIn("STATE_NATAL", finalize)
-        returned = province_values(cutback)
+        returned = province_values(object_block(path, "sb_nrp_return_boundary_districts"))
         self.assertEqual(GREATER_NRP_PROVINCES - REDUCED_NRP_PROVINCES, returned)
-        for province in REDUCED_NRP_PROVINCES:
-            self.assertIn(f"p:{province}.state.owner = ROOT", reduced)
-        for province in GREATER_NRP_PROVINCES - REDUCED_NRP_PROVINCES:
-            self.assertIn(
-                f"p:{province}.state.owner = {{ NOT = {{ this = ROOT }} }}",
-                reduced,
-            )
+        # Natal acknowledges the cutback and TRN answers the later union petition.
+        # Both predicates must read Vryheid's land even with either foreign event root.
+        from tests.test_zulu_later_court import LaterCourtRuntime
+        from tests.test_zulu_institutions_laws import statements
+        greater = object_block("common/scripted_triggers/sb_zululand_settlement_triggers.txt",
+                               "sb_nrp_is_greater_republic")
+        rt = LaterCourtRuntime()
+        nrp = rt.countries["c:NRP"] = {"id": "NRP", "vars": {}}
+        for root in (rt.country, rt.countries["c:NAL"], rt.sponsor, nrp):
+            rt.scopes["root"] = root
+            for owned in (GREATER_NRP_PROVINCES, REDUCED_NRP_PROVINCES, set()):
+                for province in GREATER_NRP_PROVINCES:
+                    rt.provinces[province]["state"]["owner"] = nrp if province in owned else rt.country
+                self.assertEqual(owned == GREATER_NRP_PROVINCES, rt.condition(statements(greater), nrp))
+                self.assertEqual(owned == REDUCED_NRP_PROVINCES, rt.condition(statements(reduced), nrp))
         self.assertIn("origin = c:TRN", create)
         self.assertIn("on_created = {", create)
         self.assertIn("c:NAL = { sb_nrp_finalize_greater_republic = yes }", create)
@@ -723,12 +731,15 @@ class ZululandPostwarSettlementTests(unittest.TestCase):
             "sb_nrp_select_boundary_initiator",
         )
 
-        # NRP (and Crown-restored ZUL on that route) must be at peace, but a
-        # global British or Natal war must not hold this regional demand forever.
-        self.assertEqual(2, trigger.count("is_at_war = no"))
-        self.assertNotIn("is_at_war = no", selector)
-        self.assertIn("is_active_in_diplomatic_play = no", trigger)
-        self.assertIn("is_active_in_diplomatic_play = no", selector)
+        for country in ("c:NAL", "c:GBR"):
+            self.assertIn(country + " ?= { sb_nrp_can_issue_boundary_demand = yes }", trigger)
+            self.assertIn(country + " ?= { sb_nrp_can_issue_boundary_demand = yes }", selector)
+        self.assertIn("sb_nrp_at_peace_on_boundary = yes", trigger)
+        launch = object_block(
+            "common/scripted_triggers/sb_zululand_settlement_triggers.txt",
+            "sb_nrp_boundary_current_launch_authority",
+        )
+        self.assertIn("is_active_in_diplomatic_play = no", launch)
 
     def test_direct_rebellion_boundary_targets_natal_without_changing_the_crown_route(self):
         path = "common/scripted_effects/sb_zululand_settlement_effects.txt"
@@ -749,10 +760,9 @@ class ZululandPostwarSettlementTests(unittest.TestCase):
         )
 
         self.assertIn("sb_nrp_direct_annexation_rebellion_var", cutback)
-        self.assertIn("country = c:NAL", cutback)
-        self.assertIn("country = global_var:sb_zululand_live_zul_scope", cutback)
-        for province in ("xE1E455", "x904EBE", "x9E9742"):
-            self.assertIn(province, cutback)
+        self.assertIn("c:NAL = { sb_nrp_return_boundary_districts = yes }", cutback)
+        self.assertIn("global_var:sb_zululand_live_zul_scope = { sb_nrp_return_boundary_districts = yes }", cutback)
+        self.assertEqual({"xBE6FEE", "x904EBE", "x9E9742"}, province_values(object_block(path, "sb_nrp_return_boundary_districts")))
 
         self.assertIn("type = annex_country", goals)
         self.assertIn("holder = c:NAL", goals)

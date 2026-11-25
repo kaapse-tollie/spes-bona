@@ -73,6 +73,14 @@ class ScriptedRulerRetentionTests(unittest.TestCase):
         guns = object_block(NATAL, 'sb_found_natalia_after_guns_bargain_rejection')
         self.assertIn('sb_found_natalia_peacefully = yes', guns)
 
+    def test_vryheid_protects_the_founder_before_it_commissions_its_ruler(self):
+        path = 'common/scripted_effects/sb_zululand_settlement_effects.txt'
+        appointment = object_block(path, 'sb_nrp_install_founding_commandant')
+        self.assert_protected(appointment, 'NRP', 'NRP')
+        self.assertLess(appointment.index(GUARD), appointment.index('create_character ='))
+        setup = object_block(path, 'sb_nrp_apply_boer_republic_setup')
+        self.assertLess(setup.index('sb_nrp_install_founding_commandant'), setup.index('sb_apply_boer_republic_spawn_setup'))
+
     def test_albany_guards_the_colony_for_transferred_and_created_godlonton(self):
         option = named_option(object_block('events/sb_cape_events.txt', 'sb_cape.200'),
                               'sb_cape.200.a')
@@ -109,7 +117,6 @@ class ScriptedRulerRetentionTests(unittest.TestCase):
             (NATAL, 'sb_restore_natalia_after_boer_corridor_victory'),
             ('common/scripted_effects/sb_subject_autonomy_effects.txt',
              'sb_apply_responsible_colony_governance_from_overlord'),
-            ('common/scripted_effects/sb_zululand_settlement_effects.txt', 'sb_nrp_apply_boer_republic_setup'),
             ('common/scripted_effects/sb_zululand_settlement_effects.txt', 'sb_zululand_mark_and_exile_royal_house'),
             ('common/scripted_effects/sb_zululand_settlement_effects.txt', 'sb_zululand_finalize_political_contest'),
             ('events/sb_boer_republics_events.txt', 'sb_boer_republics.130'),

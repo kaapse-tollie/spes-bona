@@ -358,3 +358,45 @@ sb_cleanup_exact_bst_gun_war_runtime = {
 		}
 	}
 }
+
+# Victim's Vrystaat state. Re-enter the state after each pop operation because
+# conversion or a whole-cohort move can consume the previous pop's object.
+sb_bst_take_raid_captives = {
+	c:BST.capital = { save_temporary_scope_as = sb_bst_raid_destination }
+	# Use SB's vanilla staging culture in existing campaigns. A reserved marker
+	# permits the same transfer if real Prometheans already live at either end.
+	if = {
+		limit = {
+			NOT = { any_scope_pop = { culture = cu:promethean } }
+			scope:sb_bst_raid_destination = { NOT = { any_scope_pop = { culture = cu:promethean } } }
+		}
+		cu:promethean = { save_temporary_scope_as = sb_bst_raid_marker }
+	}
+	else = { cu:sb_raid_transfer = { save_temporary_scope_as = sb_bst_raid_marker } }
+	ordered_scope_pop = {
+		limit = { sb_bst_eligible_raid_donor = yes }
+		order_by = total_size
+		position = 0
+		culture = { save_temporary_scope_as = sb_bst_raid_original_culture }
+		change_pop_culture = { target = scope:sb_bst_raid_marker value = 1 }
+	}
+	random_scope_pop = {
+		limit = { culture = scope:sb_bst_raid_marker }
+		move_partial_pop = { state = scope:sb_bst_raid_destination population = 100 }
+	}
+	every_scope_pop = {
+		limit = { culture = scope:sb_bst_raid_marker }
+		change_pop_culture = { target = scope:sb_bst_raid_original_culture value = 1 }
+	}
+	scope:sb_bst_raid_destination = {
+		every_scope_pop = {
+			limit = { culture = scope:sb_bst_raid_marker }
+			if = { limit = { owner = { has_slavery = yes } } change_poptype = pop_type:slaves }
+			else = { change_poptype = pop_type:laborers }
+		}
+		every_scope_pop = {
+			limit = { culture = scope:sb_bst_raid_marker }
+			change_pop_culture = { target = scope:sb_bst_raid_original_culture value = 1 }
+		}
+	}
+}

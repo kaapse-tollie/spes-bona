@@ -53,9 +53,23 @@ sb_zululand_chiefly_action_attraction = {
 	if = { limit = { c:NAL ?= { has_variable = sb_zululand_chief_patronage_active_var } } add = { value = 0.5 desc = sb_zululand_chiefly_patronage } }
 }
 sb_zululand_bribe_price = {
- value = gold_reserves_limit
- multiply = scope:sb_chief_bribe_candidate.sb_court_pledge_fraction
+ # Character scope, used both while ranking candidates and when freezing the quote.
+ value = scope:sb_chief_bribe_patron.gold_reserves_limit
+ multiply = sb_court_pledge_fraction
  multiply = 0.5
+}
+sb_chiefs_tenth_of_credit = { value = credit multiply = 0.10 }
+sb_chiefs_half_of_credit = { value = credit multiply = 0.50 }
+
+# Payer scope. Outstanding principal is already counted, even if the treasury is negative.
+sb_chiefs_ai_bribe_budget = {
+ value = gold_reserves
+ min = 0
+ if = {
+  limit = { country_definition = cd:TRN }
+  add = sb_chiefs_tenth_of_credit
+  subtract = principal
+ }
 }
 sb_zululand_bribe_payment = {
 	value = var:sb_zululand_bribe_cost_var
@@ -65,11 +79,17 @@ sb_zululand_bribe_payment = {
 # Country scope: the payable quote is frozen; reserves and shortfall remain live.
 sb_zululand_bribe_shortfall = {
  value = var:sb_zululand_bribe_cost_var
- subtract = gold_reserves
+ subtract = { value = gold_reserves min = 0 }
  min = 0
 }
 
 sb_zululand_projected_activism = { value = sb_usuthu_activism multiply = 100 }
+
+# State scope. Volunteers may have changed occupation since crossing the frontier.
+sb_nrp_boer_residents = {
+ value = 0
+ every_scope_pop = { limit = { culture = cu:boer } add = total_size }
+}
 
 # Natal's own Zulu radicals drive Dynamic AI; Strict retains the three-year delay.
 sb_zululand_reconciliation_ai_chance = {

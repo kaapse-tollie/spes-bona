@@ -5,11 +5,12 @@ from tests.test_zulu_court_rework import ReworkRuntime
 from tests.test_zulu_court_politics import character, definitions, EFFECTS, ACTIONS, TRIGGERS as COURT_TRIGGERS
 from tests.test_zulu_institutions_laws import statements
 from tools.check_override_inventory import find_object
-from tests.test_chiefdoms_refinement import ROOT, source
+from tests.test_chiefdoms_refinement import ROOT, source, defs
 
 VALUES = definitions('common/script_values/sb_zululand_drift_values.txt')
 SETTLEMENT = definitions('common/scripted_effects/sb_zululand_settlement_effects.txt')
 TRIGGERS = definitions('common/scripted_triggers/sb_zululand_settlement_triggers.txt')
+RULES = defs('common/scripted_triggers/sb_game_rule_triggers.txt')
 
 
 class BribeRuntime(ReworkRuntime):
@@ -24,7 +25,15 @@ class BribeRuntime(ReworkRuntime):
             if key == 'sb_zululand_contest_interventions_available':
                 # Exact pact/territory/lifecycle is executed in test_chiefdoms_refinement.
                 return self.interventions == (value == 'yes')
-            if key in ('sb_zululand_can_bribe_chief', 'sb_zululand_neutral_chief'):
+            if key == 'sb_zululand_trn_is_eligible_participant':
+                return (scope['id'] == 'TRN' and scope.get('eligible', True) and self.interventions) == (value == 'yes')
+            if key in ('is_ai', 'in_default'):
+                return scope.get(key, False) == (value == 'yes')
+            if key == 'has_game_rule':
+                return value == self.mode
+            if key in RULES:
+                return self.condition(RULES[key],scope,prev) == (value == 'yes')
+            if key in TRIGGERS:
                 return self.condition(TRIGGERS[key], scope, prev) == (value == 'yes')
         if len(nodes) > 1:
             return all(self.condition([n], scope, prev) for n in nodes)
@@ -33,7 +42,12 @@ class BribeRuntime(ReworkRuntime):
     def effect(self, nodes, scope, prev=None):
         for node in self.branches(nodes, scope, prev):
             key, _, value = node
-            if key in ('sb_zululand_offer_chief_bribe', 'sb_zululand_close_bribe_offer'):
+            if key == 'save_temporary_scope_as':
+                self.scopes[value] = scope
+            elif key == 'save_temporary_scope_value_as':
+                args = dict((k, v) for k, _, v in value)
+                self.scopes[args['name']] = self.ref(args['value'], scope, prev)
+            elif key in ('sb_zululand_offer_chief_bribe', 'sb_zululand_close_bribe_offer'):
                 self.effect(SETTLEMENT[key], scope, prev)
             else:
                 super().effect([node], scope, prev)

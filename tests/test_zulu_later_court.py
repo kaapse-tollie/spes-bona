@@ -7,9 +7,16 @@ supply the conditions, actor routing, prices, receipts and order of operations.
 import unittest
 from tests.test_zulu_dunn_event import DunnRuntime
 from tests.test_zulu_court_politics import EFFECTS, VALUES, TRIGGERS, definitions
-from tests.test_zulu_frontier_followup import field
+from tests.test_zulu_frontier_followup import block, field
 
 VALUES.update(definitions('common/script_values/sb_hamu_bargain_values.txt'))
+SETTLEMENT_EFFECTS = definitions('common/scripted_effects/sb_zululand_settlement_effects.txt')
+SETTLEMENT_TRIGGERS = definitions('common/scripted_triggers/sb_zululand_settlement_triggers.txt')
+EFFECTS['sb_nrp_establish_protectorate'] = SETTLEMENT_EFFECTS['sb_nrp_establish_protectorate']
+for effect in ('sb_nrp_return_boundary_districts', 'sb_nrp_settle_boer_households'):
+    EFFECTS[effect] = SETTLEMENT_EFFECTS[effect]
+VALUES['sb_nrp_boer_residents'] = definitions('common/script_values/sb_zululand_drift_values.txt')['sb_nrp_boer_residents']
+TRIGGERS['sb_nrp_has_protectorate_status'] = SETTLEMENT_TRIGGERS['sb_nrp_has_protectorate_status']
 PROVINCES = ('xE1E455','xE882CE','xBE6FEE','x904EBE','x9E9742')
 RESIDUAL = ('x1A084B','x41C070','x88FAD4','xBFA16B')
 
@@ -30,20 +37,23 @@ class LaterCourtRuntime(DunnRuntime):
         self.country['states'] = []
         self.provinces = {p:{'id':p,'state':{'owner':self.country}} for p in PROVINCES+RESIDUAL}
         self.region = {'id':'STATE_ZULULAND','vars':{}}
+        self.nrp_state = {'state_region':'s:STATE_ZULULAND','pops':[], 'vars':{}}
         self.subject_allowed = True
+        self.native_protectorate_allowed = False
         self.defer_subject = False
         self.defer_country_alive = False
         self.transfers = []
 
     def ref(self,key,scope,prev=None):
+        if key.startswith('cu:'): return key
         if key.startswith('p:'):
             name,_,tail=key[2:].partition('.')
             obj=self.provinces.get(name)
             return self.ref(tail,obj,prev) if tail else obj
-        if key == 'region_state:NRP':return {'owner':self.countries.get('c:NRP'),'vars':{}}
+        if key in ('region_state:NRP','s:STATE_ZULULAND.region_state:NRP'):
+            self.nrp_state['owner'] = self.countries.get('c:NRP')
+            return self.nrp_state if self.nrp_state['owner'] else None
         if key.startswith('s:STATE_ZULULAND'):
-            if '.region_state:NRP' in key:
-                return {'owner':self.countries.get('c:NRP'),'vars':{}}
             return self.region
         return super().ref(key,scope,prev)
 
@@ -66,8 +76,13 @@ class LaterCourtRuntime(DunnRuntime):
                 result=scope.get('overlord') is self.ref(value,scope,prev)
             elif key == 'is_subject_type': result=scope.get('subject_type') == value
             elif key == 'is_subject': result=('overlord' in scope) == (value=='yes')
-            elif key == 'can_have_as_subject': result=self.subject_allowed
-            elif key in ('has_truce_with','has_war_with'): result=False
+            elif key == 'can_have_as_subject':
+                result = self.subject_allowed and (
+                    field(value, 'type') != 'subject_type_protectorate' or self.native_protectorate_allowed
+                )
+            elif key in ('has_truce_with', 'has_war_with', 'is_diplomatic_play_enemy_of'):
+                other = self.ref(value, scope, prev)
+                result = other is not None and other['id'] in scope.get(key, set())
             else: result=super().condition([node],scope,prev)
             if not result:return False
         return True
@@ -84,7 +99,7 @@ class LaterCourtRuntime(DunnRuntime):
             elif key == 'create_diplomatic_pact':
                 if not self.defer_subject:
                     target=self.ref(field(value,'country'),scope,prev)
-                    target.update(overlord=scope,subject_type='subject_type_sb_boer_confederal_partner')
+                    target.update(overlord=scope, subject_type='subject_type_' + field(value, 'type'))
             elif key == 'sb_nrp_apply_boer_republic_setup': scope.setdefault('setup_calls',[]).append('boer')
             elif key == 'set_owner_of_provinces':
                 target=self.ref(field(value,'country'),scope,prev)
@@ -92,6 +107,20 @@ class LaterCourtRuntime(DunnRuntime):
                     self.provinces[p]['state']['owner']=target
                     self.transfers.append((p,target['id']))
             elif key == 'set_state_type': scope['state_type']=value
+            elif key == 'save_temporary_scope_as': self.scopes[value] = scope
+            elif key == 'save_temporary_scope_value_as':
+                self.scopes[field(value,'name')] = self.calc(field(value,'value'),scope,prev)
+            elif key in ('every_scope_state','every_scope_pop'):
+                collection = 'states' if key == 'every_scope_state' else 'pops'
+                for item in list(scope.get(collection, [])):
+                    if self.condition(field(value,'limit'),item,scope):
+                        self.effect([n for n in value if n[0] != 'limit'],item,scope)
+            elif key == 'move_partial_pop':
+                count = self.ref(field(value,'population'),scope,prev)
+                assert 0 < count <= scope['total_size']
+                scope['total_size'] -= count
+                dest = self.ref(field(value,'state'),scope,prev)
+                dest['pops'].append({'culture':scope['culture'],'total_size':count})
             elif key == 'create_diplomatic_play':
                 target=self.ref(field(value,'target_country'),scope,prev)
                 self.participants=[scope,target]
@@ -120,7 +149,13 @@ class LaterCourtRuntime(DunnRuntime):
     def accede(self):
         self.country['ruler']=self.hamu
         self.run('sb_hamu_record_accession')
-    def fulfil(self):self.accept();self.accede();self.run('sb_hamu_contract_monthly',self.sponsor)
+    def fulfil(self):
+        self.accept()
+        self.accede()
+        self.run('sb_hamu_contract_monthly', self.sponsor)
+        # The sponsor accepts the ordinary stay-in-Pretoria option.
+        option = field(block('events/sb_hamu_bargain_events.txt', 'sb_hamu_bargain.003'), 'option')
+        self.effect([node for node in option if node[0] == 'c:NRP'], self.sponsor)
 
 
 class HamuContractTests(unittest.TestCase):
@@ -181,10 +216,10 @@ class HamuContractTests(unittest.TestCase):
             rt=LaterCourtRuntime();rt.global_vars[receipt]=1;rt.offer()
             self.assertNotIn('sb_hamu_offer_open_var',rt.sponsor['vars'])
 
-    def test_actual_accession_yields_coastal_confederal_partner_once(self):
+    def test_actual_accession_yields_coastal_protectorate_once(self):
         rt=LaterCourtRuntime();rt.fulfil();nrp=rt.countries['c:NRP']
         self.assertIs(rt.sponsor,nrp['overlord'])
-        self.assertEqual('subject_type_sb_boer_confederal_partner',nrp['subject_type'])
+        self.assertEqual('subject_type_sb_nrp_protectorate',nrp['subject_type'])
         self.assertTrue(all(rt.provinces[p]['state']['owner'] is nrp for p in PROVINCES))
         self.assertTrue(all(rt.provinces[p]['state']['owner'] is rt.country for p in RESIDUAL))
         self.assertIn('sb_nrp_reward_consumed_var',rt.global_vars)
@@ -192,6 +227,36 @@ class HamuContractTests(unittest.TestCase):
         self.assertEqual(1,rt.sponsor['events'].count('sb_hamu_bargain.003'))
         self.assertNotIn('sb_nrp_boundary_pending_var',nrp['vars'])
         self.assertNotIn('sb_nrp_union_wait_var',nrp['vars'])
+
+    def test_recognised_sponsor_uses_the_native_protectorate(self):
+        rt = LaterCourtRuntime()
+        rt.native_protectorate_allowed = True
+        rt.fulfil()
+        self.assertEqual('subject_type_protectorate', rt.countries['c:NRP']['subject_type'])
+
+    def test_switching_to_vryheid_routes_hamus_demand_to_the_republic(self):
+        rt = LaterCourtRuntime()
+        rt.accept()
+        rt.accede()
+        rt.run('sb_hamu_contract_monthly', rt.sponsor)
+        nrp = rt.countries['c:NRP']
+        rt.country['overlord'] = rt.countries['c:GBR']
+        rt.run('sb_hamu_boundary_monthly', nrp)
+        self.assertNotIn('sb_hamu_boundary_open_var', nrp['vars'])
+        options = [body for k, _, body in block('events/sb_hamu_bargain_events.txt', 'sb_hamu_bargain.003')
+                   if k == 'option']
+        switch = next(body for body in options if ('play_as', '=', 'c:NRP') in body)
+        self.assertTrue(rt.condition(field(switch, 'trigger'), rt.sponsor))
+        rt.effect([node for node in switch if node[0] == 'c:NRP'], rt.sponsor)
+        rt.sponsor['player'], nrp['player'] = False, True
+        rt.run('sb_hamu_boundary_monthly', nrp)
+        self.assertEqual(['sb_hamu_bargain.010'], nrp['events'])
+        answer = TRIGGERS['sb_hamu_boundary_answer_valid']
+        self.assertFalse(rt.condition(answer, rt.sponsor))
+        self.assertTrue(rt.condition(answer, nrp))
+        rt.effect([('sb_hamu_answer_boundary', '=', [('ACCEPT', '=', 'no')])], nrp)
+        self.assertIs(rt.play['target'], rt.sponsor)
+        self.assertIn(nrp, rt.participants)
 
     def test_native_subject_creation_can_retry_without_ceding_coast(self):
         rt=LaterCourtRuntime();rt.accept();rt.accede();rt.defer_subject=True
@@ -233,7 +298,8 @@ class HamuContractTests(unittest.TestCase):
         rt.effect([('sb_hamu_answer_boundary','=',[('ACCEPT','=','yes')])],rt.sponsor)
         self.assertIs(rt.sponsor,nrp['overlord'])
         self.assertIs(rt.country,rt.provinces['x9E9742']['state']['owner'])
-        self.assertIs(nrp,rt.provinces['xBE6FEE']['state']['owner'])
+        self.assertIs(nrp,rt.provinces['xE1E455']['state']['owner'])
+        self.assertIs(rt.country,rt.provinces['xBE6FEE']['state']['owner'])
         self.assertNotIn('sb_nrp_union_wait_var',nrp['vars'])
 
     def test_changed_overlord_reissues_pending_demand(self):

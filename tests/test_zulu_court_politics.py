@@ -190,9 +190,10 @@ class CourtRuntime:
                 target = self.ref(key, scope, prev)
                 if target is not None: result += self.calc(value, target, scope)
                 continue
-            if key == 'every_political_movement':
+            if key in ('every_political_movement', 'every_scope_pop'):
                 limit = next(v for k, _, v in value if k == 'limit')
-                for m in scope['movements']:
+                collection = 'movements' if key == 'every_political_movement' else 'pops'
+                for m in scope.get(collection, []):
                     if self.condition(limit, m, scope): result += self.calc([n for n in value if n[0] != 'limit'], m, scope)
                 continue
             amount = self.calc(value, scope, prev) if isinstance(value, list) else self.ref(value, scope, prev)

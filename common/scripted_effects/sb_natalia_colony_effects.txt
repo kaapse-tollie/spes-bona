@@ -82,18 +82,22 @@ sb_convert_natalia_to_british_crown_colony = {
 	}
 	if = {
 		limit = {
-			NOT = { is_subject_of = c:GBR }
+			is_subject = no
 		}
 		c:GBR ?= {
 			create_diplomatic_pact = {
-				country = root
+				country = prev
 				type = colony
 			}
 		}
 	}
 	else_if = {
+		limit = { NOT = { is_direct_subject_of = c:GBR } }
+		c:GBR ?= { transfer_subject = prev }
+	}
+	if = {
 		limit = {
-			is_subject_of = c:GBR
+			is_direct_subject_of = c:GBR
 			NOT = { is_subject_type = subject_type_colony }
 		}
 		change_subject_type = subject_type_colony
@@ -179,7 +183,6 @@ sb_apply_british_natal_colony_setup = {
 		}
 	}
 	activate_law = law_type:law_extraction_economy
-	activate_law = law_type:law_sb_imperial_administration
 	if = {
 		limit = {
 			c:ZUL ?= { is_country_alive = yes }
@@ -221,8 +224,11 @@ sb_apply_british_natal_colony_setup = {
 		}
 		remove_primary_culture = cu:boer
 	}
-	sb_apply_generic_british_colony_interest_group_identity = yes
-	sb_apply_british_natal_interest_group_identity = yes
+	if = {
+		limit = { NOT = { has_variable = sb_crown_administration_initialized_var } }
+		sb_apply_generic_british_colony_interest_group_identity = yes
+		sb_establish_crown_administration = yes
+	}
 	sb_ensure_british_natal_loyalist_lobby = yes
 	every_interest_group = {
 		remove_ruling_interest_group = yes

@@ -171,7 +171,7 @@ class ZuluAnnexationMovementTests(unittest.TestCase):
         self.assertEqual({INITIAL, ANNEXATION}, set(new['modifiers']))
         self.assertNotIn(DISBAND, new['flags'])
 
-    def test_override_preserves_every_cmf_field_outside_two_scoped_hooks(self):
+    def test_override_preserves_cmf_outside_natal_hooks_and_garrison_exclusion(self):
         cmf = ROOT.parent / 'Community Mod Framework/common/political_movements/ycom_02_cultural_movement.txt'
         source = cmf.read_text(encoding='utf-8-sig')  # Current dependency is mandatory.
         native = find_object(source, 'movement_cultural_minority', directive='REPLACE')
@@ -180,6 +180,7 @@ class ZuluAnnexationMovementTests(unittest.TestCase):
         added = object_block_from_source(object_block(OVERRIDE, 'disband_trigger'), 'AND')
         self.assertEqual(1, sb.count(added))
         sb = sb.replace(added, '').replace(object_block(OVERRIDE, 'on_disbanded'), '')
+        sb = sb.replace('NOT = { has_ideology = ideology:ideology_sb_anglo_colonialism }', '', 1)
         # Same neighbour predicate, cheap insurrection check before culture lookup.
         old_filter = child(child(native, 'additional_radicalism_factors'), 'any_political_movement')
         new_filter = child(child(sb, 'additional_radicalism_factors'), 'any_political_movement')

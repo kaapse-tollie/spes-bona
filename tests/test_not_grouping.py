@@ -152,8 +152,11 @@ class NegationInventoryTests(unittest.TestCase):
             for path in sorted((ROOT / directory).rglob('*.txt')):
                 found.extend((str(path.relative_to(ROOT)), children)
                              for children in multi_child_nots(path.read_text(encoding='utf-8-sig')))
-        self.assertEqual([('common/political_movements/zz_sb_absolutist_override.txt',
-                           ('law_stance', 'law_stance'))], found)
+        self.assertEqual([
+            # Vanilla 1.15.2's Peru-Bolivia exception, retained verbatim in the autonomy action.
+            ('common/diplomatic_actions/zz_sb_colonial_autonomy.txt', ('AND', 'scope:target_country')),
+            ('common/political_movements/zz_sb_absolutist_override.txt', ('law_stance', 'law_stance')),
+        ], found)
 
 
 if __name__ == '__main__':

@@ -1,0 +1,38 @@
+﻿sb_warren_british_army_strength = {
+	value = 1
+	every_country = {
+		limit = {
+			OR = {
+				this = c:GBR
+				this = c:CAP
+				AND = {
+					sb_bechuanaland_is_british_subject_target = yes
+					NOT = { container:sb_bechuanaland_corridor_state = { var:sb_warren_offer_var = 2 } }
+				}
+			}
+		}
+		add = army_size
+	}
+}
+
+sb_warren_boer_army_ratio = {
+	value = 1
+	every_country = {
+		limit = {
+			OR = {
+				sb_bechuanaland_is_boer_network_member = yes
+				this = container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_warren_defender_scope
+				AND = {
+					this = c:SWA
+					container:sb_bechuanaland_corridor_state = { var:sb_warren_offer_var > 0 }
+				}
+				AND = {
+					container:sb_bechuanaland_corridor_state = { var:sb_warren_offer_var = 1 }
+					this = container:sb_bechuanaland_corridor_state.var:sb_warren_sponsor_scope
+				}
+			}
+		}
+		add = army_size
+	}
+	divide = sb_warren_british_army_strength
+}

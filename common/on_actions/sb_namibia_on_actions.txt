@@ -3,10 +3,11 @@
 		OR = {
 			country_definition = cd:GER
 			country_definition = cd:CAP
-			has_journal_entry = je_sb_consolidation_of_south_west_africa
-			has_variable = sb_nam_final_harshness_10_var
-			has_variable = sb_nam_final_harshness_7_var
-			has_variable = sb_nam_final_harshness_5_var
+			country_definition = cd:SWA
+			has_variable = sb_nam_selected_policy_var
+			has_variable = sb_nam_policy_report_pending_var
+			has_variable = sb_nam_company_payments_left_var
+			has_modifier = sb_nam_company_slot
 			p:xDEAA3C.state.owner = root
 			p:xB04050.state.owner = root
 			AND = {
@@ -84,54 +85,32 @@
 			}
 		}
 
-		if = {
-			limit = {
-				NOT = { has_journal_entry = je_sb_consolidation_of_south_west_africa }
-				sb_nam_can_run_consolidation_je = yes
-			}
-			sb_nam_add_consolidation_je_and_seed = yes
-		}
+		sb_nam_maintain_swa_company = yes
 
 		if = {
-			limit = {
-				OR = {
-					has_variable = sb_nam_final_harshness_10_var
-					has_variable = sb_nam_final_harshness_7_var
-					has_variable = sb_nam_final_harshness_5_var
-				}
-				NOT = { has_variable = sb_nam_forced_camps_fired_var }
-				any_political_movement = {
-					is_political_movement_type = movement_minority_rights
-					political_movement_radicalism >= 0.30
-					political_movement_radicalism < 0.75
-				}
-				OR = {
-					has_law = law_type:law_colonial_exploitation
-					has_law = law_type:law_national_supremacy
-					has_law = law_type:law_ethnostate
-				}
-			}
-			trigger_event = { id = sb_nam.200 popup = yes }
+			limit = { country_definition = cd:SWA is_country_alive = yes }
+			sb_nam_apply_administrative_capacity = yes
+			sb_nam_offer_extermination_orders = yes
 		}
-
 		if = {
-			limit = {
-				OR = {
-					has_variable = sb_nam_final_harshness_10_var
-					has_variable = sb_nam_final_harshness_7_var
-				}
-				NOT = { has_variable = sb_nam_extermination_fired_var }
-				any_political_movement = {
-					is_political_movement_type = movement_minority_rights
-					political_movement_radicalism >= 0.75
-				}
-				OR = {
-					has_law = law_type:law_colonial_exploitation
-					has_law = law_type:law_national_supremacy
-					has_law = law_type:law_ethnostate
-				}
+			limit = { has_variable = sb_nam_policy_expiry_var var:sb_nam_policy_expiry_var > game_date }
+			sb_nam_sync_regional_policy = yes
+		}
+		if = {
+			limit = { has_variable = sb_nam_policy_report_pending_var NOT = { sb_nam_has_survey_station = yes } }
+			remove_variable = sb_nam_policy_report_pending_var
+		}
+		if = {
+			limit = { sb_nam_seeded_policy_colony_is_pending = yes }
+			sb_nam_reconcile_seeded_policy_colony = yes
+		}
+		else_if = {
+			limit = { sb_nam_can_found_policy_colony = yes sb_nam_controls_both_consolidation_ports = yes }
+			if = {
+				limit = { NOT = { has_journal_entry = je_sb_map_namibian_coast } }
+				sb_nam_offer_policy_report = yes
 			}
-			trigger_event = { id = sb_nam.201 popup = yes }
+			sb_nam_try_found_policy_colony = yes
 		}
 	}
 }
@@ -139,5 +118,25 @@
 sb_on_namibia_global_monthly_pulse = {
 	effect = {
 		sb_nam_close_coastal_race_if_fully_occupied = yes
+	}
+}
+
+sb_on_swa_company_disbanded = {
+	trigger = {
+		scope:company ?= { is_company_type = company_type:company_sb_south_west_africa_company }
+	}
+	effect = {
+		if = { limit = { has_modifier = sb_nam_company_slot } remove_modifier = sb_nam_company_slot }
+		if = {
+			limit = {
+				c:SWA ?= {
+					is_direct_subject_of = PREV
+					is_subject_type = subject_type_chartered_company
+				}
+			}
+			c:SWA = { set_country_type = colonial }
+			remove_diplomatic_pact = { country = c:SWA type = chartered_company }
+			create_diplomatic_pact = { country = c:SWA type = colony }
+		}
 	}
 }

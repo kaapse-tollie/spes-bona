@@ -1,0 +1,138 @@
+﻿# Called only by the two controllers after they have identified the native civil
+# war and assigned both camps. Existing wars receive no new settlement.
+sb_court_register_reunion = {
+	save_scope_as = sb_court_reunion_origin
+	$WAR$ = { save_scope_as = sb_court_reunion_war }
+	scope:target = {
+		if = {
+			limit = { NOT = { var:sb_court_reunion_war_scope ?= scope:sb_court_reunion_war } }
+			remove_variable = sb_court_reunion_play_scope
+		}
+		set_variable = { name = sb_court_reunion_origin_scope value = scope:sb_court_reunion_origin }
+		set_variable = { name = sb_court_reunion_war_scope value = scope:sb_court_reunion_war }
+		sb_court_find_reunion_play = yes
+		if = {
+			limit = { NOT = { has_variable = sb_court_reunion_play_scope } }
+			trigger_event = { on_action = sb_court_recheck_reunion_play days = 1 }
+		}
+	}
+}
+
+sb_court_find_reunion_play = {
+	every_diplomatic_play = {
+		limit = { is_diplomatic_play_type = dp_revolution initiator = prev target = prev.var:sb_court_reunion_origin_scope }
+		sb_court_bind_reunion_play = yes
+	}
+}
+
+# Either the play or the revolution-start callback can run first. The second
+# hook finds both records. Keep the mirrored original-country Annex demand.
+sb_court_bind_reunion_play = {
+	save_scope_as = sb_court_reunion_play
+	if = {
+		limit = {
+			is_diplomatic_play_type = dp_revolution
+			target ?= {
+				country_definition = cd:ZUL
+				any_civil_war = { this ?= scope:sb_court_reunion_play.initiator.var:sb_court_reunion_war_scope }
+			}
+			initiator ?= {
+				var:sb_court_reunion_origin_scope ?= scope:sb_court_reunion_play.target
+				civil_war_origin_country ?= scope:sb_court_reunion_play.target
+				OR = {
+					NOT = { has_variable = sb_court_reunion_play_scope }
+					var:sb_court_reunion_play_scope ?= scope:sb_court_reunion_play
+				}
+				play_participant_has_war_goal_of_type_against = { type = annex_country target = scope:sb_court_reunion_play.target }
+			}
+			target = { play_participant_has_war_goal_of_type_against = { type = annex_country target = scope:sb_court_reunion_play.initiator } }
+		}
+		initiator = { set_variable = { name = sb_court_reunion_play_scope value = scope:sb_court_reunion_play } }
+		if = {
+			limit = { initiator = { NOT = { play_participant_has_war_goal_of_type_against = { type = sb_zulu_take_power target = scope:sb_court_reunion_play.target } } } }
+			add_war_goal = { holder = scope:sb_court_reunion_play.initiator target_country = scope:sb_court_reunion_play.target type = sb_zulu_take_power primary_demand = yes }
+		}
+		if = {
+			limit = { initiator = { play_participant_has_war_goal_of_type_against = { type = sb_zulu_take_power target = scope:sb_court_reunion_play.target } } }
+			remove_war_goal = { who = initiator type = annex_country }
+		}
+		else = { initiator = { remove_variable = sb_court_reunion_play_scope } }
+	}
+}
+
+# Copy a possibly absent winner record. A vacancy on the winning side must
+# clear the corresponding appointment or promise belonging to the losing side.
+sb_court_inherit_winning_field = {
+	if = {
+		limit = { scope:sb_court_winning_rebels = { has_variable = $FIELD$ } }
+		set_variable = { name = $FIELD$ value = scope:sb_court_winning_rebels.var:$FIELD$ }
+	}
+	else = { remove_variable = $FIELD$ }
+}
+
+# Rebel country scope. Settle the political result while both courts and their
+# native war records still exist. The old kingdom is always the territorial heir.
+sb_court_install_rebel_victory = {
+	save_scope_as = sb_court_winning_rebels
+	var:sb_court_reunion_origin_scope = { save_scope_as = sb_court_surviving_kingdom }
+	# Consume first, before any synchronous law, ruler, player or reunion callbacks.
+	remove_variable = sb_court_reunion_play_scope
+	set_variable = sb_court_selecting_head_var
+	if = {
+		limit = { is_player = yes scope:sb_court_surviving_kingdom = { is_player = no } }
+		play_as = scope:sb_court_surviving_kingdom
+	}
+	ruler ?= { save_scope_as = sb_court_winning_ruler }
+	heir ?= { save_scope_as = sb_court_winning_heir }
+	scope:sb_court_surviving_kingdom = { set_variable = sb_court_selecting_head_var }
+	every_in_list = {
+		variable = sb_court_members
+		limit = { is_character_alive = yes }
+		scope:sb_court_surviving_kingdom = {
+			if = {
+				limit = { NOT = { is_target_in_variable_list = { name = sb_court_members target = prev } } }
+				add_to_variable_list = { name = sb_court_members target = prev }
+			}
+		}
+		if = { limit = { var:sb_court_home_scope ?= scope:sb_court_winning_rebels } set_variable = { name = sb_court_home_scope value = scope:sb_court_surviving_kingdom } }
+		if = { limit = { owner ?= scope:sb_court_winning_rebels is_in_exile_pool = no is_in_void = no } transfer_character = scope:sb_court_surviving_kingdom }
+	}
+	scope:sb_court_winning_ruler ?= {
+		if = { limit = { owner ?= scope:sb_court_winning_rebels } transfer_character = scope:sb_court_surviving_kingdom }
+	}
+	scope:sb_court_winning_heir ?= {
+		if = { limit = { owner ?= scope:sb_court_winning_rebels } transfer_character = scope:sb_court_surviving_kingdom }
+	}
+	scope:sb_court_surviving_kingdom = {
+		sb_court_inherit_winning_field = { FIELD = sb_court_incumbent_scope }
+		sb_court_inherit_winning_field = { FIELD = sb_court_recognized_heir_scope }
+		sb_court_inherit_winning_field = { FIELD = sb_court_minor_sovereign_scope }
+		sb_court_inherit_winning_field = { FIELD = sb_court_regent_scope }
+		sb_court_inherit_winning_field = { FIELD = sb_court_chiefly_head_scope }
+		sb_court_inherit_winning_field = { FIELD = sb_court_restoration_claimant_scope }
+		sb_court_inherit_winning_field = { FIELD = sb_court_privileges_this_reign_var }
+		sb_court_inherit_winning_field = { FIELD = sb_prerogative_var }
+		sb_court_inherit_winning_field = { FIELD = sb_prerogative_last_change_var }
+		sb_court_inherit_winning_field = { FIELD = sb_prerogative_cooperation_var }
+		if = {
+			limit = { var:sb_court_dynastic_opponent_scope ?= scope:sb_court_winning_rebels }
+			sb_court_inherit_winning_field = { FIELD = sb_court_dynastic_candidate_scope }
+			sb_court_inherit_winning_field = { FIELD = sb_court_dynastic_opponent_candidate_scope }
+			set_variable = sb_court_dynastic_ended_var
+			sb_court_resolve_dynastic_win = yes
+		}
+		else = {
+			sb_court_inherit_winning_field = { FIELD = sb_court_war_alignment_var }
+			scope:sb_court_winning_ruler ?= { cleanup_ruler_character_roles = yes set_character_as_ruler = yes }
+			remove_variable = sb_court_selecting_head_var
+			set_variable = sb_court_war_ended_var
+			sb_court_resolve_won_war = yes
+		}
+		scope:sb_court_winning_rebels = {
+			remove_variable = sb_court_selecting_head_var
+			remove_variable = sb_court_reunion_origin_scope
+			remove_variable = sb_court_reunion_war_scope
+		}
+		annex_as_civil_war = scope:sb_court_winning_rebels
+	}
+}

@@ -27,7 +27,7 @@ On Depro's development machine, the canonical CMF path is `/Users/depro/Document
 The current lock covers:
 
 - `40` exact-path files;
-- `151` keyed `REPLACE`, `TRY_REPLACE`, or `REPLACE_OR_CREATE` objects;
+- `156` keyed `REPLACE`, `TRY_REPLACE`, or `REPLACE_OR_CREATE` objects;
 - `18` intentionally changed state-region blocks;
 - one registered additive `zz_` override;
 - all eight localization replace files plus key-level, multi-source pins for the 20 previously silent Vanilla key collisions;
@@ -37,6 +37,8 @@ The current lock covers:
 The exact-path set includes Southern African history, the Highveld event baseline, the regional state file, the province raster, terrain, locators, and spline network. Generated and binary files use hash parity; textual files also require a reviewed source diff. Every OB1 source-only drift result is repinned only after a recorded semantic decision.
 
 ## Current 1.15.2 port
+
+The cultural-minority movement applies its Colonialist secession exclusion to the Cape and British Natal garrisons’ new Anglo-Colonialism. Its CMF dependency and vanilla baseline are pinned in the inventory. [Garrison policy](../cape_natal_armed_forces_laws_design_2026_11_24.md#anglo-colonialism-and-the-frontier-vote)
 
 The inventory verifies all 573 changed or added core paths, 25 Vanilla contracts
 for the CMF patch, and the full installed CMF tree. SB keeps its ordinary-war

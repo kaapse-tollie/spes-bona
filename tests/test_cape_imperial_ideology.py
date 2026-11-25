@@ -31,7 +31,7 @@ class CapeImperialIdeologyTests(unittest.TestCase):
             "activate_law = law_type:law_subjecthood",
             "type = amendment_racialized_subjecthood",
             "sponsor = PREV.ig:ig_armed_forces",
-            "activate_law = law_type:law_sb_imperial_administration",
+            "sb_establish_crown_administration = yes",
         ):
             self.assertIn(token, cape)
 
@@ -43,8 +43,7 @@ class CapeImperialIdeologyTests(unittest.TestCase):
             "activate_law = law_type:law_subjecthood",
             "type = amendment_racialized_subjecthood",
             "activate_law = law_type:law_extraction_economy",
-            "activate_law = law_type:law_sb_imperial_administration",
-            "sb_apply_british_natal_interest_group_identity = yes",
+            "sb_establish_crown_administration = yes",
         ):
             self.assertIn(token, natal)
         self.assertNotIn(
@@ -52,7 +51,7 @@ class CapeImperialIdeologyTests(unittest.TestCase):
             text("common/scripted_effects/sb_natalia_effects.txt"),
         )
 
-    def test_imperial_administration_has_the_requested_effects_and_gate(self):
+    def test_legacy_law_loads_with_its_old_modifiers_but_cannot_be_enacted(self):
         law = object_block(
             "common/laws/04_sb_imperial_administration.txt",
             "law_sb_imperial_administration",
@@ -64,10 +63,9 @@ class CapeImperialIdeologyTests(unittest.TestCase):
             "country_aristocrats_pol_str_mult = 0.10",
             "country_sb_aristocrats_armed_forces_attraction_add = 50",
             "country_liberty_desire_add = -0.10",
-            "country_definition = cd:CAP",
-            "country_definition = cd:NAL",
-            "sb_natalia_british_colony_resolved_var",
-            "sb_is_outside_british_imperial_network = yes",
+            "is_visible = { has_law = law_type:law_sb_imperial_administration }",
+            "can_enact = { always = no }",
+            "can_impose = { always = no }",
         ):
             self.assertIn(token, law)
 
@@ -98,29 +96,12 @@ class CapeImperialIdeologyTests(unittest.TestCase):
             armed_forces,
         )
 
-    def test_cap_natal_and_bsa_colonial_forces_receive_colonialist(self):
-        identities = text("common/scripted_effects/sb_interest_group_identity_effects.txt")
-        for name in (
-            "sb_apply_cap_interest_group_identity",
-            "sb_apply_british_natal_interest_group_identity",
-        ):
-            effect = object_block(
-                "common/scripted_effects/sb_interest_group_identity_effects.txt",
-                name,
-            )
-            self.assertIn("remove_ideology = ideology_jingoist", effect)
-            self.assertIn("add_ideology = ideology_sb_imperialist", effect)
-            self.assertIn("add_ideology = ideology_colonialist", effect)
-            self.assertIn("add_ideology = ideology_patriotic", effect)
-            self.assertIn("add_ideology = ideology_loyalist", effect)
-        self.assertIn("set_interest_group_name = ig_sb_imperial_establishment", identities)
-        self.assertIn("set_interest_group_name = ig_sb_colonial_garrison", identities)
-
+    def test_chartered_company_receives_the_shared_garrison_setup(self):
         bsa = object_block(
             "common/scripted_effects/sb_rhodesian_venture_effects.txt",
             "sb_rhodesian_venture_apply_chartered_company_package",
         )
-        self.assertIn("sb_apply_british_natal_interest_group_identity = yes", bsa)
+        self.assertIn("sb_apply_british_garrison_identity = yes", bsa)
 
     def test_anglo_imperialist_stances_include_abolitionism(self):
         for name in ("ideology_sb_imperialist", "ideology_sb_imperialist_leader"):
@@ -132,7 +113,8 @@ class CapeImperialIdeologyTests(unittest.TestCase):
                 else 'icon = "gfx/interface/icons/ideology_icons/ideology_leader/ideology_leader_royalist.dds"',
                 "law_monarchy = strongly_approve",
                 "law_subjecthood = strongly_approve",
-                "law_hereditary_bureaucrats = strongly_approve",
+                "law_hereditary_bureaucrats = neutral" if name == "ideology_sb_imperialist"
+                else "law_hereditary_bureaucrats = strongly_approve",
                 "law_professional_army = strongly_approve",
                 "law_elected_bureaucrats = strongly_disapprove",
                 "law_multicultural = strongly_disapprove",

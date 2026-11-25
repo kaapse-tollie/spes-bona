@@ -19,6 +19,7 @@ RESTORATION_MAP = {
     "subject_type_sb_dominion": "sb_reestablish_dominion",
     "subject_type_sb_boer_presidential_union": "sb_reestablish_boer_presidential_union",
     "subject_type_sb_boer_confederal_partner": "sb_reestablish_boer_confederal_partner",
+    "subject_type_sb_nrp_protectorate": "sb_reestablish_nrp_protectorate",
     "subject_type_sb_cape_confederal_dependency": "sb_reestablish_cape_confederal_dependency",
     "subject_type_sb_zulu_chiefdoms": "sb_reestablish_zulu_chiefdoms",
 }
@@ -31,6 +32,7 @@ DOMINION_TEMPLATE_GOALS = {
 PERSONAL_UNION_TEMPLATE_GOALS = {"sb_reestablish_boer_presidential_union"}
 PROTECTORATE_TEMPLATE_GOALS = {
     "sb_reestablish_boer_confederal_partner",
+    "sb_reestablish_nrp_protectorate",
     "sb_reestablish_zulu_chiefdoms",
 }
 FORCED_REVOLUTION_TYPES = {
@@ -159,13 +161,13 @@ class SubjectRestorationContractTests(unittest.TestCase):
         cls.subject_source = text(SUBJECT_PATH)
         cls.goal_source = text(GOAL_PATH)
 
-    def test_exact_seven_subject_to_goal_mappings(self):
+    def test_exact_subject_to_goal_mappings(self):
         actual = {}
         for subject_type in RESTORATION_MAP:
             block = object_block(self.subject_source, subject_type)
             actual[subject_type] = scalar(block, "re_establish_war_goal")
         self.assertEqual(RESTORATION_MAP, actual)
-        self.assertEqual(7, self.subject_source.count("re_establish_war_goal ="))
+        self.assertEqual(len(RESTORATION_MAP), self.subject_source.count("re_establish_war_goal ="))
 
     def test_sb_dominion_restoration_keeps_no_auto_join(self):
         block = object_block(self.subject_source, "subject_type_sb_dominion")
@@ -191,7 +193,6 @@ class SubjectRestorationContractTests(unittest.TestCase):
             re.findall(r"^(sb_reestablish_[a-z0-9_]+)\s*=\s*\{", self.goal_source, re.MULTILINE)
         )
         self.assertEqual(set(RESTORATION_MAP.values()), actual)
-        self.assertEqual(7, len(actual))
 
     def test_every_goal_has_exact_core_fields_and_zero_costs(self):
         inverse_map = {goal: subject for subject, goal in RESTORATION_MAP.items()}

@@ -91,7 +91,7 @@ For example, Transvaal pays the grant in 1861, stops subsidising Hamu in 1864, a
 
 ### What NRP means for access to the sea
 
-The existing **Greater NRP** package uses five provinces: `xE1E455`, `xE882CE`, `xBE6FEE`, `x904EBE`, `x9E9742`. The last contains the **STATE_ZULULAND port**. The reduced NRP keeps only `xBE6FEE` and `xE882CE` and is inland. Use the mapped Greater package as the agreed concession; make ownership of all promised provinces visible and valid, not just the seed province. No third-party land may be transferred by this bargain.
+The existing **Greater NRP** package uses five provinces: `xE1E455`, `xE882CE`, `xBE6FEE`, `x904EBE`, `x9E9742`. The last contains the **STATE_ZULULAND port**. The reduced NRP keeps `xE1E455` and `xE882CE` and is inland. Use the mapped Greater package as the agreed concession; make ownership of all promised provinces visible and valid, not just the seed province. No third-party land may be transferred by this bargain.
 
 **Political destination is settled: a subject republic.** “Union” in the preceding proposal meant direct annexation into TRN/ZAR. DP chose a separate Greater NRP under the sponsor instead. No immediate union offer, no disguised direct annexation and no automatic later union petition inherited from the old boundary chain. Ordinary future annexation mechanics remain separate from this reward.
 

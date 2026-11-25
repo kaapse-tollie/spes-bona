@@ -13,11 +13,18 @@ def source(path): return (ROOT/path).read_text(encoding='utf-8-sig')
 def defs(path): return {k: statements(v) for k,v in extract_top_level_blocks(source(path)).items()}
 E = defs('common/scripted_effects/sb_chiefdoms_contest_effects.txt')
 E.update(defs('common/scripted_effects/sb_zululand_settlement_effects.txt'))
+E.update(defs('common/scripted_effects/sb_usuthu_politics_effects.txt'))
 T = defs('common/scripted_triggers/sb_chiefdoms_contest_triggers.txt')
 T.update({k:v for k,v in defs('common/scripted_triggers/sb_zululand_settlement_triggers.txt').items() if k != 'sb_zululand_chiefdoms_situation_active'})
 T.update(defs('common/scripted_triggers/sb_hamu_bargain_triggers.txt'))
+T.update(defs('common/scripted_triggers/sb_game_rule_triggers.txt'))
 
 def entity(name, **fields): return dict(id=name, vars={}, **fields)
+
+def substitute_parameters(nodes, params):
+    if isinstance(nodes, list):
+        return [(substitute_parameters(k, params), op, substitute_parameters(v, params)) for k, op, v in nodes]
+    return re.sub(r'\$([^$]+)\$', lambda m: params[m[1]], nodes)
 
 class Contest:
     """A strict bounded interpreter, not a substitute for the game's revolution engine."""
@@ -38,6 +45,7 @@ class Contest:
         self.run('sb_chiefs_start_clock',self.nal)
     def ref(self,key,ctx,prev=None):
         if key in ('yes','no'): return key=='yes'
+        if key.startswith('cu:'): return key
         if key=='game_date': return 18800101
         try: return float(key)
         except ValueError: pass
@@ -72,6 +80,9 @@ class Contest:
             elif k=='has_global_variable': b=v in self.globals
             elif k=='exists': b=self.ref(v,ctx,prev) is not None
             elif k=='is_country_alive': b=ctx.get('alive',False)==(v=='yes')
+            elif k=='has_game_rule': b=v==getattr(self, 'mode', 'sb_frontier_ai_behavior_off')
+            elif k=='any_scope_pop': b=any(self.condition(v,pop,ctx) for pop in ctx.get('pops',[]))
+            elif k=='is_pop_type': b=ctx.get('pop_type')==v
             elif k=='is_subject': b=(ctx.get('overlord') is not None)==(v=='yes')
             elif k=='is_direct_subject_of': b=ctx.get('overlord') is self.ref(v,ctx,prev)
             elif k=='is_subject_of':
@@ -98,6 +109,7 @@ class Contest:
                 elif op=='>=':b=a>=bvalue
                 elif op=='>':b=a>bvalue
                 elif op=='<':b=a<bvalue
+                elif op=='<=':b=a<=bvalue
                 else:raise AssertionError((k,op,v))
             result.append(b)
         return all(result)
@@ -111,29 +123,54 @@ class Contest:
                 limits=next((c for a,b,c in v if a=='limit'),[])
                 if k=='else' or self.condition(limits,ctx,prev):
                     matched=True;self.effect([n for n in v if n[0]!='limit'],ctx,prev)
-            elif k=='save_scope_as': self.scopes[v]=ctx
+            elif k in ('save_scope_as','save_temporary_scope_as'): self.scopes[v]=ctx
             elif k=='set_variable':
                 if isinstance(v,str):ctx['vars'][v]=1
                 else:
                     d={a:c for a,b,c in v}
                     ctx['vars'][d['name']]=self.ref(d['value'],ctx,prev) if 'value' in d else ('timed',d.get('years'),d.get('days'))
             elif k=='remove_variable':ctx['vars'].pop(v,None)
+            elif k=='change_variable':
+                args={a:c for a,_,c in v}
+                ctx['vars'][args['name']]+=self.ref(args['add'],ctx,prev)
+            elif k=='clamp_variable':
+                args={a:c for a,_,c in v}
+                ctx['vars'][args['name']]=max(float(args['min']),min(float(args['max']),ctx['vars'][args['name']]))
             elif k=='set_global_variable':
                 d={'name':v,'value':'1'} if isinstance(v,str) else {a:c for a,b,c in v}
                 self.globals[d['name']]=self.ref(d['value'],ctx,prev)
             elif k=='remove_global_variable':self.globals.pop(v,None)
             elif k=='add_to_variable_list':
                 d={a:c for a,b,c in v};ctx.setdefault(d['name'],[]).append(self.ref(d['target'],ctx,prev))
-            elif k in ('every_political_movement','every_scope_state'):
-                for m in ctx.get('movements' if k=='every_political_movement' else 'states',[]):
+            elif k in ('every_political_movement','every_scope_state','random_scope_state','every_scope_pop'):
+                collection = {'every_political_movement':'movements','every_scope_pop':'pops'}.get(k,'states')
+                for m in ctx.get(collection,[]):
                     limit=next((c for a,b,c in v if a=='limit'),[])
-                    if self.condition(limit,m,ctx):self.effect([n for n in v if n[0]!='limit'],m,ctx)
+                    if self.condition(limit,m,ctx):
+                        self.effect([n for n in v if n[0]!='limit'],m,ctx)
+                        if k=='random_scope_state': break
+            elif k=='add_modifier':ctx.setdefault('modifiers',set()).add(dict((a,c) for a,_,c in v)['name'])
             elif k=='remove_modifier':ctx['modifiers'].remove(v)
+            elif k=='ordered_scope_pop':
+                args={a:c for a,_,c in v}
+                pops=sorted((p for p in ctx['pops'] if self.condition(args['limit'],p,ctx)),
+                            key=lambda p:self.ref(args['order_by'],p,ctx), reverse=True)
+                if pops:
+                    self.effect([n for n in v if n[0] not in ('limit','order_by','position','check_range_bounds')],
+                                pops[int(args['position'])],ctx)
+            elif k=='move_partial_pop':
+                args={a:c for a,_,c in v}
+                size=int(args['population']) if 'population' in args else int(ctx['total_size']*float(args['population_ratio']))
+                ctx['total_size']-=size
+                state=self.ref(args['state'],ctx,prev)
+                state['arrivals']=state.get('arrivals',0)+size
             elif k=='hidden_effect':self.effect(v,ctx,prev)
             elif k=='sb_zululand_finalize_political_contest':
                 self.results.append((ctx['id'],ctx['vars']['sb_zululand_contest_result_var']));self.active=False
             elif k=='sb_zululand_cleanup_situation':self.active=False;self.interrupted=True
-            elif k in E:self.effect(E[k],ctx,prev)
+            elif k in E:
+                body = substitute_parameters(E[k], {a:c for a,_,c in v}) if isinstance(v,list) else E[k]
+                self.effect(body,ctx,prev)
             elif isinstance(v,list):
                 target=self.ref(k,ctx,prev)
                 if target is not None:self.effect(v,target,ctx)

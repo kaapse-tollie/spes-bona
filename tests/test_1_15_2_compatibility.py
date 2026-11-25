@@ -70,8 +70,10 @@ class CompatibilityTests(unittest.TestCase):
         self.assertEqual((2225, 17, 0), (evidence["authored_pixels"], evidence["native_changed_pixels"],
                          evidence["overlap_pixels"]))
         self.assertEqual(17, len({tuple(p) for p in evidence["native_pixel_change"]["coordinates"]}))
-        for root, key in ((ROOT, "result_sha256"), (GAME, "native_1_15_2_sha256")):
-            self.assertEqual(evidence[key], hashlib.sha256((root / "map_data/provinces.png").read_bytes()).hexdigest())
+        current = json.loads(read(ROOT, "tools/map_connectivity_manifest.json"))
+        self.assertEqual(evidence["result_sha256"], current["zululand_boundary_edit"]["base_sha256"])
+        for root, expected in ((ROOT, current["province_map_sha256"]), (GAME, evidence["native_1_15_2_sha256"])):
+            self.assertEqual(expected, hashlib.sha256((root / "map_data/provinces.png").read_bytes()).hexdigest())
 
     def test_party_exception_and_weight_reverse_to_the_pristine_cmf_bytes(self):
         patch = cmf_patch.load_patch()

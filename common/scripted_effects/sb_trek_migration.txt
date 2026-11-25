@@ -558,7 +558,7 @@ sb_spawn_transvaal_republic_v2 = {
 			}
 		}
 		sb_receive_boer_founder = { TEMPLATE = ORA_hendrik_potgieter PERSON = sb_western_hendrik TAG = TRN GROUP = ig_armed_forces }
-		sb_receive_boer_founder = { TEMPLATE = TRN_stephanus_schoeman PERSON = sb_western_schoeman TAG = TRN GROUP = ig_armed_forces }
+		sb_receive_boer_founder = { TEMPLATE = TRN_stephanus_schoeman PERSON = sb_western_schoeman TAG = TRN GROUP = ig_landowners }
 		sb_receive_boer_founder = { TEMPLATE = TRN_marthinus_wessel_pretorius PERSON = sb_western_marthinus TAG = TRN GROUP = ig_landowners }
 		scope:sb_western_hendrik ?= {
 			set_as_interest_group_leader = yes
@@ -588,6 +588,7 @@ sb_spawn_transvaal_republic_v2 = {
 			}
 		}
 		sb_cleanup_trn_generated_commanders = yes
+		sb_replace_non_boer_startup_characters = yes
 		if = {
 			limit = {
 				c:ORA ?= {
@@ -667,6 +668,7 @@ sb_found_zoutpansberg_republic = {
 		set_country_type = unrecognized
 		set_variable = sb_early_republic_var
 			sb_apply_boer_republic_spawn_setup = yes
+			activate_law = law_type:law_national_supremacy
 			activate_law = law_type:law_discrete_inboekstelsel
 			sb_add_expanded_inboekstelsel_amendment = yes
 			activate_law = law_type:law_frontier_colonization
@@ -678,14 +680,19 @@ sb_found_zoutpansberg_republic = {
 			limit = { NOT = { has_journal_entry = je_sb_great_trek } }
 			add_journal_entry = { type = je_sb_great_trek }
 		}
+		sb_seed_zpb_initial_trekker_arrivals = yes
 		sb_receive_boer_founder = { TEMPLATE = ORA_hendrik_potgieter PERSON = sb_northern_hendrik TAG = ZPB GROUP = ig_armed_forces }
-		sb_receive_boer_founder = { TEMPLATE = TRN_stephanus_schoeman PERSON = sb_northern_schoeman TAG = ZPB GROUP = ig_armed_forces }
+		sb_receive_boer_founder = { TEMPLATE = TRN_stephanus_schoeman PERSON = sb_northern_schoeman TAG = ZPB GROUP = ig_landowners }
 		scope:sb_northern_schoeman ?= { set_as_interest_group_leader = yes }
 		if = {
 			limit = { exists = scope:sb_northern_hendrik }
-			scope:sb_northern_hendrik = { set_character_as_ruler = yes }
+			scope:sb_northern_hendrik = {
+				set_as_interest_group_leader = yes
+				set_character_as_ruler = yes
+			}
 		}
 		else = { scope:sb_northern_schoeman ?= { set_character_as_ruler = yes } }
+		sb_replace_non_boer_startup_characters = yes
 		ruler ?= { if = { limit = { NOT = { has_role_of_type = general } } add_character_role = general } }
 			if = {
 				limit = { exists = scope:sb_boer_starting_commando_scope }
@@ -709,7 +716,6 @@ sb_found_zoutpansberg_republic = {
 			name = sb_trek_migration_cost
 			months = 24
 		}
-		sb_seed_zpb_initial_trekker_arrivals = yes
 			}
 			c:ZPB ?= {
 				sb_ensure_boer_republic_compacts_for_root = yes
@@ -868,6 +874,7 @@ sb_found_zoutpansberg_republic = {
 				set_character_as_ruler = yes
 				if = { limit = { NOT = { has_role_of_type = general } } add_character_role = general }
 			}
+			sb_replace_non_boer_startup_characters = yes
 			if = {
 				limit = { exists = scope:sb_boer_starting_commando_scope }
 				ruler ?= {

@@ -173,12 +173,9 @@ sb_hamu_finalise_nrp = {
      sb_nrp_apply_boer_republic_setup = yes
     }
    }
+   sb_nrp_establish_protectorate = yes
    if = {
-    limit = { c:NRP = { is_subject = no } can_have_as_subject = { who = c:NRP type = subject_type_sb_boer_confederal_partner } }
-    create_diplomatic_pact = { country = c:NRP type = sb_boer_confederal_partner }
-   }
-   if = {
-    limit = { c:NRP = { is_direct_subject_of = scope:sb_hamu_sponsor is_subject_type = subject_type_sb_boer_confederal_partner } }
+    limit = { c:NRP = { is_direct_subject_of = scope:sb_hamu_sponsor sb_nrp_has_protectorate_status = yes } }
     s:STATE_ZULULAND = { set_owner_of_provinces = { country = c:NRP provinces = { xE1E455 xE882CE xBE6FEE x904EBE x9E9742 } } region_state:NRP ?= { set_state_type = incorporated } }
     if = {
      limit = { c:NRP = { sb_hamu_land_owned = yes } }
@@ -187,6 +184,7 @@ sb_hamu_finalise_nrp = {
      remove_global_variable = sb_hamu_promise_live_var
      set_global_variable = sb_nrp_reward_consumed_var
      sb_hamu_stop_funding = yes
+     if = { limit = { is_player = yes } c:NRP = { set_variable = { name = sb_hamu_play_as_pending_var days = 4 } } }
      trigger_event = { id = sb_hamu_bargain.003 popup = yes }
     }
    }
@@ -204,20 +202,33 @@ sb_hamu_boundary_monthly = {
   remove_variable = sb_hamu_boundary_recipient_scope
  }
  if = {
-  limit = { has_variable = sb_hamu_boundary_open_var OR = { sb_hamu_boundary_valid = no sb_hamu_boundary_authority_current = no } }
+  limit = {
+   has_variable = sb_hamu_boundary_open_var
+   OR = {
+    sb_hamu_boundary_valid = no sb_hamu_boundary_authority_current = no
+    AND = { is_player = yes NOT = { has_variable = sb_hamu_boundary_offer_var } }
+    AND = { is_player = no has_variable = sb_hamu_boundary_offer_var }
+   }
+  }
   var:sb_hamu_boundary_recipient_scope ?= { remove_variable = sb_hamu_boundary_offer_var }
+  if = { limit = { has_variable = sb_hamu_boundary_offer_var } remove_variable = sb_hamu_boundary_offer_var }
   remove_variable = sb_hamu_boundary_open_var
   remove_variable = sb_hamu_boundary_recipient_scope
  }
  if = {
-  limit = { sb_hamu_boundary_valid = yes NOR = { has_variable = sb_hamu_boundary_open_var has_variable = sb_hamu_boundary_decided_var } }
+  limit = { sb_hamu_boundary_valid = yes NOR = { has_variable = sb_hamu_boundary_open_var has_variable = sb_hamu_boundary_decided_var has_variable = sb_hamu_play_as_pending_var } }
   set_variable = sb_hamu_boundary_open_var
   set_variable = { name = sb_hamu_boundary_recipient_scope value = overlord }
-  overlord = { set_variable = sb_hamu_boundary_offer_var trigger_event = { id = sb_hamu_bargain.010 popup = yes } }
+  if = {
+   limit = { is_player = yes }
+   set_variable = sb_hamu_boundary_offer_var
+   trigger_event = { id = sb_hamu_bargain.010 popup = yes }
+  }
+  else = { overlord = { set_variable = sb_hamu_boundary_offer_var trigger_event = { id = sb_hamu_bargain.010 popup = yes } } }
  }
  if = { limit = { has_variable = sb_hamu_boundary_refused_var } sb_hamu_launch_boundary = yes }
 }
-# The subject's actual overlord makes the choice; no independent-NRP auto-capitulation rule.
+# The offer belongs to the player in Vryheid or to the republic's current protector.
 sb_hamu_answer_boundary = {
  if = {
   limit = { sb_hamu_boundary_answer_valid = yes }
@@ -228,7 +239,7 @@ sb_hamu_answer_boundary = {
    if = {
     limit = { always = $ACCEPT$ }
     sb_hamu_capture_boundary_recipient = yes
-    s:STATE_ZULULAND = { set_owner_of_provinces = { country = scope:sb_hamu_boundary_beneficiary provinces = { xE1E455 x904EBE x9E9742 } } }
+    scope:sb_hamu_boundary_beneficiary = { sb_nrp_return_boundary_districts = yes }
    }
    else = { set_variable = sb_hamu_boundary_refused_var sb_hamu_launch_boundary = yes }
   }

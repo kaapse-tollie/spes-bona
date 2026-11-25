@@ -1,0 +1,29 @@
+﻿sb_is_crown_garrison_country = {
+	OR = {
+		c:CAP ?= this
+		AND = {
+			c:NAL ?= this
+			OR = {
+				has_variable = sb_natalia_british_colony_resolved_var
+				has_variable = sb_crown_administration_initialized_var
+			}
+		}
+	}
+}
+
+sb_can_reform_crown_bureaucracy = {
+	custom_tooltip = {
+		text = sb_crown_appointments_reform_lock_tt
+		NAND = {
+			has_variable = sb_crown_appointments_var
+			sb_is_crown_garrison_country = yes
+			is_direct_subject_of = c:GBR
+		}
+	}
+}
+
+# These laws normally delegate imposition to the vanilla default rule.
+sb_can_impose_alternative_bureaucracy = {
+	can_impose_law_default = yes
+	scope:target_country = { sb_can_reform_crown_bureaucracy = yes }
+}

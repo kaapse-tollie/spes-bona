@@ -7,7 +7,60 @@ sb_move_boer_politician = {
 		transfer_character = c:$TAG$
 	}
 	if = { limit = { NOT = { has_role_of_type = politician } } add_character_role = politician }
+	set_career_length = { role = politician years = 100 }
 	if = { limit = { NOT = { interest_group ?= c:$TAG$.ig:$GROUP$ } } set_interest_group = c:$TAG$.ig:$GROUP$ }
+}
+
+# Carve-outs created on indigenous-majority provinces generate non-Boer startup
+# leaders before trekker pops arrive. Replace non-historical, non-Boer leaders
+# with Boer politicians and clear displaced startup characters silently.
+sb_replace_non_boer_startup_characters = {
+	if = {
+		limit = { country_has_primary_culture = cu:boer }
+		if = {
+			limit = {
+				ruler ?= {
+					is_historical = no
+					NOT = { culture = cu:boer }
+				}
+			}
+			create_character = {
+				culture = cu:boer
+				religion = rel:protestant
+				ruler = yes
+				ig_leader = yes
+				interest_group = ig_armed_forces
+			}
+		}
+		every_interest_group = {
+			limit = {
+				leader ?= {
+					is_historical = no
+					is_ruler_of_own_country = no
+					NOT = { culture = cu:boer }
+				}
+			}
+			save_scope_as = sb_boer_replacement_ig
+			owner = {
+				create_character = {
+					culture = cu:boer
+					religion = rel:protestant
+					ig_leader = yes
+					interest_group = scope:sb_boer_replacement_ig
+				}
+			}
+		}
+		every_scope_character = {
+			limit = {
+				is_historical = no
+				is_ruler_of_own_country = no
+				is_interest_group_leader = no
+				NOT = { has_role_of_type = agitator }
+				NOT = { culture = cu:boer }
+			}
+			kill_character = { hidden = yes }
+		}
+	}
 }
 
 # Called only at a founding. Older campaigns can still introduce an unused template.

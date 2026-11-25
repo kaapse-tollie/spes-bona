@@ -456,6 +456,77 @@ sb_nam.016 = {
 	}
 }
 
+sb_nam.017 = {
+	type = country_event
+	placement = root
+	title = sb_nam.017.t
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { sb_nam_controls_both_consolidation_ports = yes }
+				desc = sb_nam.017.d_both
+			}
+			triggered_desc = {
+				trigger = { p:xDEAA3C.state.owner = root }
+				desc = sb_nam.017.d_luderitz
+			}
+			desc = sb_nam.017.d_swakopmund
+		}
+	}
+	flavor = sb_nam.017.f
+	event_image = { video = "gfx/event_pictures/africa_construction_colony.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+
+	trigger = { sb_nam_policy_report_is_pending = yes }
+	cancellation_trigger = { NOT = { sb_nam_policy_report_is_pending = yes } }
+
+	option = {
+		name = sb_nam.017.a
+		default_option = yes
+		custom_tooltip = sb_nam_017_missions_tt
+		if = { limit = { sb_nam_can_found_policy_colony = yes } custom_tooltip = sb_nam_017_swa_tt }
+		hidden_effect = { sb_nam_choose_policy = { POLICY = 1 } }
+		ai_chance = { base = 1 }
+	}
+	option = {
+		name = sb_nam.017.b
+		trigger = { sb_nam_can_found_policy_colony = yes }
+		custom_tooltip = sb_nam_017_company_tt
+		if = { limit = { sb_nam_can_found_policy_colony = yes } custom_tooltip = sb_nam_017_swa_tt }
+		hidden_effect = {
+			if = {
+				limit = { sb_nam_can_found_policy_colony = yes }
+				sb_nam_choose_policy = { POLICY = 2 }
+			}
+		}
+		ai_chance = { base = 1 }
+	}
+	option = {
+		name = sb_nam.017.c
+		custom_tooltip = sb_nam_017_settler_tt
+		if = { limit = { sb_nam_can_found_policy_colony = yes } custom_tooltip = sb_nam_017_swa_tt }
+		hidden_effect = { sb_nam_choose_policy = { POLICY = 3 } }
+		ai_chance = { base = 1 }
+	}
+	option = {
+		name = sb_nam.017.e
+		custom_tooltip = sb_nam_017_ruthless_tt
+		if = { limit = { sb_nam_can_found_policy_colony = yes } custom_tooltip = sb_nam_017_swa_tt }
+		hidden_effect = { sb_nam_choose_policy = { POLICY = 4 } }
+		ai_chance = { base = 1 }
+	}
+}
+
+sb_nam.018 = {
+	type = country_event
+	hidden = yes
+
+	trigger = { sb_nam_seeded_policy_colony_is_pending = yes }
+	immediate = { sb_nam_reconcile_seeded_policy_colony = yes }
+}
+
 sb_nam.030 = {
 	type = country_event
 	placement = root
@@ -1516,39 +1587,32 @@ sb_nam.201 = {
 	duration = 3
 
 	trigger = {
-		NOT = { has_variable = sb_nam_extermination_fired_var }
-		OR = {
-			has_variable = sb_nam_final_harshness_10_var
-			has_variable = sb_nam_final_harshness_7_var
-		}
-		OR = {
-			has_law = law_type:law_colonial_exploitation
-			has_law = law_type:law_national_supremacy
-			has_law = law_type:law_ethnostate
-		}
-		any_political_movement = {
-			is_political_movement_type = movement_minority_rights
-			political_movement_radicalism >= 0.75
-		}
+		sb_nam_extermination_orders_available = yes
+		has_variable = sb_nam_extermination_pending_var
 	}
+
+	cancellation_trigger = { NOT = { sb_nam_extermination_orders_available = yes } }
 
 	option = {
 		name = sb_nam.201.a
 		default_option = yes
 		custom_tooltip = sb_nam_201_a_tt
 		hidden_effect = {
-			add_modifier = {
-				name = sb_nam_extermination_orders_country
-				months = 48
-			}
-			set_variable = sb_nam_extermination_fired_var
-			every_political_movement = {
-				limit = {
-					is_political_movement_type = movement_minority_rights
-				}
+			if = {
+				limit = { sb_nam_extermination_orders_available = yes }
+				set_variable = sb_nam_extermination_fired_var
 				add_modifier = {
-					name = sb_nam_extermination_orders_movement
-					months = 120
+					name = sb_nam_extermination_orders_country
+					months = 48
+				}
+				every_political_movement = {
+					limit = {
+						is_political_movement_type = movement_minority_rights
+					}
+					add_modifier = {
+						name = sb_nam_extermination_orders_movement
+						months = 120
+					}
 				}
 			}
 		}
@@ -1558,14 +1622,17 @@ sb_nam.201 = {
 		name = sb_nam.201.b
 		custom_tooltip = sb_nam_201_b_tt
 		hidden_effect = {
-			set_variable = sb_nam_extermination_fired_var
-			every_political_movement = {
-				limit = {
-					is_political_movement_type = movement_minority_rights
-				}
-				add_modifier = {
-					name = sb_nam_resistance_allowed_major
-					months = 60
+			if = {
+				limit = { sb_nam_extermination_orders_available = yes }
+				set_variable = sb_nam_extermination_fired_var
+				every_political_movement = {
+					limit = {
+						is_political_movement_type = movement_minority_rights
+					}
+					add_modifier = {
+						name = sb_nam_resistance_allowed_major
+						months = 60
+					}
 				}
 			}
 		}

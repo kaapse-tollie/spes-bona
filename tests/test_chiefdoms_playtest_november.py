@@ -1,7 +1,8 @@
 """Source-executed fixes; native JE age, popup timing and rendering need DP replay."""
 import datetime
 import unittest
-from tests.test_chiefdoms_refinement import Contest, T, defs, entity, source
+from unittest.mock import patch
+from tests.test_chiefdoms_refinement import Contest, E, T, defs, entity, source
 from tools.check_override_inventory import find_object
 from tests.test_zulu_institutions_laws import statements
 
@@ -67,6 +68,42 @@ class ReconciliationContest(Contest):
 
 
 class ChiefdomsPlaytest(unittest.TestCase):
+    def test_natal_returns_refugees_before_the_claimant_reward_relieves_unrest(self):
+        class NatalReview(ReconciliationContest):
+            def ref(self,key,ctx,prev=None):
+                if key in VALUES: return calculate(self,key,ctx)
+                if key == 's:STATE_NATAL.region_state:NAL': return self.natal_state
+                return super().ref(key,ctx,prev)
+
+            def effect(self,nodes,ctx,prev=None):
+                for node in nodes:
+                    if node[0] == 'add_loyalists':
+                        ctx['radical_fractions']['cu:zulu'] = .1367
+                    else: super().effect([node],ctx,prev)
+
+        # The separate court handoff tests execute the character transfer. Start this
+        # receipt with the claimant physically home, as in the February checkpoint.
+        rt = NatalReview()
+        rt.nal.update(is_ai=True, sb_natal_has_shepstone_system=True, radical_fractions={'cu:zulu':.2667})
+        rt.claimant.update(owner=rt.zul,alive=True)
+        rt.claimant['vars']['sb_zululand_claimant_returned_var'] = 1
+        peasants = entity('households',culture='cu:zulu',pop_type='peasants',total_size=1000)
+        artisans = entity('artisans',culture='cu:zulu',pop_type='machinists',total_size=100)
+        rt.natal_state = entity('Natal',pops=[peasants,artisans])
+        zululand = entity('Zululand',state_region='s:STATE_ZULULAND')
+        rt.zul['states'] = [zululand]
+        settlement = E['sb_zululand_return_exiled_claimant']
+        body = next(node for node in field(settlement,'if') if node[0]=='if'
+                    and ('set_variable','=','sb_zululand_claimant_returned_var') in node[2])
+        native = ('change_relations','add_fervor','sb_natal_make_fully_accepted_pops_loyalist_5',
+                  'sb_natal_sync_repealed_shepstone_zulu_movement_attraction','sb_zululand_refugee_recruitment')
+        with patch.dict(E,{key:[] for key in native}):
+            rt.effect([body],rt.nal)
+            rt.run('sb_zululand_review_ai_refugee_return',rt.nal)
+        self.assertIn('sb_zululand_refugees_unloaded_var',rt.nal['vars'])
+        self.assertEqual((800,100,200),(peasants['total_size'],artisans['total_size'],zululand['arrivals']))
+        self.assertLess(rt.nal['radical_fractions']['cu:zulu'],.2)
+
     def test_reconciliation_ai_waits_for_unrest_or_historical_delay(self):
         rt = ReconciliationContest(); movement = rt.royal(1)
         rt.nal['radical_fractions'] = {'cu:zulu': .1999}
@@ -213,7 +250,8 @@ class ChiefdomsPlaytest(unittest.TestCase):
                     if key == 'option' and ('default_option', '=', 'yes') in body]
         self.assertEqual(1, len(defaults))
         option = defaults[0]
-        self.assertEqual('sb_zululand_settlement.115.b', field(option, 'name'))
+        self.assertEqual('sb_zululand_settlement.115.a', field(option, 'name'))
+        self.assertEqual(1, sum(key == 'option' for key, _, _ in EVENTS['sb_zululand_settlement.115']))
         self.assertFalse(any(key == 'trigger' for key, _, _ in option))
         self.assertFalse(rt.condition(T['sb_zululand_trn_is_eligible_participant'], rt.trn))
 

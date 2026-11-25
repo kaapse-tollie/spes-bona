@@ -99,8 +99,25 @@ sb_court_on_revolution_start = {
    # If another movement split instead, release our pending episode before its own handler.
    if = { limit = { has_variable = sb_court_dynastic_test_pending_var NOT = { has_variable = sb_court_dynastic_war_scope } } sb_court_cancel_dynastic_crisis = yes }
    sb_court_track_revolution = yes
+   if = {
+    limit = { country_definition = cd:ZUL exists = scope:target }
+    if = {
+     limit = { var:sb_court_dynastic_opponent_scope ?= scope:target exists = var:sb_court_dynastic_war_scope }
+     sb_court_register_reunion = { WAR = var:sb_court_dynastic_war_scope }
+    }
+    else_if = {
+     limit = { var:sb_court_civil_war_var ?= scope:target exists = scope:sb_court_tracked_war }
+     sb_court_register_reunion = { WAR = scope:sb_court_tracked_war }
+    }
+   }
   }
  }
 }
 sb_court_on_revolution_end = { effect = { sb_court_record_dynastic_end = yes if = { limit = { has_variable = sb_court_civil_war_var } sb_court_record_war_end = yes } } }
 sb_court_on_civil_war_won = { effect = { sb_court_resolve_dynastic_win = yes if = { limit = { has_variable = sb_court_war_ended_var } sb_court_resolve_won_war = yes } } }
+
+# One-day fallback if the native play and its mirrored demand were still being
+# constructed when the revolution-start and play-start callbacks ran.
+sb_court_recheck_reunion_play = {
+ effect = { if = { limit = { exists = var:sb_court_reunion_war_scope } sb_court_find_reunion_play = yes } }
+}

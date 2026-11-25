@@ -25,29 +25,6 @@ sb_remove_colonial_industrialist_identity = {
 }
 
 sb_apply_cap_interest_group_identity = {
-	ig:ig_armed_forces ?= {
-		set_interest_group_name = ig_sb_imperial_establishment
-		if = {
-			limit = { has_ideology = ideology:ideology_jingoist }
-			remove_ideology = ideology_jingoist
-		}
-		if = {
-			limit = { NOT = { has_ideology = ideology:ideology_sb_imperialist } }
-			add_ideology = ideology_sb_imperialist
-		}
-		if = {
-			limit = { NOT = { has_ideology = ideology:ideology_colonialist } }
-			add_ideology = ideology_colonialist
-		}
-		if = {
-			limit = { NOT = { has_ideology = ideology:ideology_patriotic } }
-			add_ideology = ideology_patriotic
-		}
-		if = {
-			limit = { NOT = { has_ideology = ideology:ideology_loyalist } }
-			add_ideology = ideology_loyalist
-		}
-	}
 	ig:ig_petty_bourgeoisie ?= {
 		set_interest_group_name = ig_burghers
 		if = {
@@ -120,9 +97,13 @@ sb_apply_cap_interest_group_identity = {
 	}
 }
 
-sb_apply_british_natal_interest_group_identity = {
+sb_apply_british_garrison_identity = {
 	ig:ig_armed_forces ?= {
-		set_interest_group_name = ig_sb_colonial_garrison
+		if = {
+			limit = { owner = { c:CAP ?= this } }
+			set_interest_group_name = ig_sb_imperial_establishment
+		}
+		else = { set_interest_group_name = ig_sb_colonial_garrison }
 		if = {
 			limit = { has_ideology = ideology:ideology_jingoist }
 			remove_ideology = ideology_jingoist
@@ -132,6 +113,17 @@ sb_apply_british_natal_interest_group_identity = {
 			add_ideology = ideology_sb_imperialist
 		}
 		if = {
+			limit = { owner = { sb_is_crown_garrison_country = yes } }
+			if = {
+				limit = { has_ideology = ideology:ideology_colonialist }
+				remove_ideology = ideology_colonialist
+			}
+			if = {
+				limit = { NOT = { has_ideology = ideology:ideology_sb_anglo_colonialism } }
+				add_ideology = ideology_sb_anglo_colonialism
+			}
+		}
+		else_if = {
 			limit = { NOT = { has_ideology = ideology:ideology_colonialist } }
 			add_ideology = ideology_colonialist
 		}
@@ -184,23 +176,27 @@ sb_apply_boer_republic_interest_group_identity = {
 			}
 			set_ideology = ideology:ideology_sb_volksraad_elitism_leader
 		}
+	if = {
+		# Restored Natalia inherits its post-imperial Armed Forces.
+		limit = { NAND = { c:NAL ?= this has_variable = sb_crown_administration_initialized_var } }
 		ig:ig_armed_forces ?= {
 			set_interest_group_name = ig_kommandante
 			if = {
-			limit = { has_ideology = ideology:ideology_loyalist }
-			remove_ideology = ideology_loyalist
+				limit = { has_ideology = ideology:ideology_loyalist }
+				remove_ideology = ideology_loyalist
+			}
+			if = {
+				limit = { has_ideology = ideology:ideology_jingoist }
+				remove_ideology = ideology_jingoist
+			}
+			if = {
+				limit = { NOT = { has_ideology = ideology:ideology_sb_boer_commando_republicanism } }
+				add_ideology = ideology_sb_boer_commando_republicanism
+			}
+			set_ig_trait = ig_trait:ig_trait_parochial_leadership
+			set_ig_trait = ig_trait:ig_trait_veteran_consultation
+			set_ig_trait = ig_trait:ig_trait_patriotic_fervor
 		}
-		if = {
-			limit = { has_ideology = ideology:ideology_jingoist }
-			remove_ideology = ideology_jingoist
-		}
-		if = {
-			limit = { NOT = { has_ideology = ideology:ideology_sb_boer_commando_republicanism } }
-			add_ideology = ideology_sb_boer_commando_republicanism
-		}
-		set_ig_trait = ig_trait:ig_trait_parochial_leadership
-		set_ig_trait = ig_trait:ig_trait_veteran_consultation
-		set_ig_trait = ig_trait:ig_trait_patriotic_fervor
 	}
 	ig:ig_devout ?= {
 		set_interest_group_name = ig_ng_kerk

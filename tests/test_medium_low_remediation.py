@@ -318,6 +318,7 @@ class MediumLowRemediationTests(unittest.TestCase):
                 "sb_on_ngi_tribute_state_owner_change",
                 "sb_on_port_natal_state_owner_change",
                 "sb_on_zululand_incorporation_state_owner_change",
+                "sb_on_chiefs_volunteer_state_owner_change",
             ),
             "on_state_incorporation": ("sb_on_zululand_state_incorporation",),
             "on_acquired_technology": ("sb_on_spes_bona_acquired_technology",),
@@ -344,6 +345,7 @@ class MediumLowRemediationTests(unittest.TestCase):
             "on_company_disbanded": (
                 "sb_on_mozambique_company_disbanded",
                 "sb_on_british_south_africa_company_disbanded",
+                "sb_on_swa_company_disbanded",
             ),
         }
         for on_action, handlers in expected.items():

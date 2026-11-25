@@ -74,58 +74,13 @@ sb_bst_frontier.010 = {
 		hidden_effect = {
 			add_treasury = -1000
 			if = {
-				limit = {
-					exists = c:BUG
-					exists = c:BST
-				}
+				limit = { exists = c:BST.capital }
 				random_scope_state = {
 					limit = {
 						state_region = s:STATE_VRYSTAAT
-						any_scope_pop = {
-							NOT = { is_pop_type = slaves }
-							total_size >= 100
-						}
+						any_scope_pop = { sb_bst_eligible_raid_donor = yes }
 					}
-					ordered_scope_pop = {
-						position = 0
-						order_by = total_size
-						limit = {
-							NOT = { is_pop_type = slaves }
-							total_size >= 100
-						}
-						save_scope_as = sb_bst_raid_captive_pop
-						culture = { save_scope_as = sb_bst_raid_captive_culture }
-						# Stage through a slavery-legal state so only the captive slice is converted.
-						move_partial_pop = {
-								state = c:BUG.capital
-								population_ratio = {
-									add = 100
-									divide = scope:sb_bst_raid_captive_pop.total_size
-								}
-							}
-					}
-				}
-				if = {
-					limit = { exists = scope:sb_bst_raid_captive_culture }
-					c:BUG.capital = {
-						every_scope_pop = {
-							limit = {
-								NOT = { is_pop_type = slaves }
-								culture = scope:sb_bst_raid_captive_culture
-							}
-							change_poptype = pop_type:slaves
-						}
-						every_scope_pop = {
-							limit = {
-								is_pop_type = slaves
-								culture = scope:sb_bst_raid_captive_culture
-							}
-							move_partial_pop = {
-								state = c:BST.capital
-								population_ratio = 1
-							}
-						}
-					}
+					sb_bst_take_raid_captives = yes
 				}
 			}
 		}

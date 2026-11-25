@@ -7,23 +7,13 @@ sb_zululand_setup_usuthu_politics = {
 sb_zululand_start_chief_patronage = {
 	set_variable = sb_zululand_chief_patronage_active_var
 	add_modifier = { name = sb_zululand_chief_patronage_cost }
-	global_var:sb_zululand_live_zul_scope ?= {
-		every_political_movement = {
-			limit = { is_political_movement_type = movement_sb_zulu_chiefly }
-			add_modifier = { name = sb_zululand_chiefly_patronage }
-		}
-	}
+	sb_chiefs_sync_intervention_movements = yes
 }
 
 sb_zululand_stop_chief_patronage = {
 	if = { limit = { has_variable = sb_zululand_chief_patronage_active_var } remove_variable = sb_zululand_chief_patronage_active_var }
 	if = { limit = { has_modifier = sb_zululand_chief_patronage_cost } remove_modifier = sb_zululand_chief_patronage_cost }
-	global_var:sb_zululand_live_zul_scope ?= {
-		every_political_movement = {
-			limit = { is_political_movement_type = movement_sb_zulu_chiefly has_modifier = sb_zululand_chiefly_patronage }
-			remove_modifier = sb_zululand_chiefly_patronage
-		}
-	}
+	sb_chiefs_sync_intervention_movements = yes
 }
 
 sb_zululand_mark_boer_commitment = {

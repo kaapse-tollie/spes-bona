@@ -19,6 +19,15 @@ CONTRACTS = json.loads((ROOT / 'Docs/compatibility/evidence/1_15_0_journal_imple
 GAME = find_game_root(None)
 CHIEFDOMS_AMENDMENTS = json.loads((ROOT/'Docs/compatibility/chiefdoms_journal_amendments_2026_11_10.json').read_text())
 
+# The policy report replaces the old score chain and retains the other 1.15 fields.
+RETIRED_CONSOLIDATION_FIELDS = "02f86461117848ff1b3e08bd8b3cdbe83f41b29e2f35f0456b39493a411509cb"
+COASTAL_SURVEY_OUTCOMES = {
+    ("complete", "effect_sha256"): "1416f16f609db3665cbcc207829b2bb9dfc75d965270697102fe40c7f97189a5",
+    ("complete", "event_outcome_desc_sha256"): "bebca4527248e8bd11ccf05a8290d94aa46ec0272d8ab14a53732be068a9d0d4",
+    ("invalid", "effect_sha256"): "b4a825b9ecc2c6d17a2e9fb65f040d0cb308e54d15ab5035d4d3e41ac0181c16",
+    ("invalid", "trigger_sha256"): "04025796c1033673dd95345cf3e61e38bfaca4beab3040be402b039afa86b6d6",
+}
+
 
 def digest(value):
     return hashlib.sha256(json.dumps(value, ensure_ascii=False, separators=(',', ':')).encode()).hexdigest()
@@ -45,7 +54,10 @@ class JournalMigrationTests(unittest.TestCase):
                 amendment = CHIEFDOMS_AMENDMENTS.get(record['key'])
                 if amendment:
                     self.assertEqual(record['retained_fields_sha256'], amendment['prior_retained_fields_sha256'])
-                self.assertEqual(amendment['retained_fields_sha256'] if amendment else record['retained_fields_sha256'],
+                retained_fields = amendment['retained_fields_sha256'] if amendment else record['retained_fields_sha256']
+                if record['key'] == 'je_sb_consolidation_of_south_west_africa':
+                    retained_fields = RETIRED_CONSOLIDATION_FIELDS
+                self.assertEqual(retained_fields,
                                  digest([n for n in nodes if n[0] not in ('outcome', 'activation_description')]))
                 if record['key'] == 'je_sb_cape_politics':
                     # The authorised playtest correction splits this dispatcher
@@ -63,6 +75,8 @@ class JournalMigrationTests(unittest.TestCase):
                     for key, value in expected.items():
                         if key.endswith('_sha256'):
                             field = key.removesuffix('_sha256')
+                            if record['key'] == 'je_sb_map_namibian_coast':
+                                value = COASTAL_SURVEY_OUTCOMES.get((expected['kind'], key), value)
                             if record['key'] == 'je_sb_bst_ora_frontier' and expected['kind'] == 'complete':
                                 if field == 'event_outcome_desc':
                                     self.assertNotIn(field, fields)  # Single-choice presentation, checked separately.

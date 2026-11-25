@@ -81,7 +81,17 @@ sb_hamu_bargain.003 = { # TO REVIEW
  on_opened_soundeffect = "event:/SFX/Events/misc/2Characters"
  trigger = { has_variable = sb_hamu_fulfilled_var c:NRP ?= { is_country_alive = yes } var:sb_hamu_prince_scope ?= { is_character_alive = yes } }
  immediate = { var:sb_hamu_prince_scope = { save_scope_as = sb_hamu_prince } c:NRP = { save_scope_as = sb_hamu_republic } }
- option = { name = sb_hamu_bargain.003.a default_option = yes custom_tooltip = sb_hamu_bargain.003.a.tt }
+ option = {
+  name = sb_hamu_bargain.003.a default_option = yes custom_tooltip = sb_hamu_bargain.003.a.tt
+  c:NRP ?= { if = { limit = { has_variable = sb_hamu_play_as_pending_var } remove_variable = sb_hamu_play_as_pending_var } }
+ }
+ option = {
+  name = sb_zululand_settlement.200.b
+  trigger = { is_player = yes c:NRP ?= { is_country_alive = yes is_direct_subject_of = prev } }
+  c:NRP = { remove_variable = sb_hamu_play_as_pending_var }
+  play_as = c:NRP
+  ai_chance = { base = 0 }
+ }
 }
 
 sb_hamu_bargain.010 = { # TO REVIEW
@@ -98,7 +108,7 @@ sb_hamu_bargain.010 = { # TO REVIEW
  on_opened_soundeffect = "event:/SFX/Events/misc/2Characters"
  trigger = { sb_hamu_boundary_answer_valid = yes }
  cancellation_trigger = { sb_hamu_boundary_answer_valid = no }
- immediate = { c:GBR.ruler = { save_scope_as = sb_hamu_british_ruler } c:NRP = { save_scope_as = sb_hamu_republic } }
+ immediate = { c:GBR.ruler = { save_scope_as = sb_hamu_british_ruler } c:NRP = { save_scope_as = sb_hamu_republic overlord = { save_scope_as = sb_hamu_protector } } }
  option = {
   name = sb_hamu_bargain.010.a
   default_option = yes

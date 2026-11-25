@@ -58,41 +58,6 @@ sb_nam_controls_both_consolidation_ports = {
 	p:xB04050.state.owner = root
 }
 
-sb_nam_has_british_southern_african_subject_admin = {
-	OR = {
-		c:CAP ?= {
-			is_country_alive = yes
-			is_subject = yes
-			exists = top_overlord
-			top_overlord = c:GBR
-		}
-		c:SAF ?= {
-			is_country_alive = yes
-			is_subject = yes
-			exists = top_overlord
-			top_overlord = c:GBR
-		}
-	}
-}
-
-sb_nam_can_run_consolidation_je = {
-	sb_nam_controls_both_consolidation_ports = yes
-	NOT = { is_country_type = decentralized }
-	NOT = { country_definition = cd:SWA }
-	NOT = { has_variable = sb_nam_consolidation_resolved_var }
-	NOT = { capital = { region = sr:region_southern_africa } }
-	NOT = {
-		AND = {
-			country_definition = cd:GBR
-			sb_nam_has_british_southern_african_subject_admin = yes
-		}
-	}
-	OR = {
-		country_definition = cd:GBR
-		sb_nam_has_any_colonial_law = yes
-	}
-}
-
 sb_nam_can_delegate_british_namibia_to_saf = {
 	country_definition = cd:GBR
 	c:SAF ?= {
@@ -182,5 +147,97 @@ sb_nam_can_delegate_british_namibia_to_cap = {
 				}
 			}
 		}
+	}
+}
+
+sb_nam_is_policy_region = {
+	OR = {
+		state_region = s:STATE_NAMAQUALAND
+		state_region = s:STATE_HEREROLAND
+	}
+}
+
+sb_nam_has_survey_station = {
+	OR = {
+		p:xDEAA3C.state.owner = THIS
+		p:xB04050.state.owner = THIS
+	}
+}
+
+sb_nam_policy_report_is_pending = {
+	has_variable = sb_nam_policy_report_pending_var
+	NOT = { has_variable = sb_nam_selected_policy_var }
+	sb_nam_has_survey_station = yes
+}
+
+sb_nam_can_found_policy_colony = {
+	is_country_alive = yes
+	is_country_type = recognized
+	is_subject = no
+	OR = { country_rank = rank_value:great_power country_rank = rank_value:major_power }
+	sb_nam_has_qualifying_overseas_colonial_law = yes
+	NOT = { capital = { region = sr:region_southern_africa } }
+	NOR = {
+		country_definition = cd:GBR
+		c:SWA ?= { is_country_alive = yes }
+	}
+}
+
+sb_nam_seeded_policy_colony_is_pending = {
+	has_variable = sb_nam_selected_policy_var
+	NOT = { has_variable = sb_nam_policy_colony_founded_var }
+	c:SWA ?= {
+		is_country_alive = yes
+		is_subject = no
+		var:sb_nam_policy_founder_var ?= PREV
+		p:xB04050.state.owner = THIS
+	}
+}
+
+sb_nam_company_is_linked = {
+	has_company = company_type:company_sb_south_west_africa_company
+	c:SWA ?= {
+		is_country_alive = yes
+		is_direct_subject_of = PREV
+		is_subject_type = subject_type_chartered_company
+		var:sb_nam_policy_founder_var ?= PREV
+		owning_company ?= { is_company_type = company_type:company_sb_south_west_africa_company }
+	}
+}
+
+# Country scope can be SWA or the British administration. Only Cape-held
+# Walvis Bay can remain outside the administrator's territory.
+sb_nam_controls_administration_territory = {
+	owns_entire_state_region = STATE_HEREROLAND
+	OR = {
+		owns_entire_state_region = STATE_NAMAQUALAND
+		AND = {
+			p:x8031D0.state ?= { owner = c:CAP num_provinces = 1 }
+			s:STATE_NAMAQUALAND = {
+				NOT = {
+					any_scope_state = {
+						NOR = { owner = c:$ADMINISTRATOR$ this = p:x8031D0.state }
+					}
+				}
+			}
+		}
+	}
+}
+
+sb_nam_extermination_orders_available = {
+	country_definition = cd:SWA
+	is_country_alive = yes
+	has_variable = sb_nam_selected_policy_var
+	OR = { var:sb_nam_selected_policy_var = 3 var:sb_nam_selected_policy_var = 4 }
+	NOT = { has_variable = sb_nam_extermination_fired_var }
+	sb_nam_controls_administration_territory = { ADMINISTRATOR = SWA }
+	OR = {
+		has_law = law_type:law_colonial_exploitation
+		has_law = law_type:law_national_supremacy
+		has_law = law_type:law_ethnostate
+	}
+	any_political_movement = {
+		is_political_movement_type = movement_minority_rights
+		political_movement_radicalism >= 0.75
 	}
 }

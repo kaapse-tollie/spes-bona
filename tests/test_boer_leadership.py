@@ -79,19 +79,29 @@ class LeadershipRuntime(RefugeeRuntime):
             return self.ref(tail, group) if tail else group
         return super().ref(key, scope, prev)
 
-    def person(self, tag, template, group=LO):
-        assert template not in self.people
+    def person(self, tag, template, group=LO, culture='cu:boer', historical=True):
+        if template is not None:
+            assert template not in self.people
         country = self.countries[tag]
-        actor = dict(id=template, template=template, owner=country, alive=True, vars={}, traits=set(),
-                     interest_group=self.ref('ig:' + group, country), age=16 if template == SON else 40)
+        actor = dict(id=template or f'gen_{len(country["characters"])}', template=template, owner=country,
+                     alive=True, vars={}, traits=set(), culture=culture, historical=historical,
+                     interest_group=self.ref('ig:' + group, country), age=16 if template == SON else 40,
+                     career_lengths={})
         country['characters'].append(actor)
-        self.people[template] = actor
+        if template is not None:
+            self.people[template] = actor
         return actor
 
     def condition(self, nodes, scope, prev=None):
         for key, op, value in nodes:
             if key == 'is_interest_group_leader':
                 result = (scope['interest_group'].get('leader') is scope) == (value == 'yes')
+            elif key == 'is_historical':
+                result = bool(scope.get('historical', True)) == (value == 'yes')
+            elif key == 'culture':
+                result = scope.get('culture', 'cu:boer') == value
+            elif key == 'country_has_primary_culture':
+                result = value == 'cu:boer'
             elif key == 'is_template_used':
                 result = value in self.people
             elif key == 'NAND':
@@ -122,6 +132,9 @@ class LeadershipRuntime(RefugeeRuntime):
                 scope['owner'] = owner
             elif key == 'add_character_role':
                 scope[value] = True
+            elif key == 'set_career_length':
+                args = fields(value)
+                scope.setdefault('career_lengths', {})[args.get('role', 'all')] = int(args['years'])
             elif key == 'remove_character_role':
                 if value == 'ruler':
                     scope['owner']['ruler'] = None
@@ -141,10 +154,40 @@ class LeadershipRuntime(RefugeeRuntime):
                 chosen = self.countries.get(self.host)
                 if chosen and self.condition(fields(value)['limit'], chosen, scope):
                     self.effect([n for n in value if n[0] != 'limit'], chosen, scope)
+            elif key == 'every_interest_group':
+                limit = fields(value).get('limit', [])
+                body = [n for n in value if n[0] != 'limit']
+                for group in list(scope['groups'].values()):
+                    group['owner'] = scope
+                    if self.condition(limit, group, scope):
+                        self.effect(body, group, scope)
+            elif key == 'every_scope_character':
+                limit = fields(value).get('limit', [])
+                body = [n for n in value if n[0] != 'limit']
+                for person in list(scope['characters']):
+                    if self.condition(limit, person, scope):
+                        self.effect(body, person, scope)
+            elif key == 'kill_character':
+                scope['alive'] = False
+                owner = scope['owner']
+                owner['characters'][:] = [p for p in owner['characters'] if p is not scope]
             elif key == 'create_character':
                 args = fields(value)
-                person = self.person(scope['id'], args['template'], args['interest_group'])
-                self.effect(args['on_created'], person, scope)
+                ig_val = args['interest_group']
+                group_name = self.ref(ig_val, scope, prev)['type'] if ig_val.startswith('scope:') else ig_val
+                person = self.person(
+                    scope['id'],
+                    args.get('template'),
+                    group_name,
+                    culture=args.get('culture', 'cu:boer'),
+                    historical=args.get('template') is not None,
+                )
+                if args.get('ig_leader') == 'yes':
+                    person['interest_group']['leader'] = person
+                if args.get('ruler') == 'yes':
+                    scope['ruler'] = person
+                if 'on_created' in args:
+                    self.effect(args['on_created'], person, scope)
             else:
                 super().effect([node], scope, prev)
 
@@ -199,6 +242,8 @@ class BoerLeadershipTests(unittest.TestCase):
                          fields(statements(object_block(TEMPLATES, 'ORA_gerrit_maritz')))['ig_leader'],
                          fields(statements(object_block(TEMPLATES, 'ORA_gerrit_maritz')))['interest_group']))
         self.assertEqual(('no', 'yes', AF), tuple(starts[HENDRIK][k] for k in ('ruler', 'ig_leader', 'interest_group')))
+        schoeman_tpl = fields(statements(object_block(TEMPLATES, 'REPLACE:' + SCHOEMAN)))
+        self.assertEqual(LO, schoeman_tpl['interest_group'])
         west = founder_offices(TREK, 'sb_spawn_transvaal_republic_v2')
         natal = founder_offices(NATAL, 'sb_found_natalia_after_blood_river')
         north = founder_offices(TREK, 'sb_found_zoutpansberg_republic')
@@ -210,7 +255,10 @@ class BoerLeadershipTests(unittest.TestCase):
                     son = self.new_son(world, 'ORA')
                     father = world.person('ORA', FATHER)
                     hendrik = world.person('ORA', HENDRIK, AF)
-                    schoeman = world.person('ORA', SCHOEMAN, AF)
+                    schoeman = world.person('ORA', SCHOEMAN, LO)
+                    world.effect(starts[SCHOEMAN]['on_created'], schoeman)
+                    self.assertEqual(100, son['career_lengths'].get('politician'))
+                    self.assertEqual(100, schoeman['career_lengths'].get('politician'))
                     trn = world.countries['TRN']
                     if natal_first:
                         world.effect(natal, world.countries['NAL'])
@@ -219,7 +267,9 @@ class BoerLeadershipTests(unittest.TestCase):
                     self.assertIs(world.ref('ig:' + AF + '.leader', trn), hendrik)
                     self.assertIs(trn, son['owner'])
                     self.assertIn('sb_youth', son['traits'])
+                    self.assertEqual(100, son['career_lengths'].get('politician'))
                     self.assertIs(trn, schoeman['owner'])
+                    self.assertEqual(LO, schoeman['interest_group']['type'])
                     if not natal_first:
                         self.assertIs(world.ref('ig:' + LO + '.leader', trn), father)
                         world.effect(natal, world.countries['NAL'])
@@ -228,13 +278,55 @@ class BoerLeadershipTests(unittest.TestCase):
                     north_country = world.countries['ZPB']
                     world.effect(north, north_country)
                     self.assertIs(north_country['ruler'], hendrik if hendrik_survives else schoeman)
-                    self.assertIs(world.ref('ig:' + AF + '.leader', north_country), schoeman)
+                    self.assertIs(world.ref('ig:' + LO + '.leader', north_country), schoeman)
+                    if hendrik_survives:
+                        self.assertIs(world.ref('ig:' + AF + '.leader', north_country), hendrik)
                     self.assertIsNot(son, trn.get('ruler'))
                     self.assertIs(father['owner'], world.countries['NAL'])
                     world.effect(east, world.countries['LYD'])
                     self.assertEqual('LYD_cornelis_potgieter', world.countries['LYD']['ruler']['template'])
         for choice in ('a', 'b'):
             self.assertIn('sb_found_lydenburg_republic', str(option('sb_boer_republics.131', choice)))
+
+    def test_zpb_replaces_non_boer_startup_leaders_and_clears_displaced_characters(self):
+        for has_founders in (True, False):
+            with self.subTest(has_founders=has_founders):
+                world = LeadershipRuntime()
+                zpb = world.countries['ZPB']
+                venda_ruler = world.person('ZPB', None, AF, culture='cu:venda', historical=False)
+                venda_ruler['general'] = True
+                zpb['ruler'] = venda_ruler
+                venda_ruler['interest_group']['leader'] = venda_ruler
+                for group in (LO, 'ig_rural_folk', 'ig_devout', 'ig_petty_bourgeoisie'):
+                    gen = world.person('ZPB', None, group, culture='cu:venda', historical=False)
+                    gen['interest_group']['leader'] = gen
+                extra_venda = world.person('ZPB', None, 'ig_intelligentsia', culture='cu:venda', historical=False)
+                agitator = world.person('ZPB', None, 'ig_trade_unions', culture='cu:venda', historical=False)
+                agitator['agitator'] = True
+                if has_founders:
+                    hendrik = world.person('ZPB', HENDRIK, AF)
+                    schoeman = world.person('ZPB', SCHOEMAN, LO)
+                    zpb['ruler'] = hendrik
+                    hendrik['interest_group']['leader'] = hendrik
+                    schoeman['interest_group']['leader'] = schoeman
+                world.call('sb_replace_non_boer_startup_characters', 'ZPB')
+                self.assertEqual('cu:boer', zpb['ruler']['culture'])
+                for group_name, group in zpb['groups'].items():
+                    if 'leader' in group and group['leader'] is not None:
+                        self.assertEqual('cu:boer', group['leader']['culture'], group_name)
+                self.assertFalse(extra_venda['alive'])
+                self.assertFalse(venda_ruler['alive'])
+                self.assertTrue(agitator['alive'])
+                if has_founders:
+                    self.assertIs(zpb['ruler'], hendrik)
+                    self.assertIs(world.ref('ig:' + AF + '.leader', zpb), hendrik)
+                    self.assertIs(world.ref('ig:' + LO + '.leader', zpb), schoeman)
+        for founder in ('sb_found_zoutpansberg_republic', 'sb_spawn_transvaal_republic_v2', 'sb_found_lydenburg_republic'):
+            self.assertIn('sb_replace_non_boer_startup_characters = yes', object_block(TREK, founder))
+        zpb_block = object_block(TREK, 'sb_found_zoutpansberg_republic')
+        self.assertIn('activate_law = law_type:law_national_supremacy', zpb_block)
+        self.assertLess(zpb_block.index('sb_seed_zpb_initial_trekker_arrivals = yes'),
+                        zpb_block.index('sb_replace_non_boer_startup_characters = yes'))
 
     def test_birthdays_and_personal_bonus(self):
         trait = fields(definitions('common/character_traits/sb_character_traits.txt')['sb_youth'])

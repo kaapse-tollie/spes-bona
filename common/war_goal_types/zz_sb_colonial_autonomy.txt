@@ -1,0 +1,63 @@
+﻿# Vanilla 1.15.2. Validate the country that would receive greater autonomy.
+REPLACE:increase_autonomy = {
+	icon = "gfx/interface/icons/war_goals/increase_autonomy.dds"
+
+	kind = increase_autonomy
+
+	settings = {
+		require_target_be_part_of_war
+
+		# Validation
+		validate_conflicts_war_goals_all
+		validate_subject_relation
+		validate_increase_autonomy
+	}
+
+	execution_priority = 40
+
+	contestion_type = control_all_own_states
+
+	target_type = country
+
+	possible = {
+		sb_is_ordinary_colonial_subject = no
+		# trigger to determine if a goal with its target data is listed when selecting a war goal in the diplo play panel
+		# scopes: root = holder, creator_country, diplomatic_play, target_country, target_state, stakeholder, target_region, article_options
+	}
+
+	valid = {
+		sb_is_ordinary_colonial_subject = no
+		# trigger in addition to some basic validation code-side
+		# scopes: root = holder, creator_country, diplomatic_play, target_country, target_state, stakeholder, target_region, article_options
+		root.overlord = scope:target_country
+	}
+
+	fill_per_week = 2
+	deplete_per_week = 2
+
+	maneuvers = {
+		value = 0
+
+		add = {
+			desc = "MANEUVERS_BASE_VALUE"
+			value = 10
+		}
+	}
+
+	infamy = {
+		value = 0
+	}
+
+	on_enforced = {
+		# script effect on top of the predefined code effect
+	}
+
+	mirrored_wargoal = {
+		method = swap
+		type = reduce_autonomy
+	}
+
+	ai = {
+		is_significant_demand = no
+	}
+}

@@ -1,0 +1,60 @@
+﻿# Vanilla 1.15.2. An ordinary colony can still fight for outright independence.
+REPLACE:dp_independence = {
+	requires_interest_marker = no
+
+	war_goal = independence
+
+	texture = "gfx/interface/icons/war_goals/independence.dds"
+	confirmation_sound = "event:/SFX/UI/SubjectInteractions/subject_button_small_independence"
+	possible = {
+		NOT = { is_country_type = decentralized }
+		OR = {
+			sb_is_ordinary_colonial_subject = yes
+			can_increase_autonomy = no
+			custom_tooltip = {
+				text = "REQUEST_AUTONOMY_RECENTLY_DENIED"
+				any_diplomatic_catalyst = {
+					is_diplomatic_catalyst_type = catalyst_autonomy_increase_denied
+					target = scope:target_country
+				}
+			}
+		}
+		diplomatic_play_has_no_relations_blockers = yes
+	}
+
+	ai_acceptance_max = 100
+
+	on_weekly_pulse = {}
+
+	on_war_begins = {}
+
+	on_war_end = {}
+}
+
+REPLACE:dp_increase_autonomy = {
+	war_goal = increase_autonomy
+
+	requires_interest_marker = no
+
+	texture = "gfx/interface/icons/war_goals/increase_autonomy.dds"
+
+	possible = {
+		is_subject = yes
+		sb_is_ordinary_colonial_subject = no
+		custom_tooltip = {
+			text = "REQUEST_AUTONOMY_RECENTLY_DENIED"
+			any_diplomatic_catalyst = {
+				is_diplomatic_catalyst_type = catalyst_autonomy_increase_denied
+				target = scope:target_country
+			}
+		}
+	}
+
+	ai_acceptance_max = 90
+
+	on_weekly_pulse = {}
+
+	on_war_begins = {}
+
+	on_war_end = {}
+}

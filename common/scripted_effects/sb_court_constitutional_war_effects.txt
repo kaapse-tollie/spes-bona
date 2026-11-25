@@ -105,7 +105,16 @@ sb_court_resolve_won_war = {
   # Set the terminal receipt before presentation; do not gate an actual win on Prerogative.
   remove_variable = sb_court_war_ended_var
   # Keep the winner's exact opponent until the earned territorial promise is recorded.
-  if = { limit = { sb_chiefs_contest_country = yes sb_chiefs_recorded_war_pair = yes } sb_chiefs_reserve_war_result = yes }
+  if = {
+   limit = { sb_chiefs_contest_country = yes sb_chiefs_recorded_war_pair = yes }
+   sb_chiefs_reserve_war_result = yes
+   # The partition settles after reunion. An actual Hamu victory can record the
+   # other half of his promised land only while the opponent is still bound.
+   if = {
+    limit = { var:sb_court_war_alignment_var = 1 ruler ?= var:sb_court_restoration_claimant_scope }
+    sb_hamu_record_accession = yes
+   }
+  }
   else = {
   if = { limit = { var:sb_court_war_alignment_var = 1 } activate_law = law_type:law_monarchy activate_law = law_type:law_autocracy sb_court_install_royal_claimant = yes sb_hamu_record_accession = yes }
   else = { activate_law = law_type:law_sb_federated_chiefdoms activate_law = law_type:law_sb_chiefly_council sb_court_select_chiefly_head = yes }

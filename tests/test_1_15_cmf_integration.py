@@ -57,6 +57,9 @@ class MovementParityTests(unittest.TestCase):
         self.assertIn("trigger_event = { id = sb_natal_interwar.031 days = 1 }", handoff)
         self.assertIn("owner ?= { country_definition = cd:NAL }", handoff)
         actual = actual.replace(handoff, "", 1)
+        garrison = "NOT = { has_ideology = ideology:ideology_sb_anglo_colonialism }"
+        self.assertIn(garrison, child(child(actual, "interest_group_can_join"), "trigger_else_if"))
+        actual = actual.replace(garrison, "", 1)
         # The retained performance change only reorders this pure filter.
         a = child(child(expected, "additional_radicalism_factors"), "any_political_movement")
         b = child(child(actual, "additional_radicalism_factors"), "any_political_movement")

@@ -85,6 +85,7 @@ sb_zululand_can_unload_refugees = {
 	NOT = { has_variable = sb_zululand_refugees_unloaded_var }
 	NOT = { has_variable = sb_natal_shepstone_repeal_locked_var }
 	sb_natal_has_shepstone_system = yes
+	s:STATE_NATAL.region_state:NAL ?= { any_scope_pop = { culture = cu:zulu is_pop_type = peasants total_size > 0 } }
 	global_var:sb_zululand_live_zul_scope ?= {
 		is_country_alive = yes
 		owns_entire_state_region = STATE_ZULULAND
@@ -110,7 +111,7 @@ sb_zululand_returned_claimant_present = {
 		var:sb_court_restoration_claimant_scope ?= {
 			sb_court_royal_candidate = yes
 			has_variable = sb_zululand_claimant_returned_var
-			owner ?= prev
+			owner ?= global_var:sb_zululand_live_zul_scope
 			is_in_exile_pool = no
 			is_in_void = no
 		}
@@ -151,9 +152,27 @@ sb_zululand_nal_is_self_governing = {
 	}
 }
 
+sb_nrp_has_protectorate_status = {
+	OR = {
+		is_subject_type = subject_type_protectorate
+		is_subject_type = subject_type_sb_nrp_protectorate
+	}
+}
+
+sb_nrp_is_trn_protectorate = {
+	is_direct_subject_of = c:TRN
+	sb_nrp_has_protectorate_status = yes
+}
+
+# A founding protectorate keeps its own president. Its territorial defence rests with Pretoria.
+sb_nrp_boundary_defended_by_trn = {
+	is_direct_subject_of = c:TRN
+	OR = { sb_nrp_has_protectorate_status = yes is_subject_type = subject_type_sb_boer_confederal_partner }
+}
+
 sb_nrp_subject_hard_safety = {
 	OR = {
-		is_subject = yes
+		AND = { is_subject = yes sb_nrp_is_trn_protectorate = no }
 		c:TRN ?= { is_subject = yes }
 	}
 }
@@ -168,11 +187,65 @@ sb_nrp_dynamic_hard_safety = {
 	}
 }
 
+# An unrelated imperial war can delay a new play, but cannot prevent a boundary letter.
+sb_nrp_at_peace_on_boundary = {
+	NOR = { has_war_with = c:NRP is_diplomatic_play_enemy_of = c:NRP }
+	trigger_if = {
+		limit = { c:NRP ?= { sb_nrp_boundary_defended_by_trn = yes } }
+		NOR = { has_war_with = c:TRN is_diplomatic_play_enemy_of = c:TRN }
+	}
+}
+
+sb_nrp_can_issue_boundary_demand = {
+	is_country_alive = yes
+	sb_nrp_at_peace_on_boundary = yes
+	NOT = { has_truce_with = c:NRP }
+	trigger_if = {
+		limit = { c:NRP ?= { sb_nrp_boundary_defended_by_trn = yes } }
+		NOT = { has_truce_with = c:TRN }
+	}
+	OR = {
+		sb_zululand_nal_is_self_governing = yes
+		AND = {
+			country_definition = cd:GBR
+			c:NAL ?= {
+				is_country_alive = yes
+				is_subject_of = c:GBR
+				sb_zululand_nal_is_self_governing = no
+				sb_nrp_at_peace_on_boundary = yes
+			}
+		}
+	}
+}
+
+# NRP scope. A player who chose Vryheid keeps the decision there.
+sb_nrp_pretoria_answers_boundary = {
+	sb_nrp_is_trn_protectorate = yes
+	is_player = no
+	c:TRN ?= { is_player = yes }
+}
+
+sb_nrp_boundary_answer_valid = {
+	c:NRP ?= {
+		has_variable = sb_nrp_boundary_pending_var
+		has_variable = sb_nrp_boundary_event_open_var
+		sb_nrp_boundary_current_political_authority = yes
+		sb_nrp_is_greater_republic = yes
+		var:sb_nrp_boundary_initiator_scope ?= { sb_nrp_can_issue_boundary_demand = yes }
+		trigger_if = {
+			limit = { NOT = { has_variable = sb_nrp_direct_annexation_rebellion_var } }
+			global_var:sb_zululand_live_zul_scope ?= { sb_nrp_at_peace_on_boundary = yes }
+		}
+	}
+	OR = {
+		AND = { country_definition = cd:TRN c:NRP ?= { sb_nrp_pretoria_answers_boundary = yes } }
+		AND = { country_definition = cd:NRP sb_nrp_pretoria_answers_boundary = no }
+	}
+}
+
 sb_nrp_boundary_demand_can_open = {
 	country_definition = cd:NRP
 	is_country_alive = yes
-	is_at_war = no
-	is_active_in_diplomatic_play = no
 	has_variable = sb_nrp_boundary_pending_var
 	NOT = { has_variable = sb_nrp_boundary_not_before_var }
 	NOT = { has_variable = sb_nrp_boundary_event_open_var }
@@ -183,8 +256,7 @@ sb_nrp_boundary_demand_can_open = {
 			global_var:sb_zululand_live_zul_scope ?= { any_scope_state = { state_region = s:STATE_ZULULAND } }
 			global_var:sb_zululand_live_zul_scope ?= {
 				is_country_alive = yes
-				is_at_war = no
-				is_active_in_diplomatic_play = no
+				sb_nrp_at_peace_on_boundary = yes
 			}
 		}
 		AND = {
@@ -194,39 +266,25 @@ sb_nrp_boundary_demand_can_open = {
 		}
 	}
 	OR = {
-		c:NAL ?= {
-			sb_zululand_nal_is_self_governing = yes
-			is_active_in_diplomatic_play = no
-			NOT = { has_truce_with = c:NRP }
-		}
-		AND = {
-			c:NAL ?= {
-				is_country_alive = yes
-				NOT = { sb_zululand_nal_is_self_governing = yes }
-			}
-			c:GBR ?= {
-				is_country_alive = yes
-				is_active_in_diplomatic_play = no
-				NOT = { has_truce_with = c:NRP }
-			}
-		}
+		c:NAL ?= { sb_nrp_can_issue_boundary_demand = yes }
+		c:GBR ?= { sb_nrp_can_issue_boundary_demand = yes }
 	}
 }
 
 sb_nrp_is_greater_republic = {
-	p:xE1E455.state.owner = ROOT
-	p:xE882CE.state.owner = ROOT
-	p:xBE6FEE.state.owner = ROOT
-	p:x904EBE.state.owner = ROOT
-	p:x9E9742.state.owner = ROOT
+	p:xE1E455.state.owner = c:NRP
+	p:xE882CE.state.owner = c:NRP
+	p:xBE6FEE.state.owner = c:NRP
+	p:x904EBE.state.owner = c:NRP
+	p:x9E9742.state.owner = c:NRP
 }
 
 sb_nrp_is_reduced_republic = {
-	p:xBE6FEE.state.owner = ROOT
-	p:xE882CE.state.owner = ROOT
-	p:xE1E455.state.owner = { NOT = { this = ROOT } }
-	p:x904EBE.state.owner = { NOT = { this = ROOT } }
-	p:x9E9742.state.owner = { NOT = { this = ROOT } }
+	p:xE1E455.state.owner = c:NRP
+	p:xE882CE.state.owner = c:NRP
+	p:xBE6FEE.state.owner = { NOT = { this = c:NRP } }
+	p:x904EBE.state.owner = { NOT = { this = c:NRP } }
+	p:x9E9742.state.owner = { NOT = { this = c:NRP } }
 }
 
 sb_zululand_nal_can_annex_subject = {
@@ -249,8 +307,7 @@ sb_zululand_nal_can_annex_subject = {
 }
 
 
-# ROOT = NRP. Revalidates the saved diplomatic initiator and every state scope
-# needed by the exact boundary play before a held choice can mutate anything.
+# NRP scope. Revalidate the initiator and territory before launching the boundary play.
 sb_nrp_boundary_current_launch_authority = {
 	country_definition = cd:NRP
 	is_country_alive = yes
@@ -275,7 +332,7 @@ sb_nrp_boundary_current_launch_authority = {
 		global_var:sb_zululand_live_zul_scope ?= { any_scope_state = { state_region = s:STATE_ZULULAND } }
 	}
 	trigger_if = {
-		limit = { is_direct_subject_of = c:TRN is_subject_type = subject_type_sb_boer_confederal_partner }
+		limit = { sb_nrp_boundary_defended_by_trn = yes }
 		c:TRN ?= { is_country_alive = yes is_subject = no is_at_war = no is_active_in_diplomatic_play = no }
 		var:sb_nrp_boundary_initiator_scope ?= { NOT = { has_truce_with = c:TRN } }
 	}
@@ -302,8 +359,8 @@ sb_nrp_boundary_current_political_authority = {
 		global_var:sb_zululand_live_zul_scope ?= { any_scope_state = { state_region = s:STATE_ZULULAND } }
 	}
 	trigger_if = {
-		limit = { is_direct_subject_of = c:TRN is_subject_type = subject_type_sb_boer_confederal_partner }
-		c:TRN ?= { is_country_alive = yes is_subject = no }
+		limit = { sb_nrp_boundary_defended_by_trn = yes }
+		c:TRN ?= { is_country_alive = yes }
 	}
 	trigger_else = { is_subject = no }
 }
@@ -326,6 +383,64 @@ sb_zululand_can_bribe_chief = {
 	global_var:sb_zululand_live_zul_scope ?= {
 		any_in_list = { variable = sb_court_members sb_zululand_neutral_chief = yes }
 	}
+}
+
+sb_chiefs_natal_cash_surplus = {
+	net_total_income > 0
+	gold_reserves > 0
+	principal = 0
+	in_default = no
+}
+
+sb_chiefs_trn_can_intervene = {
+	sb_zululand_trn_is_eligible_participant = yes
+	sb_zululand_contest_interventions_available = yes
+}
+
+# Payer scope. Opening and answering an offer use the same fiscal and political rules.
+sb_chiefs_ai_can_seek_bribe = {
+	is_ai = yes
+	sb_frontier_ai_scripting_enabled = yes
+	sb_zululand_contest_interventions_available = yes
+	OR = {
+		AND = {
+			country_definition = cd:NAL
+			sb_frontier_ai_behavior_dynamic_historical = yes
+			sb_chiefs_natal_cash_surplus = yes
+			sb_usuthu_activism > 0.50
+		}
+		AND = {
+			sb_zululand_trn_is_eligible_participant = yes
+			in_default = no
+			net_total_income > 0
+			principal <= sb_chiefs_tenth_of_credit
+		}
+	}
+}
+
+sb_chiefs_ai_will_pay_bribe = {
+	has_variable = sb_zululand_bribe_open_var
+	has_variable = sb_zululand_bribe_cost_var
+	sb_chiefs_ai_can_seek_bribe = yes
+	var:sb_zululand_bribe_cost_var <= sb_chiefs_ai_bribe_budget
+	var:sb_zululand_bribe_target_scope ?= { sb_zululand_neutral_chief = yes }
+}
+
+sb_chiefs_boer_volunteer_donor = {
+	culture = cu:boer
+	is_pop_type = soldiers
+	total_size >= 500
+}
+
+sb_chiefs_can_accept_boer_appeal = {
+	sb_chiefs_trn_can_intervene = yes
+	container:sb_zululand_chiefdoms_state ?= { NOT = { has_variable = sb_chiefs_boer_appeal_accepted_var } }
+	trigger_if = {
+		limit = { container:sb_zululand_chiefdoms_state.var:sb_chiefs_rebels_scope ?= { is_country_alive = yes var:sb_court_war_alignment_var ?= 1 } }
+		container:sb_zululand_chiefdoms_state.var:sb_chiefs_rebels_scope = { any_scope_state = { state_region = s:STATE_ZULULAND } }
+	}
+	trigger_else = { global_var:sb_zululand_live_zul_scope ?= { any_scope_state = { state_region = s:STATE_ZULULAND } } }
+	any_scope_pop = { sb_chiefs_boer_volunteer_donor = yes }
 }
 
 # Character scope in a foreign action or tooltip: never relies on a saved ROOT.

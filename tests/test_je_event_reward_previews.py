@@ -18,7 +18,7 @@ COMPLETION_PREVIEWS = {
         "sb_nam_140_charter_tt",
         "sb_nam_140_mission_tt",
     ),
-    "je_sb_map_namibian_coast": ("sb_nam_014_a_tt",),
+    "je_sb_map_namibian_coast": ("sb_nam_017_completion_tt",),
     "je_sb_consolidating_gaza": ("event_effects_sb_gaza.090_tt",),
     "je_sb_delagoa_route_to_sea": ("event_effects_sb_delagoa.020_tt",),
     "je_sb_bechuanaland_corridor": (

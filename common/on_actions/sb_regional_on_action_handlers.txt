@@ -152,6 +152,23 @@ sb_on_natal_colony_monthly_pulse_country = {
 	}
 }
 
+# The standing commando order belongs to Transvaal as its state borders change.
+sb_on_chiefs_volunteer_state_owner_change = {
+	trigger = {
+		OR = {
+			has_modifier = sb_zululand_boer_volunteer_mortality
+			owner ?= { country_definition = cd:TRN has_variable = sb_zululand_boer_volunteers_active_var }
+		}
+	}
+	effect = {
+		if = {
+			limit = { owner ?= { country_definition = cd:TRN has_variable = sb_zululand_boer_volunteers_active_var sb_chiefs_trn_can_intervene = yes } }
+			if = { limit = { NOT = { has_modifier = sb_zululand_boer_volunteer_mortality } } add_modifier = { name = sb_zululand_boer_volunteer_mortality } }
+		}
+		else_if = { limit = { has_modifier = sb_zululand_boer_volunteer_mortality } remove_modifier = sb_zululand_boer_volunteer_mortality }
+	}
+}
+
 sb_on_zululand_state_incorporation = {
 	trigger = {
 		state_region = s:STATE_ZULULAND

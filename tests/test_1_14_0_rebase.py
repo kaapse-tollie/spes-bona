@@ -24,10 +24,10 @@ def text(path: str) -> str:
 class RebaseTests(unittest.TestCase):
     def test_release_metadata_targets_1_15_2_and_cmf_1_67_x(self):
         self.assertIn('supported_version="1.15.2"', text("descriptor.mod"))
-        self.assertIn('version="0.21.0"', text("descriptor.mod"))
+        self.assertIn('version="0.21.1"', text("descriptor.mod"))
         metadata = json.loads(text(".metadata/metadata.json"))
         self.assertEqual("1.15.2", metadata["supported_game_version"])
-        self.assertEqual("0.21.0", metadata["version"])
+        self.assertEqual("0.21.1", metadata["version"])
         relationships = [item for item in metadata["relationships"] if item["id"] == CMF_ID]
         self.assertEqual(["1.67.*"], [item["version"] for item in relationships])
 
@@ -41,7 +41,7 @@ class RebaseTests(unittest.TestCase):
         )
         self.assertEqual(3, inventory["schema_version"])
         self.assertEqual(40, len(inventory["same_path_files"]))
-        self.assertEqual(151, len(inventory["keyed_overrides"]))
+        self.assertEqual(156, len(inventory["keyed_overrides"]))
         self.assertEqual(18, len(inventory["state_region_blocks"]))
         self.assertEqual(1, len(inventory["additive_overrides"]))
         self.assertEqual(8, len(inventory["localization_replace_files"]))
@@ -56,7 +56,14 @@ class RebaseTests(unittest.TestCase):
         )
         depot = json.loads(text("Docs/compatibility/evidence/1_15_2_implementation/current_target.json"))
         changed = {item["path"].removeprefix("game/") for item in depot["entries"]}
+        autonomy_overrides = {
+            f"common/{folder}/zz_sb_colonial_autonomy.txt"
+            for folder in ("diplomatic_actions", "diplomatic_plays", "war_goal_types")
+        }
         for entry in reviewed_entries:
+            if entry.get("mod_path") in autonomy_overrides:
+                self.assertEqual("2026-11-24", entry["rebase_date"])
+                continue
             source = (entry.get("upstream") or {}).get("path") or entry.get("path")
             if entry.get("upstream_file"):
                 source = "localization/english/" + entry["upstream_file"]

@@ -510,6 +510,7 @@ sb_bechuanaland_is_corridor_diplomatic_play = {
 	OR = {
 		is_diplomatic_play_type = dp_sb_bechuanaland_direct_intervention_locked
 		is_diplomatic_play_type = dp_sb_bechuanaland_warren_intervention_locked
+		is_diplomatic_play_type = dp_sb_bechuanaland_warren_kimberley_locked
 		is_diplomatic_play_type = dp_sb_bechuanaland_proxy_intervention_locked
 		is_diplomatic_play_type = dp_sb_bechuanaland_proxy_namaqualand_locked
 		is_diplomatic_play_type = dp_sb_bechuanaland_cap_sgo_return
@@ -807,47 +808,8 @@ sb_bechuanaland_cap_liberal_botswana_route = {
 
 sb_bechuanaland_boer_sphere_controls_dual_corridor = {
 	OR = {
-		AND = {
-			c:TRN ?= { is_country_alive = yes }
-			OR = {
-				c:TRN ?= { owns_entire_state_region = STATE_GRIQUALAND_WEST }
-				c:WBL ?= {
-					is_country_alive = yes
-					is_subject_of = c:TRN
-					owns_entire_state_region = STATE_GRIQUALAND_WEST
-				}
-			}
-			OR = {
-				c:TRN ?= { owns_entire_state_region = STATE_BECHUANALAND }
-				c:SGO ?= {
-					is_country_alive = yes
-					is_subject_of = c:TRN
-					owns_entire_state_region = STATE_BECHUANALAND
-				}
-			}
-		}
-		AND = {
-			c:ORA ?= {
-				is_country_alive = yes
-				is_subject = no
-			}
-			OR = {
-				c:ORA ?= { owns_entire_state_region = STATE_GRIQUALAND_WEST }
-				c:WBL ?= {
-					is_country_alive = yes
-					is_subject_of = c:ORA
-					owns_entire_state_region = STATE_GRIQUALAND_WEST
-				}
-			}
-			OR = {
-				c:ORA ?= { owns_entire_state_region = STATE_BECHUANALAND }
-				c:SGO ?= {
-					is_country_alive = yes
-					is_subject_of = c:ORA
-					owns_entire_state_region = STATE_BECHUANALAND
-				}
-			}
-		}
+		c:TRN ?= { sb_bechuanaland_warren_sphere_holds_both_regions = yes }
+		c:ORA ?= { is_subject = no sb_bechuanaland_warren_sphere_holds_both_regions = yes }
 	}
 }
 
@@ -861,11 +823,11 @@ sb_bechuanaland_corridor_ready_after_kimberley = {
 
 sb_bechuanaland_british_namibia_precludes_corridor = {
 	OR = {
-		c:GBR ?= {
-			has_variable = sb_nam_consolidation_resolved_var
-		}
+		c:GBR ?= { is_country_alive = yes sb_nam_controls_administration_territory = { ADMINISTRATOR = GBR } }
 		c:CAP ?= {
-			has_variable = sb_nam_consolidation_resolved_var
+			is_country_alive = yes
+			is_subject_of = c:GBR
+			sb_nam_controls_administration_territory = { ADMINISTRATOR = CAP }
 		}
 	}
 }
@@ -875,7 +837,7 @@ sb_bechuanaland_corridor_can_open = {
 	NOT = { has_global_variable = sb_bechuanaland_corridor_open_global_var }
 	NOT = { has_global_variable = sb_bechuanaland_corridor_resolved_global_var }
 	NOT = { sb_bechuanaland_british_namibia_precludes_corridor = yes }
-	c:SWA ?= { is_country_alive = yes }
+	c:SWA ?= { is_country_alive = yes sb_nam_controls_administration_territory = { ADMINISTRATOR = SWA } }
 	any_country = { sb_bechuanaland_swa_overlord_candidate = yes }
 	sb_cap_has_northern_cape_foothold = yes
 	c:CAP ?= {
@@ -905,4 +867,97 @@ sb_bechuanaland_can_sponsor_sgo = {
 	sb_bechuanaland_is_primary_boer_actor = yes
 	NOT = { c:SGO ?= { is_country_alive = yes } }
 	sb_bechuanaland_tsw_holds_actor_border_beachhead = yes
+}
+
+sb_bechuanaland_warren_sphere_holds_both_regions = {
+	is_country_alive = yes
+	NOT = { is_subject_of = c:GBR }
+	OR = {
+		owns_entire_state_region = STATE_BECHUANALAND
+		c:SGO ?= { is_country_alive = yes is_subject_of = PREV owns_entire_state_region = STATE_BECHUANALAND }
+	}
+	OR = {
+		owns_entire_state_region = STATE_GRIQUALAND_WEST
+		c:WBL ?= { is_country_alive = yes is_subject_of = PREV owns_entire_state_region = STATE_GRIQUALAND_WEST }
+	}
+}
+
+sb_bechuanaland_warren_demand_is_current = {
+	sb_bechuanaland_corridor_crisis_is_live = yes
+	sb_bechuanaland_no_decentralized_corridor_land = yes
+	c:GBR ?= { is_country_alive = yes }
+	c:CAP ?= { is_country_alive = yes is_subject_of = c:GBR }
+	container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_warren_defender_scope ?= {
+		is_country_alive = yes
+		NOT = { is_subject_of = c:GBR }
+	}
+	container:sb_bechuanaland_corridor_state.var:sb_warren_bechuanaland_state ?= {
+		owner = container:sb_bechuanaland_corridor_state.var:sb_warren_bechuanaland_owner
+	}
+	OR = {
+		AND = {
+			container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_warren_cap_source_var }
+			sb_bechuanaland_cap_has_corridor_foothold = yes
+			c:SGO ?= {
+				is_country_alive = yes
+				OR = {
+					this = container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_warren_defender_scope
+					is_direct_subject_of = container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_warren_defender_scope
+				}
+			}
+		}
+		AND = {
+			container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_warren_gbr_source_var }
+			c:CAP ?= { has_claim = s:STATE_BECHUANALAND has_claim = s:STATE_GRIQUALAND_WEST }
+			container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_warren_defender_scope ?= {
+				sb_bechuanaland_warren_sphere_holds_both_regions = yes
+			}
+			container:sb_bechuanaland_corridor_state.var:sb_warren_griqualand_state ?= {
+				owner = container:sb_bechuanaland_corridor_state.var:sb_warren_griqualand_owner
+			}
+		}
+	}
+}
+
+sb_bechuanaland_warren_sponsor_is_current = {
+	container:sb_bechuanaland_corridor_state.var:sb_warren_sponsor_scope ?= {
+		sb_bechuanaland_swa_active_sponsor = yes
+	}
+}
+
+sb_bechuanaland_warren_event_is_current = {
+	sb_bechuanaland_warren_demand_is_current = yes
+	container:sb_bechuanaland_corridor_state = {
+		var:sb_warren_phase_var = $PHASE$
+		var:sb_warren_sequence_var = scope:sb_warren_event_sequence
+	}
+	this = container:sb_bechuanaland_corridor_state.var:$RECIPIENT$
+}
+
+sb_bechuanaland_warren_answer_is_current = {
+	sb_bechuanaland_warren_event_is_current = { PHASE = 3 RECIPIENT = sb_bechuanaland_warren_defender_scope }
+	OR = {
+		container:sb_bechuanaland_corridor_state = { var:sb_warren_offer_var = 0 }
+		sb_bechuanaland_warren_sponsor_is_current = yes
+	}
+}
+
+sb_bechuanaland_kimberley_claim_was_revoked = {
+	container:sb_bechuanaland_corridor_state = { has_variable = sb_warren_revoked_$DEMAND$_$CLAIMANT$_var }
+	c:$CLAIMANT$ ?= { NOT = { has_claim = s:$REGION$ } }
+}
+
+sb_bechuanaland_kimberley_region_was_returned = {
+	container:sb_bechuanaland_corridor_state = { has_variable = sb_warren_returned_$DEMAND$_var }
+	c:CAP ?= { owns_entire_state_region = $REGION$ }
+}
+
+sb_bechuanaland_warren_first_choice_is_current = {
+	sb_bechuanaland_warren_event_is_current = { PHASE = 1 RECIPIENT = sb_bechuanaland_warren_defender_scope }
+	sb_bechuanaland_warren_sponsor_is_current = yes
+}
+
+sb_bechuanaland_warren_consultation_is_current = {
+	sb_bechuanaland_warren_event_is_current = { PHASE = 2 RECIPIENT = sb_warren_sponsor_scope }
+	sb_bechuanaland_warren_sponsor_is_current = yes
 }

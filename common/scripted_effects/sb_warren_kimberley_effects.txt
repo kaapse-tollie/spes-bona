@@ -1,0 +1,174 @@
+﻿sb_bechuanaland_launch_kimberley_warren = {
+	sb_bechuanaland_clear_exact_goal_target_scopes = yes
+	sb_bechuanaland_refresh_crisis_launch_participants = yes
+	sb_bechuanaland_mark_current_british_subject_package = yes
+	container:sb_bechuanaland_corridor_state.var:sb_warren_bechuanaland_owner = { sb_bechuanaland_add_to_boer_network = yes }
+	container:sb_bechuanaland_corridor_state.var:sb_warren_griqualand_owner = { sb_bechuanaland_add_to_boer_network = yes }
+	container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_warren_defender_scope = {
+		save_temporary_scope_as = sb_warren_kimberley_target
+		sb_bechuanaland_add_to_boer_network = yes
+	}
+	c:GBR = {
+		set_variable = sb_warren_kimberley_launch_var
+		create_diplomatic_play = {
+			type = dp_sb_bechuanaland_warren_kimberley_locked
+			target_country = scope:sb_warren_kimberley_target
+		}
+		if = {
+			limit = { has_variable = sb_warren_kimberley_launch_var }
+			remove_variable = sb_warren_kimberley_launch_var
+			sb_bechuanaland_cancel_warren_negotiation = yes
+			sb_bechuanaland_cancel_pending_crisis = yes
+			sb_bechuanaland_queue_unresolved_settlement_event = yes
+		}
+	}
+}
+
+sb_bechuanaland_configure_kimberley_warren = {
+	container:sb_bechuanaland_corridor_state = {
+		set_variable = { name = sb_bechuanaland_crisis_play_scope value = root }
+		set_variable = sb_warren_kimberley_play_var
+		set_variable = { name = sb_warren_kimberley_defending_principal value = scope:target }
+	}
+	c:GBR = { remove_variable = sb_warren_kimberley_launch_var }
+	if = {
+		limit = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_crisis_direct_route_var } }
+		sb_bechuanaland_configure_warren_direct_crisis_play = yes
+	}
+	else_if = {
+		limit = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_crisis_proxy_route_var } }
+		sb_bechuanaland_configure_warren_proxy_crisis_play = yes
+	}
+	else = {
+		container:sb_bechuanaland_corridor_state = {
+			set_variable = {
+				name = sb_bechuanaland_total_war_primary_target_scope
+				value = var:sb_bechuanaland_warren_defender_scope
+			}
+		}
+		add_initiator_backers = { c:CAP }
+		sb_bechuanaland_configure_total_crisis_play = yes
+		sb_bechuanaland_reset_warren_attempt_country_flags = yes
+		sb_bechuanaland_clear_pending_crisis_flags = yes
+	}
+}
+
+# Each region is already an exact saved state held by a member of the defending sphere.
+sb_bechuanaland_add_kimberley_region_demands = {
+	container:sb_bechuanaland_corridor_state.var:sb_warren_$DEMAND$_state = {
+		save_temporary_scope_as = sb_warren_claim_region_state
+	}
+	container:sb_bechuanaland_corridor_state.var:sb_warren_$DEMAND$_owner = {
+		save_temporary_scope_as = sb_warren_claim_region_owner
+	}
+	add_war_goal = {
+		holder = c:CAP
+		type = return_state
+		target_country = scope:sb_warren_claim_region_owner
+		target_state = scope:sb_warren_claim_region_state
+		primary_demand = yes
+	}
+	sb_bechuanaland_add_kimberley_revoke_claim = { DEMAND = $DEMAND$ CLAIMANT = CAP REGION = $REGION$ }
+	sb_bechuanaland_add_kimberley_revoke_claim = { DEMAND = $DEMAND$ CLAIMANT = GBR REGION = $REGION$ }
+}
+
+sb_bechuanaland_add_kimberley_revoke_claim = {
+	if = {
+		limit = {
+			c:$CLAIMANT$ ?= {
+				has_claim = s:$REGION$
+				sb_bechuanaland_is_british_war_side_member = yes
+			}
+			scope:sb_warren_claim_region_owner ?= { sb_bechuanaland_is_boer_swa_war_side_member = yes }
+		}
+		container:sb_bechuanaland_corridor_state = { set_variable = sb_warren_revoke_$DEMAND$_$CLAIMANT$_var }
+		add_war_goal = {
+			holder = scope:sb_warren_claim_region_owner
+			type = revoke_claim
+			target_country = c:$CLAIMANT$
+			target_state = scope:sb_warren_claim_region_state
+			primary_demand = yes
+		}
+	}
+}
+
+sb_bechuanaland_add_warren_primary_goals = {
+	if = {
+		limit = { is_diplomatic_play_type = dp_sb_bechuanaland_warren_kimberley_locked }
+		sb_bechuanaland_add_kimberley_region_demands = { DEMAND = bechuanaland REGION = STATE_BECHUANALAND }
+		sb_bechuanaland_add_kimberley_region_demands = { DEMAND = griqualand REGION = STATE_GRIQUALAND_WEST }
+	}
+	else = { sb_bechuanaland_add_reciprocal_corridor_goals = yes }
+}
+
+# Called only by the final enforcement hook, never occupation-timer enforcement.
+sb_bechuanaland_track_kimberley_warren_enforcement = {
+	if = {
+		limit = {
+			scope:diplomatic_play ?= { is_diplomatic_play_type = dp_sb_bechuanaland_warren_kimberley_locked }
+			container:sb_bechuanaland_corridor_state ?= { var:sb_bechuanaland_crisis_play_scope ?= scope:diplomatic_play }
+		}
+		sb_bechuanaland_track_kimberley_region_result = { DEMAND = bechuanaland }
+		sb_bechuanaland_track_kimberley_region_result = { DEMAND = griqualand }
+	}
+}
+
+sb_bechuanaland_track_kimberley_region_result = {
+	if = {
+		limit = {
+			scope:actor ?= c:CAP
+			scope:target ?= container:sb_bechuanaland_corridor_state.var:sb_warren_$DEMAND$_owner
+		}
+		container:sb_bechuanaland_corridor_state = { set_variable = sb_warren_returned_$DEMAND$_var }
+	}
+	if = {
+		limit = { scope:actor ?= container:sb_bechuanaland_corridor_state.var:sb_warren_$DEMAND$_owner }
+		sb_bechuanaland_track_kimberley_claim_result = { DEMAND = $DEMAND$ CLAIMANT = CAP }
+		sb_bechuanaland_track_kimberley_claim_result = { DEMAND = $DEMAND$ CLAIMANT = GBR }
+	}
+}
+
+sb_bechuanaland_track_kimberley_claim_result = {
+	if = {
+		limit = {
+			scope:target ?= c:$CLAIMANT$
+			container:sb_bechuanaland_corridor_state = { has_variable = sb_warren_revoke_$DEMAND$_$CLAIMANT$_var }
+		}
+		container:sb_bechuanaland_corridor_state = { set_variable = sb_warren_revoked_$DEMAND$_$CLAIMANT$_var }
+	}
+}
+
+sb_bechuanaland_reconcile_kimberley_warren = {
+	if = {
+		limit = { is_diplomatic_play_type = dp_sb_bechuanaland_warren_kimberley_locked }
+		if = {
+			limit = {
+				OR = {
+					sb_bechuanaland_kimberley_claim_was_revoked = { DEMAND = bechuanaland CLAIMANT = CAP REGION = STATE_BECHUANALAND }
+					sb_bechuanaland_kimberley_claim_was_revoked = { DEMAND = bechuanaland CLAIMANT = GBR REGION = STATE_BECHUANALAND }
+					sb_bechuanaland_kimberley_claim_was_revoked = { DEMAND = griqualand CLAIMANT = CAP REGION = STATE_GRIQUALAND_WEST }
+					sb_bechuanaland_kimberley_claim_was_revoked = { DEMAND = griqualand CLAIMANT = GBR REGION = STATE_GRIQUALAND_WEST }
+				}
+			}
+			container:sb_bechuanaland_corridor_state = { set_variable = sb_bechuanaland_boer_swa_terminal_evidence_var }
+		}
+		if = {
+			limit = {
+				sb_bechuanaland_kimberley_region_was_returned = { DEMAND = bechuanaland REGION = STATE_BECHUANALAND }
+				sb_bechuanaland_kimberley_region_was_returned = { DEMAND = griqualand REGION = STATE_GRIQUALAND_WEST }
+			}
+			container:sb_bechuanaland_corridor_state = { set_variable = sb_bechuanaland_british_terminal_evidence_var }
+		}
+		else_if = {
+			limit = {
+				container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_boer_swa_terminal_evidence_var }
+				OR = {
+					sb_bechuanaland_kimberley_region_was_returned = { DEMAND = bechuanaland REGION = STATE_BECHUANALAND }
+					sb_bechuanaland_kimberley_region_was_returned = { DEMAND = griqualand REGION = STATE_GRIQUALAND_WEST }
+				}
+			}
+			# A territorial gain on one side and a successful demand on the other is mixed peace.
+			container:sb_bechuanaland_corridor_state = { set_variable = sb_bechuanaland_british_terminal_evidence_var }
+		}
+	}
+}
