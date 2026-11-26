@@ -194,6 +194,7 @@ sb_zululand_restore_preannexation_royal_house = {
 			remove_variable = sb_zululand_preannexation_cetshwayo_line_var
 		}
 	}
+	sb_chiefs_restore_archived_court = yes
 }
 
 # ROOT = the engine-created ZUL secession. Restore a named historical ruler or
@@ -423,16 +424,31 @@ sb_zululand_normalize_live_subject_for_natal = {
 }
 
 sb_zululand_restore_protectorate_for_natal = {
+	sb_british_transfer_preannex_zulu_royal_house_to_natal = yes
 	# Ordinary Release Country uses the same ZUL country-creation footprint, but
 	# is a UI action and cannot carry this postwar branch's bespoke setup. Create
 	# the complete owner state atomically, as in Vanilla and Gates country splits.
-	p:xBE6FEE.state = { save_scope_as = sb_zululand_restoration_state }
-	p:xBE6FEE.state.owner = {
-		create_country = {
-			tag = ZUL
-			origin = this
-			state = scope:sb_zululand_restoration_state
-			on_created = { sb_natal_apply_restored_zulu_baseline = yes }
+	if = { limit = { sb_hamu_republic_founded = yes }
+		clear_saved_scope = sb_hamu_release_province
+		random_in_list = {
+			variable = sb_hamu_residual_land
+			limit = { state.owner ?= { sb_zululand_british_postwar_owner = yes NOT = { country_definition = cd:NRP } } }
+			save_scope_as = sb_hamu_release_province
+		}
+		scope:sb_hamu_release_province.state.owner ?= {
+			create_country = { tag = ZUL origin = this province = scope:sb_hamu_release_province on_created = { sb_natal_apply_restored_zulu_baseline = yes } }
+		}
+		if = { limit = { c:ZUL ?= { is_country_alive = yes } } sb_hamu_transfer_residual_land = { RECIPIENT = c:ZUL } }
+	}
+	else = {
+		p:xBE6FEE.state = { save_scope_as = sb_zululand_restoration_state }
+		p:xBE6FEE.state.owner = {
+			create_country = {
+				tag = ZUL
+				origin = this
+				state = scope:sb_zululand_restoration_state
+				on_created = { sb_natal_apply_restored_zulu_baseline = yes }
+			}
 		}
 	}
 	sb_zululand_normalize_live_subject_for_natal = yes
@@ -443,6 +459,7 @@ sb_zululand_restore_protectorate_for_natal = {
 }
 
 sb_zululand_handoff_to_natal = {
+	if = { limit = { sb_hamu_republic_founded = yes sb_zululand_under_british_postwar_control = yes } c:NAL = { set_variable = sb_hamu_residual_handoff_var } }
 	if = {
 		limit = { c:ZUL ?= { is_country_alive = yes } }
 		sb_zululand_normalize_live_subject_for_natal = yes
@@ -475,19 +492,22 @@ sb_zululand_apply_direct_british_administration = {
 			limit = {
 				c:ZUL ?= {
 					is_subject = yes
-					NOT = { is_direct_subject_of = ROOT }
+					NOT = { is_direct_subject_of = c:GBR }
 				}
 			}
 			transfer_subject = c:ZUL
 		}
 		annex = c:ZUL
 	}
-	s:STATE_ZULULAND = {
-		set_owner_of_provinces = {
-			country = c:GBR
-			provinces = {
-				xBE6FEE x1A084B xBFA16B x9E9742 x88FAD4
-				x904EBE x41C070 xE882CE xE1E455
+	if = { limit = { sb_hamu_republic_founded = yes } sb_hamu_transfer_residual_land = { RECIPIENT = c:GBR } }
+	else = {
+		s:STATE_ZULULAND = {
+			set_owner_of_provinces = {
+				country = c:GBR
+				provinces = {
+					xBE6FEE x1A084B xBFA16B x9E9742 x88FAD4
+					x904EBE x41C070 xE882CE xE1E455
+				}
 			}
 		}
 	}
@@ -502,6 +522,17 @@ sb_zululand_apply_direct_british_administration = {
 }
 
 sb_zululand_postwar_monthly_housekeeping = {
+	if = {
+		limit = {
+			country_definition = cd:GBR
+			has_variable = sb_british_zulu_royals_sheltered_var
+			NOT = { exists = var:sb_british_zulu_annex_play_scope }
+			c:ZUL ?= { is_country_alive = yes }
+		}
+		sb_british_return_sheltered_zulu_royals = yes
+		c:ZUL = { sb_zululand_return_mandlakazi_chief = yes }
+		sb_british_clear_preannex_zulu_royal_house = yes
+	}
 	if = {
 		limit = {
 			country_definition = cd:GBR
@@ -631,45 +662,9 @@ sb_zululand_mark_and_exile_royal_house = {
 			create_character = { template = ZUL_zibhebhu_kamaphitha }
 		}
 		sb_court_prepare_partition = yes
-		ruler ?= { save_scope_as = sb_zululand_exile_ruler }
-		heir ?= { save_scope_as = sb_zululand_exile_heir }
-		# Move the heir first so removing the king cannot promote him in between.
-		scope:sb_zululand_exile_heir ?= {
-			exile_character_with_role_cleanup = yes
-			if = {
-				limit = { c:CAP ?= { is_country_alive = yes } }
-				transfer_character = c:CAP
-			}
-		}
-		scope:sb_zululand_exile_ruler ?= {
-			set_variable = sb_zululand_exiled_claimant_var
-			exile_character_with_role_cleanup = yes
-			if = {
-				limit = { c:CAP ?= { is_country_alive = yes } }
-				transfer_character = c:CAP
-			}
-		}
-		# Name the first head before either law can refresh the government.
-		# Ordinary vacancies, including an early partition, use court Prominence.
-		if = {
-			limit = { game_date >= 1877.1.1 }
-			save_scope_as = sb_court_country
-			random_scope_character = {
-				limit = {
-					has_template = ZUL_zibhebhu_kamaphitha
-					sb_court_present_member = yes
-					sb_court_alignment_eligible = yes
-					NOT = { has_variable = sb_court_retired_var }
-				}
-				sb_court_align_chiefly = yes
-				scope:sb_court_country = { set_variable = { name = sb_court_chiefly_head_scope value = prev } }
-			}
-		}
-		activate_law = law_type:law_sb_federated_chiefdoms
-		activate_law = law_type:law_sb_chiefly_council
-		set_variable = sb_court_partition_setup_var
-		sb_court_select_chiefly_head = yes
-		remove_variable = sb_court_partition_setup_var
+		set_variable = sb_court_selecting_head_var
+		sb_chiefs_record_partition_house = yes
+		sb_chiefs_install_council = yes
 		sb_institutions_reconcile = yes
 	}
 }
@@ -681,6 +676,8 @@ sb_zululand_choose_thirteen_chiefdoms = {
 			limit = { sb_zululand_normalized_nal_protectorate = yes }
 			if = { limit = { has_variable = sb_natal_zulu_settlement_event_open_var } remove_variable = sb_natal_zulu_settlement_event_open_var }
 			set_variable = sb_natal_zulu_settlement_resolved_var
+			sb_hamu_close_partition_bargain = yes
+			sb_zululand_mark_and_exile_royal_house = yes
 			c:ZUL ?= {
 				if = {
 					limit = { NOT = { is_subject_type = subject_type_sb_zulu_chiefdoms } }
@@ -696,9 +693,16 @@ sb_zululand_choose_thirteen_chiefdoms = {
 			c:ZUL = {
 				set_variable = sb_zululand_usuthu_contest_var
 			}
-			sb_zululand_mark_and_exile_royal_house = yes
 			sb_zululand_setup_usuthu_politics = yes
-			sb_zululand_open_chiefdoms_situation = yes
+			if = {
+				limit = { sb_hamu_republic_founded = yes }
+				set_global_variable = sb_chiefs_hamu_confirmation_var
+				c:ZUL = {
+					set_variable = { name = sb_zululand_contest_result_var value = 2 }
+					sb_zululand_finalize_political_contest = yes
+				}
+			}
+			else = { sb_zululand_open_chiefdoms_situation = yes }
 		}
 	}
 }
@@ -867,8 +871,10 @@ sb_zululand_open_chiefdoms_situation = {
 		if = { limit = { has_global_variable = sb_zululand_chiefdoms_resolved_global_var } remove_global_variable = sb_zululand_chiefdoms_resolved_global_var }
 		sb_zululand_create_chiefdoms_container = yes
 		sb_chiefs_start_clock = yes
+		global_var:sb_zululand_live_zul_scope ?= { sb_institutions_recalculate = yes }
 		sb_zululand_set_initial_incident_wait = yes
 		sb_zululand_refresh_chiefdoms_participants = yes
+		sb_chiefs_check_house_extinction = yes
 	}
 }
 
@@ -974,19 +980,8 @@ sb_zululand_return_exiled_claimant = {
 	if = {
 		limit = { sb_zululand_can_return_claimant = yes }
 		global_var:sb_zululand_live_zul_scope = {
-			save_scope_as = sb_zululand_claimant_destination
-			var:sb_court_restoration_claimant_scope ?= {
-				if = {
-					limit = { is_character_alive = yes }
-					sb_court_align_royal = yes
-					transfer_character = scope:sb_zululand_claimant_destination
-					free_from_exile_effect = yes
-					if = { limit = { NOT = { has_role_of_type = agitator } } add_character_role = agitator }
-					# Role acquisition has its own career; template creation does not cover it.
-					set_career_length = { role = agitator years = 100 }
-					set_variable = sb_zululand_claimant_returned_var
-				}
-			}
+			sb_chiefs_return_family = yes
+			sb_chiefs_appoint_spokesperson = yes
 			sb_institutions_recalculate = yes
 		}
 		if = {
@@ -1328,7 +1323,11 @@ sb_zululand_cleanup_situation = {
 		if = { limit = { has_variable = sb_zululand_usuthu_contest_var } remove_variable = sb_zululand_usuthu_contest_var }
 	}
 	set_global_variable = sb_zululand_chiefdoms_resolved_global_var
-	container:sb_zululand_chiefdoms_state ?= { destroy_container = yes }
+	container:sb_zululand_chiefdoms_state ?= {
+		var:sb_chiefs_rebels_scope ?= { if = { limit = { is_country_alive = yes } sb_institutions_recalculate = yes } }
+		var:sb_chiefs_origin_scope ?= { if = { limit = { is_country_alive = yes } sb_institutions_recalculate = yes } }
+		destroy_container = yes
+	}
 }
 
 
@@ -2334,22 +2333,8 @@ sb_british_shelter_preannex_zulu_royals = {
 		# Capture the current pair, not the possibly superseded play-start crown.
 		sb_british_archive_preannex_zulu_royal_house = yes
 		set_variable = sb_british_zulu_royals_sheltered_var
-		save_scope_as = sb_zululand_royal_custodian
-		# Remove the heir first so moving the ruler cannot promote or replace him.
-		var:sb_british_zulu_preannex_heir_scope_var ?= {
-			if = {
-				limit = { is_character_alive = yes owner ?= c:ZUL }
-				exile_character_with_role_cleanup = yes
-				transfer_character = scope:sb_zululand_royal_custodian
-			}
-		}
-		var:sb_british_zulu_preannex_ruler_scope_var ?= {
-			if = {
-				limit = { is_character_alive = yes owner ?= c:ZUL }
-				exile_character_with_role_cleanup = yes
-				transfer_character = scope:sb_zululand_royal_custodian
-			}
-		}
+		sb_chiefs_archive_court_members = yes
+		if = { limit = { sb_hamu_republic_founded = yes } sb_hamu_capture_residual_land = yes }
 	}
 }
 
@@ -2380,6 +2365,8 @@ sb_british_return_sheltered_zulu_royals = {
 			}
 			c:ZUL = { sb_zulu_assign_new_heir_scope = yes }
 		}
+		c:ZUL = { sb_chiefs_restore_archived_court = yes }
+		clear_variable_list = sb_hamu_residual_land
 	}
 }
 
@@ -2471,6 +2458,7 @@ sb_zululand_finalize_political_contest = {
 		limit = { var:sb_zululand_contest_result_var = 1 }
 		activate_law = law_type:law_monarchy
 		activate_law = law_type:law_autocracy
+		sb_chiefs_return_family = yes
 		sb_court_install_royal_claimant = yes
 		sb_hamu_record_accession = yes
 		c:NAL ?= {
@@ -2491,21 +2479,10 @@ sb_zululand_finalize_political_contest = {
 		}
 	}
 	else = {
-		activate_law = law_type:law_sb_federated_chiefdoms
-		activate_law = law_type:law_sb_chiefly_council
-		sb_court_select_chiefly_head = yes
+		if = { limit = { NOT = { has_global_variable = sb_chiefs_extinction_awaiting_reunion_var } } sb_chiefs_install_council = yes }
 		c:NAL ?= { set_variable = sb_zululand_zibhebhu_victory_var }
 	}
-	if = { limit = { has_modifier = sb_zululand_chiefdoms_subject_dependence } remove_modifier = sb_zululand_chiefdoms_subject_dependence }
-	if = {
-		limit = { c:NAL ?= { is_country_alive = yes } }
-		if = {
-			limit = { is_direct_subject_of = c:NAL }
-			change_subject_type = subject_type_puppet
-		}
-
-		else = { c:NAL = { create_diplomatic_pact = { country = scope:sb_zululand_contest_winner type = puppet } } }
-	}
+	if = { limit = { NOT = { has_global_variable = sb_chiefs_extinction_awaiting_reunion_var } } sb_chiefs_normalize_settled_subject = yes }
 	sb_zululand_cleanup_situation = yes
 	sb_institutions_reconcile = yes
 	c:NAL ?= {
@@ -2523,6 +2500,16 @@ sb_zululand_finalize_political_contest = {
 		limit = { var:sb_zululand_contest_result_var = 1 }
 		trigger_event = { id = sb_zululand_settlement.123 days = 1 popup = yes }
 		c:NAL ?= { trigger_event = { id = sb_zululand_settlement.121 days = 1 popup = yes } }
+	}
+	else_if = { limit = { has_global_variable = sb_chiefs_house_extinct_var }
+		var:sb_chiefs_extinction_reunion_var ?= {
+			if = { limit = { is_country_alive = yes is_player = yes }
+				set_variable = { name = sb_zululand_contest_result_var value = 2 }
+				trigger_event = { id = sb_zululand_settlement.122 popup = yes }
+			}
+		}
+		trigger_event = { id = sb_zululand_settlement.122 popup = yes }
+		c:NAL ?= { trigger_event = { id = sb_zululand_settlement.120 popup = yes } }
 	}
 	else = {
 		trigger_event = { id = sb_zululand_settlement.122 days = 1 popup = yes }
@@ -2624,5 +2611,19 @@ sb_nrp_capture_zulu_state = {
 			limit = { state_region = s:STATE_ZULULAND }
 			save_temporary_scope_as = sb_nrp_residual_zulu_state
 		}
+	}
+}
+
+sb_chiefs_normalize_settled_subject = {
+	save_scope_as = sb_zululand_contest_winner
+	if = { limit = { has_modifier = sb_zululand_chiefdoms_subject_dependence } remove_modifier = sb_zululand_chiefdoms_subject_dependence }
+	if = {
+		limit = { c:NAL ?= { is_country_alive = yes } }
+		if = {
+			limit = { is_direct_subject_of = c:NAL }
+			change_subject_type = subject_type_puppet
+		}
+
+		else = { c:NAL = { create_diplomatic_pact = { country = scope:sb_zululand_contest_winner type = puppet } } }
 	}
 }

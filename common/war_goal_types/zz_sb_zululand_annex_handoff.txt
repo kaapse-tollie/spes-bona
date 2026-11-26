@@ -110,13 +110,22 @@ REPLACE:annex_country = {
 		# This effect runs before the engine removes the annexed country's characters.
 		if = {
 			limit = {
-				country_definition = cd:GBR
-				exists = scope:diplomatic_play
-				var:sb_british_zulu_annex_play_scope ?= scope:diplomatic_play
 				scope:target_country ?= { country_definition = cd:ZUL }
+				OR = {
+					AND = {
+						country_definition = cd:GBR
+						exists = scope:diplomatic_play
+						var:sb_british_zulu_annex_play_scope ?= scope:diplomatic_play
+					}
+					AND = {
+						sb_hamu_republic_founded = yes
+						sb_zululand_british_postwar_owner = yes
+						NOT = { country_definition = cd:NRP }
+					}
+				}
 			}
 			scope:target_country = { sb_zululand_shelter_mandlakazi_chief = yes }
-			sb_british_shelter_preannex_zulu_royals = yes
+			c:GBR = { sb_british_shelter_preannex_zulu_royals = yes }
 		}
 	}
 

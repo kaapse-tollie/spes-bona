@@ -15,7 +15,6 @@ sb_institutions_seed_movements = {
   set_variable = sb_institutions_movements_seeded_var
   # Generic Absolutists leave through their scoped native disband trigger.
   if = { limit = { NOT = { any_political_movement = { is_political_movement_type = movement_sb_zulu_royal } } } create_political_movement = { type = movement_sb_zulu_royal } }
-  if = { limit = { NOT = { any_political_movement = { is_political_movement_type = movement_sb_zulu_chiefly } } } create_political_movement = { type = movement_sb_zulu_chiefly } }
   if = { limit = { NOT = { any_political_movement = { is_political_movement_type = movement_sb_zulu_traditionalist } } } create_political_movement = { type = movement_sb_zulu_traditionalist } }
  }
 }
@@ -97,6 +96,8 @@ sb_change_prerogative = {
  }
 }
 sb_institutions_monthly_update = {
+ if = { limit = { has_global_variable = sb_chiefs_extinction_awaiting_reunion_var } sb_chiefs_finish_extinction_reunion = yes }
+ if = { limit = { has_variable = sb_chiefs_regency_var NOT = { has_variable = sb_institutions_active_var } } sb_court_reconcile_regency = yes }
  sb_court_reconcile_dynastic_record = yes
  sb_institutions_reconcile = yes
  if = {

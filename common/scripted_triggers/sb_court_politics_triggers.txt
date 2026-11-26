@@ -45,13 +45,50 @@ sb_court_recognisable_successor = {
 }
 # Character scope; shared by the AI button weight and final recognition validation.
 sb_court_ai_recognition_candidate = {
- var:sb_court_home_scope = { NOT = { ruler ?= { has_template = ZUL_dingane } } NOT = { has_variable = sb_court_brothers_choice_var } }
+ sb_court_of_reigning_house = yes
+ NOT = { var:sb_court_home_scope.var:sb_court_minor_sovereign_scope ?= this }
  trigger_if = {
-  limit = { var:sb_court_home_scope = { ruler ?= { has_template = ZUL_mpande_zulu } } }
+  limit = { var:sb_court_home_scope = { ruler ?= { has_template = ZUL_mpande_zulu } NOT = { has_variable = sb_court_minor_sovereign_scope } } }
   OR = { has_template = ZUL_cetshwayo_heir has_template = ZUL_mbuyazi_heir }
-  var:sb_court_home_scope = { NOT = { var:sb_court_recognized_heir_scope ?= { is_character_alive = yes } } }
+ }
+ var:sb_court_home_scope = {
+  NOT = { AND = { ruler ?= { has_template = ZUL_dingane } NOT = { var:sb_court_minor_sovereign_scope ?= { is_character_alive = yes } } } }
+  NOT = { has_variable = sb_court_brothers_choice_var }
+  NOT = { var:sb_court_recognized_heir_scope ?= {
+   sb_court_living_dynast = yes sb_court_of_reigning_house = yes
+   NOT = { is_ruler_of_own_country = yes }
+   NOT = { var:sb_court_home_scope.var:sb_court_minor_sovereign_scope ?= this }
+  } }
  }
 }
+# House identity is permanent. Zero denotes an unassigned following.
+sb_court_of_house = {
+ OR = {
+  this = $HEAD$
+  AND = { var:sb_court_following_var > 0 var:sb_court_following_var = $HEAD$.var:sb_court_following_var }
+  $HEAD$ ?= { var:sb_court_presented_son_scope ?= prev }
+  AND = {
+   OR = { var:sb_court_following_var = 0 $HEAD$ ?= { var:sb_court_following_var = 0 } }
+   OR = {
+    var:sb_court_parent_scope ?= $HEAD$
+    var:sb_court_presented_son_scope ?= $HEAD$
+    $HEAD$.var:sb_court_parent_scope ?= this
+    AND = { exists = var:sb_court_parent_scope var:sb_court_parent_scope ?= $HEAD$.var:sb_court_parent_scope }
+   }
+  }
+  AND = {
+   $HEAD$ ?= { has_template = ZUL_mpande_zulu }
+   OR = { var:sb_court_following_var = 18 var:sb_court_following_var = 19 has_template = ZUL_cetshwayo_heir has_template = ZUL_mbuyazi_heir }
+  }
+ }
+}
+sb_court_of_reigning_house = {
+ OR = {
+  AND = { var:sb_court_home_scope ?= { var:sb_court_minor_sovereign_scope ?= { is_character_alive = yes } } sb_court_of_house = { HEAD = var:sb_court_home_scope.var:sb_court_minor_sovereign_scope } }
+  AND = { NOT = { var:sb_court_home_scope ?= { var:sb_court_minor_sovereign_scope ?= { is_character_alive = yes } } } sb_court_of_house = { HEAD = var:sb_court_home_scope.ruler } }
+ }
+}
+
 # Country scope. The birthday choice keeps its original pair and any already recognised heir.
 sb_court_brothers_choice_valid = {
  has_variable = sb_institutions_active_var
@@ -314,5 +351,41 @@ sb_court_brother_needs_backing = {
  OR = {
   AND = { always = $ADDITIONAL$ $OTHER$ = { has_template = ZUL_cetshwayo_heir } }
   sb_court_brother_lacks_backing = { OTHER = $OTHER$ }
+ }
+}
+
+# The settlement records kinship independently of residence, political allegiance and adult roles.
+sb_chiefs_outside_claimant = {
+ is_character_alive = yes
+ NOR = { has_variable = sb_court_claim_renounced_var has_variable = sb_court_retired_var }
+ OR = {
+  sb_court_royal_candidate = yes
+  this = scope:sb_partition_kingdom.heir
+  this = scope:sb_partition_kingdom.var:sb_court_recognized_heir_scope
+  var:sb_court_claimant_scope ?= this
+ }
+}
+sb_chiefs_restorable_relative = {
+ has_variable = sb_chiefs_protected_var
+ is_character_alive = yes
+ NOT = { has_variable = sb_chiefs_death_recorded_var }
+ NOR = { has_variable = sb_court_claim_renounced_var has_variable = sb_court_retired_var }
+ OR = {
+  sb_court_living_dynast = yes
+  has_variable = sb_zululand_exiled_claimant_var
+  this = c:NAL.var:sb_chiefs_family_heir_scope
+  has_variable = sb_chiefs_lineal_child_var
+ }
+}
+# Only resident adults of the prospective sovereign's court can serve as regent.
+sb_chiefs_available_regent = {
+ sb_court_adult_member = yes
+ NOT = { has_variable = sb_court_retired_var }
+ var:sb_court_home_scope ?= prev
+ owner ?= prev is_in_void = no is_in_exile_pool = no
+ OR = {
+  var:sb_court_successor_pledge_scope ?= prev.var:sb_court_restoration_claimant_scope
+  var:sb_court_alignment_var = 1
+  var:sb_court_alignment_var = 0
  }
 }

@@ -18,6 +18,43 @@ sb_nam_has_coastal_engineering_technologies = {
 	has_technology_researched = civilizing_mission
 }
 
+sb_nam_german_survey_can_receive_maps = {
+	country_definition = cd:GER
+	has_journal_entry = je_sb_map_namibian_coast
+	OR = {
+		NOT = { has_variable = sb_nam_colonial_prestige_resolved_var }
+		has_variable = sb_nam_colonial_programme_backed_var
+	}
+}
+
+sb_nam_maps_offer_is_current = {
+	sb_nam_german_survey_can_receive_maps = yes
+	OR = {
+		AND = {
+			exists = scope:sb_nam_maps_survey
+			je:je_sb_map_namibian_coast = scope:sb_nam_maps_survey
+			scope:sb_nam_maps_survey = { var:sb_nam_maps_offer_var ?= 1 }
+		}
+		# Old queued events have only the country marker, cleared at expedition end.
+		AND = {
+			NOT = { exists = scope:sb_nam_maps_survey }
+			has_variable = sb_nam_german_missionary_support_offered_var
+			je:je_sb_map_namibian_coast = { NOT = { has_variable = sb_nam_maps_offer_var } }
+		}
+	}
+}
+
+sb_nam_can_pay_for_maps = {
+	OR = {
+		gold_reserves >= 100000
+		AND = {
+			is_ai = yes
+			credit > 0
+			sb_nam_maps_projected_principal <= { value = credit multiply = 0.30 }
+		}
+	}
+}
+
 sb_nam_has_physical_coastal_access = {
 	any_scope_state = {
 		owner = root
@@ -154,6 +191,23 @@ sb_nam_is_policy_region = {
 	OR = {
 		state_region = s:STATE_NAMAQUALAND
 		state_region = s:STATE_HEREROLAND
+	}
+}
+
+# Pop scope, with the sponsor captured by the founding handover.
+sb_nam_is_founding_settler = {
+	NOT = { is_pop_type = slaves }
+	culture = { is_primary_culture_of = scope:sb_nam_policy_founder }
+}
+
+# Old charters saved the founding sponsor and its instalments, but no policy date.
+sb_nam_legacy_charter_is_funded = {
+	NOT = { has_variable = sb_nam_policy_expiry_var }
+	var:sb_nam_selected_policy_var ?= 2
+	var:sb_nam_policy_founder_var ?= {
+		is_country_alive = yes
+		has_variable = sb_nam_company_payments_left_var
+		var:sb_nam_company_payments_left_var > 0
 	}
 }
 

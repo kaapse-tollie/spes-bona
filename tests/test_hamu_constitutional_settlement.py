@@ -6,7 +6,7 @@ fixture boundaries; these checks do not establish engine callback ordering.
 """
 import unittest
 
-from tests.test_zulu_later_court import LaterCourtRuntime, PROVINCES
+from tests.test_zulu_later_court import LaterCourtRuntime, PROVINCES, RESIDUAL, SETTLEMENT_TRIGGERS
 from tests.test_zulu_court_politics import definitions
 from tests.test_zulu_frontier_followup import field
 
@@ -81,6 +81,77 @@ class ConstitutionalContractRuntime(LaterCourtRuntime):
 
 
 class HamuConstitutionalSettlementTests(unittest.TestCase):
+    def test_partition_closes_open_signed_and_earned_bargains_before_a_republic_exists(self):
+        for stage in ('offer', 'signed', 'earned'):
+            with self.subTest(stage=stage):
+                rt = LaterCourtRuntime()
+                if stage == 'offer':
+                    rt.offer()
+                else:
+                    rt.accept()
+                    if stage == 'earned':
+                        rt.accede()
+                funds = rt.sponsor['gold_reserves']
+                rt.run('sb_hamu_close_partition_bargain', rt.countries['c:GBR'])
+                rt.run('sb_hamu_contract_monthly', rt.sponsor)
+                self.assertNotIn('sb_hamu_offer_open_var', rt.sponsor['vars'])
+                self.assertNotIn('sb_hamu_promise_live_var', rt.global_vars)
+                self.assertNotIn('sb_hamu_earned_var', rt.sponsor['vars'])
+                self.assertNotIn('sb_hamu_subsidy_cost', rt.sponsor.get('modifiers', {}))
+                self.assertNotIn('sb_hamu_boer_patronage', rt.hamu.get('modifiers', {}))
+                self.assertEqual(funds, rt.sponsor['gold_reserves'])
+                self.assertFalse(rt.condition([('sb_hamu_republic_founded', '=', 'yes')], rt.sponsor))
+                self.assertFalse(rt.countries.get('c:NRP', {}).get('alive', False))
+
+    def test_only_hamus_own_founding_accepts_existing_prewar_evidence(self):
+        rt = LaterCourtRuntime()
+        rt.global_vars['sb_nrp_chiefdoms_earned_var'] = 1
+        rt.global_vars['sb_nrp_reward_consumed_var'] = 1
+        rt.countries['c:NRP'] = dict(id='NRP', alive=True, vars={})
+        def founded():
+            return rt.condition([('sb_hamu_republic_founded', '=', 'yes')], rt.sponsor)
+        self.assertFalse(founded())
+        rt.countries['c:NRP']['vars']['sb_hamu_nrp_var'] = 1
+        self.assertTrue(founded())
+        rt.countries['c:NRP']['alive'] = False
+        rt.sponsor['vars']['sb_hamu_fulfilled_var'] = 1
+        self.assertTrue(founded())
+        rt.run('sb_hamu_close_partition_bargain', rt.countries['c:GBR'])
+        rt.sponsor['vars'].pop('sb_hamu_fulfilled_var')
+        self.assertTrue(founded())
+
+    def test_britain_returns_only_captured_districts_still_in_british_hands(self):
+        class Land(LaterCourtRuntime):
+            def condition(self, nodes, scope, prev=None):
+                for key, op, value in nodes:
+                    if key == 'sb_zululand_british_postwar_owner':
+                        valid = self.condition(SETTLEMENT_TRIGGERS[key], scope, prev) == (value == 'yes')
+                    else:
+                        valid = super().condition([(key, op, value)], scope, prev)
+                    if not valid:
+                        return False
+                return True
+
+        for prior_nrp in (PROVINCES, PROVINCES[:2]):
+            rt = Land()
+            gbr = rt.countries['c:GBR']
+            nrp = dict(id='NRP', vars={'sb_hamu_nrp_var':1}, alive=True, overlord=gbr, player=False)
+            third = dict(id='POR', vars={}, alive=True, player=False)
+            for p in prior_nrp:
+                rt.provinces[p]['state']['owner'] = nrp
+            rt.provinces[RESIDUAL[0]]['state']['owner'] = gbr  # Already British before the war.
+            rt.run('sb_hamu_capture_residual_land', gbr)
+            recorded = {p['id'] for p in gbr['sb_hamu_residual_land']}
+            self.assertEqual(set(rt.provinces) - set(prior_nrp) - {RESIDUAL[0]}, recorded)
+            for p in recorded:
+                rt.provinces[p]['state']['owner'] = gbr
+            rt.provinces[RESIDUAL[1]]['state']['owner'] = third  # Sold before the handover.
+            rt.effect([('sb_hamu_transfer_residual_land', '=', [('RECIPIENT', '=', 'c:ZUL')])], gbr)
+            for p, province in rt.provinces.items():
+                expected = nrp if p in prior_nrp else gbr if p == RESIDUAL[0] else third if p == RESIDUAL[1] else rt.country
+                self.assertIs(expected, province['state']['owner'], p)
+            self.assertEqual(len(recorded) - 1, len(rt.transfers))
+
     def test_both_faction_orientations_keep_signed_promise_without_earning_it(self):
         for royal_rebels in (False, True):
             with self.subTest(royal_rebels=royal_rebels):

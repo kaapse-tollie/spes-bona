@@ -23,6 +23,7 @@ VALUES.update(definitions('common/script_values/sb_court_muster_values.txt'))
 VALUES.update(definitions('common/script_values/sb_zululand_drift_values.txt'))
 EFFECTS = definitions('common/scripted_effects/sb_court_politics_effects.txt')
 EFFECTS.update(definitions('common/scripted_effects/sb_chiefdoms_contest_effects.txt'))
+EFFECTS.update(definitions('common/scripted_effects/sb_chiefs_royal_house_effects.txt'))
 ACTIONS = definitions('common/scripted_effects/sb_court_actions_effects.txt')
 for _file in ('house_identity', 'coalitions', 'succession', 'rivals', 'episodes', 'cast', 'allegiance', 'concession', 'frontier', 'dynastic', 'recruitment', 'force_split', 'muster', 'population_return', 'barracks_return', 'dunn', 'later_princes'):
     EFFECTS.update(definitions(f'common/scripted_effects/sb_court_{_file}_effects.txt'))
@@ -50,6 +51,15 @@ def character(identity, following, prominence, endorsement=0, alignment=0, age=3
     return {'id': identity, 'prominence': prominence, 'popularity': 0, 'age': age, 'alive': alive, 'agitator': agitator,
             'vars': {'sb_court_registered_var': 1, 'sb_court_following_var': following,
                      'sb_court_endorsement_var': endorsement, 'sb_court_alignment_var': alignment}}
+
+
+def with_parameters(nodes, arguments):
+    params = {key: value for key, _, value in arguments}
+    def substitute(x):
+        if isinstance(x, list):
+            return [(substitute(key), op, substitute(value)) for key, op, value in x]
+        return re.sub(r'\$([^$]+)\$', lambda match: params[match[1]], x)
+    return substitute(nodes)
 
 
 class CourtRuntime:
@@ -121,7 +131,11 @@ class CourtRuntime:
             elif key == 'NOR': r = not any(self.condition([n], scope, prev) for n in value)
             elif key == 'OR': r = any(self.condition([n], scope, prev) for n in value)
             elif key == 'AND': r = self.condition(value, scope, prev)
-            elif key in TRIGGERS: r = self.condition(TRIGGERS[key], scope, prev) == (value == 'yes')
+            elif key in TRIGGERS:
+                if isinstance(value, list):
+                    r = self.condition(with_parameters(TRIGGERS[key], value), scope, prev)
+                else:
+                    r = self.condition(TRIGGERS[key], scope, prev) == (value == 'yes')
             elif key == 'exists': r = self.ref(value, scope, prev) is not None
             elif key == 'any_scope_state': r = any(self.condition(value, state, scope) for state in scope['states'])
             elif key == 'is_incorporated': r = scope['is_incorporated'] == (value == 'yes')
@@ -213,17 +227,13 @@ class CourtRuntime:
             elif key in ACTIONS or key in EFFECTS:
                 body = ACTIONS.get(key, EFFECTS.get(key))
                 if isinstance(value, list):
-                    params = dict((k, v) for k, _, v in value)
-                    def subst(x):
-                        if isinstance(x, list): return [(subst(k), op, subst(v)) for k, op, v in x]
-                        for param, val in params.items(): x = x.replace('$'+param+'$', val)
-                        return x
-                    body = subst(body)
+                    body = with_parameters(body, value)
                 self.effect(body, scope, prev)
             elif key == 'set_global_variable':
                 fields = {'name': value, 'value': '1'} if isinstance(value,str) else dict((k,v) for k,_,v in value)
                 self.global_vars[fields['name']] = self.ref(fields.get('value','1'),scope,prev)
             elif key == 'remove_global_variable': self.global_vars.pop(value,None)
+            elif key == 'clear_saved_scope': self.scopes.pop(value, None)
             elif key == 'save_scope_as': self.scopes[value] = scope
             elif key == 'set_variable':
                 if isinstance(value, str): scope['vars'][value] = 1

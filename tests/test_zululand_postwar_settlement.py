@@ -85,7 +85,8 @@ class ZululandPostwarSettlementTests(unittest.TestCase):
         self.assertIn("state = scope:sb_zululand_restoration_state", restore)
         self.assertIn("sb_natal_apply_restored_zulu_baseline = yes", restore)
         self.assertIn("sb_zululand_normalize_live_subject_for_natal = yes", restore)
-        self.assertNotIn("province =", restore)
+        self.assertIn("sb_hamu_republic_founded = yes", restore)
+        self.assertIn("province = scope:sb_hamu_release_province", restore)
         self.assertNotIn("set_owner_of_provinces", restore)
         self.assertNotIn("subject_shell", restore)
 
@@ -385,7 +386,8 @@ class ZululandPostwarSettlementTests(unittest.TestCase):
     def test_terminal_outcomes_and_permanent_owned_state_rewards_are_distinct(self):
         path = "common/scripted_effects/sb_zululand_settlement_effects.txt"
         outcome=object_block(path,"sb_zululand_finalize_political_contest")
-        self.assertIn("change_subject_type = subject_type_puppet",outcome)
+        self.assertIn("sb_chiefs_normalize_settled_subject = yes",outcome)
+        self.assertIn("change_subject_type = subject_type_puppet",object_block(path,"sb_chiefs_normalize_settled_subject"))
         self.assertIn("sb_court_install_royal_claimant = yes",outcome)
         self.assertIn("has_variable = sb_zululand_boer_committed_var",outcome)
         self.assertIn("sb_nrp_create_greater_republic = yes",outcome)
@@ -421,8 +423,8 @@ class ZululandPostwarSettlementTests(unittest.TestCase):
         effects=text("common/scripted_effects/sb_zululand_settlement_effects.txt")
         old_effects=text("common/scripted_effects/sb_natal_interwar_effects.txt")
         returned=object_block("common/scripted_effects/sb_zululand_settlement_effects.txt","sb_zululand_return_exiled_claimant")
-        self.assertIn("var:sb_court_restoration_claimant_scope ?=",returned)
-        self.assertIn("transfer_character = scope:sb_zululand_claimant_destination",returned)
+        self.assertIn("sb_chiefs_return_family = yes",returned)
+        self.assertIn("sb_chiefs_appoint_spokesperson = yes",returned)
         self.assertNotIn("create_character",returned)
         self.assertNotIn("sb_zululand_prepare_crown_successor",effects)
         self.assertNotIn("sb_natal_ensure_zulu_restoration_agitator",old_effects)

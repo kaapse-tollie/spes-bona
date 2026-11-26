@@ -141,7 +141,7 @@ sb_hamu_create_nrp = {
   var:sb_hamu_court_scope = {
    create_country = {
     tag = NRP origin = scope:sb_hamu_sponsor province = p:xE1E455
-    on_created = { set_variable = sb_hamu_nrp_var global_var:sb_hamu_sponsor_scope ?= { set_variable = { name = sb_hamu_created_republic_scope value = prev } sb_hamu_finalise_nrp = yes } }
+    on_created = { set_global_variable = sb_hamu_nrp_founded_var set_variable = sb_hamu_nrp_var global_var:sb_hamu_sponsor_scope ?= { set_variable = { name = sb_hamu_created_republic_scope value = prev } sb_hamu_finalise_nrp = yes } }
    }
   }
   # A failed native creation can be retried; a live NRP is finalised by the monthly reconciliation.
@@ -282,4 +282,56 @@ sb_hamu_configure_boundary_play = {
   add_war_goal = { holder = scope:sb_hamu_boundary_beneficiary type = return_state target_country = c:NRP target_state = scope:sb_hamu_boundary_state primary_demand = yes }
   remove_war_goal = { who = initiator type = sb_story_humiliation }
  }
+}
+
+# Natal's actual partition choice exhausts Hamu's offer, including a grant awaiting delivery.
+sb_hamu_close_partition_bargain = {
+ set_global_variable = sb_hamu_offer_recorded_var
+ if = { limit = { sb_hamu_republic_founded = yes } set_global_variable = sb_hamu_nrp_founded_var }
+ else = {
+  global_var:sb_hamu_sponsor_scope ?= {
+   remove_variable = sb_hamu_offer_open_var
+   if = { limit = { has_variable = sb_hamu_contract_var }
+    sb_hamu_fail_contract = yes
+    remove_variable = sb_hamu_setup_pending_var
+    remove_variable = sb_hamu_earned_var
+   }
+  }
+  remove_global_variable = sb_hamu_promise_live_var
+ }
+}
+
+# Record the defeated country's individual districts before native states merge.
+sb_hamu_capture_residual_land = {
+ clear_variable_list = sb_hamu_residual_land
+ if = { limit = { p:x1A084B.state.owner = c:ZUL } add_to_variable_list = { name = sb_hamu_residual_land target = p:x1A084B } }
+ if = { limit = { p:x41C070.state.owner = c:ZUL } add_to_variable_list = { name = sb_hamu_residual_land target = p:x41C070 } }
+ if = { limit = { p:x88FAD4.state.owner = c:ZUL } add_to_variable_list = { name = sb_hamu_residual_land target = p:x88FAD4 } }
+ if = { limit = { p:xBFA16B.state.owner = c:ZUL } add_to_variable_list = { name = sb_hamu_residual_land target = p:xBFA16B } }
+ if = { limit = { p:xBE6FEE.state.owner = c:ZUL } add_to_variable_list = { name = sb_hamu_residual_land target = p:xBE6FEE } }
+ if = { limit = { p:x9E9742.state.owner = c:ZUL } add_to_variable_list = { name = sb_hamu_residual_land target = p:x9E9742 } }
+ if = { limit = { p:x904EBE.state.owner = c:ZUL } add_to_variable_list = { name = sb_hamu_residual_land target = p:x904EBE } }
+ if = { limit = { p:xE882CE.state.owner = c:ZUL } add_to_variable_list = { name = sb_hamu_residual_land target = p:xE882CE } }
+ if = { limit = { p:xE1E455.state.owner = c:ZUL } add_to_variable_list = { name = sb_hamu_residual_land target = p:xE1E455 } }
+}
+sb_hamu_return_residual_district = {
+ if = {
+  limit = {
+   is_target_in_variable_list = { name = sb_hamu_residual_land target = p:$ID$ }
+   p:$ID$.state.owner ?= { sb_zululand_british_postwar_owner = yes NOT = { country_definition = cd:NRP } }
+  }
+  s:STATE_ZULULAND = { set_owner_of_provinces = { country = $RECIPIENT$ provinces = { $ID$ } } }
+ }
+}
+sb_hamu_transfer_residual_land = {
+ sb_hamu_return_residual_district = { ID = x1A084B RECIPIENT = $RECIPIENT$ }
+ sb_hamu_return_residual_district = { ID = x41C070 RECIPIENT = $RECIPIENT$ }
+ sb_hamu_return_residual_district = { ID = x88FAD4 RECIPIENT = $RECIPIENT$ }
+ sb_hamu_return_residual_district = { ID = xBFA16B RECIPIENT = $RECIPIENT$ }
+ sb_hamu_return_residual_district = { ID = xBE6FEE RECIPIENT = $RECIPIENT$ }
+ sb_hamu_return_residual_district = { ID = x9E9742 RECIPIENT = $RECIPIENT$ }
+ sb_hamu_return_residual_district = { ID = x904EBE RECIPIENT = $RECIPIENT$ }
+ sb_hamu_return_residual_district = { ID = xE882CE RECIPIENT = $RECIPIENT$ }
+ sb_hamu_return_residual_district = { ID = xE1E455 RECIPIENT = $RECIPIENT$ }
+ clear_variable_list = sb_hamu_residual_land
 }

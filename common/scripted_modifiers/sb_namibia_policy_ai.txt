@@ -1,0 +1,40 @@
+﻿sb_nam_survey_policy_weight = {
+	modifier = {
+		trigger = { sb_frontier_ai_behavior_strict_historical = yes }
+		add = $HISTORICAL$
+	}
+	modifier = {
+		trigger = { sb_frontier_ai_behavior_strict_historical = no }
+		# Use basis points so fractional policy odds survive integer weighting.
+		add = {
+			value = 0
+			if = {
+				limit = { sb_nam_cabinet_preference_total > 0 }
+				every_interest_group = {
+					limit = { is_in_government = yes ig_clout > 0 }
+					add = { value = $PREFERENCE$ multiply = ig_clout }
+				}
+				multiply = 7500
+				divide = sb_nam_cabinet_preference_total
+			}
+			if = {
+				limit = { exists = ruler.interest_group }
+				add = {
+					value = ruler.interest_group.$PREFERENCE$
+					multiply = 2500
+					divide = {
+						value = 100
+						if = {
+							limit = { sb_nam_can_found_policy_colony = no }
+							subtract = ruler.interest_group.sb_nam_company_preference
+						}
+					}
+				}
+			}
+			else_if = {
+				limit = { sb_nam_cabinet_preference_total <= 0 }
+				value = 1
+			}
+		}
+	}
+}

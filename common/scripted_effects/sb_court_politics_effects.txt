@@ -315,6 +315,7 @@ sb_court_select_chiefly_head = {
    }
   }
   var:sb_court_chiefly_head_scope ?= {
+   scope:sb_court_country = { sb_chiefs_begin_reign = { HEAD = prev } }
    if = { limit = { NOT = { is_ruler_of_own_country = yes } } cleanup_ruler_character_roles = yes set_character_as_ruler = yes }
    set_variable = { name = sb_court_endorsement_var value = 1 }
   }
@@ -323,6 +324,12 @@ sb_court_select_chiefly_head = {
  }
 }
 sb_court_install_royal_claimant = {
+ if = {
+  limit = { has_variable = sb_zululand_usuthu_contest_var c:NAL ?= { has_variable = sb_chiefs_house_recorded_var } }
+  sb_chiefs_choose_family_claimant = yes
+  sb_chiefs_install_family_sovereign = yes
+ }
+ else = {
  save_scope_as = sb_court_country
  if = {
   limit = { NOT = { var:sb_court_restoration_claimant_scope ?= { sb_court_royal_candidate = yes } } }
@@ -340,6 +347,7 @@ sb_court_install_royal_claimant = {
   cleanup_ruler_character_roles = yes
   set_character_as_ruler = yes
   set_variable = { name = sb_court_endorsement_var value = 1 }
+ }
  }
 }
 sb_court_monthly_housekeeping = {
@@ -404,9 +412,17 @@ sb_court_spawn_dated_cast = {
 sb_court_prepare_partition = {
  save_scope_as = sb_court_country
  sb_court_ensure_roster = yes
- ruler ?= { save_scope_as = sb_court_displaced_ruler }
+ heir ?= { if = { limit = { NOT = { has_variable = sb_court_registered_var } } sb_court_register_character = { FOLLOWING = 0 ALIGNMENT = 1 ENDORSEMENT = 0 } } }
+ clear_saved_scope = sb_court_displaced_ruler
+ clear_saved_scope = sb_court_displaced_heir
+ if = { limit = { var:sb_court_minor_sovereign_scope ?= { is_character_alive = yes } }
+  var:sb_court_minor_sovereign_scope = { save_scope_as = sb_court_displaced_ruler }
+ }
+ else_if = { limit = { NOT = { var:sb_chiefs_release_placeholder_scope ?= ruler } }
+  ruler ?= { save_scope_as = sb_court_displaced_ruler }
+ }
  heir ?= { save_scope_as = sb_court_displaced_heir }
- if = { limit = { exists = scope:sb_court_displaced_heir } set_variable = { name = sb_court_recognized_heir_scope value = scope:sb_court_displaced_heir } }
+ if = { limit = { exists = scope:sb_court_displaced_heir NOT = { exists = var:sb_court_recognized_heir_scope } } set_variable = { name = sb_court_recognized_heir_scope value = scope:sb_court_displaced_heir } }
  if = { limit = { exists = scope:sb_court_displaced_ruler } set_variable = { name = sb_court_restoration_claimant_scope value = scope:sb_court_displaced_ruler } }
  set_variable = sb_court_partition_setup_var
  every_in_list = {
@@ -425,6 +441,10 @@ sb_court_prepare_partition = {
 sb_court_refresh_royal_claimant = {
  save_scope_as = sb_court_country
  if = {
+  limit = { has_variable = sb_zululand_usuthu_contest_var c:NAL ?= { has_variable = sb_chiefs_house_recorded_var } }
+  sb_chiefs_choose_family_claimant = yes
+ }
+ else_if = {
   limit = {
    OR = { has_variable = sb_zululand_usuthu_context_var sb_chiefs_contest_country = yes }
    NOT = { var:sb_court_restoration_claimant_scope ?= { sb_court_royal_candidate = yes } }

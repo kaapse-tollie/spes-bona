@@ -1,0 +1,308 @@
+﻿# Natal keeps the household across native splits, annexation and reunion.
+sb_chiefs_record_relative = {
+ if = {
+  limit = { NOT = { has_variable = sb_chiefs_protected_var } }
+  set_variable = sb_chiefs_protected_var
+  c:NAL = { add_to_variable_list = { name = sb_chiefs_royal_house target = prev } }
+ }
+}
+
+# Character scope. Move the actual person, including children without public roles.
+sb_chiefs_move_character = {
+ if = { limit = { is_in_void = yes } free_character_from_void = yes }
+ if = { limit = { OR = { is_in_exile_pool = yes NOT = { owner ?= $DESTINATION$ } } } transfer_character = $DESTINATION$ }
+ if = { limit = { has_modifier = in_exile_modifier } free_from_exile_effect = yes }
+}
+sb_chiefs_leave_court = {
+ if = { limit = { has_role_of_type = heir } remove_character_role = heir }
+ if = { limit = { is_ruler_of_own_country = yes } exile_character = yes }
+ if = { limit = { exists = commander_military_formation } unassign_from_formation = yes }
+ if = { limit = { has_role_of_type = agitator } remove_character_role = agitator }
+ sb_chiefs_move_character = { DESTINATION = $DESTINATION$ }
+}
+sb_chiefs_exile_relative = {
+ set_variable = sb_chiefs_family_in_exile_var
+ if = { limit = { c:CAP ?= { is_country_alive = yes } } sb_chiefs_leave_court = { DESTINATION = c:CAP } }
+ else = { sb_chiefs_leave_court = { DESTINATION = c:NAL } }
+}
+
+# Freeze memberships and targets before death or ruler callbacks can change them.
+sb_chiefs_record_partition_house = {
+ save_scope_as = sb_partition_kingdom
+ if = { limit = { var:sb_court_minor_sovereign_scope ?= { is_character_alive = yes } } var:sb_court_minor_sovereign_scope = { save_scope_as = sb_partition_sovereign } }
+ else_if = { limit = { var:sb_chiefs_release_placeholder_scope ?= ruler }
+  clear_saved_scope = sb_partition_sovereign
+  if = { limit = { var:sb_court_recognized_heir_scope ?= { is_character_alive = yes has_variable = sb_chiefs_archived_family_var } }
+   var:sb_court_recognized_heir_scope = { save_scope_as = sb_partition_sovereign }
+  }
+  else_if = { limit = { heir ?= { is_character_alive = yes has_variable = sb_chiefs_archived_family_var } }
+   heir = { save_scope_as = sb_partition_sovereign }
+  }
+  else = {
+   ordered_in_list = {
+    variable = sb_court_members limit = { is_character_alive = yes has_variable = sb_chiefs_archived_family_var }
+    order_by = prominence position = 0 check_range_bounds = no save_scope_as = sb_partition_sovereign
+   }
+  }
+ }
+ else = { ruler = { save_scope_as = sb_partition_sovereign } }
+ scope:sb_partition_sovereign ?= {
+  set_variable = sb_zululand_exiled_claimant_var
+  sb_chiefs_record_relative = yes
+  c:NAL = { set_variable = { name = sb_chiefs_deposed_sovereign value = prev } }
+ }
+ every_in_list = {
+  variable = sb_court_members
+  limit = { is_character_alive = yes var:sb_court_home_scope ?= scope:sb_partition_kingdom }
+  if = {
+   limit = { OR = {
+    AND = { exists = scope:sb_partition_sovereign sb_court_of_house = { HEAD = scope:sb_partition_sovereign } }
+    AND = { scope:sb_partition_kingdom = { var:sb_chiefs_release_placeholder_scope ?= ruler } has_variable = sb_chiefs_archived_family_var }
+   } }
+   sb_chiefs_record_relative = yes
+   if = { limit = { OR = {
+    var:sb_court_parent_scope ?= scope:sb_partition_sovereign
+    scope:sb_partition_sovereign = { var:sb_court_presented_son_scope ?= prev }
+    AND = { has_template = ZUL_dinuzulu_heir scope:sb_partition_sovereign = { has_template = ZUL_cetshwayo_heir } }
+    AND = { has_template = ZUL_solomon_heir scope:sb_partition_sovereign = { has_template = ZUL_dinuzulu_heir } }
+    AND = { OR = { has_template = ZUL_cetshwayo_heir has_template = ZUL_mbuyazi_heir } scope:sb_partition_sovereign = { has_template = ZUL_mpande_zulu } }
+   } } set_variable = sb_chiefs_lineal_child_var }
+  }
+  else_if = { limit = { sb_chiefs_outside_claimant = yes } add_to_temporary_list = sb_partition_rivals }
+ }
+ if = { limit = { var:sb_court_recognized_heir_scope ?= { has_variable = sb_chiefs_protected_var } }
+  c:NAL = { set_variable = { name = sb_chiefs_family_heir_scope value = scope:sb_partition_kingdom.var:sb_court_recognized_heir_scope } }
+ }
+ remove_variable = sb_court_recognized_heir_scope
+ sb_court_end_regency = yes
+ sb_court_action_cleanup = yes
+ sb_court_accession_cleanup = yes
+ every_in_list = { list = sb_partition_rivals kill_character = yes }
+ # First remove the heir, then the remaining household, then the sovereign.
+ heir ?= { if = { limit = { has_variable = sb_chiefs_protected_var } sb_chiefs_exile_relative = yes } }
+ c:NAL = { every_in_list = {
+  variable = sb_chiefs_royal_house
+  limit = { is_character_alive = yes NOT = { this = scope:sb_partition_sovereign } NOT = { has_variable = sb_chiefs_family_in_exile_var } }
+  sb_chiefs_exile_relative = yes
+ } }
+ scope:sb_partition_sovereign ?= {
+  if = { limit = { NOT = { has_variable = sb_chiefs_family_in_exile_var } } sb_chiefs_exile_relative = yes }
+  scope:sb_partition_kingdom = { set_variable = { name = sb_court_restoration_claimant_scope value = prev } }
+ }
+ remove_variable = sb_chiefs_release_placeholder_scope
+ c:NAL = { set_variable = sb_chiefs_house_recorded_var }
+}
+
+sb_chiefs_choose_family_claimant = {
+ save_scope_as = sb_chiefs_claimant_court
+ remove_variable = sb_court_restoration_claimant_scope
+ if = { limit = { c:NAL.var:sb_chiefs_deposed_sovereign ?= { sb_chiefs_restorable_relative = yes } }
+  set_variable = { name = sb_court_restoration_claimant_scope value = c:NAL.var:sb_chiefs_deposed_sovereign }
+ }
+ else_if = { limit = { c:NAL.var:sb_chiefs_family_heir_scope ?= { sb_chiefs_restorable_relative = yes } }
+  set_variable = { name = sb_court_restoration_claimant_scope value = c:NAL.var:sb_chiefs_family_heir_scope }
+ }
+ else = {
+  c:NAL = {
+   ordered_in_list = {
+    variable = sb_chiefs_royal_house limit = { sb_chiefs_restorable_relative = yes has_variable = sb_chiefs_lineal_child_var }
+    order_by = prominence position = 0 check_range_bounds = no
+    scope:sb_chiefs_claimant_court = { set_variable = { name = sb_court_restoration_claimant_scope value = prev } }
+   }
+   if = { limit = { scope:sb_chiefs_claimant_court = { NOT = { exists = var:sb_court_restoration_claimant_scope } } }
+    ordered_in_list = {
+     variable = sb_chiefs_royal_house limit = { sb_chiefs_restorable_relative = yes }
+     order_by = prominence position = 0 check_range_bounds = no
+     scope:sb_chiefs_claimant_court = { set_variable = { name = sb_court_restoration_claimant_scope value = prev } }
+    }
+   }
+  }
+ }
+}
+
+sb_chiefs_bring_relative_home = {
+ sb_chiefs_move_character = { DESTINATION = scope:sb_chiefs_homecoming }
+ set_variable = { name = sb_court_home_scope value = scope:sb_chiefs_homecoming }
+ remove_variable = sb_chiefs_family_in_exile_var
+ scope:sb_chiefs_homecoming = {
+  if = { limit = { NOT = { is_target_in_variable_list = { name = sb_court_members target = prev } } } add_to_variable_list = { name = sb_court_members target = prev } }
+ }
+}
+sb_chiefs_return_family = {
+ save_scope_as = sb_chiefs_homecoming
+ c:NAL = { every_in_list = {
+  variable = sb_chiefs_royal_house limit = { is_character_alive = yes }
+  sb_chiefs_bring_relative_home = yes
+ } }
+ sb_chiefs_choose_family_claimant = yes
+}
+sb_chiefs_appoint_spokesperson = {
+ save_scope_as = sb_chiefs_homecoming
+ clear_saved_scope = sb_chiefs_speaker
+ if = { limit = { var:sb_court_restoration_claimant_scope ?= { is_adult = yes owner ?= scope:sb_chiefs_homecoming is_in_void = no is_in_exile_pool = no NOR = { is_ruler_of_own_country = yes has_variable = sb_court_retired_var has_variable = sb_court_claim_renounced_var } } }
+  var:sb_court_restoration_claimant_scope = { save_scope_as = sb_chiefs_speaker }
+ }
+ else = {
+  ordered_in_list = {
+   variable = sb_court_members
+   limit = { has_variable = sb_chiefs_protected_var is_character_alive = yes is_adult = yes owner ?= scope:sb_chiefs_homecoming is_in_void = no is_in_exile_pool = no NOR = { is_ruler_of_own_country = yes has_variable = sb_court_retired_var has_variable = sb_court_claim_renounced_var } }
+   order_by = prominence position = 0 check_range_bounds = no save_scope_as = sb_chiefs_speaker
+  }
+ }
+ if = { limit = { NOT = { var:sb_chiefs_spokesperson_scope ?= scope:sb_chiefs_speaker } }
+  var:sb_chiefs_spokesperson_scope ?= {
+   if = { limit = { is_character_alive = yes has_role_of_type = agitator } remove_character_role = agitator }
+  }
+  remove_variable = sb_chiefs_spokesperson_scope
+  scope:sb_chiefs_speaker ?= {
+   sb_court_align_royal = yes
+   if = { limit = { NOT = { has_role_of_type = agitator } } add_character_role = agitator }
+   set_career_length = { role = agitator years = 100 }
+   scope:sb_chiefs_homecoming = { set_variable = { name = sb_chiefs_spokesperson_scope value = prev } }
+  }
+ }
+}
+
+# Record the sovereign's identity so confirmation and a regent's replacement preserve this reign.
+sb_chiefs_begin_reign = {
+ if = { limit = { NOT = { var:sb_court_incumbent_scope ?= $HEAD$ } }
+  set_variable = { name = sb_prerogative_var value = 0 }
+  set_variable = { name = sb_prerogative_last_change_var value = 0 }
+  set_variable = { name = sb_court_incumbent_scope value = $HEAD$ }
+ }
+}
+sb_chiefs_install_family_sovereign = {
+ save_scope_as = sb_chiefs_homecoming
+ if = {
+  limit = { sb_chiefs_valid_claimant = yes }
+  var:sb_court_restoration_claimant_scope = { sb_chiefs_bring_relative_home = yes }
+  set_variable = sb_court_selecting_head_var
+  if = { limit = { var:sb_court_restoration_claimant_scope = { is_adult = yes } }
+   sb_court_end_regency = yes
+   var:sb_court_restoration_claimant_scope = {
+    if = { limit = { NOT = { is_ruler_of_own_country = yes } } cleanup_ruler_character_roles = yes set_character_as_ruler = yes }
+    set_variable = { name = sb_court_endorsement_var value = 1 }
+    remove_variable = sb_court_claimant_scope
+   }
+  }
+  else = {
+   set_variable = sb_chiefs_regency_var
+   set_variable = { name = sb_court_minor_sovereign_scope value = var:sb_court_restoration_claimant_scope }
+   if = { limit = { sb_chiefs_regent_in_office = no } sb_court_choose_regent = yes }
+  }
+  sb_chiefs_begin_reign = { HEAD = var:sb_court_restoration_claimant_scope }
+  remove_variable = sb_court_selecting_head_var
+ }
+}
+sb_chiefs_find_regent = {
+ if = { limit = { NOT = { exists = var:sb_court_regent_scope } }
+  ordered_in_list = {
+   variable = sb_court_members limit = { sb_chiefs_available_regent = yes sb_chiefs_regent_tier = $TIER$ }
+   order_by = prominence position = 0 check_range_bounds = no
+   scope:sb_court_country = { set_variable = { name = sb_court_regent_scope value = prev } }
+  }
+ }
+}
+sb_chiefs_register_family_child = {
+ if = { limit = { $PARENT$ ?= { OR = { this = c:NAL.var:sb_chiefs_deposed_sovereign has_variable = sb_chiefs_lineal_child_var } } }
+  set_variable = sb_chiefs_lineal_child_var
+ }
+ sb_chiefs_record_relative = yes
+ if = { limit = { $PARENT$ ?= { has_variable = sb_chiefs_family_in_exile_var } } sb_chiefs_exile_relative = yes }
+}
+
+sb_chiefs_install_council = {
+ set_variable = sb_court_selecting_head_var
+ if = { limit = { OR = { has_variable = sb_court_minor_sovereign_scope has_variable = sb_court_regent_scope has_variable = sb_chiefs_regency_var } }
+  sb_court_end_regency = yes
+ }
+ # Name the first head before either law can refresh the government.
+ if = {
+  limit = { game_date >= 1877.1.1 }
+  save_scope_as = sb_court_country
+  random_scope_character = {
+   limit = {
+    has_template = ZUL_zibhebhu_kamaphitha
+    sb_court_present_member = yes
+    sb_court_alignment_eligible = yes
+    NOT = { has_variable = sb_court_retired_var }
+   }
+   sb_court_align_chiefly = yes
+   scope:sb_court_country = { set_variable = { name = sb_court_chiefly_head_scope value = prev } }
+  }
+ }
+ activate_law = law_type:law_sb_federated_chiefdoms
+ activate_law = law_type:law_sb_chiefly_council
+ remove_variable = sb_court_selecting_head_var
+ set_variable = sb_court_partition_setup_var
+ sb_court_select_chiefly_head = yes
+ remove_variable = sb_court_partition_setup_var
+}
+
+# British custody before native annexation. Foreign exiles retain their hosts.
+sb_chiefs_archive_court_members = {
+ clear_variable_list = sb_chiefs_sheltered_roster
+ c:ZUL = {
+  save_scope_as = sb_partition_kingdom
+  save_scope_as = sb_court_country
+  heir ?= { if = { limit = { NOT = { has_variable = sb_court_registered_var } } sb_court_register_character = { FOLLOWING = 0 ALIGNMENT = 1 ENDORSEMENT = 0 } } }
+  if = { limit = { var:sb_court_minor_sovereign_scope ?= { is_character_alive = yes } }
+   var:sb_court_minor_sovereign_scope = { save_scope_as = sb_partition_sovereign }
+   c:GBR = { set_variable = { name = sb_chiefs_archived_minor value = scope:sb_partition_sovereign } }
+  }
+  else = { ruler = { save_scope_as = sb_partition_sovereign } }
+  c:GBR = { set_variable = sb_chiefs_court_in_custody_var set_variable = { name = sb_chiefs_archived_sovereign value = scope:sb_partition_sovereign } }
+  var:sb_court_recognized_heir_scope ?= { c:GBR = { set_variable = { name = sb_chiefs_archived_heir value = prev } } }
+  every_in_list = {
+   variable = sb_court_members
+   limit = { is_character_alive = yes var:sb_court_home_scope ?= scope:sb_partition_kingdom }
+   if = { limit = { sb_court_of_house = { HEAD = scope:sb_partition_sovereign } } set_variable = sb_chiefs_archived_family_var }
+   else_if = { limit = { has_variable = sb_chiefs_archived_family_var } remove_variable = sb_chiefs_archived_family_var }
+   c:GBR = { add_to_variable_list = { name = sb_chiefs_sheltered_roster target = prev } }
+  }
+ }
+ every_in_list = {
+  variable = sb_chiefs_sheltered_roster
+  limit = { owner ?= c:ZUL NOT = { is_ruler_of_own_country = yes } }
+  set_variable = sb_chiefs_british_custody_var
+  sb_chiefs_leave_court = { DESTINATION = c:GBR }
+ }
+ var:sb_british_zulu_preannex_ruler_scope_var ?= {
+  if = { limit = { is_character_alive = yes owner ?= c:ZUL }
+   set_variable = sb_chiefs_british_custody_var
+   sb_chiefs_leave_court = { DESTINATION = c:GBR }
+  }
+ }
+}
+# ZUL scope, including a newly released country object. Restore identity and domicile independently.
+sb_chiefs_restore_archived_court = {
+ save_scope_as = sb_chiefs_homecoming
+ c:GBR ?= {
+  every_in_list = {
+   variable = sb_chiefs_sheltered_roster limit = { is_character_alive = yes }
+   if = { limit = { has_variable = sb_chiefs_british_custody_var }
+    sb_chiefs_move_character = { DESTINATION = scope:sb_chiefs_homecoming }
+    remove_variable = sb_chiefs_british_custody_var
+   }
+   set_variable = { name = sb_court_home_scope value = scope:sb_chiefs_homecoming }
+   scope:sb_chiefs_homecoming = {
+    if = { limit = { NOT = { is_target_in_variable_list = { name = sb_court_members target = prev } } } add_to_variable_list = { name = sb_court_members target = prev } }
+   }
+  }
+  var:sb_chiefs_archived_heir ?= { if = { limit = { is_character_alive = yes } scope:sb_chiefs_homecoming = { set_variable = { name = sb_court_recognized_heir_scope value = prev } } } }
+  var:sb_chiefs_archived_minor ?= { if = { limit = { is_character_alive = yes is_adult = no }
+   scope:sb_chiefs_homecoming = {
+    set_variable = { name = sb_court_minor_sovereign_scope value = prev }
+    set_variable = { name = sb_court_regent_scope value = ruler }
+   }
+  } }
+  if = { limit = { has_variable = sb_chiefs_court_in_custody_var NOT = { var:sb_chiefs_archived_sovereign ?= { is_character_alive = yes } } }
+   scope:sb_chiefs_homecoming = { set_variable = { name = sb_chiefs_release_placeholder_scope value = ruler } }
+  }
+  remove_variable = sb_chiefs_court_in_custody_var
+  remove_variable = sb_chiefs_archived_sovereign
+  clear_variable_list = sb_chiefs_sheltered_roster
+  remove_variable = sb_chiefs_archived_heir
+  remove_variable = sb_chiefs_archived_minor
+ }
+}

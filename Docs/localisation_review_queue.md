@@ -13,6 +13,8 @@ This is the pending review register for new or changed non-event/JE localisation
 
 | File | Keys | Context |
 | --- | --- | --- |
+| `localization/english/sb_l_english.yml` | `state_trait_sb_orange_river` | Regional subsistence trait name. |
+| `localization/english/sb_l_english.yml` | `state_trait_sb_orange_river_desc` | Riverbank cultivation and livestock. |
 | `localization/english/sb_l_english.yml` | `amendment_sb_imperial_administration` | Crown appointments in the Cape and British Natal. |
 | `localization/english/sb_l_english.yml` | `amendment_sb_imperial_administration_desc` | Appointments, their expiry and military staffing. |
 | `localization/english/sb_l_english.yml` | `sb_crown_appointments_reform_lock_tt` | Bureaucracy reform and amendment repeal restriction. |
@@ -766,7 +768,7 @@ New/changed general text awaiting DP review (existing reviewed namespaces preser
 | `localization/english/sb_namibia_l_english.yml` | `sb_nam_017_company_tt` | Warren and South West Africa policy rework. |
 | `localization/english/sb_namibia_l_english.yml` | `sb_nam_017_settler_tt` | Warren and South West Africa policy rework. |
 | `localization/english/sb_namibia_l_english.yml` | `sb_nam_017_ruthless_tt` | Warren and South West Africa policy rework. |
-| `localization/english/sb_namibia_l_english.yml` | `sb_nam_017_swa_tt` | Warren and South West Africa policy rework. |
+| `localization/english/sb_namibia_l_english.yml` | `sb_nam_017_swa_tt` | Founding settlers, maximum Colonial Affairs investment and the expiry of the Bureaucracy bonus. |
 | `localization/english/sb_namibia_l_english.yml` | `company_sb_south_west_africa_company` | Warren and South West Africa policy rework. |
 | `localization/english/sb_namibia_l_english.yml` | `company_sb_south_west_africa_company_desc` | Warren and South West Africa policy rework. |
 | `localization/english/sb_namibia_l_english.yml` | `dyn_c_sb_south_west_africa_company` | Warren and South West Africa policy rework. |
@@ -787,3 +789,7 @@ New/changed general text awaiting DP review (existing reviewed namespaces preser
 | `localization/english/sb_bechuanaland_corridor_l_english.yml` | `dp_sb_bechuanaland_warren_kimberley_locked` | Warren and South West Africa policy rework. |
 | `localization/english/sb_bechuanaland_corridor_l_english.yml` | `dp_sb_bechuanaland_warren_kimberley_locked_desc` | Warren and South West Africa policy rework. |
 | `localization/english/sb_bechuanaland_corridor_l_english.yml` | `dp_sb_bechuanaland_warren_kimberley_locked_tooltip` | Warren and South West Africa policy rework. |
+| `localization/english/sb_institutions_l_english.yml` | `sb_prerogative_target_chiefs` | Royal house and chiefly settlement. |
+| `localization/english/sb_institutions_l_english.yml` | `sb_prerogative_target_court` | Royal house and chiefly settlement. |
+| `localization/english/sb_chiefdoms_refinement_l_english.yml` | `sb_chiefs_claimant_and_speaker` | Royal house and chiefly settlement. |
+| `localization/english/sb_chiefdoms_refinement_l_english.yml` | `sb_chiefs_child_and_regent` | Royal house and chiefly settlement. |

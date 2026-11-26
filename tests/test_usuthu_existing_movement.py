@@ -36,7 +36,9 @@ class InterventionRuntime:
 
     def check(self, nodes, scope):
         for key, op, value in nodes:
-            if key == 'has_variable': valid = value in scope['flags']
+            if key == 'NOT': valid = not self.check(value, scope)
+            elif key == 'any_political_movement': valid = any(self.check(value, m) for m in scope['movements'])
+            elif key == 'has_variable': valid = value in scope['flags']
             elif key == 'has_modifier': valid = value in scope['modifiers']
             elif key == 'is_political_movement_type': valid = value == scope['type']
             else: raise AssertionError(key)
@@ -53,6 +55,10 @@ class InterventionRuntime:
             elif key.startswith('global_var:'):
                 tag = self.globals.get(key.split(':', 1)[1])
                 if tag: self.execute(value, self.countries[tag])
+            elif key == 'create_political_movement':
+                kind = next(v for k, _, v in value if k == 'type')
+                scope['movements'].append(dict(type=kind, modifiers=set(), support=0, activism=0))
+            elif key == 'sb_court_sync_chiefly_concessions': pass  # Concession expiry has its own tests.
             elif key == 'sb_institutions_reconcile':
                 self.reconciled.append(scope['tag'])
             elif key == 'set_variable': scope['flags'].add(value)
@@ -83,6 +89,17 @@ class AuthoredMovementHandoffTests(unittest.TestCase):
         self.assertEqual('ZUL', runtime.globals['sb_zululand_live_zul_scope'])
         self.assertEqual(before, runtime.countries)
         self.assertEqual('GBR', runtime.event_root)
+
+    def test_partition_founds_only_missing_movements_once(self):
+        for missing in ('movement_sb_zulu_chiefly', 'movement_sb_zulu_royal'):
+            runtime = InterventionRuntime()
+            zul = runtime.countries['ZUL']
+            zul['movements'][:] = [m for m in zul['movements'] if m['type'] != missing]
+            existing = deepcopy(zul['movements'])
+            runtime.call('sb_zululand_setup_usuthu_politics')
+            runtime.call('sb_zululand_setup_usuthu_politics')
+            self.assertEqual(1, sum(m['type'] == missing for m in zul['movements']))
+            self.assertEqual(existing, [m for m in zul['movements'] if m['type'] != missing])
 
     def test_chief_patronage_uses_tracked_country_and_never_harms_royal_or_unrelated_movements(self):
         runtime = Contest()

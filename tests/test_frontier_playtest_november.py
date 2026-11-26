@@ -140,6 +140,8 @@ class FrontierPlaytestTests(unittest.TestCase):
     def test_first_chief_is_named_before_the_laws_change_and_only_at_late_partition(self):
         path = "common/scripted_effects/sb_zululand_settlement_effects.txt"
         zul = fields(body(path, "sb_zululand_mark_and_exile_royal_house"), "c:ZUL")[0]
+        self.assertIn(("sb_chiefs_install_council", "=", "yes"), zul)
+        zul = body("common/scripted_effects/sb_chiefs_royal_house_effects.txt", "sb_chiefs_install_council")
         appointment = next(node for node in zul if node[0] == "if" and fields(node[2], "random_scope_character"))
         first_law = next(node for node in zul if node[0] == "activate_law")
         self.assertLess(zul.index(appointment), zul.index(first_law))
@@ -186,8 +188,12 @@ class FrontierPlaytestTests(unittest.TestCase):
                          [node for node in local if node[0] != "on_enforced"])
         self.assertEqual(fields(upstream, "on_enforced"), [[]])
         condition = fields(fields(fields(local, "on_enforced")[0], "if")[0], "limit")[0]
-        self.assertEqual(fields(condition, "country_definition"), ["cd:GBR"])
-        self.assertIn(("var:sb_british_zulu_annex_play_scope", "?=", "scope:diplomatic_play"), condition)
+        bound, residual = fields(fields(condition, "OR")[0], "AND")
+        self.assertEqual(fields(bound, "country_definition"), ["cd:GBR"])
+        self.assertIn(("var:sb_british_zulu_annex_play_scope", "?=", "scope:diplomatic_play"), bound)
+        self.assertIn(("sb_hamu_republic_founded", "=", "yes"), residual)
+        self.assertIn(("sb_zululand_british_postwar_owner", "=", "yes"), residual)
+        self.assertIn(("NOT", "=", [("country_definition", "=", "cd:NRP")]), residual)
         self.assertEqual(fields(condition, "scope:target_country")[0], [("country_definition", "=", "cd:ZUL")])
         self.assertNotIn("sb_zululand_shelter_mandlakazi_chief",
                          source("common/on_actions/sb_diplomatic_play_on_action_handlers.txt"))

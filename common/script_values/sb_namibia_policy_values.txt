@@ -7,3 +7,73 @@ sb_nam_state_policy_days_left = {
 	value = owner.var:sb_nam_policy_expiry_var
 	subtract = game_date
 }
+
+sb_nam_maps_projected_principal = {
+	value = 100000
+	subtract = { value = gold_reserves min = 0 }
+	min = 0
+	add = principal
+}
+
+# Interest group scope. Each group's four policy preferences sum to 100.
+sb_nam_missions_preference = {
+	value = 0
+	if = { limit = { is_interest_group_type = ig_devout } value = 75 }
+	else_if = { limit = { is_interest_group_type = ig_industrialists } value = 5 }
+	else_if = { limit = { is_interest_group_type = ig_rural_folk } value = 10 }
+	else_if = { limit = { is_interest_group_type = ig_petty_bourgeoisie } value = 10 }
+	else_if = { limit = { is_interest_group_type = ig_landowners } value = 10 }
+	else_if = { limit = { is_interest_group_type = ig_armed_forces } value = 5 }
+	else_if = { limit = { is_interest_group_type = ig_intelligentsia } value = 40 }
+	else_if = { limit = { is_interest_group_type = ig_trade_unions } value = 50 }
+}
+
+sb_nam_company_preference = {
+	value = 0
+	if = { limit = { is_interest_group_type = ig_devout } value = 5 }
+	else_if = { limit = { is_interest_group_type = ig_industrialists } value = 65 }
+	else_if = { limit = { is_interest_group_type = ig_rural_folk } value = 5 }
+	else_if = { limit = { is_interest_group_type = ig_petty_bourgeoisie } value = 15 }
+	else_if = { limit = { is_interest_group_type = ig_landowners } value = 15 }
+	else_if = { limit = { is_interest_group_type = ig_armed_forces } value = 10 }
+	else_if = { limit = { is_interest_group_type = ig_intelligentsia } value = 15 }
+	else_if = { limit = { is_interest_group_type = ig_trade_unions } value = 5 }
+}
+
+sb_nam_settler_preference = {
+	value = 0
+	if = { limit = { is_interest_group_type = ig_devout } value = 15 }
+	else_if = { limit = { is_interest_group_type = ig_industrialists } value = 10 }
+	else_if = { limit = { is_interest_group_type = ig_rural_folk } value = 80 }
+	else_if = { limit = { is_interest_group_type = ig_petty_bourgeoisie } value = 60 }
+	else_if = { limit = { is_interest_group_type = ig_landowners } value = 30 }
+	else_if = { limit = { is_interest_group_type = ig_armed_forces } value = 30 }
+	else_if = { limit = { is_interest_group_type = ig_intelligentsia } value = 45 }
+	else_if = { limit = { is_interest_group_type = ig_trade_unions } value = 45 }
+}
+
+sb_nam_ruthless_preference = {
+	value = 0
+	if = { limit = { is_interest_group_type = ig_devout } value = 5 }
+	else_if = { limit = { is_interest_group_type = ig_industrialists } value = 20 }
+	else_if = { limit = { is_interest_group_type = ig_rural_folk } value = 5 }
+	else_if = { limit = { is_interest_group_type = ig_petty_bourgeoisie } value = 15 }
+	else_if = { limit = { is_interest_group_type = ig_landowners } value = 45 }
+	else_if = { limit = { is_interest_group_type = ig_armed_forces } value = 55 }
+}
+
+# Country scope. Normalise the cabinet as a whole after excluding unavailable policies.
+sb_nam_cabinet_preference_total = {
+	value = 0
+	every_interest_group = {
+		limit = { is_in_government = yes ig_clout > 0 }
+		add = {
+			value = 100
+			if = {
+				limit = { owner = { sb_nam_can_found_policy_colony = no } }
+				subtract = sb_nam_company_preference
+			}
+			multiply = ig_clout
+		}
+	}
+}

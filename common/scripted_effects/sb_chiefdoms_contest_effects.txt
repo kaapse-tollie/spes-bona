@@ -98,6 +98,16 @@ sb_chiefs_refresh_organiser = {
 sb_chiefs_evaluate_contest = {
  if = {
   limit = { sb_zululand_chiefdoms_situation_active = yes }
+  sb_chiefs_check_house_extinction = yes
+ }
+ if = {
+  limit = { sb_zululand_chiefdoms_situation_active = yes }
+  global_var:sb_zululand_live_zul_scope ?= {
+   if = { limit = { c:NAL ?= { has_variable = sb_chiefs_house_recorded_var } }
+    sb_chiefs_choose_family_claimant = yes
+    if = { limit = { c:NAL = { has_variable = sb_zululand_claimant_returned_var } } sb_chiefs_appoint_spokesperson = yes }
+   }
+  }
   sb_zululand_enforce_boer_withdrawal = yes
   sb_chiefs_refresh_organiser = yes
   if = {
@@ -147,10 +157,17 @@ sb_chiefs_evaluate_contest = {
     if = {
      limit = {
       NOT = { sb_chiefs_native_mode = yes }
-      sb_chiefs_valid_claimant = yes
+      var:sb_court_restoration_claimant_scope ?= { sb_chiefs_restorable_relative = yes }
       any_political_movement = { is_political_movement_type = movement_sb_zulu_royal political_movement_radicalism >= 1 }
      }
-     sb_zululand_resolve_royal_contest = yes
+     if = { limit = { sb_chiefs_valid_claimant = yes } sb_zululand_resolve_royal_contest = yes }
+     else = {
+      # A child without a regent keeps the same durable victory receipt as a military winner.
+      container:sb_zululand_chiefdoms_state = {
+       set_variable = { name = sb_chiefs_winner_scope value = prev }
+       set_variable = { name = sb_chiefs_winner_alignment_var value = 1 }
+      }
+     }
     }
     else_if = { limit = { sb_chiefs_royal_restored = yes } sb_zululand_resolve_royal_contest = yes }
     else_if = {
@@ -231,5 +248,69 @@ sb_chiefs_reserve_war_result = {
   }
  }
 
+ }
+}
+
+# Do not infer extinction from a missing adult, claimant reference, or court in exile.
+sb_chiefs_check_house_extinction = {
+ if = {
+  limit = {
+   sb_zululand_chiefdoms_situation_active = yes
+   NOT = { has_global_variable = sb_chiefs_house_extinct_var }
+   c:NAL ?= {
+    has_variable = sb_chiefs_house_recorded_var
+    NOT = { any_in_list = { variable = sb_chiefs_royal_house is_character_alive = yes NOT = { has_variable = sb_chiefs_death_recorded_var } } }
+   }
+  }
+  set_global_variable = sb_chiefs_house_extinct_var
+  clear_saved_scope = sb_chiefs_settled_country
+  container:sb_zululand_chiefdoms_state = {
+   if = {
+    limit = { var:sb_chiefs_rebels_scope ?= { is_country_alive = yes } var:sb_chiefs_origin_scope ?= { is_country_alive = yes } }
+    set_global_variable = sb_chiefs_extinction_awaiting_reunion_var
+    var:sb_chiefs_origin_scope = { set_variable = { name = sb_chiefs_extinction_reunion_var value = prev.var:sb_chiefs_rebels_scope } }
+    var:sb_chiefs_rebels_scope = { set_variable = { name = sb_chiefs_extinction_reunion_var value = prev.var:sb_chiefs_origin_scope } }
+   }
+   if = { limit = { var:sb_chiefs_origin_scope ?= { is_country_alive = yes is_direct_subject_of = c:NAL } }
+    var:sb_chiefs_origin_scope = { save_scope_as = sb_chiefs_settled_country }
+   }
+   else_if = { limit = { var:sb_chiefs_rebels_scope ?= { is_country_alive = yes } }
+    var:sb_chiefs_rebels_scope = { save_scope_as = sb_chiefs_settled_country }
+   }
+   else = { global_var:sb_zululand_live_zul_scope ?= { save_scope_as = sb_chiefs_settled_country } }
+  }
+  scope:sb_chiefs_settled_country ?= {
+   set_variable = { name = sb_zululand_contest_result_var value = 2 }
+   sb_zululand_finalize_political_contest = yes
+  }
+ }
+}
+
+# Territorial reunion can complete after either native military callback.
+sb_chiefs_finish_extinction_reunion = {
+ if = {
+  limit = {
+   has_global_variable = sb_chiefs_extinction_awaiting_reunion_var
+   OR = { country_definition = cd:ZUL has_variable = sb_chiefs_extinction_reunion_var }
+   is_country_alive = yes
+   OR = {
+    owns_entire_state_region = STATE_ZULULAND
+    AND = {
+     any_scope_state = { state_region = s:STATE_ZULULAND }
+     NOT = { var:sb_chiefs_extinction_reunion_var ?= { is_country_alive = yes } }
+    }
+   }
+   c:NAL ?= { is_country_alive = yes }
+  }
+  remove_global_variable = sb_chiefs_extinction_awaiting_reunion_var
+  set_global_variable = { name = sb_zululand_live_zul_scope value = this }
+  set_variable = { name = sb_zululand_contest_result_var value = 2 }
+  sb_chiefs_install_council = yes
+  sb_chiefs_normalize_settled_subject = yes
+  every_scope_state = {
+   limit = { state_region = s:STATE_ZULULAND NOT = { has_modifier = sb_zululand_chiefdom_reserves } }
+   add_modifier = { name = sb_zululand_chiefdom_reserves }
+  }
+  sb_institutions_reconcile = yes
  }
 }

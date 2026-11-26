@@ -42,12 +42,14 @@
 
 		if = {
 			limit = {
-				country_definition = cd:GER
-				has_journal_entry = je_sb_map_namibian_coast
-				has_variable = sb_nam_colonial_programme_backed_var
+				sb_nam_german_survey_can_receive_maps = yes
 				NOT = { has_variable = sb_nam_german_missionary_support_offered_var }
+				je:je_sb_map_namibian_coast = { NOT = { has_variable = sb_nam_maps_offer_var } }
 			}
-			set_variable = sb_nam_german_missionary_support_offered_var
+			je:je_sb_map_namibian_coast = {
+				save_scope_as = sb_nam_maps_survey
+				set_variable = { name = sb_nam_maps_offer_var value = 1 }
+			}
 			trigger_event = { id = sb_nam.011 days = 390 popup = yes }
 		}
 
@@ -89,11 +91,22 @@
 
 		if = {
 			limit = { country_definition = cd:SWA is_country_alive = yes }
-			sb_nam_apply_administrative_capacity = yes
+			if = {
+				limit = {
+					has_modifier = sb_nam_administrative_capacity
+					NOT = { has_variable = sb_nam_capacity_term_applied_var }
+					sb_nam_legacy_charter_is_funded = no
+				}
+				sb_nam_apply_administrative_capacity = yes
+			}
 			sb_nam_offer_extermination_orders = yes
 		}
 		if = {
-			limit = { has_variable = sb_nam_policy_expiry_var var:sb_nam_policy_expiry_var > game_date }
+			limit = {
+				has_variable = sb_nam_policy_expiry_var
+				var:sb_nam_policy_expiry_var > game_date
+				NOT = { var:sb_nam_selected_policy_var = 2 }
+			}
 			sb_nam_sync_regional_policy = yes
 		}
 		if = {

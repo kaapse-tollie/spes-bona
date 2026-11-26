@@ -4,6 +4,9 @@
 
 Warren’s normal Cape route gives the Volksraad the initiative to ask for help. After a Boer win at Kimberley, Britain’s demand prompts a decision from the South West African overlord (SWA-O) before the Boer government sees the terms. The Bechuanaland Corridor opens once SWA owns Hereroland and Namaqualand, allowing for the Cape’s Walvis Bay enclave, and meets the other Corridor requirements. The survey report offers Religious Missions, Chartered Company, Settler Colony and Ruthless Extraction, with a ten-year policy or funding commitment as applicable.
 
+The 25 November playtest follow-up covers [Germany’s missionary maps, the founding settlers, Colonial Affairs investment and the duration of SWA’s Bureaucracy bonus](#german-survey-and-swa-founding-playtest).
+The agreed [survey AI weights](#how-the-sponsor-chooses-a-policy) show how the sponsor’s cabinet and ruler influence its choice.
+
 ## Warren’s ultimatum
 
 The current first Boer event, `sb_bechuanaland_corridor.010`, reads as a refusal even though its tooltip describes an appeal. The sponsor’s direct and proxy answers then commit the Boer coalition and try to start a play. Standing aside also calls a war launcher. The missing decision is the Volksraad’s response to the terms of the sponsor’s actual offer. [Boer ultimatum and sponsor options](../events/sb_bechuanaland_corridor_events.txt#L31) · [Warren launch queue](../common/scripted_effects/sb_bechuanaland_corridor_effects.txt#L2157)
@@ -63,15 +66,14 @@ The generic administration event creates a `chartered_company` diplomatic pact f
 
 ### Recommended flow · Choose the policy and found the two-port colony
 
-The **Mission to South West Africa** handles the survey. Its success report, **The Survey Returns**, states which stations were secured and offers the policy. Found SWA when the eligible sponsor holds both Lüderitz and Swakopmund. The survey report and formation normally occur in the same event. The new SWA controls the sponsor’s local holdings, uses its chosen policy from the start and expands through native colonisation. **The Bechuanaland Corridor** uses the later territorial gate. [Survey conclusion](../common/journal_entries/1-08_sb_namibia.txt#L275) · [Expedition rewards](../common/scripted_effects/sb_namibia_effects.txt#L168) · [Current Corridor prerequisites](../common/scripted_triggers/sb_bechuanaland_corridor_triggers.txt#L873)
+The **Mission to South West Africa** awards Lüderitz and Swakopmund to the first successful survey on the starting map, then closes the race. **The Survey Returns** gives the sponsor its policy choice. For an eligible SWA founder, choosing any of the four policies starts the same two-port handover. The founding script creates SWA at Swakopmund and checks ownership again in the next day’s handover before transferring the sponsor’s remaining local holdings. Britain can instead govern directly or delegate to the Cape or SAF. The Bechuanaland Corridor uses the later interior-ownership requirement. [Survey award and race closure](../common/scripted_effects/sb_namibia_effects.txt#L168) · [Survey report](../common/scripted_effects/sb_namibia_policy_effects.txt#L16) · [Two-port handover](../common/scripted_effects/sb_namibia_policy_effects.txt#L166)
 
 ```mermaid
 flowchart LR
-    A[Survey secures at least one station] --> B[Report and policy choice]
-    B --> C{Sponsor holds both ports}
-    C -->|Yes| D[Found SWA with its policy]
-    C -->|One port| E[Rule directly or wait to establish the company]
-    E -->|Other port secured later| D
+    A[First survey succeeds] --> B[Sponsor secures both stations and the race closes]
+    B --> C[Survey report and policy choice]
+    C -->|Eligible SWA founder| D[Found SWA with both ports]
+    C -->|Britain| K[Direct rule or Cape or SAF delegation]
     D -->|Ordinary colony| H[Carry over the regional policy]
     D -->|Chartered Company| I[Link the company and start sponsor funding]
     H --> F[SWA colonises its frontier]
@@ -81,9 +83,11 @@ flowchart LR
     M --> J[Check policy, laws and movement for Extermination Orders]
 ```
 
-Award the survey rewards once when the foothold is secured. If only one station is available, the winner holds it directly. Religious Missions, Settler Colony and Ruthless Extraction can take effect there and carry their remaining term into SWA if the second port is secured. A selected company charter waits for the two-port founding before granting the slot and beginning the expense. If a rival already has SWA, the winner keeps its own territory. An otherwise eligible sponsor that secures the two ports by other means can use the common founding setup. A failed or beaten expedition takes its existing failure path. Recognised major powers that qualify for the survey can choose a policy under the same rules. Britain can use local policies and its separate Cape or SAF delegation. A player who founds SWA can still take the existing play-as offer. [Survey eligibility](../common/decisions/sb_namibia_decisions.txt#L3) · [British delegation](../common/decisions/sb_namibia_decisions.txt#L106) · [Country creation readiness](pitfalls/country-lifecycle.md#life-01)
+Lüderitz starts in Nama territory and Swakopmund in Herero territory. The Cape enclave is Walvis Bay, a third province. The winner resolves both station transfers in the same effect. Other expeditions still at sea take the beaten outcome when the race closes. The separate ownership checks protect land that has already changed hands outside the survey. A single station on such a map is a fallback for existing games and externally acquired land. The common founding condition still requires both stations. [Starting owners](../common/history/states/00_states.txt#L5093) · [Two-station condition](../common/scripted_triggers/sb_namibia_triggers.txt#L93) · [Beaten expedition](../common/journal_entries/1-08_sb_namibia.txt#L347)
 
-Give the new SWA a valid incorporated capital, local claims and Namibian Coastal Access. Each proposed colonisation law enables the native Colonial Affairs institution. Apply the law after the subject has its land. Native defines give countries a minimum base colonial growth. Replay a two-port SWA growing into both regions under all four packages with the administrative barrier disabled and the intended claims and institution in place. [Native growth defines](</Users/depro/Library/Application Support/Steam/steamapps/common/Victoria 3/game/common/defines/00_defines.txt#L1639>) · [Colonial Resettlement](</Users/depro/Library/Application Support/Steam/steamapps/common/Victoria 3/game/common/laws/01_colonial_affairs.txt#L279>) · [Colonial Exploitation](</Users/depro/Library/Application Support/Steam/steamapps/common/Victoria 3/game/common/laws/01_colonial_affairs.txt#L386>) · [SB’s coastal barrier](../common/state_traits/sb_state_traits.txt#L27)
+The playtest checkpoints show this handover on the map. On 1 September 1877 Nama held Lüderitz and Herero held Swakopmund. On 1 October SWA owned both. [September Lüderitz](<../../../save games/autosave_1.v3#L2800429>) · [September Swakopmund](<../../../save games/autosave_1.v3#L2801059>) · [October Lüderitz](<../../../save games/autosave.v3#L2861312>) · [October Swakopmund](<../../../save games/autosave.v3#L2538789>)
+
+Give the new SWA a valid incorporated capital, local claims and Namibian Coastal Access. Each proposed colonisation law enables the native Colonial Affairs institution. Apply the law after the subject has its land, then set Colonial Affairs investment to SWA’s own maximum at formation. Native defines give countries a minimum base colonial growth. Replay a two-port SWA growing into both regions under all four packages with the administrative barrier disabled and the intended claims and institution in place. [Native growth defines](</Users/depro/Library/Application Support/Steam/steamapps/common/Victoria 3/game/common/defines/00_defines.txt#L1639>) · [Colonial Resettlement](</Users/depro/Library/Application Support/Steam/steamapps/common/Victoria 3/game/common/laws/01_colonial_affairs.txt#L279>) · [Colonial Exploitation](</Users/depro/Library/Application Support/Steam/steamapps/common/Victoria 3/game/common/laws/01_colonial_affairs.txt#L386>) · [SB’s coastal barrier](../common/state_traits/sb_state_traits.txt#L27)
 
 ### Policy modifier matrix
 
@@ -93,6 +97,7 @@ The table uses vanilla’s colony-side modifiers as the baseline. The three regi
 
 | Modifier or effect | Script field | Religious Missions | Chartered Company | Settler Colony | Ruthless Extraction |
 | --- | --- | ---: | ---: | ---: | ---: |
+| Bureaucracy, SWA | `country_bureaucracy_mult` | +20% | +20% | +20% | +20% |
 | Colony growth speed | `state_colony_growth_speed_mult` | +10% | — | +50% | +100% |
 | Conversion speed | `state_conversion_mult` | +20% | — | — | — |
 | Loyalist gains · Violent Hostility (1) | `state_loyalism_increases_violent_hostility_mult` | +15%* | — | — | — |
@@ -112,7 +117,7 @@ The table uses vanilla’s colony-side modifiers as the baseline. The three regi
 
 \* **+15%** provisionally carries the earlier magnitude over to loyalist gains for each of the three tiers. “Colonialism” means local colony growth speed. Replay the actual speed with the normal institution, malaria traits and native growth cap. [Native colony growth modifier](https://github.com/Victoria-3-Modding-Co-op/Modding-Digests/blob/main/1.15.0/docs/modifiers.log#L1907) · [Native loyalist gains](https://github.com/Victoria-3-Modding-Co-op/Modding-Digests/blob/main/1.15.0/docs/modifiers.log#L8749) · [Native radical gains](https://github.com/Victoria-3-Modding-Co-op/Modding-Digests/blob/main/1.15.0/docs/modifiers.log#L9401)
 
-† Ruthless uses **−2 Standard of Living in acceptance tiers 1–3** because the available mortality modifiers have broader targeting. SB already uses these country modifiers at the same values. Apply them across SWA once it forms, for the remainder of the original policy term. A one-port administration under direct rule uses the state modifiers during that phase. [Native mortality fields](https://github.com/Victoria-3-Modding-Co-op/Modding-Digests/blob/main/1.15.0/docs/modifiers.log#L2099) · [Native acceptance-tier Standard of Living fields](https://github.com/Victoria-3-Modding-Co-op/Modding-Digests/blob/main/1.15.0/docs/modifiers.log#L6585) · [Existing SB precedent](../common/static_modifiers/sb_namibia_modifiers.txt#L157)
+† Ruthless uses **−2 Standard of Living in acceptance tiers 1–3** because the available mortality modifiers have broader targeting. SB already uses these country modifiers at the same values. Apply them across SWA once it forms, for the remainder of the original policy term. Directly governed land on an already altered map uses the state modifiers during that phase. [Native mortality fields](https://github.com/Victoria-3-Modding-Co-op/Modding-Digests/blob/main/1.15.0/docs/modifiers.log#L2099) · [Native acceptance-tier Standard of Living fields](https://github.com/Victoria-3-Modding-Co-op/Modding-Digests/blob/main/1.15.0/docs/modifiers.log#L6585) · [Existing SB precedent](../common/static_modifiers/sb_namibia_modifiers.txt#L157)
 
 ### Proposed SWA starting laws
 
@@ -152,9 +157,86 @@ The existing event (`sb_nam.201`) can appear once for **Settler Colony** or **Ru
 
 1. SWA chose one of the two eligible policies. Keep that choice after its ten-year modifiers expire.
 2. SWA owns Hereroland and Namaqualand apart from the permitted Cape-held Walvis Bay enclave. Use the same ownership test as the Corridor. The Corridor’s journal status is independent of event eligibility.
-3. SWA has **Colonial Exploitation**, **National Supremacy** or **Ethnostate**, and a **Minority Rights Movement at 75% radicalism or higher**. Those are the existing law and movement gates. Keep the existing two responses and record resolution once. [Existing event trigger and choices](../events/sb_namibia_events.txt#L1502) · [Current monthly dispatch](../common/on_actions/sb_namibia_on_actions.txt#L117)
+3. SWA has **Colonial Exploitation**, **National Supremacy** or **Ethnostate**, and a **Minority Rights Movement at 75% radicalism or higher**. Those are the existing law and movement gates. Keep the existing two responses and record resolution once. [Existing event trigger and choices](../events/sb_namibia_events.txt#L1584) · [Current monthly dispatch](../common/on_actions/sb_namibia_on_actions.txt#L102)
 
 Under the proposed starting laws, Ruthless starts with a qualifying law. Settler starts under Colonial Resettlement and amended Subjecthood, so it needs a qualifying law change even if its interior is complete and the movement has reached the threshold. A Ruthless SWA that takes more than ten years to finish colonising can still receive the event when it meets the law and movement conditions. Religious Missions and Chartered Company are outside this event’s policy eligibility. [Vanilla Minority Rights Movement](</Users/depro/Library/Application Support/Steam/steamapps/common/Victoria 3/game/common/political_movements/02_cultural_movement.txt#L1305>)
+
+## German survey and SWA founding playtest
+
+### When Germany can buy the maps
+
+From 1870, **Berlin Looks Overseas** (`sb_nam.010`) can fire for GER when the Landowners or Armed Forces are in government. Germany also needs an eligible overseas colonial law or both government-petition journals to be absent. Endorsing the programme can start a law petition and adds 250 to Germany’s AI weight for starting the survey. From 1875, an otherwise eligible Germany can start the ordinary survey independently. Choosing the commander opens the mission journal. The monthly pulse queues **The Missionaries’ Maps** (`sb_nam.011`) once on the active survey, with a 390-day delay. The journal holds the offer status and the queued event carries that journal’s identity. [Political event](../events/sb_namibia_events.txt#L19) · [Survey decision and AI weights](../common/decisions/sb_namibia_decisions.txt#L3) · [Commander choice](../events/sb_namibia_events.txt#L285) · [Maps dispatch](../common/on_actions/sb_namibia_on_actions.txt#L43) · [Delivery and funding](../events/sb_namibia_events.txt#L162)
+
+```mermaid
+flowchart LR
+    S[Germany sends a coastal survey] --> T{Berlin's decision}
+    T -->|Keep Germany in Europe| D[Survey continues without maps]
+    T -->|Backed or never decided| A{Same survey active when the offer falls due?}
+    A -->|Yes| M[Offer the maps once]
+    A -->|No| E[Offer lapses]
+    M -->|Fund| P[Pay £100,000 for +10 progress and −2 peril]
+    M -->|Decline| D
+```
+
+**Agreed.** “Keep Germany in Europe” bars the maps even when Germany subsequently sends a survey. An endorsed programme and an undecided Berlin event both qualify. The two existing variables already distinguish the three outcomes in existing saves. Both choices record a decision, and only endorsement records backing. Check the political decision and the identity of the active survey when scheduling, delivering and answering the offer. A refusal while an offer is pending closes it without a charge. Keep the 390-day delay and one offer per expedition. The ordinary expedition decision remains available under its own conditions. [Berlin’s endorsement](../events/sb_namibia_events.txt#L36) · [Berlin’s refusal](../events/sb_namibia_events.txt#L117)
+
+**Agreed funding rule.** A human Germany needs £100,000 in cash. AI Germany can borrow the shortfall if its projected principal is **at most 30% of its credit limit**. Cash in hand still pays first. The AI declines if the purchase would exceed the limit, and the game rechecks affordability and the active mission before charging. Vanilla uses `principal` and `credit` for this comparison. [Purchase eligibility](../common/scripted_triggers/sb_namibia_triggers.txt#L47) · [Vanilla Iberian negotiation](</Users/depro/Library/Application Support/Steam/steamapps/common/Victoria 3/game/events/iberia_events/negotiation_events.txt#L673>)
+
+On **1 September 1877** Germany had backed the programme, and its survey had the maps dispatch marker. Its cash was £0, its principal was £7.596m and its credit limit was £86.876m. Paying then would have moved it from **8.74% to 8.86%**. The saved marker records scheduling. It cannot tell us which option Germany took. [German finances](<../../../save games/autosave_1.v3#L2147194>) · [German survey marker](<../../../save games/autosave_1.v3#L2148149>)
+
+### Who reaches the two ports
+
+On **1 October 1877**, SWA’s incorporated Hereroland capital had **2,947** residents and its unincorporated Namaqualand fragment had **565**. All 3,512 were Herero, Damara, Nama or San. SWA had both German primary cultures, Colonial Resettlement, Colonial Affairs at level 2 and Namibian Coastal Access. Its founder’s capital in Austria contained over 2.6 million South Germans. This checkpoint predates the settler transfer. New two-port administrations draw from the founder’s capital after receiving the land. [Founding effect](../common/scripted_effects/sb_namibia_policy_effects.txt#L210) · [October country and population record](<../../../save games/autosave.v3#L2179733>) · [Colonial Affairs investment](<../../../save games/autosave.v3#L3485718>)
+
+**Agreed.** Send two parties of 1,000 people, **2,000 total**. On successful formation under any of the four policies, move one party to SWA’s actual Hereroland state and one to its actual Namaqualand state. Use free residents of any of the founding sponsor’s primary cultures in its capital. This accommodates an Austrian-led Germany and gives a French or Portuguese sponsor its own settlers. Count people including dependants. Draw from additional eligible cohorts where necessary. If the capital has fewer than 2,000, divide the available people evenly, giving any odd person to Hereroland. The transfer occurs once, after both destinations belong to SWA and before the play-as choice. British delegation follows its existing territorial handover. [Founding settler quotas](../common/scripted_effects/sb_namibia_policy_effects.txt#L127) · [Documented headcount move](https://github.com/Victoria-3-Modding-Co-op/Modding-Digests/blob/main/1.15.0/docs/effects.log#L10229-L10238) · [Vanilla Hokkaidō capital migration](</Users/depro/Library/Application Support/Steam/steamapps/common/Victoria 3/game/events/japan_events/ep2_hokkaido_events.txt#L353>)
+
+### Colonial Affairs at formation
+
+**Agreed.** After the colonial law is active and SWA has its founding land and technologies, read the maximum investment of SWA’s own Colonial Affairs institution. Set its actual investment to that level once, before offering the player the country. Use this for ordinary and chartered subjects. Subsequent investment decisions belong to SWA. The engine exposes `investment_max` on the country’s institution and a country-scoped effect to set investment. SB already applies an institution level after its founding laws in Griqualand East. [Native maximum](https://github.com/Victoria-3-Modding-Co-op/Modding-Digests/blob/main/1.15.0/docs/event_targets.log#L1723-L1726) · [SWA’s founding investment](../common/scripted_effects/sb_namibia_policy_effects.txt#L143) · [Investment effect](<../../References/Modding-Digests/1.15.0/docs/effects.log#L38635>) · [Griqualand East founding order](../common/scripted_effects/sb_griqualand_west_effects.txt#L879)
+
+On 1 October, Germany and SWA both had Colonial Affairs at level 2. SWA had *Colonization* (+2 to its ceiling), *Quinine* (+1) and *Civilizing Mission* (+1). Its expected founding level in this replay is **4**. *Malaria Prevention* supplies a further level in a more advanced campaign. The effective maximum on the new country is authoritative in each playthrough. [SWA’s acquired technologies](<../../../save games/autosave.v3#L3732496>) · [Colonization](</Users/depro/Library/Application Support/Steam/steamapps/common/Victoria 3/game/common/technology/technologies/30_society.txt#L250>) · [Quinine](</Users/depro/Library/Application Support/Steam/steamapps/common/Victoria 3/game/common/technology/technologies/30_society.txt#L500>) · [SB’s technology modifiers](../common/technology/technologies/sb_society_technology_overrides.txt#L9)
+
+Vanilla describes growth generation in terms of incorporated population and Colonial Affairs investment. For the September checkpoint, compare the existing founding setup, the settler transfer alone, maximum investment alone and the two agreed changes together. Read daily growth and check that both frontiers advance. Equal headcounts of local and sponsor-primary residents at the same investment level can isolate the role of primary culture. [Vanilla growth concept](</Users/depro/Library/Application Support/Steam/steamapps/common/Victoria 3/game/localization/english/concepts_l_english.yml#L1111>) · [Growth defines](</Users/depro/Library/Application Support/Steam/steamapps/common/Victoria 3/game/common/defines/00_defines.txt#L1641>)
+
+### When the +20% Bureaucracy ends
+
+The pre-patch Settler Colony save has a permanent Bureaucracy grant. Its first SWA pulse replaces that grant using the recorded policy expiry, **22 September 1887**, the same date as both state modifiers. [Capacity grant](../common/scripted_effects/sb_namibia_policy_effects.txt#L81) · [Existing-save repair](../common/on_actions/sb_namibia_on_actions.txt#L92) · [Settler policy expiry in Hereroland](<../../../save games/autosave.v3#L2538794>) · [Saved country modifier](<../../../save games/autosave.v3#L2180085>)
+
+The agreed expiry for **all four policies** is 3,650 days from policy selection, with the remaining term applied to SWA at formation. The regular survey has already secured both stations when this choice is made. Chartered Company uses the same territorial handover and Bureaucracy term. Its business link starts the sponsor’s separate obligation of £2,000 on each of the next 120 monthly pulses. [Policy selection and expiry](../common/scripted_effects/sb_namibia_policy_effects.txt#L30) · [Company funding](../common/scripted_effects/sb_namibia_policy_effects.txt#L331)
+
+For an existing administration with a recorded policy expiry, replace the permanent grant with its remaining term and prevent monthly renewal. For an older company with only an outstanding payment count, the end of that commitment gives a recoverable cutoff. Avoid a fresh ten-year award on loading. The population adjustment belongs to formation, which the 1 September checkpoint still precedes. [Policy expiry transfer](../common/scripted_effects/sb_namibia_policy_effects.txt#L232) · [Charter funding](../common/scripted_effects/sb_namibia_policy_effects.txt#L345)
+
+### How the sponsor chooses a policy
+
+**Strict-Historical.** Every AI sponsor chooses **Ruthless Extraction**, including Britain under direct rule. **Dynamic-Historical and Disabled.** Use the cabinet and ruler of the country answering *The Survey Returns*. A human sponsor keeps all eligible choices and the Missions timeout. The event weights the eligible options and records the selected policy once, before forming SWA. [AI game rule](../common/game_rules/sb_game_rules.txt#L1) · [Survey options](../events/sb_namibia_events.txt#L492) · [Policy selection](../common/scripted_effects/sb_namibia_policy_effects.txt#L30)
+
+**Agreed split.** Give the cabinet **75%** of the choice and the ruler’s own interest group **25%**. Build the cabinet’s preferences from the table below, weighting each governing IG by its share of their combined national clout. Read the current ruler’s IG separately and use its row even if that group is in opposition. If it holds office, it contributes through both channels. For example, an IG with 40% of governing clout supplies 30% through the cabinet and another 25% through its ruler when all four options are available. [Sponsor policy weights](../common/scripted_modifiers/sb_namibia_policy_ai.txt#L1) · [IG preference values](../common/script_values/sb_namibia_policy_values.txt#L19) · [Vanilla ruler affiliation](</Users/depro/Library/Application Support/Steam/steamapps/common/Victoria 3/game/common/script_values/politics_values.txt#L60>)
+
+| Sponsor interest group | Religious Missions | Chartered Company | Settler Colony | Ruthless Extraction |
+| --- | ---: | ---: | ---: | ---: |
+| Devout | 75% | 5% | 15% | 5% |
+| Industrialists | 5% | 65% | 10% | 20% |
+| Rural Folk | 10% | 5% | 80% | 5% |
+| Petite Bourgeoisie | 10% | 15% | 60% | 15% |
+| Landowners | 10% | 15% | 30% | 45% |
+| Armed Forces | 5% | 10% | 30% | 55% |
+| Intelligentsia | 40% | 15% | 45% | 0% |
+| Trade Unions | 50% | 5% | 45% | 0% |
+
+These are the agreed weights for the four SB packages. For example, Missions combines abolition with conditional charity hospitals, while Ruthless enacts Slave Trade. The Intelligentsia and Trade Unions can therefore each give Ruthless zero weight without vetoing the rest of the government’s choice. [Policy presets](#proposed-swa-starting-laws)
+
+For each of the two inputs, remove unavailable options and rescale its remaining weights to 100% before combining them. This keeps the ruler’s quarter intact in Britain, where Chartered Company is unavailable. If the ruler has no IG, use the cabinet alone. If there is no governing IG with positive clout, use the ruler alone. If both inputs are absent, give the eligible policies equal weight. Draw once when the sponsor selects the policy. [Company eligibility](../common/scripted_triggers/sb_namibia_triggers.txt#L227)
+
+The **1 September 1877** save gives examples of a ruler’s IG inside and outside the cabinet. Each cell shows the cabinet-only chance followed by the chance with the ruler included.
+
+| Sponsor and ruler’s IG | Missions | Company | Settler | Ruthless |
+| --- | ---: | ---: | ---: | ---: |
+| Germany · Franz Josef, Petite Bourgeoisie in government | 35.6% → 29.2% | 11.1% → 12.0% | 33.1% → 39.8% | 20.3% → 19.0% |
+| Britain · Victoria, Industrialists in opposition | 44.9% → 37.2% | Ineligible | 23.9% → 25.1% | 31.2% → 37.7% |
+
+Germany’s cabinet comprised the Catholic Church (19.215% national clout), Landowners (14.986%) and Petite Bourgeoisie (14.571%). Franz Josef makes Settler the most likely choice. Britain’s Armed Forces (12.784%) and Devout (13.969%) governed without Victoria’s Industrialists. With the charter unavailable, her IG’s remaining preference leans towards Ruthless, which ends up almost level with Missions. These figures are calculated policy odds for those saved governments. [Franz Josef](<../../../save games/autosave_1.v3#L3533432>) · [German church](<../../../save games/autosave_1.v3#L3057841>) · [German Landowners](<../../../save games/autosave_1.v3#L3058385>) · [German Petite Bourgeoisie](<../../../save games/autosave_1.v3#L3058590>) · [Victoria](<../../../save games/autosave_1.v3#L3538875>) · [British Armed Forces](<../../../save games/autosave_1.v3#L3053808>) · [British Devout](<../../../save games/autosave_1.v3#L3053941>) · [British Industrialists](<../../../save games/autosave_1.v3#L3054083>)
+
+An alternative would give the ruler the weight of one average cabinet member. That gives Franz Josef 25% in his three-IG government, Victoria 33⅓% in her two-IG government and a ruler 50% alongside a single governing IG. The fixed quarter keeps the cabinet decisive across all three and lets its composition determine which policies it favours.
 
 ## Decision register
 
@@ -173,16 +255,33 @@ Under the proposed starting laws, Ruthless starts with a qualifying law. Settler
 | SWA Company presentation and unique bonus | Deferred | Design flags, icons and any bespoke company bonus separately. |
 | Religious Missions founding laws | Agreed | Keep SB’s existing laws, including Agrarianism, Colonial Resettlement and conditional mission schooling. Add Slavery Banned and use Charity Hospitals when SWA has Medical Degrees. |
 | Other founding laws and sponsor approval | Provisional | Use the three vanilla-based presets in the table. The proposal gives zero separate sponsor approval bonus. |
-| Formation and scope | Provisional | Found SWA at both survey ports, give it a working native frontier and offer the existing player switch. Eligible one-port surveys use direct rule until both ports are ready. |
+| Formation and scope | Agreed | The first successful survey secures both ports on the starting map. All four policies use that handover for an eligible founder. A map with independently altered ownership uses the existing safeguards. |
 | Bechuanaland Corridor opening | Agreed | Wait for SWA to hold Hereroland and Namaqualand, with Cape-held Walvis Bay as the sole exception. |
 | Extermination Orders eligibility | Agreed | Settler or Ruthless on the complete map with the same enclave exception, plus the existing qualifying law and 75% Minority Rights Movement radicalism. Retain the policy choice after expiry. |
-| Policy balance and AI | Provisional | Check the local impact of the growth bonuses under the native cap and tune the policy weights. |
+| Policy growth balance | Provisional | Check the local impact of the growth bonuses under the native cap. |
+| Strict-Historical survey AI | Agreed | Every AI sponsor chooses Ruthless Extraction. |
+| Political inputs to the survey AI | Agreed | Outside Strict-Historical, use SWA-O’s governing IGs and count its ruler’s IG separately, including when it is in opposition. |
+| Survey AI weights | Agreed | Give the clout-weighted cabinet 75% and the ruler 25%, using the same [IG preferences](#how-the-sponsor-chooses-a-policy) for both. |
+| German survey after a missed Berlin event | Agreed | A qualifying German survey can receive the maps even if Berlin never considered the programme. |
+| Explicit Berlin refusal | Agreed | Only “Keep Germany in Europe” bars a German survey from receiving the maps. |
+| German AI funding | Agreed | Borrow up to 30% of the credit limit after the £100,000 charge. Apply this to the AI’s maps purchase. |
+| SWA founding settlers | Agreed | Transfer 1,000 free sponsor-primary residents from the sponsor’s capital to each SWA state once at formation. Split any shortfall evenly. |
+| Founding Colonial Affairs | Agreed | Set actual investment to SWA’s own current maximum once, after applying its founding technologies and laws, under every policy. |
+| SWA Bureaucracy | Agreed | All four policies give SWA +20% temporarily for the policy term. |
+| Common Bureaucracy expiry date | Agreed | Date all four grants from policy selection for 3,650 days. The company’s separate business and payment rules begin with its link. |
+| Cause of zero colonial growth | Open | Replay separates the effects of additional primary-culture residents and SWA’s higher founding investment on generation and frontier progress. |
 | Existing games | Provisional | Preserve formed administrations and active plays. Decide how to handle an old consolidation journal already in progress when planning the change. |
 
 ## Acceptance checks for the design
 
+The survey regressions reproduce the two cabinets’ September 1877 odds and the October colony’s Bureaucracy deadline. Running the settler effect against the September save’s 74 capital cohorts found 2,598,416 eligible residents in Austria. Hereroland and Namaqualand received 1,000 each, with a loss of 2,000 in the capital. DP’s in-game replay checks event delivery, the displayed institution level and daily frontier progress. [Survey regressions](../tests/test_namibia_survey.py)
+
+- Check Strict-Historical AI always chooses Ruthless for Germany and Britain, and that the human timeout still selects Missions. In both other AI modes reproduce the September cabinet and ruler odds above. Exercise a shared IG, an opposition ruler, a ruler without an IG and an empty cabinet. Check Britain’s charter has zero chance and a succession or reload after selection leaves the chosen policy intact.
+- A German survey gets one maps offer with Berlin’s endorsement or while Berlin is undecided. An express refusal suppresses it, including after dispatch. Test an ended survey, reload and a held offer. Check one debit and grant with full cash, partial cash or projected debt exactly at 30%, and a decline when borrowing would take debt above it.
+- At two-port founding, check 2,000 people leave the sponsor and 1,000 arrive per SWA state under all four policies. Include multiple eligible cultures, a capital short of settlers, an interrupted formation and reload. Check that SWA’s actual Colonial Affairs level matches its own founding ceiling with the sponsor below or at maximum. Verify a later investment change persists. Compare the country’s growth and both frontiers using the replay cases above.
+- Compare Bureaucracy expiry under all four policies. Check the shared policy deadline, charter establishment and payments, a transfer or closure, and a monthly pulse after expiry.
 - Exercise the normal Cape consultation and the post-Kimberley sponsor-first consultation through each sponsor reply. Check the early and late surrender paths, one Boer popup in the post-Kimberley branch, and launch only after final Boer consent. Replay a changed sponsor, a held popup, reload and white peace. Check exact territorial terms and participants on the fully Boer-held map.
-- Complete the survey with both stations, one station and neither station available. Check policy delivery and expiry, the capital and subject relationship, colonial growth under the native institution, and the existing play-as choice. Exercise an existing SWA controlled by a rival and the separate British delegation.
-- Inspect the starting laws and native institutions for every package. For Missions, exercise religious and secular sponsors, SWA with and without Medical Degrees, and the Slavery Banned law after territorial transfer. Check the acceptance-specific gains and local growth cap in both state fragments. For Ruthless, check the −2 SoL in each of tiers 1–3 and zero direct change in tiers 4–5, including after formation from one-port direct rule and at policy expiry. Verify the owning-company link, one extra company slot, the first and 120th payments, disbanding, an overlord transfer, and a reload before a payment.
+- Complete competing surveys from the starting map. The winner secures both stations before choosing any policy, and the losing expedition follows the beaten route. Test the existing ownership safeguards separately with a deliberately altered map. Check the capital, subject relationship, native growth, play-as offer and separate British delegation.
+- Inspect the starting laws and native institutions for every package. For Missions, exercise religious and secular sponsors, SWA with and without Medical Degrees, and the Slavery Banned law after territorial transfer. Check the acceptance-specific gains and local growth cap in both state fragments. For Ruthless, check the −2 SoL in each of tiers 1–3 and zero direct change in tiers 4–5, at founding and at policy expiry. Verify the owning-company link, one extra company slot, the first and 120th payments, disbanding, an overlord transfer, and a reload before a payment.
 - Exercise Extermination Orders with all four policies, including Settler before and after a qualifying law change, radicalism below and at 75%, a remaining inland pocket, Cape-held Walvis Bay, and a colony that completes colonisation after its ten-year modifiers expire. Test a reload with the event pending and consume it once after either response.
 - Check that a two-port SWA waits, an incomplete interior waits, and a mature SWA opens the Corridor when the other conditions hold. Test Cape Walvis Bay by itself, Cape ownership beyond the enclave, a remaining Rehoboth or Oorlam pocket, and full control including Walvis Bay. Replay the Botswana claim, the SAF terminal route, and Portugal’s Pink Map on both sides of opening. The source trace establishes the current wiring. Native growth, event delivery and the changed pacing require in-game replay.

@@ -86,7 +86,7 @@ class ChiefdomsPlaytest(unittest.TestCase):
         rt = NatalReview()
         rt.nal.update(is_ai=True, sb_natal_has_shepstone_system=True, radical_fractions={'cu:zulu':.2667})
         rt.claimant.update(owner=rt.zul,alive=True)
-        rt.claimant['vars']['sb_zululand_claimant_returned_var'] = 1
+        rt.nal['sb_chiefs_royal_house'] = [rt.claimant]
         peasants = entity('households',culture='cu:zulu',pop_type='peasants',total_size=1000)
         artisans = entity('artisans',culture='cu:zulu',pop_type='machinists',total_size=100)
         rt.natal_state = entity('Natal',pops=[peasants,artisans])
@@ -280,6 +280,6 @@ class ChiefdomsPlaytest(unittest.TestCase):
         self.assertEqual('yes', field(pact, 'income_transfer_based_on_second_country'))
         self.assertIn('change_subject_type = subject_type_puppet',
                       find_object(source('common/scripted_effects/sb_zululand_settlement_effects.txt'),
-                                  'sb_zululand_finalize_political_contest'))
+                                  'sb_chiefs_normalize_settled_subject'))
 
 if __name__ == '__main__': unittest.main()

@@ -47,7 +47,7 @@ sb_court_on_ruler_selected = {
       set_variable = { name = sb_prerogative_var value = 0 }
       set_variable = { name = sb_prerogative_last_change_var value = 0 }
      }
-     set_variable = { name = sb_court_incumbent_scope value = ruler }
+     if = { limit = { NOT = { has_law = law_type:law_sb_federated_chiefdoms } } set_variable = { name = sb_court_incumbent_scope value = ruler } }
      remove_variable = sb_court_privileges_this_reign_var
      if = { limit = { ruler = { has_template = ZUL_mbuyazi_heir } } set_global_variable = sb_zulu_mbuyazi_succession_global_var }
      else_if = { limit = { ruler = { has_template = ZUL_cetshwayo_heir } } remove_global_variable = sb_zulu_mbuyazi_succession_global_var }
@@ -63,6 +63,10 @@ sb_court_on_character_death = {
   if = {
    limit = { has_variable = sb_court_registered_var }
    save_scope_as = sb_court_deceased
+   if = { limit = { has_variable = sb_chiefs_protected_var sb_zululand_chiefdoms_situation_active = yes }
+    set_variable = sb_chiefs_death_recorded_var
+    sb_chiefs_check_house_extinction = yes
+   }
    var:sb_court_home_scope ?= {
     if = {
      limit = { has_variable = sb_institutions_active_var sb_court_has_royal_law = yes var:sb_court_incumbent_scope ?= scope:sb_court_deceased NOT = { has_variable = sb_court_regent_scope } NOT = { has_variable = sb_court_dynastic_crisis_var } NOT = { has_variable = sb_court_selecting_head_var } }

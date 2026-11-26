@@ -52,13 +52,26 @@ sb_chiefs_royal_constitution = {
  has_law = law_type:law_monarchy
  has_law = law_type:law_autocracy
 }
-sb_chiefs_valid_claimant = { var:sb_court_restoration_claimant_scope ?= { sb_court_royal_candidate = yes } }
+sb_chiefs_regent_in_office = {
+ var:sb_court_regent_scope ?= {
+  is_character_alive = yes is_adult = yes is_ruler_of_own_country = yes owner ?= prev
+  NOT = { has_variable = sb_court_retired_var }
+ }
+}
+sb_chiefs_valid_claimant = {
+ var:sb_court_restoration_claimant_scope ?= { sb_chiefs_restorable_relative = yes }
+ OR = {
+  var:sb_court_restoration_claimant_scope = { is_adult = yes }
+  AND = { var:sb_court_minor_sovereign_scope ?= var:sb_court_restoration_claimant_scope sb_chiefs_regent_in_office = yes }
+  any_in_list = { variable = sb_court_members sb_chiefs_available_regent = yes }
+ }
+}
 sb_chiefs_royal_restored = {
  sb_chiefs_royal_constitution = yes
  sb_chiefs_valid_claimant = yes
  trigger_if = {
   limit = { exists = var:sb_court_restoration_claimant_scope }
-  ruler ?= var:sb_court_restoration_claimant_scope
+  OR = { ruler ?= var:sb_court_restoration_claimant_scope AND = { var:sb_court_minor_sovereign_scope ?= var:sb_court_restoration_claimant_scope ruler ?= var:sb_court_regent_scope } }
  }
  trigger_else = { always = no }
 }
@@ -130,4 +143,10 @@ sb_chiefs_recorded_war_pair = {
    var:sb_court_civil_war_var = container:sb_zululand_chiefdoms_state.var:sb_chiefs_origin_scope
   }
  }
+}
+
+# Existing participants keep their journal until its visible outcome is delivered.
+sb_chiefs_show_extinction_conclusion = {
+ has_global_variable = sb_chiefs_house_extinct_var
+ has_journal_entry = je_sb_zululand_chiefdoms
 }

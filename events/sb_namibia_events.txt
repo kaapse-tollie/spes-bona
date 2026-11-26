@@ -159,32 +159,25 @@ sb_nam.011 = {
 	icon = "gfx/interface/icons/event_icons/event_trade.dds"
 	duration = 3
 
-	trigger = {
-		country_definition = cd:GER
-		has_journal_entry = je_sb_map_namibian_coast
-		has_variable = sb_nam_colonial_programme_backed_var
-		has_variable = sb_nam_german_missionary_support_offered_var
-	}
-
-	cancellation_trigger = {
-		NOT = { has_journal_entry = je_sb_map_namibian_coast }
-	}
+	trigger = { sb_nam_maps_offer_is_current = yes }
+	cancellation_trigger = { sb_nam_maps_offer_is_current = no }
 
 	option = {
 		name = sb_nam.011.a
 		default_option = yes
-		trigger = { gold_reserves >= 100000 }
+		trigger = { sb_nam_can_pay_for_maps = yes }
 		custom_tooltip = sb_nam_011_a_tt
-			hidden_effect = {
-				add_treasury = -100000
-				je:je_sb_map_namibian_coast ?= {
-					add_progress = {
-						name = sb_namibian_coast_survey_progress_bar
-						value = 10
+		hidden_effect = {
+			if = {
+				limit = { sb_nam_maps_offer_is_current = yes }
+				je:je_sb_map_namibian_coast = { set_variable = { name = sb_nam_maps_offer_var value = 2 } }
+				if = {
+					limit = { sb_nam_can_pay_for_maps = yes }
+					add_treasury = -100000
+					je:je_sb_map_namibian_coast = {
+						add_progress = { name = sb_namibian_coast_survey_progress_bar value = 10 }
+						add_progress = { name = sb_namibian_coast_expedition_peril_bar value = -2 }
 					}
-				add_progress = {
-					name = sb_namibian_coast_expedition_peril_bar
-					value = -2
 				}
 			}
 		}
@@ -194,10 +187,16 @@ sb_nam.011 = {
 	option = {
 		name = sb_nam.011.b
 		custom_tooltip = sb_nam_011_b_tt
+		hidden_effect = {
+			if = {
+				limit = { sb_nam_maps_offer_is_current = yes }
+				je:je_sb_map_namibian_coast = { set_variable = { name = sb_nam_maps_offer_var value = 2 } }
+			}
+		}
 		ai_chance = {
 			base = 0
 			modifier = {
-				trigger = { gold_reserves < 100000 }
+				trigger = { sb_nam_can_pay_for_maps = no }
 				add = 100
 			}
 		}
@@ -488,7 +487,10 @@ sb_nam.017 = {
 		custom_tooltip = sb_nam_017_missions_tt
 		if = { limit = { sb_nam_can_found_policy_colony = yes } custom_tooltip = sb_nam_017_swa_tt }
 		hidden_effect = { sb_nam_choose_policy = { POLICY = 1 } }
-		ai_chance = { base = 1 }
+		ai_chance = {
+			base = 0
+			sb_nam_survey_policy_weight = { PREFERENCE = sb_nam_missions_preference HISTORICAL = 0 }
+		}
 	}
 	option = {
 		name = sb_nam.017.b
@@ -501,21 +503,30 @@ sb_nam.017 = {
 				sb_nam_choose_policy = { POLICY = 2 }
 			}
 		}
-		ai_chance = { base = 1 }
+		ai_chance = {
+			base = 0
+			sb_nam_survey_policy_weight = { PREFERENCE = sb_nam_company_preference HISTORICAL = 0 }
+		}
 	}
 	option = {
 		name = sb_nam.017.c
 		custom_tooltip = sb_nam_017_settler_tt
 		if = { limit = { sb_nam_can_found_policy_colony = yes } custom_tooltip = sb_nam_017_swa_tt }
 		hidden_effect = { sb_nam_choose_policy = { POLICY = 3 } }
-		ai_chance = { base = 1 }
+		ai_chance = {
+			base = 0
+			sb_nam_survey_policy_weight = { PREFERENCE = sb_nam_settler_preference HISTORICAL = 0 }
+		}
 	}
 	option = {
 		name = sb_nam.017.e
 		custom_tooltip = sb_nam_017_ruthless_tt
 		if = { limit = { sb_nam_can_found_policy_colony = yes } custom_tooltip = sb_nam_017_swa_tt }
 		hidden_effect = { sb_nam_choose_policy = { POLICY = 4 } }
-		ai_chance = { base = 1 }
+		ai_chance = {
+			base = 0
+			sb_nam_survey_policy_weight = { PREFERENCE = sb_nam_ruthless_preference HISTORICAL = 100 }
+		}
 	}
 }
 

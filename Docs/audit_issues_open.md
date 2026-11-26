@@ -22,7 +22,7 @@ reader audit; all 43 focused tests pass. Visual and gameplay acceptance remains 
 The [7 November smoke pass](compatibility/1_15_0_fresh_smoke_bolivia_2026_11_07.md)
 applies to the preceding 1.15.0 target. No save migration is included.
 
-The working-tree port follows the [approved design](compatibility/1_15_0_rebase_design_2026_11_05.md) and [implementation plan](compatibility/1_15_0_implementation_plan.md). Release version is `0.21.1`; source implementation does not certify runtime compatibility. The preceding 1.14.5/CMF 1.66.0 baseline remains recorded in its historical reports.
+The working-tree port follows the [approved design](compatibility/1_15_0_rebase_design_2026_11_05.md) and [implementation plan](compatibility/1_15_0_implementation_plan.md). Release version is `0.21.2`; source implementation does not certify runtime compatibility. The preceding 1.14.5/CMF 1.66.0 baseline remains recorded in its historical reports.
 
 ## Cape Colonial Affairs playtest — 19 November 2026
 

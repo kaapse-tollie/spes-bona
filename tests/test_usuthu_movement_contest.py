@@ -52,9 +52,10 @@ class UsuthuMovementContestTests(unittest.TestCase):
         exile=object_block(EFFECTS,'sb_zululand_mark_and_exile_royal_house')
         prepare=object_block('common/scripted_effects/sb_court_politics_effects.txt','sb_court_prepare_partition')
         self.assertIn('sb_court_ensure_roster = yes',prepare)
-        self.assertLess(exile.index('sb_court_prepare_partition'),exile.index('exile_character_with_role_cleanup'))
-        self.assertLess(exile.index('save_scope_as = sb_zululand_exile_heir'),exile.index('exile_character_with_role_cleanup'))
-        self.assertLess(exile.index('activate_law = law_type:law_sb_chiefly_council'),exile.index('sb_court_select_chiefly_head'))
+        self.assertLess(exile.index('sb_court_prepare_partition'),exile.index('sb_chiefs_record_partition_house'))
+        self.assertLess(exile.index('sb_chiefs_record_partition_house'),exile.index('sb_chiefs_install_council'))
+        council=object_block('common/scripted_effects/sb_chiefs_royal_house_effects.txt','sb_chiefs_install_council')
+        self.assertLess(council.index('activate_law = law_type:law_sb_chiefly_council'),council.index('sb_court_select_chiefly_head'))
         admission = next(branch for key, _, body in parse(exile) if key == 'c:ZUL'
                          for child, _, branch in body if child == 'if'
                          and any(field == 'create_character' for field, _, _ in branch))
@@ -67,7 +68,7 @@ class UsuthuMovementContestTests(unittest.TestCase):
 
     def test_foreign_interventions_keep_commitment_and_use_native_movements(self):
         setup=text('common/scripted_effects/sb_usuthu_politics_effects.txt')
-        for forced in ('create_political_lobby','add_lobby_member','royalist_networks','create_political_movement'):
+        for forced in ('create_political_lobby','add_lobby_member','royalist_networks'):
             self.assertNotIn(forced,setup)
         patron=object_block('common/scripted_effects/sb_usuthu_politics_effects.txt','sb_zululand_start_chief_patronage')
         self.assertIn('sb_chiefs_sync_intervention_movements = yes',patron)

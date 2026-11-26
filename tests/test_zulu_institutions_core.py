@@ -322,21 +322,57 @@ class InstitutionalArithmeticTests(unittest.TestCase):
         rt = Runtime(); rt.call('sb_institutions_reconcile')
         rt.zul['cooperation'] = 40
         rt.zul['movements'][0]['support'] = .4
-        rt.zul['movements'][1]['support'] = .2
-        rt.zul['movements'][2]['support'] = .9
+        rt.zul['movements'][1]['support'] = .9
+        rt.zul['movements'].append({'type': 'movement_sb_zulu_chiefly', 'support': .2, 'vars': {}, 'modifiers': {}})
         rt.call('sb_institutions_recalculate')
-        self.assertAlmostEqual(35, rt.zul['vars']['sb_prerogative_target_var'])
+        self.assertAlmostEqual(40, rt.zul['vars']['sb_prerogative_target_var'])
         previous = 0
         for _ in range(120):
             rt.call('sb_institutions_monthly_update')
             current = rt.zul['vars']['sb_prerogative_var']
             self.assertGreaterEqual(current, previous)
             self.assertLessEqual(current - previous, 4.000001)
-            self.assertLessEqual(current, 35)
+            self.assertLessEqual(current, 40)
             previous = current
-        self.assertAlmostEqual(35, previous, places=5)
+        self.assertAlmostEqual(40, previous, places=5)
         rt.zul['laws'].remove('law_monarchy'); rt.zul['laws'].add('law_sb_federated_chiefdoms')
         self.assertAlmostEqual(-20, rt.calc('sb_prerogative_movement_balance'))
+
+    def test_partition_weights_use_local_support_and_ordinary_target_resumes(self):
+        rt = Runtime()
+        rt.call('sb_institutions_reconcile')
+        rt.zul['movements'] = [
+            {'type':'movement_sb_zulu_royal', 'support':.2},
+            {'type':'movement_sb_zulu_chiefly', 'support':.8},
+        ]
+        rt.zul['cooperation'] = -20
+        rt.zul['partition_contest'] = True
+        for federation, expected in [(False, -40), (True, 20)]:
+            if federation: rt.zul['laws'].add('law_sb_federated_chiefdoms')
+            rt.call('sb_institutions_recalculate')
+            self.assertAlmostEqual(expected, rt.zul['vars']['sb_prerogative_target_var'])
+        rt.zul['cooperation'] = -27.4115
+        rt.zul['movements'][0]['support'] = .8
+        rt.call('sb_institutions_recalculate')
+        self.assertAlmostEqual(-13.70575, rt.zul['vars']['sb_prerogative_target_var'])
+        self.assertEqual(-2.06, round(rt.zul['vars']['sb_prerogative_monthly_change_var'], 2))
+        rt.zul['partition_contest'] = False
+        rt.call('sb_institutions_recalculate')
+        self.assertAlmostEqual(-27.4115, rt.zul['vars']['sb_prerogative_target_var'])
+
+    def test_split_governments_use_their_own_movements(self):
+        rt = Runtime()
+        council = rt.zul
+        council['laws'].add('law_sb_federated_chiefdoms')
+        crown = country('R01')
+        for side, royal, chiefly, expected in ((council, .1, .9, 30), (crown, .6, .1, 15)):
+            side['partition_contest'] = True
+            side['vars']['sb_prerogative_cooperation_var'] = -20
+            side['movements'] = [
+                {'type':'movement_sb_zulu_royal','support':royal},
+                {'type':'movement_sb_zulu_chiefly','support':chiefly},
+            ]
+            self.assertAlmostEqual(expected, rt.calc('sb_prerogative_target', side))
 
     def test_spending_and_events_respect_hard_endpoints(self):
         rt = Runtime(); rt.call('sb_institutions_reconcile')
@@ -415,10 +451,10 @@ class InstitutionalLifecycleTests(unittest.TestCase):
         original = deepcopy(rt.zul['movements'][0])
         rt.call('sb_institutions_reconcile')
         self.assertEqual(original, rt.zul['movements'][0])
-        self.assertEqual(3, len(rt.zul['movements']))
+        self.assertEqual(2, len(rt.zul['movements']))
         rt.zul['movements'].pop(1)
         rt.call('sb_institutions_reconcile')
-        self.assertEqual(2, len(rt.zul['movements']))
+        self.assertEqual(1, len(rt.zul['movements']))
         self.assertNotIn('disband_political_movement', (ROOT/'common/scripted_effects/sb_institutions_effects.txt').read_text())
 
     def test_ngn_profile_boundary_and_unrelated_country_negative(self):
@@ -473,7 +509,7 @@ class InstitutionalLifecycleTests(unittest.TestCase):
                 rt.call('sb_institutions_reconcile', rebels)
                 rt.call('sb_institutions_reconcile', rebels)
                 self.assertEqual({'je_sb_zulu_kingdom'}, rebels['journals'])
-                self.assertEqual(3, len(rebels['movements']))
+                self.assertEqual(2, len(rebels['movements']))
                 self.assertTrue(rebels['vars']['sb_institutions_active_var'])
                 self.assertEqual(original, rt.zul)
 
@@ -515,7 +551,7 @@ class InstitutionalLifecycleTests(unittest.TestCase):
                             rt.effect(activation, owner)
                             if rt.condition(hook['trigger'], law): rt.effect(hook['effect'], law)
                         self.assertEqual({'je_sb_zulu_kingdom'}, owner['journals'])
-                        self.assertEqual(3, len(owner['movements']))
+                        self.assertEqual(2, len(owner['movements']))
                         self.assertTrue(owner['vars']['sb_institutions_active_var'])
                         self.assertEqual(original, rt.zul)
                         self.assertEqual(foreign, rt.root)

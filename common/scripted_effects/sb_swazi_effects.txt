@@ -182,7 +182,129 @@ sb_swazi_apply_guns_for_land_bonus = {
 	}
 }
 
+# Pop scope. Each culture holds its census by religion for the duration of the sale.
+sb_swazi_count_cession_pop = {
+	religion = { save_temporary_scope_as = sb_swazi_cession_faith }
+	set_local_variable = {
+		name = sb_swazi_census_total
+		value = {
+			value = 0
+			if = {
+				limit = { culture = { is_key_in_variable_map = { name = $MAP$ target = scope:sb_swazi_cession_faith } } }
+				add = "culture.variable_map($MAP$|scope:sb_swazi_cession_faith)"
+			}
+			$OPERATION$ = total_size
+		}
+	}
+	culture = {
+		if = {
+			limit = { NOR = { has_variable_map = sb_swazi_seller_loss has_variable_map = sb_swazi_buyer_gain } }
+			add_to_temporary_list = sb_swazi_census_cultures
+		}
+		if = {
+			limit = { is_key_in_variable_map = { name = $MAP$ target = scope:sb_swazi_cession_faith } }
+			remove_from_variable_map = { name = $MAP$ key = scope:sb_swazi_cession_faith }
+		}
+		add_to_variable_map = { name = $MAP$ key = scope:sb_swazi_cession_faith value = local_var:sb_swazi_census_total }
+	}
+}
+
+# TRN Pop scope. Protect both the established Pop and the resident total of its culture and faith.
+sb_swazi_return_cession_pop = {
+	religion = { save_temporary_scope_as = sb_swazi_cession_faith }
+	if = {
+		limit = { culture = { is_key_in_variable_map = { name = sb_swazi_seller_loss target = scope:sb_swazi_cession_faith } } }
+		set_local_variable = {
+			name = sb_swazi_unmatched
+			value = {
+				value = "culture.variable_map(sb_swazi_seller_loss|scope:sb_swazi_cession_faith)"
+				max = "culture.variable_map(sb_swazi_buyer_gain|scope:sb_swazi_cession_faith)"
+			}
+		}
+		set_local_variable = {
+			name = sb_swazi_arrivals
+			value = {
+				value = total_size
+				if = {
+					limit = { is_key_in_local_variable_map = { name = sb_swazi_trn_residents target = this } }
+					subtract = "local_variable_map(sb_swazi_trn_residents|this)"
+				}
+				max = local_var:sb_swazi_unmatched
+				min = 0
+			}
+		}
+		if = {
+			limit = { local_var:sb_swazi_arrivals > 0 }
+			change_local_variable = { name = sb_swazi_unmatched subtract = local_var:sb_swazi_arrivals }
+			culture = {
+				remove_from_variable_map = { name = sb_swazi_seller_loss key = scope:sb_swazi_cession_faith }
+				add_to_variable_map = { name = sb_swazi_seller_loss key = scope:sb_swazi_cession_faith value = local_var:sb_swazi_unmatched }
+			}
+			# Carry an odd person into the next Pop, even across cultures or faiths.
+			change_local_variable = { name = sb_swazi_remainder add = local_var:sb_swazi_arrivals }
+			set_local_variable = { name = sb_swazi_returning value = { value = local_var:sb_swazi_remainder divide = 2 floor = yes } }
+			change_local_variable = { name = sb_swazi_remainder modulo = 2 }
+			if = {
+				limit = { local_var:sb_swazi_returning > 0 }
+				move_partial_pop = { state = scope:sb_swazi_retained_state population = local_var:sb_swazi_returning }
+			}
+		}
+	}
+}
+
+# Keep all third-party districts in one native grant. Splitting one owner's land
+# a province at a time would let native Pop and building rounding compound.
+sb_swazi_settle_outside_districts = {
+	if = {
+		limit = { sb_swazi_district_has_outside_owner = { DISTRICT = x73CDE8 } sb_swazi_district_has_outside_owner = { DISTRICT = x25A652 } }
+		sb_swazi_settle_remaining_outside_districts = { DISTRICTS = "x73CDE8 x25A652" }
+	}
+	else_if = {
+		limit = { sb_swazi_district_has_outside_owner = { DISTRICT = x73CDE8 } }
+		sb_swazi_settle_remaining_outside_districts = { DISTRICTS = x73CDE8 }
+	}
+	else_if = {
+		limit = { sb_swazi_district_has_outside_owner = { DISTRICT = x25A652 } }
+		sb_swazi_settle_remaining_outside_districts = { DISTRICTS = x25A652 }
+	}
+	else_if = {
+		limit = { sb_swazi_district_has_outside_owner = { DISTRICT = x50A011 } sb_swazi_district_has_outside_owner = { DISTRICT = x452304 } }
+		set_owner_of_provinces = { country = c:TRN provinces = { x50A011 x452304 } }
+	}
+	else_if = {
+		limit = { sb_swazi_district_has_outside_owner = { DISTRICT = x50A011 } }
+		set_owner_of_provinces = { country = c:TRN provinces = { x50A011 } }
+	}
+	else_if = {
+		limit = { sb_swazi_district_has_outside_owner = { DISTRICT = x452304 } }
+		set_owner_of_provinces = { country = c:TRN provinces = { x452304 } }
+	}
+}
+
+sb_swazi_settle_remaining_outside_districts = {
+	if = {
+		limit = { sb_swazi_district_has_outside_owner = { DISTRICT = x50A011 } sb_swazi_district_has_outside_owner = { DISTRICT = x452304 } }
+		set_owner_of_provinces = { country = c:TRN provinces = { $DISTRICTS$ x50A011 x452304 } }
+	}
+	else_if = {
+		limit = { sb_swazi_district_has_outside_owner = { DISTRICT = x50A011 } }
+		set_owner_of_provinces = { country = c:TRN provinces = { $DISTRICTS$ x50A011 } }
+	}
+	else_if = {
+		limit = { sb_swazi_district_has_outside_owner = { DISTRICT = x452304 } }
+		set_owner_of_provinces = { country = c:TRN provinces = { $DISTRICTS$ x452304 } }
+	}
+	else = { set_owner_of_provinces = { country = c:TRN provinces = { $DISTRICTS$ } } }
+}
+
 sb_swazi_apply_boer_buy_time_settlement = {
+	if = {
+		limit = { NOT = { has_variable = sb_swazi_boer_pressure_resolved_var } }
+		sb_swazi_settle_boer_frontier = yes
+	}
+}
+
+sb_swazi_settle_boer_frontier = {
 	# "Buy Time" is deliberately narrow: only the disputed frontier pocket changes
 	# hands, and the payoff is security + firearms progress rather than a full
 	# subject relationship.
@@ -195,10 +317,42 @@ sb_swazi_apply_boer_buy_time_settlement = {
 	}
 
 	s:STATE_EAST_TRANSVAAL = {
+		hidden_effect = {
+			# Only the SWZ-to-TRN handover belongs between the two censuses.
+			sb_swazi_settle_outside_districts = yes
+			region_state:SWZ ?= {
+				every_scope_pop = { sb_swazi_count_cession_pop = { MAP = sb_swazi_seller_loss OPERATION = add } }
+			}
+			region_state:TRN ?= {
+				every_scope_pop = {
+					add_to_local_variable_map = { name = sb_swazi_trn_residents key = this value = total_size }
+					sb_swazi_count_cession_pop = { MAP = sb_swazi_buyer_gain OPERATION = subtract }
+				}
+			}
+		}
 		set_owner_of_provinces = {
 			country = c:TRN
 			provinces = {
 				x73CDE8 x25A652 x50A011 x452304
+			}
+		}
+		hidden_effect = {
+			if = {
+				limit = { exists = region_state:SWZ exists = region_state:TRN }
+				region_state:SWZ = {
+					save_temporary_scope_as = sb_swazi_retained_state
+					every_scope_pop = { sb_swazi_count_cession_pop = { MAP = sb_swazi_seller_loss OPERATION = subtract } }
+				}
+				region_state:TRN = {
+					every_scope_pop = { sb_swazi_count_cession_pop = { MAP = sb_swazi_buyer_gain OPERATION = add } }
+					set_local_variable = { name = sb_swazi_remainder value = 0 }
+					every_scope_pop = { sb_swazi_return_cession_pop = yes }
+				}
+			}
+			every_in_list = {
+				list = sb_swazi_census_cultures
+				if = { limit = { has_variable_map = sb_swazi_seller_loss } clear_variable_map = sb_swazi_seller_loss }
+				if = { limit = { has_variable_map = sb_swazi_buyer_gain } clear_variable_map = sb_swazi_buyer_gain }
 			}
 		}
 		remove_claim = c:SWZ

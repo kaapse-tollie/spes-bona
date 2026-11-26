@@ -31,7 +31,7 @@ class PressureCourt(CourtRuntime):
     def effect(self, nodes, scope, prev=None):
         for node in self.branches(nodes, scope, prev):
             key, _, value = node
-            if key == 'sb_zululand_stop_contest_interventions': pass  # Separate aid lifecycle tests.
+            if key in ('sb_zululand_stop_contest_interventions','sb_institutions_recalculate'): pass  # Separate aid lifecycle tests.
             elif key.startswith('c:'): pass  # No Natal country record in this modifier fixture.
             elif key == 'destroy_container':
                 self.containers = {k:v for k,v in self.containers.items() if v is not scope}
@@ -149,7 +149,7 @@ class NatalReturnAITests(unittest.TestCase):
         self.assertEqual(0, calculate(rt, refugees, rt.nal))
         rt.nal['vars']['sb_zululand_claimant_returned_var'] = 1
         self.assertEqual(0, calculate(rt, refugees, rt.nal))  # Old country receipt is insufficient.
-        rt.claimant['vars']['sb_zululand_claimant_returned_var'] = 1
+        rt.nal['sb_chiefs_royal_house'] = [rt.claimant]
         self.assertEqual(25, calculate(rt, refugees, rt.nal))
         rt.nal['radical_fractions']['cu:zulu'] = .1999
         self.assertEqual(0, calculate(rt, claimant, rt.nal))

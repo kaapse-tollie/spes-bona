@@ -22,7 +22,7 @@ sb_zululand_settlement.001 = {
 		default_option = yes
 		custom_tooltip = sb_zululand_settlement.001.a.tt
 		custom_tooltip = sb_zululand_settlement.001.a.tt.government
-		hidden_effect = { sb_zululand_handoff_to_natal = yes }
+		hidden_effect = { if = { limit = { sb_zululand_under_british_postwar_control = yes } sb_zululand_handoff_to_natal = yes } }
 		ai_chance = { base = 1000 }
 	}
 
@@ -32,7 +32,7 @@ sb_zululand_settlement.001 = {
 		custom_tooltip = sb_zululand_settlement.001.b.tt
 		custom_tooltip = sb_zululand_settlement.001.b.tt.radicals
 		custom_tooltip = sb_zululand_settlement.001.b.tt.movement
-		hidden_effect = { sb_zululand_apply_direct_british_administration = yes }
+		hidden_effect = { if = { limit = { sb_zululand_under_british_postwar_control = yes } sb_zululand_apply_direct_british_administration = yes } }
 		ai_chance = { base = 0 }
 	}
 }
@@ -160,8 +160,15 @@ sb_zululand_settlement.115 = {
 sb_zululand_settlement.120 = {
 	type = country_event
 	placement = root
-	title = sb_zululand_settlement.120.t
-	desc = sb_zululand_settlement.120.d
+	title = { first_valid = {
+		triggered_desc = { trigger = { has_global_variable = sb_chiefs_house_extinct_var } desc = sb_zululand_settlement.120.t.extinction }
+		desc = sb_zululand_settlement.120.t
+	} }
+	desc = { first_valid = {
+		triggered_desc = { trigger = { has_global_variable = sb_chiefs_house_extinct_var } desc = sb_zululand_settlement.120.d.extinction }
+		triggered_desc = { trigger = { has_global_variable = sb_chiefs_hamu_confirmation_var } desc = sb_zululand_settlement.120.d.confirmation }
+		desc = sb_zululand_settlement.120.d
+	} }
 	flavor = sb_zululand_settlement.120.f
 	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
@@ -173,8 +180,9 @@ sb_zululand_settlement.120 = {
 		name = sb_zululand_settlement.120.a
 		default_option = yes
 		custom_tooltip = sb_zululand_settlement.120.a.tt
-		custom_tooltip = sb_zululand_settlement.120.a.tt.subject
-		custom_tooltip = sb_zululand_settlement.120.a.tt.interventions
+		if = { limit = { has_global_variable = sb_chiefs_extinction_awaiting_reunion_var } custom_tooltip = sb_zululand_settlement.120.a.tt.reunion }
+		else = { custom_tooltip = sb_zululand_settlement.120.a.tt.subject }
+		if = { limit = { NOT = { has_global_variable = sb_chiefs_hamu_confirmation_var } } custom_tooltip = sb_zululand_settlement.120.a.tt.interventions }
 		custom_tooltip = sb_zululand_settlement.120.a.tt.reward
 	}
 }
@@ -604,8 +612,15 @@ sb_zululand_settlement.116 = {
 sb_zululand_settlement.122 = {
 	type = country_event
 	placement = root
-	title = sb_zululand_settlement.122.t
-	desc = sb_zululand_settlement.122.d
+	title = { first_valid = {
+		triggered_desc = { trigger = { has_global_variable = sb_chiefs_house_extinct_var } desc = sb_zululand_settlement.122.t.extinction }
+		desc = sb_zululand_settlement.122.t
+	} }
+	desc = { first_valid = {
+		triggered_desc = { trigger = { has_global_variable = sb_chiefs_house_extinct_var } desc = sb_zululand_settlement.122.d.extinction }
+		triggered_desc = { trigger = { has_global_variable = sb_chiefs_hamu_confirmation_var } desc = sb_zululand_settlement.122.d.confirmation }
+		desc = sb_zululand_settlement.122.d
+	} }
 	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
 	icon = "gfx/interface/icons/event_icons/event_map.dds"
 	duration = 3

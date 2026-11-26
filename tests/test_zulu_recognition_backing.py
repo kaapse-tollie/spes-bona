@@ -241,6 +241,19 @@ class RecognitionAITests(unittest.TestCase):
                 weight += float(field(modifier, 'add'))
         return weight
 
+    def test_regent_cannot_recognise_the_child_sovereign_as_their_own_successor(self):
+        child, sibling = self.sons
+        child['age'] = 8
+        for prince in (child, sibling):
+            prince['vars']['sb_court_following_var'] = 18
+        self.rt.country['ruler']['template'] = 'ZUL_dingane'
+        self.rt.country['vars'].update(sb_court_minor_sovereign_scope=child, sb_court_recognized_heir_scope=child)
+        self.assertFalse(self.eligible(child))
+        self.assertTrue(self.eligible(sibling))
+        self.assertFalse(self.eligible(self.other))
+        self.rt.country['vars']['sb_court_recognized_heir_scope'] = sibling
+        self.assertFalse(self.eligible(sibling))
+
     def test_dingane_never_opens_or_resolves_ai_recognition(self):
         self.rt.country['ruler']['template'] = 'ZUL_dingane'
         self.assertEqual(0, self.button_weight())
@@ -302,9 +315,9 @@ class RecognitionAITests(unittest.TestCase):
             self.assertIs(self.sons[1], self.rt.country['vars']['sb_court_recognized_heir_scope'])
         self.rt.country['is_ai'] = True
         self.rt.country['ruler']['template'] = 'ZUL_dinuzulu_heir'
-        self.assertTrue(self.eligible(self.other))
+        self.assertFalse(self.eligible(self.other))
         self.rt.country['vars']['sb_court_action_actor_scope'] = self.other
-        self.assertEqual(50, self.option_weight(self.options[0]))
+        self.assertEqual(0, self.option_weight(self.options[0]))
         self.assertEqual(10, self.option_weight(self.options[-1]))
         self.rt.country['ruler']['template'] = 'ZUL_mpande_zulu'
         self.rt.country['vars'].pop('sb_court_recognized_heir_scope')

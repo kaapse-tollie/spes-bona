@@ -1,0 +1,19 @@
+﻿on_game_started = { on_actions = { sb_assign_orange_river } }
+on_monthly_pulse = { on_actions = { sb_assign_orange_river } }
+
+# The monthly hook reaches campaigns whose geography was saved before the trait existed.
+sb_assign_orange_river = {
+	trigger = { NOT = { has_global_variable = sb_orange_river_assigned } }
+	effect = {
+		s:STATE_NORTHERN_CAPE = { add_to_temporary_list = sb_orange_river_regions }
+		s:STATE_BECHUANALAND = { add_to_temporary_list = sb_orange_river_regions }
+		s:STATE_GRIQUALAND_WEST = { add_to_temporary_list = sb_orange_river_regions }
+		s:STATE_NAMAQUALAND = { add_to_temporary_list = sb_orange_river_regions }
+		every_in_list = {
+			list = sb_orange_river_regions
+			limit = { NOT = { any_scope_state = { has_state_trait = state_trait_sb_orange_river } } }
+			add_state_trait = state_trait_sb_orange_river
+		}
+		set_global_variable = sb_orange_river_assigned
+	}
+}

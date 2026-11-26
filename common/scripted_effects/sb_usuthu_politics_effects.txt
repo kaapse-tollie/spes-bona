@@ -1,7 +1,12 @@
 ﻿# Country scope: NAL at partition. Actual political state lives on the Zulu country.
 sb_zululand_setup_usuthu_politics = {
 	set_global_variable = { name = sb_zululand_live_zul_scope value = c:ZUL }
-	c:ZUL = { sb_institutions_reconcile = yes }
+	c:ZUL = {
+		if = { limit = { NOT = { any_political_movement = { is_political_movement_type = movement_sb_zulu_royal } } } create_political_movement = { type = movement_sb_zulu_royal } }
+		if = { limit = { NOT = { any_political_movement = { is_political_movement_type = movement_sb_zulu_chiefly } } } create_political_movement = { type = movement_sb_zulu_chiefly } }
+		sb_court_sync_chiefly_concessions = yes
+		sb_institutions_reconcile = yes
+	}
 }
 
 sb_zululand_start_chief_patronage = {

@@ -68,6 +68,16 @@ class JournalMigrationTests(unittest.TestCase):
                     old = statements((ROOT / 'Docs/compatibility/evidence/1_15_0_playtest_1850_fixes_2026_11_07/cape_completion_before.txt').read_text())
                     nodes = [n for n in nodes if n[0] != 'outcome'] + [
                         ('outcome', '=', old), ('outcome', '=', outcome_nodes(nodes, 'invalid'))]
+                if record['key'] == 'je_sb_zululand_chiefdoms':
+                    outcomes = [v for k, _, v in nodes if k == 'outcome']
+                    self.assertEqual(2, len(outcomes))
+                    reason = ('has_global_variable', '=', 'sb_chiefs_house_extinct_var')
+                    self.assertIn(('trigger', '=', [reason]), outcomes[0])
+                    self.assertIn(('conclusion_desc', '=', 'je_sb_zululand_chiefdoms_extinction_conclusion'), outcomes[0])
+                    def prior_invalid(ns):
+                        return [(k, op, prior_invalid(v) if isinstance(v, list) else v)
+                                for k, op, v in ns if (k, op, v) != ('NOT', '=', [reason])]
+                    nodes = [n for n in nodes if n[0] != 'outcome'] + [('outcome', '=', prior_invalid(outcomes[1]))]
                 self.assertEqual(len(record['outcomes']), sum(n[0] == 'outcome' for n in nodes))
                 self.assertEqual([outcome_nodes(nodes, e['kind']) for e in record['outcomes']], [v for k, _, v in nodes if k == 'outcome'])
                 for expected in record['outcomes']:

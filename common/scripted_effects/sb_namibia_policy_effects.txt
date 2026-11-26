@@ -32,10 +32,10 @@ sb_nam_choose_policy = {
 		limit = { sb_nam_policy_report_is_pending = yes }
 		remove_variable = sb_nam_policy_report_pending_var
 		set_variable = { name = sb_nam_selected_policy_var value = $POLICY$ }
+		set_variable = { name = sb_nam_policy_expiry_var value = game_date }
+		change_variable = { name = sb_nam_policy_expiry_var add = long_modifier_time }
 		if = {
 			limit = { NOT = { var:sb_nam_selected_policy_var = 2 } }
-			set_variable = { name = sb_nam_policy_expiry_var value = game_date }
-			change_variable = { name = sb_nam_policy_expiry_var add = long_modifier_time }
 			sb_nam_sync_regional_policy = yes
 		}
 		sb_nam_try_found_policy_colony = yes
@@ -80,8 +80,86 @@ sb_nam_sync_regional_policy = {
 
 sb_nam_apply_administrative_capacity = {
 	if = {
-		limit = { NOT = { has_modifier = sb_nam_administrative_capacity } }
-		add_modifier = { name = sb_nam_administrative_capacity months = -1 }
+		limit = { sb_nam_legacy_charter_is_funded = yes }
+		# A pre-patch charter still awaiting handover can also reach this branch.
+		# Its founder removes the grant on the final instalment.
+		if = {
+			limit = { NOT = { has_modifier = sb_nam_administrative_capacity } }
+			add_modifier = { name = sb_nam_administrative_capacity }
+		}
+	}
+	else = {
+		if = { limit = { has_modifier = sb_nam_administrative_capacity } remove_modifier = sb_nam_administrative_capacity }
+		if = {
+			limit = { has_variable = sb_nam_policy_expiry_var var:sb_nam_policy_expiry_var > game_date }
+			add_modifier = { name = sb_nam_administrative_capacity days = sb_nam_country_policy_days_left }
+			set_variable = sb_nam_capacity_term_applied_var
+		}
+	}
+}
+
+# Destination state. The remaining quota is shared by all donor cohorts in this pass.
+sb_nam_receive_founding_settlers = {
+	save_temporary_scope_as = sb_nam_settler_destination
+	set_variable = {
+		name = sb_nam_settlers_left_var
+		value = { value = scope:sb_nam_settler_total divide = 2 $ROUNDING$ = yes }
+	}
+	scope:sb_nam_policy_founder.capital = {
+		every_scope_pop = {
+			limit = { sb_nam_is_founding_settler = yes total_size > 0 }
+			if = {
+				limit = { scope:sb_nam_settler_destination.var:sb_nam_settlers_left_var > 0 }
+				save_temporary_scope_value_as = {
+					name = sb_nam_settler_count
+					value = { value = total_size max = scope:sb_nam_settler_destination.var:sb_nam_settlers_left_var }
+				}
+				scope:sb_nam_settler_destination = {
+					change_variable = { name = sb_nam_settlers_left_var subtract = scope:sb_nam_settler_count }
+				}
+				move_partial_pop = { state = scope:sb_nam_settler_destination population = scope:sb_nam_settler_count }
+			}
+		}
+	}
+	remove_variable = sb_nam_settlers_left_var
+}
+
+sb_nam_move_founding_settlers = {
+	scope:sb_nam_policy_founder.capital = {
+		save_temporary_scope_value_as = {
+			name = sb_nam_settler_total
+			value = {
+				value = 0
+				every_scope_pop = { limit = { sb_nam_is_founding_settler = yes } add = total_size }
+				max = 2000
+			}
+		}
+	}
+	s:STATE_HEREROLAND.region_state:SWA = { sb_nam_receive_founding_settlers = { ROUNDING = ceiling } }
+	s:STATE_NAMAQUALAND.region_state:SWA = { sb_nam_receive_founding_settlers = { ROUNDING = floor } }
+}
+
+# The setter takes a literal level. The native ceiling for active institutions is five.
+sb_nam_maximise_founding_colonial_affairs = {
+	if = {
+		limit = { institution:institution_colonial_affairs.investment_max = 5 }
+		set_institution_investment_level = { institution = institution_colonial_affairs level = 5 }
+	}
+	else_if = {
+		limit = { institution:institution_colonial_affairs.investment_max = 4 }
+		set_institution_investment_level = { institution = institution_colonial_affairs level = 4 }
+	}
+	else_if = {
+		limit = { institution:institution_colonial_affairs.investment_max = 3 }
+		set_institution_investment_level = { institution = institution_colonial_affairs level = 3 }
+	}
+	else_if = {
+		limit = { institution:institution_colonial_affairs.investment_max = 2 }
+		set_institution_investment_level = { institution = institution_colonial_affairs level = 2 }
+	}
+	else_if = {
+		limit = { institution:institution_colonial_affairs.investment_max = 1 }
+		set_institution_investment_level = { institution = institution_colonial_affairs level = 1 }
 	}
 }
 
@@ -175,7 +253,8 @@ sb_nam_finish_policy_colony = {
 			add_technology_researched = sb_namibian_coastal_access
 		}
 		sb_nam_apply_selected_policy_laws = yes
-		sb_nam_apply_administrative_capacity = yes
+		sb_nam_maximise_founding_colonial_affairs = yes
+		sb_nam_move_founding_settlers = yes
 		if = {
 			limit = { var:sb_nam_selected_policy_var = 4 var:sb_nam_policy_expiry_var > game_date }
 			add_modifier = { name = sb_nam_policy_ruthless_sol days = sb_nam_country_policy_days_left }
@@ -191,6 +270,7 @@ sb_nam_finish_policy_colony = {
 		limit = { var:sb_nam_selected_policy_var = 2 }
 		sb_nam_establish_swa_company = yes
 	}
+	c:SWA = { sb_nam_apply_administrative_capacity = yes }
 	sb_nam_offer_swa_play_as_to_player_overlord = yes
 }
 
@@ -270,6 +350,16 @@ sb_nam_maintain_swa_company = {
 		if = {
 			limit = { var:sb_nam_company_payments_left_var <= 0 }
 			remove_variable = sb_nam_company_payments_left_var
+			c:SWA ?= {
+				if = {
+					limit = {
+						var:sb_nam_policy_founder_var ?= PREV
+						NOT = { has_variable = sb_nam_policy_expiry_var }
+						has_modifier = sb_nam_administrative_capacity
+					}
+					remove_modifier = sb_nam_administrative_capacity
+				}
+			}
 		}
 	}
 	if = {

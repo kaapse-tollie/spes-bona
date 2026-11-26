@@ -28,6 +28,11 @@ sb_court_track_revolution = {
     if = { limit = { NOT = { is_target_in_variable_list = { name = sb_chiefs_countries target = scope:sb_court_rebels } } } add_to_variable_list = { name = sb_chiefs_countries target = scope:sb_court_rebels } }
     set_variable = { name = sb_chiefs_war_scope value = scope:sb_court_tracked_war }
    }
+   scope:sb_court_rebels = {
+    if = { limit = { NOT = { has_journal_entry = je_sb_zululand_chiefdoms } }
+     add_contextless_journal_entry = je_sb_zululand_chiefdoms
+    }
+   }
   }
   # Freeze head alignment before moving any member or rebuilding either roster.
   ruler ?= { save_scope_as = sb_court_split_incumbent }
@@ -82,6 +87,7 @@ sb_court_track_revolution = {
    sb_institutions_recalculate = yes
   }
   remove_variable = sb_court_rebel_alignment_var
+  sb_institutions_recalculate = yes
  }
 }
 # The engine invokes this immediately before on_civil_war_won. Match the recorded pair.
@@ -96,6 +102,7 @@ sb_court_resolve_won_war = {
  if = {
   limit = { has_variable = sb_court_war_ended_var has_variable = sb_court_war_alignment_var }
   # Capture and clear the defeated side too; a later revival must not replay this outcome.
+  clear_saved_scope = sb_court_defeated_country
   var:sb_court_civil_war_var ?= {
    save_scope_as = sb_court_defeated_country
    remove_variable = sb_court_war_ended_var
@@ -106,6 +113,11 @@ sb_court_resolve_won_war = {
   remove_variable = sb_court_war_ended_var
   # Keep the winner's exact opponent until the earned territorial promise is recorded.
   if = {
+   limit = { exists = scope:sb_court_defeated_country var:sb_chiefs_extinction_reunion_var ?= scope:sb_court_defeated_country scope:sb_court_defeated_country = { var:sb_chiefs_extinction_reunion_var ?= prev } }
+   set_variable = { name = sb_zululand_contest_result_var value = 2 }
+   sb_chiefs_finish_extinction_reunion = yes
+  }
+  else_if = {
    limit = { sb_chiefs_contest_country = yes sb_chiefs_recorded_war_pair = yes }
    sb_chiefs_reserve_war_result = yes
    # The partition settles after reunion. An actual Hamu victory can record the

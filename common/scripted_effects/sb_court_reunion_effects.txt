@@ -104,16 +104,19 @@ sb_court_install_rebel_victory = {
 		if = { limit = { owner ?= scope:sb_court_winning_rebels } transfer_character = scope:sb_court_surviving_kingdom }
 	}
 	scope:sb_court_surviving_kingdom = {
-		sb_court_inherit_winning_field = { FIELD = sb_court_incumbent_scope }
-		sb_court_inherit_winning_field = { FIELD = sb_court_recognized_heir_scope }
-		sb_court_inherit_winning_field = { FIELD = sb_court_minor_sovereign_scope }
-		sb_court_inherit_winning_field = { FIELD = sb_court_regent_scope }
-		sb_court_inherit_winning_field = { FIELD = sb_court_chiefly_head_scope }
-		sb_court_inherit_winning_field = { FIELD = sb_court_restoration_claimant_scope }
-		sb_court_inherit_winning_field = { FIELD = sb_court_privileges_this_reign_var }
-		sb_court_inherit_winning_field = { FIELD = sb_prerogative_var }
-		sb_court_inherit_winning_field = { FIELD = sb_prerogative_last_change_var }
-		sb_court_inherit_winning_field = { FIELD = sb_prerogative_cooperation_var }
+		if = { limit = { NOT = { var:sb_chiefs_extinction_reunion_var ?= scope:sb_court_winning_rebels } }
+			sb_court_inherit_winning_field = { FIELD = sb_court_incumbent_scope }
+			sb_court_inherit_winning_field = { FIELD = sb_court_recognized_heir_scope }
+			sb_court_inherit_winning_field = { FIELD = sb_court_minor_sovereign_scope }
+			sb_court_inherit_winning_field = { FIELD = sb_court_regent_scope }
+			sb_court_inherit_winning_field = { FIELD = sb_chiefs_regency_var }
+			sb_court_inherit_winning_field = { FIELD = sb_court_chiefly_head_scope }
+			sb_court_inherit_winning_field = { FIELD = sb_court_restoration_claimant_scope }
+			sb_court_inherit_winning_field = { FIELD = sb_court_privileges_this_reign_var }
+			sb_court_inherit_winning_field = { FIELD = sb_prerogative_var }
+			sb_court_inherit_winning_field = { FIELD = sb_prerogative_last_change_var }
+			sb_court_inherit_winning_field = { FIELD = sb_prerogative_cooperation_var }
+		}
 		if = {
 			limit = { var:sb_court_dynastic_opponent_scope ?= scope:sb_court_winning_rebels }
 			sb_court_inherit_winning_field = { FIELD = sb_court_dynastic_candidate_scope }
@@ -123,7 +126,7 @@ sb_court_install_rebel_victory = {
 		}
 		else = {
 			sb_court_inherit_winning_field = { FIELD = sb_court_war_alignment_var }
-			scope:sb_court_winning_ruler ?= { cleanup_ruler_character_roles = yes set_character_as_ruler = yes }
+			if = { limit = { NOT = { var:sb_chiefs_extinction_reunion_var ?= scope:sb_court_winning_rebels } } scope:sb_court_winning_ruler ?= { cleanup_ruler_character_roles = yes set_character_as_ruler = yes } }
 			remove_variable = sb_court_selecting_head_var
 			set_variable = sb_court_war_ended_var
 			sb_court_resolve_won_war = yes
@@ -134,5 +137,6 @@ sb_court_install_rebel_victory = {
 			remove_variable = sb_court_reunion_war_scope
 		}
 		annex_as_civil_war = scope:sb_court_winning_rebels
+		if = { limit = { has_global_variable = sb_chiefs_extinction_awaiting_reunion_var } sb_chiefs_finish_extinction_reunion = yes }
 	}
 }

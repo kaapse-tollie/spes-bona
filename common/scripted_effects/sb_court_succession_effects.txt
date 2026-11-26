@@ -50,7 +50,7 @@ sb_court_refresh_accession = {
 
 sb_court_reconcile_succession = {
  save_scope_as = sb_court_country
- if = { limit = { has_variable = sb_court_regent_scope } sb_court_reconcile_regency = yes }
+ if = { limit = { has_variable = sb_court_minor_sovereign_scope } sb_court_reconcile_regency = yes }
  else_if = {
   limit = {
    has_variable = sb_institutions_active_var
@@ -205,11 +205,18 @@ sb_court_answer_accession = {
 sb_court_choose_regent = {
  save_scope_as = sb_court_country
  remove_variable = sb_court_regent_scope
+ if = { limit = { has_variable = sb_chiefs_regency_var }
+  sb_chiefs_find_regent = { TIER = 3 }
+  sb_chiefs_find_regent = { TIER = 2 }
+  sb_chiefs_find_regent = { TIER = 1 }
+ }
+ else = {
  ordered_in_list = {
   variable = sb_court_members
   limit = { sb_court_present_member = yes var:sb_court_successor_pledge_scope ?= scope:sb_court_country.var:sb_court_minor_sovereign_scope NOT = { has_variable = sb_court_retired_var } }
   order_by = prominence position = 0 check_range_bounds = no
   scope:sb_court_country = { set_variable = { name = sb_court_regent_scope value = prev } }
+ }
  }
  if = {
   limit = { exists = var:sb_court_regent_scope }
@@ -222,9 +229,10 @@ sb_court_choose_regent = {
   remove_variable = sb_court_selecting_head_var
  }
  # With no willing adult, leave ordinary native succession available; invent no guardian.
- else = { sb_court_end_regency = yes sb_court_accession_cleanup = yes }
+ else_if = { limit = { NOT = { has_variable = sb_chiefs_regency_var } } sb_court_end_regency = yes sb_court_accession_cleanup = yes }
 }
 sb_court_end_regency = {
+ remove_variable = sb_chiefs_regency_var
  var:sb_court_regent_scope ?= { remove_variable = regency_years }
  remove_variable = sb_court_regent_scope
  remove_variable = sb_court_minor_sovereign_scope
@@ -234,14 +242,28 @@ sb_court_reconcile_regency = {
  if = {
   limit = { var:sb_court_minor_sovereign_scope ?= { is_character_alive = yes is_adult = yes } }
   var:sb_court_minor_sovereign_scope = { save_scope_as = sb_court_successor save_scope_as = sb_court_maturing_sovereign }
-  sb_court_end_regency = yes
-  sb_court_install_successor = yes
+  if = { limit = { has_variable = sb_chiefs_regency_var }
+   set_variable = { name = sb_court_restoration_claimant_scope value = scope:sb_court_successor }
+   sb_chiefs_install_family_sovereign = yes
+  }
+  else = { sb_court_end_regency = yes sb_court_install_successor = yes }
  }
  else_if = {
   limit = { NOT = { var:sb_court_minor_sovereign_scope ?= { is_character_alive = yes } } }
-  sb_court_end_regency = yes
+  if = { limit = { has_variable = sb_chiefs_regency_var }
+   sb_court_end_regency = yes
+   sb_chiefs_choose_family_claimant = yes
+   sb_chiefs_install_family_sovereign = yes
+  }
+  else = { sb_court_end_regency = yes }
  }
- else_if = { limit = { NOT = { var:sb_court_regent_scope ?= { is_character_alive = yes } } } sb_court_choose_regent = yes }
+ else_if = {
+  limit = { OR = {
+   NOT = { var:sb_court_regent_scope ?= { is_character_alive = yes } }
+   AND = { has_variable = sb_chiefs_regency_var sb_chiefs_regent_in_office = no }
+  } }
+  sb_court_choose_regent = yes
+ }
 }
 
 # One presentation per sovereign. The child's identity survives later changes of ruler.
@@ -260,8 +282,10 @@ sb_court_introduce_son = {
 sb_court_present_newborn = {
  # A generated child shares the explicitly established parental branch.
  scope:new_heir_scope = {
+  set_variable = { name = sb_court_parent_scope value = scope:sb_court_country.ruler }
   if = { limit = { var:sb_court_following_var = 0 scope:sb_court_country.ruler.var:sb_court_following_var > 0 } set_variable = { name = sb_court_following_var value = scope:sb_court_country.ruler.var:sb_court_following_var } }
  }
+ if = { limit = { ruler ?= { has_variable = sb_chiefs_protected_var } } scope:new_heir_scope = { sb_chiefs_register_family_child = { PARENT = scope:sb_court_country.ruler } } }
  ruler = { set_variable = { name = sb_court_presented_son_scope value = scope:new_heir_scope } }
  sb_change_prerogative = { VALUE = -50 }
  sb_zulu_assign_new_heir_scope = yes
@@ -345,7 +369,7 @@ sb_court_introduce_known_children = {
     has_template = ZUL_cetshwayo_heir
    }
   }
-  sb_court_create_known_child = { TEMPLATE = ZUL_dinuzulu_heir }
+  sb_court_create_known_child = { TEMPLATE = ZUL_dinuzulu_heir PARENT = ZUL_cetshwayo_heir }
  }
  if = {
   limit = {
@@ -357,13 +381,21 @@ sb_court_introduce_known_children = {
     has_template = ZUL_dinuzulu_heir
    }
   }
-  sb_court_create_known_child = { TEMPLATE = ZUL_solomon_heir }
+  sb_court_create_known_child = { TEMPLATE = ZUL_solomon_heir PARENT = ZUL_dinuzulu_heir }
  }
 }
 sb_court_create_known_child = {
  create_character = { template = $TEMPLATE$ save_scope_as = sb_court_new_child }
- scope:sb_court_new_child = {
-  sb_court_register_character = { FOLLOWING = 0 ALIGNMENT = 1 ENDORSEMENT = 0 }
+ scope:sb_court_new_child = { sb_court_register_character = { FOLLOWING = 0 ALIGNMENT = 1 ENDORSEMENT = 0 } }
+ every_in_list = {
+  variable = sb_court_members limit = { has_template = $PARENT$ is_character_alive = yes }
+  save_scope_as = sb_chiefs_child_parent
+  scope:sb_court_new_child = {
+   set_variable = { name = sb_court_parent_scope value = scope:sb_chiefs_child_parent }
+   if = { limit = { scope:sb_chiefs_child_parent = { has_variable = sb_chiefs_protected_var } }
+    sb_chiefs_register_family_child = { PARENT = scope:sb_chiefs_child_parent }
+   }
+  }
  }
  sb_court_update_heir_blocker = yes
 }

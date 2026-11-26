@@ -34,7 +34,7 @@ class Contest:
         self.trn=entity('TRN',alive=True,states=[entity('east',state_region='s:STATE_EAST_TRANSVAAL')])
         self.britain=entity('GBR',alive=True)
         self.zul=entity('ZUL',alive=True,territory=True,overlord=self.nal,laws={'law_type:law_sb_federated_chiefdoms','law_type:law_sb_chiefly_council'},movements=[])
-        self.claimant=entity('claimant',eligible=True)
+        self.claimant=entity('claimant',eligible=True,age=36,alive=True)
         self.zul['vars'].update(sb_zululand_usuthu_contest_var=1,sb_court_restoration_claimant_scope=self.claimant)
         self.container=entity('container')
         self.globals={'sb_zululand_live_zul_scope':self.zul}
@@ -75,11 +75,15 @@ class Contest:
             elif k=='trigger_else': b=matched or self.condition(v,ctx,prev)
             elif k in T: b=self.condition(T[k],ctx,prev)==(v=='yes')
             elif k=='sb_zululand_chiefdoms_situation_active': b=self.active==(v=='yes')
-            elif k=='sb_court_royal_candidate': b=ctx.get('eligible',False)==(v=='yes')
+            elif k=='is_adult': b=(ctx.get('age', 36) >= 16)==(v=='yes')
+            elif k=='any_in_list':
+                name=next(c for a,_,c in v if a=='variable')
+                b=any(self.condition([n for n in v if n[0]!='variable'], person, ctx) for person in ctx.get(name, []))
+            elif k in ('sb_court_royal_candidate','sb_chiefs_restorable_relative'): b=ctx.get('eligible',False)==(v=='yes')
             elif k=='has_variable': b=v in ctx.get('vars',{})
             elif k=='has_global_variable': b=v in self.globals
             elif k=='exists': b=self.ref(v,ctx,prev) is not None
-            elif k=='is_country_alive': b=ctx.get('alive',False)==(v=='yes')
+            elif k in ('is_country_alive', 'is_character_alive'): b=ctx.get('alive',False)==(v=='yes')
             elif k=='has_game_rule': b=v==getattr(self, 'mode', 'sb_frontier_ai_behavior_off')
             elif k=='any_scope_pop': b=any(self.condition(v,pop,ctx) for pop in ctx.get('pops',[]))
             elif k=='is_pop_type': b=ctx.get('pop_type')==v
@@ -123,6 +127,7 @@ class Contest:
                 limits=next((c for a,b,c in v if a=='limit'),[])
                 if k=='else' or self.condition(limits,ctx,prev):
                     matched=True;self.effect([n for n in v if n[0]!='limit'],ctx,prev)
+            elif k=='clear_saved_scope': self.scopes.pop(v,None)
             elif k in ('save_scope_as','save_temporary_scope_as'): self.scopes[v]=ctx
             elif k=='set_variable':
                 if isinstance(v,str):ctx['vars'][v]=1
@@ -165,6 +170,7 @@ class Contest:
                 state=self.ref(args['state'],ctx,prev)
                 state['arrivals']=state.get('arrivals',0)+size
             elif k=='hidden_effect':self.effect(v,ctx,prev)
+            elif k=='sb_chiefs_choose_family_claimant': pass  # The household fixture executes selection.
             elif k=='sb_zululand_finalize_political_contest':
                 self.results.append((ctx['id'],ctx['vars']['sb_zululand_contest_result_var']));self.active=False
             elif k=='sb_zululand_cleanup_situation':self.active=False;self.interrupted=True
@@ -189,6 +195,49 @@ class ChiefdomsRefinement(unittest.TestCase):
         c.zul['laws']={'law_type:law_sb_federated_chiefdoms','law_type:law_sb_chiefly_council'}
         c.zul['vars']['sb_prerogative_var']=-100;c.tick();self.assertEqual([('ZUL',2)],c.results)
         c.tick();self.assertEqual(1,len(c.results))
+    def test_extinction_overrides_armies_and_ten_year_review_including_a_child_abroad(self):
+        for stage in ('peace', 'exile', 'split', 'victory awaits reunion'):
+            with self.subTest(stage=stage):
+                c = Contest()
+                child = entity('infant', alive=True, age=0, owner=c.britain if stage == 'exile' else c.zul)
+                c.nal['sb_chiefs_royal_house'] = [child]
+                c.nal['vars']['sb_chiefs_house_recorded_var'] = 1
+                c.container['vars']['sb_zululand_boer_committed_var'] = 1
+                if stage in ('split', 'victory awaits reunion'):
+                    rebel = entity('royal rebels', alive=True, territory=False)
+                    c.container['vars'].update(sb_chiefs_rebels_scope=rebel, sb_chiefs_origin_scope=c.zul)
+                    child['owner'] = rebel
+                    if stage == 'victory awaits reunion':
+                        c.container['vars'].update(sb_chiefs_winner_scope=rebel, sb_chiefs_winner_alignment_var=1)
+                c.run('sb_chiefs_check_house_extinction', c.britain)
+                self.assertTrue(c.active)
+                self.assertNotIn('sb_chiefs_house_extinct_var', c.globals)
+                # The death notification can precede the native alive flag clearing.
+                child['vars']['sb_chiefs_death_recorded_var'] = 1
+                c.expire()
+                c.tick()
+                self.assertEqual([('ZUL', 2)], c.results)
+                self.assertIn('sb_chiefs_house_extinct_var', c.globals)
+                if stage in ('split', 'victory awaits reunion'):
+                    self.assertIs(rebel, c.zul['vars']['sb_chiefs_extinction_reunion_var'])
+                    self.assertIs(c.zul, rebel['vars']['sb_chiefs_extinction_reunion_var'])
+                c.tick()
+                self.assertEqual([('ZUL', 2)], c.results)
+                self.assertNotIn('sb_nrp_chiefdoms_earned_var', c.globals)
+
+    def test_royal_mobilisation_waits_for_a_child_even_if_activism_recedes(self):
+        c = Contest()
+        c.claimant['age'] = 4
+        movement = c.royal(1)
+        c.tick()
+        c.expire()
+        movement['political_movement_radicalism'] = 0
+        c.tick()
+        self.assertTrue(c.active)
+        c.claimant['age'] = 16
+        c.tick()
+        self.assertEqual([('ZUL', 1)], c.results)
+
     def test_clock_does_not_reset_on_exit_reentry_or_repeated_setup(self):
         c=Contest();c.expire();c.run('sb_chiefs_start_clock');self.assertEqual(3650,c.journal['journal_entry_age'])
         self.assertEqual([c.zul],c.container['sb_chiefs_countries'])

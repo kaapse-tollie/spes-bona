@@ -30,13 +30,15 @@ je_sb_zululand_chiefdoms = {
 		}
 	}
 
-	should_be_involved = { sb_zululand_chiefdoms_involved_actor = yes }
+	should_be_involved = {
+		OR = { sb_zululand_chiefdoms_involved_actor = yes sb_chiefs_show_extinction_conclusion = yes }
+	}
 	should_show_when_not_involved = { always = no }
 	is_shown_when_inactive = { always = no }
 	possible = {
 		custom_tooltip = {
 			text = sb_chiefs_contest_open_tt
-			hidden_trigger = { sb_zululand_chiefdoms_situation_active = yes }
+			hidden_trigger = { OR = { sb_zululand_chiefdoms_situation_active = yes has_global_variable = sb_chiefs_house_extinct_var } }
 		}
 	}
 
@@ -73,12 +75,20 @@ je_sb_zululand_chiefdoms = {
 		}
 	}
 	outcome = {
+		header = je_sb_zululand_chiefdoms_extinction_header
+		effect_header = je_standard_on_completion_header
+		color = "gold_positive"
+		conclusion_desc = je_sb_zululand_chiefdoms_extinction_conclusion
+		trigger = { has_global_variable = sb_chiefs_house_extinct_var }
+		effect = {}
+	}
+	outcome = {
 		flags = { hidden invalid_outcome }
 		conclusion_desc = je_standard_failure_conclusion_desc
 		trigger = {
 			custom_tooltip = {
 				text = sb_chiefs_contest_closed_tt
-				hidden_trigger = { NOT = { sb_zululand_chiefdoms_situation_active = yes } }
+				hidden_trigger = { NOT = { sb_zululand_chiefdoms_situation_active = yes } NOT = { has_global_variable = sb_chiefs_house_extinct_var } }
 			}
 		}
 		effect = {}

@@ -94,6 +94,8 @@ def evaluate(nodes, state, actor='NAL', root='NAL'):
                        for movement in state.get('movements', []) if movement['owner'] == actor)
         if key in ('is_political_movement_type', 'culture'):
             return actor['type' if key == 'is_political_movement_type' else 'culture'] == value
+        if key == 'sb_hamu_republic_founded':
+            return state.get('hamu_founding', False) == (value == 'yes')
         if key.startswith('sb_'):
             return trigger(key, state, actor, root) == (value == 'yes')
         if key.startswith('c:'):
@@ -170,6 +172,7 @@ def run_effect(name, state, actor='NAL', root='NAL', nodes=None, arguments=None,
         'sb_zululand_archive_preannexation_royal_house',
         'sb_zululand_begin_natal_incorporation', 'sb_zululand_mark_and_exile_royal_house',
         'sb_zululand_setup_usuthu_politics', 'sb_zululand_open_chiefdoms_situation',
+        'sb_hamu_close_partition_bargain',
     }
 
     def execute(nodes, current, previous):

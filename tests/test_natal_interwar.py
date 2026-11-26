@@ -1574,7 +1574,9 @@ class NatalInterwarTests(unittest.TestCase):
         self.assertIn("state = scope:sb_zululand_restoration_state", restore)
         self.assertIn("on_created = { sb_natal_apply_restored_zulu_baseline = yes }", restore)
         self.assertIn("sb_zululand_normalize_live_subject_for_natal = yes", restore)
-        self.assertNotIn("province =", restore)
+        # Only an earlier Hamu founding can split the residual country on release.
+        self.assertIn("province = scope:sb_hamu_release_province", restore)
+        self.assertNotIn("province =", object_block_from_source(restore, "else"))
         self.assertNotIn("set_owner_of_provinces", restore)
         self.assertNotIn("subject_shell", effects_path + restore)
         self.assertNotIn("sb_zululand_settlement.002", events)

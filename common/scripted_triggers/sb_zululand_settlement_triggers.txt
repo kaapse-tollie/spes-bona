@@ -22,14 +22,22 @@ sb_zululand_under_british_postwar_control = {
 	OR = {
 		c:ZUL ?= {
 			is_country_alive = yes
-			sb_zululand_british_postwar_owner = yes
-			owns_entire_state_region = STATE_ZULULAND
+			OR = {
+				AND = { sb_zululand_british_postwar_owner = yes owns_entire_state_region = STATE_ZULULAND }
+				AND = { sb_hamu_republic_founded = yes is_subject_of = c:GBR any_scope_state = { state_region = s:STATE_ZULULAND } }
+			}
 		}
 		AND = {
 			NOT = { c:ZUL ?= { is_country_alive = yes } }
-			p:xBE6FEE.state.owner = {
-				sb_zululand_british_postwar_owner = yes
-				owns_entire_state_region = STATE_ZULULAND
+			OR = {
+				AND = {
+					sb_hamu_republic_founded = yes
+					any_in_list = { variable = sb_hamu_residual_land state.owner ?= { sb_zululand_british_postwar_owner = yes NOT = { country_definition = cd:NRP } } }
+				}
+				AND = {
+					sb_hamu_republic_founded = no
+					p:xBE6FEE.state.owner = { sb_zululand_british_postwar_owner = yes owns_entire_state_region = STATE_ZULULAND }
+				}
 			}
 		}
 	}
@@ -50,7 +58,10 @@ sb_zululand_normalized_nal_protectorate = {
 		is_country_alive = yes
 		is_direct_subject_of = c:NAL
 		is_subject_type = subject_type_protectorate
-		owns_entire_state_region = STATE_ZULULAND
+		OR = {
+			owns_entire_state_region = STATE_ZULULAND
+			AND = { c:NAL = { has_variable = sb_hamu_residual_handoff_var } any_scope_state = { state_region = s:STATE_ZULULAND } }
+		}
 	}
 }
 
@@ -95,25 +106,18 @@ sb_zululand_can_unload_refugees = {
 sb_zululand_can_return_claimant = {
 	country_definition = cd:NAL
 	sb_zululand_contest_interventions_available = yes
-	global_var:sb_zululand_live_zul_scope ?= {
-		var:sb_court_restoration_claimant_scope ?= {
-			sb_court_royal_candidate = yes
-			NOT = { is_ruler_of_own_country = yes }
-			NOT = { has_variable = sb_zululand_claimant_returned_var }
-		}
-	}
-
+	NOT = { has_variable = sb_zululand_claimant_returned_var }
+	any_in_list = { variable = sb_chiefs_royal_house is_character_alive = yes has_variable = sb_chiefs_family_in_exile_var }
 }
 
 # Any caller. The country-wide receipt alone does not prove the current claimant returned.
 sb_zululand_returned_claimant_present = {
-	global_var:sb_zululand_live_zul_scope ?= {
-		var:sb_court_restoration_claimant_scope ?= {
-			sb_court_royal_candidate = yes
-			has_variable = sb_zululand_claimant_returned_var
+	c:NAL ?= {
+		has_variable = sb_zululand_claimant_returned_var
+		any_in_list = {
+			variable = sb_chiefs_royal_house is_character_alive = yes
 			owner ?= global_var:sb_zululand_live_zul_scope
-			is_in_exile_pool = no
-			is_in_void = no
+			is_in_exile_pool = no is_in_void = no
 		}
 	}
 }
