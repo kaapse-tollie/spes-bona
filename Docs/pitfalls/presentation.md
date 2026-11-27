@@ -65,6 +65,11 @@ they already explain the rule. Hide bookkeeping, random scheduling and
 remove/reapply maintenance while showing the real costs, consequences and
 failure reasons.
 
+If a player needs to see why an event purchase is unaffordable, pair its option
+`trigger` with `show_as_unavailable = { always = yes }`. Otherwise the purchase
+can disappear and leave only a free dismissal. Check the popup with insufficient
+funds as well as the actual debit and reward when funded. [Vanilla Baltic conversions](</Users/depro/Library/Application Support/Steam/steamapps/common/Victoria 3/game/events/russia_events/russia_misc_events.txt#L55>) · [German maps replay](../bechuanaland_warren_and_swa_policy_design_2026_11_24.md#when-germany-can-buy-the-maps)
+
 <a id="ui-06"></a>
 
 ## UI-06 — Preview the effect actually applied

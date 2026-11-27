@@ -1231,6 +1231,20 @@ sb_cape.030 = {
 	icon = "gfx/interface/icons/principles_icons/creative_legislature.dds"
 	duration = 3
 
+	immediate = {
+		if = {
+			limit = {
+				is_subject = yes
+				exists = overlord
+			}
+			overlord = { save_scope_as = sb_gbr_scope }
+		}
+		else_if = {
+			limit = { c:GBR ?= { is_country_alive = yes } }
+			c:GBR = { save_scope_as = sb_gbr_scope }
+		}
+	}
+
 	trigger = {
 		country_definition = cd:CAP
 		has_variable = sb_cape_autonomy_pressure_pending_var

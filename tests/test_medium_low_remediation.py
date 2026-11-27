@@ -315,6 +315,7 @@ class MediumLowRemediationTests(unittest.TestCase):
             ),
             "on_state_owner_change": (
                 "sb_on_namibia_consolidation_state_owner_change",
+                "sb_on_swa_frontier_state_owner_change",
                 "sb_on_ngi_tribute_state_owner_change",
                 "sb_on_port_natal_state_owner_change",
                 "sb_on_zululand_incorporation_state_owner_change",

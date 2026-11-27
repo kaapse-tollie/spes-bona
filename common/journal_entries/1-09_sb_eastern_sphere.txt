@@ -136,11 +136,20 @@ je_sb_delagoa_route_to_sea = {
 
 	icon = "gfx/interface/icons/event_icons/event_trade.dds"
 
+	is_shown_when_inactive = {
+		country_has_primary_culture = cu:boer
+		NOT = { has_variable = sb_delagoa_route_complete_var }
+		NOT = { has_global_variable = sb_delagoa_route_complete_global_var }
+		NOT = { exists = c:SAF }
+	}
+
 	possible = {
 		sb_is_delagoa_route_actor = yes
 		sb_delagoa_has_valid_gateway = yes
-		NOT = { has_variable = sb_delagoa_route_complete_var }
-		NOT = { has_global_variable = sb_delagoa_route_complete_global_var }
+		hidden_trigger = {
+			NOT = { has_variable = sb_delagoa_route_complete_var }
+			NOT = { has_global_variable = sb_delagoa_route_complete_global_var }
+		}
 		NOT = { exists = c:SAF }
 	}
 
@@ -282,8 +291,10 @@ je_sb_imperial_confederation_scheme = {
 			}
 		}
 		effect = {
-			set_global_variable = sb_imperial_confederation_terminal_je_settled_var
-			sb_imperial_confederation_clear_runtime = yes
+			hidden_effect = {
+				set_global_variable = sb_imperial_confederation_terminal_je_settled_var
+				sb_imperial_confederation_clear_runtime = yes
+			}
 		}
 	}
 
@@ -327,8 +338,10 @@ je_sb_imperial_confederation_scheme = {
 				limit = { NOT = { has_global_variable = sb_imperial_confederation_scheme_failed_var } }
 				sb_imperial_confederation_fail_scheme = yes
 			}
-			set_global_variable = sb_imperial_confederation_terminal_je_settled_var
-			sb_imperial_confederation_clear_runtime = yes
+			hidden_effect = {
+				set_global_variable = sb_imperial_confederation_terminal_je_settled_var
+				sb_imperial_confederation_clear_runtime = yes
+			}
 		}
 	}
 

@@ -21,6 +21,15 @@ CHIEFDOMS_AMENDMENTS = json.loads((ROOT/'Docs/compatibility/chiefdoms_journal_am
 
 # The policy report replaces the old score chain and retains the other 1.15 fields.
 RETIRED_CONSOLIDATION_FIELDS = "02f86461117848ff1b3e08bd8b3cdbe83f41b29e2f35f0456b39493a411509cb"
+# The 4-Act Namibia survey rework updates only status_desc and on_monthly_pulse on je_sb_map_namibian_coast.
+COASTAL_SURVEY_RETAINED_FIELDS = "dcbe901778722bf9b1f78a43419fae8a82a91acf3af0399262a3915dc0a0e15c"
+# Playtest polish: hide internal variable guards in je_sb_delagoa_route_to_sea preview,
+# and hide terminal participant-removal cleanup in je_sb_imperial_confederation_scheme.
+DELAGOA_RETAINED_FIELDS = "76d2e45ec270226fb26663fa11816fcff7a0a8820da1f01333859afc464445c4"
+IMPERIAL_CONFEDERATION_OUTCOMES = {
+    ("complete", "effect_sha256"): "4327532ebcc463f420fdab216703d52015d5e2c4ce43faadd58c4a935d79d444",
+    ("fail", "effect_sha256"): "049be8c6380939db8cda073ce136dd614db5c134f0554d46d3b62bc4b20284bb",
+}
 COASTAL_SURVEY_OUTCOMES = {
     ("complete", "effect_sha256"): "1416f16f609db3665cbcc207829b2bb9dfc75d965270697102fe40c7f97189a5",
     ("complete", "event_outcome_desc_sha256"): "bebca4527248e8bd11ccf05a8290d94aa46ec0272d8ab14a53732be068a9d0d4",
@@ -57,6 +66,10 @@ class JournalMigrationTests(unittest.TestCase):
                 retained_fields = amendment['retained_fields_sha256'] if amendment else record['retained_fields_sha256']
                 if record['key'] == 'je_sb_consolidation_of_south_west_africa':
                     retained_fields = RETIRED_CONSOLIDATION_FIELDS
+                elif record['key'] == 'je_sb_map_namibian_coast':
+                    retained_fields = COASTAL_SURVEY_RETAINED_FIELDS
+                elif record['key'] == 'je_sb_delagoa_route_to_sea':
+                    retained_fields = DELAGOA_RETAINED_FIELDS
                 self.assertEqual(retained_fields,
                                  digest([n for n in nodes if n[0] not in ('outcome', 'activation_description')]))
                 if record['key'] == 'je_sb_cape_politics':
@@ -87,6 +100,8 @@ class JournalMigrationTests(unittest.TestCase):
                             field = key.removesuffix('_sha256')
                             if record['key'] == 'je_sb_map_namibian_coast':
                                 value = COASTAL_SURVEY_OUTCOMES.get((expected['kind'], key), value)
+                            elif record['key'] == 'je_sb_imperial_confederation_scheme':
+                                value = IMPERIAL_CONFEDERATION_OUTCOMES.get((expected['kind'], key), value)
                             if record['key'] == 'je_sb_bst_ora_frontier' and expected['kind'] == 'complete':
                                 if field == 'event_outcome_desc':
                                     self.assertNotIn(field, fields)  # Single-choice presentation, checked separately.

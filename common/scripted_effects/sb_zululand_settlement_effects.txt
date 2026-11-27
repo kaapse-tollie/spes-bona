@@ -428,6 +428,7 @@ sb_zululand_restore_protectorate_for_natal = {
 	# Ordinary Release Country uses the same ZUL country-creation footprint, but
 	# is a UI action and cannot carry this postwar branch's bespoke setup. Create
 	# the complete owner state atomically, as in Vanilla and Gates country splits.
+	# The law source also pauses research recording while on_created reinstates each invention.
 	if = { limit = { sb_hamu_republic_founded = yes }
 		clear_saved_scope = sb_hamu_release_province
 		random_in_list = {
@@ -436,21 +437,23 @@ sb_zululand_restore_protectorate_for_natal = {
 			save_scope_as = sb_hamu_release_province
 		}
 		scope:sb_hamu_release_province.state.owner ?= {
-			create_country = { tag = ZUL origin = this province = scope:sb_hamu_release_province on_created = { sb_natal_apply_restored_zulu_baseline = yes } }
+			set_global_variable = { name = sb_zululand_release_law_source value = this }
+			create_country = { tag = ZUL province = scope:sb_hamu_release_province on_created = { sb_natal_apply_restored_zulu_baseline = yes } }
 		}
 		if = { limit = { c:ZUL ?= { is_country_alive = yes } } sb_hamu_transfer_residual_land = { RECIPIENT = c:ZUL } }
 	}
 	else = {
 		p:xBE6FEE.state = { save_scope_as = sb_zululand_restoration_state }
 		p:xBE6FEE.state.owner = {
+			set_global_variable = { name = sb_zululand_release_law_source value = this }
 			create_country = {
 				tag = ZUL
-				origin = this
 				state = scope:sb_zululand_restoration_state
 				on_created = { sb_natal_apply_restored_zulu_baseline = yes }
 			}
 		}
 	}
+	if = { limit = { has_global_variable = sb_zululand_release_law_source } remove_global_variable = sb_zululand_release_law_source }
 	sb_zululand_normalize_live_subject_for_natal = yes
 	c:ZUL ?= {
 		sb_zululand_return_mandlakazi_chief = yes
@@ -473,6 +476,7 @@ sb_zululand_handoff_to_natal = {
 			sb_natal_schedule_zulu_settlement = yes
 		}
 		set_variable = sb_zululand_postwar_handoff_resolved_var
+		sb_zululand_clear_research_archive = yes
 		if = { limit = { has_variable = sb_zululand_postwar_handoff_pending_var } remove_variable = sb_zululand_postwar_handoff_pending_var }
 		if = { limit = { has_variable = sb_zululand_postwar_handoff_not_before_var } remove_variable = sb_zululand_postwar_handoff_not_before_var }
 		if = { limit = { has_variable = sb_zululand_postwar_handoff_event_open_var } remove_variable = sb_zululand_postwar_handoff_event_open_var }
@@ -515,6 +519,7 @@ sb_zululand_apply_direct_british_administration = {
 	sb_natal_create_zulu_national_movement = yes
 	sb_zululand_clear_mandlakazi_shelter = yes
 	set_variable = sb_zululand_postwar_handoff_resolved_var
+	sb_zululand_clear_research_archive = yes
 	if = { limit = { has_variable = sb_zululand_postwar_handoff_pending_var } remove_variable = sb_zululand_postwar_handoff_pending_var }
 	if = { limit = { has_variable = sb_zululand_postwar_handoff_not_before_var } remove_variable = sb_zululand_postwar_handoff_not_before_var }
 	if = { limit = { has_variable = sb_zululand_postwar_handoff_event_open_var } remove_variable = sb_zululand_postwar_handoff_event_open_var }
@@ -522,6 +527,11 @@ sb_zululand_apply_direct_british_administration = {
 }
 
 sb_zululand_postwar_monthly_housekeeping = {
+	# Seed pre-war checkpoints and recognise a new main ZUL after a civil war.
+	if = {
+		limit = { this = c:GBR NOT = { has_variable = sb_zululand_postwar_handoff_resolved_var } }
+		c:ZUL ?= { sb_zululand_refresh_research_archive = yes }
+	}
 	if = {
 		limit = {
 			country_definition = cd:GBR

@@ -109,7 +109,7 @@ class RefugeeRuntime(CourtRuntime):
                 self.arrivals[scope['origin'], target['id'], scope['culture']] += int(amount)
             elif key == 'trigger_event':
                 fields = {k: v for k, _, v in value}
-                self.events.append((fields['id'], scope['id'], int(fields['days'])))
+                self.events.append((fields['id'], scope['id'], int(fields.get('days', 0))))
             elif key == 'transfer_character':
                 scope['owner'] = self.ref(value, scope, prev)
             elif key == 'set_interest_group':

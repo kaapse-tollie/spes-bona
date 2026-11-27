@@ -21,6 +21,7 @@ RESOLVED = 'sb_natal_zulu_settlement_resolved_var'
 KLIP_RESOLVED = 'sb_klip_river_county_resolved_var'
 VICTORY = 'sb_klip_river_final_evidence_1_var'
 ZUL_EFFECTS = 'common/scripted_effects/sb_zululand_settlement_effects.txt'
+ZUL_RESEARCH = 'common/scripted_effects/sb_zululand_research_effects.txt'
 NATAL_EFFECTS = 'common/scripted_effects/sb_natal_interwar_effects.txt'
 ENTHUSIASM_EFFECT = 'common/scripted_effects/zz_sb_movement_enthusiasm_override.txt'
 
@@ -106,6 +107,8 @@ def evaluate(nodes, state, actor='NAL', root='NAL'):
             return value == 'cd:' + actor
         if key == 'has_global_variable':
             return value in state.get('globals', {})
+        if key == 'has_global_variable_list':
+            return value in state.get('global_lists', {})
         if key == 'has_variable':
             return value in country_flags(state, actor)
         if key.endswith(' >'):
@@ -154,6 +157,7 @@ def selected_outcome(state):
 @lru_cache(None)
 def effect_nodes(name):
     path = (ENTHUSIASM_EFFECT if name == 'add_movement_enthusiasm_modifier' else
+            ZUL_RESEARCH if name == 'sb_zululand_clear_research_archive' else
             'common/scripted_effects/sb_boer_leadership_effects.txt' if name == 'sb_restore_punitive_andries' else
             EFFECTS if name.startswith('sb_klip_river_') else
             NATAL_EFFECTS if name.startswith('sb_natal_') else ZUL_EFFECTS)
@@ -244,6 +248,10 @@ def run_effect(name, state, actor='NAL', root='NAL', nodes=None, arguments=None,
             elif key == 'remove_variable':
                 country_flags(state, current).discard(value)
                 variables(state, current).pop(value, None)
+            elif key == 'remove_global_variable':
+                state.get('globals', {}).pop(value, None)
+            elif key == 'clear_global_variable_list':
+                state.get('global_lists', {}).pop(value, None)
             elif key == 'transfer_subject':
                 assert value == 'c:ZUL'
                 if state.get('transfer_succeeds', True):
@@ -449,9 +457,13 @@ class KlipPunitiveProtectorateTests(unittest.TestCase):
 
     def test_ordinary_british_handoff_does_not_invent_a_klip_result(self):
         state = world()
+        state['globals'] = {'sb_zululand_archived_tech_count': 1, 'sb_zululand_archived_tech_country': 'ZUL'}
+        state['global_lists'] = {'sb_zululand_archived_technologies': ['enclosure']}
         state['flags'].clear()
         subjugate(state, 'GBR')
         run_effect('sb_zululand_handoff_to_natal', state, actor='GBR', root='GBR')
+        self.assertEqual({}, state['globals'])
+        self.assertEqual({}, state['global_lists'])
         self.assertNotIn(KLIP_RESOLVED, state['flags'])
         self.assertEqual(['sb_natal_interwar.030'], [e[0] for e in state['events']])
 

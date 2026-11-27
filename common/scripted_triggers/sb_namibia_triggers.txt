@@ -18,6 +18,19 @@ sb_nam_has_coastal_engineering_technologies = {
 	has_technology_researched = civilizing_mission
 }
 
+sb_nam_can_offer_berlin_programme = {
+	country_definition = cd:GER
+	game_date >= 1870.1.1
+	NOT = { has_institution = institution_colonial_affairs }
+	NOT = { has_variable = sb_nam_colonial_prestige_resolved_var }
+	NOT = { has_journal_entry = je_government_petition_negotiation_version }
+	NOT = { has_journal_entry = je_government_petition_negotiation_version_b }
+	OR = {
+		ig:ig_landowners ?= { is_in_government = yes }
+		ig:ig_armed_forces ?= { is_in_government = yes }
+	}
+}
+
 sb_nam_german_survey_can_receive_maps = {
 	country_definition = cd:GER
 	has_journal_entry = je_sb_map_namibian_coast
@@ -27,6 +40,8 @@ sb_nam_german_survey_can_receive_maps = {
 	}
 }
 
+# The journal records 1 while pending, 2 after payment and 3 after closing without payment.
+# Older saves used 2 for both answers.
 sb_nam_maps_offer_is_current = {
 	sb_nam_german_survey_can_receive_maps = yes
 	OR = {
@@ -91,8 +106,8 @@ sb_nam_has_available_expedition_commander = {
 }
 
 sb_nam_controls_both_consolidation_ports = {
-	p:xDEAA3C.state.owner = root
-	p:xB04050.state.owner = root
+	p:xDEAA3C.state.owner = THIS
+	p:xB04050.state.owner = THIS
 }
 
 sb_nam_can_delegate_british_namibia_to_saf = {
@@ -242,9 +257,38 @@ sb_nam_seeded_policy_colony_is_pending = {
 	NOT = { has_variable = sb_nam_policy_colony_founded_var }
 	c:SWA ?= {
 		is_country_alive = yes
-		is_subject = no
 		var:sb_nam_policy_founder_var ?= PREV
-		p:xB04050.state.owner = THIS
+		has_variable = sb_nam_handover_started_var
+	}
+}
+
+# State region. A queued colony province is unnecessary: this also admits an idle front.
+sb_nam_has_open_swa_frontier = {
+	exists = region_state:SWA
+	any_scope_state = {
+		owner = { is_country_type = decentralized }
+		OR = {
+			c:SWA = { is_land_adjacent_to_state = PREV }
+			AND = {
+				is_coastal = yes
+				any_sea_node_adjacent_state = {
+					owner = c:SWA
+					is_coastal = yes
+					# A land theater is one country's contiguous controlled territory.
+					theater ?= { is_land_theater = yes }
+					theater = c:SWA.capital.theater
+				}
+			}
+		}
+	}
+}
+
+# Direct administrators keep their coastal claims. The SWA route awards them at handover.
+sb_nam_receives_direct_coastal_claims = {
+	NOR = {
+		c:SWA ?= { is_direct_subject_of = PREV }
+		sb_nam_can_found_policy_colony = yes
+		sb_nam_seeded_policy_colony_is_pending = yes
 	}
 }
 
@@ -286,6 +330,13 @@ sb_nam_extermination_orders_available = {
 	NOT = { has_variable = sb_nam_extermination_fired_var }
 	sb_nam_controls_administration_territory = { ADMINISTRATOR = SWA }
 	OR = {
+		AND = {
+			var:sb_nam_selected_policy_var = 4
+			active_law:lawgroup_colonization ?= {
+				type = law_type:law_frontier_colonization
+				has_amendment = amendment_type:amendment_sb_extractive_concessions
+			}
+		}
 		has_law = law_type:law_colonial_exploitation
 		has_law = law_type:law_national_supremacy
 		has_law = law_type:law_ethnostate

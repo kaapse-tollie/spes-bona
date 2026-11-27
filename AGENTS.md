@@ -2,11 +2,11 @@
 
 ## Working boundaries
 
+- **Only DP launches Victoria 3 and performs in-game checks.** Agents must never start the game for any purpose, directly or through Steam, the Paradox Launcher, a script, a test runner or another agent. This includes headless sessions, copied saves and temporary profiles, even when a tool approves the command.
 - Change only what the task requires; preserve unrelated work already present.
 - SB requires all Victoria 3 DLC, including DLC whose content SB does not directly use. Design against that baseline; do not add no-DLC alternatives unless DP changes this policy.
 - Use British English in player-facing text and documentation. Preserve script identifiers and quoted upstream names.
 - Existing `# ### REVIEWED ###` markers record DP's approval. Preserve them; changes within reviewed localisation namespaces are limited to spelling, grammar or minor necessary syntax-only compatibility fixes that preserve the approved wording, meaning, tone and intended presentation. `TO REVIEW` prose may be revised within the task's scope; retain its marker until DP approves it. Substantive changes to reviewed text still require DP's replacement or approval. Apply the complete localisation policy below.
-- Leave launching Victoria 3 to check launch errors to DP. Do not launch the game for this purpose. Run relevant static validation and inspect existing logs as needed; record launch checks awaiting DP as pending.
 
 ## Read for the task
 
@@ -27,10 +27,9 @@ explain observations and limits; current feature specifications determine intent
 
 ## Verification
 
-Use the [README validation guidance](README.md) for checks appropriate to the
-change. Keep static and engine verification distinct: successful static checks
-do not prove in-game event delivery. Report what was checked, its limits, and any
-pending engine scenarios.
+Run the applicable repository tests, validator and Tiger checks, and inspect existing saves and logs offline. Follow the [README validation guidance](README.md).
+
+When a plan says “replay the checkpoint” or “verify in game”, that step belongs to DP. Report the offline results and list the checkpoint, action and expected outcome under **Pending DP replay**.
 
 ## Versioning before committing or pushing
 

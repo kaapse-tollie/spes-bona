@@ -27,7 +27,7 @@ Spes Bona is a Victoria 3 regional flavor mod for greater Southern Africa built 
 - Victoria 3 `1.15.2` (Steam build `26763837`, branch `public`), all DLC
 - Community Mod Framework `1.67.9` with patch `sb-1.15.2-r1`
 
-The working tree targets 1.15.2 and carries SB release version **0.21.2**.
+The working tree targets 1.15.2 and carries SB release version **0.21.3**.
 The [port report](Docs/compatibility/1_15_2_implementation.md) records the game
 and CMF changes. DP’s [fresh-campaign replay](Docs/compatibility/1_15_2_runtime_matrix.md)
 covers subjects, parties, mobilisation, battle casualties, journal rendering and the map.

@@ -21,22 +21,7 @@
 		sb_nam_grant_coastal_access_if_eligible = yes
 
 		if = {
-			limit = {
-				country_definition = cd:GER
-				game_date >= 1870.1.1
-				NOT = { has_variable = sb_nam_colonial_prestige_resolved_var }
-				OR = {
-					ig:ig_landowners ?= { is_in_government = yes }
-					ig:ig_armed_forces ?= { is_in_government = yes }
-				}
-				OR = {
-					sb_nam_has_qualifying_overseas_colonial_law = yes
-					AND = {
-						NOT = { has_journal_entry = je_government_petition_negotiation_version }
-						NOT = { has_journal_entry = je_government_petition_negotiation_version_b }
-					}
-				}
-			}
+			limit = { sb_nam_can_offer_berlin_programme = yes }
 			trigger_event = { id = sb_nam.010 popup = yes }
 		}
 
@@ -72,6 +57,7 @@
 				p:xDEAA3C.state.owner = root
 				NOT = { is_country_type = decentralized }
 				NOT = { has_claim = s:STATE_NAMAQUALAND }
+				sb_nam_receives_direct_coastal_claims = yes
 				c:CAP ?= {
 					NOT = {
 						any_scope_state = {
@@ -91,6 +77,21 @@
 
 		if = {
 			limit = { country_definition = cd:SWA is_country_alive = yes }
+			if = {
+				limit = { has_variable = sb_nam_selected_policy_var }
+				sb_nam_sync_frontier_generation = yes
+			}
+			if = {
+				limit = { NOT = { has_variable = sb_nam_sponsor_claims_relinquished_var } }
+				if = {
+					limit = { var:sb_nam_policy_founder_var ?= { has_variable = sb_nam_policy_colony_founded_var } }
+					var:sb_nam_policy_founder_var = { sb_nam_relinquish_swa_coastal_claims = yes }
+				}
+				else_if = {
+					limit = { overlord ?= { has_variable = sb_nam_mapping_permanent_engagement_var } }
+					overlord = { sb_nam_relinquish_swa_coastal_claims = yes }
+				}
+			}
 			if = {
 				limit = {
 					has_modifier = sb_nam_administrative_capacity
@@ -131,6 +132,34 @@
 sb_on_namibia_global_monthly_pulse = {
 	effect = {
 		sb_nam_close_coastal_race_if_fully_occupied = yes
+	}
+}
+
+sb_on_swa_frontier_state_owner_change = {
+	trigger = {
+		OR = {
+			has_modifier = sb_nam_frontier_generation
+			AND = {
+				c:SWA ?= { has_variable = sb_nam_selected_policy_var }
+				OR = {
+					sb_nam_is_policy_region = yes
+					owner = c:SWA
+					c:SWA = { is_adjacent_to_state = PREV }
+				}
+			}
+		}
+	}
+	effect = {
+		if = {
+			limit = { has_modifier = sb_nam_frontier_generation NOT = { owner ?= c:SWA } }
+			remove_modifier = sb_nam_frontier_generation
+		}
+		c:SWA ?= {
+			if = {
+				limit = { has_variable = sb_nam_selected_policy_var }
+				sb_nam_sync_frontier_generation = yes
+			}
+		}
 	}
 }
 

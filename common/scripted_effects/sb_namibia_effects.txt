@@ -41,6 +41,23 @@
 	}
 }
 
+# SWA country scope, after the sponsor has chosen the appointee for the date.
+sb_nam_install_german_governor = {
+	if = {
+		limit = { NOT = { any_scope_character = { has_template = $TEMPLATE$ } } }
+		create_character = { template = $TEMPLATE$ }
+	}
+	random_scope_character = {
+		limit = { has_template = $TEMPLATE$ is_character_alive = yes }
+		if = { limit = { has_trait = basic_colonial_administrator } remove_trait = basic_colonial_administrator }
+		if = { limit = { has_trait = experienced_colonial_administrator } remove_trait = experienced_colonial_administrator }
+		if = { limit = { NOT = { has_trait = expert_colonial_administrator } } add_trait = expert_colonial_administrator }
+		set_interest_group = c:SWA.ig:$IG$
+		set_as_interest_group_leader = yes
+		set_character_as_ruler = yes
+	}
+}
+
 sb_nam_assign_german_swa_ruler = {
 	if = {
 		limit = {
@@ -51,56 +68,14 @@ sb_nam_assign_german_swa_ruler = {
 			set_variable = { name = keep_current_ruler_var days = 7 }
 			if = {
 				limit = { game_date < 1891.1.1 }
-				if = {
-					limit = {
-						NOT = { any_scope_character = { has_template = SWA_heinrich_ernst_goring } }
-					}
-					create_character = { template = SWA_heinrich_ernst_goring }
-				}
-				random_scope_character = {
-					limit = {
-						has_template = SWA_heinrich_ernst_goring
-						is_character_alive = yes
-					}
-					set_interest_group = c:SWA.ig:ig_landowners
-					set_as_interest_group_leader = yes
-					set_character_as_ruler = yes
-				}
+				sb_nam_install_german_governor = { TEMPLATE = SWA_heinrich_ernst_goring IG = ig_landowners }
 			}
 			else_if = {
 				limit = { game_date < 1894.1.1 }
-				if = {
-					limit = {
-						NOT = { any_scope_character = { has_template = SWA_curt_von_francois } }
-					}
-					create_character = { template = SWA_curt_von_francois }
-				}
-				random_scope_character = {
-					limit = {
-						has_template = SWA_curt_von_francois
-						is_character_alive = yes
-					}
-					set_interest_group = c:SWA.ig:ig_armed_forces
-					set_as_interest_group_leader = yes
-					set_character_as_ruler = yes
-				}
+				sb_nam_install_german_governor = { TEMPLATE = SWA_curt_von_francois IG = ig_armed_forces }
 			}
 			else = {
-				if = {
-					limit = {
-						NOT = { any_scope_character = { has_template = SWA_theodor_leutwein } }
-					}
-					create_character = { template = SWA_theodor_leutwein }
-				}
-				random_scope_character = {
-					limit = {
-						has_template = SWA_theodor_leutwein
-						is_character_alive = yes
-					}
-					set_interest_group = c:SWA.ig:ig_armed_forces
-					set_as_interest_group_leader = yes
-					set_character_as_ruler = yes
-				}
+				sb_nam_install_german_governor = { TEMPLATE = SWA_theodor_leutwein IG = ig_armed_forces }
 			}
 		}
 	}
@@ -162,7 +137,6 @@ sb_nam_cleanup_coastal_expedition = {
 	remove_variable = on_expedition
 	remove_variable = sb_namibian_coast_expedition_active_var
 	remove_variable = sb_nam_german_missionary_support_offered_var
-	remove_variable = sb_nam_south_west_africa_supply_crisis_fired_var
 }
 
 sb_nam_finalize_coastal_expedition_success = {
@@ -172,10 +146,10 @@ sb_nam_finalize_coastal_expedition_success = {
 		}
 		s:STATE_NAMAQUALAND = {
 			set_owner_of_provinces = {
-				country = root
+				country = PREV
 				provinces = { xDEAA3C }
 			}
-			add_claim = root
+			if = { limit = { PREV = { sb_nam_receives_direct_coastal_claims = yes } } add_claim = PREV }
 		}
 		set_variable = sb_nam_coast_secured_luderitz_var
 		random_scope_state = {
@@ -205,10 +179,10 @@ sb_nam_finalize_coastal_expedition_success = {
 		}
 		s:STATE_HEREROLAND = {
 			set_owner_of_provinces = {
-				country = root
+				country = PREV
 				provinces = { xB04050 }
 			}
-			add_claim = root
+			if = { limit = { PREV = { sb_nam_receives_direct_coastal_claims = yes } } add_claim = PREV }
 		}
 		set_variable = sb_nam_coast_secured_swakopmund_var
 		random_scope_state = {
@@ -243,9 +217,6 @@ sb_nam_finalize_coastal_expedition_success = {
 			limit = { NOT = { has_technology_researched = sb_namibian_coastal_access } }
 			add_technology_researched = sb_namibian_coastal_access
 		}
-		# The mapping claim is retained even after administration passes to SWA,
-		# permanently sustaining Engaged status. Keep the immediate grant modest.
-		set_variable = sb_nam_mapping_permanent_engagement_var
 		add_involvement = {
 			strategic_region = sr:region_southern_africa
 			value = 1100
@@ -322,6 +293,23 @@ sb_nam_transfer_british_namibia_to_southern_african_subject = {
 	set_variable = sb_nam_british_namibia_delegated_var
 }
 
+# Country scope is the founding sponsor. Record the handover on the colony.
+sb_nam_relinquish_swa_coastal_claims = {
+	if = {
+		limit = { has_claim = s:STATE_NAMAQUALAND }
+		s:STATE_NAMAQUALAND = { remove_claim = PREV }
+	}
+	if = {
+		limit = { has_claim = s:STATE_HEREROLAND }
+		s:STATE_HEREROLAND = { remove_claim = PREV }
+	}
+	if = {
+		limit = { has_variable = sb_nam_mapping_permanent_engagement_var }
+		remove_variable = sb_nam_mapping_permanent_engagement_var
+	}
+	c:SWA = { set_variable = sb_nam_sponsor_claims_relinquished_var }
+}
+
 sb_nam_finalize_swa_administration = {
 	create_diplomatic_pact = {
 		country = c:SWA
@@ -354,46 +342,9 @@ sb_nam_finalize_swa_administration = {
 		GIVER = root
 		TAKER = c:SWA
 	}
-	# Mapping winners retain their expedition claims after delegating government;
-	# either permanent claim keeps their Southern African interest Engaged.
-	if = {
-		limit = {
-			has_claim = s:STATE_NAMAQUALAND
-			NOT = { has_variable = sb_nam_mapping_permanent_engagement_var }
-		}
-		s:STATE_NAMAQUALAND = {
-			remove_claim = root
-		}
-	}
-	if = {
-		limit = {
-			has_claim = s:STATE_HEREROLAND
-			NOT = { has_variable = sb_nam_mapping_permanent_engagement_var }
-		}
-		s:STATE_HEREROLAND = {
-			remove_claim = root
-		}
-	}
-	if = {
-		limit = {
-			c:SWA ?= {
-				NOT = { has_claim = s:STATE_NAMAQUALAND }
-			}
-		}
-		s:STATE_NAMAQUALAND = {
-			add_claim = c:SWA
-		}
-	}
-	if = {
-		limit = {
-			c:SWA ?= {
-				NOT = { has_claim = s:STATE_HEREROLAND }
-			}
-		}
-		s:STATE_HEREROLAND = {
-			add_claim = c:SWA
-		}
-	}
+	sb_nam_relinquish_swa_coastal_claims = yes
+	s:STATE_NAMAQUALAND = { add_claim = c:SWA }
+	s:STATE_HEREROLAND = { add_claim = c:SWA }
 	sb_nam_assign_german_swa_ruler = yes
 	c:SWA ?= {
 		sb_nam_copy_final_harshness_flags_from_root = yes
@@ -425,7 +376,6 @@ sb_nam_apply_swa_mission_laws = {
 	activate_law = law_type:law_subjecthood
 	sb_nam_apply_swa_subjecthood_amendment = yes
 	activate_law = law_type:law_agrarianism
-	activate_law = law_type:law_colonial_resettlement
 	if = {
 		limit = {
 			root = {
@@ -455,7 +405,6 @@ sb_nam_apply_swa_charter_laws = {
 	activate_law = law_type:law_subjecthood
 	sb_nam_apply_swa_subjecthood_amendment = yes
 	activate_law = law_type:law_extraction_economy
-	activate_law = law_type:law_colonial_exploitation
 	activate_law = law_type:law_no_schools
 	activate_law = law_type:law_no_health_system
 	activate_law = law_type:law_censorship
@@ -470,7 +419,6 @@ sb_nam_apply_swa_extractive_laws = {
 	activate_law = law_type:law_oligarchy
 	activate_law = law_type:law_racial_segregation
 	activate_law = law_type:law_extraction_economy
-	activate_law = law_type:law_colonial_exploitation
 	activate_law = law_type:law_no_schools
 	activate_law = law_type:law_no_health_system
 	activate_law = law_type:law_censorship
@@ -485,7 +433,6 @@ sb_nam_apply_swa_exterminatory_laws = {
 	activate_law = law_type:law_autocracy
 	activate_law = law_type:law_racial_segregation
 	activate_law = law_type:law_extraction_economy
-	activate_law = law_type:law_colonial_exploitation
 	activate_law = law_type:law_no_schools
 	activate_law = law_type:law_no_health_system
 	activate_law = law_type:law_censorship
@@ -538,6 +485,7 @@ sb_nam_add_swa_exterminatory_state_modifier = {
 }
 
 sb_nam_apply_swa_administration_package = {
+	activate_law = law_type:law_frontier_colonization
 	if = {
 		limit = { has_variable = sb_nam_administration_exterminatory_var }
 		sb_nam_apply_swa_exterminatory_laws = yes
@@ -579,7 +527,7 @@ sb_nam_offer_swa_play_as_to_player_overlord = {
 			is_player = yes
 			c:SWA ?= {
 				is_ai = yes
-				is_subject_of = root
+				is_subject_of = PREV
 			}
 			NOT = { has_global_variable = sb_nam_swa_player_switch_taken_var }
 		}

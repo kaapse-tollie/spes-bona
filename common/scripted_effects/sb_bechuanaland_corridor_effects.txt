@@ -147,29 +147,6 @@ sb_bechuanaland_refresh_influence_scopes = {
 			}
 		}
 	}
-
-	if = { limit = { container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_swa_claimant_scope } } container:sb_bechuanaland_corridor_state = { remove_variable = sb_bechuanaland_swa_claimant_scope } }
-	if = {
-		limit = { c:SWA ?= { is_country_alive = yes } }
-		container:sb_bechuanaland_corridor_state = {
-			set_variable = { name = sb_bechuanaland_swa_claimant_scope value = c:SWA }
-		}
-	}
-	else_if = {
-		limit = {
-			container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_swa_overlord_scope }
-			container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_swa_overlord_scope = { is_country_alive = yes }
-		}
-		container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_swa_overlord_scope = {
-			save_temporary_scope_as = sb_bechuanaland_surviving_swa_overlord
-		}
-		container:sb_bechuanaland_corridor_state = {
-			set_variable = {
-				name = sb_bechuanaland_swa_claimant_scope
-				value = scope:sb_bechuanaland_surviving_swa_overlord
-			}
-		}
-	}
 }
 
 sb_bechuanaland_initialize_influence_score = {
@@ -736,8 +713,8 @@ sb_bechuanaland_record_boer_swa_terminal_outcome = {
 			container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_swa_overlord_scope = { set_variable = sb_bechuanaland_pink_map_arbiter_var }
 		}
 		if = {
-			limit = { exists = scope:sb_bechuanaland_swa_settlement_claimant_scope }
-			scope:sb_bechuanaland_swa_settlement_claimant_scope = { set_variable = sb_bechuanaland_pink_map_claimant_var }
+			limit = { c:SWA ?= { is_country_alive = yes } }
+			c:SWA = { set_variable = sb_bechuanaland_pink_map_claimant_var }
 		}
 	}
 	else = {
@@ -3722,17 +3699,6 @@ sb_bechuanaland_save_settlement_loc_scopes = {
 		}
 		container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_boer_actor_scope = { save_scope_as = sb_bechuanaland_boer_claimant_scope }
 	}
-	if = {
-		limit = { c:SWA ?= { is_country_alive = yes } }
-		c:SWA ?= { save_scope_as = sb_bechuanaland_swa_settlement_claimant_scope }
-	}
-	else_if = {
-		limit = {
-			container:sb_bechuanaland_corridor_state = { has_variable = sb_bechuanaland_swa_claimant_scope }
-			container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_swa_claimant_scope = { is_country_alive = yes }
-		}
-		container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_swa_claimant_scope = { save_scope_as = sb_bechuanaland_swa_settlement_claimant_scope }
-	}
 }
 
 # Terminal path for white peace or mutually enforced corridor packages. It drops
@@ -4039,13 +4005,13 @@ sb_bechuanaland_apply_boer_swa_settlement = {
 		limit = { container:sb_bechuanaland_corridor_state.var:sb_bechuanaland_influence_score_var < 0 }
 		sb_bechuanaland_grant_swa_settlement_leverage = yes
 		if = {
-			limit = { exists = scope:sb_bechuanaland_swa_settlement_claimant_scope }
-			s:STATE_BOTSWANA = { add_claim = scope:sb_bechuanaland_swa_settlement_claimant_scope }
+			limit = { c:SWA ?= { is_country_alive = yes } }
+			s:STATE_BOTSWANA = { add_claim = c:SWA }
 			if = {
 				limit = { NOT = { sb_pink_map_precedes_bechuanaland = yes } }
-				s:STATE_ZAMBIA = { add_claim = scope:sb_bechuanaland_swa_settlement_claimant_scope }
-				s:STATE_ZAMBEZI = { add_claim = scope:sb_bechuanaland_swa_settlement_claimant_scope }
-				s:STATE_KAZEMBE = { add_claim = scope:sb_bechuanaland_swa_settlement_claimant_scope }
+				s:STATE_ZAMBIA = { add_claim = c:SWA }
+				s:STATE_ZAMBEZI = { add_claim = c:SWA }
+				s:STATE_KAZEMBE = { add_claim = c:SWA }
 			}
 		}
 	}
@@ -4058,8 +4024,8 @@ sb_bechuanaland_apply_boer_swa_settlement = {
 			}
 		}
 		if = {
-			limit = { exists = scope:sb_bechuanaland_swa_settlement_claimant_scope }
-			s:STATE_BOTSWANA = { add_claim = scope:sb_bechuanaland_swa_settlement_claimant_scope }
+			limit = { c:SWA ?= { is_country_alive = yes } }
+			s:STATE_BOTSWANA = { add_claim = c:SWA }
 		}
 	}
 	sb_bechuanaland_trigger_warren_boer_victory_aftermath = yes

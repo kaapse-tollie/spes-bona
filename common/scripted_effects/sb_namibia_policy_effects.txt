@@ -78,6 +78,39 @@ sb_nam_sync_regional_policy = {
 	}
 }
 
+# SWA country scope. Only the incorporated capital generates this extra growth.
+sb_nam_sync_frontier_generation = {
+	every_scope_state = {
+		limit = {
+			has_modifier = sb_nam_frontier_generation
+			OR = {
+				NOT = { this = c:SWA.capital }
+				NOT = { has_variable = sb_nam_frontier_term_applied_var } # Earlier saves have an undated grant.
+			}
+		}
+		remove_modifier = sb_nam_frontier_generation
+	}
+	capital ?= {
+		if = {
+			limit = {
+				owner = { has_variable = sb_nam_policy_expiry_var var:sb_nam_policy_expiry_var > game_date }
+				is_incorporated = yes
+				s:STATE_HEREROLAND = { sb_nam_has_open_swa_frontier = yes }
+				s:STATE_NAMAQUALAND = { sb_nam_has_open_swa_frontier = yes }
+			}
+			if = {
+				limit = { NOT = { has_modifier = sb_nam_frontier_generation } }
+				add_modifier = { name = sb_nam_frontier_generation days = sb_nam_state_policy_days_left }
+				set_variable = { name = sb_nam_frontier_term_applied_var days = sb_nam_state_policy_days_left }
+			}
+		}
+		else_if = {
+			limit = { has_modifier = sb_nam_frontier_generation }
+			remove_modifier = sb_nam_frontier_generation
+		}
+	}
+}
+
 sb_nam_apply_administrative_capacity = {
 	if = {
 		limit = { sb_nam_legacy_charter_is_funded = yes }
@@ -176,11 +209,20 @@ sb_nam_try_found_policy_colony = {
 			tag = SWA
 			origin = scope:sb_nam_policy_founder
 			province = p:xB04050
+			province = p:xDEAA3C
 		}
 		c:SWA ?= {
 			if = {
-				limit = { p:xB04050.state.owner = THIS }
+				limit = { sb_nam_controls_both_consolidation_ports = yes }
+				save_scope_as = sb_nam_new_colony
 				set_variable = { name = sb_nam_policy_founder_var value = scope:sb_nam_policy_founder }
+				set_variable = { name = sb_nam_handover_started_var value = game_date }
+				s:STATE_HEREROLAND.region_state:SWA = {
+					if = {
+						limit = { NOT = { has_building = building_government_administration } }
+						create_building = { building = building_government_administration level = 1 reserves = 1 }
+					}
+				}
 			}
 		}
 		if = {
@@ -190,18 +232,20 @@ sb_nam_try_found_policy_colony = {
 	}
 }
 
-# Country scope is the sponsor. Only its provisional foothold may be returned.
+# Both ports already belong to the newborn country. A stale appointment cannot transfer land.
 sb_nam_reconcile_seeded_policy_colony = {
 	if = {
-		limit = {
-			OR = { p:xDEAA3C.state.owner = THIS p:xDEAA3C.state.owner = c:SWA }
+		limit = { c:SWA.var:sb_nam_handover_started_var < game_date }
+		c:SWA = { remove_variable = sb_nam_handover_started_var }
+		if = {
+			limit = {
+				is_subject = no
+				c:SWA = { is_subject = no sb_nam_controls_both_consolidation_ports = yes }
+			}
+			sb_nam_finish_policy_colony = yes
 		}
-		sb_nam_finish_policy_colony = yes
-	}
-	else = {
-		c:SWA = { remove_variable = sb_nam_policy_founder_var }
-		s:STATE_HEREROLAND = {
-			set_owner_of_provinces = { country = PREV provinces = { xB04050 } }
+		else = {
+			c:SWA = { remove_variable = sb_nam_policy_founder_var }
 		}
 	}
 }
@@ -262,21 +306,42 @@ sb_nam_finish_policy_colony = {
 		sb_nam_sync_regional_policy = yes
 	}
 	if = { limit = { has_variable = sb_nam_policy_expiry_var } remove_variable = sb_nam_policy_expiry_var }
+	sb_nam_relinquish_swa_coastal_claims = yes
 	s:STATE_NAMAQUALAND = { add_claim = c:SWA }
 	s:STATE_HEREROLAND = { add_claim = c:SWA }
-	sb_nam_assign_german_swa_ruler = yes
 
 	if = {
 		limit = { var:sb_nam_selected_policy_var = 2 }
 		sb_nam_establish_swa_company = yes
 	}
-	c:SWA = { sb_nam_apply_administrative_capacity = yes }
+	sb_nam_assign_german_swa_ruler = yes
+	c:SWA = {
+		if = {
+			limit = { is_ai = yes has_institution = institution_colonial_affairs }
+			set_strategy = ai_strategy_sb_swa_colonial_affairs
+		}
+		sb_nam_apply_administrative_capacity = yes
+		sb_nam_sync_frontier_generation = yes
+	}
 	sb_nam_offer_swa_play_as_to_player_overlord = yes
 }
 
 # SWA country scope, with the founder saved by the administration setup.
 sb_nam_apply_selected_policy_laws = {
 	activate_law = law_type:law_colonial_administration
+	activate_law = law_type:law_frontier_colonization
+	if = {
+		limit = { OR = { var:sb_nam_selected_policy_var = 2 var:sb_nam_selected_policy_var = 4 } }
+		active_law:lawgroup_colonization ?= {
+			if = {
+				limit = {
+					type = law_type:law_frontier_colonization
+					NOT = { has_amendment = amendment_type:amendment_sb_extractive_concessions }
+				}
+				add_amendment = { type = amendment_sb_extractive_concessions sponsor = PREV.ig:ig_industrialists }
+			}
+		}
+	}
 	activate_law = law_type:law_subjecthood
 	sb_nam_apply_swa_subjecthood_amendment = yes
 	activate_law = law_type:law_no_workers_rights
@@ -297,11 +362,9 @@ sb_nam_apply_selected_policy_laws = {
 	if = {
 		limit = { OR = { var:sb_nam_selected_policy_var = 1 var:sb_nam_selected_policy_var = 3 } }
 		activate_law = law_type:law_agrarianism
-		activate_law = law_type:law_colonial_resettlement
 	}
 	else = {
 		activate_law = law_type:law_extraction_economy
-		activate_law = law_type:law_colonial_exploitation
 	}
 	if = {
 		limit = {

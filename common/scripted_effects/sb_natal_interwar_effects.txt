@@ -1575,8 +1575,18 @@ sb_natal_create_annexation_zulu_movement = {
 
 sb_natal_apply_restored_zulu_baseline = {
 	set_country_type = unrecognized
-	effect_starting_technology_tier_6_tech = yes
-	add_technology_researched = international_trade
+	if = {
+		limit = { has_global_variable_list = sb_zululand_archived_technologies }
+		sb_zululand_for_each_technology = { ACTION = sb_zululand_restore_technology }
+	}
+	else_if = {
+		limit = { NOT = { has_global_variable = sb_zululand_archived_tech_count } }
+		# A legacy checkpoint loaded after annexation has no campaign research record.
+		effect_starting_technology_tier_6_tech = yes
+		add_technology_researched = international_trade
+	}
+	# Country creation has its own event root. Retain the releasing owner's law inheritance.
+	copy_laws = global_var:sb_zululand_release_law_source
 	effect_starting_politics_traditional = yes
 	activate_law = law_type:law_monarchy
 	activate_law = law_type:law_autocracy

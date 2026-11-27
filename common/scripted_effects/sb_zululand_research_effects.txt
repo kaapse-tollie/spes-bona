@@ -1,0 +1,228 @@
+﻿# Keep the last main ZUL's completed inventions across annexation, delayed handover and reload.
+sb_zululand_refresh_research_archive = {
+	if = {
+		limit = {
+			this = c:ZUL
+			is_country_alive = yes
+			NOT = { has_global_variable = sb_zululand_release_law_source }
+			NOT = { c:GBR ?= { has_variable = sb_zululand_postwar_handoff_resolved_var } }
+			OR = {
+				NOT = { has_global_variable = sb_zululand_archived_tech_count }
+				NOT = { global_var:sb_zululand_archived_tech_country ?= this }
+				NOT = { techs_researched = global_var:sb_zululand_archived_tech_count }
+			}
+		}
+		if = { limit = { has_global_variable_list = sb_zululand_archived_technologies } clear_global_variable_list = sb_zululand_archived_technologies }
+		set_global_variable = { name = sb_zululand_archived_tech_country value = this }
+		set_global_variable = { name = sb_zululand_archived_tech_count value = techs_researched }
+		sb_zululand_for_each_technology = { ACTION = sb_zululand_record_technology }
+	}
+}
+
+sb_zululand_record_technology = {
+	if = {
+		limit = { has_technology_researched = $TECH$ }
+		add_to_global_variable_list = { name = sb_zululand_archived_technologies target = flag:$TECH$ }
+	}
+}
+
+sb_zululand_restore_technology = {
+	if = {
+		limit = { is_target_in_global_variable_list = { name = sb_zululand_archived_technologies target = flag:$TECH$ } }
+		add_technology_researched = $TECH$
+	}
+}
+
+sb_zululand_clear_research_archive = {
+	if = { limit = { has_global_variable_list = sb_zululand_archived_technologies } clear_global_variable_list = sb_zululand_archived_technologies }
+	remove_global_variable = sb_zululand_archived_tech_count
+	remove_global_variable = sb_zululand_archived_tech_country
+}
+
+# add_technology_researched takes a literal technology key. Use one catalogue for both passes.
+sb_zululand_for_each_technology = {
+	# 10_production
+	$ACTION$ = { TECH = sericulture }
+	$ACTION$ = { TECH = enclosure }
+	$ACTION$ = { TECH = manufacturies }
+	$ACTION$ = { TECH = shaft_mining }
+	$ACTION$ = { TECH = cotton_gin }
+	$ACTION$ = { TECH = lathe }
+	$ACTION$ = { TECH = distillation }
+	$ACTION$ = { TECH = steelworking }
+	$ACTION$ = { TECH = prospecting }
+	$ACTION$ = { TECH = crystal_glass }
+	$ACTION$ = { TECH = intensive_agriculture }
+	$ACTION$ = { TECH = fractional_distillation }
+	$ACTION$ = { TECH = canneries }
+	$ACTION$ = { TECH = watertube_boiler }
+	$ACTION$ = { TECH = atmospheric_engine }
+	$ACTION$ = { TECH = railways }
+	$ACTION$ = { TECH = chemical_bleaching }
+	$ACTION$ = { TECH = nitroglycerin }
+	$ACTION$ = { TECH = bessemer_process }
+	$ACTION$ = { TECH = baking_powder }
+	$ACTION$ = { TECH = mechanized_workshops }
+	$ACTION$ = { TECH = mechanical_tools }
+	$ACTION$ = { TECH = improved_fertilizer }
+	$ACTION$ = { TECH = steam_donkey }
+	$ACTION$ = { TECH = dynamite }
+	$ACTION$ = { TECH = rubber_mastication }
+	$ACTION$ = { TECH = rotary_valve_engine }
+	$ACTION$ = { TECH = reinforced_concrete }
+	$ACTION$ = { TECH = threshing_machine }
+	$ACTION$ = { TECH = pumpjacks }
+	$ACTION$ = { TECH = aniline }
+	$ACTION$ = { TECH = open_hearth_process }
+	$ACTION$ = { TECH = vulcanization }
+	$ACTION$ = { TECH = vacuum_canning }
+	$ACTION$ = { TECH = shift_work }
+	$ACTION$ = { TECH = steel_railway_cars }
+	$ACTION$ = { TECH = electrical_generation }
+	$ACTION$ = { TECH = mechanized_farming }
+	$ACTION$ = { TECH = art_silk }
+	$ACTION$ = { TECH = automatic_bottle_blowers }
+	$ACTION$ = { TECH = conveyors }
+	$ACTION$ = { TECH = pasteurization }
+	$ACTION$ = { TECH = electric_railway }
+	$ACTION$ = { TECH = combustion_engine }
+	$ACTION$ = { TECH = pneumatic_tools }
+	$ACTION$ = { TECH = nitrogen_fixation }
+	$ACTION$ = { TECH = electric_arc_process }
+	$ACTION$ = { TECH = steam_turbine }
+	$ACTION$ = { TECH = plastics }
+	$ACTION$ = { TECH = electrical_capacitors }
+	$ACTION$ = { TECH = radio }
+	$ACTION$ = { TECH = telephone }
+	$ACTION$ = { TECH = dough_rollers }
+	$ACTION$ = { TECH = flash_freezing }
+	$ACTION$ = { TECH = oil_turbine }
+	$ACTION$ = { TECH = arc_welding }
+	$ACTION$ = { TECH = compression_ignition }
+	# 20_military
+	$ACTION$ = { TECH = standing_army }
+	$ACTION$ = { TECH = navigation }
+	$ACTION$ = { TECH = drydocks }
+	$ACTION$ = { TECH = mandatory_service }
+	$ACTION$ = { TECH = gunsmithing }
+	$ACTION$ = { TECH = artillery }
+	$ACTION$ = { TECH = military_drill }
+	$ACTION$ = { TECH = napoleonic_warfare }
+	$ACTION$ = { TECH = admiralty }
+	$ACTION$ = { TECH = army_reserves }
+	$ACTION$ = { TECH = line_infantry }
+	$ACTION$ = { TECH = paddle_steamer }
+	$ACTION$ = { TECH = field_works }
+	$ACTION$ = { TECH = logistics }
+	$ACTION$ = { TECH = triage }
+	$ACTION$ = { TECH = shell_gun }
+	$ACTION$ = { TECH = percussion_cap }
+	$ACTION$ = { TECH = rifling }
+	$ACTION$ = { TECH = general_staff }
+	$ACTION$ = { TECH = screw_frigate }
+	$ACTION$ = { TECH = power_of_the_purse }
+	$ACTION$ = { TECH = hydraulic_cranes }
+	$ACTION$ = { TECH = modern_nursing }
+	$ACTION$ = { TECH = enlistment_offices }
+	$ACTION$ = { TECH = electric_telegraph }
+	$ACTION$ = { TECH = military_statistics }
+	$ACTION$ = { TECH = repeaters }
+	$ACTION$ = { TECH = breech_loading_artillery }
+	$ACTION$ = { TECH = handcranked_machine_gun }
+	$ACTION$ = { TECH = self_propelled_torpedoes }
+	$ACTION$ = { TECH = monitor_tech }
+	$ACTION$ = { TECH = ironclad_tech }
+	$ACTION$ = { TECH = jeune_ecole }
+	$ACTION$ = { TECH = floating_harbor }
+	$ACTION$ = { TECH = gantry_cranes }
+	$ACTION$ = { TECH = trench_works }
+	$ACTION$ = { TECH = war_propaganda }
+	$ACTION$ = { TECH = wargaming }
+	$ACTION$ = { TECH = defense_in_depth }
+	$ACTION$ = { TECH = bolt_action_rifles }
+	$ACTION$ = { TECH = automatic_machine_guns }
+	$ACTION$ = { TECH = submarine }
+	$ACTION$ = { TECH = destroyer }
+	$ACTION$ = { TECH = pre_dreadnought_tech }
+	$ACTION$ = { TECH = dreadnought_tech }
+	$ACTION$ = { TECH = sea_lane_strategies }
+	$ACTION$ = { TECH = landing_craft }
+	$ACTION$ = { TECH = concrete_dockyards }
+	$ACTION$ = { TECH = nco_training }
+	$ACTION$ = { TECH = chemical_warfare }
+	$ACTION$ = { TECH = stormtroopers }
+	$ACTION$ = { TECH = concrete_fortifications }
+	$ACTION$ = { TECH = mobile_armor }
+	$ACTION$ = { TECH = military_aviation }
+	$ACTION$ = { TECH = flamethrowers }
+	$ACTION$ = { TECH = carrier_tech }
+	$ACTION$ = { TECH = battleship_tech }
+	$ACTION$ = { TECH = battlefleet_tactics }
+	# 30_society
+	$ACTION$ = { TECH = urbanization }
+	$ACTION$ = { TECH = urban_planning }
+	$ACTION$ = { TECH = rationalism }
+	$ACTION$ = { TECH = tech_bureaucracy }
+	$ACTION$ = { TECH = currency_standards }
+	$ACTION$ = { TECH = democracy }
+	$ACTION$ = { TECH = romanticism }
+	$ACTION$ = { TECH = international_trade }
+	$ACTION$ = { TECH = centralization }
+	$ACTION$ = { TECH = corporate_charters }
+	$ACTION$ = { TECH = banking }
+	$ACTION$ = { TECH = academia }
+	$ACTION$ = { TECH = colonization }
+	$ACTION$ = { TECH = international_relations }
+	$ACTION$ = { TECH = law_enforcement }
+	$ACTION$ = { TECH = stock_exchange }
+	$ACTION$ = { TECH = medical_degrees }
+	$ACTION$ = { TECH = mass_communication }
+	$ACTION$ = { TECH = empiricism }
+	$ACTION$ = { TECH = egalitarianism }
+	$ACTION$ = { TECH = pharmaceuticals }
+	$ACTION$ = { TECH = modern_sewerage }
+	$ACTION$ = { TECH = quinine }
+	$ACTION$ = { TECH = organized_sports }
+	$ACTION$ = { TECH = central_archives }
+	$ACTION$ = { TECH = central_banking }
+	$ACTION$ = { TECH = joint_stock_companies }
+	$ACTION$ = { TECH = dialectics }
+	$ACTION$ = { TECH = psychiatry }
+	$ACTION$ = { TECH = realism }
+	$ACTION$ = { TECH = nationalism }
+	$ACTION$ = { TECH = labor_movement }
+	$ACTION$ = { TECH = postal_savings }
+	$ACTION$ = { TECH = human_rights }
+	$ACTION$ = { TECH = feminism }
+	$ACTION$ = { TECH = steel_frame_buildings }
+	$ACTION$ = { TECH = civilizing_mission }
+	$ACTION$ = { TECH = anarchism }
+	$ACTION$ = { TECH = socialism }
+	$ACTION$ = { TECH = corporatism }
+	$ACTION$ = { TECH = pan-nationalism }
+	$ACTION$ = { TECH = mutual_funds }
+	$ACTION$ = { TECH = investment_banks }
+	$ACTION$ = { TECH = camera }
+	$ACTION$ = { TECH = philosophical_pragmatism }
+	$ACTION$ = { TECH = identification_documents }
+	$ACTION$ = { TECH = elevator }
+	$ACTION$ = { TECH = zeppelins }
+	$ACTION$ = { TECH = malaria_prevention }
+	$ACTION$ = { TECH = central_planning }
+	$ACTION$ = { TECH = political_agitation }
+	$ACTION$ = { TECH = international_exchange_standards }
+	$ACTION$ = { TECH = corporate_management }
+	$ACTION$ = { TECH = psychoanalysis }
+	$ACTION$ = { TECH = film }
+	$ACTION$ = { TECH = multilateral_alliances }
+	$ACTION$ = { TECH = mass_surveillance }
+	$ACTION$ = { TECH = antibiotics }
+	$ACTION$ = { TECH = mass_propaganda }
+	$ACTION$ = { TECH = modern_financial_instruments }
+	$ACTION$ = { TECH = macroeconomics }
+	$ACTION$ = { TECH = behaviorism }
+	$ACTION$ = { TECH = analytical_philosophy }
+	$ACTION$ = { TECH = paved_roads }
+	# sb_namibian_coastal_access
+	$ACTION$ = { TECH = sb_namibian_coastal_access }
+}

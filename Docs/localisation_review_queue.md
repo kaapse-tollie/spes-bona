@@ -763,12 +763,13 @@ New/changed general text awaiting DP review (existing reviewed namespaces preser
 | `localization/english/sb_war_goal_contracts_l_english.yml` | `war_goal_sb_reestablish_nrp_protectorate_type_desc` | Vryheid protectorate restoration. |
 | `localization/english/sb_war_goal_contracts_l_english.yml` | `war_goal_sb_reestablish_nrp_protectorate` | Vryheid protectorate restoration. |
 | `localization/english/sb_war_goal_contracts_l_english.yml` | `war_goal_sb_reestablish_nrp_protectorate_desc` | Vryheid protectorate restoration. |
+| `localization/english/sb_namibia_l_english.yml` | `sb_nam_014_a_tt` | Survey rewards and coastal occupation. |
 | `localization/english/sb_namibia_l_english.yml` | `sb_nam_017_completion_tt` | Warren and South West Africa policy rework. |
 | `localization/english/sb_namibia_l_english.yml` | `sb_nam_017_missions_tt` | Warren and South West Africa policy rework. |
-| `localization/english/sb_namibia_l_english.yml` | `sb_nam_017_company_tt` | Warren and South West Africa policy rework. |
+| `localization/english/sb_namibia_l_english.yml` | `sb_nam_017_company_tt` | Charter terms and Industrialist sponsorship of Extractive Concessions. |
 | `localization/english/sb_namibia_l_english.yml` | `sb_nam_017_settler_tt` | Warren and South West Africa policy rework. |
-| `localization/english/sb_namibia_l_english.yml` | `sb_nam_017_ruthless_tt` | Warren and South West Africa policy rework. |
-| `localization/english/sb_namibia_l_english.yml` | `sb_nam_017_swa_tt` | Founding settlers, maximum Colonial Affairs investment and the expiry of the Bureaucracy bonus. |
+| `localization/english/sb_namibia_l_english.yml` | `sb_nam_017_ruthless_tt` | Regional extraction bonuses and the amendment for a newly founded SWA. |
+| `localization/english/sb_namibia_l_english.yml` | `sb_nam_017_swa_tt` | Transfer both stations together when the founder secures the second port. |
 | `localization/english/sb_namibia_l_english.yml` | `company_sb_south_west_africa_company` | Warren and South West Africa policy rework. |
 | `localization/english/sb_namibia_l_english.yml` | `company_sb_south_west_africa_company_desc` | Warren and South West Africa policy rework. |
 | `localization/english/sb_namibia_l_english.yml` | `dyn_c_sb_south_west_africa_company` | Warren and South West Africa policy rework. |
@@ -793,3 +794,27 @@ New/changed general text awaiting DP review (existing reviewed namespaces preser
 | `localization/english/sb_institutions_l_english.yml` | `sb_prerogative_target_court` | Royal house and chiefly settlement. |
 | `localization/english/sb_chiefdoms_refinement_l_english.yml` | `sb_chiefs_claimant_and_speaker` | Royal house and chiefly settlement. |
 | `localization/english/sb_chiefdoms_refinement_l_english.yml` | `sb_chiefs_child_and_regent` | Royal house and chiefly settlement. |
+| `localization/english/sb_griqualand_west_l_english.yml` | `sb_griqualand_west_242_war_tt` | Replace plain-text Britain with scoped CAP overlord tag (`sb_gbr_scope`). |
+| `localization/english/sb_griqualand_west_l_english.yml` | `sb_griqualand_west_252_boer_aggressor_tt` | Replace plain-text Britain with scoped CAP overlord tag (`sb_gbr_scope`). |
+| `localization/english/sb_griqualand_west_l_english.yml` | `sb_griqualand_west_253_boer_aggressor_tt` | Replace plain-text Britain with scoped CAP overlord tag (`sb_gbr_scope`). |
+| `localization/english/sb_namibia_l_english.yml` | `sb_nam_010_a_tt` | Colonial law petition and the missionary maps offer. |
+| `localization/english/sb_namibia_l_english.yml` | `sb_nam_010_b_tt` | Effect of an explicit refusal on the maps offer. |
+| `localization/english/sb_namibia_l_english.yml` | `sb_nam_011_can_pay_tt` | Gold reserves required for a human Germany, visible when the purchase is unavailable. |
+| `localization/english/sb_namibia_l_english.yml` | `sb_nam_011_a_tt` | Clarify Mission Progress and Expedition Peril effects on `sb_nam.011.a`. |
+| `localization/english/sb_namibia_l_english.yml` | `sb_nam_011_b_tt` | State explicit no-cost / no-change outcome on `sb_nam.011.b`. |
+| `localization/english/sb_namibia_l_english.yml` | `sb_nam_017_company_immediate_tt` | Founding concessions, company capacity and charter funding. |
+| `localization/english/sb_namibia_l_english.yml` | `sb_nam_017_ruthless_immediate_tt` | Founding concessions and the separate time-limited Standard of Living loss. |
+| `localization/english/sb_namibia_l_english.yml` | `sb_nam_017_ruthless_direct_tt` | Direct-rule Ruthless Extraction preview without SWA colony-only sentences. |
+| `localization/english/sb_namibia_l_english.yml` | `sb_nam_017_swa_immediate_tt` | Immediate ownership of Lüderitz and Swakopmund. |
+| `localization/english/sb_namibia_l_english.yml` | `sb_nam_017_swa_administration_tt` | Government Administration at Swakopmund and the +340 Colonial Growth Generation grant during the ten-year policy term. |
+| `localization/english/sb_namibia_l_english.yml` | `amendment_sb_extractive_concessions` | Name of the Company and Ruthless founding amendment. |
+| `localization/english/sb_namibia_l_english.yml` | `amendment_sb_extractive_concessions_desc` | Industrial concessions in unincorporated territories. |
+| `localization/english/sb_namibia_l_english.yml` | `ai_strategy_sb_swa_colonial_affairs` | SWA’s Colonial Affairs investment priority. |
+| `localization/english/sb_namibia_l_english.yml` | `ai_strategy_sb_swa_colonial_affairs_desc` | Investment under the ordinary and chartered administrations. |
+| `localization/english/sb_namibia_l_english.yml` | `sb_nam_frontier_generation` | Capital modifier for two open frontiers. |
+| `localization/english/sb_namibia_l_english.yml` | `sb_nam_survey_hydrography_prestige` | Act I Benguela hydrography Prestige modifier. |
+| `localization/english/sb_namibia_l_english.yml` | `sb_nam_survey_charts_prestige` | Act II cove triangulation / priority charts Prestige modifier. |
+| `localization/english/sb_namibia_l_english.yml` | `sb_nam_survey_guano_prestige` | Act II guano islets & seal rookeries Prestige modifier. |
+| `localization/english/sb_namibia_l_english.yml` | `sb_nam_survey_natural_history_prestige` | Act III Welwitschia & Namib wildlife Prestige modifier. |
+| `localization/english/sb_namibia_l_english.yml` | `sb_nam_survey_heroic_rescue_prestige` | High-peril desert rescue Prestige modifier. |
+| `localization/english/sb_namibia_l_english.yml` | `sb_nam_survey_acclaimed_leader` | Expedition commander acclaim popularity modifier. |

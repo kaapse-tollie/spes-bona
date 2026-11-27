@@ -16,34 +16,18 @@ sb_nam.010 = {
 	icon = "gfx/interface/icons/event_icons/event_map.dds"
 	duration = 3
 
-	trigger = {
-		country_definition = cd:GER
-		game_date >= 1870.1.1
-		NOT = { has_variable = sb_nam_colonial_prestige_resolved_var }
-		OR = {
-			ig:ig_landowners   ?= { is_in_government = yes }
-			ig:ig_armed_forces ?= { is_in_government = yes }
-		}
-		OR = {
-			sb_nam_has_qualifying_overseas_colonial_law = yes
-			AND = {
-				NOT = { has_journal_entry = je_government_petition_negotiation_version }
-				NOT = { has_journal_entry = je_government_petition_negotiation_version_b }
-			}
-		}
-	}
+	trigger = { sb_nam_can_offer_berlin_programme = yes }
+	cancellation_trigger = { sb_nam_can_offer_berlin_programme = no }
 
 	option = {
 		name = sb_nam.010.a
 		default_option = yes
 		custom_tooltip = sb_nam_010_a_tt
 		hidden_effect = {
-			set_variable = sb_nam_colonial_prestige_resolved_var
-			set_variable = sb_nam_colonial_programme_backed_var
 			if = {
-				limit = {
-					NOT = { sb_nam_has_qualifying_overseas_colonial_law = yes }
-				}
+				limit = { sb_nam_can_offer_berlin_programme = yes }
+				set_variable = sb_nam_colonial_prestige_resolved_var
+				set_variable = sb_nam_colonial_programme_backed_var
 				random_law = {
 					limit = {
 						type = law_type:law_colonial_exploitation
@@ -118,23 +102,24 @@ sb_nam.010 = {
 		name = sb_nam.010.b
 		custom_tooltip = sb_nam_010_b_tt
 		hidden_effect = {
-			set_variable = sb_nam_colonial_prestige_resolved_var
 			if = {
-				limit = {
-					ig:ig_landowners ?= { is_in_government = yes }
-				}
-				ig:ig_landowners ?= {
-					add_modifier = {
-						name = sb_nam_german_colonial_rebuff
-						months = 60
+				limit = { sb_nam_can_offer_berlin_programme = yes }
+				set_variable = sb_nam_colonial_prestige_resolved_var
+				if = {
+					limit = { ig:ig_landowners ?= { is_in_government = yes } }
+					ig:ig_landowners = {
+						add_modifier = {
+							name = sb_nam_german_colonial_rebuff
+							months = 60
+						}
 					}
 				}
-			}
-			else = {
-				ig:ig_armed_forces ?= {
-					add_modifier = {
-						name = sb_nam_german_colonial_rebuff
-						months = 60
+				else = {
+					ig:ig_armed_forces ?= {
+						add_modifier = {
+							name = sb_nam_german_colonial_rebuff
+							months = 60
+						}
 					}
 				}
 			}
@@ -165,19 +150,28 @@ sb_nam.011 = {
 	option = {
 		name = sb_nam.011.a
 		default_option = yes
-		trigger = { sb_nam_can_pay_for_maps = yes }
+		show_as_unavailable = { always = yes }
+		trigger = {
+			custom_tooltip = {
+				text = sb_nam_011_can_pay_tt
+				sb_nam_can_pay_for_maps = yes
+			}
+		}
 		custom_tooltip = sb_nam_011_a_tt
 		hidden_effect = {
 			if = {
 				limit = { sb_nam_maps_offer_is_current = yes }
-				je:je_sb_map_namibian_coast = { set_variable = { name = sb_nam_maps_offer_var value = 2 } }
 				if = {
 					limit = { sb_nam_can_pay_for_maps = yes }
 					add_treasury = -100000
 					je:je_sb_map_namibian_coast = {
+						set_variable = { name = sb_nam_maps_offer_var value = 2 }
 						add_progress = { name = sb_namibian_coast_survey_progress_bar value = 10 }
 						add_progress = { name = sb_namibian_coast_expedition_peril_bar value = -2 }
 					}
+				}
+				else = {
+					je:je_sb_map_namibian_coast = { set_variable = { name = sb_nam_maps_offer_var value = 3 } }
 				}
 			}
 		}
@@ -190,7 +184,7 @@ sb_nam.011 = {
 		hidden_effect = {
 			if = {
 				limit = { sb_nam_maps_offer_is_current = yes }
-				je:je_sb_map_namibian_coast = { set_variable = { name = sb_nam_maps_offer_var value = 2 } }
+				je:je_sb_map_namibian_coast = { set_variable = { name = sb_nam_maps_offer_var value = 3 } }
 			}
 		}
 		ai_chance = {
@@ -485,7 +479,16 @@ sb_nam.017 = {
 		name = sb_nam.017.a
 		default_option = yes
 		custom_tooltip = sb_nam_017_missions_tt
-		if = { limit = { sb_nam_can_found_policy_colony = yes } custom_tooltip = sb_nam_017_swa_tt }
+		if = {
+			limit = { sb_nam_can_found_policy_colony = yes }
+			if = {
+				limit = { sb_nam_controls_both_consolidation_ports = yes }
+				custom_tooltip = sb_nam_017_swa_immediate_tt
+			}
+			else = {
+				custom_tooltip = sb_nam_017_swa_tt
+			}
+		}
 		hidden_effect = { sb_nam_choose_policy = { POLICY = 1 } }
 		ai_chance = {
 			base = 0
@@ -495,8 +498,23 @@ sb_nam.017 = {
 	option = {
 		name = sb_nam.017.b
 		trigger = { sb_nam_can_found_policy_colony = yes }
-		custom_tooltip = sb_nam_017_company_tt
-		if = { limit = { sb_nam_can_found_policy_colony = yes } custom_tooltip = sb_nam_017_swa_tt }
+		if = {
+			limit = { sb_nam_controls_both_consolidation_ports = yes }
+			custom_tooltip = sb_nam_017_company_immediate_tt
+		}
+		else = {
+			custom_tooltip = sb_nam_017_company_tt
+		}
+		if = {
+			limit = { sb_nam_can_found_policy_colony = yes }
+			if = {
+				limit = { sb_nam_controls_both_consolidation_ports = yes }
+				custom_tooltip = sb_nam_017_swa_immediate_tt
+			}
+			else = {
+				custom_tooltip = sb_nam_017_swa_tt
+			}
+		}
 		hidden_effect = {
 			if = {
 				limit = { sb_nam_can_found_policy_colony = yes }
@@ -511,7 +529,16 @@ sb_nam.017 = {
 	option = {
 		name = sb_nam.017.c
 		custom_tooltip = sb_nam_017_settler_tt
-		if = { limit = { sb_nam_can_found_policy_colony = yes } custom_tooltip = sb_nam_017_swa_tt }
+		if = {
+			limit = { sb_nam_can_found_policy_colony = yes }
+			if = {
+				limit = { sb_nam_controls_both_consolidation_ports = yes }
+				custom_tooltip = sb_nam_017_swa_immediate_tt
+			}
+			else = {
+				custom_tooltip = sb_nam_017_swa_tt
+			}
+		}
 		hidden_effect = { sb_nam_choose_policy = { POLICY = 3 } }
 		ai_chance = {
 			base = 0
@@ -520,8 +547,30 @@ sb_nam.017 = {
 	}
 	option = {
 		name = sb_nam.017.e
-		custom_tooltip = sb_nam_017_ruthless_tt
-		if = { limit = { sb_nam_can_found_policy_colony = yes } custom_tooltip = sb_nam_017_swa_tt }
+		if = {
+			limit = {
+				sb_nam_can_found_policy_colony = yes
+				sb_nam_controls_both_consolidation_ports = yes
+			}
+			custom_tooltip = sb_nam_017_ruthless_immediate_tt
+		}
+		else_if = {
+			limit = { sb_nam_can_found_policy_colony = yes }
+			custom_tooltip = sb_nam_017_ruthless_tt
+		}
+		else = {
+			custom_tooltip = sb_nam_017_ruthless_direct_tt
+		}
+		if = {
+			limit = { sb_nam_can_found_policy_colony = yes }
+			if = {
+				limit = { sb_nam_controls_both_consolidation_ports = yes }
+				custom_tooltip = sb_nam_017_swa_immediate_tt
+			}
+			else = {
+				custom_tooltip = sb_nam_017_swa_tt
+			}
+		}
 		hidden_effect = { sb_nam_choose_policy = { POLICY = 4 } }
 		ai_chance = {
 			base = 0
@@ -534,85 +583,318 @@ sb_nam.018 = {
 	type = country_event
 	hidden = yes
 
-	trigger = { sb_nam_seeded_policy_colony_is_pending = yes }
+	trigger = {
+		exists = scope:sb_nam_new_colony
+		scope:sb_nam_new_colony = c:SWA
+		sb_nam_seeded_policy_colony_is_pending = yes
+	}
 	immediate = { sb_nam_reconcile_seeded_policy_colony = yes }
 }
 
+# Act I (Boats — Progress 0+): The Benguela Fog
 sb_nam.030 = {
 	type = country_event
 	placement = root
 	title = sb_nam.030.t
 	desc = sb_nam.030.d
 	flavor = sb_nam.030.f
-	event_image = { video = "gfx/event_pictures/africa_desert_expedition.bk2" }
+	event_image = { video = "gfx/event_pictures/unspecific_steam_ship.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
 	icon = "gfx/interface/icons/event_icons/event_map.dds"
 	duration = 3
-	cooldown = { months = 6 }
-	cancellation_trigger = { NOT = { has_journal_entry = je_sb_map_namibian_coast } }
+	minor_left_icon = scope:sb_nam_expedition_leader
+
+	trigger = {
+		any_scope_character = { has_variable = expedition_leader_var }
+		je:je_sb_map_namibian_coast ?= {
+			NOT = { has_variable = sb_nam_survey_event_open_var }
+			NOT = { has_variable = sb_nam_pulse_cooldown_var }
+			NOT = { has_variable = sb_nam_act1_done_var }
+		}
+	}
+
+	cancellation_trigger = {
+		OR = {
+			NOT = { has_journal_entry = je_sb_map_namibian_coast }
+			NOT = { exists = scope:sb_nam_expedition_leader }
+		}
+	}
+
+	immediate = {
+		je:je_sb_map_namibian_coast ?= {
+			set_variable = sb_nam_survey_event_open_var
+			set_variable = sb_nam_act1_done_var
+		}
+		random_scope_character = {
+			limit = { has_variable = expedition_leader_var }
+			save_scope_as = sb_nam_expedition_leader
+		}
+	}
+
+	after = {
+		je:je_sb_map_namibian_coast ?= {
+			remove_variable = sb_nam_survey_event_open_var
+			set_variable = { name = sb_nam_pulse_cooldown_var days = 60 }
+		}
+	}
 
 	option = {
 		name = sb_nam.030.a
 		default_option = yes
-		je:je_sb_map_namibian_coast ?= {
-			add_progress = { name = sb_namibian_coast_survey_progress_bar value = -1 }
-			add_progress = { name = sb_namibian_coast_expedition_peril_bar value = -1 }
+		if = {
+			limit = {
+				je:je_sb_map_namibian_coast ?= {
+					"scripted_bar_progress(sb_namibian_coast_expedition_peril_bar)" > 0
+				}
+			}
+			if = {
+				limit = { scope:sb_nam_expedition_leader ?= { has_trait = cautious } }
+				custom_tooltip = sb_nam.030.a.cautious_peril.tt
+				hidden_effect = {
+					je:je_sb_map_namibian_coast ?= {
+						add_progress = { name = sb_namibian_coast_survey_progress_bar value = 2 }
+						add_progress = { name = sb_namibian_coast_expedition_peril_bar value = -1 }
+					}
+				}
+			}
+			else = {
+				custom_tooltip = sb_nam.030.a.peril.tt
+				hidden_effect = {
+					je:je_sb_map_namibian_coast ?= {
+						add_progress = { name = sb_namibian_coast_survey_progress_bar value = 1 }
+						add_progress = { name = sb_namibian_coast_expedition_peril_bar value = -1 }
+					}
+				}
+			}
+		}
+		else_if = {
+			limit = { scope:sb_nam_expedition_leader ?= { has_trait = cautious } }
+			custom_tooltip = sb_nam.030.a.cautious.tt
+			hidden_effect = {
+				je:je_sb_map_namibian_coast ?= {
+					add_progress = { name = sb_namibian_coast_survey_progress_bar value = 2 }
+				}
+			}
+		}
+		else = {
+			custom_tooltip = sb_nam.030.a.tt
+			hidden_effect = {
+				je:je_sb_map_namibian_coast ?= {
+					add_progress = { name = sb_namibian_coast_survey_progress_bar value = 1 }
+				}
+			}
 		}
 		ai_chance = {
-			base = 60
+			base = 45
 			modifier = {
 				trigger = {
 					je:je_sb_map_namibian_coast ?= {
-						"scripted_bar_progress(sb_namibian_coast_expedition_peril_bar)" >= 4
+						"scripted_bar_progress(sb_namibian_coast_expedition_peril_bar)" >= 3
 					}
 				}
-				add = 30
+				add = 35
 			}
 		}
 	}
 
 	option = {
 		name = sb_nam.030.b
-		je:je_sb_map_namibian_coast ?= {
-			add_progress = { name = sb_namibian_coast_survey_progress_bar value = 2 }
-			add_progress = { name = sb_namibian_coast_expedition_peril_bar value = 1 }
+		random_list = {
+			60 = {
+				modifier = {
+					if = {
+						limit = {
+							scope:sb_nam_expedition_leader ?= {
+								OR = {
+									has_role_of_type = admiral
+									has_trait = surveyor
+									has_trait = explorer
+									has_trait = meticulous
+								}
+							}
+						}
+						add = 20
+					}
+					if = {
+						limit = { scope:sb_nam_expedition_leader ?= { has_trait = reckless } }
+						add = -15
+					}
+				}
+				custom_tooltip = sb_nam.030.b.ok.tt
+				hidden_effect = {
+					je:je_sb_map_namibian_coast ?= {
+						add_progress = { name = sb_namibian_coast_survey_progress_bar value = 3 }
+					}
+				}
+			}
+			40 = {
+				modifier = {
+					if = {
+						limit = { scope:sb_nam_expedition_leader ?= { has_trait = reckless } }
+						add = 15
+					}
+				}
+				custom_tooltip = sb_nam.030.b.fail.tt
+				hidden_effect = {
+					je:je_sb_map_namibian_coast ?= {
+						add_progress = { name = sb_namibian_coast_survey_progress_bar value = 2 }
+						add_progress = { name = sb_namibian_coast_expedition_peril_bar value = 2 }
+					}
+				}
+			}
 		}
 		ai_chance = { base = 40 }
 	}
+
+	option = {
+		name = sb_nam.030.c
+		highlighted_option = yes
+		trigger = {
+			scope:sb_nam_expedition_leader ?= {
+				OR = {
+					has_role_of_type = admiral
+					has_trait = surveyor
+					has_trait = explorer
+				}
+			}
+		}
+		# Future Morgenröte-required edition hook: add Oceanography / Agassiz research here alongside Prestige.
+		add_modifier = {
+			name = sb_nam_survey_hydrography_prestige
+			months = 36
+		}
+		custom_tooltip = sb_nam.030.c.tt
+		hidden_effect = {
+			je:je_sb_map_namibian_coast ?= {
+				add_progress = { name = sb_namibian_coast_survey_progress_bar value = 2 }
+			}
+		}
+		ai_chance = { base = 85 }
+	}
 }
 
+# Act II (Coves — Progress 6+ after Act I): Roadsteads and Guano Rocks
 sb_nam.031 = {
 	type = country_event
 	placement = root
 	title = sb_nam.031.t
 	desc = sb_nam.031.d
 	flavor = sb_nam.031.f
-	event_image = { video = "gfx/event_pictures/africa_desert_expedition.bk2" }
+	event_image = { video = "gfx/event_pictures/africa_construction_colony.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
 	icon = "gfx/interface/icons/event_icons/event_map.dds"
 	duration = 3
-	cooldown = { months = 6 }
-	cancellation_trigger = { NOT = { has_journal_entry = je_sb_map_namibian_coast } }
+	minor_left_icon = scope:sb_nam_expedition_leader
+
+	trigger = {
+		any_scope_character = { has_variable = expedition_leader_var }
+		je:je_sb_map_namibian_coast ?= {
+			NOT = { has_variable = sb_nam_survey_event_open_var }
+			NOT = { has_variable = sb_nam_pulse_cooldown_var }
+			has_variable = sb_nam_act1_done_var
+			NOT = { has_variable = sb_nam_act2_done_var }
+			"scripted_bar_progress(sb_namibian_coast_survey_progress_bar)" >= 6
+		}
+	}
+
+	cancellation_trigger = {
+		OR = {
+			NOT = { has_journal_entry = je_sb_map_namibian_coast }
+			NOT = { exists = scope:sb_nam_expedition_leader }
+		}
+	}
+
+	immediate = {
+		je:je_sb_map_namibian_coast ?= {
+			set_variable = sb_nam_survey_event_open_var
+			set_variable = sb_nam_act2_done_var
+		}
+		random_scope_character = {
+			limit = { has_variable = expedition_leader_var }
+			save_scope_as = sb_nam_expedition_leader
+		}
+	}
+
+	after = {
+		je:je_sb_map_namibian_coast ?= {
+			remove_variable = sb_nam_survey_event_open_var
+			set_variable = { name = sb_nam_pulse_cooldown_var days = 60 }
+		}
+	}
 
 	option = {
 		name = sb_nam.031.a
 		default_option = yes
-		trigger = { gold_reserves >= 25000 }
-		add_treasury = -25000
-		je:je_sb_map_namibian_coast ?= {
-			add_progress = { name = sb_namibian_coast_survey_progress_bar value = 2 }
-			add_progress = { name = sb_namibian_coast_expedition_peril_bar value = -1 }
+		add_modifier = {
+			name = sb_nam_survey_charts_prestige
+			months = 36
 		}
-		ai_chance = { base = 80 }
+		if = {
+			limit = {
+				scope:sb_nam_expedition_leader ?= {
+					has_role_of_type = general
+					NOT = { has_trait = surveyor }
+				}
+			}
+			scope:sb_nam_expedition_leader = { add_trait = surveyor }
+		}
+		custom_tooltip = sb_nam.031.a.tt
+		hidden_effect = {
+			je:je_sb_map_namibian_coast ?= {
+				add_progress = { name = sb_namibian_coast_survey_progress_bar value = 2 }
+			}
+		}
+		ai_chance = { base = 60 }
 	}
 
 	option = {
 		name = sb_nam.031.b
-		je:je_sb_map_namibian_coast ?= {
-			add_progress = { name = sb_namibian_coast_expedition_peril_bar value = 1 }
+		custom_tooltip = sb_nam.031.b.tt
+		hidden_effect = {
+			je:je_sb_map_namibian_coast ?= {
+				add_progress = { name = sb_namibian_coast_survey_progress_bar value = 4 }
+				add_progress = { name = sb_namibian_coast_expedition_peril_bar value = 1 }
+			}
+		}
+		ai_chance = {
+			base = 30
+			modifier = {
+				trigger = {
+					any_country = {
+						has_journal_entry = je_sb_map_namibian_coast
+						NOT = { this = root }
+					}
+				}
+				add = 35
+			}
+		}
+	}
+
+	option = {
+		name = sb_nam.031.c
+		# Future Morgenröte-required edition hook: add Dubois marine/zoology specimen & tech gain here alongside Prestige.
+		add_modifier = {
+			name = sb_nam_survey_guano_prestige
+			months = 36
+		}
+		scope:sb_nam_expedition_leader ?= {
+			add_modifier = {
+				name = sb_nam_survey_acclaimed_leader
+				months = 60
+			}
+		}
+		custom_tooltip = sb_nam.031.c.tt
+		hidden_effect = {
+			je:je_sb_map_namibian_coast ?= {
+				add_progress = { name = sb_namibian_coast_survey_progress_bar value = 1 }
+				add_progress = { name = sb_namibian_coast_expedition_peril_bar value = 1 }
+			}
 		}
 		ai_chance = { base = 20 }
 	}
 }
 
+# Act III (Disembarkment & Dunes — Progress 13+ after Act II): Through the Surf, Into the Namib
 sb_nam.032 = {
 	type = country_event
 	placement = root
@@ -620,200 +902,491 @@ sb_nam.032 = {
 	desc = sb_nam.032.d
 	flavor = sb_nam.032.f
 	event_image = { video = "gfx/event_pictures/africa_desert_expedition.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
 	icon = "gfx/interface/icons/event_icons/event_map.dds"
 	duration = 3
-	cooldown = { months = 6 }
-	cancellation_trigger = { NOT = { has_journal_entry = je_sb_map_namibian_coast } }
+	minor_left_icon = scope:sb_nam_expedition_leader
 
-	option = {
-		name = sb_nam.032.a
-		default_option = yes
-		je:je_sb_map_namibian_coast ?= {
-			add_progress = { name = sb_namibian_coast_survey_progress_bar value = 1 }
-		}
-		ai_chance = { base = 70 }
-	}
-
-	option = {
-		name = sb_nam.032.b
-		je:je_sb_map_namibian_coast ?= {
-			add_progress = { name = sb_namibian_coast_survey_progress_bar value = 3 }
-			add_progress = { name = sb_namibian_coast_expedition_peril_bar value = 1 }
-		}
-		ai_chance = { base = 30 }
-	}
-}
-
-sb_nam.033 = {
-	type = country_event
-	placement = root
-	title = sb_nam.033.t
-	desc = sb_nam.033.d
-	flavor = sb_nam.033.f
-	event_image = { video = "gfx/event_pictures/africa_desert_expedition.bk2" }
-	icon = "gfx/interface/icons/event_icons/event_map.dds"
-	duration = 3
-	cooldown = { months = 6 }
-	cancellation_trigger = { NOT = { has_journal_entry = je_sb_map_namibian_coast } }
-
-	option = {
-		name = sb_nam.033.a
-		default_option = yes
-		trigger = { gold_reserves >= 10000 }
-		add_treasury = -10000
-		je:je_sb_map_namibian_coast ?= {
-			add_progress = { name = sb_namibian_coast_survey_progress_bar value = 2 }
-			add_progress = { name = sb_namibian_coast_expedition_peril_bar value = -1 }
-		}
-		ai_chance = { base = 75 }
-	}
-
-	option = {
-		name = sb_nam.033.b
-		je:je_sb_map_namibian_coast ?= {
-			add_progress = { name = sb_namibian_coast_survey_progress_bar value = 1 }
-			add_progress = { name = sb_namibian_coast_expedition_peril_bar value = 1 }
-		}
-		ai_chance = { base = 25 }
-	}
-}
-
-sb_nam.034 = {
-	type = country_event
-	placement = root
-	title = sb_nam.034.t
-	desc = sb_nam.034.d
-	flavor = sb_nam.034.f
-	event_image = { video = "gfx/event_pictures/africa_desert_expedition.bk2" }
-	icon = "gfx/interface/icons/event_icons/event_map.dds"
-	duration = 3
-	cooldown = { months = 6 }
-	cancellation_trigger = { NOT = { has_journal_entry = je_sb_map_namibian_coast } }
-
-	option = {
-		name = sb_nam.034.a
-		default_option = yes
-		je:je_sb_map_namibian_coast ?= {
-			add_progress = { name = sb_namibian_coast_survey_progress_bar value = -1 }
-			add_progress = { name = sb_namibian_coast_expedition_peril_bar value = -1 }
-		}
-		ai_chance = { base = 70 }
-	}
-
-	option = {
-		name = sb_nam.034.b
-		je:je_sb_map_namibian_coast ?= {
-			add_progress = { name = sb_namibian_coast_survey_progress_bar value = 3 }
-			add_progress = { name = sb_namibian_coast_expedition_peril_bar value = 2 }
-		}
-		ai_chance = { base = 30 }
-	}
-}
-
-sb_nam.035 = {
-	type = country_event
-	placement = root
-	title = sb_nam.035.t
-	desc = sb_nam.035.d
-	flavor = sb_nam.035.f
-	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
-	icon = "gfx/interface/icons/event_icons/event_map.dds"
-	duration = 3
-	cooldown = { months = 8 }
-	cancellation_trigger = { NOT = { has_journal_entry = je_sb_map_namibian_coast } }
 	trigger = {
-		any_country = {
-			has_journal_entry = je_sb_map_namibian_coast
-			NOT = { this = root }
-		}
-	}
-
-	option = {
-		name = sb_nam.035.a
-		default_option = yes
-		trigger = { gold_reserves >= 25000 }
-		add_treasury = -25000
+		any_scope_character = { has_variable = expedition_leader_var }
 		je:je_sb_map_namibian_coast ?= {
-			add_progress = { name = sb_namibian_coast_survey_progress_bar value = 3 }
-			add_progress = { name = sb_namibian_coast_expedition_peril_bar value = 1 }
+			NOT = { has_variable = sb_nam_survey_event_open_var }
+			NOT = { has_variable = sb_nam_pulse_cooldown_var }
+			has_variable = sb_nam_act2_done_var
+			NOT = { has_variable = sb_nam_act3_done_var }
+			"scripted_bar_progress(sb_namibian_coast_survey_progress_bar)" >= 13
 		}
-		ai_chance = { base = 70 }
 	}
 
-	option = {
-		name = sb_nam.035.b
-		ai_chance = { base = 30 }
-	}
-}
-
-sb_nam.036 = {
-	type = country_event
-	placement = root
-	title = sb_nam.036.t
-	desc = sb_nam.036.d
-	flavor = sb_nam.036.f
-	event_image = { video = "gfx/event_pictures/africa_desert_expedition.bk2" }
-	icon = "gfx/interface/icons/event_icons/event_map.dds"
-	duration = 3
-	cooldown = { months = 6 }
-	cancellation_trigger = { NOT = { has_journal_entry = je_sb_map_namibian_coast } }
-
-	option = {
-		name = sb_nam.036.a
-		default_option = yes
-		je:je_sb_map_namibian_coast ?= {
-			add_progress = { name = sb_namibian_coast_survey_progress_bar value = -2 }
-			add_progress = { name = sb_namibian_coast_expedition_peril_bar value = -1 }
+	cancellation_trigger = {
+		OR = {
+			NOT = { has_journal_entry = je_sb_map_namibian_coast }
+			NOT = { exists = scope:sb_nam_expedition_leader }
 		}
-		ai_chance = { base = 65 }
 	}
-
-	option = {
-		name = sb_nam.036.b
-		je:je_sb_map_namibian_coast ?= {
-			add_progress = { name = sb_namibian_coast_survey_progress_bar value = 1 }
-			add_progress = { name = sb_namibian_coast_expedition_peril_bar value = 1 }
-		}
-		ai_chance = { base = 35 }
-	}
-}
-
-sb_nam.037 = {
-	type = country_event
-	placement = root
-	title = sb_nam.037.t
-	desc = sb_nam.037.d
-	flavor = sb_nam.037.f
-	event_image = { video = "gfx/event_pictures/africa_desert_expedition.bk2" }
-	icon = "gfx/interface/icons/event_icons/event_map.dds"
-	duration = 3
-	cooldown = { months = 12 }
-	cancellation_trigger = { NOT = { has_journal_entry = je_sb_map_namibian_coast } }
 
 	immediate = {
+		je:je_sb_map_namibian_coast ?= {
+			set_variable = sb_nam_survey_event_open_var
+			set_variable = sb_nam_act3_done_var
+		}
 		random_scope_character = {
 			limit = { has_variable = expedition_leader_var }
 			save_scope_as = sb_nam_expedition_leader
 		}
 	}
 
-	option = {
-		name = sb_nam.037.a
-		default_option = yes
-		add_treasury = -25000
+	after = {
 		je:je_sb_map_namibian_coast ?= {
-			add_progress = { name = sb_namibian_coast_survey_progress_bar value = -3 }
-			add_progress = { name = sb_namibian_coast_expedition_peril_bar value = -2 }
+			remove_variable = sb_nam_survey_event_open_var
+			set_variable = { name = sb_nam_pulse_cooldown_var days = 60 }
 		}
-		ai_chance = { base = 80 }
 	}
 
 	option = {
-		name = sb_nam.037.b
-		custom_tooltip = sb_nam_037_b_tt
+		name = sb_nam.032.a
+		trigger = { gold_reserves >= 20000 }
+		add_treasury = -20000
+		custom_tooltip = sb_nam.032.a.tt
 		hidden_effect = {
+			je:je_sb_map_namibian_coast ?= {
+				add_progress = { name = sb_namibian_coast_survey_progress_bar value = 3 }
+				add_progress = { name = sb_namibian_coast_expedition_peril_bar value = -1 }
+			}
+		}
+		ai_chance = { base = 70 }
+	}
+
+	option = {
+		name = sb_nam.032.b
+		default_option = yes
+		random_list = {
+			55 = {
+				modifier = {
+					if = {
+						limit = {
+							scope:sb_nam_expedition_leader ?= {
+								OR = {
+									has_role_of_type = general
+									has_trait = surveyor
+									has_trait = explorer
+									has_trait = resupply_commander
+								}
+							}
+						}
+						add = 20
+					}
+					if = {
+						limit = { scope:sb_nam_expedition_leader ?= { has_trait = reckless } }
+						add = -15
+					}
+				}
+				custom_tooltip = sb_nam.032.b.ok.tt
+				hidden_effect = {
+					je:je_sb_map_namibian_coast ?= {
+						add_progress = { name = sb_namibian_coast_survey_progress_bar value = 4 }
+						add_progress = { name = sb_namibian_coast_expedition_peril_bar value = 1 }
+					}
+				}
+			}
+			45 = {
+				modifier = {
+					if = {
+						limit = { scope:sb_nam_expedition_leader ?= { has_trait = reckless } }
+						add = 15
+					}
+				}
+				custom_tooltip = sb_nam.032.b.fail.tt
+				hidden_effect = {
+					je:je_sb_map_namibian_coast ?= {
+						add_progress = { name = sb_namibian_coast_survey_progress_bar value = 1 }
+						add_progress = { name = sb_namibian_coast_expedition_peril_bar value = 2 }
+					}
+				}
+			}
+		}
+		ai_chance = { base = 30 }
+	}
+
+	option = {
+		name = sb_nam.032.c
+		# Future Morgenröte-required edition hook: add Ito botanical / Dubois fauna specimen & Society tech progress here.
+		add_modifier = {
+			name = sb_nam_survey_natural_history_prestige
+			months = 60
+		}
+		scope:sb_nam_expedition_leader ?= {
+			add_modifier = {
+				name = sb_nam_survey_acclaimed_leader
+				months = 60
+			}
+		}
+		custom_tooltip = sb_nam.032.c.tt
+		hidden_effect = {
+			je:je_sb_map_namibian_coast ?= {
+				add_progress = { name = sb_namibian_coast_survey_progress_bar value = 1 }
+				add_progress = { name = sb_namibian_coast_expedition_peril_bar value = 1 }
+			}
+		}
+		ai_chance = { base = 25 }
+	}
+}
+
+# Act IV (Inland Corridor & Locals — Progress 20+ after Act III): Wells and Tracks of the Interior
+sb_nam.033 = {
+	type = country_event
+	placement = root
+	title = sb_nam.033.t
+	desc = sb_nam.033.d
+	flavor = sb_nam.033.f
+	event_image = { video = "gfx/event_pictures/africa_diplomats_negotiating.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+	minor_left_icon = scope:sb_nam_expedition_leader
+
+	trigger = {
+		any_scope_character = { has_variable = expedition_leader_var }
+		je:je_sb_map_namibian_coast ?= {
+			NOT = { has_variable = sb_nam_survey_event_open_var }
+			NOT = { has_variable = sb_nam_pulse_cooldown_var }
+			has_variable = sb_nam_act3_done_var
+			NOT = { has_variable = sb_nam_act4_done_var }
+			"scripted_bar_progress(sb_namibian_coast_survey_progress_bar)" >= 20
+		}
+	}
+
+	cancellation_trigger = {
+		OR = {
+			NOT = { has_journal_entry = je_sb_map_namibian_coast }
+			NOT = { exists = scope:sb_nam_expedition_leader }
+		}
+	}
+
+	immediate = {
+		je:je_sb_map_namibian_coast ?= {
+			set_variable = sb_nam_survey_event_open_var
+			set_variable = sb_nam_act4_done_var
+		}
+		random_scope_character = {
+			limit = { has_variable = expedition_leader_var }
+			save_scope_as = sb_nam_expedition_leader
+		}
+	}
+
+	after = {
+		je:je_sb_map_namibian_coast ?= {
+			remove_variable = sb_nam_survey_event_open_var
+			set_variable = { name = sb_nam_pulse_cooldown_var days = 60 }
+		}
+	}
+
+	option = {
+		name = sb_nam.033.a
+		trigger = { gold_reserves >= 15000 }
+		add_treasury = -15000
+		custom_tooltip = sb_nam.033.a.tt
+		hidden_effect = {
+			je:je_sb_map_namibian_coast ?= {
+				add_progress = { name = sb_namibian_coast_survey_progress_bar value = 4 }
+				add_progress = { name = sb_namibian_coast_expedition_peril_bar value = -1 }
+			}
+		}
+		ai_chance = { base = 70 }
+	}
+
+	option = {
+		name = sb_nam.033.b
+		highlighted_option = yes
+		trigger = {
+			scope:sb_nam_expedition_leader ?= {
+				NOT = { has_trait = bigoted }
+				OR = {
+					has_trait = charismatic
+					has_trait = surveyor
+					has_trait = experienced_diplomat
+				}
+			}
+		}
+		random_list = {
+			75 = {
+				modifier = {
+					if = {
+						limit = { scope:sb_nam_expedition_leader ?= { has_trait = charismatic } }
+						add = 15
+					}
+				}
+				scope:sb_nam_expedition_leader ?= {
+					add_modifier = {
+						name = sb_nam_survey_acclaimed_leader
+						months = 60
+					}
+				}
+				custom_tooltip = sb_nam.033.b.ok.tt
+				hidden_effect = {
+					je:je_sb_map_namibian_coast ?= {
+						add_progress = { name = sb_namibian_coast_survey_progress_bar value = 4 }
+						add_progress = { name = sb_namibian_coast_expedition_peril_bar value = -1 }
+					}
+				}
+			}
+			25 = {
+				custom_tooltip = sb_nam.033.b.fail.tt
+				hidden_effect = {
+					je:je_sb_map_namibian_coast ?= {
+						add_progress = { name = sb_namibian_coast_survey_progress_bar value = 2 }
+					}
+				}
+			}
+		}
+		ai_chance = { base = 85 }
+	}
+
+	option = {
+		name = sb_nam.033.c
+		default_option = yes
+		custom_tooltip = sb_nam.033.c.tt
+		hidden_effect = {
+			je:je_sb_map_namibian_coast ?= {
+				add_progress = { name = sb_namibian_coast_survey_progress_bar value = 3 }
+				add_progress = { name = sb_namibian_coast_expedition_peril_bar value = 2 }
+			}
+		}
+		if = {
+			limit = { scope:sb_nam_expedition_leader ?= { NOT = { has_trait = cruel } } }
 			random_list = {
-				25 = {
+				35 = {
+					modifier = {
+						if = {
+							limit = {
+								scope:sb_nam_expedition_leader ?= {
+									OR = {
+										has_trait = reckless
+										has_trait = bigoted
+									}
+								}
+							}
+							add = 20
+						}
+					}
+					scope:sb_nam_expedition_leader = { add_trait = cruel }
+				}
+				65 = { }
+			}
+		}
+		ai_chance = { base = 25 }
+	}
+}
+
+# Conditional (Rival Scramble Race — shared 5th-event slot, Progress >= 6): Foreign Ensigns on the Horizon
+sb_nam.034 = {
+	type = country_event
+	placement = root
+	title = sb_nam.034.t
+	desc = sb_nam.034.d
+	flavor = sb_nam.034.f
+	event_image = { video = "gfx/event_pictures/votp_gunboat_diplomacy.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+	minor_left_icon = scope:sb_nam_expedition_leader
+
+	trigger = {
+		any_scope_character = { has_variable = expedition_leader_var }
+		je:je_sb_map_namibian_coast ?= {
+			NOT = { has_variable = sb_nam_survey_event_open_var }
+			NOT = { has_variable = sb_nam_pulse_cooldown_var }
+			NOT = { has_variable = sb_nam_optional_event_done_var }
+			has_variable = sb_nam_act1_done_var
+			"scripted_bar_progress(sb_namibian_coast_survey_progress_bar)" >= 6
+		}
+		any_country = {
+			has_journal_entry = je_sb_map_namibian_coast
+			NOT = { this = root }
+		}
+	}
+
+	cancellation_trigger = {
+		OR = {
+			NOT = { has_journal_entry = je_sb_map_namibian_coast }
+			NOT = { exists = scope:sb_nam_expedition_leader }
+		}
+	}
+
+	immediate = {
+		je:je_sb_map_namibian_coast ?= {
+			set_variable = sb_nam_survey_event_open_var
+			set_variable = sb_nam_optional_event_done_var
+		}
+		random_scope_character = {
+			limit = { has_variable = expedition_leader_var }
+			save_scope_as = sb_nam_expedition_leader
+		}
+	}
+
+	after = {
+		je:je_sb_map_namibian_coast ?= {
+			remove_variable = sb_nam_survey_event_open_var
+			set_variable = { name = sb_nam_pulse_cooldown_var days = 60 }
+		}
+	}
+
+	option = {
+		name = sb_nam.034.a
+		trigger = { gold_reserves >= 25000 }
+		add_treasury = -25000
+		custom_tooltip = sb_nam.034.a.tt
+		hidden_effect = {
+			je:je_sb_map_namibian_coast ?= {
+				add_progress = { name = sb_namibian_coast_survey_progress_bar value = 4 }
+				add_progress = { name = sb_namibian_coast_expedition_peril_bar value = 1 }
+			}
+		}
+		ai_chance = { base = 60 }
+	}
+
+	option = {
+		name = sb_nam.034.b
+		default_option = yes
+		custom_tooltip = sb_nam.034.b.tt
+		hidden_effect = {
+			je:je_sb_map_namibian_coast ?= {
+				add_progress = { name = sb_namibian_coast_survey_progress_bar value = 2 }
+			}
+		}
+		ai_chance = { base = 35 }
+	}
+
+	option = {
+		name = sb_nam.034.c
+		add_modifier = {
+			name = sb_nam_survey_charts_prestige
+			months = 36
+		}
+		custom_tooltip = sb_nam.034.c.tt
+		hidden_effect = {
+			je:je_sb_map_namibian_coast ?= {
+				add_progress = { name = sb_namibian_coast_survey_progress_bar value = 1 }
+				add_progress = { name = sb_namibian_coast_expedition_peril_bar value = 1 }
+			}
+		}
+		ai_chance = { base = 25 }
+	}
+}
+
+# Conditional (High-Peril Crisis — shared 5th-event slot, Progress >= 13, Peril >= 4): Dry Wells and a Missing Party
+sb_nam.035 = {
+	type = country_event
+	placement = root
+	title = sb_nam.035.t
+	desc = sb_nam.035.d
+	flavor = sb_nam.035.f
+	event_image = { video = "gfx/event_pictures/africa_desert_expedition.bk2" }
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+	duration = 3
+	minor_left_icon = scope:sb_nam_expedition_leader
+
+	trigger = {
+		any_scope_character = { has_variable = expedition_leader_var }
+		je:je_sb_map_namibian_coast ?= {
+			NOT = { has_variable = sb_nam_survey_event_open_var }
+			NOT = { has_variable = sb_nam_pulse_cooldown_var }
+			NOT = { has_variable = sb_nam_optional_event_done_var }
+			has_variable = sb_nam_act2_done_var
+			"scripted_bar_progress(sb_namibian_coast_survey_progress_bar)" >= 13
+			"scripted_bar_progress(sb_namibian_coast_expedition_peril_bar)" >= 4
+		}
+	}
+
+	cancellation_trigger = {
+		OR = {
+			NOT = { has_journal_entry = je_sb_map_namibian_coast }
+			NOT = { exists = scope:sb_nam_expedition_leader }
+		}
+	}
+
+	immediate = {
+		je:je_sb_map_namibian_coast ?= {
+			set_variable = sb_nam_survey_event_open_var
+			set_variable = sb_nam_optional_event_done_var
+		}
+		random_scope_character = {
+			limit = { has_variable = expedition_leader_var }
+			save_scope_as = sb_nam_expedition_leader
+		}
+	}
+
+	after = {
+		je:je_sb_map_namibian_coast ?= {
+			remove_variable = sb_nam_survey_event_open_var
+			set_variable = { name = sb_nam_pulse_cooldown_var days = 60 }
+		}
+	}
+
+	option = {
+		name = sb_nam.035.a
+		default_option = yes
+		add_treasury = -20000
+		custom_tooltip = sb_nam.035.a.tt
+		hidden_effect = {
+			je:je_sb_map_namibian_coast ?= {
+				add_progress = { name = sb_namibian_coast_survey_progress_bar value = -3 }
+				add_progress = { name = sb_namibian_coast_expedition_peril_bar value = -3 }
+			}
+		}
+		ai_chance = { base = 70 }
+	}
+
+	option = {
+		name = sb_nam.035.b
+		random_list = {
+			75 = {
+				modifier = {
+					if = {
+						limit = {
+							scope:sb_nam_expedition_leader ?= {
+								OR = {
+									has_trait = brave
+									has_trait = explorer
+									has_trait = surveyor
+								}
+							}
+						}
+						add = 10
+					}
+					if = {
+						limit = { scope:sb_nam_expedition_leader ?= { has_trait = reckless } }
+						add = -10
+					}
+				}
+				add_modifier = {
+					name = sb_nam_survey_heroic_rescue_prestige
+					months = 36
+				}
+				scope:sb_nam_expedition_leader ?= {
+					add_modifier = {
+						name = sb_nam_survey_acclaimed_leader
+						months = 60
+					}
+				}
+				custom_tooltip = sb_nam.035.b.ok.tt
+				hidden_effect = {
+					je:je_sb_map_namibian_coast ?= {
+						add_progress = { name = sb_namibian_coast_survey_progress_bar value = 4 }
+						add_progress = { name = sb_namibian_coast_expedition_peril_bar value = 1 }
+					}
+				}
+			}
+			25 = {
+				modifier = {
+					if = {
+						limit = { scope:sb_nam_expedition_leader ?= { has_trait = reckless } }
+						add = 10
+					}
+				}
+				custom_tooltip = sb_nam.035.b.fail.tt
+				hidden_effect = {
 					if = {
 						limit = { exists = scope:sb_nam_expedition_leader }
 						scope:sb_nam_expedition_leader = {
@@ -822,65 +1395,20 @@ sb_nam.037 = {
 						}
 					}
 				}
-				75 = {
-					je:je_sb_map_namibian_coast ?= {
-						add_progress = { name = sb_namibian_coast_survey_progress_bar value = 3 }
-						add_progress = { name = sb_namibian_coast_expedition_peril_bar value = 3 }
-					}
-				}
 			}
 		}
 		ai_chance = { base = 20 }
 	}
-}
-
-sb_nam.038 = {
-	type = country_event
-	placement = root
-	title = sb_nam.038.t
-	desc = sb_nam.038.d
-	flavor = sb_nam.038.f
-	event_image = { video = "gfx/event_pictures/africa_desert_expedition.bk2" }
-	icon = "gfx/interface/icons/event_icons/event_map.dds"
-	duration = 3
-
-	trigger = {
-		NOT = { has_variable = sb_nam_south_west_africa_supply_crisis_fired_var }
-	}
-
-	cancellation_trigger = {
-		NOT = { has_journal_entry = je_sb_map_namibian_coast }
-	}
-
-	immediate = {
-		set_variable = sb_nam_south_west_africa_supply_crisis_fired_var
-	}
 
 	option = {
-		name = sb_nam.038.a
-		default_option = yes
-		je:je_sb_map_namibian_coast ?= {
-			add_progress = {
-				name = sb_namibian_coast_expedition_peril_bar
-				value = 4
+		name = sb_nam.035.c
+		custom_tooltip = sb_nam.035.c.tt
+		hidden_effect = {
+			je:je_sb_map_namibian_coast ?= {
+				add_progress = { name = sb_namibian_coast_expedition_peril_bar value = 2 }
 			}
 		}
-		ai_chance = { base = 50 }
-	}
-
-	option = {
-		name = sb_nam.038.b
-		je:je_sb_map_namibian_coast ?= {
-			add_progress = {
-				name = sb_namibian_coast_survey_progress_bar
-				value = -9
-			}
-			add_progress = {
-				name = sb_namibian_coast_expedition_peril_bar
-				value = 2
-			}
-		}
-		ai_chance = { base = 50 }
+		ai_chance = { base = 15 }
 	}
 }
 
